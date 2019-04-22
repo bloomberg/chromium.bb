@@ -88,7 +88,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   // Handles the callback for HandleGetPrinterInfo for a discovered printer.
   void OnAutoconfQueriedDiscovered(
-      std::unique_ptr<Printer> printer,
+      Printer printer,
       bool success,
       const std::string& make,
       const std::string& model,
@@ -191,8 +191,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   // parameters.  See https://crbug.com/835476
   void FireManuallyAddDiscoveredPrinter(const Printer& printer);
 
-  void OnIpResolved(std::unique_ptr<Printer> printer,
-                    const net::IPEndPoint& endpoint);
+  void OnIpResolved(const Printer& printer, const net::IPEndPoint& endpoint);
 
   Profile* profile_;
 

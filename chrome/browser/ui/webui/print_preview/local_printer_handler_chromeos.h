@@ -65,7 +65,7 @@ class LocalPrinterHandlerChromeos : public PrinterHandler {
   // |profile_|.
   base::Value GetNativePrinterPolicies() const;
 
-  void HandlePrinterSetup(std::unique_ptr<chromeos::Printer> printer,
+  void HandlePrinterSetup(const chromeos::Printer& printer,
                           GetCapabilityCallback cb,
                           chromeos::PrinterSetupResult result);
 
