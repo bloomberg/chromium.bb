@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/net_export.h"
+#include "net/base/proxy_server.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/connect_job.h"
@@ -41,6 +42,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   WebSocketTransportClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
+      const ProxyServer& proxy_server,
       const CommonConnectJobParams* common_connect_job_params);
 
   ~WebSocketTransportClientSocketPool() override;
@@ -189,6 +191,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   void ActivateStalledRequest();
   bool DeleteStalledRequest(ClientSocketHandle* handle);
 
+  const ProxyServer proxy_server_;
   const CommonConnectJobParams* const common_connect_job_params_;
   std::set<const ClientSocketHandle*> pending_callbacks_;
   PendingConnectsMap pending_connects_;

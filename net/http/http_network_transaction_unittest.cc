@@ -667,6 +667,8 @@ class CaptureGroupIdTransportSocketPool : public TransportClientSocketPool {
       : TransportClientSocketPool(0,
                                   0,
                                   base::TimeDelta(),
+                                  ProxyServer::Direct(),
+                                  false /* is_for_websockets */,
                                   common_connect_job_params,
                                   nullptr /* ssl_config_service */) {}
 
@@ -14355,6 +14357,7 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
       50,                                // Max sockets for pool
       1,                                 // Max sockets per group
       base::TimeDelta::FromSeconds(10),  // unused_idle_socket_timeout
+      ProxyServer::Direct(), false,      // is_for_websockets
       &common_connect_job_params, session_deps_.ssl_config_service.get());
   auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
   mock_pool_manager->SetSocketPool(ProxyServer::Direct(),

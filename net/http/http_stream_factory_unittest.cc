@@ -406,6 +406,8 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
       : TransportClientSocketPool(0,
                                   0,
                                   base::TimeDelta(),
+                                  ProxyServer::Direct(),
+                                  false /* is_for_websockets */,
                                   common_connect_job_params,
                                   nullptr /* ssl_config_service */),
         last_num_streams_(-1) {}

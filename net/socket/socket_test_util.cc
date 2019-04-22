@@ -32,6 +32,7 @@
 #include "net/base/hex_utils.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_timing_info.h"
+#include "net/base/proxy_server.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -2096,6 +2097,8 @@ MockTransportClientSocketPool::MockTransportClientSocketPool(
           max_sockets,
           max_sockets_per_group,
           base::TimeDelta::FromSeconds(10) /* unused_idle_socket_timeout */,
+          ProxyServer::Direct(),
+          false /* is_for_websockets */,
           common_connect_job_params,
           nullptr /* ssl_config_service */),
       client_socket_factory_(common_connect_job_params->client_socket_factory),

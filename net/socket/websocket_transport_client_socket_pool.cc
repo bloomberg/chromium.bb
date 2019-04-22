@@ -29,8 +29,10 @@ namespace net {
 WebSocketTransportClientSocketPool::WebSocketTransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
+    const ProxyServer& proxy_server,
     const CommonConnectJobParams* common_connect_job_params)
-    : common_connect_job_params_(common_connect_job_params),
+    : proxy_server_(proxy_server),
+      common_connect_job_params_(common_connect_job_params),
       max_sockets_(max_sockets),
       handed_out_socket_count_(0),
       flushing_(false),
@@ -99,14 +101,10 @@ int WebSocketTransportClientSocketPool::RequestSocket(
       std::make_unique<ConnectJobDelegate>(this, std::move(callback), handle,
                                            request_net_log);
 
-  // For WebSockets, only the main socket pool uses a
-  // WebSocketTransportClientSocketPool, so there's no need to pass in any
-  // nested socket pools for the proxy case, which use standard proxy socket
-  // pool types on top of a standard TransportClientSocketPool.
   std::unique_ptr<ConnectJob> connect_job =
-      params->create_connect_job_callback().Run(priority, SocketTag(),
-                                                common_connect_job_params_,
-                                                connect_job_delegate.get());
+      CreateConnectJob(group_id, params, proxy_server_,
+                       true /* is_for_websockets */, common_connect_job_params_,
+                       priority, SocketTag(), connect_job_delegate.get());
 
   int result = connect_job_delegate->Connect(std::move(connect_job));
 

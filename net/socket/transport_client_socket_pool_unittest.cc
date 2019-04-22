@@ -23,6 +23,7 @@
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/privacy_mode.h"
+#include "net/base/proxy_server.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -126,6 +127,7 @@ class TransportClientSocketPoolTest : public ::testing::Test,
     common_connect_job_params_->client_socket_factory = &client_socket_factory_;
     pool_ = std::make_unique<TransportClientSocketPool>(
         kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
+        ProxyServer::Direct(), false /* is_for_websockets */,
         common_connect_job_params_.get(),
         session_deps_.ssl_config_service.get());
 
@@ -136,6 +138,7 @@ class TransportClientSocketPoolTest : public ::testing::Test,
         &tagging_client_socket_factory_;
     tagging_pool_ = std::make_unique<TransportClientSocketPool>(
         kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
+        ProxyServer::Direct(), false /* is_for_websockets */,
         tagging_common_connect_job_params_.get(),
         session_deps_.ssl_config_service.get());
 
@@ -146,6 +149,7 @@ class TransportClientSocketPoolTest : public ::testing::Test,
         ClientSocketFactory::GetDefaultFactory();
     pool_for_real_sockets_ = std::make_unique<TransportClientSocketPool>(
         kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
+        ProxyServer::Direct(), false /* is_for_websockets */,
         common_connect_job_params_for_real_sockets_.get(),
         session_deps_.ssl_config_service.get());
   }
@@ -505,9 +509,10 @@ TEST_F(TransportClientSocketPoolTest, ReprioritizeRequests) {
 }
 
 TEST_F(TransportClientSocketPoolTest, RequestIgnoringLimitsIsReprioritized) {
-  TransportClientSocketPool pool(kMaxSockets, 1, kUnusedIdleSocketTimeout,
-                                 common_connect_job_params_.get(),
-                                 nullptr /* ssl_config_service */);
+  TransportClientSocketPool pool(
+      kMaxSockets, 1, kUnusedIdleSocketTimeout, ProxyServer::Direct(),
+      false /* is_for_websockets */, common_connect_job_params_.get(),
+      nullptr /* ssl_config_service */);
 
   // Creates a job which ignores limits whose priority is MAXIMUM_PRIORITY.
   TestCompletionCallback callback1;
@@ -1312,9 +1317,10 @@ TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   // Create a socket pool which only allows a single connection at a time.
-  TransportClientSocketPool pool(1, 1, kUnusedIdleSocketTimeout,
-                                 tagging_common_connect_job_params_.get(),
-                                 session_deps_.ssl_config_service.get());
+  TransportClientSocketPool pool(
+      1, 1, kUnusedIdleSocketTimeout, ProxyServer::Direct(),
+      false /* is_for_websockets */, tagging_common_connect_job_params_.get(),
+      session_deps_.ssl_config_service.get());
 
   // First connection attempt will get an error after creating the SpdyStream.
 
@@ -1417,9 +1423,10 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   // Create a socket pool which only allows a single connection at a time.
-  TransportClientSocketPool pool(1, 1, kUnusedIdleSocketTimeout,
-                                 tagging_common_connect_job_params_.get(),
-                                 session_deps_.ssl_config_service.get());
+  TransportClientSocketPool pool(
+      1, 1, kUnusedIdleSocketTimeout, ProxyServer::Direct(),
+      false /* is_for_websockets */, tagging_common_connect_job_params_.get(),
+      session_deps_.ssl_config_service.get());
 
   SpdyTestUtil spdy_util;
   spdy::SpdySerializedFrame connect(spdy_util.ConstructSpdyConnect(

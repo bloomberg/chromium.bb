@@ -28,6 +28,7 @@
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/privacy_mode.h"
+#include "net/base/proxy_server.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
@@ -572,9 +573,10 @@ class TestConnectJobFactory
   // ConnectJobFactory implementation.
 
   std::unique_ptr<ConnectJob> NewConnectJob(
+      ClientSocketPool::GroupId group_id,
+      scoped_refptr<ClientSocketPool::SocketParams> socket_params,
       RequestPriority request_priority,
       SocketTag socket_tag,
-      scoped_refptr<ClientSocketPool::SocketParams> socket_params,
       ConnectJob::Delegate* delegate) const override {
     EXPECT_TRUE(!job_types_ || !job_types_->empty());
     TestConnectJob::JobType job_type = job_type_;

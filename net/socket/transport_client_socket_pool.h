@@ -52,6 +52,7 @@ namespace net {
 
 struct CommonConnectJobParams;
 struct NetLogSource;
+class ProxyServer;
 
 // TransportClientSocketPool establishes network connections through using
 // ConnectJobs, and maintains a list of idle persistent sockets available for
@@ -150,9 +151,10 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     virtual ~ConnectJobFactory() {}
 
     virtual std::unique_ptr<ConnectJob> NewConnectJob(
+        ClientSocketPool::GroupId group_id,
+        scoped_refptr<ClientSocketPool::SocketParams> socket_params,
         RequestPriority request_priority,
         SocketTag socket_tag,
-        scoped_refptr<SocketParams> socket_params,
         ConnectJob::Delegate* delegate) const = 0;
 
    private:
@@ -163,6 +165,8 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
       int max_sockets,
       int max_sockets_per_group,
       base::TimeDelta unused_idle_socket_timeout,
+      const ProxyServer& proxy_server,
+      bool is_for_websockets,
       const CommonConnectJobParams* common_connect_job_params,
       SSLConfigService* ssl_config_service);
 
@@ -264,6 +268,8 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   void OnIPAddressChanged() override;
 
  private:
+  class ConnectJobFactoryImpl;
+
   // Entry for a persistent socket which became idle at time |start_time|.
   struct IdleSocket {
     IdleSocket() : socket(nullptr) {}

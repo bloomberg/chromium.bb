@@ -20,6 +20,7 @@
 #include "net/http/http_request_info.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/socket/connect_job.h"
+#include "net/socket/socket_tag.h"
 
 namespace base {
 class DictionaryValue;
@@ -37,6 +38,7 @@ class HttpAuthController;
 class HttpProxySocketParams;
 class HttpResponseInfo;
 class NetLogWithSource;
+class ProxyServer;
 class SOCKSSocketParams;
 class SSLSocketParams;
 class StreamSocket;
@@ -342,8 +344,18 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
 
   // Utility method to log a GroupId with a NetLog event.
   static std::unique_ptr<base::Value> NetLogGroupIdCallback(
-      const ClientSocketPool::GroupId* group_id,
+      const GroupId* group_id,
       NetLogCaptureMode capture_mode);
+
+  static std::unique_ptr<ConnectJob> CreateConnectJob(
+      GroupId group_id,
+      scoped_refptr<SocketParams> socket_params,
+      const ProxyServer& proxy_server,
+      bool is_for_websockets,
+      const CommonConnectJobParams* common_connect_job_params,
+      RequestPriority request_priority,
+      SocketTag socket_tag,
+      ConnectJob::Delegate* delegate);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientSocketPool);

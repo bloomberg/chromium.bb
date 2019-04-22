@@ -79,13 +79,14 @@ ClientSocketPool* ClientSocketPoolManagerImpl::GetSocketPool(
   if (pool_type_ == HttpNetworkSession::WEBSOCKET_SOCKET_POOL &&
       proxy_server.is_direct()) {
     new_pool = std::make_unique<WebSocketTransportClientSocketPool>(
-        sockets_per_proxy_server, sockets_per_group,
+        sockets_per_proxy_server, sockets_per_group, proxy_server,
         &websocket_common_connect_job_params_);
   } else {
     new_pool = std::make_unique<TransportClientSocketPool>(
         sockets_per_proxy_server, sockets_per_group,
-        unused_idle_socket_timeout(pool_type_), &common_connect_job_params_,
-        ssl_config_service_);
+        unused_idle_socket_timeout(pool_type_), proxy_server,
+        pool_type_ == HttpNetworkSession::WEBSOCKET_SOCKET_POOL,
+        &common_connect_job_params_, ssl_config_service_);
   }
 
   std::pair<SocketPoolMap::iterator, bool> ret =

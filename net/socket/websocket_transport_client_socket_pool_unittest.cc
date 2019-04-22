@@ -21,6 +21,7 @@
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/privacy_mode.h"
+#include "net/base/proxy_server.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/test_net_log.h"
@@ -87,7 +88,10 @@ class WebSocketTransportClientSocketPoolTest
             nullptr /* network_quality_estimator */,
             nullptr /* netlog */,
             &websocket_endpoint_lock_manager_),
-        pool_(kMaxSockets, kMaxSocketsPerGroup, &common_connect_job_params_) {
+        pool_(kMaxSockets,
+              kMaxSocketsPerGroup,
+              ProxyServer::Direct(),
+              &common_connect_job_params_) {
     websocket_endpoint_lock_manager_.SetUnlockDelayForTesting(
         base::TimeDelta());
   }

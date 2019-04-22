@@ -182,12 +182,25 @@ void ClientSocketPool::NetLogTcpClientSocketPoolRequestedSocket(
 }
 
 std::unique_ptr<base::Value> ClientSocketPool::NetLogGroupIdCallback(
-    const ClientSocketPool::GroupId* group_id,
+    const GroupId* group_id,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> event_params(
       new base::DictionaryValue());
   event_params->SetString("group_id", group_id->ToString());
   return event_params;
+}
+
+std::unique_ptr<ConnectJob> ClientSocketPool::CreateConnectJob(
+    GroupId group_id,
+    scoped_refptr<SocketParams> socket_params,
+    const ProxyServer& proxy_server,
+    bool is_for_websockets,
+    const CommonConnectJobParams* common_connect_job_params,
+    RequestPriority request_priority,
+    SocketTag socket_tag,
+    ConnectJob::Delegate* delegate) {
+  return socket_params->create_connect_job_callback().Run(
+      request_priority, socket_tag, common_connect_job_params, delegate);
 }
 
 }  // namespace net

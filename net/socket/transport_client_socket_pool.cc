@@ -22,6 +22,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
+#include "net/base/proxy_server.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
@@ -46,39 +47,46 @@ std::unique_ptr<base::Value> NetLogCreateConnectJobCallback(
   return std::move(dict);
 }
 
+}  // namespace
+
 // ConnectJobFactory implementation that creates the standard ConnectJob
 // classes, using SocketParams.
-class TransportConnectJobFactory
+class TransportClientSocketPool::ConnectJobFactoryImpl
     : public TransportClientSocketPool::ConnectJobFactory {
  public:
-  explicit TransportConnectJobFactory(
-      const CommonConnectJobParams* common_connect_job_params)
-      : common_connect_job_params_(common_connect_job_params) {
+  ConnectJobFactoryImpl(const ProxyServer& proxy_server,
+                        bool is_for_websockets,
+                        const CommonConnectJobParams* common_connect_job_params)
+      : proxy_server_(proxy_server),
+        is_for_websockets_(is_for_websockets),
+        common_connect_job_params_(common_connect_job_params) {
     // This class should not be used with WebSockets. Note that
     // |common_connect_job_params| may be nullptr in tests.
     DCHECK(!common_connect_job_params ||
            !common_connect_job_params->websocket_endpoint_lock_manager);
   }
 
-  ~TransportConnectJobFactory() override = default;
+  ~ConnectJobFactoryImpl() override = default;
 
   // ClientSocketPoolBase::ConnectJobFactory methods.
   std::unique_ptr<ConnectJob> NewConnectJob(
+      ClientSocketPool::GroupId group_id,
+      scoped_refptr<ClientSocketPool::SocketParams> socket_params,
       RequestPriority request_priority,
       SocketTag socket_tag,
-      scoped_refptr<ClientSocketPool::SocketParams> socket_params,
       ConnectJob::Delegate* delegate) const override {
-    return socket_params->create_connect_job_callback().Run(
-        request_priority, socket_tag, common_connect_job_params_, delegate);
+    return CreateConnectJob(group_id, socket_params, proxy_server_,
+                            is_for_websockets_, common_connect_job_params_,
+                            request_priority, socket_tag, delegate);
   }
 
  private:
+  const ProxyServer proxy_server_;
+  const bool is_for_websockets_;
   const CommonConnectJobParams* common_connect_job_params_;
 
-  DISALLOW_COPY_AND_ASSIGN(TransportConnectJobFactory);
+  DISALLOW_COPY_AND_ASSIGN(ConnectJobFactoryImpl);
 };
-
-}  // namespace
 
 TransportClientSocketPool::Request::Request(
     ClientSocketHandle* handle,
@@ -131,16 +139,20 @@ TransportClientSocketPool::TransportClientSocketPool(
     int max_sockets,
     int max_sockets_per_group,
     base::TimeDelta unused_idle_socket_timeout,
+    const ProxyServer& proxy_server,
+    bool is_for_websockets,
     const CommonConnectJobParams* common_connect_job_params,
     SSLConfigService* ssl_config_service)
-    : TransportClientSocketPool(max_sockets,
-                                max_sockets_per_group,
-                                unused_idle_socket_timeout,
-                                ClientSocketPool::used_idle_socket_timeout(),
-                                std::make_unique<TransportConnectJobFactory>(
-                                    common_connect_job_params),
-                                ssl_config_service,
-                                true /* connect_backup_jobs_enabled */) {}
+    : TransportClientSocketPool(
+          max_sockets,
+          max_sockets_per_group,
+          unused_idle_socket_timeout,
+          ClientSocketPool::used_idle_socket_timeout(),
+          std::make_unique<ConnectJobFactoryImpl>(proxy_server,
+                                                  is_for_websockets,
+                                                  common_connect_job_params),
+          ssl_config_service,
+          true /* connect_backup_jobs_enabled */) {}
 
 TransportClientSocketPool::~TransportClientSocketPool() {
   // Clean up any idle sockets and pending connect jobs.  Assert that we have no
@@ -400,9 +412,9 @@ int TransportClientSocketPool::RequestSocketInternal(const GroupId& group_id,
   group = GetOrCreateGroup(group_id);
   connecting_socket_count_++;
   std::unique_ptr<ConnectJob> owned_connect_job(
-      connect_job_factory_->NewConnectJob(request.priority(),
-                                          request.socket_tag(),
-                                          request.socket_params(), group));
+      connect_job_factory_->NewConnectJob(group_id, request.socket_params(),
+                                          request.priority(),
+                                          request.socket_tag(), group));
   owned_connect_job->net_log().AddEvent(
       NetLogEventType::SOCKET_POOL_CONNECT_JOB_CREATED,
       base::BindRepeating(&NetLogCreateConnectJobCallback,
@@ -1515,8 +1527,8 @@ void TransportClientSocketPool::Group::OnBackupJobTimerFired(
   Request* request = unbound_requests_.FirstMax().value().get();
   std::unique_ptr<ConnectJob> owned_backup_job =
       client_socket_pool_base_helper_->connect_job_factory_->NewConnectJob(
-          request->priority(), request->socket_tag(), request->socket_params(),
-          this);
+          group_id, request->socket_params(), request->priority(),
+          request->socket_tag(), this);
   owned_backup_job->net_log().AddEvent(
       NetLogEventType::SOCKET_POOL_CONNECT_JOB_CREATED,
       base::BindRepeating(&NetLogCreateConnectJobCallback,
