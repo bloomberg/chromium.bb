@@ -567,11 +567,15 @@ void BlobRegistryImpl::RegisterFromStream(
     return;
   }
 
-  blobs_being_streamed_.insert(std::make_unique<BlobBuilderFromStream>(
-      context_, content_type, content_disposition, expected_length,
-      std::move(data), std::move(progress_client),
-      base::BindOnce(&BlobRegistryImpl::StreamingBlobDone,
-                     base::Unretained(this), std::move(callback))));
+  std::unique_ptr<BlobBuilderFromStream> blob_builder =
+      std::make_unique<BlobBuilderFromStream>(
+          context_, content_type, content_disposition,
+          base::BindOnce(&BlobRegistryImpl::StreamingBlobDone,
+                         base::Unretained(this), std::move(callback)));
+  BlobBuilderFromStream* blob_builder_ptr = blob_builder.get();
+  blobs_being_streamed_.insert(std::move(blob_builder));
+  blob_builder_ptr->Start(expected_length, std::move(data),
+                          std::move(progress_client));
 }
 
 void BlobRegistryImpl::GetBlobFromUUID(blink::mojom::BlobRequest blob,
