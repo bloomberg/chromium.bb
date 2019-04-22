@@ -24,9 +24,8 @@ class __declspec(uuid("3e1c192b-4348-45ac-8eb6-4b58eeb3dcca"))
   AXPlatformNodeTextProviderWin();
   ~AXPlatformNodeTextProviderWin();
 
-  // Creates an instance of the class.
-  // Returns true on success
-  static HRESULT Create(ui::AXPlatformNodeWin* owner, IUnknown** provider);
+  static AXPlatformNodeTextProviderWin* Create(AXPlatformNodeWin* owner);
+  static void CreateIUnknown(AXPlatformNodeWin* owner, IUnknown** unknown);
 
   //
   // ITextProvider methods.

@@ -25,24 +25,22 @@ AXPlatformNodeTextRangeProviderWin::AXPlatformNodeTextRangeProviderWin() {
 
 AXPlatformNodeTextRangeProviderWin::~AXPlatformNodeTextRangeProviderWin() {}
 
-HRESULT AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+ITextRangeProvider* AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
     ui::AXPlatformNodeWin* owner,
     AXPositionInstance start,
-    AXPositionInstance end,
-    ITextRangeProvider** provider) {
+    AXPositionInstance end) {
   CComObject<AXPlatformNodeTextRangeProviderWin>* text_range_provider = nullptr;
-  HRESULT hr = CComObject<AXPlatformNodeTextRangeProviderWin>::CreateInstance(
-      &text_range_provider);
-  if (SUCCEEDED(hr)) {
+  if (SUCCEEDED(CComObject<AXPlatformNodeTextRangeProviderWin>::CreateInstance(
+          &text_range_provider))) {
     DCHECK(text_range_provider);
     text_range_provider->owner_ = owner;
     text_range_provider->start_ = std::move(start);
     text_range_provider->end_ = std::move(end);
     text_range_provider->AddRef();
-    *provider = text_range_provider;
+    return text_range_provider;
   }
 
-  return hr;
+  return nullptr;
 }
 
 //
@@ -52,9 +50,10 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Clone(
     ITextRangeProvider** clone) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_CLONE);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
-  *clone = nullptr;
 
-  return CreateTextRangeProvider(owner_, start_->Clone(), end_->Clone(), clone);
+  *clone = CreateTextRangeProvider(owner_, start_->Clone(), end_->Clone());
+
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Compare(
@@ -227,8 +226,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindAttribute(
     return E_FAIL;
 
   if (matched_range_start != nullptr && matched_range_end != nullptr)
-    return CreateTextRangeProvider(owner(), std::move(matched_range_start),
-                                   std::move(matched_range_end), result);
+    *result = CreateTextRangeProvider(owner(), std::move(matched_range_start),
+                                      std::move(matched_range_end));
   return S_OK;
 }
 
@@ -297,9 +296,9 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindText(
   if (base::i18n::StringSearch(search_string, text_range, &find_start,
                                &find_length, !ignore_case, !backwards)) {
     const AXPlatformNodeDelegate* delegate = owner()->GetDelegate();
-    return CreateTextRangeProvider(
+    *result = CreateTextRangeProvider(
         owner_, delegate->CreateTextPositionAt(find_start),
-        delegate->CreateTextPositionAt(find_start + find_length), result);
+        delegate->CreateTextPositionAt(find_start + find_length));
   }
   return S_OK;
 }

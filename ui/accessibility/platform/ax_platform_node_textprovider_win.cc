@@ -29,18 +29,26 @@ AXPlatformNodeTextProviderWin::AXPlatformNodeTextProviderWin() {
 AXPlatformNodeTextProviderWin::~AXPlatformNodeTextProviderWin() {}
 
 // static
-HRESULT AXPlatformNodeTextProviderWin::Create(ui::AXPlatformNodeWin* owner,
-                                              IUnknown** provider) {
+AXPlatformNodeTextProviderWin* AXPlatformNodeTextProviderWin::Create(
+    AXPlatformNodeWin* owner) {
   CComObject<AXPlatformNodeTextProviderWin>* text_provider = nullptr;
-  HRESULT hr =
-      CComObject<AXPlatformNodeTextProviderWin>::CreateInstance(&text_provider);
-  if (SUCCEEDED(hr)) {
+  if (SUCCEEDED(CComObject<AXPlatformNodeTextProviderWin>::CreateInstance(
+          &text_provider))) {
     DCHECK(text_provider);
     text_provider->owner_ = owner;
-    hr = text_provider->QueryInterface(IID_PPV_ARGS(provider));
+    text_provider->AddRef();
+    return text_provider;
   }
 
-  return hr;
+  return nullptr;
+}
+
+// static
+void AXPlatformNodeTextProviderWin::CreateIUnknown(AXPlatformNodeWin* owner,
+                                                   IUnknown** unknown) {
+  CComPtr<AXPlatformNodeTextProviderWin> text_provider(Create(owner));
+  if (text_provider)
+    *unknown = text_provider.Detach();
 }
 
 //
@@ -92,13 +100,11 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
   DCHECK(!start->IsNullPosition());
   DCHECK(!end->IsNullPosition());
 
-  CComPtr<ITextRangeProvider> text_range_provider;
-  HRESULT hr = AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-      owner_, std::move(start), std::move(end), &text_range_provider);
-
-  DCHECK(SUCCEEDED(hr));
-  if (FAILED(hr))
-    return E_FAIL;
+  CComPtr<ITextRangeProvider> text_range_provider =
+      AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+          owner_, std::move(start), std::move(end));
+  if (&text_range_provider == nullptr)
+    return E_OUTOFMEMORY;
 
   // Since we don't support disjoint text ranges, the SAFEARRAY returned
   // will always have one element
@@ -110,8 +116,8 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
     return E_OUTOFMEMORY;
 
   LONG index = 0;
-  hr = SafeArrayPutElement(selections_to_return.Get(), &index,
-                           text_range_provider);
+  HRESULT hr = SafeArrayPutElement(selections_to_return.Get(), &index,
+                                   text_range_provider);
   DCHECK(SUCCEEDED(hr));
 
   // Since DCHECK only happens in debug builds, return immediately to ensure
@@ -162,8 +168,6 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::get_DocumentRange(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXT_GET_DOCUMENTRANGE);
   UIA_VALIDATE_TEXTPROVIDER_CALL();
 
-  *range = nullptr;
-
   // Start and end should be leaf text positions that span the beginning
   // and end of text content within a node for get_DocumentRange. The start
   // position should be the directly first child and the end position should
@@ -191,8 +195,10 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::get_DocumentRange(
               ->AsLeafTextPosition();
   }
 
-  return AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-      owner_, std::move(start), std::move(end), range);
+  *range = AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+      owner_, std::move(start), std::move(end));
+
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeTextProviderWin::get_SupportedTextSelection(
@@ -229,7 +235,6 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetConversionTarget(
 ITextRangeProvider* AXPlatformNodeTextProviderWin::GetRangeFromChild(
     ui::AXPlatformNodeWin* ancestor,
     ui::AXPlatformNodeWin* descendant) {
-  ITextRangeProvider* range = nullptr;
 
   DCHECK(ancestor);
   DCHECK(descendant);
@@ -246,12 +251,8 @@ ITextRangeProvider* AXPlatformNodeTextProviderWin::GetRangeFromChild(
           ->AsLeafTextPosition()
           ->CreatePositionAtEndOfAnchor();
 
-  if (!SUCCEEDED(AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-          ancestor, std::move(start), std::move(end), &range))) {
-    return nullptr;
-  }
-
-  return range;
+  return AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+      ancestor, std::move(start), std::move(end));
 }
 
 ui::AXPlatformNodeWin* AXPlatformNodeTextProviderWin::owner() const {
@@ -280,8 +281,8 @@ AXPlatformNodeTextProviderWin::GetTextRangeProviderFromActiveComposition(
         owner()->GetDelegate()->CreateTextPositionAt(
             /*offset*/ active_composition_offset.end());
 
-    return AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-        owner_, std::move(start), std::move(end), range);
+    *range = AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+        owner_, std::move(start), std::move(end));
   }
 
   return S_OK;

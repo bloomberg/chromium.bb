@@ -208,10 +208,9 @@ void AppendTextToString(base::string16 extra_text, base::string16* string) {
 // Helper function to GetPatternProviderFactoryMethod that, given a node,
 // will return a pattern interface through result based on the provided type T.
 template <typename T>
-HRESULT PatternProvider(AXPlatformNodeWin* node, IUnknown** result) {
+void PatternProvider(AXPlatformNodeWin* node, IUnknown** result) {
   node->AddRef();
   *result = static_cast<T*>(node);
-  return S_OK;
 }
 
 }  // namespace
@@ -6876,7 +6875,7 @@ AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
 
     case UIA_TextChildPatternId:
       if (AXPlatformNodeTextChildProviderWin::GetTextContainer(this)) {
-        return &AXPlatformNodeTextChildProviderWin::CreateTextChildProvider;
+        return &AXPlatformNodeTextChildProviderWin::CreateIUnknown;
       }
       break;
 
@@ -6884,7 +6883,7 @@ AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
     case UIA_TextPatternId:
       if (IsTextOnlyObject() || IsDocument() ||
           HasBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot)) {
-        return &AXPlatformNodeTextProviderWin::Create;
+        return &AXPlatformNodeTextProviderWin::CreateIUnknown;
       }
       break;
 

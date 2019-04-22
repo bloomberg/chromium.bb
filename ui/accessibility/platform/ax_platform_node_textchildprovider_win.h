@@ -20,8 +20,9 @@ class AX_EXPORT AXPlatformNodeTextChildProviderWin
   AXPlatformNodeTextChildProviderWin();
   ~AXPlatformNodeTextChildProviderWin();
 
-  static HRESULT CreateTextChildProvider(AXPlatformNodeWin* owner,
-                                         IUnknown** provider);
+  static AXPlatformNodeTextChildProviderWin* Create(
+      ui::AXPlatformNodeWin* owner);
+  static void CreateIUnknown(AXPlatformNodeWin* owner, IUnknown** unknown);
 
   // Retrieves this element's nearest ancestor provider that supports the Text
   // control pattern. If the element does not have an ancestor which supports

@@ -35,22 +35,29 @@ AXPlatformNodeTextChildProviderWin::AXPlatformNodeTextChildProviderWin() {
 
 AXPlatformNodeTextChildProviderWin::~AXPlatformNodeTextChildProviderWin() {}
 
-HRESULT AXPlatformNodeTextChildProviderWin::CreateTextChildProvider(
-    AXPlatformNodeWin* owner,
-    IUnknown** provider) {
-  win::CreateATLModuleIfNeeded();
-
+// static
+AXPlatformNodeTextChildProviderWin* AXPlatformNodeTextChildProviderWin::Create(
+    AXPlatformNodeWin* owner) {
   CComObject<AXPlatformNodeTextChildProviderWin>* text_child_provider = nullptr;
-  HRESULT hr = CComObject<AXPlatformNodeTextChildProviderWin>::CreateInstance(
-      &text_child_provider);
-  if (SUCCEEDED(hr)) {
+  if (SUCCEEDED(CComObject<AXPlatformNodeTextChildProviderWin>::CreateInstance(
+          &text_child_provider))) {
     DCHECK(text_child_provider);
     text_child_provider->owner_ = owner;
     text_child_provider->AddRef();
-    *provider = static_cast<ITextChildProvider*>(text_child_provider);
+    return text_child_provider;
   }
 
-  return hr;
+  return nullptr;
+}
+
+// static
+void AXPlatformNodeTextChildProviderWin::CreateIUnknown(
+    AXPlatformNodeWin* owner,
+    IUnknown** unknown) {
+  CComPtr<AXPlatformNodeTextChildProviderWin> text_child_provider(
+      Create(owner));
+  if (text_child_provider)
+    *unknown = text_child_provider.Detach();
 }
 
 STDMETHODIMP AXPlatformNodeTextChildProviderWin::get_TextContainer(

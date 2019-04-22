@@ -115,8 +115,10 @@ class AXPlatformNodeTextChildProviderTest : public ui::AXPlatformNodeWinTest {
     if (!text_child_provider) {
       ui::AXPlatformNodeWin* platform_node =
           (ui::AXPlatformNodeWin*)raw_element_provider.Get();
-      ui::AXPlatformNodeTextChildProviderWin::CreateTextChildProvider(
-          platform_node, &text_child_provider);
+
+      ComPtr<ITextChildProvider> new_child_provider =
+          ui::AXPlatformNodeTextChildProviderWin::Create(platform_node);
+      new_child_provider->QueryInterface(IID_PPV_ARGS(&text_child_provider));
     }
   }
 

@@ -1236,8 +1236,7 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
 
   // IRawElementProviderSimple support methods.
 
-  using PatternProviderFactoryMethod = HRESULT (*)(AXPlatformNodeWin*,
-                                                   IUnknown**);
+  using PatternProviderFactoryMethod = void (*)(AXPlatformNodeWin*, IUnknown**);
 
   PatternProviderFactoryMethod GetPatternProviderFactoryMethod(
       PATTERNID pattern_id);
