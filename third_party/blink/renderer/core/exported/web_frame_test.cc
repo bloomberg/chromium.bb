@@ -33,9 +33,7 @@
 #include <stdarg.h>
 
 #include <limits>
-#include <map>
 #include <memory>
-#include <set>
 
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -164,6 +162,8 @@
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "v8/include/v8.h"
 
@@ -874,7 +874,16 @@ class CSSCallbackWebFrameClient
       const WebVector<WebString>& newly_matching_selectors,
       const WebVector<WebString>& stopped_matching_selectors) override;
 
-  std::map<WebLocalFrame*, std::set<std::string>> matched_selectors_;
+  HashSet<String>& MatchedSelectors() {
+    auto it = matched_selectors_.find(Frame());
+    if (it != matched_selectors_.end())
+      return it->value;
+
+    auto add_result = matched_selectors_.insert(Frame(), HashSet<String>());
+    return add_result.stored_value->value;
+  }
+
+  HashMap<WebLocalFrame*, HashSet<String>> matched_selectors_;
   int update_count_;
 };
 
@@ -882,16 +891,21 @@ void CSSCallbackWebFrameClient::DidMatchCSS(
     const WebVector<WebString>& newly_matching_selectors,
     const WebVector<WebString>& stopped_matching_selectors) {
   ++update_count_;
-  std::set<std::string>& frame_selectors = matched_selectors_[Frame()];
+
+  HashSet<String>& frame_selectors = MatchedSelectors();
   for (size_t i = 0; i < newly_matching_selectors.size(); ++i) {
-    std::string selector = newly_matching_selectors[i].Utf8();
-    EXPECT_EQ(0U, frame_selectors.count(selector)) << selector;
+    String selector = newly_matching_selectors[i];
+    EXPECT_TRUE(frame_selectors.find(selector) == frame_selectors.end())
+        << selector;
     frame_selectors.insert(selector);
   }
   for (size_t i = 0; i < stopped_matching_selectors.size(); ++i) {
-    std::string selector = stopped_matching_selectors[i].Utf8();
-    EXPECT_EQ(1U, frame_selectors.count(selector)) << selector;
+    String selector = stopped_matching_selectors[i];
+    EXPECT_TRUE(frame_selectors.find(selector) != frame_selectors.end())
+        << selector;
     frame_selectors.erase(selector);
+    EXPECT_TRUE(frame_selectors.find(selector) == frame_selectors.end())
+        << selector;
   }
 }
 
@@ -911,8 +925,14 @@ class WebFrameCSSCallbackTest : public testing::Test {
 
   int UpdateCount() const { return client_.update_count_; }
 
-  const std::set<std::string>& MatchedSelectors() {
-    return client_.matched_selectors_[frame_];
+  const HashSet<String>& MatchedSelectors() {
+    auto it = client_.matched_selectors_.find(frame_);
+    if (it != client_.matched_selectors_.end())
+      return it->value;
+
+    auto add_result =
+        client_.matched_selectors_.insert(frame_, HashSet<String>());
+    return add_result.stored_value->value;
   }
 
   void LoadHTML(const std::string& html) {
