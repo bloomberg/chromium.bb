@@ -3057,11 +3057,12 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       if config.get('sync_chrome', True))
 
   _chromium_pfq_important_boards = frozenset([
+      'amd64-generic',
       'arm-generic',
       'arm64-generic',
       'daisy',
+      'scarlet',
       'veyron_jerry',
-      'amd64-generic',
   ])
 
   _chromium_pfq_experimental_boards = frozenset([
@@ -3137,7 +3138,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'peach_pit',
       'peppy',
       'reef',
-      'scarlet',
       'terra',
       'tricky',
       'veyron_minnie',

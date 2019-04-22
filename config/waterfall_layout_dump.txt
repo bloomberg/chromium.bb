@@ -36,7 +36,7 @@
     peach_pit-chrome-pfq
     peppy-chrome-pfq
     reef-chrome-pfq
-    scarlet-chrome-pfq
+    scarlet-chromium-pfq
     terra-chrome-pfq
     tricky-chrome-pfq
     veyron_jerry-chromium-pfq
@@ -2544,7 +2544,7 @@
     peach_pit-chrome-pfq-tryjob
     peppy-chrome-pfq-tryjob
     reef-chrome-pfq-tryjob
-    scarlet-chrome-pfq-tryjob
+    scarlet-chromium-pfq-tryjob
     terra-chrome-pfq-tryjob
     tricky-chrome-pfq-tryjob
     veyron_jerry-chromium-pfq-tryjob
