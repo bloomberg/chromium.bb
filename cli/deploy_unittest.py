@@ -37,7 +37,7 @@ class ChromiumOSDeviceFake(object):
     self.port = None
     self.lsb_release = None
 
-  def IsDirWritable(self, _):
+  def MountRootfsReadWrite(self):
     return True
 
 

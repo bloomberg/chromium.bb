@@ -44,8 +44,7 @@ class DeployError(Exception):
 class BrilloDeployOperation(operation.ProgressBarOperation):
   """ProgressBarOperation specific for brillo deploy."""
   MERGE_EVENTS = ['NOTICE: Copying', 'NOTICE: Installing',
-                  'Calculating dependencies', '... done!', 'Extracting info',
-                  'Installing (1 of 1)', 'has been installed.']
+                  'emerge --usepkg', 'has been installed.']
   UNMERGE_EVENTS = ['NOTICE: Unmerging', 'has been uninstalled.']
 
   def __init__(self, pkg_count, emerge):
@@ -986,10 +985,9 @@ def Deploy(device, packages, board=None, emerge=True, update=False, deep=False,
         logging.notice('Cleaning outdated binary packages from %s', sysroot)
         portage_util.CleanOutdatedBinaryPackages(sysroot)
 
-      if not device.IsDirWritable(root):
-        # Only remounts rootfs if the given root is not writable.
-        if not device.MountRootfsReadWrite():
-          raise DeployError('Cannot remount rootfs as read-write. Exiting.')
+      # Remount rootfs as writable if necessary.
+      if not device.MountRootfsReadWrite():
+        raise DeployError('Cannot remount rootfs as read-write. Exiting.')
 
       # Obtain list of packages to upgrade/remove.
       pkg_scanner = _InstallPackageScanner(sysroot)
