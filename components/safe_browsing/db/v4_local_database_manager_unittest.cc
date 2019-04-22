@@ -51,7 +51,7 @@ class FakeGetHashProtocolManager : public V4GetHashProtocolManager {
       : V4GetHashProtocolManager(url_loader_factory, stores_to_check, config),
         full_hash_infos_(full_hash_infos) {}
 
-  void GetFullHashes(const FullHashToStoreAndHashPrefixesMap&,
+  void GetFullHashes(const FullHashToStoreAndHashPrefixesMap,
                      const std::vector<std::string>&,
                      FullHashCallback callback) override {
     // Async, since the real manager might use a fetcher.
@@ -260,9 +260,7 @@ class FakeV4LocalDatabaseManager : public V4LocalDatabaseManager {
         perform_full_hash_check_called_(false) {}
 
   // V4LocalDatabaseManager impl:
-  void PerformFullHashCheck(std::unique_ptr<PendingCheck> check,
-                            const FullHashToStoreAndHashPrefixesMap&
-                                full_hash_to_store_and_hash_prefixes) override {
+  void PerformFullHashCheck(std::unique_ptr<PendingCheck> check) override {
     perform_full_hash_check_called_ = true;
   }
 

@@ -176,6 +176,10 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     // length of |full_hash_threat_type| must always match |full_hashes|.
     std::vector<SBThreatType> full_hash_threat_types;
 
+    // List of full hashes of urls we are checking and corresponding store and
+    // hash prefixes that match it in the local database.
+    FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
+
     // The metadata associated with the full hash of the severest match found
     // for that URL.
     ThreatMetadata url_metadata;
@@ -215,9 +219,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   // Identifies the prefixes and the store they matched in, for a given |check|.
   // Returns true if one or more hash prefix matches are found; false otherwise.
-  bool GetPrefixMatches(
-      const std::unique_ptr<PendingCheck>& check,
-      FullHashToStoreAndHashPrefixesMap* full_hash_to_store_and_hash_prefixes);
+  bool GetPrefixMatches(const std::unique_ptr<PendingCheck>& check);
 
   // Goes over the |full_hash_infos| and stores the most severe SBThreatType in
   // |most_severe_threat_type|, the corresponding metadata in |metadata|, and
@@ -246,9 +248,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   AsyncMatch HandleWhitelistCheck(std::unique_ptr<PendingCheck> check);
 
   // Schedules a full-hash check for a given set of prefixes.
-  void ScheduleFullHashCheck(std::unique_ptr<PendingCheck> check,
-                             const FullHashToStoreAndHashPrefixesMap&
-                                 full_hash_to_store_and_hash_prefixes);
+  void ScheduleFullHashCheck(std::unique_ptr<PendingCheck> check);
 
   // Checks |stores_to_check| in database synchronously for hash prefixes
   // matching |hash|. Returns true if there's a match; false otherwise. This is
@@ -269,9 +269,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
                           const std::vector<FullHashInfo>& full_hash_infos);
 
   // Performs the full hash checking of the URL in |check|.
-  virtual void PerformFullHashCheck(std::unique_ptr<PendingCheck> check,
-                                    const FullHashToStoreAndHashPrefixesMap&
-                                        full_hash_to_store_and_hash_prefixes);
+  virtual void PerformFullHashCheck(std::unique_ptr<PendingCheck> check);
 
   // When the database is ready to use, process the checks that were queued
   // while the database was loading from disk.

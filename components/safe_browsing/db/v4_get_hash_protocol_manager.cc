@@ -267,7 +267,7 @@ void V4GetHashProtocolManager::ClearCache() {
 }
 
 void V4GetHashProtocolManager::GetFullHashes(
-    const FullHashToStoreAndHashPrefixesMap&
+    const FullHashToStoreAndHashPrefixesMap
         full_hash_to_store_and_hash_prefixes,
     const std::vector<std::string>& list_client_states,
     FullHashCallback callback) {

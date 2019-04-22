@@ -597,23 +597,22 @@ void V4LocalDatabaseManager::DeleteUnusedStoreFiles() {
 }
 
 bool V4LocalDatabaseManager::GetPrefixMatches(
-    const std::unique_ptr<PendingCheck>& check,
-    FullHashToStoreAndHashPrefixesMap* full_hash_to_store_and_hash_prefixes) {
+    const std::unique_ptr<PendingCheck>& check) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(enabled_);
 
-  full_hash_to_store_and_hash_prefixes->clear();
+  check->full_hash_to_store_and_hash_prefixes.clear();
   for (const auto& full_hash : check->full_hashes) {
     StoreAndHashPrefixes matched_store_and_hash_prefixes;
     v4_database_->GetStoresMatchingFullHash(full_hash, check->stores_to_check,
                                             &matched_store_and_hash_prefixes);
     if (!matched_store_and_hash_prefixes.empty()) {
-      (*full_hash_to_store_and_hash_prefixes)[full_hash] =
+      (check->full_hash_to_store_and_hash_prefixes)[full_hash] =
           matched_store_and_hash_prefixes;
     }
   }
 
-  return !full_hash_to_store_and_hash_prefixes->empty();
+  return !check->full_hash_to_store_and_hash_prefixes.empty();
 }
 
 void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(
@@ -674,8 +673,7 @@ AsyncMatch V4LocalDatabaseManager::HandleWhitelistCheck(
   // The caller should have already checked that the DB is ready.
   DCHECK(v4_database_);
 
-  FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
-  if (!GetPrefixMatches(check, &full_hash_to_store_and_hash_prefixes)) {
+  if (!GetPrefixMatches(check)) {
     return AsyncMatch::NO_MATCH;
   }
 
@@ -683,14 +681,14 @@ AsyncMatch V4LocalDatabaseManager::HandleWhitelistCheck(
   // there's no need for a full-hash check. This saves bandwidth for
   // very popular sites since they'll have full-length hashes locally.
   // These loops will have exactly 1 entry most of the time.
-  for (const auto& entry : full_hash_to_store_and_hash_prefixes) {
+  for (const auto& entry : check->full_hash_to_store_and_hash_prefixes) {
     for (const auto& store_and_prefix : entry.second) {
       if (store_and_prefix.hash_prefix.size() == kMaxHashPrefixLength)
         return AsyncMatch::MATCH;
     }
   }
 
-  ScheduleFullHashCheck(std::move(check), full_hash_to_store_and_hash_prefixes);
+  ScheduleFullHashCheck(std::move(check));
   return AsyncMatch::ASYNC;
 }
 
@@ -700,19 +698,16 @@ bool V4LocalDatabaseManager::HandleCheck(std::unique_ptr<PendingCheck> check) {
     return false;
   }
 
-  FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
-  if (!GetPrefixMatches(check, &full_hash_to_store_and_hash_prefixes)) {
+  if (!GetPrefixMatches(check)) {
     return true;
   }
 
-  ScheduleFullHashCheck(std::move(check), full_hash_to_store_and_hash_prefixes);
+  ScheduleFullHashCheck(std::move(check));
   return false;
 }
 
 void V4LocalDatabaseManager::ScheduleFullHashCheck(
-    std::unique_ptr<PendingCheck> check,
-    const FullHashToStoreAndHashPrefixesMap&
-        full_hash_to_store_and_hash_prefixes) {
+    std::unique_ptr<PendingCheck> check) {
   // Add check to pending_checks_ before scheduling PerformFullHashCheck so that
   // even if the client calls CancelCheck before PerformFullHashCheck gets
   // called, the check can be found in pending_checks_.
@@ -722,8 +717,7 @@ void V4LocalDatabaseManager::ScheduleFullHashCheck(
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&V4LocalDatabaseManager::PerformFullHashCheck,
-                     weak_factory_.GetWeakPtr(), std::move(check),
-                     full_hash_to_store_and_hash_prefixes));
+                     weak_factory_.GetWeakPtr(), std::move(check)));
 }
 
 bool V4LocalDatabaseManager::HandleHashSynchronously(
@@ -735,8 +729,7 @@ bool V4LocalDatabaseManager::HandleHashSynchronously(
   std::unique_ptr<PendingCheck> check = std::make_unique<PendingCheck>(
       nullptr, ClientCallbackType::CHECK_OTHER, stores_to_check, hashes);
 
-  FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
-  return GetPrefixMatches(check, &full_hash_to_store_and_hash_prefixes);
+  return GetPrefixMatches(check);
 }
 
 bool V4LocalDatabaseManager::HandleUrlSynchronously(
@@ -748,8 +741,7 @@ bool V4LocalDatabaseManager::HandleUrlSynchronously(
       nullptr, ClientCallbackType::CHECK_OTHER, stores_to_check,
       std::vector<GURL>(1, url));
 
-  FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
-  return GetPrefixMatches(check, &full_hash_to_store_and_hash_prefixes);
+  return GetPrefixMatches(check);
 }
 
 void V4LocalDatabaseManager::OnFullHashResponse(
@@ -778,14 +770,14 @@ void V4LocalDatabaseManager::OnFullHashResponse(
 }
 
 void V4LocalDatabaseManager::PerformFullHashCheck(
-    std::unique_ptr<PendingCheck> check,
-    const FullHashToStoreAndHashPrefixesMap&
-        full_hash_to_store_and_hash_prefixes) {
+    std::unique_ptr<PendingCheck> check) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(enabled_);
-  DCHECK(!full_hash_to_store_and_hash_prefixes.empty());
+  DCHECK(!check->full_hash_to_store_and_hash_prefixes.empty());
 
+  FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes =
+      check->full_hash_to_store_and_hash_prefixes;
   v4_get_hash_protocol_manager_->GetFullHashes(
       full_hash_to_store_and_hash_prefixes, list_client_states_,
       base::Bind(&V4LocalDatabaseManager::OnFullHashResponse,
@@ -800,12 +792,11 @@ void V4LocalDatabaseManager::ProcessQueuedChecks() {
   checks.swap(queued_checks_);
 
   for (auto& it : checks) {
-    FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
-    if (!GetPrefixMatches(it, &full_hash_to_store_and_hash_prefixes)) {
+    if (!GetPrefixMatches(it)) {
       RespondToClient(std::move(it));
     } else {
       pending_checks_.insert(it.get());
-      PerformFullHashCheck(std::move(it), full_hash_to_store_and_hash_prefixes);
+      PerformFullHashCheck(std::move(it));
     }
   }
 }
