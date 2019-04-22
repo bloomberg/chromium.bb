@@ -27,6 +27,7 @@
 #include <limits.h>
 #include <string.h>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/checked_math.h"
@@ -209,6 +210,14 @@ class WTF_EXPORT StringImpl {
   ALWAYS_INLINE const UChar* Characters16() const {
     DCHECK(!Is8Bit());
     return reinterpret_cast<const UChar*>(this + 1);
+  }
+  ALWAYS_INLINE base::span<const LChar> Span8() const {
+    DCHECK(Is8Bit());
+    return {reinterpret_cast<const LChar*>(this + 1), length_};
+  }
+  ALWAYS_INLINE base::span<const UChar> Span16() const {
+    DCHECK(!Is8Bit());
+    return {reinterpret_cast<const UChar*>(this + 1), length_};
   }
   ALWAYS_INLINE const void* Bytes() const {
     return reinterpret_cast<const void*>(this + 1);
