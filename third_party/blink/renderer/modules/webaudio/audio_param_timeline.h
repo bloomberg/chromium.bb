@@ -453,6 +453,11 @@ class AudioParamTimeline {
   // at the given index.  Update |new_events_| too.
   void RemoveCancelledEvents(wtf_size_t first_event_to_remove);
 
+  // Remove old events, but always leave at least one event in the timeline.
+  // This is needed in case a new event is added (like linearRamp) that would
+  // use a previous event to compute the automation.
+  void RemoveOldEvents(wtf_size_t n_events);
+
   // Vector of all automation events for the AudioParam.  Access must
   // be locked via m_eventsLock.
   Vector<std::unique_ptr<ParamEvent>> events_;
