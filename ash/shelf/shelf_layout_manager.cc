@@ -1299,8 +1299,6 @@ bool ShelfLayoutManager::CalculateStatusAreaVisibility(
 bool ShelfLayoutManager::ShouldRepaintStatusAreaOnStateChange(
     ShelfLayoutManager::State old_state,
     ShelfLayoutManager::State new_state) const {
-  if (!new_state.is_status_area_visible)
-    return false;
 
   if (old_state.visibility_state == new_state.visibility_state)
     return false;
