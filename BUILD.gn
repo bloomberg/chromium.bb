@@ -6,6 +6,7 @@ import("//common-mk/proto_library.gni")
 
 group("all") {
   deps = [
+    ":system_api-attestation-protos",
     ":system_api-authpolicy-protos",
     ":system_api-biod-protos",
     ":system_api-bootlockbox-protos",
@@ -151,6 +152,21 @@ proto_library("system_api-chaps-protos") {
   proto_out_dir = "include/chaps/proto_bindings"
   sources = [
     "${proto_in_dir}/ck_structs.proto",
+  ]
+  standalone = true
+
+  # system_api-chaps-protos" is used by a shared_library
+  # object, so we need to build it with "-fPIC" instead of "-fPIE".
+  use_pic = true
+}
+
+proto_library("system_api-attestation-protos") {
+  proto_in_dir = "dbus/attestation"
+  proto_out_dir = "include/attestation/proto_bindings"
+  sources = [
+    "${proto_in_dir}/attestation_ca.proto",
+    "${proto_in_dir}/interface.proto",
+    "${proto_in_dir}/keystore.proto",
   ]
   standalone = true
 
