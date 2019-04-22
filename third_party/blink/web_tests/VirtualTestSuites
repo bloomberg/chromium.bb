@@ -697,6 +697,12 @@
   },
   {
     "prefix": "omt-worker-fetch",
+    "base": "http/tests/security/cors-rfc1918",
+    "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch",
+             "--enable-blink-features=CorsRFC1918"]
+  },
+  {
+    "prefix": "omt-worker-fetch",
     "base": "http/tests/workers",
     "args": ["--enable-features=OffMainThreadDedicatedWorkerScriptFetch,PlzDedicatedWorker,OffMainThreadServiceWorkerScriptFetch,OffMainThreadSharedWorkerScriptFetch"]
   },
