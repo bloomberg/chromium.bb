@@ -42,6 +42,7 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/android/android_surface_control_compat.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
 #include "ui/gl/gl_gl_api_implementation.h"
@@ -1036,6 +1037,8 @@ SharedImageBackingFactoryAHB::CreateSharedImage(
   // flags based on the usage params in the current function call.
   hwb_desc.usage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE |
                    AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT;
+  if (usage & SHARED_IMAGE_USAGE_SCANOUT)
+    hwb_desc.usage |= gl::SurfaceControl::RequiredUsage();
 
   // Number of images in an image array.
   hwb_desc.layers = 1;

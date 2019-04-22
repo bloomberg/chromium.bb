@@ -48,6 +48,7 @@ enum {
 
 enum {
   AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY = 1ULL << 11,
+  AHARDWAREBUFFER_USAGE_QCOMM_UBWC = 1ULL << 28,
 };
 
 // ASurfaceTransaction
@@ -103,6 +104,8 @@ namespace gl {
 namespace {
 
 base::AtomicSequenceNumber g_next_transaction_id;
+
+uint64_t g_agb_required_usage_bits = AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY;
 
 // Helper function to log errors from dlsym. Calling LOG(ERROR) inside a macro
 // crashes clang code coverage. https://crbug.com/843356
@@ -301,7 +304,11 @@ bool SurfaceControl::SupportsColorSpace(const gfx::ColorSpace& color_space) {
 uint64_t SurfaceControl::RequiredUsage() {
   if (!IsSupported())
     return 0u;
-  return AHARDWAREBUFFER_USAGE_COMPOSER_OVERLAY;
+  return g_agb_required_usage_bits;
+}
+
+void SurfaceControl::EnableQualcommUBWC() {
+  g_agb_required_usage_bits |= AHARDWAREBUFFER_USAGE_QCOMM_UBWC;
 }
 
 SurfaceControl::Surface::Surface() = default;
