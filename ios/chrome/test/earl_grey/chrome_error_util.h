@@ -8,6 +8,18 @@
 @class NSError;
 @class NSString;
 
+// Wraps an expression that returns an NSError*, asserting if an error is
+// returned. Used in EG test code to assert if app helpers fail. For example:
+//  CHROME_EG_ASSERT_ON_ERROR(helperReturningNSError());
+//  CHROME_EG_ASSERT_ON_ERROR([ChromeEarlGrey helperReturningNSError]);
+#define CHROME_EG_ASSERT_ON_ERROR(expression)                           \
+  {                                                                     \
+    NSError* error = expression;                                        \
+    GREYAssert(error == nil || [error isKindOfClass:[NSError class]],   \
+               @"Expression did not return an object of type NSError"); \
+    GREYAssertNil(error, error.localizedDescription);                   \
+  }
+
 namespace chrome_test_util {
 
 // Returns a NSError with generic domain and error code, and the provided string

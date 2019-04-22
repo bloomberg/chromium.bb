@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -80,16 +81,13 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 
 - (void)addProfile {
   _profile = autofill::test::GetFullProfile();
-  NSError* autofillProfileError = [self addAutofillProfile:_profile];
-  GREYAssertNil(autofillProfileError,
-                autofillProfileError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:_profile]);
 }
 
 - (void)addLocalCard {
   _localCard = autofill::test::GetCreditCard();  // Visa.
   _localCard.set_billing_address_id(_profile.guid());
-  NSError* creditCardError = [self addCreditCard:_localCard];
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:_localCard]);
 }
 
 - (void)addServerCardWithType:(autofill::CreditCard::CardType)cardType {

@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
@@ -168,13 +169,11 @@ const char kNoShippingPage[] =
 // Promise returned by response.complete() with an appropriate response message.
 - (void)testOpenAndPay {
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  NSError* profileError = [self addAutofillProfile:profile];
-  GREYAssertNil(profileError, profileError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:profile]);
 
   autofill::CreditCard card = autofill::test::GetCreditCard();
   card.set_billing_address_id(profile.guid());
-  NSError* creditCardError = [self addCreditCard:card];
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:card]);
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)];
 

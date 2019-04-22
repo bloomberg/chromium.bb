@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
 #import "ios/chrome/test/app/histogram_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -37,26 +38,22 @@ using payments::JourneyLogger;
 
 - (void)addProfiles {
   _profile1 = autofill::test::GetFullProfile();
-  NSError* profile1Error = [self addAutofillProfile:_profile1];
-  GREYAssertNil(profile1Error, profile1Error.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:_profile1]);
 
   _profile2 = autofill::test::GetFullProfile2();
-  NSError* profile2Error = [self addAutofillProfile:_profile2];
-  GREYAssertNil(profile2Error, profile2Error.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:_profile2]);
 }
 
 - (void)addCard1 {
   _creditCard1 = autofill::test::GetCreditCard();
   _creditCard1.set_billing_address_id(_profile1.guid());
-  NSError* creditCardError = [self addCreditCard:_creditCard1];
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:_creditCard1]);
 }
 
 - (void)addCard2 {
   _creditCard2 = autofill::test::GetCreditCard2();
   _creditCard2.set_billing_address_id(_profile2.guid());
-  NSError* creditCardError = [self addCreditCard:_creditCard2];
-  GREYAssertNil(creditCardError, creditCardError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:_creditCard2]);
 }
 
 #pragma mark - Tests

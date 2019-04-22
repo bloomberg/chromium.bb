@@ -26,6 +26,7 @@
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
@@ -150,16 +151,13 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
       kSelectedTabHistogramName, TabUsageRecorder::IN_MEMORY, 1, failureBlock);
 
   // Evict the tab.
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());
 
   GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
                  @"Failed to switch to incognito mode");
 
   // Switch back to the normal tabs. Should be on tab one.
-
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(SwitchToNormalMode());
 
   [ChromeEarlGrey waitForWebViewContainingText:kURL1FirstWord];
 
@@ -221,13 +219,11 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   // Evict the tab. Create a dummy tab so that switching back to normal mode
   // does not trigger a reload immediately.
   [ChromeEarlGrey openNewTab];
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());
   [ChromeEarlGrey waitForIncognitoTabCount:1];
 
   // Switch back to the normal tabs. Should be on tab one.
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(SwitchToNormalMode());
 
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   [ChromeEarlGrey waitForWebViewContainingText:kURL1FirstWord];
@@ -262,16 +258,13 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
                  @"Fail to state tabs as cold start tabs");
 
   // Open two incognito tabs with urls, clearing normal tabs from memory.
-  NSError* firstTabError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(firstTabError, firstTabError.localizedDescription);
-  NSError* secondTabError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(secondTabError, secondTabError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());
+  CHROME_EG_ASSERT_ON_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());
 
   [ChromeEarlGrey waitForIncognitoTabCount:2];
 
   // Switch back to the normal tabs.
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(SwitchToNormalMode());
 
   [ChromeEarlGrey waitForWebViewContainingText:kURL2FirstWord];
 
@@ -321,15 +314,13 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
                  @"Fail to simulate tab backgrounding.");
 
   // Open incognito and clear normal tabs from memory.
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());
   GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
                  @"Failed to switch to incognito mode");
   histogramTester.ExpectTotalCount(kEvictedTabReloadTime, 0, failureBlock);
 
   // Switch back to the normal tabs.
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(SwitchToNormalMode());
 
   [ChromeEarlGrey waitForWebViewContainingText:kURL2FirstWord];
 
@@ -361,11 +352,8 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   [ChromeEarlGrey closeAllTabsInCurrentMode];
   GURL URL = web::test::HttpServer::MakeUrl(kTestUrl1);
   NewMainTabWithURL(URL, kURL1FirstWord);
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
-
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());
+  CHROME_EG_ASSERT_ON_ERROR(SwitchToNormalMode());
 
   [ChromeEarlGrey waitForWebViewContainingText:kURL1FirstWord];
   [ChromeEarlGrey waitForMainTabCount:1];
@@ -398,8 +386,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey openNewTab];
   chrome_test_util::LoadUrl(slowURL);
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());
 
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
       std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
@@ -451,8 +438,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
   NewMainTabWithURL(slowURL, "Slow");
 
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
       std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
 
@@ -502,11 +488,8 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   };
 
   NewMainTabWithURL(slowURL, responses[slowURL]);
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
-
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());
+  CHROME_EG_ASSERT_ON_ERROR(SwitchToNormalMode());
 
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
@@ -535,8 +518,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   [ChromeEarlGrey openNewTab];
   chrome_test_util::LoadUrl(slowURL);
 
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());
 
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
       std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
@@ -626,11 +608,8 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
   NSUInteger tabIndex = chrome_test_util::GetMainTabCount() - 1;
   [ChromeEarlGrey openNewTab];
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
-
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());
+  CHROME_EG_ASSERT_ON_ERROR(SwitchToNormalMode());
 
   chrome_test_util::SelectTabAtIndexInCurrentMode(tabIndex);
   [ChromeEarlGrey waitForWebViewContainingText:"arrived"];
@@ -677,11 +656,8 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   [ChromeEarlGrey waitForWebViewContainingText:"Whee"];
   NSUInteger tabIndex = chrome_test_util::GetMainTabCount() - 1;
   [ChromeEarlGrey openNewTab];
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
-
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR(OpenNewIncognitoTabUsingUIAndEvictMainTabs());
+  CHROME_EG_ASSERT_ON_ERROR(SwitchToNormalMode());
 
   chrome_test_util::SelectTabAtIndexInCurrentMode(tabIndex);
   [ChromeEarlGrey waitForWebViewContainingText:"Whee"];

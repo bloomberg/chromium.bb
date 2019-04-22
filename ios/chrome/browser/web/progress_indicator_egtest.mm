@@ -19,6 +19,7 @@
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 #include "ios/web/public/test/http_server/html_response_provider.h"
@@ -196,8 +197,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   [[EarlGrey selectElementWithMatcher:ProgressViewWithProgress(0.5)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  NSError* visibleError = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(visibleError, visibleError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR([ChromeEarlGreyUI waitForToolbarVisible:YES]);
   infinitePendingProvider->Abort();
 }
 
@@ -237,8 +237,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   [[EarlGrey selectElementWithMatcher:ProgressViewWithProgress(0.5)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
-  NSError* visibleError = [ChromeEarlGreyUI waitForToolbarVisible:YES];
-  GREYAssertNil(visibleError, visibleError.localizedDescription);
+  CHROME_EG_ASSERT_ON_ERROR([ChromeEarlGreyUI waitForToolbarVisible:YES]);
   infinitePendingProvider->Abort();
 }
 
