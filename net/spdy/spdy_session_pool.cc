@@ -258,11 +258,19 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
       // If socket tags differ, see if session's socket tag can be changed.
       if (alias_key.socket_tag() != key.socket_tag()) {
         SpdySessionKey old_key = available_session->spdy_session_key();
+        SpdySessionKey new_key(old_key.host_port_pair(), old_key.proxy_server(),
+                               old_key.privacy_mode(),
+                               old_key.is_proxy_session(), key.socket_tag());
+
+        // If there is already a session with |new_key|, skip this one.
+        // It will be found in |aliases_| in a future iteration.
+        if (available_sessions_.find(new_key) != available_sessions_.end())
+          continue;
 
         if (!available_session->ChangeSocketTag(key.socket_tag()))
           continue;
 
-        const SpdySessionKey& new_key = available_session->spdy_session_key();
+        DCHECK(available_session->spdy_session_key() == new_key);
 
         // This isn't a pooled alias, it's the actual session.
         adding_pooled_alias = false;
