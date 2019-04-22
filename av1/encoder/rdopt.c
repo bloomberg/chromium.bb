@@ -11728,8 +11728,8 @@ static int fetch_picked_ref_frames_mask(const MACROBLOCK *const x,
 // Case 2: return 1, means skip this mode completely
 // Case 3: return 2, means skip compound only, but still try single motion modes
 static int inter_mode_search_order_independent_skip(
-    const AV1_COMP *cpi, const MACROBLOCK *x, BLOCK_SIZE bsize, int mode_index,
-    int mi_row, int mi_col, mode_skip_mask_t *mode_skip_mask,
+    const AV1_COMP *cpi, const MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
+    int mi_col, mode_skip_mask_t *mode_skip_mask,
     InterModeSearchState *search_state, int skip_ref_frame_mask) {
   const SPEED_FEATURES *const sf = &cpi->sf;
   const AV1_COMMON *const cm = &cpi->common;
@@ -11737,8 +11737,8 @@ static int inter_mode_search_order_independent_skip(
   const CurrentFrame *const current_frame = &cm->current_frame;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const MB_MODE_INFO *const mbmi = xd->mi[0];
-  const MV_REFERENCE_FRAME *ref_frame = av1_mode_order[mode_index].ref_frame;
-  const PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
+  const MV_REFERENCE_FRAME *ref_frame = mbmi->ref_frame;
+  const PREDICTION_MODE this_mode = mbmi->mode;
   const int comp_pred = ref_frame[1] > INTRA_FRAME;
   int skip_motion_mode = 0;
 
@@ -12676,7 +12676,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (inter_mode_compatible_skip(cpi, x, bsize, midx)) continue;
 
     const int ret = inter_mode_search_order_independent_skip(
-        cpi, x, bsize, midx, mi_row, mi_col, &mode_skip_mask, &search_state,
+        cpi, x, bsize, mi_row, mi_col, &mode_skip_mask, &search_state,
         skip_ref_frame_mask);
     if (ret == 1) continue;
     args.skip_motion_mode = (ret == 2);
@@ -13320,7 +13320,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (inter_mode_compatible_skip(cpi, x, bsize, midx)) continue;
 
     const int ret = inter_mode_search_order_independent_skip(
-        cpi, x, bsize, midx, mi_row, mi_col, &mode_skip_mask, &search_state,
+        cpi, x, bsize, mi_row, mi_col, &mode_skip_mask, &search_state,
         skip_ref_frame_mask);
     if (ret == 1) continue;
     args.skip_motion_mode = (ret == 2);
