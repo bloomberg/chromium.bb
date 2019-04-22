@@ -1268,10 +1268,10 @@ const char kMobileIdentityConsistencyName[] = "Mobile identity consistency";
 const char kMobileIdentityConsistencyDescription[] =
     "Enables stronger identity consistency on mobile";
 
-const char kNativeFilesystemAPIName[] = "Native Filesystem API";
-const char kNativeFilesystemAPIDescription[] =
-    "Enables the experimental Native Filesystem API, giving websites access to "
-    "the native filesystem";
+const char kNativeFileSystemAPIName[] = "Native File System API";
+const char kNativeFileSystemAPIDescription[] =
+    "Enables the experimental Native File System API, giving websites access "
+    "to the native file system";
 
 const char kNewAudioRenderingMixingStrategyName[] =
     "New audio rendering mixing strategy";

@@ -207,8 +207,8 @@ const base::Feature kTextFragmentAnchor{"TextFragmentAnchor",
 const base::Feature kWasmCodeCache = {"WasmCodeCache",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Writable files and native filesystem access. https://crbug.com/853326
-const base::Feature kNativeFilesystemAPI{"NativeFilesystemAPI",
+// Writable files and native file system access. https://crbug.com/853326
+const base::Feature kNativeFileSystemAPI{"NativeFileSystemAPI",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows for synchronous XHR requests during page dismissal

@@ -2241,19 +2241,6 @@ interface FileReader : EventTarget
     setter onloadend
     setter onloadstart
     setter onprogress
-interface FileSystemDirectoryHandle : FileSystemBaseHandle
-    static method getSystemDirectory
-    attribute @@toStringTag
-    method constructor
-    method getDirectory
-    method getEntries
-    method getFile
-    method removeRecursively
-interface FileSystemFileHandle : FileSystemBaseHandle
-    attribute @@toStringTag
-    method constructor
-    method createWriter
-    method getFile
 interface FocusEvent : UIEvent
     attribute @@toStringTag
     getter relatedTarget
@@ -11072,7 +11059,6 @@ interface webkitURL
     method cancelAnimationFrame
     method cancelIdleCallback
     method captureEvents
-    method chooseFileSystemEntries
     method clearInterval
     method clearTimeout
     method close

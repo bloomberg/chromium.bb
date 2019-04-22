@@ -57,6 +57,6 @@
     // style handles.
     // TODO(mek): Remove this method once API to get new-style file handles
     // directly has been implemented.
-    [RuntimeEnabled=WritableFiles]
+    [RuntimeEnabled=NativeFileSystem]
     FileSystemBaseHandle asFileSystemHandle();
 };

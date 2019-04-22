@@ -775,8 +775,8 @@ extern const char kMimeHandlerViewInCrossProcessFrameDescription[];
 extern const char kMobileIdentityConsistencyName[];
 extern const char kMobileIdentityConsistencyDescription[];
 
-extern const char kNativeFilesystemAPIName[];
-extern const char kNativeFilesystemAPIDescription[];
+extern const char kNativeFileSystemAPIName[];
+extern const char kNativeFileSystemAPIDescription[];
 
 extern const char kNewAudioRenderingMixingStrategyName[];
 extern const char kNewAudioRenderingMixingStrategyDescription[];

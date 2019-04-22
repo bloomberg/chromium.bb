@@ -1053,6 +1053,6 @@
   {
     "prefix": "native-file-system",
     "base": "external/wpt/native-file-system",
-    "args": ["--enable-features=NativeFilesystemAPI"]
+    "args": ["--enable-features=NativeFileSystemAPI"]
   }
 ]

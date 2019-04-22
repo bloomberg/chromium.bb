@@ -4,7 +4,7 @@
 
 // https://wicg.github.io/native-file-system/#filesystemhandle
 [
-    RuntimeEnabled=WritableFiles,
+    RuntimeEnabled=NativeFileSystem,
     NoInterfaceObject
 ] interface FileSystemBaseHandle {
     // Brand checking APIs because javascript makes it otherwise really hard to

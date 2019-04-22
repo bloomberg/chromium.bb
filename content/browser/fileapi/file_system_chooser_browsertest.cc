@@ -25,7 +25,7 @@ class FileSystemChooserBrowserTest : public ContentBrowserTest {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kNativeFilesystemAPI);
+        blink::features::kNativeFileSystemAPI);
 
     ASSERT_TRUE(embedded_test_server()->Start());
 

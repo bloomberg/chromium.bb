@@ -4,7 +4,7 @@
 
 // https://wicg.github.io/native-file-system/#filesystemfilehandle
 [
-    RuntimeEnabled=WritableFiles
+    RuntimeEnabled=NativeFileSystem
 ] interface FileSystemFileHandle : FileSystemBaseHandle {
     [CallWith=ScriptState] Promise<FileSystemWriter> createWriter();
     [CallWith=ScriptState] Promise<File> getFile();

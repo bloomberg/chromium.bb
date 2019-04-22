@@ -5,7 +5,7 @@
 // https://wicg.github.io/native-file-system/#filesystemwriter
 [
     NoInterfaceObject,
-    RuntimeEnabled=WritableFiles
+    RuntimeEnabled=NativeFileSystem
 ] interface FileSystemWriter {
     [CallWith=ScriptState, RaisesException] Promise<void> write(unsigned long long position, (Blob or ReadableStream) data);
     [CallWith=ScriptState] Promise<void> truncate(unsigned long long size);

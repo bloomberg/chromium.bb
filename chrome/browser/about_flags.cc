@@ -3857,9 +3857,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBuiltInModuleKvStorageDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBuiltInModuleKvStorage)},
 
-    {"native-filesystem-api", flag_descriptions::kNativeFilesystemAPIName,
-     flag_descriptions::kNativeFilesystemAPIDescription, kOsAll,
-     FEATURE_VALUE_TYPE(blink::features::kNativeFilesystemAPI)},
+    {"native-file-system-api", flag_descriptions::kNativeFileSystemAPIName,
+     flag_descriptions::kNativeFileSystemAPIDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kNativeFileSystemAPI)},
 
 #if !defined(OS_ANDROID)
     {"enable-intent-picker", flag_descriptions::kIntentPickerName,

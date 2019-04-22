@@ -7,7 +7,7 @@
 // https://www.ecma-international.org/ecma-262/9.0/index.html#sec-asynciterator-interface
 [
     NoInterfaceObject,
-    RuntimeEnabled=WritableFiles
+    RuntimeEnabled=NativeFileSystem
 ] interface FileSystemDirectoryIterator {
   [CallWith=ScriptState] Promise<any> next();
   [ImplementedAs=IteratorReturn] void return();
