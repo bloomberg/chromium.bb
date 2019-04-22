@@ -106,8 +106,8 @@ TEST_F(PrivacyTableViewControllerTest, TestModel) {
       NO, l10n_util::GetNSString(IDS_SETTINGS_CAN_MAKE_PAYMENT_TOGGLE_LABEL), 0,
       1);
   if (base::FeatureList::IsEnabled(kUmaCellular)) {
-    CheckSwitchCellStateAndTextWithId(
-        YES, IDS_IOS_OPTIONS_SEARCH_URL_SUGGESTIONS, 0, 2);
+    CheckSwitchCellStateAndTextWithId(NO, IDS_IOS_OPTIONS_SEND_USAGE_DATA, 0,
+                                      2);
   } else {
     CheckDetailItemTextWithIds(IDS_IOS_OPTIONS_SEND_USAGE_DATA,
                                IDS_IOS_OPTIONS_DATA_USAGE_NEVER, 0, 2);
