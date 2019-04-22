@@ -568,6 +568,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
         <div style="height: 5000px;"></div>
         <img src="" alt="Target2">
         <div style="height: 5000px;"></div>
+        <span>Target 3</span>
+        <div style="height: 5000px;"></div>
       </body>
       </html>)HTML");
 
@@ -581,10 +583,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
                             &doc_height, ATK_XY_SCREEN);
 
   // The document should only have two children, both with a role of GRAPHIC.
-  ASSERT_EQ(2, atk_object_get_n_accessible_children(document));
+  ASSERT_EQ(3, atk_object_get_n_accessible_children(document));
 
   AtkObject* target = atk_object_ref_accessible_child(document, 0);
   AtkObject* target2 = atk_object_ref_accessible_child(document, 1);
+  AtkObject* target3 = atk_object_ref_accessible_child(document, 2);
 
   ASSERT_TRUE(ATK_IS_COMPONENT(target));
   ASSERT_TRUE(ATK_IS_COMPONENT(target2));
@@ -624,8 +627,24 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestScrollTo) {
   EXPECT_GT(y + height / 2, doc_y + 0.4 * doc_height);
   EXPECT_LT(y + height / 2, doc_y + 0.6 * doc_height);
 
+  // Orca expects atk_text_set_caret_offset to operate like scroll to the
+  // target node like atk_component_scroll_to, so we test that here.
+  ASSERT_TRUE(ATK_IS_TEXT(target3));
+  AccessibilityNotificationWaiter waiter3(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kScrollPositionChanged);
+  atk_text_set_caret_offset(ATK_TEXT(target3), 0);
+  waiter3.WaitForNotification();
+
+  // Same as above, make sure it's roughly centered.
+  atk_component_get_extents(ATK_COMPONENT(target3), &x, &y, &width, &height,
+                            ATK_XY_SCREEN);
+  EXPECT_GT(y + height / 2, doc_y + 0.4 * doc_height);
+  EXPECT_LT(y + height / 2, doc_y + 0.6 * doc_height);
+
   g_object_unref(target);
   g_object_unref(target2);
+  g_object_unref(target3);
 }
 #endif  //  defined(ATK_230)
 

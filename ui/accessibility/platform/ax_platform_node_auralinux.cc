@@ -1120,7 +1120,13 @@ gboolean SetCaretOffset(AtkText* atk_text, gint offset) {
       AtkObjectToAXPlatformNodeAuraLinux(ATK_OBJECT(atk_text));
   if (!obj)
     return FALSE;
-  return obj->SetCaretOffset(offset);
+  if (!obj->SetCaretOffset(offset))
+    return FALSE;
+
+  // Orca expects atk_text_set_caret_offset to scroll to the target element.
+  obj->ScrollToNode(AXPlatformNodeBase::ScrollType::Anywhere);
+
+  return TRUE;
 }
 
 int GetNSelections(AtkText* atk_text) {
