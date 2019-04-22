@@ -1490,6 +1490,10 @@ void BrowserView::ConfirmBrowserCloseWithPendingDownloads(
     Browser::DownloadClosePreventionType dialog_type,
     bool app_modal,
     const base::Callback<void(bool)>& callback) {
+  // The dialog eats mouse events which results in the close button
+  // getting stuck in the hover state. Reset the window controls to
+  // prevent this.
+  frame()->non_client_view()->ResetWindowControls();
   DownloadInProgressDialogView::Show(
       GetNativeWindow(), download_count, dialog_type, app_modal, callback);
 }
