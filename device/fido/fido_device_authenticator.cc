@@ -46,7 +46,7 @@ void FidoDeviceAuthenticator::InitializeAuthenticatorDone(
       break;
     case ProtocolVersion::kCtap:
       DCHECK(device_->device_info()) << "uninitialized device";
-      options_ = device_->device_info()->options();
+      options_ = device_->device_info()->options;
       break;
     case ProtocolVersion::kUnknown:
       NOTREACHED() << "uninitialized device";
@@ -211,7 +211,7 @@ FidoDeviceAuthenticator::WillNeedPINToMakeCredential(
   // Thus, if fallback to U2F isn't possible, a PIN will be needed if set.
   const bool supports_u2f =
       device()->device_info() &&
-      device()->device_info()->versions().contains(ProtocolVersion::kU2f);
+      device()->device_info()->versions.contains(ProtocolVersion::kU2f);
   if (device_support == ClientPinAvailability::kSupportedAndPinSet &&
       !supports_u2f) {
     if (can_collect_pin) {

@@ -120,7 +120,7 @@ TEST_F(FidoMakeCredentialTaskTest, DefaultToU2fWhenClientPinSet) {
   AuthenticatorSupportedOptions options;
   options.client_pin_availability =
       AuthenticatorSupportedOptions::ClientPinAvailability::kSupportedAndPinSet;
-  device_info.SetOptions(std::move(options));
+  device_info.options = std::move(options);
 
   auto device = MockFidoDevice::MakeCtap(std::move(device_info));
   device->ExpectRequestAndRespondWith(
@@ -140,7 +140,7 @@ TEST_F(FidoMakeCredentialTaskTest, EnforceClientPinWhenUserVerificationSet) {
   AuthenticatorSupportedOptions options;
   options.client_pin_availability =
       AuthenticatorSupportedOptions::ClientPinAvailability::kSupportedAndPinSet;
-  device_info.SetOptions(std::move(options));
+  device_info.options = std::move(options);
 
   auto device = MockFidoDevice::MakeCtap(std::move(device_info));
   device->ExpectCtap2CommandAndRespondWith(

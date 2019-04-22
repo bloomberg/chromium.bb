@@ -458,7 +458,7 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
   }
 
   if (options_updated) {
-    device_info_->SetOptions(options);
+    device_info_->options = std::move(options);
   }
 }
 
@@ -526,7 +526,7 @@ base::WeakPtr<FidoDevice> VirtualCtap2Device::GetWeakPtr() {
 
 void VirtualCtap2Device::SetAuthenticatorSupportedOptions(
     const AuthenticatorSupportedOptions& options) {
-  device_info_->SetOptions(options);
+  device_info_->options = options;
 }
 
 CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
@@ -540,7 +540,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnMakeCredential(
   CtapMakeCredentialRequest request = std::get<0>(*request_and_hash);
   CtapMakeCredentialRequest::ClientDataHash client_data_hash =
       std::get<1>(*request_and_hash);
-  const AuthenticatorSupportedOptions& options = device_info_->options();
+  const AuthenticatorSupportedOptions& options = device_info_->options;
 
   bool user_verified;
   const CtapDeviceResponseCode uv_error = CheckUserVerification(
@@ -684,7 +684,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
   CtapGetAssertionRequest request = std::get<0>(*request_and_hash);
   CtapGetAssertionRequest::ClientDataHash client_data_hash =
       std::get<1>(*request_and_hash);
-  const AuthenticatorSupportedOptions& options = device_info_->options();
+  const AuthenticatorSupportedOptions& options = device_info_->options;
 
   bool user_verified;
   const CtapDeviceResponseCode uv_error = CheckUserVerification(
@@ -837,7 +837,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetNextAssertion(
 CtapDeviceResponseCode VirtualCtap2Device::OnPINCommand(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {
-  if (device_info_->options().client_pin_availability ==
+  if (device_info_->options.client_pin_availability ==
       AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported) {
     return CtapDeviceResponseCode::kCtap1ErrInvalidCommand;
   }
@@ -914,10 +914,10 @@ CtapDeviceResponseCode VirtualCtap2Device::OnPINCommand(
         return err;
       };
 
-      AuthenticatorSupportedOptions options = device_info_->options();
+      AuthenticatorSupportedOptions options = device_info_->options;
       options.client_pin_availability = AuthenticatorSupportedOptions::
           ClientPinAvailability::kSupportedAndPinSet;
-      device_info_->SetOptions(options);
+      device_info_->options = std::move(options);
 
       break;
     }
@@ -1007,7 +1007,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnPINCommand(
 
 CtapDeviceResponseCode VirtualCtap2Device::OnAuthenticatorGetInfo(
     std::vector<uint8_t>* response) const {
-  *response = EncodeToCBOR(*device_info_);
+  *response = AuthenticatorGetInfoResponse::EncodeToCBOR(*device_info_);
   return CtapDeviceResponseCode::kSuccess;
 }
 

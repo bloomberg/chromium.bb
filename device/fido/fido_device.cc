@@ -59,8 +59,8 @@ void FidoDevice::OnDeviceInfoReceived(
   state_ = FidoDevice::State::kReady;
   base::Optional<AuthenticatorGetInfoResponse> get_info_response =
       response ? ReadCTAPGetInfoResponse(*response) : base::nullopt;
-  if (!get_info_response || !base::ContainsKey(get_info_response->versions(),
-                                               ProtocolVersion::kCtap)) {
+  if (!get_info_response ||
+      !base::ContainsKey(get_info_response->versions, ProtocolVersion::kCtap)) {
     supported_protocol_ = ProtocolVersion::kU2f;
     FIDO_LOG(DEBUG) << "The device only supports the U2F protocol.";
   } else {

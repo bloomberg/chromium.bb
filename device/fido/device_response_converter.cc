@@ -218,7 +218,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
 
       extensions.push_back(extension.GetString());
     }
-    response.SetExtensions(std::move(extensions));
+    response.extensions = std::move(extensions);
   }
 
   AuthenticatorSupportedOptions options;
@@ -279,7 +279,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
             ClientPinAvailability::kSupportedButPinNotSet;
       }
     }
-    response.SetOptions(std::move(options));
+    response.options = std::move(options);
   }
 
   it = response_map.find(CBOR(5));
@@ -287,7 +287,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
     if (!it->second.is_unsigned())
       return base::nullopt;
 
-    response.SetMaxMsgSize(it->second.GetUnsigned());
+    response.max_msg_size = it->second.GetUnsigned();
   }
 
   it = response_map.find(CBOR(6));
@@ -302,7 +302,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
 
       supported_pin_protocols.push_back(protocol.GetUnsigned());
     }
-    response.SetPinProtocols(std::move(supported_pin_protocols));
+    response.pin_protocols = std::move(supported_pin_protocols);
   }
 
   return base::Optional<AuthenticatorGetInfoResponse>(std::move(response));

@@ -33,10 +33,10 @@ bool ShouldUseU2fBecauseCtapRequiresClientPin(
 
   DCHECK(device && device->device_info());
   bool client_pin_set =
-      device->device_info()->options().client_pin_availability ==
+      device->device_info()->options.client_pin_availability ==
       AuthenticatorSupportedOptions::ClientPinAvailability::kSupportedAndPinSet;
-  bool supports_u2f = base::ContainsKey(device->device_info()->versions(),
-                                        ProtocolVersion::kU2f);
+  bool supports_u2f =
+      base::ContainsKey(device->device_info()->versions, ProtocolVersion::kU2f);
   return client_pin_set && supports_u2f;
 }
 
@@ -84,7 +84,7 @@ CtapMakeCredentialRequest MakeCredentialTask::GetTouchRequest(
   // https://fidoalliance.org/specs/fido-v2.0-ps-20190130/fido-client-to-authenticator-protocol-v2.0-ps-20190130.html#using-pinToken-in-authenticatorGetAssertion
   if (device->supported_protocol() == ProtocolVersion::kU2f ||
       (device->device_info() &&
-       device->device_info()->options().client_pin_availability !=
+       device->device_info()->options.client_pin_availability !=
            AuthenticatorSupportedOptions::ClientPinAvailability::
                kNotSupported)) {
     req.SetPinAuth({});
