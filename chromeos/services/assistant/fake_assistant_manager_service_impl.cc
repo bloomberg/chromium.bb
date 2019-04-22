@@ -90,5 +90,8 @@ void FakeAssistantManagerServiceImpl::OnAccessibilityStatusChanged(
 void FakeAssistantManagerServiceImpl::SendAssistantFeedback(
     mojom::AssistantFeedbackPtr feedback) {}
 
+void FakeAssistantManagerServiceImpl::StopAlarmTimerRinging() {}
+void FakeAssistantManagerServiceImpl::CreateTimer(base::TimeDelta duration) {}
+
 }  // namespace assistant
 }  // namespace chromeos

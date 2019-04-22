@@ -10,6 +10,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/timer/timer.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -17,6 +18,46 @@ namespace assistant {
 namespace util {
 
 using DeepLinkUnitTest = AshTestBase;
+
+TEST_F(DeepLinkUnitTest, CreateAlarmTimerDeeplink) {
+  // OK: Simple case.
+  ASSERT_EQ(
+      "googleassistant://"
+      "alarm-timer?action=addTimeToTimer&id=1&durationMs=60000",
+      CreateAlarmTimerDeepLink(AlarmTimerAction::kAddTimeToTimer, "1",
+                               base::TimeDelta::FromMinutes(1))
+          .value());
+  ASSERT_EQ("googleassistant://alarm-timer?action=stopAlarmTimerRinging",
+            CreateAlarmTimerDeepLink(AlarmTimerAction::kStopRinging,
+                                     base::nullopt, base::nullopt)
+                .value());
+
+  // For invalid deeplink params, we will hit DCHECK since this API isn't meant
+  // to be used in such cases. We'll use a |ScopedLogAssertHandler| to safely
+  // ignore the NOTREACHED assertion.
+  logging::ScopedLogAssertHandler handler(base::BindRepeating(
+      [](const char* file, int line, const base::StringPiece message,
+         const base::StringPiece stack_trace) {}));
+
+  ASSERT_EQ(base::nullopt,
+            CreateAlarmTimerDeepLink(AlarmTimerAction::kStopRinging, "1",
+                                     base::nullopt));
+  ASSERT_EQ(base::nullopt, CreateAlarmTimerDeepLink(
+                               AlarmTimerAction::kStopRinging, base::nullopt,
+                               base::TimeDelta::FromMinutes(1)));
+  ASSERT_EQ(base::nullopt,
+            CreateAlarmTimerDeepLink(AlarmTimerAction::kStopRinging, "1",
+                                     base::TimeDelta::FromMinutes(1)));
+  ASSERT_EQ(base::nullopt,
+            CreateAlarmTimerDeepLink(AlarmTimerAction::kAddTimeToTimer, "1",
+                                     base::nullopt));
+  ASSERT_EQ(base::nullopt, CreateAlarmTimerDeepLink(
+                               AlarmTimerAction::kAddTimeToTimer, base::nullopt,
+                               base::TimeDelta::FromMinutes(1)));
+  ASSERT_EQ(base::nullopt,
+            CreateAlarmTimerDeepLink(AlarmTimerAction::kAddTimeToTimer,
+                                     base::nullopt, base::nullopt));
+}
 
 TEST_F(DeepLinkUnitTest, CreateAssistantQueryDeepLink) {
   const std::map<std::string, std::string> test_cases = {
@@ -77,7 +118,9 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParams) {
 
 TEST_F(DeepLinkUnitTest, GetDeepLinkParam) {
   std::map<std::string, std::string> params = {
-      {"page", "main"}, {"q", "query"}, {"relaunch", "true"}};
+      {"action", "0"},  {"durationMs", "60000"}, {"id", "timer_id_1"},
+      {"page", "main"}, {"q", "query"},          {"relaunch", "true"},
+  };
 
   auto AssertDeepLinkParamEq = [&params](
                                    const base::Optional<std::string>& expected,
@@ -86,6 +129,9 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParam) {
   };
 
   // Case: Deep link parameters present.
+  AssertDeepLinkParamEq("0", DeepLinkParam::kAction);
+  AssertDeepLinkParamEq("60000", DeepLinkParam::kDurationMs);
+  AssertDeepLinkParamEq("timer_id_1", DeepLinkParam::kId);
   AssertDeepLinkParamEq("main", DeepLinkParam::kPage);
   AssertDeepLinkParamEq("query", DeepLinkParam::kQuery);
   AssertDeepLinkParamEq("true", DeepLinkParam::kRelaunch);
@@ -97,9 +143,37 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParam) {
 
   // Case: Deep link parameters absent.
   params.clear();
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kAction);
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kDurationMs);
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kId);
   AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kPage);
   AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kQuery);
   AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kRelaunch);
+}
+
+TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsAlarmTimerAction) {
+  std::map<std::string, std::string> params;
+
+  auto AssertDeepLinkParamEq =
+      [&params](const base::Optional<AlarmTimerAction>& expected) {
+        ASSERT_EQ(expected, GetDeepLinkParamAsAlarmTimerAction(params));
+      };
+
+  AssertDeepLinkParamEq(base::nullopt);
+
+  // Case: Deep link parameter present, well formed.
+  params["action"] = "addTimeToTimer";
+  AssertDeepLinkParamEq(AlarmTimerAction::kAddTimeToTimer);
+  params["action"] = "stopAlarmTimerRinging";
+  AssertDeepLinkParamEq(AlarmTimerAction::kStopRinging);
+
+  // Case: Deep link parameter present, non AlarmTimerAction value.
+  params["action"] = "true";
+  AssertDeepLinkParamEq(base::nullopt);
+
+  // Case: Deep link parameter present, non AlarmTimerAction value.
+  params["action"] = "100";
+  AssertDeepLinkParamEq(base::nullopt);
 }
 
 TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsBool) {
@@ -135,6 +209,54 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsBool) {
   AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kRelaunch);
 }
 
+TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsInt64) {
+  std::map<std::string, std::string> params;
+
+  auto AssertDeepLinkParamEq =
+      [&params](const base::Optional<int64_t>& expected, DeepLinkParam param) {
+        ASSERT_EQ(expected, GetDeepLinkParamAsInt64(params, param));
+      };
+
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kDurationMs);
+
+  // Case: Deep link parameter present, well formed "60000".
+  params["durationMs"] = "60000";
+  AssertDeepLinkParamEq(60000, DeepLinkParam::kDurationMs);
+  params["durationMs"] = "00";
+  AssertDeepLinkParamEq(0, DeepLinkParam::kDurationMs);
+
+  // Case: Deep link parameter present, non-int value.
+  params["durationMs"] = "true";
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kDurationMs);
+}
+
+TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsTimeDelta) {
+  std::map<std::string, std::string> params;
+
+  auto AssertDeepLinkParamEq =
+      [&params](const base::Optional<base::TimeDelta>& expected,
+                DeepLinkParam param) {
+        ASSERT_EQ(expected, GetDeepLinkParamAsTimeDelta(params, param));
+      };
+
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kDurationMs);
+
+  // Case: Deep link parameter present, well formed "60000".
+  params["durationMs"] = "60000";
+  AssertDeepLinkParamEq(base::TimeDelta::FromMinutes(1),
+                        DeepLinkParam::kDurationMs);
+  params["durationMs"] = "00";
+  AssertDeepLinkParamEq(base::TimeDelta::FromMilliseconds(0),
+                        DeepLinkParam::kDurationMs);
+
+  // Case: Deep link parameter present, non-int value.
+  params["durationMs"] = "true";
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kDurationMs);
+
+  // Case: Not accepted deep link param.
+  AssertDeepLinkParamEq(base::nullopt, DeepLinkParam::kAction);
+}
+
 TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsRemindersAction) {
   std::map<std::string, std::string> params;
 
@@ -164,6 +286,7 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkParamAsRemindersAction) {
 TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
   const std::map<std::string, DeepLinkType> test_cases = {
       // OK: Supported deep links.
+      {"googleassistant://alarm-timer", DeepLinkType::kAlarmTimer},
       {"googleassistant://chrome-settings", DeepLinkType::kChromeSettings},
       {"googleassistant://lists", DeepLinkType::kLists},
       {"googleassistant://notes", DeepLinkType::kNotes},
@@ -177,6 +300,7 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
       {"googleassistant://whats-on-my-screen", DeepLinkType::kWhatsOnMyScreen},
 
       // OK: Parameterized deep links.
+      {"googleassistant://alarm-timer?param=true", DeepLinkType::kAlarmTimer},
       {"googleassistant://chrome-settings?param=true",
        DeepLinkType::kChromeSettings},
       {"googleassistant://lists?param=true", DeepLinkType::kLists},
@@ -193,6 +317,7 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
        DeepLinkType::kWhatsOnMyScreen},
 
       // UNSUPPORTED: Deep links are case sensitive.
+      {"GOOGLEASSISTANT://ALARM-TIMER", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://CHROME-SETTINGS", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://LISTS", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://NOTES", DeepLinkType::kUnsupported},
@@ -220,6 +345,7 @@ TEST_F(DeepLinkUnitTest, GetDeepLinkType) {
 TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
   const std::map<std::string, DeepLinkType> test_cases = {
       // OK: Supported deep link types.
+      {"googleassistant://alarm-timer", DeepLinkType::kAlarmTimer},
       {"googleassistant://chrome-settings", DeepLinkType::kChromeSettings},
       {"googleassistant://lists", DeepLinkType::kLists},
       {"googleassistant://notes", DeepLinkType::kNotes},
@@ -233,6 +359,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
       {"googleassistant://whats-on-my-screen", DeepLinkType::kWhatsOnMyScreen},
 
       // OK: Parameterized deep link types.
+      {"googleassistant://alarm-timer?param=true", DeepLinkType::kAlarmTimer},
       {"googleassistant://chrome-settings?param=true",
        DeepLinkType::kChromeSettings},
       {"googleassistant://lists?param=true", DeepLinkType::kLists},
@@ -249,6 +376,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
        DeepLinkType::kWhatsOnMyScreen},
 
       // UNSUPPORTED: Deep links are case sensitive.
+      {"GOOGLEASSISTANT://ALARM-TIMER", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://CHROME-SETTINGS", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://LISTS", DeepLinkType::kUnsupported},
       {"GOOGLEASSISTANT://NOTES", DeepLinkType::kUnsupported},
@@ -274,6 +402,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkType) {
 TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
   const std::map<std::string, bool> test_cases = {
       // OK: Supported deep links.
+      {"googleassistant://alarm-timer", true},
       {"googleassistant://chrome-settings", true},
       {"googleassistant://lists", true},
       {"googleassistant://notes", true},
@@ -287,6 +416,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
       {"googleassistant://whats-on-my-screen", true},
 
       // OK: Parameterized deep links.
+      {"googleassistant://alarm-timer?param=true", true},
       {"googleassistant://chrome-settings?param=true", true},
       {"googleassistant://lists?param=true", true},
       {"googleassistant://notes?param=true", true},
@@ -300,6 +430,7 @@ TEST_F(DeepLinkUnitTest, IsDeepLinkUrl) {
       {"googleassistant://whats-on-my-screen?param=true", true},
 
       // FAIL: Deep links are case sensitive.
+      {"GOOGLEASSISTANT://ALARM-TIMER", false},
       {"GOOGLEASSISTANT://CHROME-SETTINGS", false},
       {"GOOGLEASSISTANT://LISTS", false},
       {"GOOGLEASSISTANT://NOTES", false},
@@ -494,6 +625,7 @@ TEST_F(DeepLinkUnitTest, GetWebUrl) {
       {"GOOGLEASSISTANT://SETTINGS", base::nullopt},
 
       // FAIL: Non-web deep links.
+      {"googleassistant://alarm-timer", base::nullopt},
       {"googleassistant://chrome-settings", base::nullopt},
       {"googleassistant://onboarding", base::nullopt},
       {"googleassistant://send-feedback", base::nullopt},
@@ -612,6 +744,7 @@ TEST_F(DeepLinkUnitTest, IsWebDeepLink) {
       {"GOOGLEASSISTANT://SETTINGS", false},
 
       // FAIL: Non-web deep links.
+      {"googleassistant://alarm-timer", false},
       {"googleassistant://chrome-settings", false},
       {"googleassistant://onboarding", false},
       {"googleassistant://send-feedback", false},

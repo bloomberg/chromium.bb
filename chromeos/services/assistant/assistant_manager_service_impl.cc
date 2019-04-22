@@ -1435,6 +1435,21 @@ void AssistantManagerServiceImpl::OnAccessibilityStatusChanged(
     UpdateInternalOptions(assistant_manager_internal_);
 }
 
+void AssistantManagerServiceImpl::StopAlarmTimerRinging() {
+  if (!assistant_manager_internal_)
+    return;
+
+  assistant_manager_internal_->GetAlarmTimerManager()->StopRinging();
+}
+
+void AssistantManagerServiceImpl::CreateTimer(base::TimeDelta duration) {
+  if (!assistant_manager_internal_)
+    return;
+
+  assistant_manager_internal_->GetAlarmTimerManager()->CreateTimer(
+      duration.InSeconds(), /*label=*/std::string());
+}
+
 void AssistantManagerServiceImpl::CacheAssistantStructure(
     base::OnceClosure on_done,
     ax::mojom::AssistantExtraPtr assistant_extra,

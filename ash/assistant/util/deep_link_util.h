@@ -10,6 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/optional.h"
+#include "base/timer/timer.h"
 
 class GURL;
 
@@ -20,6 +21,7 @@ namespace util {
 // Enumeration of deep link types.
 enum class DeepLinkType {
   kUnsupported,
+  kAlarmTimer,
   kChromeSettings,
   kFeedback,
   kLists,
@@ -37,6 +39,7 @@ enum class DeepLinkType {
 enum class DeepLinkParam {
   kAction,
   kClientId,
+  kDurationMs,
   kId,
   kPage,
   kQuery,
@@ -48,6 +51,19 @@ enum class ReminderAction {
   kCreate,
   kEdit,
 };
+
+// Enumeration of deep link parameter alarm/timer action.
+enum class AlarmTimerAction {
+  kAddTimeToTimer,
+  kStopRinging,
+};
+
+// Returns a deep link to perform an alarm/timer action.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<GURL> CreateAlarmTimerDeepLink(
+    AlarmTimerAction action,
+    base::Optional<std::string> alarm_timer_id,
+    base::Optional<base::TimeDelta> duration);
 
 // Returns a deep link to send an Assistant query.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
@@ -72,6 +88,13 @@ base::Optional<std::string> GetDeepLinkParam(
     const std::map<std::string, std::string>& params,
     DeepLinkParam param);
 
+// Returns AlarmTimerAction from the given parameters. If the desired
+// parameter is not found or is not an AlarmTimerAction, an empty value is
+// returned.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<AlarmTimerAction> GetDeepLinkParamAsAlarmTimerAction(
+    const std::map<std::string, std::string>& params);
+
 // Returns a specific bool |param| from the given parameters. If the desired
 // parameter is not found or is not a bool, an empty value is returned.
 COMPONENT_EXPORT(ASSISTANT_UTIL)
@@ -84,6 +107,21 @@ base::Optional<bool> GetDeepLinkParamAsBool(
 COMPONENT_EXPORT(ASSISTANT_UTIL)
 base::Optional<ReminderAction> GetDeepLinkParamAsRemindersAction(
     const std::map<std::string, std::string> params,
+    DeepLinkParam param);
+
+// Returns a specific int64 |param| from the given parameters. If the desired
+// parameter is not found or is not an int64, an empty value is returned.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<int64_t> GetDeepLinkParamAsInt64(
+    const std::map<std::string, std::string>& params,
+    DeepLinkParam param);
+
+// Returns TimeDelta from the given parameters. If the desired parameter is not
+// found, can't convert to TimeDelta or not a time type parameter, an empty
+// value is returned.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+base::Optional<base::TimeDelta> GetDeepLinkParamAsTimeDelta(
+    const std::map<std::string, std::string>& params,
     DeepLinkParam param);
 
 // Returns the deep link type of the specified |url|. If the specified url is

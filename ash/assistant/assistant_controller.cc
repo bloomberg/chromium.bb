@@ -86,6 +86,7 @@ void AssistantController::SetAssistant(
   assistant_ = std::move(assistant);
 
   // Provide reference to sub-controllers.
+  assistant_alarm_timer_controller_.SetAssistant(assistant_.get());
   assistant_interaction_controller_.SetAssistant(assistant_.get());
   assistant_notification_controller_.SetAssistant(assistant_.get());
   assistant_screen_context_controller_.SetAssistant(assistant_.get());
@@ -187,6 +188,7 @@ void AssistantController::OnDeepLinkReceived(
       Shell::Get()->new_window_controller()->ShowTaskManager();
       break;
     case DeepLinkType::kUnsupported:
+    case DeepLinkType::kAlarmTimer:
     case DeepLinkType::kLists:
     case DeepLinkType::kNotes:
     case DeepLinkType::kOnboarding:

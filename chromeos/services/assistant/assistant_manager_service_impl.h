@@ -135,6 +135,8 @@ class AssistantManagerServiceImpl
   void OnAccessibilityStatusChanged(bool spoken_feedback_enabled) override;
   void SendAssistantFeedback(
       mojom::AssistantFeedbackPtr assistant_feedback) override;
+  void StopAlarmTimerRinging() override;
+  void CreateTimer(base::TimeDelta duration) override;
 
   // AssistantActionObserver overrides:
   void OnScheduleWait(int id, int time_ms) override;
