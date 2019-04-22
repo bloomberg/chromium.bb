@@ -32,22 +32,46 @@ class RemoveSuggestionBubbleDialogDelegateView
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
     layout_manager->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+    // TODO(tommycli): Replace this with the real spacing from UX.
+    layout_manager->set_between_child_spacing(16);
     // TODO(tommycli): Replace this with the real translated string from UX.
-    AddChildView(new views::Label(
-        base::ASCIIToUTF16("Remove suggestion from history?")));
+    views::Label* why_this_suggestion_label =
+        new views::Label(match.GetWhyThisSuggestionText());
+    why_this_suggestion_label->SetMultiLine(true);
+    why_this_suggestion_label->SetHorizontalAlignment(
+        gfx::HorizontalAlignment::ALIGN_LEFT);
+    AddChildView(why_this_suggestion_label);
+
+    AddChildView(new views::Label(base::ASCIIToUTF16(
+        match.SupportsDeletion() ? "Remove suggestion from history?"
+                                 : "This match cannot be removed.")));
   }
 
   // views::DialogDelegateView:
+  int GetDialogButtons() const override {
+    int buttons = ui::DIALOG_BUTTON_CANCEL;
+    if (match_.SupportsDeletion())
+      buttons |= ui::DIALOG_BUTTON_OK;
+    return buttons;
+  }
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override {
     // TODO(tommycli): Replace this with the real translated string from UX.
     if (button == ui::DIALOG_BUTTON_OK)
       return base::ASCIIToUTF16("Remove");
 
-    return l10n_util::GetStringUTF16(IDS_CANCEL);
+    return l10n_util::GetStringUTF16(match_.SupportsDeletion() ? IDS_CANCEL
+                                                               : IDS_CLOSE);
   }
   bool Accept() override {
+    DCHECK(match_.SupportsDeletion());
     std::move(remove_closure_).Run();
     return true;
+  }
+
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override {
+    // TODO(tommycli): Replace with the real width from UX.
+    return gfx::Size(500, GetHeightForWidth(500));
   }
 
   // views::WidgetDelegate:

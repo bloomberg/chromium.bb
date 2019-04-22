@@ -105,7 +105,8 @@ class OmniboxResultView : public views::View,
                                   ui::MenuSourceType source_type) override;
 
   // ui::SimpleMenuModel::Delegate overrides:
-  bool IsCommandIdEnabled(int command_id) const override;
+  bool IsItemForCommandIdDynamic(int command_id) const override;
+  base::string16 GetLabelForCommandId(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:

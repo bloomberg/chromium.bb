@@ -446,9 +446,16 @@ void OmniboxResultView::ShowContextMenuForViewImpl(
 }
 
 // ui::SimpleMenuModel::Delegate overrides:
-bool OmniboxResultView::IsCommandIdEnabled(int command_id) const {
+bool OmniboxResultView::IsItemForCommandIdDynamic(int command_id) const {
   DCHECK_EQ(COMMAND_REMOVE_SUGGESTION, command_id);
-  return match_.SupportsDeletion();
+  return true;
+}
+
+base::string16 OmniboxResultView::GetLabelForCommandId(int command_id) const {
+  DCHECK_EQ(COMMAND_REMOVE_SUGGESTION, command_id);
+  // TODO(tommycli): Replace this with the real translated string from UX.
+  return base::ASCIIToUTF16(match_.SupportsDeletion() ? "More info / Remove..."
+                                                      : "More info...");
 }
 
 void OmniboxResultView::ExecuteCommand(int command_id, int event_flags) {
