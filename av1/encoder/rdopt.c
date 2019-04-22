@@ -12769,16 +12769,11 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
           args.simple_rd_state = x->simple_rd_state[midx];
         }
 
-#if CONFIG_COLLECT_COMPONENT_TIMING
-        start_timing(cpi, handle_inter_mode_time);
-#endif
         this_rd = handle_inter_mode(
             cpi, tile_data, x, bsize, &rd_stats, &rd_stats_y, &rd_stats_uv,
             &disable_skip, mi_row, mi_col, &args, ref_best_rd, tmp_buf,
             &rd_buffers, &best_est_rd, do_tx_search, inter_modes_info);
-#if CONFIG_COLLECT_COMPONENT_TIMING
-        end_timing(cpi, handle_inter_mode_time);
-#endif
+
         rate2 = rd_stats.rate;
         skippable = rd_stats.skip;
         distortion2 = rd_stats.dist;
