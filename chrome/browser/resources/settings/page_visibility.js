@@ -66,52 +66,83 @@ cr.define('settings', function() {
    */
   let pageVisibility;
 
-  const isGuest = loadTimeData.getBoolean('isGuest');
+  const showOSSettings = loadTimeData.getBoolean('showOSSettings');
 
-  // "if not chromeos" and "if chromeos" in two completely separate blocks
-  // to work around closure compiler.
-  // <if expr="not chromeos">
-  pageVisibility = {
-    autofill: !isGuest,
-    people: !isGuest,
-    onStartup: !isGuest,
-    reset: !isGuest,
-    appearance: !isGuest,
-    defaultBrowser: !isGuest,
-    advancedSettings: !isGuest,
-    extensions: !isGuest,
-  };
-  // </if>
-  // <if expr="chromeos">
-  const showOS = loadTimeData.getBoolean('showOSSettings');
-  const showBrowser = loadTimeData.getBoolean('showBrowserSettings');
-  pageVisibility = {
-    internet: showOS,
-    bluetooth: showOS,
-    multidevice: showOS && !isGuest,
-    autofill: showBrowser && !isGuest,
-    people: !isGuest,
-    onStartup: !isGuest,
-    reset: !isGuest,
-    appearance: {
-      setWallpaper: showOS && !isGuest,
-      setTheme: showBrowser && !isGuest,
-      homeButton: showBrowser && !isGuest,
-      bookmarksBar: showBrowser && !isGuest,
-      pageZoom: showBrowser && !isGuest,
-    },
-    device: showOS,
-    advancedSettings: true,
-    privacy: {
-      searchPrediction: !isGuest,
-      networkPrediction: !isGuest,
-    },
-    downloads: {
-      googleDrive: !isGuest,
-    },
-    extensions: showBrowser && !isGuest,
-  };
-  // </if>
+  if (loadTimeData.getBoolean('isGuest')) {
+    // "if not chromeos" and "if chromeos" in two completely separate blocks
+    // to work around closure compiler.
+    // <if expr="not chromeos">
+    pageVisibility = {
+      autofill: false,
+      people: false,
+      onStartup: false,
+      reset: false,
+      appearance: false,
+      defaultBrowser: false,
+      advancedSettings: false,
+      extensions: false,
+    };
+    // </if>
+    // <if expr="chromeos">
+    pageVisibility = {
+      internet: showOSSettings,
+      bluetooth: showOSSettings,
+      multidevice: false,
+      autofill: false,
+      people: false,
+      onStartup: false,
+      reset: false,
+      appearance: {
+        setWallpaper: false,
+        setTheme: false,
+        homeButton: false,
+        bookmarksBar: false,
+        pageZoom: false,
+      },
+      device: showOSSettings,
+      advancedSettings: true,
+      privacy: {
+        searchPrediction: false,
+        networkPrediction: false,
+      },
+      downloads: {
+        googleDrive: false,
+      },
+      extensions: false,
+    };
+    // </if>
+  } else {
+    // All pages are visible when not in chromeos. Since polymer only notifies
+    // after a property is set.
+    // <if expr="chromeos">
+    pageVisibility = {
+      internet: showOSSettings,
+      bluetooth: showOSSettings,
+      multidevice: showOSSettings,
+      autofill: true,
+      people: true,
+      onStartup: true,
+      reset: true,
+      appearance: {
+        setWallpaper: true,
+        setTheme: true,
+        homeButton: true,
+        bookmarksBar: true,
+        pageZoom: true,
+      },
+      device: showOSSettings,
+      advancedSettings: true,
+      privacy: {
+        searchPrediction: true,
+        networkPrediction: true,
+      },
+      downloads: {
+        googleDrive: true,
+      },
+      extensions: true,
+    };
+    // </if>
+  }
 
   return {pageVisibility: pageVisibility};
 });

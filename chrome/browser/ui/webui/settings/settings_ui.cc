@@ -290,7 +290,6 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
 #else
   html_source->AddBoolean("showOSSettings", false);
 #endif
-  html_source->AddBoolean("showBrowserSettings", true);
 
   AddSettingsPageUIHandler(
       base::WrapUnique(AboutHandler::Create(html_source, profile)));

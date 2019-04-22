@@ -71,7 +71,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
 
   // TODO(jamescook): Remove after basic_page.html is forked for OS settings.
   html_source->AddBoolean("showOSSettings", true);
-  html_source->AddBoolean("showBrowserSettings", false);
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   std::vector<std::string> exclude_from_gzip;
