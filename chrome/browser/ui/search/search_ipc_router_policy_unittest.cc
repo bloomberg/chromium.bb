@@ -100,28 +100,6 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessLogEvent) {
   EXPECT_FALSE(GetSearchIPCRouterPolicy()->ShouldProcessLogEvent());
 }
 
-TEST_F(SearchIPCRouterPolicyTest, ProcessChromeIdentityCheck) {
-  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
-  EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldProcessChromeIdentityCheck());
-}
-
-TEST_F(SearchIPCRouterPolicyTest, DoNotProcessChromeIdentityCheck) {
-  // Process message only if the underlying page is an InstantNTP.
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  EXPECT_FALSE(GetSearchIPCRouterPolicy()->ShouldProcessChromeIdentityCheck());
-}
-
-TEST_F(SearchIPCRouterPolicyTest, ProcessHistorySyncCheck) {
-  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
-  EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldProcessHistorySyncCheck());
-}
-
-TEST_F(SearchIPCRouterPolicyTest, DoNotProcessHistorySyncCheck) {
-  // Process message only if the underlying page is an InstantNTP.
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  EXPECT_FALSE(GetSearchIPCRouterPolicy()->ShouldProcessHistorySyncCheck());
-}
-
 TEST_F(SearchIPCRouterPolicyTest, ProcessPasteIntoOmniboxMsg) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldProcessPasteIntoOmnibox(true));

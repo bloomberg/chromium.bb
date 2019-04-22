@@ -354,17 +354,6 @@ SearchBox* GetSearchBoxForCurrentContext() {
   return SearchBox::Get(main_frame);
 }
 
-static const char kDispatchChromeIdentityCheckResult[] =
-    "if (window.chrome &&"
-    "    window.chrome.embeddedSearch &&"
-    "    window.chrome.embeddedSearch.newTabPage &&"
-    "    window.chrome.embeddedSearch.newTabPage.onsignedincheckdone &&"
-    "    typeof window.chrome.embeddedSearch.newTabPage"
-    "        .onsignedincheckdone === 'function') {"
-    "  window.chrome.embeddedSearch.newTabPage.onsignedincheckdone(%s, %s);"
-    "  true;"
-    "}";
-
 static const char kDispatchFocusChangedScript[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -373,17 +362,6 @@ static const char kDispatchFocusChangedScript[] =
     "    typeof window.chrome.embeddedSearch.searchBox.onfocuschange =="
     "         'function') {"
     "  window.chrome.embeddedSearch.searchBox.onfocuschange();"
-    "  true;"
-    "}";
-
-static const char kDispatchHistorySyncCheckResult[] =
-    "if (window.chrome &&"
-    "    window.chrome.embeddedSearch &&"
-    "    window.chrome.embeddedSearch.newTabPage &&"
-    "    window.chrome.embeddedSearch.newTabPage.onhistorysynccheckdone &&"
-    "    typeof window.chrome.embeddedSearch.newTabPage"
-    "        .onhistorysynccheckdone === 'function') {"
-    "  window.chrome.embeddedSearch.newTabPage.onhistorysynccheckdone(%s);"
     "  true;"
     "}";
 
@@ -588,8 +566,6 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
   static bool GetIsCustomLinks();
 
   // Handlers for JS functions visible to all NTPs.
-  static void CheckIsUserSignedInToChromeAs(const std::string& identity);
-  static void CheckIsUserSyncingHistory();
   static void DeleteMostVisitedItem(v8::Isolate* isolate,
                                     v8::Local<v8::Value> rid);
   static void UndoAllMostVisitedDeletions();
@@ -656,10 +632,6 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetProperty("themeBackgroundInfo",
                    &NewTabPageBindings::GetThemeBackgroundInfo)
       .SetProperty("isCustomLinks", &NewTabPageBindings::GetIsCustomLinks)
-      .SetMethod("checkIsUserSignedIntoChromeAs",
-                 &NewTabPageBindings::CheckIsUserSignedInToChromeAs)
-      .SetMethod("checkIsUserSyncingHistory",
-                 &NewTabPageBindings::CheckIsUserSyncingHistory)
       .SetMethod("deleteMostVisitedItem",
                  &NewTabPageBindings::DeleteMostVisitedItem)
       .SetMethod("undoAllMostVisitedDeletions",
@@ -774,23 +746,6 @@ bool NewTabPageBindings::GetIsCustomLinks() {
     return false;
 
   return search_box->IsCustomLinks();
-}
-
-// static
-void NewTabPageBindings::CheckIsUserSignedInToChromeAs(
-    const std::string& identity) {
-  SearchBox* search_box = GetSearchBoxForCurrentContext();
-  if (!search_box)
-    return;
-  search_box->CheckIsUserSignedInToChromeAs(base::UTF8ToUTF16(identity));
-}
-
-// static
-void NewTabPageBindings::CheckIsUserSyncingHistory() {
-  SearchBox* search_box = GetSearchBoxForCurrentContext();
-  if (!search_box)
-    return;
-  search_box->CheckIsUserSyncingHistory();
 }
 
 // static
@@ -1106,29 +1061,8 @@ void SearchBoxExtension::Install(blink::WebLocalFrame* frame) {
 }
 
 // static
-void SearchBoxExtension::DispatchChromeIdentityCheckResult(
-    blink::WebLocalFrame* frame,
-    const base::string16& identity,
-    bool identity_match) {
-  std::string escaped_identity = base::GetQuotedJSONString(identity);
-  blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
-      kDispatchChromeIdentityCheckResult, escaped_identity.c_str(),
-      identity_match ? "true" : "false")));
-  Dispatch(frame, script);
-}
-
-// static
 void SearchBoxExtension::DispatchFocusChange(blink::WebLocalFrame* frame) {
   Dispatch(frame, kDispatchFocusChangedScript);
-}
-
-// static
-void SearchBoxExtension::DispatchHistorySyncCheckResult(
-    blink::WebLocalFrame* frame,
-    bool sync_history) {
-  blink::WebString script(blink::WebString::FromUTF8(base::StringPrintf(
-      kDispatchHistorySyncCheckResult, sync_history ? "true" : "false")));
-  Dispatch(frame, script);
 }
 
 // static

@@ -162,16 +162,6 @@ window.chrome.embeddedSearch.newTabPage.blacklistSearchSuggestion;
 window.chrome.embeddedSearch.newTabPage.blacklistSearchSuggestionWithHash;
 
 /**
- * @param {string} identity
- */
-window.chrome.embeddedSearch.newTabPage.checkIsUserSignedIntoChromeAs;
-
-/**
- * No params.
- */
-window.chrome.embeddedSearch.newTabPage.checkIsUserSyncingHistory;
-
-/**
  * @param {number} tid
  */
 window.chrome.embeddedSearch.newTabPage.deleteMostVisitedItem;
