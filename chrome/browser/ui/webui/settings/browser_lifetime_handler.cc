@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "build/build_config.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 
 #if defined(OS_CHROMEOS)
@@ -17,6 +18,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/first_run/upgrade_util_mac.h"
+#endif
 
 namespace settings {
 
@@ -81,6 +86,11 @@ void BrowserLifetimeHandler::HandleRestart(
 
 void BrowserLifetimeHandler::HandleRelaunch(
     const base::ListValue* args) {
+#if defined(OS_MACOSX)
+  if (!upgrade_util::ShouldContinueToRelaunchForUpgrade())
+    return;
+#endif  // OS_MACOSX
+
   chrome::AttemptRelaunch();
 }
 
