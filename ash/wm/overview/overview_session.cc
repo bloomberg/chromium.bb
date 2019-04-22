@@ -203,9 +203,7 @@ void OverviewSession::Init(const WindowList& windows,
   for (auto* root : root_windows) {
     // Observed switchable containers for newly created windows on all root
     // windows.
-    for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i) {
-      aura::Window* container =
-          root->GetChildById(wm::kSwitchableWindowContainerIds[i]);
+    for (auto* container : wm::GetSwitchableContainersForRoot(root)) {
       container->AddObserver(this);
       observed_windows_.insert(container);
     }
@@ -756,13 +754,11 @@ void OverviewSession::OnWindowHierarchyChanged(
     return;
   }
 
-  for (size_t i = 0; i < wm::kSwitchableWindowContainerIdsLength; ++i) {
-    if (new_window->parent()->id() == wm::kSwitchableWindowContainerIds[i] &&
-        !::wm::GetTransientParent(new_window)) {
-      // The new window is in one of the switchable containers, abort overview.
-      CancelSelection();
-      return;
-    }
+  if (wm::IsSwitchableContainer(new_window->parent()) &&
+      !::wm::GetTransientParent(new_window)) {
+    // The new window is in one of the switchable containers, abort overview.
+    CancelSelection();
+    return;
   }
 }
 

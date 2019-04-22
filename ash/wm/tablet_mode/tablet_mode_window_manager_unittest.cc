@@ -164,8 +164,8 @@ class TabletModeWindowManagerTest : public AshTestBase {
     behavior |= params.can_resize ? ws::mojom::kResizeBehaviorCanResize : 0;
     behavior |= params.can_maximize ? ws::mojom::kResizeBehaviorCanMaximize : 0;
     window->SetProperty(aura::client::kResizeBehaviorKey, behavior);
-    aura::Window* container = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(), wm::kSwitchableWindowContainerIds[0]);
+    aura::Window* container =
+        wm::GetSwitchableContainersForRoot(Shell::GetPrimaryRootWindow())[0];
     container->AddChild(window);
     return window;
   }

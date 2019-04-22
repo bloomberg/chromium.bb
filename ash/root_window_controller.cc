@@ -211,9 +211,7 @@ void ReparentWindow(aura::Window* window, aura::Window* new_parent) {
 // Reparents the appropriate set of windows from |src| to |dst|.
 void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
   // Set of windows to move.
-  const int kContainerIdsToMove[] = {
-      // TODO(afakhry): Add rest of desks containers.
-      kShellWindowId_DefaultContainerDeprecated,
+  constexpr int kContainerIdsToMove[] = {
       kShellWindowId_AlwaysOnTopContainer,
       kShellWindowId_PipContainer,
       kShellWindowId_SystemModalContainer,
@@ -222,18 +220,22 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
       kShellWindowId_OverlayContainer,
       kShellWindowId_LockActionHandlerContainer,
   };
-  const int kExtraContainerIdsToMoveInUnifiedMode[] = {
+  constexpr int kExtraContainerIdsToMoveInUnifiedMode[] = {
       kShellWindowId_LockScreenContainer,
   };
-  std::vector<int> container_ids(
-      kContainerIdsToMove,
-      kContainerIdsToMove + base::size(kContainerIdsToMove));
+
+  // The list of desks containers depends on whether the Virtual Desks feature
+  // is enabled or not.
+  std::vector<int> container_ids = desks_util::GetDesksContainersIds();
+  for (const int id : kContainerIdsToMove)
+    container_ids.emplace_back(id);
+
   // Check the display mode as this is also necessary when trasitioning between
   // mirror and unified mode.
   if (Shell::Get()->display_manager()->current_default_multi_display_mode() ==
       display::DisplayManager::UNIFIED) {
-    for (int id : kExtraContainerIdsToMoveInUnifiedMode)
-      container_ids.push_back(id);
+    for (const int id : kExtraContainerIdsToMoveInUnifiedMode)
+      container_ids.emplace_back(id);
   }
 
   for (int id : container_ids) {
@@ -563,13 +565,14 @@ void RootWindowController::CloseChildWindows() {
     return;
   did_close_child_windows_ = true;
 
+  aura::Window* root = GetRootWindow();
+
   // Notify the keyboard controller before closing child windows and shutting
   // down associated layout managers.
-  Shell::Get()->ash_keyboard_controller()->OnRootWindowClosing(GetRootWindow());
+  Shell::Get()->ash_keyboard_controller()->OnRootWindowClosing(root);
 
   shelf_->ShutdownShelfWidget();
 
-  aura::Window* root = GetRootWindow();
   ClearWorkspaceControllers(root);
 
   // Explicitly destroy top level windows. We do this because such windows may

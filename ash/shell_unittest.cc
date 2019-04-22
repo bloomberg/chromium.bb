@@ -6,11 +6,13 @@
 
 #include <algorithm>
 #include <memory>
+#include <queue>
 #include <vector>
 
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/drag_drop/drag_drop_controller_test_api.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_root_window_for_new_windows.h"
@@ -28,8 +30,10 @@
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/testing_pref_service.h"
@@ -72,18 +76,35 @@ aura::Window* GetAlwaysOnTopContainer() {
 
 // Expect ALL the containers!
 void ExpectAllContainers() {
-  // Validate no duplicate container IDs.
-  const size_t all_shell_container_ids_size = base::size(kAllShellContainerIds);
-  std::set<int32_t> container_ids;
-  for (size_t i = 0; i < all_shell_container_ids_size; ++i)
-    EXPECT_TRUE(container_ids.insert(kAllShellContainerIds[i]).second);
-
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
+
+  // Validate no duplicate container IDs.
+  base::flat_set<int> container_ids;
+  std::queue<aura::Window*> window_queue;
+  window_queue.push(root_window);
+  while (!window_queue.empty()) {
+    aura::Window* current_window = window_queue.front();
+    window_queue.pop();
+    for (aura::Window* child : current_window->children())
+      window_queue.push(child);
+
+    const int id = current_window->id();
+
+    // Skip windows with no IDs.
+    if (id == aura::Window::kInitialId)
+      continue;
+
+    EXPECT_TRUE(container_ids.insert(id).second)
+        << "Found duplicate ID: " << id
+        << " at window: " << current_window->GetName();
+  }
+
   EXPECT_TRUE(
       Shell::GetContainer(root_window, kShellWindowId_WallpaperContainer));
-  // TODO(afakhry): Test rest of desks containers.
-  EXPECT_TRUE(Shell::GetContainer(root_window,
-                                  kShellWindowId_DefaultContainerDeprecated));
+
+  for (int desk_id : desks_util::GetDesksContainersIds())
+    EXPECT_TRUE(Shell::GetContainer(root_window, desk_id));
+
   EXPECT_TRUE(
       Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer));
   EXPECT_TRUE(Shell::GetContainer(root_window, kShellWindowId_ShelfContainer));
@@ -676,5 +697,39 @@ TEST_F(ShellLoginTest, DragAndDropDisabledBeforeLogin) {
   SimulateUserLogin("user1@test.com");
   EXPECT_TRUE(drag_drop_controller_test_api.enabled());
 }
+
+// Defines a parameterized test fixture to validate that there are no duplicate
+// containers IDs in both cases when the Virtual Desks feature is enabled or
+// disabled.
+class NoDuplicateShellContainerIdsTest
+    : public AshTestBase,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  NoDuplicateShellContainerIdsTest() = default;
+  ~NoDuplicateShellContainerIdsTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    if (GetParam())
+      scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
+    else
+      scoped_feature_list_.InitAndDisableFeature(features::kVirtualDesks);
+
+    AshTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(NoDuplicateShellContainerIdsTest);
+};
+
+TEST_P(NoDuplicateShellContainerIdsTest, ValidateContainersIds) {
+  ExpectAllContainers();
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         NoDuplicateShellContainerIdsTest,
+                         ::testing::Values(false, true));
 
 }  // namespace ash

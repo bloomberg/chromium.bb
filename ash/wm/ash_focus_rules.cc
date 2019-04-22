@@ -12,6 +12,7 @@
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state.h"
+#include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
@@ -42,7 +43,8 @@ bool BelongsToContainerWithId(const aura::Window* window, int container_id) {
 ////////////////////////////////////////////////////////////////////////////////
 // AshFocusRules, public:
 
-AshFocusRules::AshFocusRules() = default;
+AshFocusRules::AshFocusRules()
+    : activatable_container_ids_(GetActivatableShellWindowIds()) {}
 
 AshFocusRules::~AshFocusRules() = default;
 
@@ -57,11 +59,12 @@ bool AshFocusRules::IsToplevelWindow(const aura::Window* window) const {
 
   // The window must exist within a container that supports activation.
   // The window cannot be blocked by a modal transient.
-  return IsActivatableShellWindowId(window->parent()->id());
+  return base::ContainsValue(activatable_container_ids_,
+                             window->parent()->id());
 }
 
 bool AshFocusRules::SupportsChildActivation(const aura::Window* window) const {
-  return ash::IsActivatableShellWindowId(window->id());
+  return base::ContainsValue(activatable_container_ids_, window->id());
 }
 
 bool AshFocusRules::IsWindowConsideredVisibleForActivation(
@@ -153,10 +156,10 @@ aura::Window* AshFocusRules::GetNextActivatableWindow(
   aura::Window* root = starting_window->GetRootWindow();
   if (!root)
     root = Shell::GetRootWindowForNewWindows();
-  int container_count = static_cast<int>(kNumActivatableShellWindowIds);
+  int container_count = activatable_container_ids_.size();
   for (int i = 0; i < container_count; i++) {
     aura::Window* container =
-        Shell::GetContainer(root, kActivatableShellWindowIds[i]);
+        Shell::GetContainer(root, activatable_container_ids_[i]);
     if (container && container->Contains(starting_window)) {
       starting_container_index = i;
       break;
@@ -182,7 +185,7 @@ aura::Window* AshFocusRules::GetTopmostWindowToActivateForContainerIndex(
   aura::Window* window = nullptr;
   aura::Window* root = ignore ? ignore->GetRootWindow() : nullptr;
   aura::Window::Windows containers = wm::GetContainersFromAllRootWindows(
-      kActivatableShellWindowIds[index], root);
+      activatable_container_ids_[index], root);
   for (aura::Window* container : containers) {
     window = GetTopmostWindowToActivateInContainer(container, ignore);
     if (window)

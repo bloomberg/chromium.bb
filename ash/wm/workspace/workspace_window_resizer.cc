@@ -168,8 +168,6 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
     return nullptr;
 
   window_state->CreateDragDetails(point_in_parent, window_component, source);
-  const int parent_shell_window_id =
-      window->parent() ? window->parent()->id() : -1;
 
   // TODO(varkha): The chaining of window resizers causes some of the logic
   // to be repeated and the logic flow difficult to control. With some windows
@@ -181,10 +179,11 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   // layout manager that a drag has started or stopped. It may be possible to
   // refactor and eliminate chaining.
   std::unique_ptr<WindowResizer> window_resizer;
-  if (window->parent() &&
+  const auto* parent = window->parent();
+  if (parent &&
       // TODO(afakhry): Maybe use switchable containers?
-      (desks_util::IsDeskContainerId(parent_shell_window_id) ||
-       parent_shell_window_id == kShellWindowId_AlwaysOnTopContainer)) {
+      (desks_util::IsDeskContainer(parent) ||
+       parent->id() == kShellWindowId_AlwaysOnTopContainer)) {
     window_resizer.reset(WorkspaceWindowResizer::Create(
         window_state, std::vector<aura::Window*>()));
   } else {

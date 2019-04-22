@@ -18,11 +18,9 @@ namespace ash {
 
 namespace desks_util {
 
-// TODO(afakhry): Fix the size of the array when you add the rest of the desks'
-// containters.
-constexpr size_t kMaxNumberOfDesks = 1;
+constexpr size_t kMaxNumberOfDesks = 4;
 
-ASH_EXPORT const std::array<int, kMaxNumberOfDesks>& GetDesksContainersIds();
+ASH_EXPORT std::vector<int> GetDesksContainersIds();
 
 ASH_EXPORT std::vector<aura::Window*> GetDesksContainers(aura::Window* root);
 

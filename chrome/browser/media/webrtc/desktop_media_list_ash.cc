@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/desks_util.h"
 #include "base/bind.h"
 #include "chrome/grit/generated_resources.h"
 #include "media/base/video_util.h"
@@ -108,15 +109,15 @@ void DesktopMediaListAsh::EnumerateSources(
 
       CaptureThumbnail(screen_source.id, root_windows[i]);
     } else {
-      constexpr int kContainersIds[] = {
-          ash::kShellWindowId_DefaultContainerDeprecated,
-          // TODO(afakhry): Add rest of desks containers.
-          ash::kShellWindowId_AlwaysOnTopContainer,
-          ash::kShellWindowId_PipContainer,
-      };
+      // The list of desks containers depends on whether the Virtual Desks
+      // feature is enabled or not.
+      for (int desk_id : ash::desks_util::GetDesksContainersIds())
+        EnumerateWindowsForRoot(sources, root_windows[i], desk_id);
 
-      for (int id : kContainersIds)
-        EnumerateWindowsForRoot(sources, root_windows[i], id);
+      EnumerateWindowsForRoot(sources, root_windows[i],
+                              ash::kShellWindowId_AlwaysOnTopContainer);
+      EnumerateWindowsForRoot(sources, root_windows[i],
+                              ash::kShellWindowId_PipContainer);
     }
   }
 }

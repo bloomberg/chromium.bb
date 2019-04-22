@@ -106,9 +106,9 @@ MruWindowTracker::WindowList BuildWindowListInternal(
     // |wm::kSwitchableWindowContainerIds[]| contains a list of the container
     // IDs sorted such that the ID of the top-most container comes last. Hence,
     // we iterate in reverse order so the top-most windows are added first.
-    for (int i = wm::kSwitchableWindowContainerIdsLength - 1; i >= 0; --i) {
-      aura::Window* container =
-          root->GetChildById(wm::kSwitchableWindowContainerIds[i]);
+    const auto switachable_containers =
+        wm::GetSwitchableContainersForRoot(root);
+    for (auto* container : base::Reversed(switachable_containers)) {
       for (auto* child : base::Reversed(container->children())) {
         // Only add windows that the predicate allows.
         if (!can_include_window_predicate(child))

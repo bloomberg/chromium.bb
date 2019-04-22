@@ -94,7 +94,7 @@ const char ShelfWindowWatcher::kDefaultShelfIdPrefix[] = "ShelfWindowWatcher";
 void ShelfWindowWatcher::ContainerWindowObserver::OnWindowHierarchyChanged(
     const HierarchyChangeParams& params) {
   if (!params.old_parent && params.new_parent &&
-      desks_util::IsDeskContainerId(params.new_parent->id())) {
+      desks_util::IsDeskContainer(params.new_parent)) {
     // A new window was created in one of the desks' containers. Note that the
     // shelf is globally showing all apps from all active and inactive desks.
     window_watcher_->OnUserWindowAdded(params.target);
