@@ -246,15 +246,19 @@ void ReparentAllWindows(aura::Window* src, aura::Window* dst) {
       // may change as a result of moving other windows.
       const aura::Window::Windows& src_container_children =
           src_container->children();
-      auto iter = src_container_children.begin();
-      while (iter != src_container_children.end() &&
+      auto iter = src_container_children.rbegin();
+      while (iter != src_container_children.rend() &&
              SystemModalContainerLayoutManager::IsModalBackground(*iter)) {
         ++iter;
       }
       // If the entire window list is modal background windows then stop.
-      if (iter == src_container_children.end())
+      if (iter == src_container_children.rend())
         break;
-      ReparentWindow(*iter, dst_container);
+
+      // |iter| is invalidated after ReparentWindow. Cache it to use afterwards.
+      aura::Window* const window = *iter;
+      ReparentWindow(window, dst_container);
+      dst_container->StackChildAtBottom(window);
     }
   }
 }
