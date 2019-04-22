@@ -275,7 +275,13 @@ Polymer({
     } else {
       message = this.getEventDesc_(this.pairingEvent_.pairing);
     }
-    return this.i18n(message, this.pairingDevice.name || '');
+
+    let pairingDeviceName = '';
+    if (this.pairingDevice && this.pairingDevice.name) {
+      pairingDeviceName = this.pairingDevice.name;
+    }
+
+    return this.i18n(message, pairingDeviceName);
   },
 
   /**
@@ -357,7 +363,7 @@ Polymer({
    * @private
    */
   showDismiss_: function() {
-    return this.pairingDevice.paired ||
+    return (!!this.pairingDevice && this.pairingDevice.paired) ||
         (!!this.pairingEvent_ &&
          this.pairingEvent_.pairing == PairingEventType.COMPLETE);
   },
