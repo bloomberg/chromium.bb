@@ -38,6 +38,9 @@ iron-autogrow-textarea/*
 # iron-checked-element-behavior
 iron-checked-element-behavior/*
 
+# iron-form-element-behavior
+iron-form-element-behavior/*
+
 # paper-behaviors
 paper-behaviors/paper-checked-element-behavior.html
 

@@ -64,12 +64,6 @@ Tree: v2.0.3
 Revision: 67461d70607ca19d17b462b9a649c1585094f798
 Tree link: https://github.com/PolymerElements/iron-flex-layout/tree/v2.0.3
 
-Name: iron-form-element-behavior
-Repository: https://github.com/PolymerElements/iron-form-element-behavior.git
-Tree: v2.1.1
-Revision: 89568e9b7ae3ebfa86f67395085b7f1f34df505e
-Tree link: https://github.com/PolymerElements/iron-form-element-behavior/tree/v2.1.1
-
 Name: iron-icon
 Repository: https://github.com/PolymerElements/iron-icon.git
 Tree: v2.0.1
