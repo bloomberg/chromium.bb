@@ -180,6 +180,8 @@ public class JourneyManager implements Destroyable {
     }
 
     private void handleTabEngagementStarted(Tab tab) {
+        if (tab == null) return;
+
         Boolean didFirstPaint = mDidFirstPaintPerTab.get(tab.getId());
         if (didFirstPaint == null || !didFirstPaint) return;
 
@@ -187,6 +189,8 @@ public class JourneyManager implements Destroyable {
     }
 
     private void handleTabEngagementStopped(Tab tab) {
+        if (tab == null) return;
+
         if (mPendingRevisits.containsKey(tab.getId())) {
             mHandler.removeCallbacks(mPendingRevisits.get(tab.getId()));
             mPendingRevisits.remove(tab.getId());
