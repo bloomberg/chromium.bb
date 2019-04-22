@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/numerics/math_constants.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -94,7 +95,11 @@ void MixedRealityDevice::RequestSession(
     CreateRenderLoop();
 
   if (!render_loop_->IsRunning()) {
-    render_loop_->Start();
+    // We need to start a UI message loop or we will not receive input events
+    // on 1809 or newer.
+    base::Thread::Options options;
+    options.message_loop_type = base::MessageLoop::TYPE_UI;
+    render_loop_->StartWithOptions(options);
 
     // IsRunning() should be true here unless the thread failed to start (likely
     // memory exhaustion). If the thread fails to start, then we fail to create
