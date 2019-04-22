@@ -51,8 +51,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter size
 [Worker]     getter type
+[Worker]     method arrayBuffer
 [Worker]     method constructor
 [Worker]     method slice
+[Worker]     method stream
+[Worker]     method text
 [Worker] interface BroadcastChannel : EventTarget
 [Worker]     attribute @@toStringTag
 [Worker]     getter name

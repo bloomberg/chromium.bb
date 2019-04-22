@@ -34,8 +34,10 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/url_registry.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
+#include "third_party/blink/renderer/core/streams/readable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -97,6 +99,9 @@ class CORE_EXPORT Blob : public ScriptWrappable,
     return slice(start, end, String(), exception_state);
   }
 
+  ReadableStream* stream(ScriptState* script_state) const;
+  ScriptPromise text(ScriptState* script_state);
+  ScriptPromise arrayBuffer(ScriptState* script_state);
   String type() const { return blob_data_handle_->GetType(); }
   String Uuid() const { return blob_data_handle_->Uuid(); }
   scoped_refptr<BlobDataHandle> GetBlobDataHandle() const {
@@ -131,6 +136,10 @@ class CORE_EXPORT Blob : public ScriptWrappable,
 
  private:
   Blob() = delete;
+  // Helper called by text() and arrayBuffer(). The operations only differ by
+  // 1 line, depending on the read_type.
+  ScriptPromise ReadBlobInternal(ScriptState* script_state,
+                                 FileReaderLoader::ReadType read_type);
 
   scoped_refptr<BlobDataHandle> blob_data_handle_;
 };

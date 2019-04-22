@@ -58,8 +58,11 @@ interface Blob
     attribute @@toStringTag
     getter size
     getter type
+    method arrayBuffer
     method constructor
     method slice
+    method stream
+    method text
 interface BroadcastChannel : EventTarget
     attribute @@toStringTag
     getter name

@@ -526,8 +526,11 @@ interface Blob
     attribute @@toStringTag
     getter size
     getter type
+    method arrayBuffer
     method constructor
     method slice
+    method stream
+    method text
 interface BlobEvent : Event
     attribute @@toStringTag
     getter data

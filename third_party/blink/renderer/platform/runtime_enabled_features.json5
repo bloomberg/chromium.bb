@@ -177,6 +177,12 @@
       name: "BloatedRendererDetectionSkipUptimeCheck",
     },
     {
+      // Adding simpler reading methods - stream(), text(), and arrayBuffer() -
+      // to the Blob interface. See: https://github.com/w3c/FileAPI/pull/117
+      name: "BlobReadMethods",
+      status: "experimental"
+    },
+    {
       name: "BlockCredentialedSubresources",
       status: "stable",
     },
