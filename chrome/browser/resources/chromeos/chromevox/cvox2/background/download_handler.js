@@ -12,8 +12,10 @@ goog.provide('DownloadHandler');
 /**
  * Maps download item ID to an object containing its file name and progress
  * update function.
- * @private {{id: {fileName: string, notifyProgressId: number, time: Date,
- *     percentComplete: number}}}
+ * @private {Object<number, {fileName: string,
+ *                           notifyProgressId: number,
+ *                           time: number,
+ *                           percentComplete: number}>}
  */
 DownloadHandler.downloadItemData_ = {};
 
@@ -85,7 +87,8 @@ DownloadHandler.init = function() {
     // New download if we're not tracking the item and if the filename was
     // previously empty.
     if (!storedItem && name && (name.previous === '')) {
-      DownloadHandler.startTrackingDownload(item);
+      DownloadHandler.startTrackingDownload(
+          /** @type {!chrome.downloads.DownloadItem} */ (item));
 
       // Speech and braille output.
       var optSubs = [DownloadHandler.downloadItemData_[id].fileName];
@@ -201,7 +204,7 @@ DownloadHandler.notifyProgress = function(id) {
 
 /**
  * Store item data.
- * @param{chrome.downloads.DownloadItem} item The download item we want to
+ * @param{!chrome.downloads.DownloadItem} item The download item we want to
  * track.
  */
 DownloadHandler.startTrackingDownload = function(item) {
@@ -230,7 +233,7 @@ DownloadHandler.startTrackingDownload = function(item) {
 /**
  * Output download notification as speech and braille.
  * @param{string} msgId The msgId for Output.
- * @param{number} queueMode The queue mode.
+ * @param{cvox.QueueMode} queueMode The queue mode.
  * @param{Array<string>} optSubs Substitution strings.
  */
 DownloadHandler.speechAndBrailleOutput = function(msgId, queueMode, optSubs) {
