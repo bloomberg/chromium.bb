@@ -1607,6 +1607,21 @@
             ]
         }
     ],
+    "DataReductionProxyBlockOnBadGatewayResponse": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DataReductionProxyBlockOnBadGatewayResponse"
+                    ]
+                }
+            ]
+        }
+    ],
     "DataReductionProxyFREPromo": [
         {
             "platforms": [
