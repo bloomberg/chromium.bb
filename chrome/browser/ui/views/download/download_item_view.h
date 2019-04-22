@@ -197,11 +197,7 @@ class DownloadItemView : public views::InkDropHostView,
   // relative to local bounds.
   int GetYForFilenameText() const;
 
-  // Painting of various download item bits.
-  void DrawStatusText(gfx::Canvas* canvas);
-  void DrawFilename(gfx::Canvas* canvas);
   void DrawIcon(gfx::Canvas* canvas);
-
   void LoadIcon();
   void LoadIconIfItemPathChanged();
 
@@ -300,11 +296,12 @@ class DownloadItemView : public views::InkDropHostView,
   // Returns the base text color.
   SkColor GetTextColor() const;
 
-  // Returns a slightly dimmed version of the base text color.
-  SkColor GetDimmedTextColor() const;
-
   // Returns the status text to show in the notification.
   base::string16 GetStatusText() const;
+
+  // Returns the file name to report to user. It might be elided to fit into
+  // the text width.
+  base::string16 ElidedFilename();
 
   // The download shelf that owns us.
   DownloadShelfView* shelf_;
@@ -363,6 +360,12 @@ class DownloadItemView : public views::InkDropHostView,
   views::MdTextButton* save_button_;
   views::MdTextButton* discard_button_;
 
+  // The file name label.
+  views::Label* file_name_label_;
+
+  // The status text label.
+  views::Label* status_label_;
+
   // The drop down button.
   views::ImageButton* dropdown_button_;
 
@@ -371,9 +374,6 @@ class DownloadItemView : public views::InkDropHostView,
 
   // Whether the dangerous mode label has been sized yet.
   bool dangerous_download_label_sized_;
-
-  // Whether we are currently disabled as part of opening the downloaded file.
-  bool disabled_while_opening_;
 
   // The time at which this view was created.
   base::Time creation_time_;
