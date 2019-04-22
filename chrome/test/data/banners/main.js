@@ -92,7 +92,7 @@ function addPromptListener(action) {
         break;
       case Action.CANCEL_PROMPT_AND_NAVIGATE:
         // Navigate the window to trigger cancellation in the renderer.
-        window.location.href = "/";
+        setTimeout(function() { window.location.href = "/" }, 0);
         break;
       case Action.STASH_EVENT:
         stashedEvent = e;

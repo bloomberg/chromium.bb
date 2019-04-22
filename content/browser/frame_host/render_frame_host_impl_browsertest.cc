@@ -723,7 +723,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   DOMMessageQueue msg_queue;
   GURL new_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   TestNavigationManager navigation_manager(web_contents(), new_url);
-  EXPECT_TRUE(ExecuteScript(root, "location.href = '" + new_url.spec() + "';"));
+  // Use ExecuteScriptAsync because a ping may arrive before the script
+  // execution completion notification and confuse our expectations.
+  ExecuteScriptAsync(root, "location.href = '" + new_url.spec() + "';");
   dialog_manager()->Wait();
 
   // Answer the dialog and allow the navigation to proceed.  Note that at this
@@ -768,8 +770,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
   DOMMessageQueue msg_queue;
   GURL new_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   TestNavigationManager navigation_manager(web_contents(), new_url);
-  EXPECT_TRUE(ExecuteScript(root->child_at(0),
-                            "location.href = '" + new_url.spec() + "';"));
+  // Use ExecuteScriptAsync because a ping may arrive before the script
+  // execution completion notification and confuse our expectations.
+  ExecuteScriptAsync(root->child_at(0),
+                     "location.href = '" + new_url.spec() + "';");
   navigation_manager.WaitForNavigationFinished();
   EXPECT_EQ(new_url,
             root->child_at(0)->current_frame_host()->GetLastCommittedURL());

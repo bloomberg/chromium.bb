@@ -1479,15 +1479,19 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   const GURL sneaky_extension2_manifest(embedded_test_server()->GetURL(
       "/server-redirect?" + extension2_manifest.spec()));
   {
+    content::RenderFrameDeletedObserver frame_deleted_observer(
+        ChildFrameAt(main_frame, 1));
     EXPECT_TRUE(ExecuteScript(
         tab, base::StringPrintf("frames[1].location.href = '%s';",
                                 sneaky_extension2_manifest.spec().c_str())));
     WaitForLoadStop(tab);
-    EXPECT_EQ(extension1->url().Resolve("/empty.html"),
+    frame_deleted_observer.WaitUntilDeleted();
+    EXPECT_EQ(sneaky_extension2_manifest,
               ChildFrameAt(main_frame, 1)->GetLastCommittedURL())
-        << "The URL of frames[1] should not have changed";
-    EXPECT_EQ(3u, pm->GetAllFrames().size());
-    EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
+        << "The initial navigation should be allowed, but not the server "
+           "redirect to extension2's manifest";
+    EXPECT_EQ(2u, pm->GetAllFrames().size());
+    EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
     EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
   }
 
