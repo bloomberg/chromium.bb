@@ -214,10 +214,6 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   if (RuntimeEnabledFeatures::TrackLayoutPassesPerBlockEnabled() && block_flow)
     block_flow->IncrementLayoutPassCount();
 
-  NGLayoutInputNode first_child = FirstChild();
-  if (block_flow && !first_child)
-    block_flow->ClearNGInlineNodeData();
-
   // The exclusion space internally is a pointer to a shared vector, and
   // equality of exclusion spaces is performed using pointer comparison on this
   // internal shared vector.
@@ -355,19 +351,22 @@ void NGBlockNode::FinishLayout(
   if (block_flow) {
     NGLayoutInputNode first_child = FirstChild();
     bool has_inline_children = first_child && first_child.IsInline();
-    if (has_inline_children || box_->IsLayoutNGFieldset()) {
-      if (has_inline_children) {
-        CopyFragmentDataToLayoutBoxForInlineChildren(
-            To<NGPhysicalBoxFragment>(*layout_result->PhysicalFragment()),
-            layout_result->PhysicalFragment()->Size().width,
-            Style().IsFlippedBlocksWritingMode());
-      }
-
+    if (has_inline_children) {
+      CopyFragmentDataToLayoutBoxForInlineChildren(
+          To<NGPhysicalBoxFragment>(*layout_result->PhysicalFragment()),
+          layout_result->PhysicalFragment()->Size().width,
+          Style().IsFlippedBlocksWritingMode());
+      block_flow->SetPaintFragment(To<NGBlockBreakToken>(break_token),
+                                   layout_result->PhysicalFragment());
+    } else if (UNLIKELY(box_->IsLayoutNGFieldset())) {
+      // TODO(kojii): NGFieldset should not create PaintFragment.
+      block_flow->ClearNGInlineNodeData();
       block_flow->SetPaintFragment(To<NGBlockBreakToken>(break_token),
                                    layout_result->PhysicalFragment());
     } else {
       // We still need to clear paint fragments in case it had inline children,
       // and thus had NGPaintFragment.
+      block_flow->ClearNGInlineNodeData();
       block_flow->SetPaintFragment(To<NGBlockBreakToken>(break_token), nullptr);
     }
   }
