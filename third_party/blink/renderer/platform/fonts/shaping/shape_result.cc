@@ -362,19 +362,6 @@ void ShapeResult::RunInfo::CharacterIndexForXPosition(
   }
 }
 
-void HarfBuzzRunGlyphData::SetGlyphAndPositions(uint16_t new_glyph_id,
-                                                uint16_t new_character_index,
-                                                float new_advance,
-                                                const FloatSize& new_offset,
-                                                bool new_safe_to_break_before) {
-  this->glyph = new_glyph_id;
-  DCHECK_LE(new_character_index, kMaxCharacterIndex);
-  this->character_index = new_character_index;
-  this->advance = new_advance;
-  this->offset = new_offset;
-  this->safe_to_break_before = new_safe_to_break_before;
-}
-
 ShapeResult::ShapeResult(scoped_refptr<const SimpleFontData> font_data,
                          unsigned num_characters,
                          TextDirection direction)
@@ -889,7 +876,6 @@ float HarfBuzzPositionToFloat(hb_position_t value) {
 
 // Checks whether it's safe to break without reshaping before the given glyph.
 bool IsSafeToBreakBefore(const hb_glyph_info_t* glyph_infos,
-                         unsigned num_glyphs,
                          unsigned i) {
   // Before the first glyph is safe to break.
   if (!i)
@@ -1013,9 +999,6 @@ unsigned ShapeResult::RunInfo::LimitNumGlyphs(
 }
 
 // Computes glyph positions, sets advance and offset of each glyph to RunInfo.
-//
-// Also computes glyph bounding box of the run. In this function, glyph bounding
-// box is in physical.
 template <bool is_horizontal_run>
 void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
                                         unsigned start_glyph,
@@ -1040,7 +1023,7 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
 
   // HarfBuzz returns result in visual order, no need to flip for RTL.
   for (unsigned i = 0; i < num_glyphs; ++i) {
-    uint16_t glyph = glyph_infos[start_glyph + i].codepoint;
+    const hb_glyph_info_t glyph = glyph_infos[start_glyph + i];
     const hb_glyph_position_t& pos = glyph_positions[start_glyph + i];
 
     // Offset is primarily used when painting glyphs. Keep it in physical.
@@ -1053,13 +1036,11 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
     float advance = is_horizontal_run ? HarfBuzzPositionToFloat(pos.x_advance)
                                       : -HarfBuzzPositionToFloat(pos.y_advance);
 
-    uint16_t character_index =
-        glyph_infos[start_glyph + i].cluster - start_cluster;
+    uint16_t character_index = glyph.cluster - start_cluster;
     DCHECK_LE(character_index, HarfBuzzRunGlyphData::kMaxCharacterIndex);
-    HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
-    glyph_data.SetGlyphAndPositions(
-        glyph, character_index, advance, offset,
-        IsSafeToBreakBefore(glyph_infos + start_glyph, num_glyphs, i));
+    run->glyph_data_[i] = {glyph.codepoint, character_index,
+                           IsSafeToBreakBefore(glyph_infos + start_glyph, i),
+                           advance, offset};
 
     total_advance += advance;
     has_vertical_offsets |= (offset.Height() != 0);
@@ -1130,9 +1111,9 @@ ShapeResult::RunInfo* ShapeResult::InsertRunForTesting(
       nullptr, IsLtr(direction) ? HB_DIRECTION_LTR : HB_DIRECTION_RTL,
       CanvasRotationInVertical::kRegular, HB_SCRIPT_COMMON, start_index,
       num_characters, num_characters);
-  unsigned i = 0;
-  for (auto& glyph_data : run->glyph_data_)
-    glyph_data.SetGlyphAndPositions(0, i++, 0, FloatSize(), false);
+  for (unsigned i = 0; i < run->glyph_data_.size(); i++) {
+    run->glyph_data_[i] = {0, i, false, 0, FloatSize()};
+  }
   for (uint16_t offset : safe_break_offsets)
     run->glyph_data_[offset].safe_to_break_before = true;
   // RTL runs have glyphs in the descending order of character_index.
@@ -1401,9 +1382,8 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
       // 2nd and following tabs have the base width, without using |position|.
       if (i == 1)
         advance = font->TabWidth(font_data, tab_size);
-      HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
-      glyph_data.SetGlyphAndPositions(font_data->SpaceGlyph(), i, advance,
-                                      FloatSize(), true);
+      run->glyph_data_[i] = {font_data->SpaceGlyph(), i, true, advance,
+                             FloatSize()};
 
       position += advance;
     }
@@ -1438,9 +1418,8 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForSpaces(const Font* font,
       HB_SCRIPT_COMMON, start_index, length, length);
   result->width_ = run->width_ = width;
   for (unsigned i = 0; i < length; i++) {
-    HarfBuzzRunGlyphData& glyph_data = run->glyph_data_[i];
-    glyph_data.SetGlyphAndPositions(font_data->SpaceGlyph(), i, width,
-                                    FloatSize(), true);
+    run->glyph_data_[i] = {font_data->SpaceGlyph(), i, true, width,
+                           FloatSize()};
     width = 0;
   }
   result->runs_.push_back(std::move(run));

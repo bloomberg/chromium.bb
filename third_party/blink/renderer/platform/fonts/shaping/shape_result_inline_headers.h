@@ -57,13 +57,6 @@ struct HarfBuzzRunGlyphData {
 
   float advance;
   FloatSize offset;
-
-  void SetGlyphAndPositions(uint16_t glyph_id,
-                            uint16_t character_index,
-                            float advance,
-                            const FloatSize& offset,
-                            bool safe_to_break_before);
-  void SetGlyphBounds(LayoutUnit bounds_logical_x, LayoutUnit bounds_logical_w);
 };
 
 struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
@@ -128,11 +121,6 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
                           unsigned* num_glyphs_in_out,
                           const bool is_ltr,
                           const hb_glyph_info_t* glyph_infos);
-  void SetGlyphAndPositions(unsigned index,
-                            uint16_t glyph_id,
-                            float advance,
-                            float offset_x,
-                            float offset_y);
 
   unsigned GlyphToCharacterIndex(unsigned i) const {
     return start_index_ + glyph_data_[i].character_index;
