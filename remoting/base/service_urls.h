@@ -49,6 +49,10 @@ class ServiceUrls {
     return ftl_server_endpoint_;
   }
 
+  const std::string& remoting_server_endpoint() const {
+    return remoting_server_endpoint_;
+  }
+
 #if !defined(NDEBUG)
   // Override the directory bot JID for testing.
   void set_directory_bot_jid(const std::string& bot_jid) {
@@ -72,6 +76,7 @@ class ServiceUrls {
   std::string gcd_jid_;
   std::string ice_config_url_;
   std::string ftl_server_endpoint_;
+  std::string remoting_server_endpoint_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceUrls);
 };
