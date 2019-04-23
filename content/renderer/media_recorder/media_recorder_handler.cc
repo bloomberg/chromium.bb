@@ -343,7 +343,8 @@ void MediaRecorderHandler::Resume() {
     video_recorder->Resume();
   for (const auto& audio_recorder : audio_recorders_)
     audio_recorder->Resume();
-  webm_muxer_->Resume();
+  if (webm_muxer_)
+    webm_muxer_->Resume();
 }
 
 void MediaRecorderHandler::EncodingInfo(
