@@ -623,8 +623,8 @@
   },
   {
     "name": "double-tap-to-zoom-in-tablet-mode",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "afakhry" ],
+    "expiry_milestone": 80
   },
   {
     "name": "download-home-v2",
