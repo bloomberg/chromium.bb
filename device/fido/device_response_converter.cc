@@ -339,11 +339,11 @@ static base::Optional<std::string> FixInvalidUTF8String(
 
   switch (state) {
     case base::StreamingUtf8Validator::VALID_ENDPOINT:
-      // This shouldn't happen because this callback should only be called
-      // when the UTF-8 was found to be invalid. Thus reaching this point
-      // suggests a divergence between |StreamingUtf8Validator| and
-      // |base::IsStringUTF8|, which the CBOR code uses.
-      NOTREACHED();
+      // |base::IsStringUTF8|, which the CBOR code uses, is stricter than
+      // |StreamingUtf8Validator| in that the former rejects ranges of code
+      // points that should never appear. Therefore, if this case occurs, the
+      // string is structurally valid as UTF-8, but includes invalid code points
+      // and thus we reject it.
       return base::nullopt;
 
     case base::StreamingUtf8Validator::INVALID:
