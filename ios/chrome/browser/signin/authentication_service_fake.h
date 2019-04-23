@@ -40,8 +40,6 @@ class AuthenticationServiceFake : public AuthenticationService {
 
   ChromeIdentity* GetAuthenticatedIdentity() override;
 
-  NSString* GetAuthenticatedUserEmail() override;
-
  private:
   AuthenticationServiceFake(PrefService* pref_service,
                             SyncSetupService* sync_setup_service,

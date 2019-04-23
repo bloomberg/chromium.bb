@@ -79,10 +79,6 @@ class AuthenticationService : public KeyedService,
   // managed.
   virtual bool IsAuthenticatedIdentityManaged();
 
-  // Returns the email of the authenticated user, or |nil| if the user is not
-  // authenticated.
-  virtual NSString* GetAuthenticatedUserEmail();
-
   // Retrieves the identity of the currently authenticated user or |nil| if
   // either the user is not authenticated, or is authenticated through
   // ClientLogin.

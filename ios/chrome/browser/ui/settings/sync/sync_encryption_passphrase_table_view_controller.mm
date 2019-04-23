@@ -81,8 +81,8 @@ const CGFloat kSpinnerButtonPadding = 18;
     self.shouldHideDoneButton = YES;
     browserState_ = browserState;
     NSString* userEmail =
-        AuthenticationServiceFactory::GetForBrowserState(browserState_)
-            ->GetAuthenticatedUserEmail();
+        [AuthenticationServiceFactory::GetForBrowserState(browserState_)
+                ->GetAuthenticatedIdentity() userEmail];
     DCHECK(userEmail);
     syncer::SyncService* service =
         ProfileSyncServiceFactory::GetForBrowserState(browserState_);

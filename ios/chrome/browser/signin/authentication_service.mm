@@ -571,15 +571,6 @@ bool AuthenticationService::IsAuthenticated() {
   return identity_manager_->HasPrimaryAccount();
 }
 
-NSString* AuthenticationService::GetAuthenticatedUserEmail() {
-  if (!IsAuthenticated())
-    return nil;
-  std::string authenticated_username =
-      identity_manager_->GetPrimaryAccountInfo().email;
-  DCHECK_LT(0U, authenticated_username.length());
-  return base::SysUTF8ToNSString(authenticated_username);
-}
-
 bool AuthenticationService::IsAuthenticatedIdentityManaged() {
   base::Optional<AccountInfo> primary_account_info =
       identity_manager_->FindExtendedAccountInfoForAccount(

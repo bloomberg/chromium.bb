@@ -185,7 +185,7 @@ NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
   // Do not show the SSO promo if the user is already logged in.
-  if (authService->GetAuthenticatedUserEmail())
+  if (authService->IsAuthenticated())
     return NO;
 
   // Show the promo at most every two major versions.

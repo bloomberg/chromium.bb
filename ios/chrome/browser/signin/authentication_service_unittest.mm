@@ -295,8 +295,6 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncSetupCompleted) {
 
   EXPECT_EQ(base::SysNSStringToUTF8([identity_ userEmail]),
             identity_manager()->GetPrimaryAccountInfo().email);
-  EXPECT_NSEQ([identity_ userEmail],
-              authentication_service_->GetAuthenticatedUserEmail());
   EXPECT_EQ(identity_, authentication_service_->GetAuthenticatedIdentity());
 }
 
@@ -316,8 +314,6 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncDisabled) {
 
   EXPECT_EQ(base::SysNSStringToUTF8([identity_ userEmail]),
             identity_manager()->GetPrimaryAccountInfo().email);
-  EXPECT_NSEQ([identity_ userEmail],
-              authentication_service_->GetAuthenticatedUserEmail());
   EXPECT_EQ(identity_, authentication_service_->GetAuthenticatedIdentity());
 }
 
@@ -335,7 +331,6 @@ TEST_F(AuthenticationServiceTest, OnAppEnterForegroundWithSyncNotConfigured) {
   CreateAuthenticationService();
 
   EXPECT_EQ("", identity_manager()->GetPrimaryAccountInfo().email);
-  EXPECT_NSEQ(nil, authentication_service_->GetAuthenticatedUserEmail());
   EXPECT_FALSE(authentication_service_->GetAuthenticatedIdentity());
 }
 
