@@ -64,8 +64,6 @@ class NET_EXPORT_PRIVATE URLRequestFtpJob : public URLRequestJob {
 
   void RestartTransactionWithAuth();
 
-  void LogFtpServerType(char server_type);
-
   // Overridden from URLRequestJob:
   LoadState GetLoadState() const override;
   bool NeedsAuth() override;

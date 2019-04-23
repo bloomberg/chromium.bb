@@ -24333,6 +24333,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="FtpDataConnectionError">
+  <obsolete>
+    Removed in Chrome 76.
+  </obsolete>
   <int value="0" label="Data connection successful"/>
   <int value="1" label="Local firewall blocked the connection"/>
   <int value="2" label="Connection timed out"/>
@@ -24370,6 +24373,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="FtpServerType2">
+  <obsolete>
+    Removed in Chrome 76.
+  </obsolete>
   <summary>
     FTP server type as defined in net/ftp/ftp_server_type_histograms.h
   </summary>

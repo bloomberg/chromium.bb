@@ -198,8 +198,6 @@ class NET_EXPORT_PRIVATE FtpNetworkTransaction : public FtpTransaction {
   int DoDataRead();
   int DoDataReadComplete(int result);
 
-  void RecordDataConnectionError(int result);
-
   Command command_sent_;
 
   CompletionRepeatingCallback io_callback_;

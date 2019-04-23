@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_FTP_FTP_SERVER_TYPE_HISTOGRAMS_H_
-#define NET_FTP_FTP_SERVER_TYPE_HISTOGRAMS_H_
-
-// The UpdateFtpServerTypeHistograms function collects statistics related
-// to the types of FTP servers that our users are encountering.
+#ifndef NET_FTP_FTP_SERVER_TYPE_H_
+#define NET_FTP_FTP_SERVER_TYPE_H_
 
 namespace net {
 
 enum FtpServerType {
-  // Record cases in which we couldn't parse the server's response. That means
+  // Cases in which we couldn't parse the server's response. That means
   // a server type we don't recognize, a security attack (when what we're
   // connecting to isn't an FTP server), or a broken server.
   SERVER_UNKNOWN = 0,
@@ -25,8 +22,6 @@ enum FtpServerType {
   NUM_OF_SERVER_TYPES
 };
 
-void UpdateFtpServerTypeHistograms(FtpServerType type);
-
 }  // namespace net
 
-#endif  // NET_FTP_FTP_SERVER_TYPE_HISTOGRAMS_H_
+#endif  // NET_FTP_FTP_SERVER_TYPE_H_
