@@ -75,7 +75,7 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
                           bool supported_types_specified,
                           const std::set<autofill::CreditCard::CardType>&
                               supported_types) const override;
-  const gfx::ImageSkia* icon_image_skia() const override;
+  gfx::ImageSkia icon_image_skia() const override;
 
  private:
   friend class ServiceWorkerPaymentInstrumentTest;
@@ -93,7 +93,7 @@ class ServiceWorkerPaymentInstrument : public PaymentInstrument {
   GURL frame_origin_;
   const PaymentRequestSpec* spec_;
   std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info_;
-  std::unique_ptr<gfx::ImageSkia> icon_image_;
+  gfx::ImageSkia icon_image_;
 
   // Weak pointer is fine here since the owner of this object is
   // PaymentRequestState which also owns PaymentResponseHelper.

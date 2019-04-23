@@ -318,7 +318,7 @@ void EnsureCustomWallpaperDirectories(const std::string& wallpaper_files_id) {
 void SaveCustomWallpaper(const std::string& wallpaper_files_id,
                          const base::FilePath& original_path,
                          WallpaperLayout layout,
-                         std::unique_ptr<gfx::ImageSkia> image) {
+                         gfx::ImageSkia image) {
   base::DeleteFile(WallpaperController::GetCustomWallpaperDir(
                        WallpaperController::kOriginalWallpaperSubDir)
                        .Append(wallpaper_files_id),
@@ -345,11 +345,11 @@ void SaveCustomWallpaper(const std::string& wallpaper_files_id,
   // Re-encode orginal file to jpeg format and saves the result in case that
   // resized wallpaper is not generated (i.e. chrome shutdown before resized
   // wallpaper is saved).
-  ResizeAndSaveWallpaper(*image, original_path, WALLPAPER_LAYOUT_STRETCH,
-                         image->width(), image->height());
-  ResizeAndSaveWallpaper(*image, small_wallpaper_path, layout,
+  ResizeAndSaveWallpaper(image, original_path, WALLPAPER_LAYOUT_STRETCH,
+                         image.width(), image.height());
+  ResizeAndSaveWallpaper(image, small_wallpaper_path, layout,
                          kSmallWallpaperMaxWidth, kSmallWallpaperMaxHeight);
-  ResizeAndSaveWallpaper(*image, large_wallpaper_path, layout,
+  ResizeAndSaveWallpaper(image, large_wallpaper_path, layout,
                          kLargeWallpaperMaxWidth, kLargeWallpaperMaxHeight);
 }
 
@@ -395,19 +395,19 @@ base::FilePath GetExistingOnlineWallpaperPath(const std::string& url) {
 // system.
 void SaveOnlineWallpaper(const std::string& url,
                          WallpaperLayout layout,
-                         std::unique_ptr<gfx::ImageSkia> image) {
+                         gfx::ImageSkia image) {
   DCHECK(!GlobalChromeOSWallpapersDir().empty());
   if (!base::DirectoryExists(GlobalChromeOSWallpapersDir()) &&
       !base::CreateDirectory(GlobalChromeOSWallpapersDir())) {
     return;
   }
   ResizeAndSaveWallpaper(
-      *image,
+      image,
       GetOnlineWallpaperPath(url,
                              WallpaperController::WALLPAPER_RESOLUTION_LARGE),
-      layout, image->width(), image->height());
+      layout, image.width(), image.height());
   ResizeAndSaveWallpaper(
-      *image,
+      image,
       GetOnlineWallpaperPath(url,
                              WallpaperController::WALLPAPER_RESOLUTION_SMALL),
       WALLPAPER_LAYOUT_CENTER_CROPPED, kSmallWallpaperMaxWidth,
@@ -1729,11 +1729,10 @@ void WallpaperController::OnOnlineWallpaperDecoded(
 
   if (save_file) {
     image.EnsureRepsForSupportedScales();
-    std::unique_ptr<gfx::ImageSkia> deep_copy(image.DeepCopy());
+    gfx::ImageSkia deep_copy(image.DeepCopy());
     sequenced_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SaveOnlineWallpaper, params.url, params.layout,
-                       base::Passed(std::move(deep_copy))));
+        FROM_HERE, base::BindOnce(&SaveOnlineWallpaper, params.url,
+                                  params.layout, deep_copy));
   }
 
   const bool is_active_user = IsActiveUser(params.account_id);
@@ -1895,7 +1894,7 @@ void WallpaperController::SaveAndSetWallpaper(
 
   if (should_save_to_disk) {
     image.EnsureRepsForSupportedScales();
-    std::unique_ptr<gfx::ImageSkia> deep_copy(image.DeepCopy());
+    gfx::ImageSkia deep_copy(image.DeepCopy());
     // Block shutdown on this task. Otherwise, we may lose the custom wallpaper
     // that the user selected.
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner =
@@ -1903,9 +1902,8 @@ void WallpaperController::SaveAndSetWallpaper(
             {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
              base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
     blocking_task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SaveCustomWallpaper, wallpaper_files_id, wallpaper_path,
-                       layout, base::Passed(std::move(deep_copy))));
+        FROM_HERE, base::BindOnce(&SaveCustomWallpaper, wallpaper_files_id,
+                                  wallpaper_path, layout, deep_copy));
   }
 
   if (show_wallpaper) {

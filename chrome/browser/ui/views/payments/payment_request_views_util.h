@@ -81,7 +81,7 @@ void PopulateSheetHeaderView(bool show_back_arrow,
 // size of the resulting ImageView. Callers should set a |tooltip_text|.
 std::unique_ptr<views::ImageView> CreateInstrumentIconView(
     int icon_resource_id,
-    const gfx::ImageSkia* img,
+    gfx::ImageSkia img,
     const base::string16& tooltip_text,
     float opacity = 1.0f);
 

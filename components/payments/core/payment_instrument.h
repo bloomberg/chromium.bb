@@ -59,7 +59,7 @@ class PaymentInstrument {
   // Return the sub/label of payment instrument, to be displayed to the user.
   virtual base::string16 GetLabel() const = 0;
   virtual base::string16 GetSublabel() const = 0;
-  virtual const gfx::ImageSkia* icon_image_skia() const;
+  virtual gfx::ImageSkia icon_image_skia() const;
 
   // Returns true if this payment instrument can be used to fulfill a request
   // specifying |method| as supported method of payment, false otherwise.

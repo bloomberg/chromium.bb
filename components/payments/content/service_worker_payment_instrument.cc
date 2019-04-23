@@ -405,8 +405,8 @@ bool ServiceWorkerPaymentInstrument::IsValidForModifier(
   return i < stored_payment_app_info_->capabilities.size();
 }
 
-const gfx::ImageSkia* ServiceWorkerPaymentInstrument::icon_image_skia() const {
-  return icon_image_.get();
+gfx::ImageSkia ServiceWorkerPaymentInstrument::icon_image_skia() const {
+  return icon_image_;
 }
 
 }  // namespace payments

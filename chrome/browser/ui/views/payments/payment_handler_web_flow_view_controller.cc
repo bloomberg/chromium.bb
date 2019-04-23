@@ -57,7 +57,7 @@ class ReadOnlyOriginView : public views::View {
  public:
   ReadOnlyOriginView(const base::string16& page_title,
                      const GURL& origin,
-                     const gfx::ImageSkia* icon_image_skia,
+                     gfx::ImageSkia icon_image_skia,
                      SkColor background_color,
                      views::ButtonListener* site_settings_listener) {
     std::unique_ptr<views::View> title_origin_container =
@@ -116,12 +116,11 @@ class ReadOnlyOriginView : public views::View {
                                  views::GridLayout::USE_PREF, 0, 0);
     // Payment handler icon should be 32 pixels tall.
     constexpr int kPaymentHandlerIconHeight = 32;
-    bool has_icon = icon_image_skia && icon_image_skia->width() &&
-                    icon_image_skia->height();
-    float adjusted_width = base::checked_cast<float>(icon_image_skia->width());
+    const bool has_icon = icon_image_skia.width() && icon_image_skia.height();
+    float adjusted_width = base::checked_cast<float>(icon_image_skia.width());
     if (has_icon) {
-      adjusted_width = adjusted_width * kPaymentHandlerIconHeight /
-                       icon_image_skia->height();
+      adjusted_width =
+          adjusted_width * kPaymentHandlerIconHeight / icon_image_skia.height();
       // A column for the instrument icon.
       top_level_columns->AddColumn(
           views::GridLayout::LEADING, views::GridLayout::FILL,

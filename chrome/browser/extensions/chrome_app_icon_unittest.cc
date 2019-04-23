@@ -183,8 +183,8 @@ bool AreAllImageRepresentationsDifferent(const gfx::ImageSkia& image1,
 
 void WaitForIconUpdates(const gfx::ImageSkia& icon) {
   icon.EnsureRepsForSupportedScales();
-  std::unique_ptr<gfx::ImageSkia> reference_image = icon.DeepCopy();
-  while (!AreAllImageRepresentationsDifferent(*reference_image, icon))
+  gfx::ImageSkia reference_image = icon.DeepCopy();
+  while (!AreAllImageRepresentationsDifferent(reference_image, icon))
     base::RunLoop().RunUntilIdle();
 }
 
@@ -314,8 +314,7 @@ TEST_F(ChromeAppIconWithModelTest, IconsTheSame) {
   ChromeAppListItem* app_list_item = FindAppListItem(kTestAppId);
   ASSERT_TRUE(app_list_item);
   WaitForIconUpdates(app_list_item->icon());
-  std::unique_ptr<gfx::ImageSkia> app_list_item_image =
-      app_list_item->icon().DeepCopy();
+  gfx::ImageSkia app_list_item_image = app_list_item->icon().DeepCopy();
 
   const ChromeAppIconService::ResizeFunction resize_function =
       base::BindRepeating(&app_list::MaybeResizeAndPadIconForMd);
@@ -333,7 +332,7 @@ TEST_F(ChromeAppIconWithModelTest, IconsTheSame) {
 
   // Now compare with app list icon snapshot.
   EXPECT_TRUE(
-      AreEqual(reference_icon_app_list.image_skia(), *app_list_item_image));
+      AreEqual(reference_icon_app_list.image_skia(), app_list_item_image));
 
   // Load reference icon sized for the search result.
   TestAppIcon reference_icon_search(
