@@ -432,16 +432,9 @@ void AutoclickController::OnMouseEvent(ui::MouseEvent* event) {
       autoclick_ring_handler_->SetGestureCenter(point_in_screen, widget_.get());
     }
   } else if (event->type() == ui::ET_MOUSE_PRESSED ||
-             event->type() == ui::ET_MOUSE_RELEASED) {
+             event->type() == ui::ET_MOUSE_RELEASED ||
+             event->type() == ui::ET_MOUSEWHEEL) {
     CancelAutoclickAction();
-  } else if (event->type() == ui::ET_MOUSEWHEEL) {
-    anchor_location_ = point_in_screen;
-    gesture_anchor_location_ = point_in_screen;
-    start_gesture_timer_->Reset();
-    if (autoclick_timer_) {
-      autoclick_timer_->Stop();
-    }
-    autoclick_ring_handler_->StopGesture();
   }
 }
 

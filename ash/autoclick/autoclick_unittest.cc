@@ -379,6 +379,12 @@ TEST_F(AutoclickTest, UserInputCancelsAutoclick) {
   events = WaitForMouseEvents();
   EXPECT_EQ(2u, events.size());
 
+  // Mouse-wheel scroll events should cancel the autoclick.
+  GetEventGenerator()->MoveMouseTo(300, 300);
+  GetEventGenerator()->MoveMouseWheel(0, 20);
+  events = WaitForMouseEvents();
+  EXPECT_EQ(0u, events.size());
+
   // Performing a gesture should cancel the autoclick.
   GetEventGenerator()->MoveMouseTo(200, 200);
   GetEventGenerator()->GestureTapDownAndUp(gfx::Point(100, 100));
