@@ -195,6 +195,9 @@
   "components/components_strings.grd": {
     "messages": [15100],
   },
+  "components/omnibox/resources/omnibox_resources.grd": {
+    "includes": [17190],
+  },
   "components/policy/resources/policy_templates.grd": {
     "structures": [17200],
   },
