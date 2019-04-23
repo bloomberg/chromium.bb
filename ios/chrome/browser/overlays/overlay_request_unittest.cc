@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/overlays/overlay_request.h"
+#include "ios/chrome/browser/overlays/public/overlay_request.h"
 
 #include "ios/chrome/browser/overlays/test/fake_overlay_user_data.h"
 #include "testing/platform_test.h"

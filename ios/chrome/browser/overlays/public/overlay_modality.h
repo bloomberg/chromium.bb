@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_MODALITY_H_
-#define IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_MODALITY_H_
+#ifndef IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_MODALITY_H_
+#define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_MODALITY_H_
 
 // An OverlayManager instance manages overlays for a single Browser at a single
 // level of modality.  Additional values should be added for each desired level
@@ -14,4 +14,4 @@ enum class OverlayModality {
   kWebContentArea,
 };
 
-#endif  // IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_MODALITY_H_
+#endif  // IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_MODALITY_H_

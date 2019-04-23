@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_MANAGER_OBSERVER_H_
-#define IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_MANAGER_OBSERVER_H_
+#ifndef IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_MANAGER_OBSERVER_H_
+#define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_MANAGER_OBSERVER_H_
 
 class OverlayManager;
 class OverlayRequest;
@@ -36,4 +36,4 @@ class OverlayManagerObserver {
   virtual void OverlayManagerDestroyed(OverlayManager* manager) {}
 };
 
-#endif  // IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_MANAGER_OBSERVER_H_
+#endif  // IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_MANAGER_OBSERVER_H_

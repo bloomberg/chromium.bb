@@ -9,8 +9,8 @@
 #include <memory>
 
 #include "base/observer_list.h"
-#include "ios/chrome/browser/overlays/overlay_manager.h"
-#include "ios/chrome/browser/overlays/overlay_user_data.h"
+#include "ios/chrome/browser/overlays/public/overlay_manager.h"
+#include "ios/chrome/browser/overlays/public/overlay_user_data.h"
 
 class WebStateList;
 

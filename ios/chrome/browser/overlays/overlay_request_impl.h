@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ios/chrome/browser/overlays/overlay_request.h"
+#include "ios/chrome/browser/overlays/public/overlay_request.h"
 
 // Internal implementation of OverlayRequest.
 class OverlayRequestImpl : public OverlayRequest,

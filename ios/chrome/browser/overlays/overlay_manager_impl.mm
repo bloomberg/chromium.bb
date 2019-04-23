@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/main/browser.h"
-#include "ios/chrome/browser/overlays/overlay_request.h"
 #import "ios/chrome/browser/overlays/overlay_request_queue_impl.h"
+#include "ios/chrome/browser/overlays/public/overlay_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

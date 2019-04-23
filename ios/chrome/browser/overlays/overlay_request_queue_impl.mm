@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "ios/chrome/browser/overlays/overlay_request.h"
+#include "ios/chrome/browser/overlays/public/overlay_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

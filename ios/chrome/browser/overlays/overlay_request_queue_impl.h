@@ -10,9 +10,9 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/observer_list.h"
-#include "ios/chrome/browser/overlays/overlay_modality.h"
-#import "ios/chrome/browser/overlays/overlay_request_queue.h"
 #include "ios/chrome/browser/overlays/overlay_request_queue_impl_observer.h"
+#include "ios/chrome/browser/overlays/public/overlay_modality.h"
+#import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
 // Mutable implementation of OverlayRequestQueue.

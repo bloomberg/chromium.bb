@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_REQUEST_H_
-#define IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_REQUEST_H_
+#ifndef IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_REQUEST_H_
+#define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_REQUEST_H_
 
 #include <memory>
 
@@ -56,4 +56,4 @@ class OverlayRequest {
   virtual base::SupportsUserData* data() = 0;
 };
 
-#endif  // IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_REQUEST_H_
+#endif  // IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_REQUEST_H_

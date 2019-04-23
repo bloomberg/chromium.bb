@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/overlays/overlay_manager_impl.h"
 
-#include "ios/chrome/browser/overlays/overlay_request.h"
-#include "ios/chrome/browser/overlays/overlay_request_queue.h"
+#include "ios/chrome/browser/overlays/public/overlay_request.h"
+#include "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_user_data.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"

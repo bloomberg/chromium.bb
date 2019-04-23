@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_MANAGER_H_
-#define IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_MANAGER_H_
+#ifndef IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_MANAGER_H_
+#define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_MANAGER_H_
 
 #include <memory>
 
-#include "ios/chrome/browser/overlays/overlay_modality.h"
+#include "ios/chrome/browser/overlays/public/overlay_modality.h"
 
 class Browser;
 class OverlayRequest;
@@ -43,4 +43,4 @@ class OverlayManager {
       web::WebState* web_state) = 0;
 };
 
-#endif  // IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_MANAGER_H_
+#endif  // IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_MANAGER_H_

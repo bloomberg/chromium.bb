@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_RESPONSE_IMPL_H_
 #define IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_RESPONSE_IMPL_H_
 
-#include "ios/chrome/browser/overlays/overlay_response.h"
+#include "ios/chrome/browser/overlays/public/overlay_response.h"
 
 // Internal implementation of OverlayResponse.
 class OverlayResponseImpl : public OverlayResponse,

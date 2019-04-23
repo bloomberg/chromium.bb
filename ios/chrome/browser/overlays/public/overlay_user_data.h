@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_USER_DATA_H_
-#define IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_USER_DATA_H_
+#ifndef IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_USER_DATA_H_
+#define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_USER_DATA_H_
 
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
@@ -75,4 +75,4 @@ class OverlayUserData : public base::SupportsUserData::Data {
   static const void* UserDataKey() { return &DataType::kUserDataKey; }
 };
 
-#endif  // IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_USER_DATA_H_
+#endif  // IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_USER_DATA_H_

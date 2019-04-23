@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/overlays/overlay_request_queue_impl.h"
 
-#include "ios/chrome/browser/overlays/overlay_request.h"
 #include "ios/chrome/browser/overlays/overlay_request_queue_impl_observer.h"
+#include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_user_data.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"

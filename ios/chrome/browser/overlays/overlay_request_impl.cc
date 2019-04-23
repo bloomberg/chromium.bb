@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/overlays/overlay_request_impl.h"
 
-#include "ios/chrome/browser/overlays/overlay_response.h"
+#include "ios/chrome/browser/overlays/public/overlay_response.h"
 
 // static
 std::unique_ptr<OverlayRequest> OverlayRequest::Create() {
