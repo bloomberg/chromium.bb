@@ -228,8 +228,8 @@ void PrepareSuggestions(bool contains_address,
   DCHECK_EQ(suggestions->size(), labels.size());
 
   for (size_t i = 0; i < labels.size(); ++i) {
-    (*suggestions)[i].additional_label = base::string16(labels[i]);
-    (*suggestions)[i].label = base::string16(labels[i]);
+    (*suggestions)[i].additional_label = labels[i];
+    (*suggestions)[i].label = labels[i];
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
     if (base::FeatureList::IsEnabled(
