@@ -362,6 +362,7 @@ public class SyncCustomizationFragmentTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
+    @DisabledTest(message = "crbug.com/955490")
     public void testPaymentsIntegrationCheckboxClearsServerAutofillCreditCards() {
         mSyncTestRule.setUpTestAccountAndSignIn();
 
@@ -390,7 +391,7 @@ public class SyncCustomizationFragmentTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
-    @DisabledTest
+    @DisabledTest(message = "crbug.com/951141")
     public void testSyncSwitchClearsServerAutofillCreditCards() {
         mSyncTestRule.setUpTestAccountAndSignIn();
 
