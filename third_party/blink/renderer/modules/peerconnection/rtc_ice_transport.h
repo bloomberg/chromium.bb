@@ -29,6 +29,7 @@ class RTCIceCandidate;
 class RTCIceGatherOptions;
 class IceTransportAdapterCrossThreadFactory;
 class RTCQuicTransport;
+class RTCPeerConnection;
 
 // Blink bindings for the RTCIceTransport JavaScript object.
 //
@@ -46,6 +47,7 @@ class MODULES_EXPORT RTCIceTransport final
       public IceTransportProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RTCIceTransport);
+  USING_PRE_FINALIZER(RTCIceTransport, Dispose);
 
  public:
   enum class CloseReason {
@@ -53,19 +55,28 @@ class MODULES_EXPORT RTCIceTransport final
     kStopped,
     // The ExecutionContext is being destroyed.
     kContextDestroyed,
+    // The object is being garbage collected.
+    kDisposed,
   };
 
   static RTCIceTransport* Create(ExecutionContext* context);
   static RTCIceTransport* Create(
       ExecutionContext* context,
-      rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport_channel);
+      rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport_channel,
+      RTCPeerConnection* peer_connection);
   static RTCIceTransport* Create(
       ExecutionContext* context,
       scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
       scoped_refptr<base::SingleThreadTaskRunner> host_thread,
       std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory);
 
-  explicit RTCIceTransport(
+  RTCIceTransport(
+      ExecutionContext* context,
+      scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> host_thread,
+      std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory,
+      RTCPeerConnection* peer_connection);
+  RTCIceTransport(
       ExecutionContext* context,
       scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
       scoped_refptr<base::SingleThreadTaskRunner> host_thread,
@@ -77,6 +88,8 @@ class MODULES_EXPORT RTCIceTransport final
 
   // Returns the role specified in start().
   cricket::IceRole GetRole() const { return role_; }
+
+  webrtc::IceTransportState GetState() const { return state_; }
 
   // Returns true if the RTCIceTransport is in a terminal state.
   bool IsClosed() const { return state_ == webrtc::IceTransportState::kClosed; }
@@ -122,7 +135,7 @@ class MODULES_EXPORT RTCIceTransport final
   void ContextDestroyed(ExecutionContext*) override;
 
   // ActiveScriptWrappable overrides.
-  bool HasPendingActivity() const override;
+  bool HasPendingActivity() const final;
 
   // For garbage collection.
   void Trace(blink::Visitor* visitor) override;
@@ -146,6 +159,7 @@ class MODULES_EXPORT RTCIceTransport final
   void Close(CloseReason reason);
 
   bool RaiseExceptionIfClosed(ExceptionState& exception_state) const;
+  void Dispose();
 
   cricket::IceRole role_ = cricket::ICEROLE_UNKNOWN;
   webrtc::IceTransportState state_ = webrtc::IceTransportState::kNew;
@@ -159,6 +173,7 @@ class MODULES_EXPORT RTCIceTransport final
   Member<RTCIceCandidatePair> selected_candidate_pair_;
 
   Member<RTCQuicTransport> consumer_;
+  const WeakMember<RTCPeerConnection> peer_connection_;
 
   // Handle to the WebRTC ICE transport. Created when this binding is
   // constructed and deleted once network traffic should be stopped.

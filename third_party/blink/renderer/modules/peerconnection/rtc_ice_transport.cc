@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_gather_options.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_parameters.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_server.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event_init.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
@@ -128,7 +129,8 @@ RTCIceTransport* RTCIceTransport::Create(ExecutionContext* context) {
 
 RTCIceTransport* RTCIceTransport::Create(
     ExecutionContext* context,
-    rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport) {
+    rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport,
+    RTCPeerConnection* peer_connection) {
   LocalFrame* frame = To<Document>(context)->GetFrame();
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
       frame->GetTaskRunner(TaskType::kNetworking);
@@ -137,7 +139,8 @@ RTCIceTransport* RTCIceTransport::Create(
   return MakeGarbageCollected<RTCIceTransport>(
       context, std::move(proxy_thread), std::move(host_thread),
       std::make_unique<DtlsIceTransportAdapterCrossThreadFactory>(
-          std::move(ice_transport)));
+          std::move(ice_transport)),
+      peer_connection);
 }
 
 RTCIceTransport* RTCIceTransport::Create(
@@ -154,8 +157,9 @@ RTCIceTransport::RTCIceTransport(
     ExecutionContext* context,
     scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
     scoped_refptr<base::SingleThreadTaskRunner> host_thread,
-    std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory)
-    : ContextLifecycleObserver(context) {
+    std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory,
+    RTCPeerConnection* peer_connection)
+    : ContextLifecycleObserver(context), peer_connection_(peer_connection) {
   DCHECK(context);
   DCHECK(proxy_thread);
   DCHECK(host_thread);
@@ -170,6 +174,17 @@ RTCIceTransport::RTCIceTransport(
 
   GenerateLocalParameters();
 }
+
+RTCIceTransport::RTCIceTransport(
+    ExecutionContext* context,
+    scoped_refptr<base::SingleThreadTaskRunner> proxy_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> host_thread,
+    std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory)
+    : RTCIceTransport(context,
+                      std::move(proxy_thread),
+                      std::move(host_thread),
+                      std::move(adapter_factory),
+                      nullptr) {}
 
 RTCIceTransport::~RTCIceTransport() {
   DCHECK(!proxy_);
@@ -420,9 +435,6 @@ void RTCIceTransport::start(RTCIceParameters* remote_parameters,
 }
 
 void RTCIceTransport::stop() {
-  if (IsClosed()) {
-    return;
-  }
   Close(CloseReason::kStopped);
 }
 
@@ -486,6 +498,13 @@ void RTCIceTransport::OnStateChanged(webrtc::IceTransportState new_state) {
     selected_candidate_pair_ = nullptr;
   }
   DispatchEvent(*Event::Create(event_type_names::kStatechange));
+  if (peer_connection_) {
+    peer_connection_->UpdateIceConnectionState();
+  }
+  if (state_ == webrtc::IceTransportState::kClosed ||
+      state_ == webrtc::IceTransportState::kFailed) {
+    stop();
+  }
 }
 
 void RTCIceTransport::OnSelectedCandidatePairChanged(
@@ -502,7 +521,9 @@ void RTCIceTransport::OnSelectedCandidatePairChanged(
 }
 
 void RTCIceTransport::Close(CloseReason reason) {
-  DCHECK_NE(state_, webrtc::IceTransportState::kClosed);
+  if (IsClosed()) {
+    return;
+  }
   if (HasConsumer()) {
     consumer_->OnIceTransportClosed(reason);
   }
@@ -533,16 +554,13 @@ ExecutionContext* RTCIceTransport::GetExecutionContext() const {
 }
 
 void RTCIceTransport::ContextDestroyed(ExecutionContext*) {
-  if (IsClosed()) {
-    return;
-  }
   Close(CloseReason::kContextDestroyed);
 }
 
 bool RTCIceTransport::HasPendingActivity() const {
   // Only allow the RTCIceTransport to be garbage collected if the ICE
   // implementation is not active.
-  return static_cast<bool>(proxy_);
+  return !!proxy_;
 }
 
 void RTCIceTransport::Trace(blink::Visitor* visitor) {
@@ -552,8 +570,13 @@ void RTCIceTransport::Trace(blink::Visitor* visitor) {
   visitor->Trace(remote_parameters_);
   visitor->Trace(selected_candidate_pair_);
   visitor->Trace(consumer_);
+  visitor->Trace(peer_connection_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
+}
+
+void RTCIceTransport::Dispose() {
+  Close(CloseReason::kDisposed);
 }
 
 }  // namespace blink

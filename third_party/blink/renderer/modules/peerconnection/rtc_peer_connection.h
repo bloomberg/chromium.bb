@@ -338,8 +338,10 @@ class MODULES_EXPORT RTCPeerConnection final
   // getUserMedia().
   bool HasDocumentMedia() const;
 
-  // Look up, and potentially create, a DTLSTransport object.
-  RTCDtlsTransport* LookupDtlsTransportByMid(String mid);
+  // Called by RTCIceTransport::OnStateChange to update the ice connection
+  // state.
+  void UpdateIceConnectionState();
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -460,8 +462,14 @@ class MODULES_EXPORT RTCPeerConnection final
 
   void ChangeIceConnectionState(
       webrtc::PeerConnectionInterface::IceConnectionState);
-  bool SetIceConnectionState(
-      webrtc::PeerConnectionInterface::IceConnectionState);
+  webrtc::PeerConnectionInterface::IceConnectionState
+  ComputeIceConnectionState();
+  bool HasAnyFailedIceTransport() const;
+  bool HasAnyDisconnectedIceTransport() const;
+  bool HasAllNewOrClosedIceTransports() const;
+  bool HasAnyNewOrCheckingIceTransport() const;
+  bool HasAllCompletedOrClosedIceTransports() const;
+  bool HasAllConnectedCompletedOrClosedIceTransports() const;
 
   void ChangePeerConnectionState(
       webrtc::PeerConnectionInterface::PeerConnectionState);
