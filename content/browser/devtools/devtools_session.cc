@@ -17,7 +17,6 @@
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "third_party/inspector_protocol/encoding/encoding.h"
 
-namespace cbor = inspector_protocol_encoding::cbor;
 using inspector_protocol_encoding::SpanFrom;
 
 namespace content {
@@ -150,7 +149,8 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
   // TODO(dgozman): revisit the proxy delegate.
   if (proxy_delegate_) {
     if (client_->UsesBinaryProtocol()) {
-      DCHECK(cbor::IsCBORMessage(SpanFrom(message)));
+      DCHECK(
+          inspector_protocol_encoding::cbor::IsCBORMessage(SpanFrom(message)));
       proxy_delegate_->SendMessageToBackend(
           this, ConvertCBORToJSON(SpanFrom(message)));
       return true;
@@ -168,7 +168,8 @@ bool DevToolsSession::DispatchProtocolMessage(const std::string& message) {
     if (client_->UsesBinaryProtocol()) {
       // If the client uses the binary protocol, then |message| is already
       // CBOR (it comes from the client).
-      DCHECK(cbor::IsCBORMessage(SpanFrom(message)));
+      DCHECK(
+          inspector_protocol_encoding::cbor::IsCBORMessage(SpanFrom(message)));
     } else {
       converted_cbor_message = ConvertJSONToCBOR(SpanFrom(message));
       message_to_send = &converted_cbor_message;
@@ -288,7 +289,7 @@ static void SendProtocolResponseOrNotification(
     return;
   }
   std::string cbor = message->serialize(/*binary=*/true);
-  DCHECK(cbor::IsCBORMessage(SpanFrom(cbor)));
+  DCHECK(inspector_protocol_encoding::cbor::IsCBORMessage(SpanFrom(cbor)));
   client->DispatchProtocolMessage(
       agent_host,
       client->UsesBinaryProtocol() ? cbor : ConvertCBORToJSON(SpanFrom(cbor)));
@@ -329,7 +330,7 @@ static void DispatchProtocolResponseOrNotification(
   }
   std::string cbor(reinterpret_cast<const char*>(message->data.data()),
                    message->data.size());
-  DCHECK(cbor::IsCBORMessage(SpanFrom(cbor)));
+  DCHECK(inspector_protocol_encoding::cbor::IsCBORMessage(SpanFrom(cbor)));
   client->DispatchProtocolMessage(
       agent_host,
       client->UsesBinaryProtocol() ? cbor : ConvertCBORToJSON(SpanFrom(cbor)));
@@ -364,7 +365,8 @@ void DevToolsSession::DispatchOnClientHost(const std::string& message) {
   // Or it comes from another devtools_session, in which case it may be CBOR
   // already. We auto-detect and convert to what the client wants as needed.
   inspector_protocol_encoding::span<uint8_t> bytes = SpanFrom(message);
-  bool is_cbor_message = cbor::IsCBORMessage(bytes);
+  bool is_cbor_message =
+      inspector_protocol_encoding::cbor::IsCBORMessage(bytes);
   if (client_->UsesBinaryProtocol()) {
     client_->DispatchProtocolMessage(
         agent_host_, is_cbor_message ? message : ConvertJSONToCBOR(bytes));
@@ -437,13 +439,14 @@ void DevToolsSession::SendMessageFromChildSession(const std::string& session_id,
     // |this| may be deleted at this point.
     return;
   }
-  DCHECK(cbor::IsCBORMessage(SpanFrom(message)));
+  DCHECK(inspector_protocol_encoding::cbor::IsCBORMessage(SpanFrom(message)));
   std::string patched(message);
   inspector_protocol_encoding::Status status =
       inspector_protocol_encoding::cbor::AppendString8EntryToCBORMap(
           SpanFrom(kSessionId), SpanFrom(session_id), &patched);
   if (!status.ok()) {
-    LOG(ERROR) << "cbor::AppendString8EntryToCBORMap error "
+    LOG(ERROR) << "inspector_protocol_encoding::cbor::"
+                  "AppendString8EntryToCBORMap error "
                << static_cast<uint32_t>(status.error) << " position "
                << static_cast<uint32_t>(status.pos);
     return;
