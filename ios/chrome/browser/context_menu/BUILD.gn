@@ -13,7 +13,7 @@ source_set("eg_tests") {
     "//base/test:test_support",
     "//components/strings",
     "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/public/provider/chrome/browser",

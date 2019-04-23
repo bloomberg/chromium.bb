@@ -28,7 +28,6 @@ source_set("tab_grid") {
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/history",

@@ -39,7 +39,6 @@ source_set("url_loading") {
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/ntp:util",
     "//ios/chrome/browser/web",

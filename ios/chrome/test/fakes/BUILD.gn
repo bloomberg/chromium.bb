@@ -37,7 +37,6 @@ source_set("fakes") {
     "//components/translate/core/common",
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/store_kit",
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/download",
     "//ios/chrome/browser/ui/overscroll_actions",

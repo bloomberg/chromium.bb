@@ -75,14 +75,15 @@ source_set("passwords") {
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/browser/translate:translate",
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/infobars:feature_flags",
     "//ios/chrome/browser/ui/infobars:infobars_ui",
     "//ios/chrome/browser/ui/infobars/coordinators",
+    "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web",
+    "//ios/chrome/common/ui_util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/ui",
     "//ios/third_party/material_components_ios:material_components_ios",
@@ -135,7 +136,6 @@ source_set("passwords_generation_utils") {
   ]
   deps = [
     "//base:i18n",
-    "//ios/chrome/browser/ui",
   ]
   libs = [ "CoreGraphics.framework" ]
 }

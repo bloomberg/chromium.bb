@@ -68,7 +68,6 @@ source_set("tab_switcher") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
     "//ui/base",
     "//url",

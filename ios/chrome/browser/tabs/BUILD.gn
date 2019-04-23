@@ -121,7 +121,6 @@ source_set("tabs_internal") {
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/u2f",
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/commands",

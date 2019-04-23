@@ -16,6 +16,6 @@ source_set("memory") {
     "//base",
     "//components/prefs",
     "//ios/chrome/browser",
-    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/util",
   ]
 }

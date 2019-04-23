@@ -70,7 +70,6 @@ source_set("infobars_ui") {
     "//components/strings",
     "//ios/chrome/app/theme:theme",
     "//ios/chrome/app/theme:theme_grit",
-    "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/fancy_ui",
     "//ios/chrome/browser/ui/fullscreen",
