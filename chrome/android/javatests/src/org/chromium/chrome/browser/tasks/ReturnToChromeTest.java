@@ -22,6 +22,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -75,6 +76,7 @@ public class ReturnToChromeTest {
     @Test
     @SmallTest
     @Feature({"ReturnToChrome"})
+    @DisabledTest(message = "crbug.com/955436")
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
             "enable-features=" + ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<FakeStudyName",
             "force-fieldtrials=FakeStudyName/Enabled",
@@ -83,7 +85,7 @@ public class ReturnToChromeTest {
     testObserverModeTriggeredWithDelay() throws Exception {
         finishActivityCompletely();
 
-        // Sleep past the timeout
+        // Sleep past the timeout.
         SystemClock.sleep(30);
 
         mActivityTestRule.startMainActivityFromLauncher();
