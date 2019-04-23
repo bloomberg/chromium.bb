@@ -147,16 +147,9 @@ void AssistantPageView::OnGestureEvent(ui::GestureEvent* event) {
 
 gfx::Rect AssistantPageView::GetPageBoundsForState(
     ash::AppListState state) const {
-  gfx::Rect bounds;
-  if (state != ash::AppListState::kStateEmbeddedAssistant) {
-    // Hides this view behind the search box by using the same bounds.
-    bounds = AppListPage::contents_view()->GetSearchBoxBoundsForState(state);
-  } else {
-    bounds = AppListPage::GetSearchBoxBounds();
-    bounds.Offset((bounds.width() - ash::kPreferredWidthDip) / 2, 0);
-    bounds.set_size(GetPreferredSize());
-  }
-
+  gfx::Rect bounds = AppListPage::GetSearchBoxBounds();
+  bounds.Offset((bounds.width() - ash::kPreferredWidthDip) / 2, 0);
+  bounds.set_size(GetPreferredSize());
   return AddShadowBorderToBounds(bounds);
 }
 
