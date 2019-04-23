@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/authenticator_make_credential_response.h"
@@ -105,6 +106,14 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
 
   NOTREACHED();
   return base::flat_set<FidoTransportProtocol>();
+}
+
+void ReportMakeCredentialRequestTransport(FidoAuthenticator* authenticator) {
+  if (authenticator->AuthenticatorTransport()) {
+    base::UmaHistogramEnumeration(
+        "WebAuthentication.MakeCredentialRequestTransport",
+        *authenticator->AuthenticatorTransport());
+  }
 }
 
 }  // namespace
@@ -217,6 +226,9 @@ void MakeCredentialRequestHandler::DispatchRequest(
       request.user_verification = UserVerificationRequirement::kDiscouraged;
     }
   }
+
+  ReportMakeCredentialRequestTransport(authenticator);
+
   authenticator->MakeCredential(
       std::move(request),
       base::BindOnce(&MakeCredentialRequestHandler::HandleResponse,
@@ -288,6 +300,12 @@ void MakeCredentialRequestHandler::HandleResponse(
                             FidoReturnCode::kAuthenticatorResponseInvalid,
                             base::nullopt);
     return;
+  }
+
+  if (authenticator->AuthenticatorTransport()) {
+    base::UmaHistogramEnumeration(
+        "WebAuthentication.MakeCredentialResponseTransport",
+        *authenticator->AuthenticatorTransport());
   }
 
   OnAuthenticatorResponse(authenticator, FidoReturnCode::kSuccess,
@@ -481,6 +499,8 @@ void MakeCredentialRequestHandler::OnHavePINToken(
   // If doing a PIN operation then we don't ask the authenticator to also do
   // internal UV.
   request.user_verification = UserVerificationRequirement::kDiscouraged;
+
+  ReportMakeCredentialRequestTransport(authenticator_);
 
   authenticator_->MakeCredential(
       std::move(request),

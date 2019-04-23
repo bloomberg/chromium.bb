@@ -177,6 +177,22 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedAndConfiguredByRP(
   return transports;
 }
 
+void ReportGetAssertionRequestTransport(FidoAuthenticator* authenticator) {
+  if (authenticator->AuthenticatorTransport()) {
+    base::UmaHistogramEnumeration(
+        "WebAuthentication.GetAssertionRequestTransport",
+        *authenticator->AuthenticatorTransport());
+  }
+}
+
+void ReportGetAssertionResponseTransport(FidoAuthenticator* authenticator) {
+  if (authenticator->AuthenticatorTransport()) {
+    base::UmaHistogramEnumeration(
+        "WebAuthentication.GetAssertionResponseTransport",
+        *authenticator->AuthenticatorTransport());
+  }
+}
+
 }  // namespace
 
 GetAssertionRequestHandler::GetAssertionRequestHandler(
@@ -260,12 +276,6 @@ void GetAssertionRequestHandler::DispatchRequest(
     }
   }
 
-  if (authenticator->AuthenticatorTransport()) {
-    base::UmaHistogramEnumeration(
-        "WebAuthentication.GetAssertionRequestTransport",
-        *authenticator->AuthenticatorTransport());
-  }
-
   CtapGetAssertionRequest request(request_);
   if (authenticator->Options()) {
     if (authenticator->Options()->user_verification_availability ==
@@ -278,6 +288,8 @@ void GetAssertionRequestHandler::DispatchRequest(
       request.user_verification = UserVerificationRequirement::kDiscouraged;
     }
   }
+
+  ReportGetAssertionRequestTransport(authenticator);
 
   FIDO_LOG(DEBUG) << "Asking for assertion from "
                   << authenticator->GetDisplayName();
@@ -376,6 +388,8 @@ void GetAssertionRequestHandler::HandleResponse(
     return;
   }
 
+  ReportGetAssertionResponseTransport(authenticator);
+
   OnAuthenticatorResponse(authenticator, FidoReturnCode::kSuccess,
                           std::move(responses_));
 }
@@ -418,6 +432,8 @@ void GetAssertionRequestHandler::HandleNextResponse(
                        weak_factory_.GetWeakPtr(), authenticator));
     return;
   }
+
+  ReportGetAssertionResponseTransport(authenticator);
 
   OnAuthenticatorResponse(authenticator, FidoReturnCode::kSuccess,
                           std::move(responses_));
@@ -553,6 +569,8 @@ void GetAssertionRequestHandler::OnHavePINToken(
   // If doing a PIN operation then we don't ask the authenticator to also do
   // internal UV.
   request.user_verification = UserVerificationRequirement::kDiscouraged;
+
+  ReportGetAssertionRequestTransport(authenticator_);
 
   authenticator_->GetAssertion(
       std::move(request),
