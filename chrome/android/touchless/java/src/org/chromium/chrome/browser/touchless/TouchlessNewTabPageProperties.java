@@ -4,17 +4,18 @@
 
 package org.chromium.chrome.browser.touchless;
 
+import android.os.Bundle;
+
 import org.chromium.base.Callback;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
 class TouchlessNewTabPageProperties {
     public static final PropertyModel
-            .ReadableObjectPropertyKey<Callback<TouchlessNewTabPageFocusInfo>>
-                    FOCUS_CHANGE_CALLBACK = new PropertyModel.ReadableObjectPropertyKey<>();
+            .ReadableObjectPropertyKey<Callback<Bundle>> FOCUS_CHANGE_CALLBACK =
+            new PropertyModel.ReadableObjectPropertyKey<>();
 
-    public static final PropertyModel
-            .ReadableObjectPropertyKey<TouchlessNewTabPageFocusInfo> INITIAL_FOCUS =
+    public static final PropertyModel.ReadableObjectPropertyKey<Bundle> INITIAL_FOCUS =
             new PropertyModel.ReadableObjectPropertyKey<>();
 
     public static final PropertyModel

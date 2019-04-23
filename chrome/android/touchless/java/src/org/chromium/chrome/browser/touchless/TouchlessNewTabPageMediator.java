@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.browser.touchless;
 
+import android.os.Bundle;
+import android.os.Parcel;
+import android.util.Base64;
+
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -22,7 +26,7 @@ class TouchlessNewTabPageMediator extends EmptyTabObserver {
     private long mLastShownTimeNs;
 
     private ScrollPositionInfo mScrollPosition;
-    private TouchlessNewTabPageFocusInfo mFocus;
+    private Bundle mFocus;
 
     public TouchlessNewTabPageMediator(Tab tab) {
         mTab = tab;
@@ -30,8 +34,18 @@ class TouchlessNewTabPageMediator extends EmptyTabObserver {
 
         ScrollPositionInfo initialScrollPosition = ScrollPositionInfo.deserialize(
                 NewTabPage.getStringFromNavigationEntry(tab, NAVIGATION_ENTRY_SCROLL_POSITION_KEY));
-        TouchlessNewTabPageFocusInfo initialFocus = TouchlessNewTabPageFocusInfo.deserialize(
-                NewTabPage.getStringFromNavigationEntry(tab, NAVIGATION_ENTRY_FOCUS_KEY));
+
+        String serializedString =
+                NewTabPage.getStringFromNavigationEntry(tab, NAVIGATION_ENTRY_FOCUS_KEY);
+        Bundle initialFocus = null;
+        if (serializedString != null) {
+            Parcel parcel = Parcel.obtain();
+            byte[] bytes = Base64.decode(serializedString, Base64.DEFAULT);
+            parcel.unmarshall(bytes, 0, bytes.length);
+            parcel.setDataPosition(0);
+            initialFocus = Bundle.CREATOR.createFromParcel(parcel);
+            parcel.recycle();
+        }
 
         mModel = new PropertyModel.Builder(TouchlessNewTabPageProperties.ALL_KEYS)
                          .with(TouchlessNewTabPageProperties.FOCUS_CHANGE_CALLBACK,
@@ -63,8 +77,13 @@ class TouchlessNewTabPageMediator extends EmptyTabObserver {
                     tab, NAVIGATION_ENTRY_SCROLL_POSITION_KEY, mScrollPosition.serialize());
         }
         if (mFocus != null) {
+            Parcel parcel = Parcel.obtain();
+            mFocus.writeToParcel(parcel, 0);
+            byte[] bytes = parcel.marshall();
+            parcel.recycle();
+            String serializedString = Base64.encodeToString(bytes, Base64.DEFAULT);
             NewTabPage.saveStringToNavigationEntry(
-                    tab, NAVIGATION_ENTRY_FOCUS_KEY, mFocus.serialize());
+                    tab, NAVIGATION_ENTRY_FOCUS_KEY, serializedString);
         }
     }
 

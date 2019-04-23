@@ -23,6 +23,13 @@ class OpenLastTabViewBinder {
             view.setTimestamp(model.get(OpenLastTabProperties.OPEN_LAST_TAB_TIMESTAMP));
         } else if (propertyKey == OpenLastTabProperties.OPEN_LAST_TAB_LOAD_SUCCESS) {
             view.setLoadSuccess(model.get(OpenLastTabProperties.OPEN_LAST_TAB_LOAD_SUCCESS));
+        } else if (propertyKey == OpenLastTabProperties.ON_FOCUS_CALLBACK) {
+            view.setOnFocusCallback(model.get(OpenLastTabProperties.ON_FOCUS_CALLBACK));
+        } else if (propertyKey == OpenLastTabProperties.SHOULD_FOCUS_VIEW) {
+            if (model.get(OpenLastTabProperties.SHOULD_FOCUS_VIEW)) view.triggerRequestFocus();
+            model.set(OpenLastTabProperties.SHOULD_FOCUS_VIEW, false);
+        } else if (propertyKey == OpenLastTabProperties.ASYNC_FOCUS_DELEGATE) {
+            view.setAsyncFocusDelegate(model.get(OpenLastTabProperties.ASYNC_FOCUS_DELEGATE));
         } else {
             assert false : "Unhandled property detected.";
         }

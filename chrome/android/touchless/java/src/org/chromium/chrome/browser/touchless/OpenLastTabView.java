@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.touchless.R;
 
 /**
@@ -28,6 +29,7 @@ public class OpenLastTabView extends FrameLayout {
     private ImageView mIconView;
     private TextView mTitleText;
     private TextView mTimestampText;
+    private Callback<View> mAsyncFocusDelegate;
 
     public OpenLastTabView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -72,5 +74,23 @@ public class OpenLastTabView extends FrameLayout {
 
     void setTimestamp(String timestamp) {
         mTimestampText.setText(timestamp);
+    }
+
+    void setOnFocusCallback(Runnable callback) {
+        mLastTabView.setOnFocusChangeListener((View view, boolean hasFocus) -> {
+            if (hasFocus) {
+                callback.run();
+            }
+        });
+    }
+
+    void triggerRequestFocus() {
+        if (mAsyncFocusDelegate != null) {
+            mAsyncFocusDelegate.onResult(mLastTabView);
+        }
+    }
+
+    void setAsyncFocusDelegate(Callback<View> asyncFocusDelegate) {
+        mAsyncFocusDelegate = asyncFocusDelegate;
     }
 }

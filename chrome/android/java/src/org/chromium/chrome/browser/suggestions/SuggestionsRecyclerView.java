@@ -87,8 +87,13 @@ public class SuggestionsRecyclerView extends RecyclerView {
         this(context, null);
     }
 
-    @SuppressWarnings("RestrictTo")
     public SuggestionsRecyclerView(Context context, AttributeSet attrs) {
+        this(context, attrs, new LinearLayoutManager(context));
+    }
+
+    @SuppressWarnings("RestrictTo")
+    protected SuggestionsRecyclerView(
+            Context context, AttributeSet attrs, LinearLayoutManager layoutManager) {
         super(new ContextThemeWrapper(context, R.style.NewTabPageRecyclerView), attrs);
 
         Resources res = getContext().getResources();
@@ -109,8 +114,8 @@ public class SuggestionsRecyclerView extends RecyclerView {
                         return retVal;
                     }
                 });
-        mLayoutManager = new LinearLayoutManager(getContext());
-        setLayoutManager(mLayoutManager);
+        mLayoutManager = layoutManager;
+        setLayoutManager(layoutManager);
         setHasFixedSize(true);
 
         ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchCallbacks());

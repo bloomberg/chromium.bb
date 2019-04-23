@@ -32,8 +32,10 @@ import java.util.List;
  * Handles SiteSuggestion loading from MostVisitedSites. This includes images and reloading more
  * suggestions when needed.
  */
-class SiteSuggestionsMediator
-        implements MostVisitedSites.Observer, PropertyObservable.PropertyObserver<PropertyKey> {
+
+class SiteSuggestionsMediator implements MostVisitedSites.Observer,
+                                         PropertyObservable.PropertyObserver<PropertyKey>,
+                                         FocusableComponent {
     private static final int NUM_FETCHED_SITES = 8;
     // The ML tiles could show anywhere between 2-5 tiles. To ensure that the initial index
     // would land on % n == 0 and be roughly Integer.MAX / 2, where n could be [2,5],
@@ -137,6 +139,16 @@ class SiteSuggestionsMediator
 
     public void destroy() {
         mMostVisitedSites.destroy();
+    }
+
+    @Override
+    public void requestFocus() {
+        mModel.set(SiteSuggestionsCoordinator.SHOULD_FOCUS_VIEW, true);
+    }
+
+    @Override
+    public void setOnFocusListener(Runnable listener) {
+        mModel.set(SiteSuggestionsCoordinator.ON_FOCUS_CALLBACK, listener);
     }
 
     private int getItemCount() {
