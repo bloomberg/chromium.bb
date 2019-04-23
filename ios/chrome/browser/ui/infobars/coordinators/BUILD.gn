@@ -18,6 +18,7 @@ source_set("coordinators") {
     "//components/infobars/core",
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/passwords:public",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/infobars:infobars_ui",

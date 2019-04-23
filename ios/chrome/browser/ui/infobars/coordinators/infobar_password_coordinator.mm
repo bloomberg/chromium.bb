@@ -7,6 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_infobar_delegate.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_password_modal_delegate.h"
@@ -123,12 +124,23 @@
 - (void)updateCredentialsWithUsername:(NSString*)username
                              password:(NSString*)password {
   self.passwordInfoBarDelegate->UpdateCredentials(username, password);
-  [self dismissInfobarModal:self completion:nil];
+  [self dismissInfobarModal:self animated:YES completion:nil];
 }
 
 - (void)neverSaveCredentialsForCurrentSite {
   self.passwordInfoBarDelegate->Cancel();
-  [self dismissInfobarModal:self completion:nil];
+  [self dismissInfobarModal:self animated:YES completion:nil];
+}
+
+- (void)presentPasswordSettings {
+  DCHECK(self.dispatcher);
+  [self
+      dismissInfobarModal:self
+                 animated:NO
+               completion:^{
+                 [self.dispatcher showSavedPasswordsSettingsFromViewController:
+                                      self.baseViewController];
+               }];
 }
 
 @end

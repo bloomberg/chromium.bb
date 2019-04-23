@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
 
+@protocol ApplicationCommands;
 @protocol InfobarBadgeUIDelegate;
 
 @class InfobarBannerTransitionDriver;
@@ -79,6 +80,9 @@ class InfoBarDelegate;
 // TODO(crbug.com/927064): Once we create the coordinators in the UI Hierarchy
 // baseViewController will be set on init.
 @property(nonatomic, weak) UIViewController* baseViewController;
+
+// The dispatcher for this Coordinator.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
 // YES if an InfobarBanner is being presented.
 @property(nonatomic, assign, getter=isPresentingInfobarBanner)

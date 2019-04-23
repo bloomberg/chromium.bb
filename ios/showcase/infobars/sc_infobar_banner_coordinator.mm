@@ -121,12 +121,14 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
 #pragma mark InfobarModalDelegate
 
 - (void)modalInfobarButtonWasPressed:(UIButton*)sender {
-  [self dismissInfobarModal:sender completion:nil];
+  [self dismissInfobarModal:sender animated:YES completion:nil];
 }
 
 - (void)dismissInfobarModal:(UIButton*)sender
+                   animated:(BOOL)animated
                  completion:(ProceduralBlock)completion {
-  [self.baseViewController dismissViewControllerAnimated:YES completion:nil];
+  [self.baseViewController dismissViewControllerAnimated:animated
+                                              completion:nil];
 }
 
 @end

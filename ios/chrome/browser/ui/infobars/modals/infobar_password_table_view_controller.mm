@@ -63,11 +63,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   cancelButton.accessibilityIdentifier = kInfobarModalCancelButton;
   UIImage* settingsImage = [[UIImage imageNamed:@"infobar_settings_icon"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  UIBarButtonItem* settingsButton =
-      [[UIBarButtonItem alloc] initWithImage:settingsImage
-                                       style:UIBarButtonItemStylePlain
-                                      target:self
-                                      action:nil];
+  UIBarButtonItem* settingsButton = [[UIBarButtonItem alloc]
+      initWithImage:settingsImage
+              style:UIBarButtonItemStylePlain
+             target:self.infobarModalDelegate
+             action:@selector(presentPasswordSettings)];
   self.navigationItem.leftBarButtonItem = cancelButton;
   self.navigationItem.rightBarButtonItem = settingsButton;
   self.navigationController.navigationBar.prefersLargeTitles = NO;
@@ -182,7 +182,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)dismissInfobarModal:(UIButton*)sender {
-  [self.infobarModalDelegate dismissInfobarModal:sender completion:nil];
+  [self.infobarModalDelegate dismissInfobarModal:sender
+                                        animated:YES
+                                      completion:nil];
 }
 
 - (void)saveCredentialsButtonWasPressed:(UIButton*)sender {

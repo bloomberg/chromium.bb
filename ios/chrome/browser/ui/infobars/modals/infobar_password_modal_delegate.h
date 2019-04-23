@@ -21,6 +21,10 @@
 // again.
 - (void)neverSaveCredentialsForCurrentSite;
 
+// Dismisses the InfobarModal with no animation, then presents the Password
+// Settings screen modally.
+- (void)presentPasswordSettings;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_MODALS_INFOBAR_PASSWORD_MODAL_DELEGATE_H_

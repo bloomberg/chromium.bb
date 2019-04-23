@@ -192,16 +192,17 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
 - (void)modalInfobarButtonWasPressed:(UIButton*)sender {
   [self performInfobarAction];
   [self.badgeDelegate infobarWasAccepted];
-  [self dismissInfobarModal:sender completion:nil];
+  [self dismissInfobarModal:sender animated:YES completion:nil];
 }
 
-- (void)dismissInfobarModal:(UIButton*)sender
-                 completion:(void (^)())completion {
+- (void)dismissInfobarModal:(id)sender
+                   animated:(BOOL)animated
+                 completion:(ProceduralBlock)completion {
   DCHECK(self.baseViewController);
   if (self.baseViewController.presentedViewController) {
     __weak __typeof(self) weakSelf = self;
     [self.baseViewController
-        dismissViewControllerAnimated:YES
+        dismissViewControllerAnimated:animated
                            completion:^{
                              [weakSelf.badgeDelegate infobarModalWasDismissed];
                              weakSelf.modalTransitionDriver = nil;
