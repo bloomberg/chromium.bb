@@ -103,6 +103,12 @@ class CONTENT_EXPORT BrowserThread {
   //
   // TODO(crbug.com/887407): Replace callsites with PostTaskWithTraits and
   // appropriate traits (TBD).
+  //
+  // DEPRECATED(carlscab): This method is deprecated and will go away soon,
+  // consider posting the task with priority BEST_EFFORT. For example:
+  // base::PostTaskWithTraits(
+  //   FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+  //   base::BindOnce(...));
   static void PostAfterStartupTask(
       const base::Location& from_here,
       const scoped_refptr<base::TaskRunner>& task_runner,
