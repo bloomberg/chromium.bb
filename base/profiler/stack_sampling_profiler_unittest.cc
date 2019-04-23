@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <memory>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -94,216 +95,8 @@ struct FunctionAddressRange {
   const void* end;
 };
 
-// Signature for a target function that is expected to appear in the stack. See
-// SignalAndWaitUntilSignaled() below.
-using TargetFunction = FunctionAddressRange (*)(WaitableEvent*,
-                                                WaitableEvent*,
-                                                const StackConfiguration*);
-
-// A thread to target for profiling, whose stack is guaranteed to contain
-// SignalAndWaitUntilSignaled() when coordinated with the main thread.
-class TargetThread : public PlatformThread::Delegate {
- public:
-  explicit TargetThread(const StackConfiguration& stack_config);
-
-  // PlatformThread::Delegate:
-  void ThreadMain() override;
-
-  // Waits for the thread to have started and be executing in
-  // SignalAndWaitUntilSignaled().
-  void WaitForThreadStart();
-
-  // Allows the thread to return from SignalAndWaitUntilSignaled() and finish
-  // execution.
-  void SignalThreadToFinish();
-
-  // A function which invokes one of the stack setup functions below. This is
-  // used to place a frame on the stack that we can identify before those calls,
-  // so that we can check that unwinds from them have succeeded.
-  //
-  // This and the following functions return a program counter value near the
-  // end of the function. They can be invoked with null parameters to just
-  // return the program counter.  The functions are static so that we can get a
-  // straightforward address for them in the tests below, rather than dealing
-  // with the complexity of a member function pointer representation.
-  static FunctionAddressRange InvokeSetupFunction(
-      WaitableEvent* thread_started_event,
-      WaitableEvent* finish_event,
-      const StackConfiguration* stack_config);
-
-  // This function is guaranteed to be executing between calls to
-  // WaitForThreadStart() and SignalThreadToFinish() when invoked with
-  // |thread_started_event_| and |finish_event_|.
-  static FunctionAddressRange SignalAndWaitUntilSignaled(
-      WaitableEvent* thread_started_event,
-      WaitableEvent* finish_event,
-      const StackConfiguration* stack_config);
-
-  // Calls into SignalAndWaitUntilSignaled() after allocating memory on the
-  // stack with alloca.
-  static FunctionAddressRange CallWithAlloca(
-      WaitableEvent* thread_started_event,
-      WaitableEvent* finish_event,
-      const StackConfiguration* stack_config);
-
-  // Calls into SignalAndWaitUntilSignaled() via a function in
-  // base_profiler_test_support_library.
-  static FunctionAddressRange CallThroughOtherLibrary(
-      WaitableEvent* thread_started_event,
-      WaitableEvent* finish_event,
-      const StackConfiguration* stack_config);
-
-  PlatformThreadId id() const { return id_; }
-
- private:
-  struct TargetFunctionArgs {
-    WaitableEvent* thread_started_event;
-    WaitableEvent* finish_event;
-    const StackConfiguration* stack_config;
-  };
-
-  // Callback function to be provided when calling through the other library.
-  static void OtherLibraryCallback(void* arg);
-
-  // Returns the current program counter, or a value very close to it.
-  static const void* GetProgramCounter();
-
-  WaitableEvent thread_started_event_;
-  WaitableEvent finish_event_;
-  PlatformThreadId id_;
-  const StackConfiguration stack_config_;
-
-  DISALLOW_COPY_AND_ASSIGN(TargetThread);
-};
-
-TargetThread::TargetThread(const StackConfiguration& stack_config)
-    : thread_started_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
-                            WaitableEvent::InitialState::NOT_SIGNALED),
-      finish_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
-                    WaitableEvent::InitialState::NOT_SIGNALED),
-      id_(0),
-      stack_config_(stack_config) {}
-
-void TargetThread::ThreadMain() {
-  id_ = PlatformThread::CurrentId();
-  InvokeSetupFunction(&thread_started_event_, &finish_event_, &stack_config_);
-}
-
-void TargetThread::WaitForThreadStart() {
-  thread_started_event_.Wait();
-}
-
-void TargetThread::SignalThreadToFinish() {
-  finish_event_.Signal();
-}
-
-// static
 // Disable inlining for this function so that it gets its own stack frame.
-NOINLINE FunctionAddressRange
-TargetThread::InvokeSetupFunction(WaitableEvent* thread_started_event,
-                                  WaitableEvent* finish_event,
-                                  const StackConfiguration* stack_config) {
-  const void* start_program_counter = GetProgramCounter();
-
-  if (stack_config) {
-    switch (stack_config->config) {
-      case StackConfiguration::NORMAL:
-        SignalAndWaitUntilSignaled(thread_started_event, finish_event,
-                                   stack_config);
-        break;
-
-      case StackConfiguration::WITH_ALLOCA:
-        CallWithAlloca(thread_started_event, finish_event, stack_config);
-        break;
-
-      case StackConfiguration::WITH_OTHER_LIBRARY:
-        CallThroughOtherLibrary(thread_started_event, finish_event,
-                                stack_config);
-        break;
-    }
-  }
-
-  // Volatile to prevent a tail call to GetProgramCounter().
-  const void* volatile end_program_counter = GetProgramCounter();
-  return {start_program_counter, end_program_counter};
-}
-
-// static
-// Disable inlining for this function so that it gets its own stack frame.
-NOINLINE FunctionAddressRange TargetThread::SignalAndWaitUntilSignaled(
-    WaitableEvent* thread_started_event,
-    WaitableEvent* finish_event,
-    const StackConfiguration* stack_config) {
-  const void* start_program_counter = GetProgramCounter();
-
-  if (thread_started_event && finish_event) {
-    thread_started_event->Signal();
-    finish_event->Wait();
-  }
-
-  // Volatile to prevent a tail call to GetProgramCounter().
-  const void* volatile end_program_counter = GetProgramCounter();
-  return {start_program_counter, end_program_counter};
-}
-
-// static
-// Disable inlining for this function so that it gets its own stack frame.
-NOINLINE FunctionAddressRange
-TargetThread::CallWithAlloca(WaitableEvent* thread_started_event,
-                             WaitableEvent* finish_event,
-                             const StackConfiguration* stack_config) {
-  const void* start_program_counter = GetProgramCounter();
-
-  const size_t alloca_size = 100;
-  // Memset to 0 to generate a clean failure.
-  std::memset(alloca(alloca_size), 0, alloca_size);
-
-  SignalAndWaitUntilSignaled(thread_started_event, finish_event, stack_config);
-
-  // Volatile to prevent a tail call to GetProgramCounter().
-  const void* volatile end_program_counter = GetProgramCounter();
-  return {start_program_counter, end_program_counter};
-}
-
-// static
-NOINLINE FunctionAddressRange
-TargetThread::CallThroughOtherLibrary(WaitableEvent* thread_started_event,
-                                      WaitableEvent* finish_event,
-                                      const StackConfiguration* stack_config) {
-  const void* start_program_counter = GetProgramCounter();
-
-  if (stack_config) {
-    // A function whose arguments are a function accepting void*, and a void*.
-    using InvokeCallbackFunction = void (*)(void (*)(void*), void*);
-    EXPECT_TRUE(stack_config->library);
-    InvokeCallbackFunction function = reinterpret_cast<InvokeCallbackFunction>(
-        GetFunctionPointerFromNativeLibrary(stack_config->library,
-                                            "InvokeCallbackFunction"));
-    EXPECT_TRUE(function);
-
-    TargetFunctionArgs args = {thread_started_event, finish_event,
-                               stack_config};
-    (*function)(&OtherLibraryCallback, &args);
-  }
-
-  // Volatile to prevent a tail call to GetProgramCounter().
-  const void* volatile end_program_counter = GetProgramCounter();
-  return {start_program_counter, end_program_counter};
-}
-
-// static
-void TargetThread::OtherLibraryCallback(void* arg) {
-  const TargetFunctionArgs* args = static_cast<TargetFunctionArgs*>(arg);
-  SignalAndWaitUntilSignaled(args->thread_started_event, args->finish_event,
-                             args->stack_config);
-  // Prevent tail call.
-  volatile int i = 0;
-  ALLOW_UNUSED_LOCAL(i);
-}
-
-// static
-// Disable inlining for this function so that it gets its own stack frame.
-NOINLINE const void* TargetThread::GetProgramCounter() {
+NOINLINE const void* GetProgramCounter() {
   // Saving to a volatile prevents clang from assuming it can reuse the return
   // value across multiple calls to GetProgramCounter().
 #if defined(OS_WIN)
@@ -312,6 +105,255 @@ NOINLINE const void* TargetThread::GetProgramCounter() {
   const void* volatile program_counter = __builtin_return_address(0);
 #endif
   return program_counter;
+}
+
+// Represents a stack unwind scenario to be sampled by the
+// StackSamplingProfiler.
+class UnwindScenario {
+ public:
+  // A callback provided by the caller that sets up the unwind scenario, then
+  // calls into the passed closure to wait for a sample to be taken. Returns the
+  // address range of the function that sets up the unwind scenario. The passed
+  // closure will be null when invoked solely to obtain the address range.
+  using SetupFunction = RepeatingCallback<FunctionAddressRange(const Closure&)>;
+
+  // Events to coordinate the sampling.
+  struct SampleEvents {
+    WaitableEvent ready_for_sample;
+    WaitableEvent sample_finished;
+  };
+
+  explicit UnwindScenario(const SetupFunction& setup_function)
+      : setup_function_(setup_function) {}
+
+  UnwindScenario(const UnwindScenario&) = delete;
+  UnwindScenario& operator=(const UnwindScenario&) = delete;
+
+  FunctionAddressRange GetWaitForSampleAddressRange() const;
+  FunctionAddressRange GetSetupFunctionAddressRange() const;
+  FunctionAddressRange GetOuterFunctionAddressRange() const;
+
+  void Execute(SampleEvents* events);
+
+ private:
+  static FunctionAddressRange InvokeSetupFunction(
+      const SetupFunction& setup_function,
+      SampleEvents* events);
+
+  static FunctionAddressRange WaitForSample(SampleEvents* events);
+
+  const SetupFunction setup_function_;
+};
+
+FunctionAddressRange UnwindScenario::GetWaitForSampleAddressRange() const {
+  return WaitForSample(nullptr);
+}
+
+FunctionAddressRange UnwindScenario::GetSetupFunctionAddressRange() const {
+  return setup_function_.Run(Closure());
+}
+
+FunctionAddressRange UnwindScenario::GetOuterFunctionAddressRange() const {
+  return InvokeSetupFunction(SetupFunction(), nullptr);
+}
+
+void UnwindScenario::Execute(SampleEvents* events) {
+  InvokeSetupFunction(setup_function_, events);
+}
+
+// static
+// Disable inlining for this function so that it gets its own stack frame.
+NOINLINE FunctionAddressRange
+UnwindScenario::InvokeSetupFunction(const SetupFunction& setup_function,
+                                    SampleEvents* events) {
+  const void* start_program_counter = GetProgramCounter();
+
+  if (!setup_function.is_null()) {
+    const auto wait_for_sample_closure =
+        BindLambdaForTesting([&]() { UnwindScenario::WaitForSample(events); });
+    setup_function.Run(wait_for_sample_closure);
+  }
+
+  // Volatile to prevent a tail call to GetProgramCounter().
+  const void* volatile end_program_counter = GetProgramCounter();
+  return {start_program_counter, end_program_counter};
+}
+
+// static
+// Disable inlining for this function so that it gets its own stack frame.
+NOINLINE FunctionAddressRange
+UnwindScenario::WaitForSample(SampleEvents* events) {
+  const void* start_program_counter = GetProgramCounter();
+
+  if (events) {
+    events->ready_for_sample.Signal();
+    events->sample_finished.Wait();
+  }
+
+  // Volatile to prevent a tail call to GetProgramCounter().
+  const void* volatile end_program_counter = GetProgramCounter();
+  return {start_program_counter, end_program_counter};
+}
+
+// A thread to target for profiling, whose stack is guaranteed to contain
+// SignalAndWaitUntilSignaled() when coordinated with the main thread.
+class TargetThread : public PlatformThread::Delegate {
+ public:
+  TargetThread(const Closure& to_run);
+
+  // PlatformThread::Delegate:
+  void ThreadMain() override;
+
+  PlatformThreadId id() const { return id_; }
+
+ private:
+  PlatformThreadId id_ = 0;
+  Closure to_run_;
+
+  DISALLOW_COPY_AND_ASSIGN(TargetThread);
+};
+
+TargetThread::TargetThread(const Closure& to_run) : to_run_(to_run) {}
+
+void TargetThread::ThreadMain() {
+  id_ = PlatformThread::CurrentId();
+  to_run_.Run();
+}
+
+// Calls into |wait_for_sample| without doing any special unwinding setup, to
+// test the "normal" unwind scenario.
+// Disable inlining for this function so that it gets its own stack frame.
+NOINLINE FunctionAddressRange
+CallWithPlainFunction(const Closure& wait_for_sample) {
+  const void* start_program_counter = GetProgramCounter();
+
+  if (!wait_for_sample.is_null())
+    wait_for_sample.Run();
+
+  // Volatile to prevent a tail call to GetProgramCounter().
+  const void* volatile end_program_counter = GetProgramCounter();
+  return {start_program_counter, end_program_counter};
+}
+
+// Calls into |wait_for_sample| after using alloca(), to test unwinding with a
+// frame pointer.
+// Disable inlining for this function so that it gets its own stack frame.
+NOINLINE FunctionAddressRange CallWithAlloca(const Closure& wait_for_sample) {
+  const void* start_program_counter = GetProgramCounter();
+
+  const size_t alloca_size = 100;
+  // Memset to 0 to generate a clean failure.
+  std::memset(alloca(alloca_size), 0, alloca_size);
+
+  if (!wait_for_sample.is_null())
+    wait_for_sample.Run();
+
+  // Volatile to prevent a tail call to GetProgramCounter().
+  const void* volatile end_program_counter = GetProgramCounter();
+  return {start_program_counter, end_program_counter};
+}
+
+// The function to be executed by the code in the other library.
+void OtherLibraryCallback(void* arg) {
+  const Closure* wait_for_sample = static_cast<const Closure*>(arg);
+
+  wait_for_sample->Run();
+
+  // Prevent tail call.
+  volatile int i = 0;
+  ALLOW_UNUSED_LOCAL(i);
+}
+
+// Calls into |wait_for_sample| through a function within another library, to
+// test unwinding through multiple modules and scenarios involving unloaded
+// modules.
+// Disable inlining for this function so that it gets its own stack frame.
+NOINLINE FunctionAddressRange
+CallThroughOtherLibrary(NativeLibrary library, const Closure& wait_for_sample) {
+  const void* start_program_counter = GetProgramCounter();
+
+  if (!wait_for_sample.is_null()) {
+    // A function whose arguments are a function accepting void*, and a void*.
+    using InvokeCallbackFunction = void (*)(void (*)(void*), void*);
+    EXPECT_TRUE(library);
+    InvokeCallbackFunction function = reinterpret_cast<InvokeCallbackFunction>(
+        GetFunctionPointerFromNativeLibrary(library, "InvokeCallbackFunction"));
+    EXPECT_TRUE(function);
+
+    // This copy avoids the need for a const_cast.
+    Closure wait_for_sample_copy = wait_for_sample;
+    (*function)(&OtherLibraryCallback, &wait_for_sample_copy);
+  }
+
+  // Volatile to prevent a tail call to GetProgramCounter().
+  const void* volatile end_program_counter = GetProgramCounter();
+  return {start_program_counter, end_program_counter};
+}
+
+// Formats a sample into a string that can be output for test diagnostics.
+std::string FormatSampleForDiagnosticOutput(const Frames& frames) {
+  std::string output;
+  for (const auto& frame : frames) {
+    output += StringPrintf(
+        "0x%p %s\n", reinterpret_cast<const void*>(frame.instruction_pointer),
+        frame.module ? frame.module->GetDebugBasename().AsUTF8Unsafe().c_str()
+                     : "null module");
+  }
+  return output;
+}
+
+// Expects that the stack contains the functions with the specified address
+// ranges, in the specified order.
+void ExpectStackContains(const Frames& stack,
+                         const std::vector<FunctionAddressRange>& functions) {
+  auto frame_it = stack.begin();
+  auto function_it = functions.begin();
+  for (; frame_it != stack.end() && function_it != functions.end();
+       ++frame_it) {
+    if (frame_it->instruction_pointer >=
+            reinterpret_cast<uintptr_t>(function_it->start) &&
+        frame_it->instruction_pointer <=
+            reinterpret_cast<uintptr_t>(function_it->end)) {
+      ++function_it;
+    }
+  }
+
+  EXPECT_EQ(function_it, functions.end())
+      << "Function in position " << function_it - functions.begin() << " at "
+      << function_it->start << " was not found in stack "
+      << "(or did not appear in the expected order):\n"
+      << FormatSampleForDiagnosticOutput(stack);
+}
+
+// Expects that the stack does not contain the functions with the specified
+// address ranges.
+void ExpectStackDoesNotContain(
+    const Frames& stack,
+    const std::vector<FunctionAddressRange>& functions) {
+  struct FunctionAddressRangeCompare {
+    bool operator()(const FunctionAddressRange& a,
+                    const FunctionAddressRange& b) const {
+      return std::make_pair(a.start, a.end) < std::make_pair(b.start, b.end);
+    }
+  };
+
+  std::set<FunctionAddressRange, FunctionAddressRangeCompare> seen_functions;
+  for (const auto frame : stack) {
+    for (const auto function : functions) {
+      if (frame.instruction_pointer >=
+              reinterpret_cast<uintptr_t>(function.start) &&
+          frame.instruction_pointer <=
+              reinterpret_cast<uintptr_t>(function.end)) {
+        seen_functions.insert(function);
+      }
+    }
+  }
+
+  for (const auto function : seen_functions) {
+    ADD_FAILURE() << "Function at " << function.start
+                  << " was unexpectedly found in stack:\n"
+                  << FormatSampleForDiagnosticOutput(stack);
+  }
 }
 
 // Profile consists of a set of frame sets and other sampling information.
@@ -454,28 +496,32 @@ void SynchronousUnloadNativeLibrary(NativeLibrary library) {
 #endif
 }
 
-// Executes the function with the target thread running and executing within
-// SignalAndWaitUntilSignaled(). Performs all necessary target thread startup
-// and shutdown work before and afterward.
-template <class Function>
-void WithTargetThread(Function function,
-                      const StackConfiguration& stack_config) {
-  TargetThread target_thread(stack_config);
+// Executes ProfileFunction while ThreadFunction is running on the target
+// thread. Performs all necessary target thread startup and shutdown work before
+// and afterward.
+template <class ProfileFunction>
+void WithTargetThread(UnwindScenario* scenario,
+                      ProfileFunction profile_function) {
+  UnwindScenario::SampleEvents events;
+  TargetThread target_thread(
+      BindLambdaForTesting([&]() { scenario->Execute(&events); }));
+
   PlatformThreadHandle target_thread_handle;
   EXPECT_TRUE(PlatformThread::Create(0, &target_thread, &target_thread_handle));
 
-  target_thread.WaitForThreadStart();
+  events.ready_for_sample.Wait();
 
-  function(target_thread.id());
+  profile_function(target_thread.id());
 
-  target_thread.SignalThreadToFinish();
+  events.sample_finished.Signal();
 
   PlatformThread::Join(target_thread_handle);
 }
 
-template <class Function>
-void WithTargetThread(Function function) {
-  WithTargetThread(function, StackConfiguration(StackConfiguration::NORMAL));
+template <class ProfileFunction>
+void WithTargetThread(ProfileFunction profile_function) {
+  UnwindScenario scenario(BindRepeating(&CallWithPlainFunction));
+  WithTargetThread(&scenario, profile_function);
 }
 
 struct TestProfilerInfo {
@@ -553,35 +599,6 @@ size_t WaitForSamplingComplete(
                                  sampling_completed_rawptrs.size());
 }
 
-// Searches through the frames in |sample|, returning an iterator to the first
-// frame that has an instruction pointer within |target_function|. Returns
-// sample.end() if no such frames are found.
-Frames::const_iterator FindFirstFrameWithinFunction(
-    const Frames& frames,
-    TargetFunction target_function) {
-  FunctionAddressRange address_range =
-      target_function(nullptr, nullptr, nullptr);
-  return std::find_if(
-      frames.begin(), frames.end(), [&address_range](const Frame& frame) {
-        return frame.instruction_pointer >=
-                   reinterpret_cast<uintptr_t>(address_range.start) &&
-               frame.instruction_pointer <=
-                   reinterpret_cast<uintptr_t>(address_range.end);
-      });
-}
-
-// Formats a sample into a string that can be output for test diagnostics.
-std::string FormatSampleForDiagnosticOutput(const Frames& frames) {
-  std::string output;
-  for (const auto& frame : frames) {
-    output += StringPrintf(
-        "0x%p %s\n", reinterpret_cast<const void*>(frame.instruction_pointer),
-        frame.module ? frame.module->GetDebugBasename().AsUTF8Unsafe().c_str()
-                     : "null module");
-  }
-  return output;
-}
-
 // Returns a duration that is longer than the test timeout. We would use
 // TimeDelta::Max() but https://crbug.com/465948.
 TimeDelta AVeryLongTimeDelta() {
@@ -621,13 +638,18 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
   params.samples_per_profile = 1;
 
   NativeLibrary other_library = LoadOtherLibrary();
-  TargetThread target_thread(StackConfiguration(
-      StackConfiguration::WITH_OTHER_LIBRARY, other_library));
+
+  UnwindScenario scenario(
+      BindRepeating(&CallThroughOtherLibrary, Unretained(other_library)));
+
+  UnwindScenario::SampleEvents events;
+  TargetThread target_thread(
+      BindLambdaForTesting([&]() { scenario.Execute(&events); }));
 
   PlatformThreadHandle target_thread_handle;
   EXPECT_TRUE(PlatformThread::Create(0, &target_thread, &target_thread_handle));
 
-  target_thread.WaitForThreadStart();
+  events.ready_for_sample.Wait();
 
   WaitableEvent sampling_thread_completed(
       WaitableEvent::ResetPolicy::MANUAL,
@@ -658,7 +680,7 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
 
   // Cause the target thread to finish, so that it's no longer executing code in
   // the library we're about to unload.
-  target_thread.SignalThreadToFinish();
+  events.sample_finished.Signal();
   PlatformThread::Join(target_thread_handle);
 
   // Unload the library now that it's not being used.
@@ -678,79 +700,40 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
   ASSERT_EQ(1u, profile.frame_sets.size());
   const Frames& frames = profile.frame_sets[0];
 
-  // Check that the stack contains a frame for
-  // TargetThread::SignalAndWaitUntilSignaled().
-  auto end_frame = FindFirstFrameWithinFunction(
-      frames, &TargetThread::SignalAndWaitUntilSignaled);
-  ASSERT_TRUE(end_frame != frames.end())
-      << "Function at "
-      << TargetThread::SignalAndWaitUntilSignaled(nullptr, nullptr, nullptr)
-             .start
-      << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(frames);
-
   if (wait_until_unloaded) {
-    // The stack should look like this, resulting one frame after
-    // SignalAndWaitUntilSignaled. The frame in the now-unloaded library should
-    // have a null module.
+    // We expect the stack to look something like this, with the frame in the
+    // now-unloaded library having a null module.
     //
     // ... WaitableEvent and system frames ...
-    // TargetThread::SignalAndWaitUntilSignaled
+    // WaitForSample()
     // TargetThread::OtherLibraryCallback
     // <frame in unloaded library>
-    EXPECT_EQ(3, frames.end() - end_frame)
-        << "Stack:\n"
-        << FormatSampleForDiagnosticOutput(frames);
     EXPECT_EQ(nullptr, frames.back().module)
         << "Stack:\n"
         << FormatSampleForDiagnosticOutput(frames);
+
+    ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange()});
+    ExpectStackDoesNotContain(frames,
+                              {scenario.GetSetupFunctionAddressRange(),
+                               scenario.GetOuterFunctionAddressRange()});
   } else {
     // We didn't wait for the asynchronous unloading to complete, so the results
     // are non-deterministic: if the library finished unloading we should have
     // the same stack as |wait_until_unloaded|, if not we should have the full
     // stack. The important thing is that we should not crash.
 
-    if (frames.end() - end_frame == 3) {
+    if (!frames.back().module) {
       // This is the same case as |wait_until_unloaded|.
+      ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange()});
+      ExpectStackDoesNotContain(frames,
+                                {scenario.GetSetupFunctionAddressRange(),
+                                 scenario.GetOuterFunctionAddressRange()});
       return;
     }
 
-    // Check that the stack contains a frame for
-    // TargetThread::CallThroughOtherLibrary().
-    auto other_library_frame = FindFirstFrameWithinFunction(
-        frames, &TargetThread::CallThroughOtherLibrary);
-    ASSERT_TRUE(other_library_frame != frames.end())
-        << "Function at "
-        << TargetThread::CallThroughOtherLibrary(nullptr, nullptr, nullptr)
-               .start
-        << " was not found in stack:\n"
-        << FormatSampleForDiagnosticOutput(frames);
-
-    // Check that the stack contains a frame for
-    // TargetThread::InvokeSetupFunction().
-    auto invoker_frame = FindFirstFrameWithinFunction(
-        frames, &TargetThread::InvokeSetupFunction);
-    ASSERT_TRUE(invoker_frame != frames.end())
-        << "Function at "
-        << TargetThread::InvokeSetupFunction(nullptr, nullptr, nullptr).start
-        << " was not found in stack:\n"
-        << FormatSampleForDiagnosticOutput(frames);
-
-    // The stack should look like this, resulting in three frames between
-    // SignalAndWaitUntilSignaled and CallThroughOtherLibrary:
-    //
-    // ... WaitableEvent and system frames ...
-    // TargetThread::SignalAndWaitUntilSignaled
-    // TargetThread::OtherLibraryCallback
-    // InvokeCallbackFunction (in other library)
-    // TargetThread::CallThroughOtherLibrary
-    // TargetThread::InvokeSetupFunction
-    EXPECT_EQ(4, invoker_frame - end_frame)
-        << "Stack:\n"
-        << FormatSampleForDiagnosticOutput(frames);
-    EXPECT_EQ(1, invoker_frame - other_library_frame)
-        << "Stack:\n"
-        << FormatSampleForDiagnosticOutput(frames);
+    ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange(),
+                                 scenario.GetSetupFunctionAddressRange(),
+                                 scenario.GetOuterFunctionAddressRange()});
   }
 }
 
@@ -794,37 +777,38 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
-  FrameSets frame_sets =
-      CaptureFrameSets(params, AVeryLongTimeDelta(), module_cache());
+  UnwindScenario scenario(BindRepeating(&CallWithPlainFunction));
+
+  Profile profile;
+  WithTargetThread(&scenario, [&](PlatformThreadId target_thread_id) {
+    WaitableEvent sampling_thread_completed(
+        WaitableEvent::ResetPolicy::MANUAL,
+        WaitableEvent::InitialState::NOT_SIGNALED);
+    StackSamplingProfiler profiler(
+        target_thread_id, params,
+        std::make_unique<TestProfileBuilder>(
+            module_cache(),
+            BindLambdaForTesting(
+                [&profile, &sampling_thread_completed](Profile result_profile) {
+                  profile = std::move(result_profile);
+                  sampling_thread_completed.Signal();
+                })));
+    profiler.Start();
+    sampling_thread_completed.Wait();
+  });
 
   // Check that the size of the frame sets are correct.
-  ASSERT_EQ(1u, frame_sets.size());
-  const Frames& frames = frame_sets[0];
+  ASSERT_EQ(1u, profile.frame_sets.size());
+  const Frames& frames = profile.frame_sets[0];
 
   // Check that all the modules are valid.
   for (const auto& frame : frames)
     EXPECT_NE(nullptr, frame.module);
 
-  // Check that the stack contains a frame for
-  // TargetThread::SignalAndWaitUntilSignaled().
-  auto end_frame = FindFirstFrameWithinFunction(
-      frames, &TargetThread::SignalAndWaitUntilSignaled);
-  ASSERT_TRUE(end_frame != frames.end())
-      << "Function at "
-      << TargetThread::SignalAndWaitUntilSignaled(nullptr, nullptr, nullptr)
-             .start
-      << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(frames);
-
-  // Check that the stack contains a frame for
-  // TargetThread::InvokeSetupFunction().
-  auto invoker_frame =
-      FindFirstFrameWithinFunction(frames, &TargetThread::InvokeSetupFunction);
-  ASSERT_TRUE(invoker_frame != frames.end())
-      << "Function at "
-      << TargetThread::InvokeSetupFunction(nullptr, nullptr, nullptr).start
-      << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(frames);
+  // The stack should contain a full unwind.
+  ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange(),
+                               scenario.GetSetupFunctionAddressRange(),
+                               scenario.GetOuterFunctionAddressRange()});
 }
 
 // Checks that the profiler handles stacks containing dynamically-allocated
@@ -840,9 +824,11 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
+  UnwindScenario scenario(BindRepeating(&CallWithAlloca));
+
   Profile profile;
   WithTargetThread(
-      [&](PlatformThreadId target_thread_id) {
+      &scenario, [&](PlatformThreadId target_thread_id) {
         WaitableEvent sampling_thread_completed(
             WaitableEvent::ResetPolicy::MANUAL,
             WaitableEvent::InitialState::NOT_SIGNALED);
@@ -857,50 +843,16 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
                 })));
         profiler.Start();
         sampling_thread_completed.Wait();
-      },
-      StackConfiguration(StackConfiguration::WITH_ALLOCA));
+      });
 
   // Look up the frames.
   ASSERT_EQ(1u, profile.frame_sets.size());
   const Frames& frames = profile.frame_sets[0];
 
-  // Check that the stack contains a frame for
-  // TargetThread::SignalAndWaitUntilSignaled().
-  auto end_frame = FindFirstFrameWithinFunction(
-      frames, &TargetThread::SignalAndWaitUntilSignaled);
-  ASSERT_TRUE(end_frame != frames.end())
-      << "Function at "
-      << TargetThread::SignalAndWaitUntilSignaled(nullptr, nullptr, nullptr)
-             .start
-      << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(frames);
-
-  // Check that the stack contains a frame for TargetThread::CallWithAlloca().
-  auto alloca_frame =
-      FindFirstFrameWithinFunction(frames, &TargetThread::CallWithAlloca);
-  ASSERT_TRUE(alloca_frame != frames.end())
-      << "Function at "
-      << TargetThread::CallWithAlloca(nullptr, nullptr, nullptr).start
-      << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(frames);
-
-  // Check that the stack contains a frame for
-  // TargetThread::InvokeSetupFunction().
-  auto invoker_frame =
-      FindFirstFrameWithinFunction(frames, &TargetThread::InvokeSetupFunction);
-  ASSERT_TRUE(invoker_frame != frames.end())
-      << "Function at "
-      << TargetThread::InvokeSetupFunction(nullptr, nullptr, nullptr).start
-      << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(frames);
-
-  // These frames should be adjacent on the stack.
-  EXPECT_EQ(1, alloca_frame - end_frame)
-      << "Stack:\n"
-      << FormatSampleForDiagnosticOutput(frames);
-  EXPECT_EQ(1, invoker_frame - alloca_frame)
-      << "Stack:\n"
-      << FormatSampleForDiagnosticOutput(frames);
+  // The stack should contain a full unwind.
+  ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange(),
+                               scenario.GetSetupFunctionAddressRange(),
+                               scenario.GetOuterFunctionAddressRange()});
 }
 
 // Checks that a profiler can stop/destruct without ever having started.
@@ -1371,79 +1323,36 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
   params.samples_per_profile = 1;
 
   Profile profile;
-  {
-    ScopedNativeLibrary other_library(LoadOtherLibrary());
-    WithTargetThread(
-        [&, this](PlatformThreadId target_thread_id) {
-          WaitableEvent sampling_thread_completed(
-              WaitableEvent::ResetPolicy::MANUAL,
-              WaitableEvent::InitialState::NOT_SIGNALED);
-          StackSamplingProfiler profiler(
-              target_thread_id, params,
-              std::make_unique<TestProfileBuilder>(
-                  module_cache(),
-                  BindLambdaForTesting([&profile, &sampling_thread_completed](
-                                           Profile result_profile) {
-                    profile = std::move(result_profile);
-                    sampling_thread_completed.Signal();
-                  })));
-          profiler.Start();
-          sampling_thread_completed.Wait();
-        },
-        StackConfiguration(StackConfiguration::WITH_OTHER_LIBRARY,
-                           other_library.get()));
-  }
+
+  ScopedNativeLibrary other_library(LoadOtherLibrary());
+  UnwindScenario scenario(
+      BindRepeating(&CallThroughOtherLibrary, Unretained(other_library.get())));
+
+  WithTargetThread(&scenario, [&, this](PlatformThreadId target_thread_id) {
+    WaitableEvent sampling_thread_completed(
+        WaitableEvent::ResetPolicy::MANUAL,
+        WaitableEvent::InitialState::NOT_SIGNALED);
+    StackSamplingProfiler profiler(
+        target_thread_id, params,
+        std::make_unique<TestProfileBuilder>(
+            module_cache(),
+            BindLambdaForTesting(
+                [&profile, &sampling_thread_completed](Profile result_profile) {
+                  profile = std::move(result_profile);
+                  sampling_thread_completed.Signal();
+                })));
+    profiler.Start();
+    sampling_thread_completed.Wait();
+  });
 
   // Look up the frames.
   ASSERT_EQ(1u, profile.frame_sets.size());
   const Frames& frames = profile.frame_sets[0];
 
-  // Check that the stack contains a frame for
-  // TargetThread::CallThroughOtherLibrary().
-  auto other_library_frame = FindFirstFrameWithinFunction(
-      frames, &TargetThread::CallThroughOtherLibrary);
-  ASSERT_TRUE(other_library_frame != frames.end())
-      << "Function at "
-      << TargetThread::CallThroughOtherLibrary(nullptr, nullptr, nullptr).start
-      << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(frames);
-
-  // Check that the stack contains a frame for
-  // TargetThread::SignalAndWaitUntilSignaled().
-  auto end_frame = FindFirstFrameWithinFunction(
-      frames, &TargetThread::SignalAndWaitUntilSignaled);
-  ASSERT_TRUE(end_frame != frames.end())
-      << "Function at "
-      << TargetThread::SignalAndWaitUntilSignaled(nullptr, nullptr, nullptr)
-             .start
-      << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(frames);
-
-  // Check that the stack contains a frame for
-  // TargetThread::InvokeSetupFunction().
-  auto invoker_frame =
-      FindFirstFrameWithinFunction(frames, &TargetThread::InvokeSetupFunction);
-  ASSERT_TRUE(invoker_frame != frames.end())
-      << "Function at "
-      << TargetThread::InvokeSetupFunction(nullptr, nullptr, nullptr).start
-      << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(frames);
-
-  // The stack should look like this, resulting in three frames between
-  // SignalAndWaitUntilSignaled and CallThroughOtherLibrary:
-  //
-  // ... WaitableEvent and system frames ...
-  // TargetThread::SignalAndWaitUntilSignaled
-  // TargetThread::OtherLibraryCallback
-  // InvokeCallbackFunction (in other library)
-  // TargetThread::CallThroughOtherLibrary
-  // TargetThread::InvokeSetupFunction
-  EXPECT_EQ(3, other_library_frame - end_frame)
-      << "Stack:\n"
-      << FormatSampleForDiagnosticOutput(frames);
-  EXPECT_EQ(1, invoker_frame - other_library_frame)
-      << "Stack:\n"
-      << FormatSampleForDiagnosticOutput(frames);
+  // The stack should contain a full unwind.
+  ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange(),
+                               scenario.GetSetupFunctionAddressRange(),
+                               scenario.GetOuterFunctionAddressRange()});
 }
 
 // Checks that a stack that runs through a library that is unloading produces a
@@ -1472,17 +1381,24 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_UnloadedLibrary) {
 
 // Checks that different threads can be sampled in parallel.
 PROFILER_TEST_F(StackSamplingProfilerTest, MultipleSampledThreads) {
-  // Create target threads. The extra parethesis around the StackConfiguration
-  // call are to avoid the most-vexing-parse problem.
-  TargetThread target_thread1((StackConfiguration(StackConfiguration::NORMAL)));
-  TargetThread target_thread2((StackConfiguration(StackConfiguration::NORMAL)));
-  PlatformThreadHandle target_thread_handle1, target_thread_handle2;
+  UnwindScenario scenario1(BindRepeating(&CallWithPlainFunction));
+  UnwindScenario::SampleEvents events1;
+  TargetThread target_thread1(
+      BindLambdaForTesting([&]() { scenario1.Execute(&events1); }));
+  PlatformThreadHandle target_thread_handle1;
   EXPECT_TRUE(
       PlatformThread::Create(0, &target_thread1, &target_thread_handle1));
+  events1.ready_for_sample.Wait();
+
+  UnwindScenario scenario2(BindRepeating(&CallWithPlainFunction));
+  UnwindScenario::SampleEvents events2;
+  TargetThread target_thread2(
+      BindLambdaForTesting([&]() { scenario2.Execute(&events2); }));
+
+  PlatformThreadHandle target_thread_handle2;
   EXPECT_TRUE(
       PlatformThread::Create(0, &target_thread2, &target_thread_handle2));
-  target_thread1.WaitForThreadStart();
-  target_thread2.WaitForThreadStart();
+  events2.ready_for_sample.Wait();
 
   // Providing an initial delay makes it more likely that both will be
   // scheduled before either starts to run. Once started, samples will
@@ -1532,8 +1448,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleSampledThreads) {
   EXPECT_EQ(9u, profile1.frame_sets.size());
   EXPECT_EQ(8u, profile2.frame_sets.size());
 
-  target_thread1.SignalThreadToFinish();
-  target_thread2.SignalThreadToFinish();
+  events1.sample_finished.Signal();
+  events2.sample_finished.Signal();
   PlatformThread::Join(target_thread_handle1);
   PlatformThread::Join(target_thread_handle2);
 }
