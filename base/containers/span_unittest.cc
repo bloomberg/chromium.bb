@@ -1211,18 +1211,25 @@ TEST(SpanTest, EnsureConstexprGoodness) {
 
 TEST(SpanTest, OutOfBoundsDeath) {
   constexpr span<int, 0> kEmptySpan;
-
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan[0], "");
-
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.first(1), "");
-
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.last(1), "");
-
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.subspan(1), "");
 
   constexpr span<int> kEmptyDynamicSpan;
+  ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan[0], "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.front(), "");
+  ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.first(1), "");
+  ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.last(1), "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.back(), "");
+  ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.subspan(1), "");
+
+  static constexpr int kArray[] = {0, 1, 2};
+  constexpr span<const int> kNonEmptyDynamicSpan(kArray);
+  EXPECT_EQ(3U, kNonEmptyDynamicSpan.size());
+  ASSERT_DEATH_IF_SUPPORTED(kNonEmptyDynamicSpan[4], "");
+  ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.subspan(10), "");
+  ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.subspan(1, 7), "");
 }
 
 TEST(SpanTest, IteratorIsRangeMoveSafe) {
