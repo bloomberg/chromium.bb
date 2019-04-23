@@ -6,8 +6,7 @@
 
 <dom-module id="settings-crostini-shared-usb-devices">
   <template>
-    <style include="settings-shared"></style>
-    <style>
+    <style include="settings-shared">
       .toggle-container {
         display: flex;
         flex-direction: row;
@@ -30,10 +29,10 @@
     <div class="list-frame vertical-list"
         hidden="[[!sharedUsbDevices_.length]]">
       <template is="dom-repeat" items="[[sharedUsbDevices_]]">
-        <div class="toggle-container settings-box">
+        <div class="list-item toggle-container">
           <div class="label">[[item.label]]</div>
           <cr-toggle class="toggle" checked="[[item.shared]]"
-            on-change="onDeviceSharedChange_" 
+            on-change="onDeviceSharedChange_"
             aria-label$="[[item.label]]"></cr-toggle>
         </div>
       </div>
