@@ -41,8 +41,6 @@
 #include "content/browser/android/navigation_handle_proxy.h"
 #endif
 
-struct FrameHostMsg_DidCommitProvisionalLoad_Params;
-
 namespace content {
 
 class AppCacheNavigationHandle;
@@ -207,18 +205,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // |state_| and inform the delegate.
   void ReadyToCommitNavigation(bool is_error);
 
-  // Called when the navigation was committed. This will update the |state_|.
-  // |navigation_entry_committed| indicates whether the navigation changed which
-  // NavigationEntry is current.
-  // |did_replace_entry| is true if the committed entry has replaced the
-  // existing one. A non-user initiated redirect causes such replacement.
-  void DidCommitNavigation(
-      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      bool navigation_entry_committed,
-      bool did_replace_entry,
-      const GURL& previous_url,
-      NavigationType navigation_type);
-
   // Called during commit. Takes ownership of the embedder's NavigationData
   // instance. This NavigationData may have been cloned prior to being added
   // here.
@@ -230,11 +216,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return navigation_request_->navigation_ui_data();
   }
 
-  const GURL& base_url() { return base_url_; }
+  const GURL& base_url() { return navigation_request_->base_url(); }
 
   NavigationType navigation_type() {
-    DCHECK_GE(state(), NavigationRequest::DID_COMMIT);
-    return navigation_type_;
+    return navigation_request_->navigation_type();
   }
 
   void set_response_headers_for_testing(
@@ -321,6 +306,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void StopCommitTimeout();
   void RestartCommitTimeout();
 
+  // TODO(zetamoo): Remove once |ready_to_commit_time_| is owned by
+  // NavigationRequest.
+  base::TimeTicks ready_to_commit_time() const { return ready_to_commit_time_; }
+
   // The NavigationRequest that owns this NavigationHandle.
   NavigationRequest* navigation_request_;
 
@@ -328,9 +317,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   Referrer sanitized_referrer_;
   net::Error net_error_code_;
   bool was_redirected_;
-  bool did_replace_entry_;
-  bool should_update_history_;
-  bool subframe_entry_committed_;
 
   // The headers used for the request.
   net::HttpRequestHeaders request_headers_;
@@ -389,10 +375,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Stores the restore type, or NONE it it's not a restore.
   RestoreType restore_type_;
-
-  GURL previous_url_;
-  GURL base_url_;
-  NavigationType navigation_type_;
 
   // Which proxy server was used for this navigation, if any.
   net::ProxyServer proxy_server_;

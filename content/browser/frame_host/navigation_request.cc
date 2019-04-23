@@ -12,6 +12,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
@@ -337,6 +338,98 @@ bool ShouldPropagateUserActivation(const url::Origin& previous_origin,
           new_origin.host(),
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   return !previous_domain.empty() && previous_domain == new_domain;
+}
+
+// LOG_NAVIGATION_TIMING_HISTOGRAM logs |value| for "Navigation.<histogram>" UMA
+// as well as supplementary UMAs (depending on |transition| and |is_background|)
+// for BackForward/Reload/NewNavigation variants.
+//
+// kMaxTime and kBuckets constants are consistent with
+// UMA_HISTOGRAM_MEDIUM_TIMES, but a custom kMinTime is used for high fidelity
+// near the low end of measured values.
+//
+// TODO(zetamoo): This is duplicated in navigation_handle_impl. Never update one
+// without the other.
+//
+// TODO(csharrison,nasko): This macro is incorrect for subframe navigations,
+// which will only have subframe-specific transition types. This means that all
+// subframes currently are tagged as NewNavigations.
+#define LOG_NAVIGATION_TIMING_HISTOGRAM(histogram, transition, is_background, \
+                                        duration)                             \
+  do {                                                                        \
+    const base::TimeDelta kMinTime = base::TimeDelta::FromMilliseconds(1);    \
+    const base::TimeDelta kMaxTime = base::TimeDelta::FromMinutes(3);         \
+    const int kBuckets = 50;                                                  \
+    UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram, duration, kMinTime,   \
+                               kMaxTime, kBuckets);                           \
+    if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {                      \
+      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".BackForward",      \
+                                 duration, kMinTime, kMaxTime, kBuckets);     \
+    } else if (ui::PageTransitionCoreTypeIs(transition,                       \
+                                            ui::PAGE_TRANSITION_RELOAD)) {    \
+      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".Reload", duration, \
+                                 kMinTime, kMaxTime, kBuckets);               \
+    } else if (ui::PageTransitionIsNewNavigation(transition)) {               \
+      UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram ".NewNavigation",    \
+                                 duration, kMinTime, kMaxTime, kBuckets);     \
+    } else {                                                                  \
+      NOTREACHED() << "Invalid page transition: " << transition;              \
+    }                                                                         \
+    if (is_background.has_value()) {                                          \
+      if (is_background.value()) {                                            \
+        UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram                    \
+                                   ".BackgroundProcessPriority",              \
+                                   duration, kMinTime, kMaxTime, kBuckets);   \
+      } else {                                                                \
+        UMA_HISTOGRAM_CUSTOM_TIMES("Navigation." histogram                    \
+                                   ".ForegroundProcessPriority",              \
+                                   duration, kMinTime, kMaxTime, kBuckets);   \
+      }                                                                       \
+    }                                                                         \
+  } while (0)
+
+void RecordStartToCommitMetrics(base::TimeTicks navigation_start_time,
+                                ui::PageTransition transition,
+                                const base::TimeTicks& ready_to_commit_time,
+                                base::Optional<bool> is_background,
+                                bool is_same_process,
+                                bool is_main_frame) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta delta = now - navigation_start_time;
+  LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit", transition, is_background,
+                                  delta);
+  if (is_main_frame) {
+    LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.MainFrame", transition,
+                                    is_background, delta);
+  } else {
+    LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.Subframe", transition,
+                                    is_background, delta);
+  }
+  if (is_same_process) {
+    LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess", transition,
+                                    is_background, delta);
+    if (is_main_frame) {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess.MainFrame",
+                                      transition, is_background, delta);
+    } else {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess.Subframe",
+                                      transition, is_background, delta);
+    }
+  } else {
+    LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess", transition,
+                                    is_background, delta);
+    if (is_main_frame) {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess.MainFrame",
+                                      transition, is_background, delta);
+    } else {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess.Subframe",
+                                      transition, is_background, delta);
+    }
+  }
+  if (!ready_to_commit_time.is_null()) {
+    LOG_NAVIGATION_TIMING_HISTOGRAM("ReadyToCommitUntilCommit2", transition,
+                                    is_background, now - ready_to_commit_time);
+  }
 }
 
 }  // namespace
@@ -2564,6 +2657,69 @@ bool NavigationRequest::IsSelfReferentialURL() {
     }
   }
   return false;
+}
+
+void NavigationRequest::DidCommitNavigation(
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    bool navigation_entry_committed,
+    bool did_replace_entry,
+    const GURL& previous_url,
+    NavigationType navigation_type) {
+  CHECK_EQ(common_params_.url, params.url);
+
+  did_replace_entry_ = did_replace_entry;
+  should_update_history_ = params.should_update_history;
+  previous_url_ = previous_url;
+  base_url_ = params.base_url;
+  navigation_type_ = navigation_type;
+
+  // If an error page reloads, net_error_code might be 200 but we still want to
+  // count it as an error page.
+  if (params.base_url.spec() == kUnreachableWebDataURL ||
+      navigation_handle_->GetNetErrorCode() != net::OK) {
+    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle",
+                                 navigation_handle_.get(),
+                                 "DidCommitNavigation: error page");
+    handle_state_ = DID_COMMIT_ERROR_PAGE;
+  } else {
+    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle",
+                                 navigation_handle_.get(),
+                                 "DidCommitNavigation");
+    handle_state_ = DID_COMMIT;
+  }
+
+  navigation_handle_->StopCommitTimeout();
+
+  // Record metrics for the time it took to commit the navigation if it was to
+  // another document without error.
+  if (!IsSameDocument() && handle_state_ != DID_COMMIT_ERROR_PAGE) {
+    ui::PageTransition transition = common_params_.transition;
+    base::Optional<bool> is_background =
+        render_frame_host_->GetProcess()->IsProcessBackgrounded();
+    const base::TimeTicks& ready_to_commit_time =
+        navigation_handle_->ready_to_commit_time();
+
+    RecordStartToCommitMetrics(common_params_.navigation_start, transition,
+                               ready_to_commit_time, is_background,
+                               navigation_handle_->is_same_process_,
+                               frame_tree_node_->IsMainFrame());
+  }
+
+  DCHECK(!frame_tree_node_->IsMainFrame() || navigation_entry_committed)
+      << "Only subframe navigations can get here without changing the "
+      << "NavigationEntry";
+  subframe_entry_committed_ = navigation_entry_committed;
+
+  // For successful navigations, ensure the frame owner element is no longer
+  // collapsed as a result of a prior navigation.
+  if (handle_state_ != DID_COMMIT_ERROR_PAGE &&
+      !frame_tree_node()->IsMainFrame()) {
+    // The last committed load in collapsed frames will be an error page with
+    // |kUnreachableWebDataURL|. Same-document navigation should not be
+    // possible.
+    DCHECK(!IsSameDocument() || !frame_tree_node()->is_collapsed());
+    frame_tree_node()->SetCollapsed(false);
+  }
 }
 
 }  // namespace content

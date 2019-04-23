@@ -23,6 +23,7 @@
 #include "content/common/navigation_params.mojom.h"
 #include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/navigation_type.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/common/previews_state.h"
 
@@ -30,6 +31,8 @@ namespace network {
 class ResourceRequestBody;
 struct URLLoaderCompletionStatus;
 }
+
+struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace content {
 
@@ -347,6 +350,51 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
     return throttle_runner_->GetDeferringThrottle();
   }
 
+  // Called when the navigation was committed.
+  // This will update the |handle_state_|.
+  // |navigation_entry_committed| indicates whether the navigation changed which
+  // NavigationEntry is current.
+  // |did_replace_entry| is true if the committed entry has replaced the
+  // existing one. A non-user initiated redirect causes such replacement.
+  void DidCommitNavigation(
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      bool navigation_entry_committed,
+      bool did_replace_entry,
+      const GURL& previous_url,
+      NavigationType navigation_type);
+
+  NavigationType navigation_type() const {
+    DCHECK_GE(handle_state_, DID_COMMIT);
+    return navigation_type_;
+  }
+
+  const GURL& base_url() { return base_url_; }
+
+  bool did_replace_entry() const {
+    DCHECK(handle_state_ == DID_COMMIT ||
+           handle_state_ == DID_COMMIT_ERROR_PAGE);
+    return did_replace_entry_;
+  }
+
+  bool should_update_history() const {
+    DCHECK(handle_state_ == DID_COMMIT ||
+           handle_state_ == DID_COMMIT_ERROR_PAGE);
+    return should_update_history_;
+  }
+
+  bool subframe_entry_committed() const {
+    DCHECK(!frame_tree_node_->IsMainFrame());
+    DCHECK(handle_state_ == DID_COMMIT ||
+           handle_state_ == DID_COMMIT_ERROR_PAGE);
+    return subframe_entry_committed_;
+  }
+
+  const GURL& previous_url() const {
+    DCHECK(handle_state_ == DID_COMMIT ||
+           handle_state_ == DID_COMMIT_ERROR_PAGE);
+    return previous_url_;
+  }
+
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
   // once NavigationHandleImpl has become a wrapper around NavigationRequest.
@@ -576,6 +624,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // RenderProcessHostObserver implementation.
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
+  void RecordNavigationMetrics() const;
+
   FrameTreeNode* frame_tree_node_;
 
   RenderFrameHostImpl* render_frame_host_ = nullptr;
@@ -707,6 +757,29 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // Owns the NavigationThrottles associated with this navigation, and is
   // responsible for notifying them about the various navigation events.
   std::unique_ptr<NavigationThrottleRunner> throttle_runner_;
+
+  // Indicates whether the navigation changed which NavigationEntry is current.
+  bool subframe_entry_committed_ = false;
+
+  // True if the committed entry has replaced the existing one.
+  // A non-user initiated redirect causes such replacement.
+  bool did_replace_entry_ = false;
+
+  // Set to false if we want to update the session history but not update the
+  // browser history. E.g., on unreachable urls.
+  bool should_update_history_ = false;
+
+  // The previous main frame URL that the user was on. This may be empty if
+  // there was no last committed entry.
+  GURL previous_url_;
+
+  // The base URL for the page's document when the frame was committed.
+  GURL base_url_;
+
+  // The type of navigation that just occurred. Note that not all types of
+  // navigations in the enum are valid here, since some of them don't actually
+  // cause a "commit" and won't generate this notification.
+  NavigationType navigation_type_ = NAVIGATION_TYPE_UNKNOWN;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_;
 

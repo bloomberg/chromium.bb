@@ -59,6 +59,9 @@ int64_t CreateUniqueHandleID() {
 // UMA_HISTOGRAM_MEDIUM_TIMES, but a custom kMinTime is used for high fidelity
 // near the low end of measured values.
 //
+// TODO(zetamoo): This is duplicated in navigation_request. Never update one
+// without the other. And remove this one.
+//
 // TODO(csharrison,nasko): This macro is incorrect for subframe navigations,
 // which will only have subframe-specific transition types. This means that all
 // subframes currently are tagged as NewNavigations.
@@ -128,16 +131,12 @@ NavigationHandleImpl::NavigationHandleImpl(
     : navigation_request_(navigation_request),
       net_error_code_(net::OK),
       was_redirected_(false),
-      did_replace_entry_(false),
-      should_update_history_(false),
-      subframe_entry_committed_(false),
       request_headers_(std::move(request_headers)),
       pending_nav_entry_id_(pending_nav_entry_id),
       navigation_id_(CreateUniqueHandleID()),
       redirect_chain_(redirect_chain),
       reload_type_(ReloadType::NONE),
       restore_type_(RestoreType::NONE),
-      navigation_type_(NAVIGATION_TYPE_UNKNOWN),
       is_same_process_(true),
       weak_factory_(this) {
   const GURL& url = navigation_request_->common_params().url;
@@ -370,28 +369,19 @@ bool NavigationHandleImpl::IsErrorPage() {
 }
 
 bool NavigationHandleImpl::HasSubframeNavigationEntryCommitted() {
-  DCHECK(!IsInMainFrame());
-  DCHECK(state() == NavigationRequest::DID_COMMIT ||
-         state() == NavigationRequest::DID_COMMIT_ERROR_PAGE);
-  return subframe_entry_committed_;
+  return navigation_request_->subframe_entry_committed();
 }
 
 bool NavigationHandleImpl::DidReplaceEntry() {
-  DCHECK(state() == NavigationRequest::DID_COMMIT ||
-         state() == NavigationRequest::DID_COMMIT_ERROR_PAGE);
-  return did_replace_entry_;
+  return navigation_request_->did_replace_entry();
 }
 
 bool NavigationHandleImpl::ShouldUpdateHistory() {
-  DCHECK(state() == NavigationRequest::DID_COMMIT ||
-         state() == NavigationRequest::DID_COMMIT_ERROR_PAGE);
-  return should_update_history_;
+  return navigation_request_->should_update_history();
 }
 
 const GURL& NavigationHandleImpl::GetPreviousURL() {
-  DCHECK(state() == NavigationRequest::DID_COMMIT ||
-         state() == NavigationRequest::DID_COMMIT_ERROR_PAGE);
-  return previous_url_;
+  return navigation_request_->previous_url();
 }
 
 net::IPEndPoint NavigationHandleImpl::GetSocketAddress() {
@@ -613,99 +603,6 @@ void NavigationHandleImpl::ReadyToCommitNavigation(bool is_error) {
 
   if (!IsSameDocument())
     GetDelegate()->ReadyToCommitNavigation(this);
-}
-
-void NavigationHandleImpl::DidCommitNavigation(
-    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    bool navigation_entry_committed,
-    bool did_replace_entry,
-    const GURL& previous_url,
-    NavigationType navigation_type) {
-  CHECK_EQ(GetURL(), params.url);
-
-  did_replace_entry_ = did_replace_entry;
-  should_update_history_ = params.should_update_history;
-  previous_url_ = previous_url;
-  base_url_ = params.base_url;
-  navigation_type_ = navigation_type;
-
-  // If an error page reloads, net_error_code might be 200 but we still want to
-  // count it as an error page.
-  if (params.base_url.spec() == kUnreachableWebDataURL ||
-      net_error_code_ != net::OK) {
-    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                                 "DidCommitNavigation: error page");
-    navigation_request_->set_handle_state(
-        NavigationRequest::DID_COMMIT_ERROR_PAGE);
-  } else {
-    TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
-                                 "DidCommitNavigation");
-    navigation_request_->set_handle_state(NavigationRequest::DID_COMMIT);
-  }
-
-  StopCommitTimeout();
-
-  // Record metrics for the time it took to commit the navigation if it was to
-  // another document without error.
-  if (!IsSameDocument() && !IsErrorPage()) {
-    base::TimeTicks now = base::TimeTicks::Now();
-    base::TimeDelta delta =
-        now - navigation_request_->common_params().navigation_start;
-    ui::PageTransition transition = GetPageTransition();
-    base::Optional<bool> is_background =
-        GetRenderFrameHost()->GetProcess()->IsProcessBackgrounded();
-    LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit", transition, is_background,
-                                    delta);
-    if (IsInMainFrame()) {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.MainFrame", transition,
-                                      is_background, delta);
-    } else {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.Subframe", transition,
-                                      is_background, delta);
-    }
-    if (is_same_process_) {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess", transition,
-                                      is_background, delta);
-      if (IsInMainFrame()) {
-        LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess.MainFrame",
-                                        transition, is_background, delta);
-      } else {
-        LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.SameProcess.Subframe",
-                                        transition, is_background, delta);
-      }
-    } else {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess", transition,
-                                      is_background, delta);
-      if (IsInMainFrame()) {
-        LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess.MainFrame",
-                                        transition, is_background, delta);
-      } else {
-        LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit.CrossProcess.Subframe",
-                                        transition, is_background, delta);
-      }
-    }
-
-    if (!ready_to_commit_time_.is_null()) {
-      LOG_NAVIGATION_TIMING_HISTOGRAM("ReadyToCommitUntilCommit2",
-                                      GetPageTransition(), is_background,
-                                      now - ready_to_commit_time_);
-    }
-  }
-
-  DCHECK(!IsInMainFrame() || navigation_entry_committed)
-      << "Only subframe navigations can get here without changing the "
-      << "NavigationEntry";
-  subframe_entry_committed_ = navigation_entry_committed;
-
-  // For successful navigations, ensure the frame owner element is no longer
-  // collapsed as a result of a prior navigation.
-  if (!IsErrorPage() && !frame_tree_node()->IsMainFrame()) {
-    // The last committed load in collapsed frames will be an error page with
-    // |kUnreachableWebDataURL|. Same-document navigation should not be
-    // possible.
-    DCHECK(!IsSameDocument() || !frame_tree_node()->is_collapsed());
-    frame_tree_node()->SetCollapsed(false);
-  }
 }
 
 void NavigationHandleImpl::RunCompleteCallback(
