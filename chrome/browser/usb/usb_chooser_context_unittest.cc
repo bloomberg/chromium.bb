@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/chooser_context_base_mock_permission_observer.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
@@ -94,11 +95,11 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokePermission) {
       device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "123ABC");
   UsbChooserContext* store = GetChooserContext(profile());
 
-  base::DictionaryValue object_dict;
-  object_dict.SetString(kDeviceNameKey, "Gizmo");
-  object_dict.SetInteger(kVendorIdKey, 0);
-  object_dict.SetInteger(kProductIdKey, 0);
-  object_dict.SetString(kSerialNumberKey, "123ABC");
+  base::Value object(base::Value::Type::DICTIONARY);
+  object.SetStringKey(kDeviceNameKey, "Gizmo");
+  object.SetIntKey(kVendorIdKey, 0);
+  object.SetIntKey(kProductIdKey, 0);
+  object.SetStringKey(kSerialNumberKey, "123ABC");
 
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   EXPECT_CALL(
@@ -111,14 +112,14 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokePermission) {
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       store->GetGrantedObjects(origin, origin);
   ASSERT_EQ(1u, objects.size());
-  EXPECT_EQ(object_dict, objects[0]->value);
+  EXPECT_EQ(object, objects[0]->value);
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
       store->GetAllGrantedObjects();
   ASSERT_EQ(1u, all_origin_objects.size());
   EXPECT_EQ(origin, all_origin_objects[0]->requesting_origin);
   EXPECT_EQ(origin, all_origin_objects[0]->embedding_origin);
-  EXPECT_EQ(object_dict, all_origin_objects[0]->value);
+  EXPECT_EQ(object, all_origin_objects[0]->value);
   EXPECT_FALSE(all_origin_objects[0]->incognito);
 
   EXPECT_CALL(
@@ -146,11 +147,11 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokeEphemeralPermission) {
 
   UsbChooserContext* store = GetChooserContext(profile());
 
-  base::DictionaryValue object_dict;
-  object_dict.SetString(kDeviceNameKey, "Gizmo");
-  object_dict.SetString(kGuidKey, device_info->guid);
-  object_dict.SetInteger(kVendorIdKey, device_info->vendor_id);
-  object_dict.SetInteger(kProductIdKey, device_info->product_id);
+  base::Value object(base::Value::Type::DICTIONARY);
+  object.SetStringKey(kDeviceNameKey, "Gizmo");
+  object.SetStringKey(kGuidKey, device_info->guid);
+  object.SetIntKey(kVendorIdKey, device_info->vendor_id);
+  object.SetIntKey(kProductIdKey, device_info->product_id);
 
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
   EXPECT_CALL(
@@ -165,14 +166,14 @@ TEST_F(UsbChooserContextTest, CheckGrantAndRevokeEphemeralPermission) {
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       store->GetGrantedObjects(origin, origin);
   EXPECT_EQ(1u, objects.size());
-  EXPECT_EQ(object_dict, objects[0]->value);
+  EXPECT_EQ(object, objects[0]->value);
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
       store->GetAllGrantedObjects();
   EXPECT_EQ(1u, all_origin_objects.size());
   EXPECT_EQ(origin, all_origin_objects[0]->requesting_origin);
   EXPECT_EQ(origin, all_origin_objects[0]->embedding_origin);
-  EXPECT_EQ(object_dict, all_origin_objects[0]->value);
+  EXPECT_EQ(object, all_origin_objects[0]->value);
   EXPECT_FALSE(all_origin_objects[0]->incognito);
 
   EXPECT_CALL(
@@ -385,6 +386,20 @@ TEST_F(UsbChooserContextTest, UsbGuardPermission) {
                                          *ephemeral_device_info));
 }
 
+TEST_F(UsbChooserContextTest, GetObjectNameForNamelessDevice) {
+  const GURL kGoogleOrigin("https://google.com");
+  UsbDeviceInfoPtr device_info =
+      device_manager_.CreateAndAddDevice(6353, 5678, "", "", "");
+
+  auto* store = GetChooserContext(profile());
+  store->GrantDevicePermission(kGoogleOrigin, kGoogleOrigin, *device_info);
+
+  auto objects = store->GetAllGrantedObjects();
+  ASSERT_EQ(objects.size(), 1u);
+  EXPECT_EQ(store->GetObjectName(objects[0]->value),
+            "Unknown product 0x162E from Google Inc.");
+}
+
 namespace {
 
 constexpr char kPolicySetting[] = R"(
@@ -573,24 +588,22 @@ const GURL kProductVendorOrigin("https://product.vendor.com");
 const GURL kGadgetOrigin("https://gadget.com");
 const GURL kCoolOrigin("https://cool.com");
 
-void ExpectDeviceObjectInfo(const base::DictionaryValue& actual,
+void ExpectDeviceObjectInfo(const base::Value& actual,
                             int vendor_id,
                             int product_id,
                             const std::string& name) {
-  const base::Value* vendor_id_value =
-      actual.FindKeyOfType(kVendorIdKey, base::Value::Type::INTEGER);
-  ASSERT_TRUE(vendor_id_value);
-  EXPECT_EQ(vendor_id_value->GetInt(), vendor_id);
+  const base::Optional<int> actual_vendor_id = actual.FindIntKey(kVendorIdKey);
+  ASSERT_TRUE(actual_vendor_id);
+  EXPECT_EQ(*actual_vendor_id, vendor_id);
 
-  const base::Value* product_id_value =
-      actual.FindKeyOfType(kProductIdKey, base::Value::Type::INTEGER);
-  ASSERT_TRUE(product_id_value);
-  EXPECT_EQ(product_id_value->GetInt(), product_id);
+  const base::Optional<int> actual_product_id =
+      actual.FindIntKey(kProductIdKey);
+  ASSERT_TRUE(actual_product_id);
+  EXPECT_EQ(*actual_product_id, product_id);
 
-  const base::Value* device_name_value =
-      actual.FindKeyOfType(kDeviceNameKey, base::Value::Type::STRING);
-  ASSERT_TRUE(device_name_value);
-  EXPECT_EQ(device_name_value->GetString(), name);
+  const std::string* actual_device_name = actual.FindStringKey(kDeviceNameKey);
+  ASSERT_TRUE(actual_device_name);
+  EXPECT_EQ(*actual_device_name, name);
 }
 
 void ExpectChooserObjectInfo(const ChooserContextBase::Object* actual,

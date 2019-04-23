@@ -247,8 +247,10 @@ ChooserContextBase* GetSerialChooserContext(Profile* profile) {
 }
 
 const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
-    {&GetUsbChooserContext, kUsbChooserDataGroupType},
-    {&GetSerialChooserContext, kSerialChooserDataGroupType},
+    {&GetUsbChooserContext, &UsbChooserContext::GetObjectName,
+     kUsbChooserDataGroupType},
+    {&GetSerialChooserContext, &SerialChooserContext::GetObjectName,
+     kSerialChooserDataGroupType},
 };
 
 }  // namespace
@@ -592,23 +594,23 @@ const ChooserTypeNameEntry* ChooserTypeFromGroupName(const std::string& name) {
 // Create a DictionaryValue* that will act as a data source for a single row
 // in a chooser permission exceptions table. The chooser permission will contain
 // a list of site exceptions that correspond to the exception.
-std::unique_ptr<base::DictionaryValue> CreateChooserExceptionObject(
+base::Value CreateChooserExceptionObject(
     const std::string& display_name,
     const base::Value& object,
     const std::string& chooser_type,
     const ChooserExceptionDetails& chooser_exception_details) {
-  auto exception = std::make_unique<base::DictionaryValue>();
+  base::Value exception(base::Value::Type::DICTIONARY);
 
   std::string setting_string =
       content_settings::ContentSettingToString(CONTENT_SETTING_DEFAULT);
   DCHECK(!setting_string.empty());
 
-  exception->SetString(kDisplayName, display_name);
-  exception->SetKey(kObject, object.Clone());
-  exception->SetString(kChooserType, chooser_type);
+  exception.SetStringKey(kDisplayName, display_name);
+  exception.SetKey(kObject, object.Clone());
+  exception.SetStringKey(kChooserType, chooser_type);
 
   // Order the sites by the provider precedence order.
-  std::vector<std::unique_ptr<base::Value>>
+  std::vector<base::Value>
       all_provider_sites[HostContentSettingsMap::NUM_PROVIDER_TYPES];
   for (const auto& details : chooser_exception_details) {
     const GURL& requesting_origin = details.first.first;
@@ -621,35 +623,35 @@ std::unique_ptr<base::DictionaryValue> CreateChooserExceptionObject(
     for (const auto& embedding_origin_incognito_pair : details.second) {
       const GURL& embedding_origin = embedding_origin_incognito_pair.first;
       const bool incognito = embedding_origin_incognito_pair.second;
-      auto site = std::make_unique<base::DictionaryValue>();
+      base::Value site(base::Value::Type::DICTIONARY);
 
-      site->SetString(kOrigin, requesting_origin.spec());
-      site->SetString(kDisplayName, requesting_origin.spec());
-      site->SetString(kEmbeddingOrigin, embedding_origin.is_empty()
-                                            ? std::string()
-                                            : embedding_origin.spec());
-      site->SetString(kSetting, setting_string);
-      site->SetString(kSource, source);
-      site->SetBoolean(kIncognito, incognito);
+      site.SetStringKey(kOrigin, requesting_origin.spec());
+      site.SetStringKey(kDisplayName, requesting_origin.spec());
+      site.SetStringKey(kEmbeddingOrigin, embedding_origin.is_empty()
+                                              ? std::string()
+                                              : embedding_origin.spec());
+      site.SetStringKey(kSetting, setting_string);
+      site.SetStringKey(kSource, source);
+      site.SetBoolKey(kIncognito, incognito);
       this_provider_sites.push_back(std::move(site));
     }
   }
 
-  auto sites = std::make_unique<base::ListValue>();
+  base::Value sites(base::Value::Type::LIST);
   for (auto& one_provider_sites : all_provider_sites) {
     for (auto& site : one_provider_sites) {
-      sites->Append(std::move(site));
+      sites.GetList().push_back(std::move(site));
     }
   }
 
-  exception->SetList(kSites, std::move(sites));
+  exception.SetKey(kSites, std::move(sites));
   return exception;
 }
 
-std::unique_ptr<base::ListValue> GetChooserExceptionListFromProfile(
+base::Value GetChooserExceptionListFromProfile(
     Profile* profile,
     const ChooserTypeNameEntry& chooser_type) {
-  auto exceptions = std::make_unique<base::ListValue>();
+  base::Value exceptions(base::Value::Type::LIST);
   ContentSettingsType content_type =
       ContentSettingsTypeFromGroupName(std::string(chooser_type.name));
 
@@ -670,7 +672,7 @@ std::unique_ptr<base::ListValue> GetChooserExceptionListFromProfile(
 
   AllChooserObjects all_chooser_objects;
   for (const auto& object : objects) {
-    std::string name = chooser_context->GetObjectName(object->value);
+    std::string name = chooser_type.get_object_name(object->value);
     auto& chooser_exception_details =
         all_chooser_objects[std::make_pair(name, object->value.Clone())];
 
@@ -692,7 +694,7 @@ std::unique_ptr<base::ListValue> GetChooserExceptionListFromProfile(
     const base::Value& object = all_chooser_objects_entry.first.second;
     const ChooserExceptionDetails& chooser_exception_details =
         all_chooser_objects_entry.second;
-    exceptions->Append(CreateChooserExceptionObject(
+    exceptions.GetList().push_back(CreateChooserExceptionObject(
         name, object, chooser_type.name, chooser_exception_details));
   }
 

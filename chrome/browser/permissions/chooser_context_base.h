@@ -26,17 +26,16 @@ class Profile;
 class ChooserContextBase : public KeyedService {
  public:
   struct Object {
-    // The contents of |object| are Swap()ed into the internal dictionary.
     Object(GURL requesting_origin,
            GURL embedding_origin,
-           base::DictionaryValue* value,
+           base::Value value,
            content_settings::SettingSource source,
            bool incognito);
     ~Object();
 
     GURL requesting_origin;
     GURL embedding_origin;
-    base::DictionaryValue value;
+    base::Value value;
     content_settings::SettingSource source;
     bool incognito;
   };
@@ -92,7 +91,7 @@ class ChooserContextBase : public KeyedService {
   // |embedding_origin| by writing it into |host_content_settings_map_|.
   void GrantObjectPermission(const GURL& requesting_origin,
                              const GURL& embedding_origin,
-                             std::unique_ptr<base::DictionaryValue> object);
+                             base::Value object);
 
   // Revokes |requesting_origin|'s permission to access |object| when embedded
   // within |embedding_origin|.
@@ -102,14 +101,11 @@ class ChooserContextBase : public KeyedService {
   // |host_content_settings_map_|.
   virtual void RevokeObjectPermission(const GURL& requesting_origin,
                                       const GURL& embedding_origin,
-                                      const base::DictionaryValue& object);
+                                      const base::Value& object);
 
   // Validates the structure of an object read from
   // |host_content_settings_map_|.
-  virtual bool IsValidObject(const base::DictionaryValue& object) = 0;
-
-  // Returns the human readable string representing the given object.
-  virtual std::string GetObjectName(const base::DictionaryValue& object) = 0;
+  virtual bool IsValidObject(const base::Value& object) = 0;
 
  protected:
   void NotifyPermissionChanged();
@@ -121,13 +117,12 @@ class ChooserContextBase : public KeyedService {
   base::ObserverList<PermissionObserver> permission_observer_list_;
 
  private:
-  std::unique_ptr<base::DictionaryValue> GetWebsiteSetting(
-      const GURL& requesting_origin,
-      const GURL& embedding_origin,
-      content_settings::SettingInfo* info);
+  base::Value GetWebsiteSetting(const GURL& requesting_origin,
+                                const GURL& embedding_origin,
+                                content_settings::SettingInfo* info);
   void SetWebsiteSetting(const GURL& requesting_origin,
                          const GURL& embedding_origin,
-                         std::unique_ptr<base::Value> value);
+                         base::Value value);
 
   HostContentSettingsMap* const host_content_settings_map_;
 };

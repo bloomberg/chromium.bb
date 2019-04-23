@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -422,9 +423,8 @@ SkColor PageInfoUI::GetSecondaryTextColor() {
 // static
 base::string16 PageInfoUI::ChosenObjectToUIString(
     const ChosenObjectInfo& object) {
-  base::string16 name;
-  object.chooser_object->value.GetString(object.ui_info.ui_name_key, &name);
-  return name;
+  return base::UTF8ToUTF16(
+      object.ui_info.get_object_name(object.chooser_object->value));
 }
 
 #if defined(OS_ANDROID)

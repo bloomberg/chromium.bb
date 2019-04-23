@@ -26,15 +26,14 @@ ChooserContextBase::~ChooserContextBase() = default;
 
 ChooserContextBase::Object::Object(GURL requesting_origin,
                                    GURL embedding_origin,
-                                   base::DictionaryValue* value,
+                                   base::Value value,
                                    content_settings::SettingSource source,
                                    bool incognito)
     : requesting_origin(requesting_origin),
       embedding_origin(embedding_origin),
+      value(std::move(value)),
       source(source),
-      incognito(incognito) {
-  this->value.Swap(value);
-}
+      incognito(incognito) {}
 
 ChooserContextBase::Object::~Object() = default;
 
@@ -71,28 +70,23 @@ ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin,
                                       const GURL& embedding_origin) {
   DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
   DCHECK_EQ(embedding_origin, embedding_origin.GetOrigin());
+  std::vector<std::unique_ptr<Object>> results;
 
   if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
-    return {};
+    return results;
 
-  std::vector<std::unique_ptr<Object>> results;
   content_settings::SettingInfo info;
-  std::unique_ptr<base::DictionaryValue> setting =
+  base::Value setting =
       GetWebsiteSetting(requesting_origin, embedding_origin, &info);
-  std::unique_ptr<base::Value> objects;
-  if (!setting->Remove(kObjectListKey, &objects))
+
+  base::Value* objects = setting.FindListKey(kObjectListKey);
+  if (!objects)
     return results;
 
-  std::unique_ptr<base::ListValue> object_list =
-      base::ListValue::From(std::move(objects));
-  if (!object_list)
-    return results;
-
-  for (auto& object : *object_list) {
-    base::DictionaryValue* object_dict;
-    if (object.GetAsDictionary(&object_dict) && IsValidObject(*object_dict)) {
+  for (auto& object : objects->GetList()) {
+    if (IsValidObject(object)) {
       results.push_back(std::make_unique<Object>(
-          requesting_origin, embedding_origin, object_dict, info.source,
+          requesting_origin, embedding_origin, std::move(object), info.source,
           host_content_settings_map_->is_incognito()));
     }
   }
@@ -116,21 +110,19 @@ ChooserContextBase::GetAllGrantedObjects() {
       continue;
 
     content_settings::SettingInfo info;
-    std::unique_ptr<base::DictionaryValue> setting =
+    base::Value setting =
         GetWebsiteSetting(requesting_origin, embedding_origin, &info);
-    base::ListValue* object_list;
-    if (!setting->GetList(kObjectListKey, &object_list))
+    base::Value* objects = setting.FindListKey(kObjectListKey);
+    if (!objects)
       continue;
 
-    for (auto& object : *object_list) {
-      base::DictionaryValue* object_dict;
-      if (!object.GetAsDictionary(&object_dict) ||
-          !IsValidObject(*object_dict)) {
+    for (auto& object : objects->GetList()) {
+      if (!IsValidObject(object)) {
         continue;
       }
 
       results.push_back(std::make_unique<Object>(
-          requesting_origin, embedding_origin, object_dict, info.source,
+          requesting_origin, embedding_origin, std::move(object), info.source,
           content_setting.incognito));
     }
   }
@@ -138,41 +130,47 @@ ChooserContextBase::GetAllGrantedObjects() {
   return results;
 }
 
-void ChooserContextBase::GrantObjectPermission(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin,
-    std::unique_ptr<base::DictionaryValue> object) {
-  DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
-  DCHECK_EQ(embedding_origin, embedding_origin.GetOrigin());
-  DCHECK(object);
-  DCHECK(IsValidObject(*object));
-
-  std::unique_ptr<base::DictionaryValue> setting =
-      GetWebsiteSetting(requesting_origin, embedding_origin, /*info=*/nullptr);
-  base::ListValue* object_list;
-  if (!setting->GetList(kObjectListKey, &object_list)) {
-    object_list =
-        setting->SetList(kObjectListKey, std::make_unique<base::ListValue>());
-  }
-  object_list->AppendIfNotPresent(std::move(object));
-  SetWebsiteSetting(requesting_origin, embedding_origin, std::move(setting));
-  NotifyPermissionChanged();
-}
-
-void ChooserContextBase::RevokeObjectPermission(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin,
-    const base::DictionaryValue& object) {
+void ChooserContextBase::GrantObjectPermission(const GURL& requesting_origin,
+                                               const GURL& embedding_origin,
+                                               base::Value object) {
   DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
   DCHECK_EQ(embedding_origin, embedding_origin.GetOrigin());
   DCHECK(IsValidObject(object));
 
-  std::unique_ptr<base::DictionaryValue> setting =
+  base::Value setting =
       GetWebsiteSetting(requesting_origin, embedding_origin, /*info=*/nullptr);
-  base::ListValue* object_list;
-  if (!setting->GetList(kObjectListKey, &object_list))
+  base::Value* objects = setting.FindListKey(kObjectListKey);
+  if (!objects) {
+    objects =
+        setting.SetKey(kObjectListKey, base::Value(base::Value::Type::LIST));
+  }
+
+  auto& object_list = objects->GetList();
+  if (!base::ContainsValue(object_list, object))
+    object_list.push_back(std::move(object));
+
+  SetWebsiteSetting(requesting_origin, embedding_origin, std::move(setting));
+  NotifyPermissionChanged();
+}
+
+void ChooserContextBase::RevokeObjectPermission(const GURL& requesting_origin,
+                                                const GURL& embedding_origin,
+                                                const base::Value& object) {
+  DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
+  DCHECK_EQ(embedding_origin, embedding_origin.GetOrigin());
+  DCHECK(IsValidObject(object));
+
+  base::Value setting =
+      GetWebsiteSetting(requesting_origin, embedding_origin, /*info=*/nullptr);
+  base::Value* objects = setting.FindListKey(kObjectListKey);
+  if (!objects)
     return;
-  object_list->Remove(object, nullptr);
+
+  auto& object_list = objects->GetList();
+  auto it = std::find(object_list.begin(), object_list.end(), object);
+  if (it != object_list.end())
+    objects->GetList().erase(it);
+
   SetWebsiteSetting(requesting_origin, embedding_origin, std::move(setting));
   NotifyPermissionRevoked(requesting_origin, embedding_origin);
 }
@@ -193,24 +191,23 @@ void ChooserContextBase::NotifyPermissionRevoked(const GURL& requesting_origin,
   }
 }
 
-std::unique_ptr<base::DictionaryValue> ChooserContextBase::GetWebsiteSetting(
+base::Value ChooserContextBase::GetWebsiteSetting(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     content_settings::SettingInfo* info) {
-  std::unique_ptr<base::DictionaryValue> value =
-      base::DictionaryValue::From(host_content_settings_map_->GetWebsiteSetting(
+  std::unique_ptr<base::Value> value =
+      host_content_settings_map_->GetWebsiteSetting(
           requesting_origin, embedding_origin, data_content_settings_type_,
-          std::string(), info));
-  if (!value)
-    value.reset(new base::DictionaryValue());
-
-  return value;
+          std::string(), info);
+  if (value)
+    return base::Value::FromUniquePtrValue(std::move(value));
+  return base::Value(base::Value::Type::DICTIONARY);
 }
 
 void ChooserContextBase::SetWebsiteSetting(const GURL& requesting_origin,
                                            const GURL& embedding_origin,
-                                           std::unique_ptr<base::Value> value) {
+                                           base::Value value) {
   host_content_settings_map_->SetWebsiteSettingDefaultScope(
       requesting_origin, embedding_origin, data_content_settings_type_,
-      std::string(), std::move(value));
+      std::string(), base::Value::ToUniquePtrValue(std::move(value)));
 }

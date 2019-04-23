@@ -26,14 +26,9 @@ class TestChooserContext : public ChooserContextBase {
                            CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA) {}
   ~TestChooserContext() override {}
 
-  bool IsValidObject(const base::DictionaryValue& object) override {
-    return object.size() == 2 && object.HasKey(kRequiredKey1) &&
-           object.HasKey(kRequiredKey2);
-  }
-
-  std::string GetObjectName(const base::DictionaryValue& object) override {
-    NOTREACHED();
-    return std::string();
+  bool IsValidObject(const base::Value& object) override {
+    return object.DictSize() == 2 && object.FindKey(kRequiredKey1) &&
+           object.FindKey(kRequiredKey2);
   }
 };
 
@@ -42,11 +37,14 @@ class TestChooserContext : public ChooserContextBase {
 class ChooserContextBaseTest : public testing::Test {
  public:
   ChooserContextBaseTest()
-      : origin1_("https://google.com"), origin2_("https://chromium.org") {
-    object1_.SetString(kRequiredKey1, "value1");
-    object1_.SetString(kRequiredKey2, "value2");
-    object2_.SetString(kRequiredKey1, "value3");
-    object2_.SetString(kRequiredKey2, "value4");
+      : origin1_("https://google.com"),
+        origin2_("https://chromium.org"),
+        object1_(base::Value::Type::DICTIONARY),
+        object2_(base::Value::Type::DICTIONARY) {
+    object1_.SetStringKey(kRequiredKey1, "value1");
+    object1_.SetStringKey(kRequiredKey2, "value2");
+    object2_.SetStringKey(kRequiredKey1, "value3");
+    object2_.SetStringKey(kRequiredKey2, "value4");
   }
 
   ~ChooserContextBaseTest() override {}
@@ -60,8 +58,8 @@ class ChooserContextBaseTest : public testing::Test {
  protected:
   GURL origin1_;
   GURL origin2_;
-  base::DictionaryValue object1_;
-  base::DictionaryValue object2_;
+  base::Value object1_;
+  base::Value object2_;
 };
 
 TEST_F(ChooserContextBaseTest, GrantAndRevokeObjectPermissions) {
@@ -70,8 +68,8 @@ TEST_F(ChooserContextBaseTest, GrantAndRevokeObjectPermissions) {
   context.AddObserver(&mock_observer);
 
   EXPECT_CALL(mock_observer, OnChooserObjectPermissionChanged(_, _)).Times(2);
-  context.GrantObjectPermission(origin1_, origin1_, object1_.CreateDeepCopy());
-  context.GrantObjectPermission(origin1_, origin1_, object2_.CreateDeepCopy());
+  context.GrantObjectPermission(origin1_, origin1_, object1_.Clone());
+  context.GrantObjectPermission(origin1_, origin1_, object2_.Clone());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       context.GetGrantedObjects(origin1_, origin1_);
@@ -101,8 +99,8 @@ TEST_F(ChooserContextBaseTest, GrantObjectPermissionTwice) {
   context.AddObserver(&mock_observer);
 
   EXPECT_CALL(mock_observer, OnChooserObjectPermissionChanged(_, _)).Times(2);
-  context.GrantObjectPermission(origin1_, origin1_, object1_.CreateDeepCopy());
-  context.GrantObjectPermission(origin1_, origin1_, object1_.CreateDeepCopy());
+  context.GrantObjectPermission(origin1_, origin1_, object1_.Clone());
+  context.GrantObjectPermission(origin1_, origin1_, object1_.Clone());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       context.GetGrantedObjects(origin1_, origin1_);
@@ -122,7 +120,7 @@ TEST_F(ChooserContextBaseTest, GrantObjectPermissionEmbedded) {
   context.AddObserver(&mock_observer);
 
   EXPECT_CALL(mock_observer, OnChooserObjectPermissionChanged(_, _));
-  context.GrantObjectPermission(origin1_, origin2_, object1_.CreateDeepCopy());
+  context.GrantObjectPermission(origin1_, origin2_, object1_.Clone());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       context.GetGrantedObjects(origin1_, origin2_);
@@ -144,8 +142,8 @@ TEST_F(ChooserContextBaseTest, GetAllGrantedObjects) {
   context.AddObserver(&mock_observer);
 
   EXPECT_CALL(mock_observer, OnChooserObjectPermissionChanged(_, _)).Times(2);
-  context.GrantObjectPermission(origin1_, origin1_, object1_.CreateDeepCopy());
-  context.GrantObjectPermission(origin2_, origin2_, object2_.CreateDeepCopy());
+  context.GrantObjectPermission(origin1_, origin1_, object1_.Clone());
+  context.GrantObjectPermission(origin2_, origin2_, object2_.Clone());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       context.GetAllGrantedObjects();
@@ -182,8 +180,8 @@ TEST_F(ChooserContextBaseTest, GetGrantedObjectsWithGuardBlocked) {
   context.AddObserver(&mock_observer);
 
   EXPECT_CALL(mock_observer, OnChooserObjectPermissionChanged(_, _)).Times(2);
-  context.GrantObjectPermission(origin1_, origin1_, object1_.CreateDeepCopy());
-  context.GrantObjectPermission(origin2_, origin2_, object2_.CreateDeepCopy());
+  context.GrantObjectPermission(origin1_, origin1_, object1_.Clone());
+  context.GrantObjectPermission(origin2_, origin2_, object2_.Clone());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects1 =
       context.GetGrantedObjects(origin1_, origin1_);
@@ -206,8 +204,8 @@ TEST_F(ChooserContextBaseTest, GetAllGrantedObjectsWithGuardBlocked) {
   context.AddObserver(&mock_observer);
 
   EXPECT_CALL(mock_observer, OnChooserObjectPermissionChanged(_, _)).Times(2);
-  context.GrantObjectPermission(origin1_, origin1_, object1_.CreateDeepCopy());
-  context.GrantObjectPermission(origin2_, origin2_, object2_.CreateDeepCopy());
+  context.GrantObjectPermission(origin1_, origin1_, object1_.Clone());
+  context.GrantObjectPermission(origin2_, origin2_, object2_.Clone());
 
   std::vector<std::unique_ptr<ChooserContextBase::Object>> objects =
       context.GetAllGrantedObjects();

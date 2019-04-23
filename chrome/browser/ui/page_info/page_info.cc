@@ -94,8 +94,8 @@
 #endif
 
 using base::ASCIIToUTF16;
-using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
+using base::UTF8ToUTF16;
 using content::BrowserThread;
 #if defined(FULL_SAFE_BROWSING)
 using PasswordReuseEvent =
@@ -288,12 +288,12 @@ const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
     {CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, &GetUsbChooserContext,
      IDS_PAGE_INFO_USB_DEVICE_SECONDARY_LABEL,
      IDS_PAGE_INFO_USB_DEVICE_ALLOWED_BY_POLICY_LABEL,
-     IDS_PAGE_INFO_DELETE_USB_DEVICE, "name"},
+     IDS_PAGE_INFO_DELETE_USB_DEVICE, &UsbChooserContext::GetObjectName},
 #if !defined(OS_ANDROID)
     {CONTENT_SETTINGS_TYPE_SERIAL_CHOOSER_DATA, &GetSerialChooserContext,
      IDS_PAGE_INFO_SERIAL_PORT_SECONDARY_LABEL,
      /*allowed_by_policy_description_string_id=*/-1,
-     IDS_PAGE_INFO_DELETE_SERIAL_PORT, "name"},
+     IDS_PAGE_INFO_DELETE_SERIAL_PORT, &SerialChooserContext::GetObjectName},
 #endif
 };
 
@@ -491,7 +491,7 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
 }
 
 void PageInfo::OnSiteChosenObjectDeleted(const ChooserUIInfo& ui_info,
-                                         const base::DictionaryValue& object) {
+                                         const base::Value& object) {
   // TODO(reillyg): Create metrics for revocations. crbug.com/556845
   ChooserContextBase* context = ui_info.get_context(profile_);
   const GURL origin = site_url_.GetOrigin();

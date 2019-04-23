@@ -341,10 +341,10 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
         /*chooser_type=*/kUsbChooserGroupName,
         /*chooser_exception_details=*/exception_details);
     ExpectValidChooserExceptionObject(
-        *exception, /*chooser_type=*/kUsbChooserGroupName,
+        exception, /*chooser_type=*/kUsbChooserGroupName,
         /*display_name=*/kObjectName, *chooser_object);
 
-    const auto& sites_list = exception->FindKey(kSites)->GetList();
+    const auto& sites_list = exception.FindKey(kSites)->GetList();
     ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[0],
                                    /*origin=*/kGoogleOrigin,
                                    /*embedding_origin=*/kChromiumOrigin,
@@ -364,14 +364,14 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
         /*object=*/*chooser_object,
         /*chooser_type=*/kUsbChooserGroupName,
         /*chooser_exception_details=*/exception_details);
-    ExpectValidChooserExceptionObject(*exception,
+    ExpectValidChooserExceptionObject(exception,
                                       /*chooser_type=*/kUsbChooserGroupName,
                                       /*display_name=*/kObjectName,
                                       *chooser_object);
 
     // The map sorts the sites by requesting origin, so |kAndroidOrigin| should
     // be first, followed by the origin pair (kGoogleOrigin, kChromiumOrigin).
-    const auto& sites_list = exception->FindKey(kSites)->GetList();
+    const auto& sites_list = exception.FindKey(kSites)->GetList();
     ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[0],
                                    /*origin=*/kAndroidOrigin,
                                    /*embedding_origin=*/kAndroidOrigin,
@@ -394,7 +394,7 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
         /*object=*/*chooser_object,
         /*chooser_type=*/kUsbChooserGroupName,
         /*chooser_exception_details=*/exception_details);
-    ExpectValidChooserExceptionObject(*exception,
+    ExpectValidChooserExceptionObject(exception,
                                       /*chooser_type=*/kUsbChooserGroupName,
                                       /*display_name=*/kObjectName,
                                       *chooser_object);
@@ -403,7 +403,7 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
     // CreateChooserExceptionObject method sorts the sites further by the
     // source. Therefore, policy granted sites are listed before user granted
     // sites.
-    const auto& sites_list = exception->FindKey(kSites)->GetList();
+    const auto& sites_list = exception.FindKey(kSites)->GetList();
     ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[0],
                                    /*origin=*/kGoogleOrigin,
                                    /*embedding_origin=*/GURL::EmptyGURL(),
@@ -494,10 +494,10 @@ class SiteSettingsHelperChooserExceptionTest : public testing::Test {
 
 void ExpectDisplayNameEq(const base::Value& actual_exception_object,
                          const std::string& display_name) {
-  const base::Value* display_name_value = actual_exception_object.FindKeyOfType(
-      kDisplayName, base::Value::Type::STRING);
-  ASSERT_TRUE(display_name_value);
-  EXPECT_EQ(display_name_value->GetString(), display_name);
+  const std::string* actual_display_name =
+      actual_exception_object.FindStringKey(kDisplayName);
+  ASSERT_TRUE(actual_display_name);
+  EXPECT_EQ(*actual_display_name, display_name);
 }
 
 }  // namespace
@@ -518,10 +518,10 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
   // origin and the embedding origin. User granted permissions that are also
   // granted by policy are combined with the policy so that duplicate
   // permissions are not displayed.
-  std::unique_ptr<base::ListValue> exceptions =
+  base::Value exceptions =
       GetChooserExceptionListFromProfile(profile(), *chooser_type);
-  ASSERT_EQ(exceptions->GetSize(), 4u);
-  auto& exceptions_list = exceptions->GetList();
+  auto& exceptions_list = exceptions.GetList();
+  ASSERT_EQ(exceptions_list.size(), 4u);
 
   // This exception should describe the permissions for any device with the
   // vendor ID corresponding to "Google Inc.". There are no user granted

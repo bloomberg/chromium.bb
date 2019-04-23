@@ -870,10 +870,9 @@ void SiteSettingsHandler::HandleGetChooserExceptionList(
       site_settings::ChooserTypeFromGroupName(type);
   CHECK(chooser_type);
 
-  std::unique_ptr<base::ListValue> exceptions =
-      site_settings::GetChooserExceptionListFromProfile(profile_,
-                                                        *chooser_type);
-  ResolveJavascriptCallback(*callback_id, *exceptions.get());
+  base::Value exceptions = site_settings::GetChooserExceptionListFromProfile(
+      profile_, *chooser_type);
+  ResolveJavascriptCallback(*callback_id, std::move(exceptions));
 }
 
 void SiteSettingsHandler::HandleGetOriginPermissions(
@@ -1145,12 +1144,9 @@ void SiteSettingsHandler::HandleResetChooserExceptionForSite(
   GURL embedding_origin(embedding_origin_str);
   CHECK(embedding_origin.is_valid() || embedding_origin.is_empty());
 
-  const base::DictionaryValue* object = nullptr;
-  CHECK(args->GetDictionary(3, &object));
-
   ChooserContextBase* chooser_context = chooser_type->get_context(profile_);
   chooser_context->RevokeObjectPermission(requesting_origin, embedding_origin,
-                                          *object);
+                                          args->GetList()[3]);
 }
 
 void SiteSettingsHandler::HandleIsOriginValid(const base::ListValue* args) {

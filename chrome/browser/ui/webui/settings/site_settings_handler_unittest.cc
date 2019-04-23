@@ -1599,15 +1599,22 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
       const base::Value& exception,
       const std::string& requesting_origin,
       const std::string& embedding_origin) {
-    const base::Value* site_value = exception.FindKey(site_settings::kSites);
-    for (const auto& site : site_value->GetList()) {
-      const base::Value* origin_value = site.FindKey(site_settings::kOrigin);
-      if (origin_value->GetString() != requesting_origin)
+    const base::Value* sites = exception.FindListKey(site_settings::kSites);
+    if (!sites)
+      return false;
+
+    for (const auto& site : sites->GetList()) {
+      const std::string* origin = site.FindStringKey(site_settings::kOrigin);
+      if (!origin)
+        continue;
+      if (*origin != requesting_origin)
         continue;
 
-      const base::Value* embedding_origin_value =
-          site.FindKey(site_settings::kEmbeddingOrigin);
-      if (embedding_origin_value->GetString() == embedding_origin)
+      const std::string* exception_embedding_origin =
+          site.FindStringKey(site_settings::kEmbeddingOrigin);
+      if (!exception_embedding_origin)
+        continue;
+      if (*exception_embedding_origin == embedding_origin)
         return true;
     }
     return false;
@@ -1617,14 +1624,20 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
   // chooser exception with |display_name| that contains a site exception for
   // |requesting_origin| and |embedding_origin|.
   bool ChooserExceptionContainsSiteException(
-      const base::Value& exception_list,
+      const base::Value& exceptions,
       const std::string& display_name,
       const std::string& requesting_origin,
       const std::string& embedding_origin) {
-    for (const auto& exception : exception_list.GetList()) {
-      const base::Value* display_name_value =
-          exception.FindKey(site_settings::kDisplayName);
-      if (display_name_value->GetString() == display_name) {
+    if (!exceptions.is_list())
+      return false;
+
+    for (const auto& exception : exceptions.GetList()) {
+      const std::string* exception_display_name =
+          exception.FindStringKey(site_settings::kDisplayName);
+      if (!exception_display_name)
+        continue;
+
+      if (*exception_display_name == display_name) {
         return ChooserExceptionContainsSiteException(
             exception, requesting_origin, embedding_origin);
       }
@@ -1711,8 +1724,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   args.AppendString(kUsbChooserGroupName);
   args.AppendString(kAndroidOriginStr);
   args.AppendString(kChromiumOriginStr);
-  args.Append(
-      UsbChooserContext::DeviceInfoToDictValue(*persistent_device_info_));
+  args.Append(base::Value::ToUniquePtrValue(
+      UsbChooserContext::DeviceInfoToValue(*persistent_device_info_)));
 
   EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
                              CONTENT_SETTINGS_TYPE_USB_GUARD,
@@ -1743,8 +1756,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   args.AppendString(kUsbChooserGroupName);
   args.AppendString(kChromiumOriginStr);
   args.AppendString(kChromiumOriginStr);
-  args.Append(
-      UsbChooserContext::DeviceInfoToDictValue(*persistent_device_info_));
+  args.Append(base::Value::ToUniquePtrValue(
+      UsbChooserContext::DeviceInfoToValue(*persistent_device_info_)));
 
   {
     const base::Value& exceptions =
@@ -1791,8 +1804,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   args.AppendString(kUsbChooserGroupName);
   args.AppendString(kAndroidOriginStr);
   args.AppendString(kAndroidOriginStr);
-  args.Append(
-      UsbChooserContext::DeviceInfoToDictValue(*user_granted_device_info_));
+  args.Append(base::Value::ToUniquePtrValue(
+      UsbChooserContext::DeviceInfoToValue(*user_granted_device_info_)));
 
   {
     const base::Value& exceptions =

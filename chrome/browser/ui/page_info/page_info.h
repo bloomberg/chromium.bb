@@ -133,7 +133,7 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
     int description_string_id;
     int allowed_by_policy_description_string_id;
     int delete_tooltip_string_id;
-    const char* ui_name_key;
+    std::string (*get_object_name)(const base::Value&);
   };
 
   // Creates a PageInfo for the passed |url| using the given |ssl| status
@@ -155,7 +155,7 @@ class PageInfo : public TabSpecificContentSettings::SiteDataObserver,
 
   // This method is called whenever access to an object is revoked.
   void OnSiteChosenObjectDeleted(const ChooserUIInfo& ui_info,
-                                 const base::DictionaryValue& object);
+                                 const base::Value& object);
 
   // This method is called by the UI when the UI is closing.
   void OnUIClosing();

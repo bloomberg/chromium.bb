@@ -37,7 +37,7 @@ class UsbChooserContext : public ChooserContextBase,
     virtual void OnDeviceManagerConnectionError();
   };
 
-  static std::unique_ptr<base::DictionaryValue> DeviceInfoToDictValue(
+  static base::Value DeviceInfoToValue(
       const device::mojom::UsbDeviceInfo& device_info);
 
   // These methods from ChooserContextBase are overridden in order to expose
@@ -49,7 +49,7 @@ class UsbChooserContext : public ChooserContextBase,
   GetAllGrantedObjects() override;
   void RevokeObjectPermission(const GURL& requesting_origin,
                               const GURL& embedding_origin,
-                              const base::DictionaryValue& object) override;
+                              const base::Value& object) override;
 
   // Grants |requesting_origin| access to the USB device.
   void GrantDevicePermission(const GURL& requesting_origin,
@@ -81,8 +81,10 @@ class UsbChooserContext : public ChooserContextBase,
       device::mojom::UsbDeviceManagerPtr fake_device_manager);
 
   // ChooserContextBase implementation.
-  bool IsValidObject(const base::DictionaryValue& object) override;
-  std::string GetObjectName(const base::DictionaryValue& object) override;
+  bool IsValidObject(const base::Value& object) override;
+
+  // Returns the human readable string representing the given object.
+  static std::string GetObjectName(const base::Value& object);
   void InitDeviceList(std::vector<::device::mojom::UsbDeviceInfoPtr> devices);
 
  private:
