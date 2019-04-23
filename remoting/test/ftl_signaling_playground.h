@@ -15,10 +15,11 @@
 #include "remoting/protocol/client_authentication_config.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_manager.h"
-#include "remoting/protocol/webrtc_transport.h"
 #include "remoting/signaling/ftl_messaging_client.h"
 #include "remoting/signaling/ftl_registration_manager.h"
 #include "remoting/signaling/signal_strategy.h"
+#include "remoting/test/fake_ice_connection.h"
+#include "remoting/test/fake_webrtc_connection.h"
 
 namespace network {
 class TransitionalURLLoaderFactoryOwner;
@@ -57,6 +58,7 @@ class FtlSignalingPlayground final : public SignalStrategy::Listener,
   void TearDownSignaling();
   void RegisterSession(std::unique_ptr<protocol::Session> session,
                        protocol::TransportRole transport_role);
+  void InitializeTransport();
 
   // SignalStrategy::Listener interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
@@ -76,10 +78,10 @@ class FtlSignalingPlayground final : public SignalStrategy::Listener,
 
   std::unique_ptr<SignalStrategy> signal_strategy_;
   std::unique_ptr<protocol::SessionManager> session_manager_;
-  std::unique_ptr<protocol::WebrtcTransport::EventHandler>
-      transport_event_handler_;
-  std::unique_ptr<protocol::WebrtcTransport> transport_;
+  std::unique_ptr<test::FakeWebrtcConnection> webrtc_connection_;
+  std::unique_ptr<test::FakeIceConnection> ice_connection_;
   std::unique_ptr<protocol::Session> session_;
+  protocol::TransportRole transport_role_;
 
   base::OnceClosure current_callback_;
   base::OnceClosure on_signaling_connected_callback_;
