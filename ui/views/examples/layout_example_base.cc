@@ -48,8 +48,8 @@ class FullPanel : public View {
 
 void FullPanel::Layout() {
   DCHECK_EQ(2u, children().size());
-  View* left_panel = child_at(0);
-  View* right_panel = child_at(1);
+  View* left_panel = children()[0];
+  View* right_panel = children()[1];
   gfx::Rect bounds = GetContentsBounds();
   left_panel->SetBounds(bounds.x(), bounds.y(), (bounds.width() * 75) / 100,
                         bounds.height());

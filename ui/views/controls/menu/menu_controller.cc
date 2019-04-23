@@ -712,7 +712,8 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     // |menu| is null means this event is from an empty menu or a separator.
     // If it is from an empty menu, use parent context menu instead of that.
     if (!menu && part.submenu->children().size() == 1 &&
-        part.submenu->child_at(0)->id() == MenuItemView::kEmptyMenuItemViewID) {
+        part.submenu->children().front()->id() ==
+            MenuItemView::kEmptyMenuItemViewID) {
       menu = part.parent;
     }
 

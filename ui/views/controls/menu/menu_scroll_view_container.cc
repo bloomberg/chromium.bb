@@ -161,9 +161,7 @@ class MenuScrollViewContainer::MenuScrollView : public View {
   }
 
   // Returns the contents, which is the SubmenuView.
-  View* GetContents() {
-    return child_at(0);
-  }
+  View* GetContents() { return children().front(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MenuScrollView);

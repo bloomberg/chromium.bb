@@ -37,8 +37,8 @@ class ScrollViewExample::ScrollableView : public View {
     to_color_ = to;
   }
 
-  void PlaceChildY(int index, int y) {
-    View* view = child_at(index);
+  void PlaceChildY(size_t index, int y) {
+    View* view = children()[index];
     gfx::Size size = view->GetPreferredSize();
     view->SetBounds(0, y, size.width(), size.height());
   }

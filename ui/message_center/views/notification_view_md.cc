@@ -1015,7 +1015,7 @@ void NotificationViewMD::CreateOrUpdateImageView(
     AddChildViewAt(image_container_view_, GetIndexOf(content_row_) + 1);
   }
 
-  static_cast<LargeImageView*>(image_container_view_->child_at(0))
+  static_cast<LargeImageView*>(image_container_view_->children().front())
       ->SetImage(notification.image().AsImageSkia());
 }
 

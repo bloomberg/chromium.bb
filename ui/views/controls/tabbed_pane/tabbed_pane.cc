@@ -601,7 +601,7 @@ void MdTabStrip::OnPaintBorder(gfx::Canvas* canvas) {
   // underneath or on the right of the selected tab will be overdrawn later.
   gfx::Rect rect;
   if (is_horizontal) {
-    max_cross_axis = child_at(0)->y() + child_at(0)->height();
+    max_cross_axis = children().front()->bounds().bottom();
     rect = gfx::Rect(0, max_cross_axis - kUnselectedBorderThickness, width(),
                      kUnselectedBorderThickness);
   } else {

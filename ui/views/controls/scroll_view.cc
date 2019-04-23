@@ -120,7 +120,7 @@ class ScrollView::Viewport : public View {
     if (children().empty() || !parent())
       return;
 
-    View* contents = child_at(0);
+    View* contents = children().front();
     gfx::Rect scroll_rect(rect);
 
     if (scroll_view_->ScrollsWithLayers()) {

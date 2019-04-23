@@ -66,8 +66,8 @@ class TabbedPaneAccessibilityMacTest : public WidgetTest {
     WidgetTest::TearDown();
   }
 
-  Tab* GetTabAt(int index) {
-    return static_cast<Tab*>(tabbed_pane_->tab_strip_->child_at(index));
+  Tab* GetTabAt(size_t index) {
+    return static_cast<Tab*>(tabbed_pane_->tab_strip_->children()[index]);
   }
 
   id<NSAccessibility> A11yElementAtPoint(const gfx::Point& point) {
@@ -77,7 +77,7 @@ class TabbedPaneAccessibilityMacTest : public WidgetTest {
         accessibilityHitTest:ns_point]);
   }
 
-  gfx::Point TabCenterPoint(int index) {
+  gfx::Point TabCenterPoint(size_t index) {
     return GetTabAt(index)->GetBoundsInScreen().CenterPoint();
   }
 
@@ -117,7 +117,7 @@ TEST_F(TabbedPaneAccessibilityMacTest, AttributesMatchAppKit) {
 
   // Compare the value attribute against native Cocoa and check it matches up
   // with whether tabs are actually selected.
-  for (int i : {0, 1}) {
+  for (size_t i : {0, 1}) {
     NSNumber* cocoa_value = GetLegacyA11yAttributeValue(
         cocoa_tabs[i], NSAccessibilityValueAttribute);
     // Verify that only the second tab is selected.

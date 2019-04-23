@@ -176,7 +176,7 @@ View* AXAuraObjCache::GetFocusedView() {
     auto* non_client = focused_widget->non_client_view();
     auto* client = non_client ? non_client->client_view() : nullptr;
     return (client && !client->children().empty())
-               ? client->child_at(0)
+               ? client->children().front()
                : focused_widget->GetRootView();
   }
 

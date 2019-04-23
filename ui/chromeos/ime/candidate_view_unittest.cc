@@ -72,8 +72,8 @@ class CandidateViewTest : public views::ViewsTestBase,
   }
 
  protected:
-  CandidateView* GetCandidateAt(int index) {
-    return static_cast<CandidateView*>(container_->child_at(index));
+  CandidateView* GetCandidateAt(size_t index) {
+    return static_cast<CandidateView*>(container_->children()[index]);
   }
 
   size_t GetHighlightedCount() const {

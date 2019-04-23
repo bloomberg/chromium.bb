@@ -71,7 +71,7 @@ bool LayerIsAncestor(const ui::Layer* ancestor, const ui::Layer* layer) {
 // Convenience functions for walking a View tree.
 const views::View* FirstView(const views::View* view) {
   const views::View* v;
-  for (v = view; !v->children().empty(); v = v->child_at(0)) {
+  for (v = view; !v->children().empty(); v = v->children().front()) {
   }
   return v;
 }
@@ -180,13 +180,13 @@ void ScrambleTree(views::View* view) {
 
   size_t count = view->children().size();
   if (count > 1) {
-    const int max = int{count - 1};
-    int a = base::RandInt(0, max);
-    int b = base::RandInt(0, max);
+    const uint64_t max = count - 1;
+    size_t a = size_t{base::RandGenerator(max)};
+    size_t b = size_t{base::RandGenerator(max)};
 
     if (a != b) {
-      views::View* view_a = view->child_at(a);
-      views::View* view_b = view->child_at(b);
+      views::View* view_a = view->children()[a];
+      views::View* view_b = view->children()[b];
       view->ReorderChildView(view_a, b);
       view->ReorderChildView(view_b, a);
     }
@@ -4918,34 +4918,34 @@ class OrderableView : public View {
 };
 
 TEST_F(ViewTest, ChildViewZOrderChanged) {
-  const int kChildrenCount = 4;
+  const size_t kNumChildren = 4;
   auto view = std::make_unique<OrderableView>();
   view->SetPaintToLayer();
-  for (int i = 0; i < kChildrenCount; ++i)
+  for (size_t i = 0; i < kNumChildren; ++i)
     AddViewWithChildLayer(view.get());
   View::Views children = view->GetChildrenInZOrder();
   const std::vector<ui::Layer*>& layers = view->layer()->children();
-  EXPECT_EQ(kChildrenCount, static_cast<int>(layers.size()));
-  EXPECT_EQ(kChildrenCount, static_cast<int>(children.size()));
-  for (int i = 0; i < kChildrenCount; ++i) {
-    EXPECT_EQ(view->child_at(i), children[i]);
-    EXPECT_EQ(view->child_at(i)->layer(), layers[i]);
+  ASSERT_EQ(kNumChildren, children.size());
+  ASSERT_EQ(kNumChildren, layers.size());
+  for (size_t i = 0; i < kNumChildren; ++i) {
+    EXPECT_EQ(view->children()[i], children[i]);
+    EXPECT_EQ(view->children()[i]->layer(), layers[i]);
   }
 
   // Raise one of the children in z-order and add another child to reorder.
-  view->child_at(2)->set_id(OrderableView::VIEW_ID_RAISED);
+  view->children()[2]->set_id(OrderableView::VIEW_ID_RAISED);
   AddViewWithChildLayer(view.get());
 
   // 2nd child should be now on top, i.e. the last element in the array returned
   // by GetChildrenInZOrder(). Its layer should also be above the others.
   // The rest of the children and layers order should be unchanged.
-  const int expected_order[] = {0, 1, 3, 4, 2};
+  const size_t expected_order[] = {0, 1, 3, 4, 2};
   children = view->GetChildrenInZOrder();
-  EXPECT_EQ(kChildrenCount + 1, static_cast<int>(children.size()));
-  EXPECT_EQ(kChildrenCount + 1, static_cast<int>(layers.size()));
-  for (size_t i = 0; i < kChildrenCount + 1; ++i) {
-    EXPECT_EQ(view->child_at(expected_order[i]), children[i]);
-    EXPECT_EQ(view->child_at(expected_order[i])->layer(), layers[i]);
+  EXPECT_EQ(kNumChildren + 1, children.size());
+  EXPECT_EQ(kNumChildren + 1, layers.size());
+  for (size_t i = 0; i < kNumChildren + 1; ++i) {
+    EXPECT_EQ(view->children()[expected_order[i]], children[i]);
+    EXPECT_EQ(view->children()[expected_order[i]]->layer(), layers[i]);
   }
 }
 

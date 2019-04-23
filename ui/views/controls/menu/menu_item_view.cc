@@ -179,7 +179,7 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (IsContainer()) {
     // The first child is taking over, just use its accessible name instead of
     // |title_|.
-    View* child = child_at(0);
+    View* child = children().front();
     ui::AXNodeData node_data;
     child->GetAccessibleNodeData(&node_data);
     item_text =
@@ -514,7 +514,7 @@ int MenuItemView::GetHeightForWidth(int width) const {
     return GetPreferredSize().height();
 
   const gfx::Insets margins = GetContainerMargins();
-  int height = child_at(0)->GetHeightForWidth(width - margins.width());
+  int height = children().front()->GetHeightForWidth(width - margins.width());
   if (!icon_view_ && GetRootMenuItem()->has_icons())
     height = std::max(height, MenuConfig::instance().check_height);
 
@@ -642,7 +642,7 @@ void MenuItemView::Layout() {
     // bounds, less the margins.
     gfx::Rect bounds = GetContentsBounds();
     bounds.Inset(GetContainerMargins());
-    child_at(0)->SetBoundsRect(bounds);
+    children().front()->SetBoundsRect(bounds);
   } else {
     // Child views are laid out right aligned and given the full height. To
     // right align start with the last view and progress to the first.
@@ -1180,7 +1180,7 @@ gfx::Size MenuItemView::GetChildPreferredSize() const {
     return gfx::Size();
 
   if (IsContainer())
-    return child_at(0)->GetPreferredSize();
+    return children().front()->GetPreferredSize();
 
   const auto add_width = [this](int width, const View* child) {
     if (child == icon_view_ || child == radio_check_image_view_ ||
@@ -1357,7 +1357,7 @@ gfx::Insets MenuItemView::GetContainerMargins() const {
   // Use the child's preferred margins but take the standard top and bottom
   // margins as minimums.
   const gfx::Insets* margins_prop =
-      child_at(0)->GetProperty(views::kMarginsKey);
+      children().front()->GetProperty(views::kMarginsKey);
   gfx::Insets margins = margins_prop ? *margins_prop : gfx::Insets();
   margins.set_top(std::max(margins.top(), GetTopMargin()));
   margins.set_bottom(std::max(margins.bottom(), GetBottomMargin()));

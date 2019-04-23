@@ -197,7 +197,7 @@ void RootView::SetContentsView(View* contents_view) {
 }
 
 View* RootView::GetContentsView() {
-  return children().empty() ? nullptr : child_at(0);
+  return children().empty() ? nullptr : children().front();
 }
 
 void RootView::NotifyNativeViewHierarchyChanged() {

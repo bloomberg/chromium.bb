@@ -1848,8 +1848,8 @@ TEST_F(FlexLayoutCrossAxisFitTest, Layout_CrossEnd) {
 
 class NestedFlexLayoutTest : public FlexLayoutTest {
  public:
-  void AddChildren(int num_children) {
-    for (int i = 0; i < num_children; ++i) {
+  void AddChildren(size_t num_children) {
+    for (size_t i = 0; i < num_children; ++i) {
       auto v = std::make_unique<View>();
       FlexLayout* layout = v->SetLayoutManager(std::make_unique<FlexLayout>());
       children_.push_back(v.get());
@@ -1859,20 +1859,20 @@ class NestedFlexLayoutTest : public FlexLayoutTest {
   }
 
   View* AddGrandchild(
-      int child_index,
+      size_t child_index,
       const gfx::Size& preferred,
       const base::Optional<gfx::Size>& minimum = base::nullopt) {
     return AddChild(children_[child_index - 1], preferred, minimum);
   }
 
-  View* child(int child_index) const { return children_[child_index - 1]; }
+  View* child(size_t child_index) const { return children_[child_index - 1]; }
 
-  FlexLayout* layout(int child_index) const {
+  FlexLayout* layout(size_t child_index) const {
     return layouts_[child_index - 1];
   }
 
-  View* grandchild(int child_index, int grandchild_index) const {
-    return children_[child_index - 1]->child_at(grandchild_index - 1);
+  View* grandchild(size_t child_index, size_t grandchild_index) const {
+    return children_[child_index - 1]->children()[grandchild_index - 1];
   }
 
  private:

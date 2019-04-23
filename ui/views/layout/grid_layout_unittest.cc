@@ -586,12 +586,12 @@ TEST_F(GridLayoutTest, FixedSize) {
 
   layout()->Layout(&host());
 
+  auto i = host().children().cbegin();
   for (size_t row = 0; row < kRowCount; ++row) {
-    for (size_t column = 0; column < kColumnCount; ++column) {
-      View* view = host().child_at(row * kColumnCount + column);
+    for (size_t column = 0; column < kColumnCount; ++column, ++i) {
       ExpectViewBoundsEquals(
           2 + kTitleWidth * column + (kTitleWidth - kPrefWidth) / 2,
-          2 + kPrefHeight * row, kPrefWidth, kPrefHeight, view);
+          2 + kPrefHeight * row, kPrefWidth, kPrefHeight, *i);
     }
   }
 
