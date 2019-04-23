@@ -106,7 +106,7 @@ void CreditCardSaveManager::AttemptToOfferCardLocalSave(
     bool has_non_focusable_field,
     const CreditCard& card) {
   local_card_save_candidate_ = card;
-  show_save_prompt_ = base::nullopt;
+  show_save_prompt_.reset();
   has_non_focusable_field_ = has_non_focusable_field;
   from_dynamic_change_form_ = from_dynamic_change_form;
 
@@ -143,7 +143,7 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   upload_request_ = payments::PaymentsClient::UploadRequestDetails();
   upload_request_.card = card;
   uploading_local_card_ = uploading_local_card;
-  show_save_prompt_ = base::nullopt;
+  show_save_prompt_.reset();
 
   // In an ideal scenario, when uploading a card, we would have:
   //  1) Card number and expiration
@@ -373,7 +373,7 @@ void CreditCardSaveManager::OnDidUploadCard(
           base::DoNothing());
     }
   } else {
-    if (show_save_prompt_.value()) {
+    if (show_save_prompt_.has_value() && show_save_prompt_.value()) {
       if (base::FeatureList::IsEnabled(
               features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
         // If the upload failed and the bubble was actually shown (NOT just the
@@ -471,7 +471,7 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
     // LegacyStrikeDatabase have returned their decisions. Use presence of
     // |show_save_prompt_| as an indicator of LegacyStrikeDatabase retrieving
     // its data.
-    if (show_save_prompt_ != base::nullopt)
+    if (show_save_prompt_.has_value())
       OfferCardUploadSave();
   } else {
     // If the upload details request failed and we *know* we have all possible
@@ -514,16 +514,16 @@ void CreditCardSaveManager::OfferCardLocalSave() {
   bool is_mobile_build = false;
 #endif  // #if defined(OS_ANDROID) || defined(OS_IOS)
 
-  // If |show_save_prompt_.value()| is false, desktop builds will still offer
+  // If |show_save_prompt_|'s value is false, desktop builds will still offer
   // save in the omnibox without popping-up the bubble. Mobile builds, however,
   // should not display the offer-to-save infobar at all.
-  if (!is_mobile_build || show_save_prompt_.value()) {
+  if (!is_mobile_build || show_save_prompt_.value_or(true)) {
     if (observer_for_testing_)
       observer_for_testing_->OnOfferLocalSave();
     client_->ConfirmSaveCreditCardLocally(
         local_card_save_candidate_,
         AutofillClient::SaveCreditCardOptions().with_show_prompt(
-            show_save_prompt_.value()),
+            show_save_prompt_.value_or(true)),
         base::BindOnce(&CreditCardSaveManager::OnUserDidDecideOnLocalSave,
                        weak_ptr_factory_.GetWeakPtr()));
 
@@ -532,7 +532,7 @@ void CreditCardSaveManager::OfferCardLocalSave() {
       AutofillMetrics::LogSaveCardWithFirstAndLastNameOffered(
           /*is_local=*/true);
   }
-  if (!show_save_prompt_.value()) {
+  if (show_save_prompt_.has_value() && !show_save_prompt_.value()) {
     AutofillMetrics::LogCreditCardSaveNotOfferedDueToMaxStrikesMetric(
         AutofillMetrics::SaveTypeMetric::LOCAL);
   }
@@ -544,10 +544,10 @@ void CreditCardSaveManager::OfferCardUploadSave() {
 #else
   bool is_mobile_build = false;
 #endif  // #if defined(OS_ANDROID) || defined(OS_IOS)
-  // If |show_save_prompt_.value()| is false, desktop builds will still offer
+  // If |show_save_prompt_|'s value is false, desktop builds will still offer
   // save in the omnibox without popping-up the bubble. Mobile builds, however,
   // should not display the offer-to-save infobar at all.
-  if (!is_mobile_build || show_save_prompt_.value()) {
+  if (!is_mobile_build || show_save_prompt_.value_or(true)) {
     user_did_accept_upload_prompt_ = false;
     client_->ConfirmSaveCreditCardToCloud(
         upload_request_.card, std::move(legal_message_),
@@ -557,7 +557,7 @@ void CreditCardSaveManager::OfferCardUploadSave() {
             .with_should_request_name_from_user(should_request_name_from_user_)
             .with_should_request_expiration_date_from_user(
                 should_request_expiration_date_from_user_)
-            .with_show_prompt(show_save_prompt_.value()),
+            .with_show_prompt(show_save_prompt_.value_or(true)),
         base::BindOnce(&CreditCardSaveManager::OnUserDidDecideOnUploadSave,
                        weak_ptr_factory_.GetWeakPtr()));
     client_->LoadRiskData(
@@ -581,7 +581,7 @@ void CreditCardSaveManager::OfferCardUploadSave() {
         AutofillMetrics::UPLOAD_NOT_OFFERED_MAX_STRIKES_ON_MOBILE;
   }
   LogCardUploadDecisions(upload_decision_metrics_);
-  if (!show_save_prompt_.value()) {
+  if (show_save_prompt_.has_value() && !show_save_prompt_.value()) {
     AutofillMetrics::LogCreditCardSaveNotOfferedDueToMaxStrikesMetric(
         AutofillMetrics::SaveTypeMetric::SERVER);
   }
@@ -992,7 +992,7 @@ void CreditCardSaveManager::SendUploadCardRequest() {
 
 void CreditCardSaveManager::OnUserDidIgnoreOrDeclineSave(
     const base::string16& card_last_four_digits) {
-  if (show_save_prompt_ != base::nullopt && show_save_prompt_.value()) {
+  if (show_save_prompt_.has_value() && show_save_prompt_.value()) {
     if (base::FeatureList::IsEnabled(
             features::kAutofillSaveCreditCardUsesStrikeSystemV2)) {
       // If the user rejected or ignored save and the offer-to-save bubble or
