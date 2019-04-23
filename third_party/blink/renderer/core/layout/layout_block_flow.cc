@@ -4902,6 +4902,7 @@ void LayoutBlockFlow::ClearOffsetMappingIfNeeded() {
 
 const NGOffsetMapping* LayoutBlockFlow::GetOffsetMapping() const {
   DCHECK(!IsLayoutNGObject());
+  CHECK(!NeedsLayout());
   return rare_data_ ? rare_data_->offset_mapping_.get() : nullptr;
 }
 
