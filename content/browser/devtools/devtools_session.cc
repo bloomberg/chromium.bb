@@ -19,7 +19,6 @@
 
 namespace cbor = inspector_protocol_encoding::cbor;
 using inspector_protocol_encoding::SpanFrom;
-using inspector_protocol_encoding::Status;
 
 namespace content {
 
@@ -440,8 +439,9 @@ void DevToolsSession::SendMessageFromChildSession(const std::string& session_id,
   }
   DCHECK(cbor::IsCBORMessage(SpanFrom(message)));
   std::string patched(message);
-  Status status = cbor::AppendString8EntryToCBORMap(
-      SpanFrom(kSessionId), SpanFrom(session_id), &patched);
+  inspector_protocol_encoding::Status status =
+      inspector_protocol_encoding::cbor::AppendString8EntryToCBORMap(
+          SpanFrom(kSessionId), SpanFrom(session_id), &patched);
   if (!status.ok()) {
     LOG(ERROR) << "cbor::AppendString8EntryToCBORMap error "
                << static_cast<uint32_t>(status.error) << " position "
