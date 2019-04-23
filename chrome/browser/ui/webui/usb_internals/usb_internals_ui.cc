@@ -33,7 +33,6 @@ UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)
                           IDR_USB_DEVICE_MANAGER_CLIENT_MOJOM_LITE_JS);
   source->AddResourcePath("device_manager_test.mojom-lite.js",
                           IDR_USB_DEVICE_MANAGER_TEST_MOJOM_LITE_JS);
-  source->AddResourcePath("url.mojom-lite.js", IDR_URL_MOJOM_LITE_JS);
 
   source->SetDefaultResource(IDR_USB_INTERNALS_HTML);
   source->UseGzip();

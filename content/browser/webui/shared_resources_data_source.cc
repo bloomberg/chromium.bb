@@ -15,6 +15,8 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "content/grit/content_resources.h"
+#include "content/grit/content_resources_map.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -93,6 +95,12 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
   }
 #endif  // !defined(OS_ANDROID)
   return aliases;
+}
+
+const std::map<int, std::string> CreateContentResourceIdToAliasMap() {
+  return std::map<int, std::string>{
+      {IDR_URL_MOJO_JS, "js/url.mojom-lite.js"},
+  };
 }
 
 const std::map<int, std::string> CreateMojoResourceIdToAliasMap() {
@@ -213,6 +221,8 @@ void AddAliasedResourcesToMap(
 const ResourcesMap* CreateResourcesMap() {
   ResourcesMap* result = new ResourcesMap();
   AddResourcesToMap(result);
+  AddAliasedResourcesToMap(CreateContentResourceIdToAliasMap(),
+                           kContentResources, kContentResourcesSize, result);
   AddAliasedResourcesToMap(CreateMojoResourceIdToAliasMap(),
                            kMojoBindingsResources, kMojoBindingsResourcesSize,
                            result);

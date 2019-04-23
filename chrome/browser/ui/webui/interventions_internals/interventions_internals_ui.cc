@@ -27,7 +27,6 @@ content::WebUIDataSource* GetSource() {
       "chrome/browser/ui/webui/interventions_internals/"
       "interventions_internals.mojom-lite.js",
       IDR_INTERVENTIONS_INTERNALS_MOJOM_LITE_JS);
-  source->AddResourcePath("url/mojom/url.mojom-lite.js", IDR_URL_MOJOM_LITE_JS);
   source->SetDefaultResource(IDR_INTERVENTIONS_INTERNALS_INDEX_HTML);
   source->UseGzip();
   return source;

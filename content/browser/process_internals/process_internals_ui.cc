@@ -35,7 +35,6 @@ ProcessInternalsUI::ProcessInternalsUI(WebUI* web_ui)
   WebUIDataSource* source =
       WebUIDataSource::Create(kChromeUIProcessInternalsHost);
 
-  source->AddResourcePath("url.mojom-lite.js", IDR_URL_MOJO_JS);
   source->AddResourcePath("process_internals.js", IDR_PROCESS_INTERNALS_JS);
   source->AddResourcePath("process_internals.css", IDR_PROCESS_INTERNALS_CSS);
   source->AddResourcePath("process_internals.mojom-lite.js",
