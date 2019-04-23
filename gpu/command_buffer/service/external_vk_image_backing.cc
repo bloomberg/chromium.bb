@@ -223,7 +223,7 @@ ExternalVkImageBacking::ProduceSkia(
   // This backing type is only used when vulkan is enabled, so SkiaRenderer
   // should also be using Vulkan.
   DCHECK_EQ(context_state_, context_state.get());
-  DCHECK(context_state->use_vulkan_gr_context());
+  DCHECK(context_state->GrContextIsVulkan());
   return std::make_unique<ExternalVkImageSkiaRepresentation>(manager, this,
                                                              tracker);
 }

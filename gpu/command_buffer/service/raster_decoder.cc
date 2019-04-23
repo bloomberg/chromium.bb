@@ -796,7 +796,7 @@ void RasterDecoderImpl::Destroy(bool have_context) {
 
 // Make this decoder's GL context current.
 bool RasterDecoderImpl::MakeCurrent() {
-  if (shared_context_state_->use_vulkan_gr_context())
+  if (!shared_context_state_->GrContextIsGL())
     return true;
 
   if (!context_.get())
@@ -1494,13 +1494,13 @@ error::Error RasterDecoderImpl::HandleEndQueryEXT(
 }
 
 void RasterDecoderImpl::DoFinish() {
-  if (!shared_context_state_->use_vulkan_gr_context())
+  if (shared_context_state_->GrContextIsGL())
     api()->glFinishFn();
   ProcessPendingQueries(true);
 }
 
 void RasterDecoderImpl::DoFlush() {
-  if (!shared_context_state_->use_vulkan_gr_context())
+  if (shared_context_state_->GrContextIsGL())
     api()->glFlushFn();
   ProcessPendingQueries(false);
 }

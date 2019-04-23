@@ -345,6 +345,7 @@ target(link_target_type, "gles2_sources") {
   }
 
   if (is_mac) {
+    deps += [ "//components/viz/common:metal_context_provider" ]
     sources += [
       "shared_image_backing_factory_iosurface.h",
       "shared_image_backing_factory_iosurface.mm",

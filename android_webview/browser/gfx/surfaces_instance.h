@@ -55,8 +55,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   void AddChildId(const viz::SurfaceId& child_id);
   void RemoveChildId(const viz::SurfaceId& child_id);
   bool is_using_vulkan() const {
-    return shared_context_state_ &&
-           shared_context_state_->use_vulkan_gr_context();
+    return shared_context_state_ && shared_context_state_->GrContextIsVulkan();
   }
 
  private:

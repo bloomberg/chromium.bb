@@ -727,7 +727,7 @@ SharedImageBackingAHB::ProduceSkia(
 
   // Check whether we are in Vulkan mode OR GL mode and accordingly create
   // Skia representation.
-  if (context_state->use_vulkan_gr_context()) {
+  if (context_state->GrContextIsVulkan()) {
     sk_sp<SkPromiseImageTexture> promise_texture = CreatePromiseTexture(
         context_state->vk_context_provider(), GetAhbHandle(), size(), format());
     if (!promise_texture)
@@ -736,6 +736,7 @@ SharedImageBackingAHB::ProduceSkia(
         manager, this, std::move(context_state), std::move(promise_texture),
         tracker);
   }
+  DCHECK(context_state->GrContextIsGL());
 
   auto* texture = GenGLTexture();
   if (!texture)

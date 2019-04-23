@@ -23,6 +23,10 @@
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "components/viz/common/gpu/metal_context_provider.h"
+#endif
+
 namespace {
 static constexpr size_t kInitialScratchDeserializationBufferSize = 1024;
 }
@@ -35,24 +39,32 @@ SharedContextState::SharedContextState(
     scoped_refptr<gl::GLContext> context,
     bool use_virtualized_gl_contexts,
     base::OnceClosure context_lost_callback,
-    viz::VulkanContextProvider* vulkan_context_provider)
+    viz::VulkanContextProvider* vulkan_context_provider,
+    viz::MetalContextProvider* metal_context_provider)
     : use_virtualized_gl_contexts_(use_virtualized_gl_contexts),
       context_lost_callback_(std::move(context_lost_callback)),
       vk_context_provider_(vulkan_context_provider),
-#if BUILDFLAG(ENABLE_VULKAN)
-      gr_context_(vk_context_provider_ ? vk_context_provider_->GetGrContext()
-                                       : nullptr),
-#endif
-      use_vulkan_gr_context_(!!vk_context_provider_),
+      metal_context_provider_(metal_context_provider),
       share_group_(std::move(share_group)),
       context_(context),
       real_context_(std::move(context)),
       surface_(std::move(surface)),
       weak_ptr_factory_(this) {
-  if (use_vulkan_gr_context_) {
-    DCHECK(gr_context_);
+  if (GrContextIsVulkan()) {
+#if BUILDFLAG(ENABLE_VULKAN)
+    gr_context_ = vk_context_provider_->GetGrContext();
+#endif
     use_virtualized_gl_contexts_ = false;
+    DCHECK(gr_context_);
   }
+  if (GrContextIsMetal()) {
+#if defined(OS_MACOSX)
+    gr_context_ = metal_context_provider_->GetGrContext();
+#endif
+    use_virtualized_gl_contexts_ = false;
+    DCHECK(gr_context_);
+  }
+
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         this, "SharedContextState", base::ThreadTaskRunnerHandle::Get());
@@ -78,7 +90,7 @@ void SharedContextState::InitializeGrContext(
     gl::ProgressReporter* progress_reporter) {
   progress_reporter_ = progress_reporter;
 
-  if (!use_vulkan_gr_context_) {
+  if (GrContextIsGL()) {
     DCHECK(context_->IsCurrent(nullptr));
     sk_sp<GrGLInterface> interface(gl::init::CreateGrGLInterface(
         *context_->GetVersionInfo(), workarounds.use_es2_for_oopr,
@@ -194,7 +206,7 @@ bool SharedContextState::InitializeGL(
 }
 
 bool SharedContextState::MakeCurrent(gl::GLSurface* surface) {
-  if (use_vulkan_gr_context_)
+  if (!GrContextIsGL())
     return true;
 
   if (context_lost_)
@@ -223,7 +235,7 @@ void SharedContextState::MarkContextLost() {
 }
 
 bool SharedContextState::IsCurrent(gl::GLSurface* surface) {
-  if (use_vulkan_gr_context_)
+  if (!GrContextIsGL())
     return true;
   return context_->IsCurrent(surface);
 }
@@ -281,7 +293,7 @@ void SharedContextState::PessimisticallyResetGrContext() const {
   // Calling GrContext::resetContext() is very cheap, so we do it
   // pessimistically. We could dirty less state if skia state setting
   // performance becomes an issue.
-  if (gr_context_ && !use_vulkan_gr_context_)
+  if (gr_context_ && GrContextIsGL())
     gr_context_->resetContext();
 }
 

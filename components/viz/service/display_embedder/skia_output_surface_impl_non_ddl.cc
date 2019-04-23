@@ -130,11 +130,10 @@ void SkiaOutputSurfaceImplNonDDL::Reshape(const gfx::Size& size,
   reshape_has_alpha_ = has_alpha;
   reshape_use_stencil_ = use_stencil;
 
-  const bool is_using_vulkan = shared_context_state_->use_vulkan_gr_context();
-  if (is_using_vulkan) {
+  if (shared_context_state_->GrContextIsVulkan()) {
     auto* context_provider = shared_context_state_->vk_context_provider();
     DCHECK(context_provider->GetGrSecondaryCBDrawContext());
-  } else {
+  } else if (shared_context_state_->GrContextIsGL()) {
     gl::GLSurface::ColorSpace surface_color_space =
         gl::ColorSpaceUtils::GetGLSurfaceColorSpace(color_space);
     gl_surface_->Resize(size, device_scale_factor, surface_color_space,
@@ -156,6 +155,8 @@ void SkiaOutputSurfaceImplNonDDL::Reshape(const gfx::Size& size,
         gr_context(), render_target, kBottomLeft_GrSurfaceOrigin,
         kRGBA_8888_SkColorType, color_space.ToSkColorSpace(), &surface_props);
     DCHECK(sk_surface_);
+  } else {
+    NOTIMPLEMENTED();
   }
 }
 
@@ -213,9 +214,7 @@ SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintCurrentFrame() {
   order_num_ = sync_point_order_data_->GenerateUnprocessedOrderNumber();
   sync_point_order_data_->BeginProcessingOrderNumber(order_num_);
 
-  const bool is_using_vulkan = shared_context_state_->use_vulkan_gr_context();
-
-  if (is_using_vulkan) {
+  if (shared_context_state_->GrContextIsVulkan()) {
 #if BUILDFLAG(ENABLE_VULKAN)
     DCHECK(!draw_context_);
     draw_context_ = shared_context_state_->vk_context_provider()
@@ -402,8 +401,7 @@ gpu::SyncToken SkiaOutputSurfaceImplNonDDL::SubmitPaint() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (current_render_pass_id_ == 0) {
-    const bool is_using_vulkan = shared_context_state_->use_vulkan_gr_context();
-    if (is_using_vulkan) {
+    if (shared_context_state_->GrContextIsVulkan()) {
 #if BUILDFLAG(ENABLE_VULKAN)
       DCHECK(draw_context_);
       draw_context_->flush();
@@ -435,8 +433,7 @@ gpu::SyncToken SkiaOutputSurfaceImplNonDDL::SubmitPaint() {
       sync_point_client_state_->command_buffer_id(), ++sync_fence_release_);
   sync_token.SetVerifyFlush();
   sync_point_client_state_->ReleaseFenceSync(sync_fence_release_);
-  const bool is_using_vulkan = shared_context_state_->use_vulkan_gr_context();
-  if (!is_using_vulkan) {
+  if (shared_context_state_->GrContextIsGL()) {
     DCHECK(mailbox_manager_->UsesSync());
     mailbox_manager_->PushTextureUpdates(sync_token);
   }
@@ -554,8 +551,7 @@ bool SkiaOutputSurfaceImplNonDDL::GetGrBackendTexture(
     GrBackendTexture* backend_texture) {
   DCHECK(!metadata.mailbox_holder.mailbox.IsZero());
   if (WaitSyncToken(metadata.mailbox_holder.sync_token)) {
-    const bool is_using_vulkan = shared_context_state_->use_vulkan_gr_context();
-    if (!is_using_vulkan) {
+    if (shared_context_state_->GrContextIsGL()) {
       DCHECK(mailbox_manager_->UsesSync());
       mailbox_manager_->PullTextureUpdates(metadata.mailbox_holder.sync_token);
     }
