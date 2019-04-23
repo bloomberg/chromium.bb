@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -176,6 +177,7 @@ public class VrBrowserTransitionTest {
     @Test
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @MediumTest
+    @DisableIf.Build(sdk_is_greater_than = 27, message = "crbug.com/955516")
     public void test2dIntentExitsVrShell() {
         TestVrShellDelegate.getInstance().setAllow2dIntents(true);
         String url = testVrEntryIntentInternal();
