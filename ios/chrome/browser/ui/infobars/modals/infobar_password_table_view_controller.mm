@@ -50,7 +50,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super viewDidLoad];
   self.view.backgroundColor = [UIColor whiteColor];
   self.styler.cellBackgroundColor = [UIColor whiteColor];
-  self.tableView.scrollEnabled = NO;
   self.tableView.sectionHeaderHeight = 0;
   [self.tableView
       setSeparatorInset:UIEdgeInsetsMake(0, kTableViewHorizontalSpacing, 0, 0)];
@@ -73,6 +72,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.navigationController.navigationBar.prefersLargeTitles = NO;
 
   [self loadModel];
+}
+
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  self.tableView.scrollEnabled =
+      self.tableView.contentSize.height > self.view.frame.size.height;
 }
 
 #pragma mark - TableViewModel

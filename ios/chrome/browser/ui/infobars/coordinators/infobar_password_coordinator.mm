@@ -119,6 +119,13 @@
   self.modalViewController = nil;
 }
 
+- (CGFloat)infobarModalContentHeight {
+  UITableView* tableView = self.modalViewController.tableView;
+  [tableView setNeedsLayout];
+  [tableView layoutIfNeeded];
+  return tableView.contentSize.height;
+}
+
 #pragma mark - InfobarPasswordModalDelegate
 
 - (void)updateCredentialsWithUsername:(NSString*)username

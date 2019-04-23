@@ -27,6 +27,9 @@
 // Transitioning from Banner to Modal won't call this method.
 - (void)infobarWasDismissed;
 
+// The infobar modal content height. Used to calculate its container height.
+- (CGFloat)infobarModalContentHeight;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_COORDINATORS_INFOBAR_COORDINATOR_IMPLEMENTATION_H_

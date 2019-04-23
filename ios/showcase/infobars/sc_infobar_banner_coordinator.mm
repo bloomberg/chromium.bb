@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_positioner.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_positioner.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_transition_driver.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,7 +24,8 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
 
 #pragma mark - ContainerViewController
 
-@interface ContainerViewController : UIViewController <InfobarBannerPositioner>
+@interface ContainerViewController
+    : UIViewController <InfobarBannerPositioner, InfobarModalPositioner>
 @property(nonatomic, strong) InfobarBannerViewController* bannerViewController;
 @property(nonatomic, strong)
     InfobarBannerTransitionDriver* bannerTransitionDriver;
@@ -51,6 +53,13 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
 - (UIView*)bannerView {
   return self.bannerViewController.view;
 }
+
+#pragma mark InfobarBannerPositioner
+
+- (CGFloat)modalHeight {
+  return 200;
+}
+
 @end
 
 #pragma mark - SCInfobarBannerCoordinator
@@ -97,6 +106,7 @@ NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
 - (void)presentInfobarModalFromBanner {
   self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
       initWithTransitionMode:InfobarModalTransitionBanner];
+  self.modalTransitionDriver.modalPositioner = self.containerViewController;
   self.modalViewController =
       [[InfobarModalViewController alloc] initWithModalDelegate:self];
   self.modalViewController.title = kInfobarBannerPresentedModalLabel;

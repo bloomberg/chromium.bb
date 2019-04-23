@@ -33,6 +33,7 @@
       [[InfobarModalPresentationController alloc]
           initWithPresentedViewController:presented
                  presentingViewController:presenting];
+  presentationController.modalPositioner = self.modalPositioner;
   return presentationController;
 }
 

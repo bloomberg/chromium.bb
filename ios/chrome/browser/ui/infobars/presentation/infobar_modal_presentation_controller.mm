@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_presentation_controller.h"
 
+#include "base/logging.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_positioner.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -11,18 +13,18 @@
 #endif
 
 namespace {
-// The presented view Height
-const CGFloat kPresentedViewHeight = 350.0;
 // The presented view outer horizontal margins.
-const CGFloat kPresentedViewHorizontalMargin = 10.0;
+const CGFloat kPresentedViewMargin = 10.0;
 // The presented view maximum width.
 const CGFloat kPresentedViewMaxWidth = 394.0;
 // The rounded corner radius for the container view.
 const CGFloat kContainerCornerRadius = 13.0;
-// The background colot for the container view.
+// The background color for the container view.
 const int kContainerBackgroundColor = 0x2F2F2F;
 // The alpha component for the container view background color.
 const CGFloat kContainerBackgroundColorAlpha = 0.5;
+// The modal view content vertical padding.
+const CGFloat kModalViewVerticalPadding = 20;
 }  // namespace
 
 @implementation InfobarModalPresentationController
@@ -40,21 +42,26 @@ const CGFloat kContainerBackgroundColorAlpha = 0.5;
 }
 
 - (CGRect)frameForPresentedView {
+  DCHECK(self.modalPositioner);
   CGFloat containerWidth = CGRectGetWidth(self.containerView.bounds);
   CGFloat containerHeight = CGRectGetHeight(self.containerView.bounds);
 
   // Calculate the frame width.
-  CGFloat maxAvailableWidth =
-      containerWidth - 2 * kPresentedViewHorizontalMargin;
+  CGFloat maxAvailableWidth = containerWidth - 2 * kPresentedViewMargin;
   CGFloat frameWidth = fmin(maxAvailableWidth, kPresentedViewMaxWidth);
+
+  // Calculate the frame height needed to fit the content.
+  CGFloat contentHeight = [self.modalPositioner modalHeight];
+  CGFloat maxAvailableHeight = containerHeight - 2 * kPresentedViewMargin;
+  CGFloat frameHeight =
+      fmin(maxAvailableHeight, contentHeight + kModalViewVerticalPadding);
 
   // Based on the container width calculate the values in order to center the
   // frame in the X and Y axis.
   CGFloat modalXPosition = (containerWidth / 2) - (frameWidth / 2);
-  CGFloat modalYPosition = (containerHeight / 2) - (kPresentedViewHeight / 2);
+  CGFloat modalYPosition = (containerHeight / 2) - (frameHeight / 2);
 
-  return CGRectMake(modalXPosition, modalYPosition, frameWidth,
-                    kPresentedViewHeight);
+  return CGRectMake(modalXPosition, modalYPosition, frameWidth, frameHeight);
 }
 
 @end

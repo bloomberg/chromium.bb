@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_positioner.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_positioner.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_transition_driver.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 
@@ -23,7 +24,8 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
 }  // namespace
 
 @interface InfobarCoordinator () <InfobarCoordinatorImplementation,
-                                  InfobarBannerPositioner> {
+                                  InfobarBannerPositioner,
+                                  InfobarModalPositioner> {
   // The AnimatedFullscreenDisable disables fullscreen by displaying the
   // Toolbar/s when an Infobar banner is presented.
   std::unique_ptr<AnimatedScopedFullscreenDisabler> animatedFullscreenDisabler_;
@@ -97,6 +99,7 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
     DCHECK(self.baseViewController);
     self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
         initWithTransitionMode:InfobarModalTransitionBase];
+    self.modalTransitionDriver.modalPositioner = self;
     [self presentInfobarModalFrom:self.baseViewController
                            driver:self.modalTransitionDriver];
   };
@@ -145,6 +148,7 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
   DCHECK(self.bannerViewController);
   self.modalTransitionDriver = [[InfobarModalTransitionDriver alloc]
       initWithTransitionMode:InfobarModalTransitionBanner];
+  self.modalTransitionDriver.modalPositioner = self;
   [self presentInfobarModalFrom:self.bannerViewController
                          driver:self.modalTransitionDriver];
 }
@@ -216,6 +220,12 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
   }
 }
 
+#pragma mark InfobarModalPositioner
+
+- (CGFloat)modalHeight {
+  return [self infobarModalContentHeight];
+}
+
 #pragma mark InfobarCoordinatorImplementation
 
 - (void)configureModalViewController {
@@ -232,6 +242,11 @@ const CGFloat kBannerOverlapWithOmnibox = 5.0;
 
 - (void)infobarWasDismissed {
   NOTREACHED() << "Subclass must implement.";
+}
+
+- (CGFloat)infobarModalContentHeight {
+  NOTREACHED() << "Subclass must implement.";
+  return 0;
 }
 
 #pragma mark - Private
