@@ -396,7 +396,7 @@ static const arg_def_t arnr_strength =
 static const struct arg_enum_list tuning_enum[] = {
   { "psnr", AOM_TUNE_PSNR },
   { "ssim", AOM_TUNE_SSIM },
-#ifdef CONFIG_DIST_8X8
+#if CONFIG_DIST_8X8
   { "cdef-dist", AOM_TUNE_CDEF_DIST },
   { "daala-dist", AOM_TUNE_DAALA_DIST },
 #endif
