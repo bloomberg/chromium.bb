@@ -137,12 +137,19 @@ cr.define('app_management', function() {
    * @return {SearchState}
    */
   SearchState.startSearch = function(apps, search, action) {
+    const searchTerm = action.term.toLowerCase();
     const results = [];
+
     for (const app of Object.values(apps)) {
-      if (app.title.includes(action.term)) {
+      if (app.title.toLowerCase().includes(searchTerm)) {
         results.push(app);
       }
     }
+
+    results.sort(
+        (a, b) => app_management.util.alphabeticalSort(
+            assert(a.title), assert(b.title)));
+
     return /** @type {SearchState} */ (Object.assign({}, search, {
       term: action.term,
       results: results,

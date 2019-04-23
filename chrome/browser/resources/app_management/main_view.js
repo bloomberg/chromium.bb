@@ -48,7 +48,9 @@ Polymer({
    */
   onAppsChanged_: function() {
     this.appsList = Object.values(this.apps_)
-                        .sort((a, b) => a.title.localeCompare(assert(b.title)));
+                        .sort(
+                            (a, b) => app_management.util.alphabeticalSort(
+                                assert(a.title), assert(b.title)));
   },
 
   /** @private */
