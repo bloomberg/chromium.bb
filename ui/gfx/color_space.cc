@@ -408,6 +408,17 @@ ColorSpace ColorSpace::GetBlendingColorSpace() const {
   return *this;
 }
 
+ColorSpace ColorSpace::GetWithMatrixAndRange(MatrixID matrix,
+                                             RangeID range) const {
+  ColorSpace result(*this);
+  if (!IsValid())
+    return result;
+
+  result.matrix_ = matrix;
+  result.range_ = range;
+  return result;
+}
+
 sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   // Unspecified color spaces correspond to the null SkColorSpace.
   if (!IsValid())

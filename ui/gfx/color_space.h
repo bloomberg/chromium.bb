@@ -244,6 +244,10 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // would be appropriate for blending.
   ColorSpace GetBlendingColorSpace() const;
 
+  // Return a combined color space with has the same primary and transfer than
+  // the caller but replacing the matrix and range with the given values.
+  ColorSpace GetWithMatrixAndRange(MatrixID matrix, RangeID range) const;
+
   // This will return nullptr for non-RGB spaces, spaces with non-FULL
   // range, and unspecified spaces.
   sk_sp<SkColorSpace> ToSkColorSpace() const;
