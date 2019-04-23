@@ -327,11 +327,13 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
       pc.stats_[id][iter->first].push_back(iter->second);
     }
     std::stringstream ss;
-    ss << "{pid:" << pc.pid_ << ", lid:" << pc.lid_ << ","
-           "reports:[" << "{id:'" << id << "', type:'" << type << "', "
-                           "stats:" << stats.GetString() << "}]}";
-
-    ASSERT_TRUE(ExecuteJavascript("addLegacyStats(" + ss.str() + ")"));
+    ss << "(() => {\n";
+    ss << "  currentGetStatsMethod = OPTION_GETSTATS_LEGACY;\n";
+    ss << "  addLegacyStats({pid:" << pc.pid_ << ", lid:" << pc.lid_
+       << ", reports:[{id:'" << id << "', type:'" << type
+       << "', stats:" << stats.GetString() << "}]});\n";
+    ss << "})()";
+    ASSERT_TRUE(ExecuteJavascript(ss.str()));
     VerifyStatsTable(pc, entry);
   }
 
