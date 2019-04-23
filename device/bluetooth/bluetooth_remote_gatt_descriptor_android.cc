@@ -141,7 +141,6 @@ void BluetoothRemoteGattDescriptorAndroid::OnRead(
   // Clear callbacks before calling to avoid reentrancy issues.
   ValueCallback read_callback = std::move(read_callback_);
   ErrorCallback read_error_callback = std::move(read_error_callback_);
-  read_callback_.Reset();
 
   if (status == 0  // android.bluetooth.BluetoothGatt.GATT_SUCCESS
       && !read_callback.is_null()) {
