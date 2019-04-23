@@ -69,6 +69,7 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAcce
 import org.chromium.chrome.browser.autofill.keyboard_accessory.data.PropertyProvider;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
+import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.Tab.TabHidingType;
@@ -113,6 +114,8 @@ public class ManualFillingControllerTest {
     private KeyboardAccessoryCoordinator mMockKeyboardAccessory;
     @Mock
     private AccessorySheetCoordinator mMockAccessorySheet;
+    @Mock
+    private CompositorViewHolder mMockCompositorViewHolder;
 
     @Rule
     public Features.JUnitProcessor mFeaturesProcessor = new Features.JUnitProcessor();
@@ -267,6 +270,7 @@ public class ManualFillingControllerTest {
         when(mMockActivity.getActivityTabProvider()).thenReturn(mock(ActivityTabProvider.class));
         ChromeFullscreenManager fullscreenManager = new ChromeFullscreenManager(mMockActivity, 0);
         when(mMockActivity.getFullscreenManager()).thenReturn(fullscreenManager);
+        when(mMockActivity.getCompositorViewHolder()).thenReturn(mMockCompositorViewHolder);
         when(mMockActivity.getResources()).thenReturn(mMockResources);
         when(mMockActivity.getPackageManager())
                 .thenReturn(RuntimeEnvironment.application.getPackageManager());
@@ -746,6 +750,7 @@ public class ManualFillingControllerTest {
         verify(mMockAccessorySheet).hide();
         verify(mMockKeyboardAccessory).closeActiveTab();
         verify(mMockKeyboardAccessory).dismiss();
+        verify(mMockCompositorViewHolder).requestLayout(); // Triggered as if it was a keyboard.
     }
 
     @Test
@@ -780,6 +785,7 @@ public class ManualFillingControllerTest {
         verify(mMockKeyboard).showKeyboard(any());
         verify(mMockAccessorySheet).hide();
         verify(mMockKeyboardAccessory).closeActiveTab();
+        verify(mMockCompositorViewHolder).requestLayout(); // Triggered as if it was a keyboard.
         verify(mMockKeyboardAccessory).show();
     }
 
