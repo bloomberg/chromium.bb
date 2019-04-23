@@ -104,13 +104,21 @@ def QualifyFilename(filename, symbol):
   return candidate
 
 
-# Regex matching nm output for the symbols we're interested in.
+# Regex matching nm output for the symbols we're interested in. The two formats
+# we are interested in are _GLOBAL__sub_I_<filename> and _cxx_global_var_initN.
 # See test_ParseNmLine for examples.
 nm_re = re.compile(
-  r'(\S+) (\S+) t ((?:_ZN12)?_GLOBAL__(?:sub_)?I_|__cxx_global_var_init\d*)(.*)'
-)
+    r'''(\S+)\s(\S+)\st\s                # Symbol start address and size
+        (
+          (?:_ZN12)?_GLOBAL__(?:sub_)?I_ # Pattern with filename
+        |
+          __cxx_global_var_init\d*       # Pattern without filename
+        )(.*)                            # capture the filename''',
+    re.X)
 def ParseNmLine(line):
-  """Given a line of nm output, parse static initializers as a
+  """Parse static initializers from a line of nm output.
+
+  Given a line of nm output, parse static initializers as a
   (file, start, size, symbol) tuple."""
   match = nm_re.match(line)
   if match:
@@ -146,7 +154,9 @@ test_ParseNmLine()
 
 
 def ParseNm(toolchain, binary):
-  """Given a binary, yield static initializers as (file, start, size, symbol)
+  """Yield static initializers for the given binary.
+
+  Given a binary, yield static initializers as (file, start, size, symbol)
   tuples."""
   nm = subprocess.Popen([toolchain + 'nm', '-S', binary],
                         stdout=subprocess.PIPE)
