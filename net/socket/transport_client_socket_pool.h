@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/address_list.h"
@@ -53,6 +54,7 @@ namespace net {
 struct CommonConnectJobParams;
 struct NetLogSource;
 class ProxyServer;
+struct NetworkTrafficAnnotationTag;
 
 // TransportClientSocketPool establishes network connections through using
 // ConnectJobs, and maintains a list of idle persistent sockets available for
@@ -84,15 +86,17 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
    public:
     // If |proxy_auth_callback| is null, proxy auth challenges will
     // result in an error.
-    Request(ClientSocketHandle* handle,
-            CompletionOnceCallback callback,
-            const ProxyAuthCallback& proxy_auth_callback,
-            RequestPriority priority,
-            const SocketTag& socket_tag,
-            RespectLimits respect_limits,
-            Flags flags,
-            scoped_refptr<SocketParams> socket_params,
-            const NetLogWithSource& net_log);
+    Request(
+        ClientSocketHandle* handle,
+        CompletionOnceCallback callback,
+        const ProxyAuthCallback& proxy_auth_callback,
+        RequestPriority priority,
+        const SocketTag& socket_tag,
+        RespectLimits respect_limits,
+        Flags flags,
+        scoped_refptr<SocketParams> socket_params,
+        const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+        const NetLogWithSource& net_log);
 
     virtual ~Request();
 
@@ -106,6 +110,10 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     RespectLimits respect_limits() const { return respect_limits_; }
     Flags flags() const { return flags_; }
     SocketParams* socket_params() const { return socket_params_.get(); }
+    const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag()
+        const {
+      return proxy_annotation_tag_;
+    }
     const NetLogWithSource& net_log() const { return net_log_; }
     const SocketTag& socket_tag() const { return socket_tag_; }
     ConnectJob* job() const { return job_; }
@@ -135,6 +143,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     const RespectLimits respect_limits_;
     const Flags flags_;
     const scoped_refptr<SocketParams> socket_params_;
+    const base::Optional<NetworkTrafficAnnotationTag> proxy_annotation_tag_;
     const NetLogWithSource net_log_;
     const SocketTag socket_tag_;
     ConnectJob* job_;
@@ -153,6 +162,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
     virtual std::unique_ptr<ConnectJob> NewConnectJob(
         ClientSocketPool::GroupId group_id,
         scoped_refptr<ClientSocketPool::SocketParams> socket_params,
+        const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
         RequestPriority request_priority,
         SocketTag socket_tag,
         ConnectJob::Delegate* delegate) const = 0;
@@ -195,19 +205,23 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) override;
 
   // ClientSocketPool implementation:
-  int RequestSocket(const GroupId& group_id,
-                    scoped_refptr<SocketParams> params,
-                    RequestPriority priority,
-                    const SocketTag& socket_tag,
-                    RespectLimits respect_limits,
-                    ClientSocketHandle* handle,
-                    CompletionOnceCallback callback,
-                    const ProxyAuthCallback& proxy_auth_callback,
-                    const NetLogWithSource& net_log) override;
-  void RequestSockets(const GroupId& group_id,
-                      scoped_refptr<SocketParams> params,
-                      int num_sockets,
-                      const NetLogWithSource& net_log) override;
+  int RequestSocket(
+      const GroupId& group_id,
+      scoped_refptr<SocketParams> params,
+      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+      RequestPriority priority,
+      const SocketTag& socket_tag,
+      RespectLimits respect_limits,
+      ClientSocketHandle* handle,
+      CompletionOnceCallback callback,
+      const ProxyAuthCallback& proxy_auth_callback,
+      const NetLogWithSource& net_log) override;
+  void RequestSockets(
+      const GroupId& group_id,
+      scoped_refptr<SocketParams> params,
+      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+      int num_sockets,
+      const NetLogWithSource& net_log) override;
   void SetPriority(const GroupId& group_id,
                    ClientSocketHandle* handle,
                    RequestPriority priority) override;

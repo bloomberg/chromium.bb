@@ -20,6 +20,7 @@
 #include "net/socket/stream_socket.h"
 #include "net/socket/transport_connect_job.h"
 #include "net/ssl/ssl_config.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -101,7 +102,7 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
     bool using_ssl,
     const HostPortPair& endpoint,
     const ProxyServer& proxy_server,
-    MutableNetworkTrafficAnnotationTag proxy_annotation_tag,
+    const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
     const SSLConfig* ssl_config_for_origin,
     const SSLConfig* ssl_config_for_proxy,
     bool force_tunnel,
@@ -134,14 +135,13 @@ std::unique_ptr<ConnectJob> ConnectJob::CreateConnectJob(
       http_proxy_params = base::MakeRefCounted<HttpProxySocketParams>(
           std::move(proxy_tcp_params), std::move(ssl_params),
           proxy_server.is_quic(), endpoint, proxy_server.is_trusted_proxy(),
-          force_tunnel || using_ssl,
-          NetworkTrafficAnnotationTag(proxy_annotation_tag));
+          force_tunnel || using_ssl, *proxy_annotation_tag);
     } else {
       DCHECK(proxy_server.is_socks());
       socks_params = base::MakeRefCounted<SOCKSSocketParams>(
           std::move(proxy_tcp_params),
           proxy_server.scheme() == ProxyServer::SCHEME_SOCKS5, endpoint,
-          NetworkTrafficAnnotationTag(proxy_annotation_tag));
+          *proxy_annotation_tag);
     }
   }
 

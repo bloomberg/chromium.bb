@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "net/base/host_port_pair.h"
@@ -96,7 +97,6 @@ class WebSocketClientSocketHandleAdapterTest
   bool InitClientSocketHandle(ClientSocketHandle* connection) {
     scoped_refptr<ClientSocketPool::SocketParams> socks_params =
         base::MakeRefCounted<ClientSocketPool::SocketParams>(
-            MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
             std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
             nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
     TestCompletionCallback callback;
@@ -104,9 +104,9 @@ class WebSocketClientSocketHandleAdapterTest
         ClientSocketPool::GroupId(host_port_pair_,
                                   ClientSocketPool::SocketType::kSsl,
                                   PrivacyMode::PRIVACY_MODE_DISABLED),
-        socks_params, MEDIUM, SocketTag(),
-        ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
-        ClientSocketPool::ProxyAuthCallback(),
+        socks_params, TRAFFIC_ANNOTATION_FOR_TESTS /* proxy_annotation_tag */,
+        MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+        callback.callback(), ClientSocketPool::ProxyAuthCallback(),
         socket_pool_manager_->GetSocketPool(ProxyServer::Direct()), net_log_);
     rv = callback.GetResult(rv);
     return rv == OK;

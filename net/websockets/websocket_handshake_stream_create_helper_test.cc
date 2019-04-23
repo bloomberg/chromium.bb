@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
@@ -92,7 +93,8 @@ class MockClientSocketHandleFactory {
         ClientSocketPool::GroupId(HostPortPair("a", 80),
                                   ClientSocketPool::SocketType::kHttp,
                                   PrivacyMode::PRIVACY_MODE_DISABLED),
-        scoped_refptr<ClientSocketPool::SocketParams>(), MEDIUM, SocketTag(),
+        scoped_refptr<ClientSocketPool::SocketParams>(),
+        base::nullopt /* proxy_annotation_tag */, MEDIUM, SocketTag(),
         ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
         ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
     return socket_handle;

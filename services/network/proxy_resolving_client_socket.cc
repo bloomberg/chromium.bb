@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
@@ -275,13 +276,19 @@ int ProxyResolvingClientSocket::DoInitConnection() {
 
   next_state_ = STATE_INIT_CONNECTION_COMPLETE;
 
+  base::Optional<net::NetworkTrafficAnnotationTag> proxy_annotation_tag =
+      proxy_info_.is_direct()
+          ? base::nullopt
+          : base::Optional<net::NetworkTrafficAnnotationTag>(
+                proxy_info_.traffic_annotation());
+
   // Now that the proxy is resolved, create and start a ConnectJob.
   connect_job_ = net::ConnectJob::CreateConnectJob(
       use_tls_, net::HostPortPair::FromURL(url_), proxy_info_.proxy_server(),
-      proxy_info_.traffic_annotation(), &ssl_config_, &ssl_config_,
-      true /* force_tunnel */, net::PRIVACY_MODE_DISABLED,
-      net::OnHostResolutionCallback(), net::MAXIMUM_PRIORITY, net::SocketTag(),
-      common_connect_job_params_, this);
+      proxy_annotation_tag, &ssl_config_, &ssl_config_, true /* force_tunnel */,
+      net::PRIVACY_MODE_DISABLED, net::OnHostResolutionCallback(),
+      net::MAXIMUM_PRIORITY, net::SocketTag(), common_connect_job_params_,
+      this);
   return connect_job_->Connect();
 }
 

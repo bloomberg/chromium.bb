@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/load_states.h"
@@ -21,7 +22,6 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/socket_tag.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace base {
 class DictionaryValue;
@@ -38,6 +38,7 @@ struct CommonConnectJobParams;
 class HttpAuthController;
 class HttpResponseInfo;
 class NetLogWithSource;
+struct NetworkTrafficAnnotationTag;
 class ProxyServer;
 struct SSLConfig;
 class StreamSocket;
@@ -177,18 +178,13 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
    public:
     // For non-SSL requests / non-HTTPS proxies, the corresponding SSLConfig
     // argument may be nullptr.
-    SocketParams(MutableNetworkTrafficAnnotationTag proxy_annotation_tag,
-                 std::unique_ptr<SSLConfig> ssl_config_for_origin,
+    SocketParams(std::unique_ptr<SSLConfig> ssl_config_for_origin,
                  std::unique_ptr<SSLConfig> ssl_config_for_proxy,
                  const OnHostResolutionCallback& resolution_callback);
 
     // Creates a  SocketParams object with none of the fields populated. This
     // works for the HTTP case only.
     static scoped_refptr<SocketParams> CreateForHttpForTesting();
-
-    MutableNetworkTrafficAnnotationTag proxy_annotation_tag() const {
-      return proxy_annotation_tag_;
-    }
 
     const SSLConfig* ssl_config_for_origin() const {
       return ssl_config_for_origin_.get();
@@ -206,7 +202,6 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
     friend class base::RefCounted<SocketParams>;
     ~SocketParams();
 
-    MutableNetworkTrafficAnnotationTag proxy_annotation_tag_;
     std::unique_ptr<SSLConfig> ssl_config_for_origin_;
     std::unique_ptr<SSLConfig> ssl_config_for_proxy_;
     const OnHostResolutionCallback resolution_callback_;
@@ -248,18 +243,23 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   //
   // If |respect_limits| is DISABLED, priority must be HIGHEST.
   //
+  // |proxy_annotation_tag| is the annotation used for proxy-related reads and
+  // writes, and may be nullopt if (and only if) no proxy is in use.
+  //
   // |proxy_auth_callback| will be invoked each time an auth challenge is seen
   // while establishing a tunnel. It will be invoked asynchronously, once for
   // each auth challenge seen.
-  virtual int RequestSocket(const GroupId& group_id,
-                            scoped_refptr<SocketParams> params,
-                            RequestPriority priority,
-                            const SocketTag& socket_tag,
-                            RespectLimits respect_limits,
-                            ClientSocketHandle* handle,
-                            CompletionOnceCallback callback,
-                            const ProxyAuthCallback& proxy_auth_callback,
-                            const NetLogWithSource& net_log) = 0;
+  virtual int RequestSocket(
+      const GroupId& group_id,
+      scoped_refptr<SocketParams> params,
+      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+      RequestPriority priority,
+      const SocketTag& socket_tag,
+      RespectLimits respect_limits,
+      ClientSocketHandle* handle,
+      CompletionOnceCallback callback,
+      const ProxyAuthCallback& proxy_auth_callback,
+      const NetLogWithSource& net_log) = 0;
 
   // RequestSockets is used to request that |num_sockets| be connected in the
   // connection group for |group_id|.  If the connection group already has
@@ -271,10 +271,12 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // This priority will probably be lower than all others, since this method
   // is intended to make sure ahead of time that |num_sockets| sockets are
   // available to talk to a host.
-  virtual void RequestSockets(const GroupId& group_id,
-                              scoped_refptr<SocketParams> params,
-                              int num_sockets,
-                              const NetLogWithSource& net_log) = 0;
+  virtual void RequestSockets(
+      const GroupId& group_id,
+      scoped_refptr<SocketParams> params,
+      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+      int num_sockets,
+      const NetLogWithSource& net_log) = 0;
 
   // Called to change the priority of a RequestSocket call that returned
   // ERR_IO_PENDING and has not yet asynchronously completed.  The same handle
@@ -362,6 +364,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
       GroupId group_id,
       scoped_refptr<SocketParams> socket_params,
       const ProxyServer& proxy_server,
+      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
       bool is_for_websockets,
       const CommonConnectJobParams* common_connect_job_params,
       RequestPriority request_priority,

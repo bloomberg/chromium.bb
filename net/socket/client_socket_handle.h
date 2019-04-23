@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_states.h"
@@ -30,6 +31,7 @@
 namespace net {
 
 class ConnectJob;
+struct NetworkTrafficAnnotationTag;
 class SocketTag;
 
 // A container for a StreamSocket.
@@ -79,15 +81,17 @@ class NET_EXPORT ClientSocketHandle {
   // Init may be called multiple times.
   //
   // Profiling information for the request is saved to |net_log| if non-NULL.
-  int Init(const ClientSocketPool::GroupId& group_id,
-           scoped_refptr<ClientSocketPool::SocketParams> socket_params,
-           RequestPriority priority,
-           const SocketTag& socket_tag,
-           ClientSocketPool::RespectLimits respect_limits,
-           CompletionOnceCallback callback,
-           const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
-           ClientSocketPool* pool,
-           const NetLogWithSource& net_log);
+  int Init(
+      const ClientSocketPool::GroupId& group_id,
+      scoped_refptr<ClientSocketPool::SocketParams> socket_params,
+      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+      RequestPriority priority,
+      const SocketTag& socket_tag,
+      ClientSocketPool::RespectLimits respect_limits,
+      CompletionOnceCallback callback,
+      const ClientSocketPool::ProxyAuthCallback& proxy_auth_callback,
+      ClientSocketPool* pool,
+      const NetLogWithSource& net_log);
 
   // Changes the priority of the ClientSocketHandle to the passed value.
   // This function is a no-op if |priority| is the same as the current

@@ -26,6 +26,7 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 using base::TimeDelta;
 
@@ -72,12 +73,14 @@ class TransportClientSocketPool::ConnectJobFactoryImpl
   std::unique_ptr<ConnectJob> NewConnectJob(
       ClientSocketPool::GroupId group_id,
       scoped_refptr<ClientSocketPool::SocketParams> socket_params,
+      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
       RequestPriority request_priority,
       SocketTag socket_tag,
       ConnectJob::Delegate* delegate) const override {
     return CreateConnectJob(group_id, socket_params, proxy_server_,
-                            is_for_websockets_, common_connect_job_params_,
-                            request_priority, socket_tag, delegate);
+                            proxy_annotation_tag, is_for_websockets_,
+                            common_connect_job_params_, request_priority,
+                            socket_tag, delegate);
   }
 
  private:
@@ -97,6 +100,7 @@ TransportClientSocketPool::Request::Request(
     RespectLimits respect_limits,
     Flags flags,
     scoped_refptr<SocketParams> socket_params,
+    const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
     const NetLogWithSource& net_log)
     : handle_(handle),
       callback_(std::move(callback)),
@@ -105,6 +109,7 @@ TransportClientSocketPool::Request::Request(
       respect_limits_(respect_limits),
       flags_(flags),
       socket_params_(std::move(socket_params)),
+      proxy_annotation_tag_(proxy_annotation_tag),
       net_log_(net_log),
       socket_tag_(socket_tag),
       job_(nullptr) {
@@ -240,6 +245,7 @@ void TransportClientSocketPool::RemoveHigherLayeredPool(
 int TransportClientSocketPool::RequestSocket(
     const GroupId& group_id,
     scoped_refptr<SocketParams> params,
+    const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
     RequestPriority priority,
     const SocketTag& socket_tag,
     RespectLimits respect_limits,
@@ -254,7 +260,7 @@ int TransportClientSocketPool::RequestSocket(
 
   std::unique_ptr<Request> request = std::make_unique<Request>(
       handle, std::move(callback), proxy_auth_callback, priority, socket_tag,
-      respect_limits, NORMAL, std::move(params), net_log);
+      respect_limits, NORMAL, std::move(params), proxy_annotation_tag, net_log);
 
   // Cleanup any timed-out idle sockets.
   CleanupIdleSockets(false);
@@ -291,6 +297,7 @@ int TransportClientSocketPool::RequestSocket(
 void TransportClientSocketPool::RequestSockets(
     const GroupId& group_id,
     scoped_refptr<SocketParams> params,
+    const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
     int num_sockets,
     const NetLogWithSource& net_log) {
   if (net_log.IsCapturing()) {
@@ -303,7 +310,7 @@ void TransportClientSocketPool::RequestSockets(
   Request request(nullptr /* no handle */, CompletionOnceCallback(),
                   ProxyAuthCallback(), IDLE, SocketTag(),
                   RespectLimits::ENABLED, NO_IDLE_SOCKETS, std::move(params),
-                  net_log);
+                  proxy_annotation_tag, net_log);
 
   // Cleanup any timed-out idle sockets.
   CleanupIdleSockets(false);
@@ -412,9 +419,9 @@ int TransportClientSocketPool::RequestSocketInternal(const GroupId& group_id,
   group = GetOrCreateGroup(group_id);
   connecting_socket_count_++;
   std::unique_ptr<ConnectJob> owned_connect_job(
-      connect_job_factory_->NewConnectJob(group_id, request.socket_params(),
-                                          request.priority(),
-                                          request.socket_tag(), group));
+      connect_job_factory_->NewConnectJob(
+          group_id, request.socket_params(), request.proxy_annotation_tag(),
+          request.priority(), request.socket_tag(), group));
   owned_connect_job->net_log().AddEvent(
       NetLogEventType::SOCKET_POOL_CONNECT_JOB_CREATED,
       base::BindRepeating(&NetLogCreateConnectJobCallback,
@@ -1527,8 +1534,8 @@ void TransportClientSocketPool::Group::OnBackupJobTimerFired(
   Request* request = unbound_requests_.FirstMax().value().get();
   std::unique_ptr<ConnectJob> owned_backup_job =
       client_socket_pool_base_helper_->connect_job_factory_->NewConnectJob(
-          group_id, request->socket_params(), request->priority(),
-          request->socket_tag(), this);
+          group_id, request->socket_params(), request->proxy_annotation_tag(),
+          request->priority(), request->socket_tag(), this);
   owned_backup_job->net_log().AddEvent(
       NetLogEventType::SOCKET_POOL_CONNECT_JOB_CREATED,
       base::BindRepeating(&NetLogCreateConnectJobCallback,

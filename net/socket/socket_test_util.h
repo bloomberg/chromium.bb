@@ -45,7 +45,6 @@
 #include "net/socket/transport_client_socket_pool.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_info.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -56,6 +55,7 @@ namespace net {
 
 struct CommonConnectJobParams;
 class NetLog;
+struct NetworkTrafficAnnotationTag;
 
 const NetworkChangeNotifier::NetworkHandle kDefaultNetworkForTests = 1;
 const NetworkChangeNotifier::NetworkHandle kNewNetworkForTests = 2;
@@ -1136,9 +1136,9 @@ class ClientSocketPoolTest {
         new TestSocketRequest(&request_order_, &completion_count_));
     requests_.push_back(base::WrapUnique(request));
     int rv = request->handle()->Init(
-        group_id, socket_params, priority, SocketTag(), respect_limits,
-        request->callback(), ClientSocketPool::ProxyAuthCallback(), socket_pool,
-        NetLogWithSource());
+        group_id, socket_params, base::nullopt /* proxy_annotation_tag */,
+        priority, SocketTag(), respect_limits, request->callback(),
+        ClientSocketPool::ProxyAuthCallback(), socket_pool, NetLogWithSource());
     if (rv != ERR_IO_PENDING)
       request_order_.push_back(request);
     return rv;
@@ -1234,15 +1234,17 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
   int cancel_count() const { return cancel_count_; }
 
   // TransportClientSocketPool implementation.
-  int RequestSocket(const GroupId& group_id,
-                    scoped_refptr<ClientSocketPool::SocketParams> socket_params,
-                    RequestPriority priority,
-                    const SocketTag& socket_tag,
-                    RespectLimits respect_limits,
-                    ClientSocketHandle* handle,
-                    CompletionOnceCallback callback,
-                    const ProxyAuthCallback& on_auth_callback,
-                    const NetLogWithSource& net_log) override;
+  int RequestSocket(
+      const GroupId& group_id,
+      scoped_refptr<ClientSocketPool::SocketParams> socket_params,
+      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+      RequestPriority priority,
+      const SocketTag& socket_tag,
+      RespectLimits respect_limits,
+      ClientSocketHandle* handle,
+      CompletionOnceCallback callback,
+      const ProxyAuthCallback& on_auth_callback,
+      const NetLogWithSource& net_log) override;
   void SetPriority(const GroupId& group_id,
                    ClientSocketHandle* handle,
                    RequestPriority priority) override;

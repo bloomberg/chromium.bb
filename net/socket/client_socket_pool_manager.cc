@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/features.h"
@@ -88,14 +89,12 @@ ClientSocketPool::GroupId CreateGroupId(
 scoped_refptr<ClientSocketPool::SocketParams> CreateSocketParams(
     const ClientSocketPool::GroupId& group_id,
     const ProxyServer& proxy_server,
-    MutableNetworkTrafficAnnotationTag proxy_annotation_tag,
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     const OnHostResolutionCallback& resolution_callback) {
   bool using_ssl = group_id.socket_type() == ClientSocketPool::SocketType::kSsl;
   bool using_proxy_ssl = proxy_server.is_http_like() && !proxy_server.is_http();
   return base::MakeRefCounted<ClientSocketPool::SocketParams>(
-      proxy_annotation_tag,
       using_ssl ? std::make_unique<SSLConfig>(ssl_config_for_origin) : nullptr,
       using_proxy_ssl ? std::make_unique<SSLConfig>(ssl_config_for_proxy)
                       : nullptr,
@@ -134,8 +133,8 @@ int InitSocketPoolHelper(
       CreateGroupId(group_type, origin_host_port, proxy_info, privacy_mode);
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       CreateSocketParams(connection_group, proxy_info.proxy_server(),
-                         proxy_info.traffic_annotation(), ssl_config_for_origin,
-                         ssl_config_for_proxy, resolution_callback);
+                         ssl_config_for_origin, ssl_config_for_proxy,
+                         resolution_callback);
 
   ClientSocketPool* pool =
       session->GetSocketPool(socket_pool_type, proxy_info.proxy_server());
@@ -144,15 +143,20 @@ int InitSocketPoolHelper(
   if ((request_load_flags & LOAD_IGNORE_LIMITS) != 0)
     respect_limits = ClientSocketPool::RespectLimits::DISABLED;
 
+  base::Optional<NetworkTrafficAnnotationTag> proxy_annotation =
+      proxy_info.is_direct() ? base::nullopt
+                             : base::Optional<NetworkTrafficAnnotationTag>(
+                                   proxy_info.traffic_annotation());
   if (num_preconnect_streams) {
     pool->RequestSockets(connection_group, std::move(socket_params),
-                         num_preconnect_streams, net_log);
+                         proxy_annotation, num_preconnect_streams, net_log);
     return OK;
   }
 
-  return socket_handle->Init(
-      connection_group, std::move(socket_params), request_priority, socket_tag,
-      respect_limits, std::move(callback), proxy_auth_callback, pool, net_log);
+  return socket_handle->Init(connection_group, std::move(socket_params),
+                             proxy_annotation, request_priority, socket_tag,
+                             respect_limits, std::move(callback),
+                             proxy_auth_callback, pool, net_log);
 }
 
 }  // namespace

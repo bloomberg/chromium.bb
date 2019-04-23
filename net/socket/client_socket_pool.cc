@@ -27,12 +27,10 @@ int64_t g_used_idle_socket_timeout_s = 300;  // 5 minutes
 }  // namespace
 
 ClientSocketPool::SocketParams::SocketParams(
-    MutableNetworkTrafficAnnotationTag proxy_annotation_tag,
     std::unique_ptr<SSLConfig> ssl_config_for_origin,
     std::unique_ptr<SSLConfig> ssl_config_for_proxy,
     const OnHostResolutionCallback& resolution_callback)
-    : proxy_annotation_tag_(proxy_annotation_tag),
-      ssl_config_for_origin_(std::move(ssl_config_for_origin)),
+    : ssl_config_for_origin_(std::move(ssl_config_for_origin)),
       ssl_config_for_proxy_(std::move(ssl_config_for_proxy)),
       resolution_callback_(resolution_callback) {}
 
@@ -40,9 +38,9 @@ ClientSocketPool::SocketParams::~SocketParams() = default;
 
 scoped_refptr<ClientSocketPool::SocketParams>
 ClientSocketPool::SocketParams::CreateForHttpForTesting() {
-  return base::MakeRefCounted<SocketParams>(
-      MutableNetworkTrafficAnnotationTag(), nullptr /* ssl_config_for_origin */,
-      nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
+  return base::MakeRefCounted<SocketParams>(nullptr /* ssl_config_for_origin */,
+                                            nullptr /* ssl_config_for_proxy */,
+                                            OnHostResolutionCallback());
 }
 
 ClientSocketPool::GroupId::GroupId()
@@ -124,6 +122,7 @@ std::unique_ptr<ConnectJob> ClientSocketPool::CreateConnectJob(
     GroupId group_id,
     scoped_refptr<SocketParams> socket_params,
     const ProxyServer& proxy_server,
+    const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
     bool is_for_websockets,
     const CommonConnectJobParams* common_connect_job_params,
     RequestPriority request_priority,
@@ -131,8 +130,7 @@ std::unique_ptr<ConnectJob> ClientSocketPool::CreateConnectJob(
     ConnectJob::Delegate* delegate) {
   bool using_ssl = group_id.socket_type() == ClientSocketPool::SocketType::kSsl;
   return ConnectJob::CreateConnectJob(
-      using_ssl, group_id.destination(), proxy_server,
-      socket_params->proxy_annotation_tag(),
+      using_ssl, group_id.destination(), proxy_server, proxy_annotation_tag,
       socket_params->ssl_config_for_origin(),
       socket_params->ssl_config_for_proxy(), is_for_websockets,
       group_id.privacy_mode(), socket_params->resolution_callback(),

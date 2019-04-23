@@ -34,6 +34,7 @@ ClientSocketHandle::~ClientSocketHandle() {
 int ClientSocketHandle::Init(
     const ClientSocketPool::GroupId& group_id,
     scoped_refptr<ClientSocketPool::SocketParams> socket_params,
+    const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
     RequestPriority priority,
     const SocketTag& socket_tag,
     ClientSocketPool::RespectLimits respect_limits,
@@ -51,8 +52,9 @@ int ClientSocketHandle::Init(
   CompletionOnceCallback io_complete_callback =
       base::BindOnce(&ClientSocketHandle::OnIOComplete, base::Unretained(this));
   int rv = pool_->RequestSocket(
-      group_id, std::move(socket_params), priority, socket_tag, respect_limits,
-      this, std::move(io_complete_callback), proxy_auth_callback, net_log);
+      group_id, std::move(socket_params), proxy_annotation_tag, priority,
+      socket_tag, respect_limits, this, std::move(io_complete_callback),
+      proxy_auth_callback, net_log);
   if (rv == ERR_IO_PENDING) {
     callback_ = std::move(callback);
   } else {

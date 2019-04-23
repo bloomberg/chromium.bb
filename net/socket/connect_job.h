@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/address_list.h"
@@ -24,7 +25,6 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
@@ -39,6 +39,7 @@ class HttpUserAgentSettings;
 class NetLog;
 class NetLogWithSource;
 class NetworkQualityEstimator;
+struct NetworkTrafficAnnotationTag;
 class ProxyDelegate;
 class ProxyServer;
 class SocketPerformanceWatcherFactory;
@@ -161,7 +162,7 @@ class NET_EXPORT_PRIVATE ConnectJob {
       bool using_ssl,
       const HostPortPair& endpoint,
       const ProxyServer& proxy_server,
-      MutableNetworkTrafficAnnotationTag proxy_annotation_tag,
+      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
       const SSLConfig* ssl_config_for_origin,
       const SSLConfig* ssl_config_for_proxy,
       bool force_tunnel,

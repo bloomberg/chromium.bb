@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -3533,16 +3534,16 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
   TestCompletionCallback callback2;
   HostPortPair host_port2("2.com", 80);
   auto connection2 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(
-      ERR_IO_PENDING,
-      connection2->Init(
-          ClientSocketPool::GroupId(host_port2,
-                                    ClientSocketPool::SocketType::kHttp,
-                                    PrivacyMode::PRIVACY_MODE_DISABLED),
-          ClientSocketPool::SocketParams::CreateForHttpForTesting(),
-          DEFAULT_PRIORITY, SocketTag(),
-          ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
-          ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            connection2->Init(
+                ClientSocketPool::GroupId(host_port2,
+                                          ClientSocketPool::SocketType::kHttp,
+                                          PrivacyMode::PRIVACY_MODE_DISABLED),
+                ClientSocketPool::SocketParams::CreateForHttpForTesting(),
+                base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
+                SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                callback2.callback(), ClientSocketPool::ProxyAuthCallback(),
+                pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // The socket pool should close the connection asynchronously and establish a
@@ -3615,16 +3616,16 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   TestCompletionCallback callback3;
   HostPortPair host_port3("3.com", 80);
   auto connection3 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(
-      ERR_IO_PENDING,
-      connection3->Init(
-          ClientSocketPool::GroupId(host_port3,
-                                    ClientSocketPool::SocketType::kHttp,
-                                    PrivacyMode::PRIVACY_MODE_DISABLED),
-          ClientSocketPool::SocketParams::CreateForHttpForTesting(),
-          DEFAULT_PRIORITY, SocketTag(),
-          ClientSocketPool::RespectLimits::ENABLED, callback3.callback(),
-          ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            connection3->Init(
+                ClientSocketPool::GroupId(host_port3,
+                                          ClientSocketPool::SocketType::kHttp,
+                                          PrivacyMode::PRIVACY_MODE_DISABLED),
+                ClientSocketPool::SocketParams::CreateForHttpForTesting(),
+                base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
+                SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                callback3.callback(), ClientSocketPool::ProxyAuthCallback(),
+                pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // The socket pool should close the connection asynchronously and establish a
@@ -3695,16 +3696,16 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   TestCompletionCallback callback2;
   HostPortPair host_port2("2.com", 80);
   auto connection2 = std::make_unique<ClientSocketHandle>();
-  EXPECT_EQ(
-      ERR_IO_PENDING,
-      connection2->Init(
-          ClientSocketPool::GroupId(host_port2,
-                                    ClientSocketPool::SocketType::kHttp,
-                                    PrivacyMode::PRIVACY_MODE_DISABLED),
-          ClientSocketPool::SocketParams::CreateForHttpForTesting(),
-          DEFAULT_PRIORITY, SocketTag(),
-          ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
-          ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
+  EXPECT_EQ(ERR_IO_PENDING,
+            connection2->Init(
+                ClientSocketPool::GroupId(host_port2,
+                                          ClientSocketPool::SocketType::kHttp,
+                                          PrivacyMode::PRIVACY_MODE_DISABLED),
+                ClientSocketPool::SocketParams::CreateForHttpForTesting(),
+                base::nullopt /* proxy_annotation_tag */, DEFAULT_PRIORITY,
+                SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+                callback2.callback(), ClientSocketPool::ProxyAuthCallback(),
+                pool, NetLogWithSource()));
   EXPECT_TRUE(pool->IsStalled());
 
   // Running the message loop should cause the socket pool to ask the SPDY
