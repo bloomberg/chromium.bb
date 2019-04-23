@@ -1049,10 +1049,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   class DroppedInterfaceRequestLogger;
 
   // IPC Message handlers.
-  void OnDidAddMessageToConsole(int32_t level,
-                                const base::string16& message,
-                                int32_t line_no,
-                                const base::string16& source_id);
   void OnDetach();
   void OnFrameFocused();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
@@ -1206,6 +1202,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void FullscreenStateChanged(bool is_fullscreen) override;
   void DocumentOnLoadCompleted() override;
   void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
+  void DidAddMessageToConsole(blink::mojom::ConsoleMessageLevel log_level,
+                              const base::string16& message,
+                              int32_t line_no,
+                              const base::string16& source_id) override;
+
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif

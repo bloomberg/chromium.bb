@@ -4545,9 +4545,9 @@ void RenderFrameImpl::DidAddMessageToConsole(
     }
   }
 
-  Send(new FrameHostMsg_DidAddMessageToConsole(
-      routing_id_, static_cast<int32_t>(log_severity), message.text.Utf16(),
-      static_cast<int32_t>(source_line), source_name.Utf16()));
+  GetFrameHost()->DidAddMessageToConsole(message.level, message.text.Utf16(),
+                                         static_cast<int32_t>(source_line),
+                                         source_name.Utf16());
 }
 
 void RenderFrameImpl::DownloadURL(

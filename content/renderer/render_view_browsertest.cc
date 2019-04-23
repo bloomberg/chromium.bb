@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <tuple>
 
 #include "base/bind.h"
@@ -17,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -2486,35 +2488,6 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnShouldClearHistoryList) {
                    view()->HistoryForwardListCount() + 1);
 }
 
-// IPC Listener that runs a callback when a console.log() is executed from
-// javascript.
-class ConsoleCallbackFilter : public IPC::Listener {
- public:
-  explicit ConsoleCallbackFilter(
-      base::Callback<void(const base::string16&)> callback)
-      : callback_(callback) {}
-
-  bool OnMessageReceived(const IPC::Message& msg) override {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(ConsoleCallbackFilter, msg)
-      IPC_MESSAGE_HANDLER(FrameHostMsg_DidAddMessageToConsole,
-                          OnDidAddMessageToConsole)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
-  void OnDidAddMessageToConsole(int32_t,
-                                const base::string16& message,
-                                int32_t,
-                                const base::string16&) {
-    callback_.Run(message);
-  }
-
- private:
-  base::Callback<void(const base::string16&)> callback_;
-};
-
 // Tests that there's no UaF after dispatchBeforeUnloadEvent.
 // See https://crbug.com/666714.
 TEST_F(RenderViewImplTest, DispatchBeforeUnloadCanDetachFrame) {
@@ -2522,26 +2495,29 @@ TEST_F(RenderViewImplTest, DispatchBeforeUnloadCanDetachFrame) {
       "<script>window.onbeforeunload = function() { "
       "window.console.log('OnBeforeUnload called'); }</script>");
 
-  // Creates a callback that swaps the frame when the 'OnBeforeUnload called'
+  // Create a callback that swaps the frame when the 'OnBeforeUnload called'
   // log is printed from the beforeunload handler.
-  std::unique_ptr<ConsoleCallbackFilter> callback_filter(
-      new ConsoleCallbackFilter(base::Bind(
-          [](RenderFrameImpl* frame, const base::string16& msg) {
-            // Makes sure this happens during the beforeunload handler.
-            EXPECT_EQ(base::UTF8ToUTF16("OnBeforeUnload called"), msg);
+  base::RunLoop run_loop;
+  bool was_callback_run = false;
+  frame()->SetDidAddMessageToConsoleCallback(
+      base::BindOnce(base::BindLambdaForTesting([&](const base::string16& msg) {
+        // Makes sure this happens during the beforeunload handler.
+        EXPECT_EQ(base::UTF8ToUTF16("OnBeforeUnload called"), msg);
 
-            // Swaps the main frame.
-            frame->OnMessageReceived(FrameMsg_SwapOut(
-                frame->GetRoutingID(), 1, false, FrameReplicationState()));
-          },
-          base::Unretained(frame()))));
-  render_thread_->sink().AddFilter(callback_filter.get());
+        // Swaps the main frame.
+        frame()->OnMessageReceived(FrameMsg_SwapOut(
+            frame()->GetRoutingID(), 1, false, FrameReplicationState()));
 
-  // Simulates a BeforeUnload IPC received from the browser.
+        was_callback_run = true;
+        run_loop.Quit();
+      })));
+
+  // Simulate a BeforeUnload IPC received from the browser.
   frame()->OnMessageReceived(
       FrameMsg_BeforeUnload(frame()->GetRoutingID(), false));
 
-  render_thread_->sink().RemoveFilter(callback_filter.get());
+  run_loop.Run();
+  ASSERT_TRUE(was_callback_run);
 }
 
 // IPC Listener that runs a callback when a javascript modal dialog is

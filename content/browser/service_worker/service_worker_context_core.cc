@@ -786,7 +786,7 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
     const GURL& source_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // NOTE: This differs slightly from
-  // RenderFrameHostImpl::OnDidAddMessageToConsole, which also asks the
+  // RenderFrameHostImpl::DidAddMessageToConsole, which also asks the
   // content embedder whether to classify the message as a builtin component.
   // This is called on the IO thread, though, so we can't easily get a
   // BrowserContext and call ContentBrowserClient::IsBuiltinComponent().

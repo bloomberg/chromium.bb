@@ -1375,8 +1375,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
 
   handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameHostImpl, msg)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidAddMessageToConsole,
-                        OnDidAddMessageToConsole)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameFocused, OnFrameFocused)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFailProvisionalLoadWithError,
@@ -1833,21 +1831,35 @@ void RenderFrameHostImpl::OnAudibleStateChanged(bool is_audible) {
   is_audible_ = is_audible;
 }
 
-void RenderFrameHostImpl::OnDidAddMessageToConsole(
-    int32_t level,
+void RenderFrameHostImpl::DidAddMessageToConsole(
+    blink::mojom::ConsoleMessageLevel log_level,
     const base::string16& message,
     int32_t line_no,
     const base::string16& source_id) {
-  if (level < logging::LOG_VERBOSE || level > logging::LOG_FATAL) {
-    bad_message::ReceivedBadMessage(
-        GetProcess(), bad_message::RFH_DID_ADD_CONSOLE_MESSAGE_BAD_SEVERITY);
+  // TODO(https://crbug.com/786836): Update downstream code to use
+  // ConsoleMessageLevel everywhere to avoid this conversion.
+  logging::LogSeverity log_severity = logging::LOG_VERBOSE;
+  switch (log_level) {
+    case blink::mojom::ConsoleMessageLevel::kVerbose:
+      log_severity = logging::LOG_VERBOSE;
+      break;
+    case blink::mojom::ConsoleMessageLevel::kInfo:
+      log_severity = logging::LOG_INFO;
+      break;
+    case blink::mojom::ConsoleMessageLevel::kWarning:
+      log_severity = logging::LOG_WARNING;
+      break;
+    case blink::mojom::ConsoleMessageLevel::kError:
+      log_severity = logging::LOG_ERROR;
+      break;
+  }
+
+  if (delegate_->DidAddMessageToConsole(log_severity, message, line_no,
+                                        source_id)) {
     return;
   }
 
-  if (delegate_->DidAddMessageToConsole(level, message, line_no, source_id))
-    return;
-
-  // Pass through log level only on builtin components pages to limit console
+  // Pass through log severity only on builtin components pages to limit console
   // spew.
   const bool is_builtin_component =
       HasWebUIScheme(delegate_->GetMainFrameLastCommittedURL()) ||
@@ -1856,7 +1868,7 @@ void RenderFrameHostImpl::OnDidAddMessageToConsole(
   const bool is_off_the_record =
       GetSiteInstance()->GetBrowserContext()->IsOffTheRecord();
 
-  LogConsoleMessage(level, message, line_no, is_builtin_component,
+  LogConsoleMessage(log_severity, message, line_no, is_builtin_component,
                     is_off_the_record, source_id);
 }
 
