@@ -100,6 +100,13 @@ option(
 )
 
 option(
+	'pipewire',
+	type: 'boolean',
+	value: true,
+	description: 'Virtual remote output with Pipewire on DRM backend'
+)
+
+option(
 	'shell-desktop',
 	type: 'boolean',
 	value: true,
