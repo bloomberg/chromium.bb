@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
@@ -104,8 +105,11 @@ XR::XR(LocalFrame& frame, int64_t ukm_source_id)
     : ContextLifecycleObserver(frame.GetDocument()),
       FocusChangedObserver(frame.GetPage()),
       ukm_source_id_(ukm_source_id),
-      binding_(this) {
+      binding_(this),
+      navigation_start_(
+          frame.Loader().GetDocumentLoader()->GetTiming().NavigationStart()) {
   // See https://bit.ly/2S0zRAS for task types.
+  DCHECK(frame.IsAttached());
   frame.GetInterfaceProvider().GetInterface(mojo::MakeRequest(
       &service_, frame.GetTaskRunner(TaskType::kMiscPlatformAPI)));
   service_.set_connection_error_handler(

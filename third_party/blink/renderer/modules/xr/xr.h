@@ -74,6 +74,8 @@ class XR final : public EventTargetWithInlineData,
   void AddEnvironmentProviderErrorHandler(
       EnvironmentProviderErrorCallback callback);
 
+  TimeTicks NavigationStart() const { return navigation_start_; }
+
  private:
   class PendingSessionQuery final
       : public GarbageCollected<PendingSessionQuery> {
@@ -147,6 +149,10 @@ class XR final : public EventTargetWithInlineData,
   device::mojom::blink::XREnvironmentIntegrationProviderAssociatedPtr
       environment_provider_;
   mojo::Binding<device::mojom::blink::VRServiceClient> binding_;
+
+  // Time at which navigation started. Used as the base for relative timestamps,
+  // such as for Gamepad objects.
+  TimeTicks navigation_start_;
 };
 
 }  // namespace blink

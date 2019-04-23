@@ -5,22 +5,27 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_INPUT_SOURCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_INPUT_SOURCE_H_
 
+#include "third_party/blink/renderer/modules/gamepad/gamepad.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+namespace device {
+class Gamepad;
+}
+
 namespace blink {
 
-class Gamepad;
 class XRGripSpace;
 class XRSession;
 class XRSpace;
 class XRTargetRaySpace;
 
-class XRInputSource : public ScriptWrappable {
+class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(XRInputSource);
 
  public:
   enum Handedness {
@@ -50,6 +55,16 @@ class XRInputSource : public ScriptWrappable {
   void SetEmulatedPosition(bool emulated_position);
   void SetBasePoseMatrix(std::unique_ptr<TransformationMatrix>);
   void SetPointerTransformMatrix(std::unique_ptr<TransformationMatrix>);
+  void SetGamepad(const base::Optional<device::Gamepad>);
+
+  // Gamepad::Client
+  GamepadHapticActuator* GetVibrationActuatorForGamepad(
+      const Gamepad&) override {
+    // TODO(https://crbug.com/955097): XRInputSource implementation of
+    // Gamepad::Client must manage vibration actuator state in a similar way to
+    // NavigatorGamepad.
+    return nullptr;
+  }
 
   void Trace(blink::Visitor*) override;
 
@@ -80,6 +95,9 @@ class XRInputSource : public ScriptWrappable {
   // This is the transform to apply to the base_pose_matrix_ to get the pointer
   // matrix. In most cases it should be static.
   std::unique_ptr<TransformationMatrix> pointer_transform_matrix_;
+
+  // gamepad_ uses this to get relative timestamps.
+  TimeTicks base_timestamp_;
 };
 
 }  // namespace blink

@@ -873,6 +873,8 @@ void XRSession::UpdateInputSourceState(
   if (!input_source || !state)
     return;
 
+  input_source->SetGamepad(state->gamepad);
+
   // Update the input source's description if this state update
   // includes them.
   if (state->description) {

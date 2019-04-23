@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
 
-#include "third_party/blink/renderer/modules/gamepad/gamepad.h"
+#include "base/time/time.h"
+#include "third_party/blink/renderer/modules/xr/xr.h"
 #include "third_party/blink/renderer/modules/xr/xr_grip_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_space.h"
@@ -16,7 +17,8 @@ XRInputSource::XRInputSource(XRSession* session, uint32_t source_id)
     : session_(session),
       source_id_(source_id),
       target_ray_space_(MakeGarbageCollected<XRTargetRaySpace>(session, this)),
-      grip_space_(MakeGarbageCollected<XRGripSpace>(session, this)) {
+      grip_space_(MakeGarbageCollected<XRGripSpace>(session, this)),
+      base_timestamp_(session->xr()->NavigationStart()) {
   SetTargetRayMode(kGaze);
   SetHandedness(kHandNone);
 }
@@ -94,6 +96,23 @@ void XRInputSource::SetBasePoseMatrix(
 void XRInputSource::SetPointerTransformMatrix(
     std::unique_ptr<TransformationMatrix> pointer_transform_matrix) {
   pointer_transform_matrix_ = std::move(pointer_transform_matrix);
+}
+
+// TODO(https://crbug.com/955101): Should Gamepad objects be updated in-place,
+// or should a new object be created on every call?
+void XRInputSource::SetGamepad(const base::Optional<device::Gamepad> gamepad) {
+  if (gamepad) {
+    if (!gamepad_) {
+      // TODO(https://crbug.com/955104): Is the Gamepad object creation time the
+      // correct time floor?
+      gamepad_ = MakeGarbageCollected<Gamepad>(this, 0, base_timestamp_,
+                                               TimeTicks::Now());
+    }
+
+    gamepad_->UpdateFromDeviceState(*gamepad);
+  } else {
+    gamepad_ = nullptr;
+  }
 }
 
 void XRInputSource::Trace(blink::Visitor* visitor) {

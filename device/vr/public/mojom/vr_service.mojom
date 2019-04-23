@@ -4,6 +4,7 @@
 
 module device.mojom;
 
+import "device/gamepad/public/mojom/gamepad.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
@@ -112,6 +113,13 @@ struct XRInputSourceState {
   // the space of a single frame, so it may not have been preceeded by a
   // primary_input_pressed = true;
   bool primary_input_clicked;
+
+  // Contains information about advanced input state such as additional buttons,
+  // triggers, touch sensors, joysticks, touchpads, and vibration actuators. If
+  // the controller has none of these capabilities, then this field will be
+  // null. The information is a snapshot of the controller state that was taken
+  // at the time corresponding to the timestamp field's value.
+  Gamepad? gamepad;
 };
 
 //
