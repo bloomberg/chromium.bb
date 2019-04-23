@@ -292,27 +292,6 @@ int InitSocketHandleForWebSocketRequest(
       resolution_callback, std::move(callback), proxy_auth_callback);
 }
 
-NET_EXPORT std::unique_ptr<ConnectJob> CreateConnectJobForRawConnect(
-    const HostPortPair& host_port_pair,
-    bool use_tls,
-    const CommonConnectJobParams* common_connect_job_params,
-    RequestPriority request_priority,
-    const ProxyInfo& proxy_info,
-    const SSLConfig& ssl_config_for_origin,
-    const SSLConfig& ssl_config_for_proxy,
-    const NetLogWithSource& net_log,
-    ConnectJob::Delegate* connect_job_delegate) {
-  // QUIC proxies are currently not supported through this method.
-  DCHECK(!proxy_info.is_quic());
-
-  return ConnectJob::CreateConnectJob(
-      use_tls, host_port_pair, proxy_info.proxy_server(),
-      proxy_info.traffic_annotation(), &ssl_config_for_origin,
-      &ssl_config_for_proxy, true /* force_tunnel */,
-      net::PRIVACY_MODE_DISABLED, OnHostResolutionCallback(), request_priority,
-      SocketTag(), common_connect_job_params, connect_job_delegate);
-}
-
 int PreconnectSocketsForHttpRequest(
     ClientSocketPoolManager::SocketGroupType group_type,
     const HostPortPair& endpoint,
