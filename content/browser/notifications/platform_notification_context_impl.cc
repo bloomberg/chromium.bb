@@ -235,7 +235,7 @@ void PlatformNotificationContextImpl::DoReadAllNotificationOrigins(
   std::set<GURL> origins;
   if (!initialized) {
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(callback), /* success= */ false,
                        std::move(origins)));
     return;
@@ -257,7 +257,7 @@ void PlatformNotificationContextImpl::DoReadAllNotificationOrigins(
     DestroyDatabase();
 
   base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(std::move(callback), success, std::move(origins)));
 }
 
@@ -303,7 +303,7 @@ void PlatformNotificationContextImpl::DoDeleteAllNotificationDataForOrigins(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!initialized) {
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(callback), /* success= */ false,
                        /* deleted_count= */ 0));
     return;
@@ -336,10 +336,9 @@ void PlatformNotificationContextImpl::DoDeleteAllNotificationDataForOrigins(
       service_proxy_->CloseNotification(notification_id);
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(std::move(callback), success,
-                     deleted_notification_ids.size()));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(std::move(callback), success,
+                                          deleted_notification_ids.size()));
 }
 
 void PlatformNotificationContextImpl::ReadNotificationDataAndRecordInteraction(
@@ -362,7 +361,7 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!initialized) {
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(callback), /* success= */ false,
                        NotificationDatabaseData()));
     return;
@@ -378,7 +377,7 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
 
   if (status == NotificationDatabase::STATUS_OK) {
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(callback), /* success= */ true,
                        database_data));
     return;
@@ -389,7 +388,7 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
     DestroyDatabase();
 
   base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(std::move(callback), /* success= */ false,
                      NotificationDatabaseData()));
 }
@@ -459,7 +458,7 @@ void PlatformNotificationContextImpl::DoReadNotificationResources(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!initialized) {
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(callback), /* success= */ false,
                        blink::NotificationResources()));
     return;
@@ -474,7 +473,7 @@ void PlatformNotificationContextImpl::DoReadNotificationResources(
 
   if (status == NotificationDatabase::STATUS_OK) {
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(callback), /* success= */ true,
                        notification_resources));
     return;
@@ -485,7 +484,7 @@ void PlatformNotificationContextImpl::DoReadNotificationResources(
     DestroyDatabase();
 
   base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(std::move(callback), /* success= */ false,
                      blink::NotificationResources()));
 }
@@ -543,7 +542,7 @@ void PlatformNotificationContextImpl::
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!initialized) {
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(callback), /* success= */ false,
                        std::vector<NotificationDatabaseData>()));
     return;
@@ -578,7 +577,7 @@ void PlatformNotificationContextImpl::
     }
 
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(callback), /* success= */ true,
                        notification_datas));
 
@@ -593,7 +592,7 @@ void PlatformNotificationContextImpl::
     DestroyDatabase();
 
   base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(std::move(callback), /* success= */ false,
                      std::vector<NotificationDatabaseData>()));
 }
@@ -644,7 +643,7 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
   DCHECK(database_data.notification_id.empty());
   if (!initialized || !service_proxy_) {
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(callback), /* success= */ false,
                        /* notification_id= */ ""));
     return;
@@ -680,7 +679,7 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
       DestroyDatabase();
 
       base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(std::move(callback), /* success= */ false,
                          /* notification_id= */ ""));
       return;
@@ -696,7 +695,7 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
       !DoCheckNotificationTriggerQuota(origin)) {
     // TODO(knollr): Reply with a custom error so developers can handle this.
     base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(std::move(callback), /* success= */ false,
                        /* notification_id= */ ""));
     return;
@@ -723,7 +722,7 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
 
       // Respond with success as this notification got scheduled successfully.
       base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+          FROM_HERE, {BrowserThread::UI},
           base::BindOnce(std::move(callback), /* success= */ true,
                          write_database_data.notification_id));
       return;
@@ -742,7 +741,7 @@ void PlatformNotificationContextImpl::DoWriteNotificationData(
     DestroyDatabase();
 
   base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+      FROM_HERE, {BrowserThread::UI},
       base::BindOnce(std::move(callback), /* success= */ false,
                      /* notification_id= */ ""));
 }
@@ -765,9 +764,8 @@ void PlatformNotificationContextImpl::DoDeleteNotificationData(
     bool initialized) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!initialized) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(std::move(callback), false));
+    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                             base::BindOnce(std::move(callback), false));
     return;
   }
 
@@ -787,9 +785,8 @@ void PlatformNotificationContextImpl::DoDeleteNotificationData(
     success = true;
   }
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(std::move(callback), success));
+  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
+                           base::BindOnce(std::move(callback), success));
 }
 
 void PlatformNotificationContextImpl::OnRegistrationDeleted(
@@ -850,7 +847,7 @@ void PlatformNotificationContextImpl::LazyInitialize(
 
   if (!task_runner_) {
     task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+        {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
   }
 
   task_runner_->PostTask(
