@@ -96,6 +96,9 @@ class CONTENT_EXPORT NavigationControllerAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       int index);
+  base::android::ScopedJavaLocalRef<jobject> GetVisibleEntry(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& /* obj */);
   base::android::ScopedJavaLocalRef<jobject> GetPendingEntry(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& /* obj */);

@@ -29,7 +29,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
-import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.WebContents;
 
 /** Tests for SendTabToSelfAndroidBridge */
@@ -53,8 +52,6 @@ public class SendTabToSelfShareActivityTest {
     private WebContents mWebContents;
     @Mock
     private NavigationController mNavigationController;
-    @Mock
-    private NavigationHistory mNavigationHistory;
     @Mock
     private NavigationEntry mNavigationEntry;
 
@@ -94,9 +91,7 @@ public class SendTabToSelfShareActivityTest {
         // Setup the mocked object chain to get to the url, title and timestamp.
         when(mTab.getWebContents()).thenReturn(mWebContents);
         when(mWebContents.getNavigationController()).thenReturn(mNavigationController);
-        when(mNavigationController.getNavigationHistory()).thenReturn(mNavigationHistory);
-        when(mNavigationHistory.getCurrentEntryIndex()).thenReturn(1);
-        when(mNavigationHistory.getEntryAtIndex(anyInt())).thenReturn(mNavigationEntry);
+        when(mNavigationController.getVisibleEntry()).thenReturn(mNavigationEntry);
         when(mNavigationEntry.getUrl()).thenReturn(URL);
         when(mNavigationEntry.getTitle()).thenReturn(TITLE);
         when(mNavigationEntry.getTimestamp()).thenReturn(TIMESTAMP);

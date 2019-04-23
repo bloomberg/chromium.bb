@@ -4,6 +4,8 @@
 
 package org.chromium.content_public.browser;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.VisibleForTesting;
 
 /**
@@ -145,6 +147,12 @@ public interface NavigationController {
      */
     @VisibleForTesting
     public NavigationEntry getEntryAtIndex(int index);
+
+    /**
+     * @return The {@link NavigationEntry} that is appropriate to be displayed in the address bar.
+     */
+    @Nullable
+    NavigationEntry getVisibleEntry();
 
     /**
      * @return The pending {@link NavigationEntry} for this controller or {@code null} if none

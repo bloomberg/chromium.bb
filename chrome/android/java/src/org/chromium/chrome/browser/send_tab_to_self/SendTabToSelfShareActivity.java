@@ -9,7 +9,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.share.ShareActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.NavigationEntry;
-import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -19,10 +18,10 @@ public class SendTabToSelfShareActivity extends ShareActivity {
     @Override
     protected void handleShareAction(ChromeActivity triggeringActivity) {
         Tab tab = triggeringActivity.getActivityTabProvider().get();
+        if (tab == null) return;
 
-        NavigationHistory history =
-                tab.getWebContents().getNavigationController().getNavigationHistory();
-        NavigationEntry entry = history.getEntryAtIndex(history.getCurrentEntryIndex());
+        NavigationEntry entry = tab.getWebContents().getNavigationController().getVisibleEntry();
+        if (entry == null) return;
 
         // TODO(crbug/946808) Add actual target device cache GUID.
         String targetDeviceSyncCacheGuid = "";

@@ -358,6 +358,11 @@ public class GoogleSearchRestrictionTest {
         public void setUseDesktopUserAgent(boolean override, boolean reloadOnChange) {}
 
         @Override
+        public NavigationEntry getVisibleEntry() {
+            return null;
+        }
+
+        @Override
         public NavigationEntry getPendingEntry() {
             return null;
         }
