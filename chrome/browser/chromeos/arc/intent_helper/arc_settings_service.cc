@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
@@ -426,6 +427,11 @@ void ArcSettingsServiceImpl::SyncFocusHighlightEnabled() const {
 }
 
 void ArcSettingsServiceImpl::SyncFontSize() const {
+  // When OS settings are split from browser, don't use the browser's font size
+  // to change ARC++ font scale.
+  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings))
+    return;
+
   int default_size = GetIntegerPref(::prefs::kWebKitDefaultFontSize);
   int default_fixed_size = GetIntegerPref(::prefs::kWebKitDefaultFixedFontSize);
   int minimum_size = GetIntegerPref(::prefs::kWebKitMinimumFontSize);
@@ -440,6 +446,11 @@ void ArcSettingsServiceImpl::SyncFontSize() const {
 }
 
 void ArcSettingsServiceImpl::SyncPageZoom() const {
+  // When OS settings are split from browser, don't use the browser's page zoom
+  // to set ARC++ application density.
+  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings))
+    return;
+
   double zoom_level = profile_->GetZoomLevelPrefs()->GetDefaultZoomLevelPref();
   double zoom_factor = content::ZoomLevelToZoomFactor(zoom_level);
 

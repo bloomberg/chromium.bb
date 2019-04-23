@@ -8,12 +8,16 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
+#include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "components/arc/arc_prefs.h"
@@ -233,6 +237,42 @@ TEST_F(ArcSettingsServiceTest, InitialSettingsNotAppliedNextSession) {
                     .size());
   EXPECT_FALSE(
       profile()->GetPrefs()->GetBoolean(prefs::kArcInitialSettingsPending));
+}
+
+TEST_F(ArcSettingsServiceTest, SplitSettingsDisablesFontSize) {
+  constexpr char kSetFontScale[] =
+      "org.chromium.arc.intent_helper.SET_FONT_SCALE";
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
+
+  // No initial broadcast.
+  arc_session_manager()->RequestEnable();
+  SetInstances();
+  FakeIntentHelperInstance* intent_helper = intent_helper_instance();
+  EXPECT_EQ(0U, intent_helper->GetBroadcastsForAction(kSetFontScale).size());
+
+  // No broadcast after update.
+  profile()->GetPrefs()->SetInteger(::prefs::kWebKitDefaultFontSize, 20);
+  EXPECT_EQ(0U, intent_helper->GetBroadcastsForAction(kSetFontScale).size());
+}
+
+TEST_F(ArcSettingsServiceTest, SplitSettingsDisablesPageZoom) {
+  constexpr char kSetPageZoom[] =
+      "org.chromium.arc.intent_helper.SET_PAGE_ZOOM";
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(chromeos::features::kSplitSettings);
+
+  // No initial broadcast.
+  arc_session_manager()->RequestEnable();
+  SetInstances();
+  FakeIntentHelperInstance* intent_helper = intent_helper_instance();
+  EXPECT_EQ(0U, intent_helper->GetBroadcastsForAction(kSetPageZoom).size());
+
+  // No broadcast after update.
+  profile()->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(150.0);
+  EXPECT_EQ(0U, intent_helper->GetBroadcastsForAction(kSetPageZoom).size());
 }
 
 }  // namespace arc
