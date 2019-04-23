@@ -895,7 +895,8 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   if (cpi->oxcf.row_mt == 1 && (cpi->oxcf.max_threads > 1)) {
     sf->adaptive_rd_thresh = 0;
     if (sf->inter_mode_rd_model_estimation == 1) {
-      sf->inter_mode_rd_model_estimation = 0;
+      // Revert to type 2
+      sf->inter_mode_rd_model_estimation = 2;
       sf->inter_mode_rd_model_estimation_adaptive = 0;
     }
   }
