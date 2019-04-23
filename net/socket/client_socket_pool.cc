@@ -24,92 +24,26 @@ namespace {
 // The maximum duration, in seconds, to keep used idle persistent sockets alive.
 int64_t g_used_idle_socket_timeout_s = 300;  // 5 minutes
 
-// TODO(mmenke): Once the socket pool arguments are no longer needed, remove
-// this method and use TransportConnectJob::CreateTransportConnectJob()
-// directly.
-std::unique_ptr<ConnectJob> CreateTransportConnectJob(
-    scoped_refptr<TransportSocketParams> transport_socket_params,
-    RequestPriority priority,
-    const SocketTag& socket_tag,
-    const CommonConnectJobParams* common_connect_job_params,
-    ConnectJob::Delegate* delegate) {
-  return TransportConnectJob::CreateTransportConnectJob(
-      std::move(transport_socket_params), priority, socket_tag,
-      common_connect_job_params, delegate, nullptr /* net_log */);
-}
-
-std::unique_ptr<ConnectJob> CreateSOCKSConnectJob(
-    scoped_refptr<SOCKSSocketParams> socks_socket_params,
-    RequestPriority priority,
-    const SocketTag& socket_tag,
-    const CommonConnectJobParams* common_connect_job_params,
-    ConnectJob::Delegate* delegate) {
-  return std::make_unique<SOCKSConnectJob>(
-      priority, socket_tag, common_connect_job_params,
-      std::move(socks_socket_params), delegate, nullptr /* net_log */);
-}
-
-std::unique_ptr<ConnectJob> CreateSSLConnectJob(
-    scoped_refptr<SSLSocketParams> ssl_socket_params,
-    RequestPriority priority,
-    const SocketTag& socket_tag,
-    const CommonConnectJobParams* common_connect_job_params,
-    ConnectJob::Delegate* delegate) {
-  return std::make_unique<SSLConnectJob>(
-      priority, socket_tag, common_connect_job_params,
-      std::move(ssl_socket_params), delegate, nullptr /* net_log */);
-}
-
-std::unique_ptr<ConnectJob> CreateHttpProxyConnectJob(
-    scoped_refptr<HttpProxySocketParams> http_proxy_socket_params,
-    RequestPriority priority,
-    const SocketTag& socket_tag,
-    const CommonConnectJobParams* common_connect_job_params,
-    ConnectJob::Delegate* delegate) {
-  return std::make_unique<HttpProxyConnectJob>(
-      priority, socket_tag, common_connect_job_params,
-      std::move(http_proxy_socket_params), delegate, nullptr /* net_log */);
-}
-
 }  // namespace
 
 ClientSocketPool::SocketParams::SocketParams(
-    const CreateConnectJobCallback& create_connect_job_callback)
-    : create_connect_job_callback_(create_connect_job_callback) {}
-
-scoped_refptr<ClientSocketPool::SocketParams>
-ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-    scoped_refptr<TransportSocketParams> transport_client_params) {
-  CreateConnectJobCallback callback = base::BindRepeating(
-      &CreateTransportConnectJob, std::move(transport_client_params));
-  return base::MakeRefCounted<SocketParams>(callback);
-}
-
-scoped_refptr<ClientSocketPool::SocketParams>
-ClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
-    scoped_refptr<SOCKSSocketParams> socks_socket_params) {
-  CreateConnectJobCallback callback = base::BindRepeating(
-      &CreateSOCKSConnectJob, std::move(socks_socket_params));
-  return base::MakeRefCounted<SocketParams>(callback);
-}
-
-scoped_refptr<ClientSocketPool::SocketParams>
-ClientSocketPool::SocketParams::CreateFromSSLSocketParams(
-    scoped_refptr<SSLSocketParams> ssl_socket_params) {
-  CreateConnectJobCallback callback =
-      base::BindRepeating(&CreateSSLConnectJob, std::move(ssl_socket_params));
-  return base::MakeRefCounted<SocketParams>(callback);
-}
-
-scoped_refptr<ClientSocketPool::SocketParams>
-ClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
-    scoped_refptr<HttpProxySocketParams> http_proxy_socket_params) {
-  CreateConnectJobCallback callback = base::BindRepeating(
-      &CreateHttpProxyConnectJob, std::move(http_proxy_socket_params));
-  return base::MakeRefCounted<SocketParams>(callback);
-}
+    MutableNetworkTrafficAnnotationTag proxy_annotation_tag,
+    std::unique_ptr<SSLConfig> ssl_config_for_origin,
+    std::unique_ptr<SSLConfig> ssl_config_for_proxy,
+    const OnHostResolutionCallback& resolution_callback)
+    : proxy_annotation_tag_(proxy_annotation_tag),
+      ssl_config_for_origin_(std::move(ssl_config_for_origin)),
+      ssl_config_for_proxy_(std::move(ssl_config_for_proxy)),
+      resolution_callback_(resolution_callback) {}
 
 ClientSocketPool::SocketParams::~SocketParams() = default;
+
+scoped_refptr<ClientSocketPool::SocketParams>
+ClientSocketPool::SocketParams::CreateForHttpForTesting() {
+  return base::MakeRefCounted<SocketParams>(
+      MutableNetworkTrafficAnnotationTag(), nullptr /* ssl_config_for_origin */,
+      nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
+}
 
 ClientSocketPool::GroupId::GroupId()
     : socket_type_(SocketType::kHttp),
@@ -199,7 +133,16 @@ std::unique_ptr<ConnectJob> ClientSocketPool::CreateConnectJob(
     RequestPriority request_priority,
     SocketTag socket_tag,
     ConnectJob::Delegate* delegate) {
-  return socket_params->create_connect_job_callback().Run(
+  bool using_ssl =
+      (group_id.socket_type() == ClientSocketPool::SocketType::kSsl ||
+       group_id.socket_type() ==
+           ClientSocketPool::SocketType::kSslVersionInterferenceProbe);
+  return ConnectJob::CreateConnectJob(
+      using_ssl, group_id.destination(), proxy_server,
+      socket_params->proxy_annotation_tag(),
+      socket_params->ssl_config_for_origin(),
+      socket_params->ssl_config_for_proxy(), is_for_websockets,
+      group_id.privacy_mode(), socket_params->resolution_callback(),
       request_priority, socket_tag, common_connect_job_params, delegate);
 }
 

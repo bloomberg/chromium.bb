@@ -66,10 +66,7 @@ class WebSocketTransportClientSocketPoolTest
       : group_id_(HostPortPair("www.google.com", 80),
                   ClientSocketPool::SocketType::kHttp,
                   PrivacyMode::PRIVACY_MODE_DISABLED),
-        params_(ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-            base::MakeRefCounted<TransportSocketParams>(
-                HostPortPair("www.google.com", 80),
-                OnHostResolutionCallback()))),
+        params_(ClientSocketPool::SocketParams::CreateForHttpForTesting()),
         host_resolver_(new MockHostResolver),
         client_socket_factory_(&net_log_),
         common_connect_job_params_(
@@ -181,17 +178,17 @@ TEST_F(WebSocketTransportClientSocketPoolTest, SetResolvePriorityOnInit) {
 }
 
 TEST_F(WebSocketTransportClientSocketPoolTest, InitHostResolutionFailure) {
-  host_resolver_->rules()->AddSimulatedFailure("unresolvable.host.name");
+  HostPortPair host_port_pair("unresolvable.host.name", 80);
+  host_resolver_->rules()->AddSimulatedFailure(host_port_pair.host());
   TestCompletionCallback callback;
   ClientSocketHandle handle;
-  HostPortPair host_port_pair("unresolvable.host.name", 80);
-  scoped_refptr<ClientSocketPool::SocketParams> dest(
-      ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-          base::MakeRefCounted<TransportSocketParams>(
-              host_port_pair, OnHostResolutionCallback())));
   EXPECT_EQ(
       ERR_IO_PENDING,
-      handle.Init(group_id_, dest, kDefaultPriority, SocketTag(),
+      handle.Init(ClientSocketPool::GroupId(host_port_pair,
+                                            ClientSocketPool::SocketType::kHttp,
+                                            PRIVACY_MODE_DISABLED),
+                  ClientSocketPool::SocketParams::CreateForHttpForTesting(),
+                  kDefaultPriority, SocketTag(),
                   ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
                   ClientSocketPool::ProxyAuthCallback(), &pool_,
                   NetLogWithSource()));
@@ -416,14 +413,11 @@ void RequestSocketOnComplete(const ClientSocketPool::GroupId& group_id,
   handle->socket()->Disconnect();
   handle->Reset();
 
-  scoped_refptr<ClientSocketPool::SocketParams> dest(
-      ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-          base::MakeRefCounted<TransportSocketParams>(
-              HostPortPair("www.google.com", 80), OnHostResolutionCallback())));
   int rv = handle->Init(
-      group_id, dest, LOWEST, SocketTag(),
-      ClientSocketPool::RespectLimits::ENABLED, nested_callback->callback(),
-      ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource());
+      group_id, ClientSocketPool::SocketParams::CreateForHttpForTesting(),
+      LOWEST, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      nested_callback->callback(), ClientSocketPool::ProxyAuthCallback(), pool,
+      NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   if (ERR_IO_PENDING != rv)
     nested_callback->callback().Run(rv);
@@ -434,17 +428,13 @@ void RequestSocketOnComplete(const ClientSocketPool::GroupId& group_id,
 // ClientSocketHandle for the second socket, after disconnecting the first.
 TEST_F(WebSocketTransportClientSocketPoolTest, RequestTwice) {
   ClientSocketHandle handle;
-  scoped_refptr<ClientSocketPool::SocketParams> dest(
-      ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-          base::MakeRefCounted<TransportSocketParams>(
-              HostPortPair("www.google.com", 80), OnHostResolutionCallback())));
   TestCompletionCallback second_result_callback;
-  int rv = handle.Init(group_id_, dest, LOWEST, SocketTag(),
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       base::BindOnce(&RequestSocketOnComplete, group_id_,
-                                      &handle, &pool_, &second_result_callback),
-                       ClientSocketPool::ProxyAuthCallback(), &pool_,
-                       NetLogWithSource());
+  int rv = handle.Init(
+      group_id_, ClientSocketPool::SocketParams::CreateForHttpForTesting(),
+      LOWEST, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      base::BindOnce(&RequestSocketOnComplete, group_id_, &handle, &pool_,
+                     &second_result_callback),
+      ClientSocketPool::ProxyAuthCallback(), &pool_, NetLogWithSource());
   ASSERT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_THAT(second_result_callback.WaitForResult(), IsOk());
 

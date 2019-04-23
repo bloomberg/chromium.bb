@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -23,10 +24,6 @@ namespace net {
 
 class NetLogWithSource;
 class SocketTag;
-
-typedef base::RepeatingCallback<int(const AddressList&,
-                                    const NetLogWithSource& net_log)>
-    OnHostResolutionCallback;
 
 class NET_EXPORT_PRIVATE TransportSocketParams
     : public base::RefCounted<TransportSocketParams> {

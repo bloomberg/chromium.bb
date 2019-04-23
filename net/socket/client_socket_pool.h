@@ -21,6 +21,7 @@
 #include "net/log/net_log_capture_mode.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/socket_tag.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace base {
 class DictionaryValue;
@@ -35,14 +36,11 @@ namespace net {
 class ClientSocketHandle;
 struct CommonConnectJobParams;
 class HttpAuthController;
-class HttpProxySocketParams;
 class HttpResponseInfo;
 class NetLogWithSource;
 class ProxyServer;
-class SOCKSSocketParams;
-class SSLSocketParams;
+struct SSLConfig;
 class StreamSocket;
-class TransportSocketParams;
 
 // ClientSocketPools are layered. This defines an interface for lower level
 // socket pools to communicate with higher layer pools.
@@ -169,35 +167,52 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
           const CommonConnectJobParams* common_connect_job_params,
           ConnectJob::Delegate* delegate)>;
 
-  // "Parameters" that own a single callback for creating a ConnectJob that can
-  // be of any type.
+  // Parameters that, in combination with GroupId, proxy, websocket information,
+  // and global state, are sufficient to create a ConnectJob.
+  //
+  // DO NOT ADD ANY FIELDS TO THIS CLASS.
+  //
+  // TODO(https://crbug.com/921369) In order to resolve longstanding issues
+  // related to pooling distinguishable sockets together, remove this class
+  // entirely.
   class NET_EXPORT_PRIVATE SocketParams
       : public base::RefCounted<SocketParams> {
    public:
-    explicit SocketParams(
-        const CreateConnectJobCallback& create_connect_job_callback);
+    // For non-SSL requests / non-HTTPS proxies, the corresponding SSLConfig
+    // argument may be nullptr.
+    SocketParams(MutableNetworkTrafficAnnotationTag proxy_annotation_tag,
+                 std::unique_ptr<SSLConfig> ssl_config_for_origin,
+                 std::unique_ptr<SSLConfig> ssl_config_for_proxy,
+                 const OnHostResolutionCallback& resolution_callback);
 
-    const CreateConnectJobCallback& create_connect_job_callback() {
-      return create_connect_job_callback_;
+    // Creates a  SocketParams object with none of the fields populated. This
+    // works for the HTTP case only.
+    static scoped_refptr<SocketParams> CreateForHttpForTesting();
+
+    MutableNetworkTrafficAnnotationTag proxy_annotation_tag() const {
+      return proxy_annotation_tag_;
     }
 
-    static scoped_refptr<SocketParams> CreateFromTransportSocketParams(
-        scoped_refptr<TransportSocketParams> transport_client_params);
+    const SSLConfig* ssl_config_for_origin() const {
+      return ssl_config_for_origin_.get();
+    }
 
-    static scoped_refptr<SocketParams> CreateFromSOCKSSocketParams(
-        scoped_refptr<SOCKSSocketParams> socks_socket_params);
+    const SSLConfig* ssl_config_for_proxy() const {
+      return ssl_config_for_proxy_.get();
+    }
 
-    static scoped_refptr<SocketParams> CreateFromSSLSocketParams(
-        scoped_refptr<SSLSocketParams> ssl_socket_params);
-
-    static scoped_refptr<SocketParams> CreateFromHttpProxySocketParams(
-        scoped_refptr<HttpProxySocketParams> http_proxy_socket_params);
+    const OnHostResolutionCallback& resolution_callback() const {
+      return resolution_callback_;
+    }
 
    private:
     friend class base::RefCounted<SocketParams>;
     ~SocketParams();
 
-    const CreateConnectJobCallback create_connect_job_callback_;
+    MutableNetworkTrafficAnnotationTag proxy_annotation_tag_;
+    std::unique_ptr<SSLConfig> ssl_config_for_origin_;
+    std::unique_ptr<SSLConfig> ssl_config_for_proxy_;
+    const OnHostResolutionCallback resolution_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(SocketParams);
   };

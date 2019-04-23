@@ -81,14 +81,6 @@ ClientSocketPool::GroupId TestGroupId(
                                    privacy_mode);
 }
 
-// Returns a ClientSocketPool::SocketParams that will never be used to
-// create a real TreansportConnectJob.
-scoped_refptr<ClientSocketPool::SocketParams> CreateDummyParams() {
-  return ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-      base::MakeRefCounted<TransportSocketParams>(HostPortPair("ignored", 80),
-                                                  OnHostResolutionCallback()));
-}
-
 // Make sure |handle| sets load times correctly when it has been assigned a
 // reused socket.
 void TestLoadTimingInfoConnectedReused(const ClientSocketHandle& handle) {
@@ -632,7 +624,7 @@ class ClientSocketPoolBaseTest : public TestWithScopedTaskEnvironment {
   ClientSocketPoolBaseTest()
       : TestWithScopedTaskEnvironment(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
-        params_(CreateDummyParams()) {
+        params_(ClientSocketPool::SocketParams::CreateForHttpForTesting()) {
     connect_backup_jobs_enabled_ =
         TransportClientSocketPool::connect_backup_jobs_enabled();
     TransportClientSocketPool::set_connect_backup_jobs_enabled(true);
@@ -1562,9 +1554,11 @@ void RequestSocketOnComplete(ClientSocketHandle* handle,
 
   TestCompletionCallback callback;
   int rv = handle->Init(
-      TestGroupId("a"), CreateDummyParams(), LOWEST, SocketTag(),
-      ClientSocketPool::RespectLimits::ENABLED, nested_callback->callback(),
-      ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource());
+      TestGroupId("a"),
+      ClientSocketPool::SocketParams::CreateForHttpForTesting(), LOWEST,
+      SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+      nested_callback->callback(), ClientSocketPool::ProxyAuthCallback(), pool,
+      NetLogWithSource());
   if (rv != ERR_IO_PENDING) {
     DCHECK_EQ(TestConnectJob::kMockJob, next_job_type);
     nested_callback->callback().Run(rv);
@@ -2660,11 +2654,12 @@ class TestReleasingSocketRequest : public TestCompletionCallbackBase {
 
     EXPECT_EQ(
         expected_result_,
-        handle2_.Init(TestGroupId("a"), CreateDummyParams(), DEFAULT_PRIORITY,
-                      SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-                      CompletionOnceCallback(),
-                      ClientSocketPool::ProxyAuthCallback(), pool_,
-                      NetLogWithSource()));
+        handle2_.Init(
+            TestGroupId("a"),
+            ClientSocketPool::SocketParams::CreateForHttpForTesting(),
+            DEFAULT_PRIORITY, SocketTag(),
+            ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
+            ClientSocketPool::ProxyAuthCallback(), pool_, NetLogWithSource()));
   }
 
   TransportClientSocketPool* const pool_;
@@ -4510,14 +4505,16 @@ class MockLayeredPool : public HigherLayeredPool {
 
   int RequestSocket(TransportClientSocketPool* pool) {
     return handle_.Init(
-        group_id_, CreateDummyParams(), DEFAULT_PRIORITY, SocketTag(),
-        ClientSocketPool::RespectLimits::ENABLED, callback_.callback(),
-        ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource());
+        group_id_, ClientSocketPool::SocketParams::CreateForHttpForTesting(),
+        DEFAULT_PRIORITY, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+        callback_.callback(), ClientSocketPool::ProxyAuthCallback(), pool,
+        NetLogWithSource());
   }
 
   int RequestSocketWithoutLimits(TransportClientSocketPool* pool) {
     return handle_.Init(
-        group_id_, CreateDummyParams(), MAXIMUM_PRIORITY, SocketTag(),
+        group_id_, ClientSocketPool::SocketParams::CreateForHttpForTesting(),
+        MAXIMUM_PRIORITY, SocketTag(),
         ClientSocketPool::RespectLimits::DISABLED, callback_.callback(),
         ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource());
   }

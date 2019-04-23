@@ -3532,8 +3532,6 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback2;
   HostPortPair host_port2("2.com", 80);
-  scoped_refptr<TransportSocketParams> params2(
-      new TransportSocketParams(host_port2, OnHostResolutionCallback()));
   auto connection2 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(
       ERR_IO_PENDING,
@@ -3541,8 +3539,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnection) {
           ClientSocketPool::GroupId(host_port2,
                                     ClientSocketPool::SocketType::kHttp,
                                     PrivacyMode::PRIVACY_MODE_DISABLED),
-          ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-              params2),
+          ClientSocketPool::SocketParams::CreateForHttpForTesting(),
           DEFAULT_PRIORITY, SocketTag(),
           ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
           ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
@@ -3617,8 +3614,6 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback3;
   HostPortPair host_port3("3.com", 80);
-  scoped_refptr<TransportSocketParams> params3(
-      new TransportSocketParams(host_port3, OnHostResolutionCallback()));
   auto connection3 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(
       ERR_IO_PENDING,
@@ -3626,8 +3621,7 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
           ClientSocketPool::GroupId(host_port3,
                                     ClientSocketPool::SocketType::kHttp,
                                     PrivacyMode::PRIVACY_MODE_DISABLED),
-          ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-              params3),
+          ClientSocketPool::SocketParams::CreateForHttpForTesting(),
           DEFAULT_PRIORITY, SocketTag(),
           ClientSocketPool::RespectLimits::ENABLED, callback3.callback(),
           ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));
@@ -3700,8 +3694,6 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
   // post a task asynchronously to try and close the session.
   TestCompletionCallback callback2;
   HostPortPair host_port2("2.com", 80);
-  scoped_refptr<TransportSocketParams> params2(
-      new TransportSocketParams(host_port2, OnHostResolutionCallback()));
   auto connection2 = std::make_unique<ClientSocketHandle>();
   EXPECT_EQ(
       ERR_IO_PENDING,
@@ -3709,8 +3701,7 @@ TEST_F(SpdySessionTest, CloseSessionOnIdleWhenPoolStalled) {
           ClientSocketPool::GroupId(host_port2,
                                     ClientSocketPool::SocketType::kHttp,
                                     PrivacyMode::PRIVACY_MODE_DISABLED),
-          ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-              params2),
+          ClientSocketPool::SocketParams::CreateForHttpForTesting(),
           DEFAULT_PRIORITY, SocketTag(),
           ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
           ClientSocketPool::ProxyAuthCallback(), pool, NetLogWithSource()));

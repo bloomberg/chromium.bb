@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "net/base/address_list.h"
 #include "net/base/load_states.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_export.h"
@@ -23,10 +24,12 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 
 class ClientSocketFactory;
+class HostPortPair;
 class HostResolver;
 class HttpAuthCache;
 class HttpAuthController;
@@ -34,12 +37,16 @@ class HttpAuthHandlerFactory;
 class HttpResponseInfo;
 class HttpUserAgentSettings;
 class NetLog;
+class NetLogWithSource;
 class NetworkQualityEstimator;
 class ProxyDelegate;
+class ProxyServer;
 class SocketPerformanceWatcherFactory;
+struct SSLConfig;
 class StreamSocket;
 class WebSocketEndpointLockManager;
 class QuicStreamFactory;
+class SocketTag;
 class SpdySessionPool;
 class SSLCertRequestInfo;
 
@@ -88,6 +95,10 @@ struct NET_EXPORT_PRIVATE CommonConnectJobParams {
   // This must only be non-null for WebSockets.
   WebSocketEndpointLockManager* websocket_endpoint_lock_manager;
 };
+
+using OnHostResolutionCallback =
+    base::RepeatingCallback<int(const AddressList&,
+                                const NetLogWithSource& net_log)>;
 
 // ConnectJob provides an abstract interface for "connecting" a socket.
 // The connection may involve host resolution, tcp connection, ssl connection,
@@ -142,6 +153,24 @@ class NET_EXPORT_PRIVATE ConnectJob {
              NetLogSourceType net_log_source_type,
              NetLogEventType net_log_connect_event_type);
   virtual ~ConnectJob();
+
+  // Creates a ConnectJob with the specified parameters.
+  // |common_connect_job_params| and |delegate| must outlive the returned
+  // ConnectJob.
+  static std::unique_ptr<ConnectJob> CreateConnectJob(
+      bool using_ssl,
+      const HostPortPair& endpoint,
+      const ProxyServer& proxy_server,
+      MutableNetworkTrafficAnnotationTag proxy_annotation_tag,
+      const SSLConfig* ssl_config_for_origin,
+      const SSLConfig* ssl_config_for_proxy,
+      bool force_tunnel,
+      PrivacyMode privacy_mode,
+      const OnHostResolutionCallback& resolution_callback,
+      RequestPriority request_priority,
+      SocketTag socket_tag,
+      const CommonConnectJobParams* common_connect_job_params,
+      ConnectJob::Delegate* delegate);
 
   // Accessors
   const NetLogWithSource& net_log() { return net_log_; }

@@ -19,18 +19,14 @@
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_proxy_connect_job.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_manager_impl.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/socket_tag.h"
 #include "net/socket/socket_test_util.h"
-#include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/socket/ssl_connect_job.h"
 #include "net/socket/transport_client_socket_pool.h"
-#include "net/socket/transport_connect_job.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_key.h"
@@ -93,29 +89,24 @@ class WebSocketClientSocketHandleAdapterTest
                 net_log_.net_log(),
                 &websocket_endpoint_lock_manager_),
             nullptr /* ssl_config_service */,
-            HttpNetworkSession::NORMAL_SOCKET_POOL)),
-        transport_params_(base::MakeRefCounted<TransportSocketParams>(
-            host_port_pair_,
-            OnHostResolutionCallback())),
-        ssl_params_(
-            base::MakeRefCounted<SSLSocketParams>(transport_params_,
-                                                  nullptr,
-                                                  nullptr,
-                                                  host_port_pair_,
-                                                  SSLConfig(),
-                                                  PRIVACY_MODE_DISABLED)) {}
+            HttpNetworkSession::NORMAL_SOCKET_POOL)) {}
 
   ~WebSocketClientSocketHandleAdapterTest() override = default;
 
   bool InitClientSocketHandle(ClientSocketHandle* connection) {
+    scoped_refptr<ClientSocketPool::SocketParams> socks_params =
+        base::MakeRefCounted<ClientSocketPool::SocketParams>(
+            MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+            std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
+            nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
     TestCompletionCallback callback;
     int rv = connection->Init(
         ClientSocketPool::GroupId(host_port_pair_,
                                   ClientSocketPool::SocketType::kSsl,
                                   PrivacyMode::PRIVACY_MODE_DISABLED),
-        ClientSocketPool::SocketParams::CreateFromSSLSocketParams(ssl_params_),
-        MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-        callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+        socks_params, MEDIUM, SocketTag(),
+        ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+        ClientSocketPool::ProxyAuthCallback(),
         socket_pool_manager_->GetSocketPool(ProxyServer::Direct()), net_log_);
     rv = callback.GetResult(rv);
     return rv == OK;
@@ -126,8 +117,6 @@ class WebSocketClientSocketHandleAdapterTest
   MockClientSocketFactory socket_factory_;
   MockHostResolver host_resolver;
   std::unique_ptr<ClientSocketPoolManagerImpl> socket_pool_manager_;
-  scoped_refptr<TransportSocketParams> transport_params_;
-  scoped_refptr<SSLSocketParams> ssl_params_;
   WebSocketEndpointLockManager websocket_endpoint_lock_manager_;
 };
 

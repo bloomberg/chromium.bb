@@ -30,9 +30,7 @@
 #include "net/socket/socket_tag.h"
 #include "net/socket/socks_connect_job.h"
 #include "net/socket/ssl_client_socket.h"
-#include "net/socket/ssl_connect_job.h"
 #include "net/socket/transport_client_socket_pool.h"
-#include "net/socket/transport_connect_job.h"
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_stream.h"
@@ -490,23 +488,21 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
       key, enable_ip_based_pooling,
       /* is_websocket = */ false, NetLogWithSource()));
 
-  auto transport_params = base::MakeRefCounted<TransportSocketParams>(
-      key.host_port_pair(), OnHostResolutionCallback());
-
   auto connection = std::make_unique<ClientSocketHandle>();
   TestCompletionCallback callback;
 
-  SSLConfig ssl_config;
-  auto ssl_params = base::MakeRefCounted<SSLSocketParams>(
-      transport_params, nullptr, nullptr, key.host_port_pair(), ssl_config,
-      key.privacy_mode());
+  scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+      base::MakeRefCounted<ClientSocketPool::SocketParams>(
+          MutableNetworkTrafficAnnotationTag(),
+          std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
+          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
   int rv = connection->Init(
       ClientSocketPool::GroupId(key.host_port_pair(),
                                 ClientSocketPool::SocketType::kSsl,
                                 key.privacy_mode()),
-      ClientSocketPool::SocketParams::CreateFromSSLSocketParams(ssl_params),
-      MEDIUM, key.socket_tag(), ClientSocketPool::RespectLimits::ENABLED,
-      callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+      socket_params, MEDIUM, key.socket_tag(),
+      ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+      ClientSocketPool::ProxyAuthCallback(),
       http_session->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
                                   ProxyServer::Direct()),
       net_log);

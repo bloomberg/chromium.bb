@@ -109,10 +109,7 @@ class TransportClientSocketPoolTest : public ::testing::Test,
         group_id_(HostPortPair("www.google.com", 80),
                   ClientSocketPool::SocketType::kHttp,
                   PrivacyMode::PRIVACY_MODE_DISABLED),
-        params_(ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-            base::MakeRefCounted<TransportSocketParams>(
-                HostPortPair("www.google.com", 80),
-                OnHostResolutionCallback()))),
+        params_(ClientSocketPool::SocketParams::CreateForHttpForTesting()),
         client_socket_factory_(&net_log_) {
     std::unique_ptr<MockCertVerifier> cert_verifier =
         std::make_unique<MockCertVerifier>();
@@ -163,13 +160,10 @@ class TransportClientSocketPoolTest : public ::testing::Test,
     ClientSocketPool::GroupId group_id(HostPortPair(host_name, 80),
                                        ClientSocketPool::SocketType::kHttp,
                                        PrivacyMode::PRIVACY_MODE_DISABLED);
-    scoped_refptr<ClientSocketPool::SocketParams> params(
-        ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-            base::MakeRefCounted<TransportSocketParams>(
-                group_id.destination(), OnHostResolutionCallback())));
     return test_base_.StartRequestUsingPool(
         pool_.get(), group_id, priority,
-        ClientSocketPool::RespectLimits::ENABLED, params);
+        ClientSocketPool::RespectLimits::ENABLED,
+        ClientSocketPool::SocketParams::CreateForHttpForTesting());
   }
 
   int GetOrderOfRequest(size_t index) {
@@ -189,9 +183,9 @@ class TransportClientSocketPoolTest : public ::testing::Test,
   }
   size_t completion_count() const { return test_base_.completion_count(); }
 
-  SSLConfig GetSSLConfig() const {
-    SSLConfig ssl_config;
-    session_deps_.ssl_config_service->GetSSLConfig(&ssl_config);
+  std::unique_ptr<SSLConfig> GetSSLConfig() const {
+    std::unique_ptr<SSLConfig> ssl_config = std::make_unique<SSLConfig>();
+    session_deps_.ssl_config_service->GetSSLConfig(ssl_config.get());
     return ssl_config;
   }
 
@@ -874,10 +868,6 @@ class RequestSocketCallback : public TestCompletionCallbackBase {
 TEST_F(TransportClientSocketPoolTest, RequestTwice) {
   ClientSocketHandle handle;
   RequestSocketCallback callback(group_id_, params_, &handle, pool_.get());
-  scoped_refptr<ClientSocketPool::SocketParams> dest(
-      ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-          base::MakeRefCounted<TransportSocketParams>(
-              HostPortPair("www.google.com", 80), OnHostResolutionCallback())));
   int rv = handle.Init(
       group_id_, params_, LOWEST, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
@@ -1011,23 +1001,22 @@ TEST_F(TransportClientSocketPoolTest, SSLCertError) {
 
   const HostPortPair kHostPortPair("ssl.server.test", 443);
 
-  scoped_refptr<TransportSocketParams> tcp_params =
-      base::MakeRefCounted<TransportSocketParams>(kHostPortPair,
-                                                  OnHostResolutionCallback());
-  scoped_refptr<SSLSocketParams> params(
-      new SSLSocketParams(tcp_params, nullptr, nullptr, kHostPortPair,
-                          GetSSLConfig(), PRIVACY_MODE_DISABLED));
+  scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+      base::MakeRefCounted<ClientSocketPool::SocketParams>(
+          MutableNetworkTrafficAnnotationTag(),
+          GetSSLConfig() /* ssl_config_for_origin */,
+          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
 
   ClientSocketHandle handle;
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      ClientSocketPool::GroupId(kHostPortPair,
-                                ClientSocketPool::SocketType::kSsl,
-                                PrivacyMode::PRIVACY_MODE_DISABLED),
-      ClientSocketPool::SocketParams::CreateFromSSLSocketParams(params), MEDIUM,
-      SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-      callback.callback(), ClientSocketPool::ProxyAuthCallback(),
-      tagging_pool_.get(), NetLogWithSource());
+  int rv =
+      handle.Init(ClientSocketPool::GroupId(kHostPortPair,
+                                            ClientSocketPool::SocketType::kSsl,
+                                            PrivacyMode::PRIVACY_MODE_DISABLED),
+                  socket_params, MEDIUM, SocketTag(),
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(), tagging_pool_.get(),
+                  NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -1273,30 +1262,34 @@ TEST_F(TransportClientSocketPoolTest, BackupSocketFailAfterDelay) {
 
 // Test the case that SOCKSSocketParams are provided.
 TEST_F(TransportClientSocketPoolTest, SOCKS) {
-  const HostPortPair kDesination("host", 80);
+  const HostPortPair kDestination("host", 80);
+
+  TransportClientSocketPool proxy_pool(
+      kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
+      ProxyServer::FromURI("socks5://foopy",
+                           ProxyServer::SCHEME_HTTP /* default_scheme */),
+      false /* is_for_websockets */, tagging_common_connect_job_params_.get(),
+      session_deps_.ssl_config_service.get());
+
   for (IoMode socket_io_mode : {SYNCHRONOUS, ASYNC}) {
-    scoped_refptr<TransportSocketParams> tcp_params =
-        base::MakeRefCounted<TransportSocketParams>(HostPortPair("proxy", 80),
-                                                    OnHostResolutionCallback());
-    scoped_refptr<ClientSocketPool::SocketParams> socks_params(
-        ClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
-            base::MakeRefCounted<SOCKSSocketParams>(
-                tcp_params, true /* socks_v5 */, kDesination,
-                TRAFFIC_ANNOTATION_FOR_TESTS)));
+    scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+        base::MakeRefCounted<ClientSocketPool::SocketParams>(
+            MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+            nullptr /* ssl_config_for_origin */,
+            nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
 
     SOCKS5MockData data(socket_io_mode);
     data.data_provider()->set_connect_data(MockConnect(socket_io_mode, OK));
     tagging_client_socket_factory_.AddSocketDataProvider(data.data_provider());
     ClientSocketHandle handle;
     TestCompletionCallback callback;
-    int rv =
-        handle.Init(ClientSocketPool::GroupId(
-                        kDesination, ClientSocketPool::SocketType::kSsl,
-                        PrivacyMode::PRIVACY_MODE_DISABLED),
-                    socks_params, LOW, SocketTag(),
-                    ClientSocketPool::RespectLimits::ENABLED,
-                    callback.callback(), ClientSocketPool::ProxyAuthCallback(),
-                    tagging_pool_.get(), NetLogWithSource());
+    int rv = handle.Init(
+        ClientSocketPool::GroupId(kDestination,
+                                  ClientSocketPool::SocketType::kHttp,
+                                  PrivacyMode::PRIVACY_MODE_DISABLED),
+        socket_params, LOW, SocketTag(),
+        ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+        ClientSocketPool::ProxyAuthCallback(), &proxy_pool, NetLogWithSource());
     EXPECT_THAT(callback.GetResult(rv), IsOk());
     EXPECT_TRUE(handle.is_initialized());
     EXPECT_TRUE(handle.socket());
@@ -1312,13 +1305,14 @@ TEST_F(TransportClientSocketPoolTest, SOCKS) {
 // See https://crbug.com/940848
 TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
   const HostPortPair kEndpoint("unresolvable.host.name", 443);
-  const HostPortPair kProxy("unresolvable.proxy.name", 443);
 
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   // Create a socket pool which only allows a single connection at a time.
   TransportClientSocketPool pool(
-      1, 1, kUnusedIdleSocketTimeout, ProxyServer::Direct(),
+      1, 1, kUnusedIdleSocketTimeout,
+      ProxyServer::FromURI("https://unresolvable.proxy.name",
+                           ProxyServer::SCHEME_HTTP /* default_scheme */),
       false /* is_for_websockets */, tagging_common_connect_job_params_.get(),
       session_deps_.ssl_config_service.get());
 
@@ -1352,29 +1346,12 @@ TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
   SSLSocketDataProvider ssl_data2(SYNCHRONOUS, OK);
   tagging_client_socket_factory_.AddSSLSocketDataProvider(&ssl_data2);
 
-  scoped_refptr<TransportSocketParams> transport_params =
-      base::MakeRefCounted<TransportSocketParams>(kProxy,
-                                                  OnHostResolutionCallback());
-
-  scoped_refptr<SSLSocketParams> proxy_ssl_params =
-      base::MakeRefCounted<SSLSocketParams>(
-          transport_params, nullptr /* socks_proxy_params */,
-          nullptr /* http_proxy_params */, kProxy, GetSSLConfig(),
-          PRIVACY_MODE_DISABLED);
-
-  scoped_refptr<HttpProxySocketParams> http_proxy_params =
-      base::MakeRefCounted<HttpProxySocketParams>(
-          nullptr /* transport_params */, proxy_ssl_params, false /* is_quic */,
-          kEndpoint, false /* is_trusted_proxy */, true /* tunnel */,
-          TRAFFIC_ANNOTATION_FOR_TESTS);
-  scoped_refptr<SSLSocketParams> endpoint_ssl_params =
-      base::MakeRefCounted<SSLSocketParams>(
-          nullptr /* direct_params */, nullptr /* socks_proxy_params */,
-          http_proxy_params, kEndpoint, GetSSLConfig(), PRIVACY_MODE_DISABLED);
-
-  scoped_refptr<ClientSocketPool::SocketParams> pool_params =
-      ClientSocketPool::SocketParams::CreateFromSSLSocketParams(
-          endpoint_ssl_params);
+  scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+      base::MakeRefCounted<ClientSocketPool::SocketParams>(
+          MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+          GetSSLConfig() /* ssl_config_for_origin */,
+          GetSSLConfig() /* ssl_config_for_proxy */,
+          OnHostResolutionCallback());
 
   ClientSocketPool::GroupId group_id(kEndpoint,
                                      ClientSocketPool::SocketType::kSsl,
@@ -1384,7 +1361,7 @@ TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
   TestCompletionCallback callback1;
   ClientSocketHandle handle1;
   int rv1 = handle1.Init(
-      group_id, pool_params, HIGHEST, SocketTag(),
+      group_id, socket_params, HIGHEST, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED, callback1.callback(),
       ClientSocketPool::ProxyAuthCallback(), &pool, NetLogWithSource());
   ASSERT_THAT(rv1, IsError(ERR_IO_PENDING));
@@ -1393,7 +1370,7 @@ TEST_F(TransportClientSocketPoolTest, SpdyOneConnectJobTwoRequestsError) {
   TestCompletionCallback callback2;
   ClientSocketHandle handle2;
   int rv2 = handle2.Init(
-      group_id, pool_params, LOWEST, SocketTag(),
+      group_id, socket_params, LOWEST, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
       ClientSocketPool::ProxyAuthCallback(), &pool, NetLogWithSource());
   ASSERT_THAT(rv2, IsError(ERR_IO_PENDING));
@@ -1424,7 +1401,9 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
 
   // Create a socket pool which only allows a single connection at a time.
   TransportClientSocketPool pool(
-      1, 1, kUnusedIdleSocketTimeout, ProxyServer::Direct(),
+      1, 1, kUnusedIdleSocketTimeout,
+      ProxyServer::FromURI("https://unresolvable.proxy.name",
+                           ProxyServer::SCHEME_HTTP /* default_scheme */),
       false /* is_for_websockets */, tagging_common_connect_job_params_.get(),
       session_deps_.ssl_config_service.get());
 
@@ -1471,29 +1450,12 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
   SSLSocketDataProvider ssl_data2(SYNCHRONOUS, OK);
   tagging_client_socket_factory_.AddSSLSocketDataProvider(&ssl_data2);
 
-  scoped_refptr<TransportSocketParams> transport_params =
-      base::MakeRefCounted<TransportSocketParams>(kProxy,
-                                                  OnHostResolutionCallback());
-
-  scoped_refptr<SSLSocketParams> proxy_ssl_params =
-      base::MakeRefCounted<SSLSocketParams>(
-          transport_params, nullptr /* socks_proxy_params */,
-          nullptr /* http_proxy_params */, kProxy, GetSSLConfig(),
-          PRIVACY_MODE_DISABLED);
-
-  scoped_refptr<HttpProxySocketParams> http_proxy_params =
-      base::MakeRefCounted<HttpProxySocketParams>(
-          nullptr /* transport_params */, proxy_ssl_params, false /* is_quic */,
-          kEndpoint, false /* is_trusted_proxy */, true /* tunnel */,
-          TRAFFIC_ANNOTATION_FOR_TESTS);
-  scoped_refptr<SSLSocketParams> endpoint_ssl_params =
-      base::MakeRefCounted<SSLSocketParams>(
-          nullptr /* direct_params */, nullptr /* socks_proxy_params */,
-          http_proxy_params, kEndpoint, GetSSLConfig(), PRIVACY_MODE_DISABLED);
-
-  scoped_refptr<ClientSocketPool::SocketParams> pool_params =
-      ClientSocketPool::SocketParams::CreateFromSSLSocketParams(
-          endpoint_ssl_params);
+  scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+      base::MakeRefCounted<ClientSocketPool::SocketParams>(
+          MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+          GetSSLConfig() /* ssl_config_for_origin */,
+          GetSSLConfig() /* ssl_config_for_proxy */,
+          OnHostResolutionCallback());
 
   ClientSocketPool::GroupId group_id(kEndpoint,
                                      ClientSocketPool::SocketType::kSsl,
@@ -1503,7 +1465,7 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
   TestCompletionCallback callback1;
   ClientSocketHandle handle1;
   base::RunLoop run_loop;
-  int rv1 = handle1.Init(group_id, pool_params, HIGHEST, SocketTag(),
+  int rv1 = handle1.Init(group_id, socket_params, HIGHEST, SocketTag(),
                          ClientSocketPool::RespectLimits::ENABLED,
                          callback1.callback(),
                          base::BindLambdaForTesting(
@@ -1519,7 +1481,7 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
   TestCompletionCallback callback2;
   ClientSocketHandle handle2;
   int rv2 = handle2.Init(
-      group_id, pool_params, LOWEST, SocketTag(),
+      group_id, socket_params, LOWEST, SocketTag(),
       ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
       ClientSocketPool::ProxyAuthCallback(), &pool, NetLogWithSource());
   ASSERT_THAT(rv2, IsError(ERR_IO_PENDING));
@@ -1540,7 +1502,6 @@ TEST_F(TransportClientSocketPoolTest, SpdyAuthOneConnectJobTwoRequests) {
 
 TEST_F(TransportClientSocketPoolTest, HttpTunnelSetupRedirect) {
   const HostPortPair kEndpoint("host.test", 443);
-  const HostPortPair kProxy("proxy.test", 443);
 
   const std::string kRedirectTarget = "https://some.other.host.test/";
 
@@ -1558,6 +1519,16 @@ TEST_F(TransportClientSocketPoolTest, HttpTunnelSetupRedirect) {
 
     for (bool use_https_proxy : {false, true}) {
       SCOPED_TRACE(use_https_proxy);
+
+      TransportClientSocketPool proxy_pool(
+          kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
+          ProxyServer::FromURI(
+              use_https_proxy ? "https://proxy.test" : "http://proxy.test",
+              ProxyServer::SCHEME_HTTP /* default_scheme */),
+          false /* is_for_websockets */,
+          tagging_common_connect_job_params_.get(),
+          session_deps_.ssl_config_service.get());
+
       MockWrite writes[] = {
           MockWrite(ASYNC, 0,
                     "CONNECT host.test:443 HTTP/1.1\r\n"
@@ -1576,42 +1547,21 @@ TEST_F(TransportClientSocketPoolTest, HttpTunnelSetupRedirect) {
       ClientSocketHandle handle;
       TestCompletionCallback callback;
 
-      scoped_refptr<TransportSocketParams> transport_params =
-          base::MakeRefCounted<TransportSocketParams>(
-              kProxy, OnHostResolutionCallback());
+      scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+          base::MakeRefCounted<ClientSocketPool::SocketParams>(
+              MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+              GetSSLConfig() /* ssl_config_for_origin */,
+              GetSSLConfig() /* ssl_config_for_proxy */,
+              OnHostResolutionCallback());
 
-      scoped_refptr<SSLSocketParams> proxy_ssl_params =
-          base::MakeRefCounted<SSLSocketParams>(
-              transport_params, nullptr /* socks_proxy_params */,
-              nullptr /* http_proxy_params */, kProxy, GetSSLConfig(),
-              PRIVACY_MODE_DISABLED);
-
-      scoped_refptr<HttpProxySocketParams> http_proxy_params =
-          base::MakeRefCounted<HttpProxySocketParams>(
-              use_https_proxy ? nullptr : transport_params,
-              use_https_proxy ? proxy_ssl_params : nullptr, false /* is_quic */,
-              kEndpoint, false /* is_trusted_proxy */, true /* tunnel */,
-              TRAFFIC_ANNOTATION_FOR_TESTS);
-      scoped_refptr<SSLSocketParams> endpoint_ssl_params =
-          base::MakeRefCounted<SSLSocketParams>(
-              nullptr /* direct_params */, nullptr /* socks_proxy_params */,
-              http_proxy_params, kEndpoint, GetSSLConfig(),
-              PRIVACY_MODE_DISABLED);
-
-      // Whether the proxy is HTTPS or not, always connecting to an HTTPS site
-      // through it.
-      scoped_refptr<ClientSocketPool::SocketParams> pool_params =
-          ClientSocketPool::SocketParams::CreateFromSSLSocketParams(
-              endpoint_ssl_params);
-
-      int rv = handle.Init(
-          ClientSocketPool::GroupId(kEndpoint,
-                                    ClientSocketPool::SocketType::kSsl,
-                                    PrivacyMode::PRIVACY_MODE_DISABLED),
-          pool_params, LOW, SocketTag(),
-          ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
-          ClientSocketPool::ProxyAuthCallback(), tagging_pool_.get(),
-          NetLogWithSource());
+      int rv = handle.Init(ClientSocketPool::GroupId(
+                               kEndpoint, ClientSocketPool::SocketType::kSsl,
+                               PrivacyMode::PRIVACY_MODE_DISABLED),
+                           socket_params, LOW, SocketTag(),
+                           ClientSocketPool::RespectLimits::ENABLED,
+                           callback.callback(),
+                           ClientSocketPool::ProxyAuthCallback(), &proxy_pool,
+                           NetLogWithSource());
       rv = callback.GetResult(rv);
 
       if (!use_https_proxy) {
@@ -1671,12 +1621,10 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
   // Test socket is tagged before connected.
   uint64_t old_traffic = GetTaggedBytes(tag_val1);
   const ClientSocketPool::GroupId kGroupId(test_server.host_port_pair(),
-                                           ClientSocketPool::SocketType::kSsl,
+                                           ClientSocketPool::SocketType::kHttp,
                                            PrivacyMode::PRIVACY_MODE_DISABLED);
   scoped_refptr<ClientSocketPool::SocketParams> params =
-      ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-          base::MakeRefCounted<TransportSocketParams>(
-              test_server.host_port_pair(), OnHostResolutionCallback()));
+      ClientSocketPool::SocketParams::CreateForHttpForTesting();
   TestCompletionCallback callback;
   int rv = handle.Init(
       kGroupId, params, LOW, tag1, ClientSocketPool::RespectLimits::ENABLED,
@@ -1787,20 +1735,24 @@ TEST_F(TransportClientSocketPoolTest, Tag) {
 TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 
+  TransportClientSocketPool proxy_pool(
+      kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
+      ProxyServer::FromURI("socks5://proxy",
+                           ProxyServer::SCHEME_HTTP /* default_scheme */),
+      false /* is_for_websockets */, tagging_common_connect_job_params_.get(),
+      session_deps_.ssl_config_service.get());
+
   SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
   SocketTag tag2(getuid(), 0x87654321);
   const HostPortPair kDestination("host", 80);
   const ClientSocketPool::GroupId kGroupId(kDestination,
                                            ClientSocketPool::SocketType::kHttp,
                                            PrivacyMode::PRIVACY_MODE_DISABLED);
-  scoped_refptr<TransportSocketParams> tcp_params =
-      base::MakeRefCounted<TransportSocketParams>(HostPortPair("proxy", 80),
-                                                  OnHostResolutionCallback());
-  scoped_refptr<ClientSocketPool::SocketParams> socks_params(
-      ClientSocketPool::SocketParams::CreateFromSOCKSSocketParams(
-          base::MakeRefCounted<SOCKSSocketParams>(
-              tcp_params, true /* socks_v5 */, kDestination,
-              TRAFFIC_ANNOTATION_FOR_TESTS)));
+  scoped_refptr<ClientSocketPool::SocketParams> socks_params =
+      base::MakeRefCounted<ClientSocketPool::SocketParams>(
+          MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+          nullptr /* ssl_config_for_origin */,
+          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
 
   // Test socket is tagged when created synchronously.
   SOCKS5MockData data_sync(SYNCHRONOUS);
@@ -1808,11 +1760,10 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
   tagging_client_socket_factory_.AddSocketDataProvider(
       data_sync.data_provider());
   ClientSocketHandle handle;
-  int rv = handle.Init(kGroupId, socks_params, LOW, tag1,
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       CompletionOnceCallback(),
-                       ClientSocketPool::ProxyAuthCallback(),
-                       tagging_pool_.get(), NetLogWithSource());
+  int rv = handle.Init(
+      kGroupId, socks_params, LOW, tag1,
+      ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
+      ClientSocketPool::ProxyAuthCallback(), &proxy_pool, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.is_initialized());
   EXPECT_TRUE(handle.socket());
@@ -1824,11 +1775,10 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
   // Test socket is tagged when reused synchronously.
   StreamSocket* socket = handle.socket();
   handle.Reset();
-  rv = handle.Init(kGroupId, socks_params, LOW, tag2,
-                   ClientSocketPool::RespectLimits::ENABLED,
-                   CompletionOnceCallback(),
-                   ClientSocketPool::ProxyAuthCallback(), tagging_pool_.get(),
-                   NetLogWithSource());
+  rv = handle.Init(
+      kGroupId, socks_params, LOW, tag2,
+      ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
+      ClientSocketPool::ProxyAuthCallback(), &proxy_pool, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -1846,7 +1796,7 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
   rv = handle.Init(kGroupId, socks_params, LOW, tag1,
                    ClientSocketPool::RespectLimits::ENABLED,
                    callback.callback(), ClientSocketPool::ProxyAuthCallback(),
-                   tagging_pool_.get(), NetLogWithSource());
+                   &proxy_pool, NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_TRUE(handle.is_initialized());
@@ -1859,11 +1809,10 @@ TEST_F(TransportClientSocketPoolTest, TagSOCKSProxy) {
   // Test socket is tagged when reused after being created asynchronously.
   socket = handle.socket();
   handle.Reset();
-  rv = handle.Init(kGroupId, socks_params, LOW, tag2,
-                   ClientSocketPool::RespectLimits::ENABLED,
-                   CompletionOnceCallback(),
-                   ClientSocketPool::ProxyAuthCallback(), tagging_pool_.get(),
-                   NetLogWithSource());
+  rv = handle.Init(
+      kGroupId, socks_params, LOW, tag2,
+      ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
+      ClientSocketPool::ProxyAuthCallback(), &proxy_pool, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -1887,8 +1836,8 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirect) {
   // TLS 1.3 sockets aren't reused until the read side has been pumped.
   // TODO(crbug.com/906668): Support pumping the read side and setting the
   // socket to be reusable.
-  SSLConfig ssl_config = GetSSLConfig();
-  ssl_config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  std::unique_ptr<SSLConfig> ssl_config = GetSSLConfig();
+  ssl_config->version_max = SSL_PROTOCOL_VERSION_TLS1_2;
 
   TestCompletionCallback callback;
   ClientSocketHandle handle;
@@ -1899,21 +1848,20 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirect) {
   const ClientSocketPool::GroupId kGroupId(test_server.host_port_pair(),
                                            ClientSocketPool::SocketType::kSsl,
                                            PrivacyMode::PRIVACY_MODE_DISABLED);
-  scoped_refptr<TransportSocketParams> tcp_params =
-      base::MakeRefCounted<TransportSocketParams>(test_server.host_port_pair(),
-                                                  OnHostResolutionCallback());
-  scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
-      tcp_params, nullptr, nullptr, test_server.host_port_pair(), ssl_config,
-      PRIVACY_MODE_DISABLED));
+
+  scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+      base::MakeRefCounted<ClientSocketPool::SocketParams>(
+          MutableNetworkTrafficAnnotationTag(),
+          std::move(ssl_config) /* ssl_config_for_origin */,
+          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
 
   // Test socket is tagged before connected.
   uint64_t old_traffic = GetTaggedBytes(tag_val1);
-  int rv = handle.Init(
-      kGroupId,
-      ClientSocketPool::SocketParams::CreateFromSSLSocketParams(params), LOW,
-      tag1, ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
-      ClientSocketPool::ProxyAuthCallback(), pool_for_real_sockets_.get(),
-      NetLogWithSource());
+  int rv =
+      handle.Init(kGroupId, socket_params, LOW, tag1,
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(),
+                  pool_for_real_sockets_.get(), NetLogWithSource());
   EXPECT_THAT(callback.GetResult(rv), IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -1924,12 +1872,10 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirect) {
   handle.Reset();
   old_traffic = GetTaggedBytes(tag_val2);
   TestCompletionCallback callback2;
-  rv = handle.Init(
-      kGroupId,
-      ClientSocketPool::SocketParams::CreateFromSSLSocketParams(params), LOW,
-      tag2, ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
-      ClientSocketPool::ProxyAuthCallback(), pool_for_real_sockets_.get(),
-      NetLogWithSource());
+  rv = handle.Init(kGroupId, socket_params, LOW, tag2,
+                   ClientSocketPool::RespectLimits::ENABLED,
+                   callback2.callback(), ClientSocketPool::ProxyAuthCallback(),
+                   pool_for_real_sockets_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -1972,32 +1918,28 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSockets) {
   const ClientSocketPool::GroupId kGroupId(test_server.host_port_pair(),
                                            ClientSocketPool::SocketType::kSsl,
                                            PrivacyMode::PRIVACY_MODE_DISABLED);
-  scoped_refptr<TransportSocketParams> tcp_params =
-      base::MakeRefCounted<TransportSocketParams>(test_server.host_port_pair(),
-                                                  OnHostResolutionCallback());
-  scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
-      tcp_params, nullptr, nullptr, test_server.host_port_pair(),
-      GetSSLConfig(), PRIVACY_MODE_DISABLED));
+  scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+      base::MakeRefCounted<ClientSocketPool::SocketParams>(
+          MutableNetworkTrafficAnnotationTag(),
+          GetSSLConfig() /* ssl_config_for_origin */,
+          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
 
   // Test connect jobs that are orphaned and then adopted, appropriately apply
   // new tag. Request socket with |tag1|.
   TestCompletionCallback callback;
-  int rv = handle.Init(
-      kGroupId,
-      ClientSocketPool::SocketParams::CreateFromSSLSocketParams(params), LOW,
-      tag1, ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
-      ClientSocketPool::ProxyAuthCallback(), pool_for_real_sockets_.get(),
-      NetLogWithSource());
+  int rv =
+      handle.Init(kGroupId, socket_params, LOW, tag1,
+                  ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+                  ClientSocketPool::ProxyAuthCallback(),
+                  pool_for_real_sockets_.get(), NetLogWithSource());
   EXPECT_TRUE(rv == OK || rv == ERR_IO_PENDING) << "Result: " << rv;
   // Abort and request socket with |tag2|.
   handle.Reset();
   TestCompletionCallback callback2;
-  rv = handle.Init(
-      kGroupId,
-      ClientSocketPool::SocketParams::CreateFromSSLSocketParams(params), LOW,
-      tag2, ClientSocketPool::RespectLimits::ENABLED, callback2.callback(),
-      ClientSocketPool::ProxyAuthCallback(), pool_for_real_sockets_.get(),
-      NetLogWithSource());
+  rv = handle.Init(kGroupId, socket_params, LOW, tag2,
+                   ClientSocketPool::RespectLimits::ENABLED,
+                   callback2.callback(), ClientSocketPool::ProxyAuthCallback(),
+                   pool_for_real_sockets_.get(), NetLogWithSource());
   EXPECT_THAT(callback2.GetResult(rv), IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -2039,12 +1981,11 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSocketsFullPool) {
   const ClientSocketPool::GroupId kGroupId(test_server.host_port_pair(),
                                            ClientSocketPool::SocketType::kSsl,
                                            PrivacyMode::PRIVACY_MODE_DISABLED);
-  scoped_refptr<TransportSocketParams> tcp_params =
-      base::MakeRefCounted<TransportSocketParams>(test_server.host_port_pair(),
-                                                  OnHostResolutionCallback());
-  scoped_refptr<SSLSocketParams> params(new SSLSocketParams(
-      tcp_params, nullptr, nullptr, test_server.host_port_pair(),
-      GetSSLConfig(), PRIVACY_MODE_DISABLED));
+  scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+      base::MakeRefCounted<ClientSocketPool::SocketParams>(
+          MutableNetworkTrafficAnnotationTag(),
+          GetSSLConfig() /* ssl_config_for_origin */,
+          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
 
   // Test that sockets paused by a full underlying socket pool are properly
   // connected and tagged when underlying pool is freed up.
@@ -2052,13 +1993,11 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSocketsFullPool) {
   ClientSocketHandle tcp_handles[kMaxSocketsPerGroup];
   int rv;
   for (auto& tcp_handle : tcp_handles) {
-    rv = tcp_handle.Init(
-        kGroupId,
-        ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-            tcp_params),
-        LOW, tag1, ClientSocketPool::RespectLimits::ENABLED,
-        callback.callback(), ClientSocketPool::ProxyAuthCallback(),
-        pool_for_real_sockets_.get(), NetLogWithSource());
+    rv = tcp_handle.Init(kGroupId, socket_params, LOW, tag1,
+                         ClientSocketPool::RespectLimits::ENABLED,
+                         callback.callback(),
+                         ClientSocketPool::ProxyAuthCallback(),
+                         pool_for_real_sockets_.get(), NetLogWithSource());
     EXPECT_THAT(callback.GetResult(rv), IsOk());
     EXPECT_TRUE(tcp_handle.socket());
     EXPECT_TRUE(tcp_handle.socket()->IsConnected());
@@ -2066,18 +2005,15 @@ TEST_F(TransportClientSocketPoolTest, TagSSLDirectTwoSocketsFullPool) {
   // Request two SSL sockets.
   ClientSocketHandle handle_to_be_canceled;
   rv = handle_to_be_canceled.Init(
-      kGroupId,
-      ClientSocketPool::SocketParams::CreateFromSSLSocketParams(params), LOW,
-      tag1, ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+      kGroupId, socket_params, LOW, tag1,
+      ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
       ClientSocketPool::ProxyAuthCallback(), pool_for_real_sockets_.get(),
       NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  rv = handle.Init(
-      kGroupId,
-      ClientSocketPool::SocketParams::CreateFromSSLSocketParams(params), LOW,
-      tag2, ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
-      ClientSocketPool::ProxyAuthCallback(), pool_for_real_sockets_.get(),
-      NetLogWithSource());
+  rv = handle.Init(kGroupId, socket_params, LOW, tag2,
+                   ClientSocketPool::RespectLimits::ENABLED,
+                   callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+                   pool_for_real_sockets_.get(), NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
   // Cancel first request.
   handle_to_be_canceled.Reset();
@@ -2109,6 +2045,13 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyNoTunnel) {
   SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
   SocketTag tag2(getuid(), 0x87654321);
 
+  TransportClientSocketPool proxy_pool(
+      kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
+      ProxyServer::FromURI("http://proxy",
+                           ProxyServer::SCHEME_HTTP /* default_scheme */),
+      false /* is_for_websockets */, tagging_common_connect_job_params_.get(),
+      session_deps_.ssl_config_service.get());
+
   session_deps_.host_resolver->set_synchronous_mode(true);
   SequencedSocketData socket_data;
   socket_data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
@@ -2116,24 +2059,20 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyNoTunnel) {
 
   const HostPortPair kDestination("www.google.com", 80);
   const ClientSocketPool::GroupId kGroupId(kDestination,
-                                           ClientSocketPool::SocketType::kSsl,
+                                           ClientSocketPool::SocketType::kHttp,
                                            PrivacyMode::PRIVACY_MODE_DISABLED);
-  scoped_refptr<ClientSocketPool::SocketParams> params =
-      ClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
-          base::MakeRefCounted<HttpProxySocketParams>(
-              base::MakeRefCounted<TransportSocketParams>(
-                  HostPortPair("http.proxy.host", 80),
-                  OnHostResolutionCallback()),
-              nullptr /* ssl_params */, false /* is_quic */, kDestination,
-              false /* is_trusted_proxy */, false /* tunnel */,
-              TRAFFIC_ANNOTATION_FOR_TESTS));
+  scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+      base::MakeRefCounted<ClientSocketPool::SocketParams>(
+          MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+          nullptr /* ssl_config_for_origin */,
+          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
 
   // Verify requested socket is tagged properly.
   ClientSocketHandle handle;
   int rv = handle.Init(
-      kGroupId, params, LOW, tag1, ClientSocketPool::RespectLimits::ENABLED,
-      CompletionOnceCallback(), ClientSocketPool::ProxyAuthCallback(),
-      tagging_pool_.get(), NetLogWithSource());
+      kGroupId, socket_params, LOW, tag1,
+      ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
+      ClientSocketPool::ProxyAuthCallback(), &proxy_pool, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.is_initialized());
   ASSERT_TRUE(handle.socket());
@@ -2147,9 +2086,9 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyNoTunnel) {
   StreamSocket* socket = handle.socket();
   handle.Reset();
   rv = handle.Init(
-      kGroupId, params, LOW, tag2, ClientSocketPool::RespectLimits::ENABLED,
-      CompletionOnceCallback(), ClientSocketPool::ProxyAuthCallback(),
-      tagging_pool_.get(), NetLogWithSource());
+      kGroupId, socket_params, LOW, tag2,
+      ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
+      ClientSocketPool::ProxyAuthCallback(), &proxy_pool, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -2167,6 +2106,13 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyTunnel) {
   SocketTag tag1(SocketTag::UNSET_UID, 0x12345678);
   SocketTag tag2(getuid(), 0x87654321);
 
+  TransportClientSocketPool proxy_pool(
+      kMaxSockets, kMaxSocketsPerGroup, kUnusedIdleSocketTimeout,
+      ProxyServer::FromURI("http://proxy",
+                           ProxyServer::SCHEME_HTTP /* default_scheme */),
+      false /* is_for_websockets */, tagging_common_connect_job_params_.get(),
+      session_deps_.ssl_config_service.get());
+
   session_deps_.host_resolver->set_synchronous_mode(true);
 
   std::string request =
@@ -2182,27 +2128,26 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyTunnel) {
 
   SequencedSocketData socket_data(MockConnect(SYNCHRONOUS, OK), reads, writes);
   tagging_client_socket_factory_.AddSocketDataProvider(&socket_data);
+  SSLSocketDataProvider ssl_data(SYNCHRONOUS, OK);
+  tagging_client_socket_factory_.AddSSLSocketDataProvider(&ssl_data);
 
   const HostPortPair kDestination("www.google.com", 443);
   const ClientSocketPool::GroupId kGroupId(kDestination,
                                            ClientSocketPool::SocketType::kSsl,
                                            PrivacyMode::PRIVACY_MODE_DISABLED);
-  scoped_refptr<ClientSocketPool::SocketParams> params =
-      ClientSocketPool::SocketParams::CreateFromHttpProxySocketParams(
-          base::MakeRefCounted<HttpProxySocketParams>(
-              base::MakeRefCounted<TransportSocketParams>(
-                  HostPortPair("http.proxy.host", 80),
-                  OnHostResolutionCallback()),
-              nullptr /* ssl_params */, quic::QUIC_VERSION_UNSUPPORTED,
-              kDestination, false /* is_trusted_proxy */, true /* tunnel */,
-              TRAFFIC_ANNOTATION_FOR_TESTS));
+
+  scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+      base::MakeRefCounted<ClientSocketPool::SocketParams>(
+          MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
+          GetSSLConfig() /* ssl_config_for_origin */,
+          nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
 
   // Verify requested socket is tagged properly.
   ClientSocketHandle handle;
   int rv = handle.Init(
-      kGroupId, params, LOW, tag1, ClientSocketPool::RespectLimits::ENABLED,
-      CompletionOnceCallback(), ClientSocketPool::ProxyAuthCallback(),
-      tagging_pool_.get(), NetLogWithSource());
+      kGroupId, socket_params, LOW, tag1,
+      ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
+      ClientSocketPool::ProxyAuthCallback(), &proxy_pool, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.is_initialized());
   ASSERT_TRUE(handle.socket());
@@ -2216,9 +2161,9 @@ TEST_F(TransportClientSocketPoolTest, TagHttpProxyTunnel) {
   StreamSocket* socket = handle.socket();
   handle.Reset();
   rv = handle.Init(
-      kGroupId, params, LOW, tag2, ClientSocketPool::RespectLimits::ENABLED,
-      CompletionOnceCallback(), ClientSocketPool::ProxyAuthCallback(),
-      tagging_pool_.get(), NetLogWithSource());
+      kGroupId, socket_params, LOW, tag2,
+      ClientSocketPool::RespectLimits::ENABLED, CompletionOnceCallback(),
+      ClientSocketPool::ProxyAuthCallback(), &proxy_pool, NetLogWithSource());
   EXPECT_THAT(rv, IsOk());
   EXPECT_TRUE(handle.socket());
   EXPECT_TRUE(handle.socket()->IsConnected());
@@ -2305,9 +2250,11 @@ TEST_F(TransportClientSocketPoolMockNowSourceTest, IdleUnusedSocketTimeout) {
                                           base::span<MockRead>(), kWrites);
     {
       // Create 1 socket.
-      scoped_refptr<TransportSocketParams> transport_params(
-          base::MakeRefCounted<TransportSocketParams>(
-              kHostPortPair1, OnHostResolutionCallback()));
+      scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+          base::MakeRefCounted<ClientSocketPool::SocketParams>(
+              MutableNetworkTrafficAnnotationTag(),
+              nullptr /* ssl_config_for_origin */,
+              nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
       session_deps.socket_factory->AddSocketDataProvider(&provider_socket_1);
       ClientSocketHandle connection;
       TestCompletionCallback callback;
@@ -2315,9 +2262,8 @@ TEST_F(TransportClientSocketPoolMockNowSourceTest, IdleUnusedSocketTimeout) {
           ClientSocketPool::GroupId(kHostPortPair1,
                                     ClientSocketPool::SocketType::kHttp,
                                     PrivacyMode::PRIVACY_MODE_DISABLED),
-          ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-              transport_params),
-          MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
+          ClientSocketPool::SocketParams::CreateForHttpForTesting(), MEDIUM,
+          SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
           callback.callback(), ClientSocketPool::ProxyAuthCallback(),
           session->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
                                  ProxyServer::Direct()),
@@ -2349,9 +2295,11 @@ TEST_F(TransportClientSocketPoolMockNowSourceTest, IdleUnusedSocketTimeout) {
 
     {
       // Request a new socket to trigger cleanup of idle timedout sockets.
-      scoped_refptr<TransportSocketParams> transport_params(
-          base::MakeRefCounted<TransportSocketParams>(
-              kHostPortPair2, OnHostResolutionCallback()));
+      scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+          base::MakeRefCounted<ClientSocketPool::SocketParams>(
+              MutableNetworkTrafficAnnotationTag(),
+              nullptr /* ssl_config_for_origin */,
+              nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
       SequencedSocketData provider_socket_2(MockConnect(ASYNC, OK),
                                             base::span<MockRead>(),
                                             base::span<MockWrite>());
@@ -2362,10 +2310,9 @@ TEST_F(TransportClientSocketPoolMockNowSourceTest, IdleUnusedSocketTimeout) {
           ClientSocketPool::GroupId(kHostPortPair2,
                                     ClientSocketPool::SocketType::kHttp,
                                     PrivacyMode::PRIVACY_MODE_DISABLED),
-          ClientSocketPool::SocketParams::CreateFromTransportSocketParams(
-              transport_params),
-          MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-          callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+          socket_params, MEDIUM, SocketTag(),
+          ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+          ClientSocketPool::ProxyAuthCallback(),
           session->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
                                  ProxyServer::Direct()),
           NetLogWithSource());

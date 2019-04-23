@@ -2000,24 +2000,21 @@ TEST_F(HttpStreamFactoryTest, NewSpdySessionCloseIdleH2Sockets) {
   // Create some HTTP/2 sockets.
   std::vector<std::unique_ptr<ClientSocketHandle>> handles;
   for (size_t i = 0; i < kNumIdleSockets; i++) {
-    scoped_refptr<TransportSocketParams> transport_params(
-        new TransportSocketParams(host_port_pair, OnHostResolutionCallback()));
-
     auto connection = std::make_unique<ClientSocketHandle>();
     TestCompletionCallback callback;
 
-    SSLConfig ssl_config;
-    scoped_refptr<SSLSocketParams> ssl_params(
-        new SSLSocketParams(transport_params, nullptr, nullptr, host_port_pair,
-                            ssl_config, PRIVACY_MODE_DISABLED));
+    scoped_refptr<ClientSocketPool::SocketParams> socket_params =
+        base::MakeRefCounted<ClientSocketPool::SocketParams>(
+            MutableNetworkTrafficAnnotationTag(),
+            std::make_unique<SSLConfig>() /* ssl_config_for_origin */,
+            nullptr /* ssl_config_for_proxy */, OnHostResolutionCallback());
     ClientSocketPool::GroupId group_id(host_port_pair,
                                        ClientSocketPool::SocketType::kSsl,
                                        PrivacyMode::PRIVACY_MODE_DISABLED);
     int rv = connection->Init(
-        group_id,
-        ClientSocketPool::SocketParams::CreateFromSSLSocketParams(ssl_params),
-        MEDIUM, SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
-        callback.callback(), ClientSocketPool::ProxyAuthCallback(),
+        group_id, socket_params, MEDIUM, SocketTag(),
+        ClientSocketPool::RespectLimits::ENABLED, callback.callback(),
+        ClientSocketPool::ProxyAuthCallback(),
         session->GetSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL,
                                ProxyServer::Direct()),
         NetLogWithSource());
