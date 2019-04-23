@@ -181,12 +181,6 @@ class StartupBrowserCreator {
                               const base::FilePath& cur_dir,
                               Profile* profile);
 
-  // This is run as a task by ProcessCommandLineAlreadyRunning.
-  static void ProcessCommandLineAlreadyRunningImpl(
-      const base::CommandLine& command_line,
-      const base::FilePath& cur_dir,
-      const base::FilePath& profile_path);
-
   // Callback after a profile has been created.
   static void ProcessCommandLineOnProfileCreated(
       const base::CommandLine& command_line,
