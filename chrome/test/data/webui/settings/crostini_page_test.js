@@ -112,8 +112,8 @@ suite('CrostiniPageTests', function() {
     });
 
     test('SharedPaths', function() {
-      assertTrue(!!subpage.$$('#crostini-shared-paths .subpage-arrow'));
-      subpage.$$('#crostini-shared-paths .subpage-arrow').click();
+      assertTrue(!!subpage.$$('#crostini-shared-paths'));
+      subpage.$$('#crostini-shared-paths').click();
       return flushAsync().then(() => {
         subpage = crostiniPage.$$('settings-crostini-shared-paths');
         assertTrue(!!subpage);
@@ -121,8 +121,8 @@ suite('CrostiniPageTests', function() {
     });
 
     test('Export', function() {
-      assertTrue(!!subpage.$$('#crostini-export-import .subpage-arrow'));
-      subpage.$$('#crostini-export-import .subpage-arrow').click();
+      assertTrue(!!subpage.$$('#crostini-export-import'));
+      subpage.$$('#crostini-export-import').click();
       return flushAsync().then(() => {
         subpage = crostiniPage.$$('settings-crostini-export-import');
         assertTrue(!!subpage.$$('#export paper-button'));
@@ -133,8 +133,8 @@ suite('CrostiniPageTests', function() {
     });
 
     test('Import', function() {
-      assertTrue(!!subpage.$$('#crostini-export-import .subpage-arrow'));
-      subpage.$$('#crostini-export-import .subpage-arrow').click();
+      assertTrue(!!subpage.$$('#crostini-export-import'));
+      subpage.$$('#crostini-export-import').click();
       return flushAsync().then(() => {
         subpage = crostiniPage.$$('settings-crostini-export-import');
         assertTrue(!!subpage.$$('#import paper-button'));
