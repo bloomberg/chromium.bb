@@ -90,12 +90,6 @@ void FakeDebugDaemonClient::GetNetworkStatus(
       FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
 }
 
-void FakeDebugDaemonClient::GetModemStatus(
-    DBusMethodCallback<std::string> callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
-}
-
 void FakeDebugDaemonClient::GetNetworkInterfaces(
     DBusMethodCallback<std::string> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
