@@ -191,7 +191,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // Returns the bounding box of visual overflow rects of all line boxes.
   LayoutRect VisualOverflowRect() const;
 
-  FloatPoint FirstRunOrigin() const;
+  LayoutPoint FirstLineBoxTopLeft() const;
 
   virtual void SetText(scoped_refptr<StringImpl>,
                        bool force = false,
@@ -221,10 +221,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // returns first-letter part of |InlineTextBox| instead of remaining part.
   InlineTextBox* FirstTextBox() const { return TextBoxes().First(); }
   InlineTextBox* LastTextBox() const { return TextBoxes().Last(); }
-
-  // Returns upper left corner point in local physical coordinates with flipped
-  // block-flow direction if this object has rendered text.
-  base::Optional<FloatPoint> GetUpperLeftCorner() const;
 
   // True if we have inline text box children which implies rendered text (or
   // whitespace) output.

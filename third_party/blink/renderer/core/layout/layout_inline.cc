@@ -1002,27 +1002,66 @@ void LayoutInline::AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
     context(FloatRect());
 }
 
-LayoutPoint LayoutInline::FirstLineBoxTopLeft() const {
+base::Optional<LayoutPoint> LayoutInline::FirstLineBoxTopLeftInternal() const {
   if (IsInLayoutNGInlineFormattingContext()) {
     const NGPhysicalBoxFragment* box_fragment =
         ContainingBlockFlowFragmentOf(*this);
     if (!box_fragment)
-      return LayoutPoint();
+      return base::nullopt;
     const auto& fragments =
         NGInlineFragmentTraversal::SelfFragmentsOf(*box_fragment, this);
     if (fragments.IsEmpty())
-      return LayoutPoint();
+      return base::nullopt;
     return fragments.front().offset_to_container_box.ToLayoutPoint();
   }
-  if (InlineBox* first_box = FirstLineBoxIncludingCulling()) {
+  if (const InlineBox* first_box = FirstLineBoxIncludingCulling()) {
     LayoutPoint location = first_box->Location();
     if (UNLIKELY(HasFlippedBlocksWritingMode())) {
       location = ContainingBlock()->FlipForWritingMode(location);
-      location.Move(-LinesBoundingBox().Width(), LayoutUnit());
+      location.Move(-first_box->Width(), LayoutUnit());
     }
     return location;
   }
+  return base::nullopt;
+}
+
+LayoutPoint LayoutInline::AnchorPhysicalLocation() const {
+  if (const auto& location = FirstLineBoxTopLeftInternal())
+    return *location;
+  // This object doesn't have fragment/line box, probably because it's an empty
+  // and at the beginning/end of a line. Query sibling or parent.
+  // TODO(crbug.com/953479): We won't need this if we always create line box
+  // for empty inline elements. The following algorithm works in most cases for
+  // anchor elements, though may be inaccurate in some corner cases (e.g. if the
+  // sibling is not in the same line).
+  if (const auto* sibling = NextSibling()) {
+    if (sibling->IsLayoutInline())
+      return ToLayoutInline(sibling)->AnchorPhysicalLocation();
+    if (sibling->IsText())
+      return ToLayoutText(sibling)->FirstLineBoxTopLeft();
+    if (sibling->IsBox())
+      return ToLayoutBox(sibling)->PhysicalLocation();
+  }
+  if (Parent()->IsLayoutInline())
+    return ToLayoutInline(Parent())->AnchorPhysicalLocation();
   return LayoutPoint();
+}
+
+LayoutRect LayoutInline::AbsoluteBoundingBoxRectHandlingEmptyInline() const {
+  Vector<LayoutRect> rects;
+  AddOutlineRects(rects, LayoutPoint(),
+                  NGOutlineType::kIncludeBlockVisualOverflow);
+  LayoutRect rect = UnionRect(rects);
+  if (rects.IsEmpty()) {
+    LayoutPoint location = AnchorPhysicalLocation();
+    // AnchorPhysicalLocation is pure physical, while LocalToAbsolute() requires
+    // physical coordinates with flipped block direction.
+    if (UNLIKELY(HasFlippedBlocksWritingMode()))
+      location = ContainingBlock()->FlipForWritingMode(location);
+    rect.SetLocation(location);
+  }
+  return LayoutRect(LocalToAbsoluteQuad(FloatRect(rect), kUseTransforms)
+                        .EnclosingBoundingBox());
 }
 
 LayoutUnit LayoutInline::OffsetLeft(const Element* parent) const {

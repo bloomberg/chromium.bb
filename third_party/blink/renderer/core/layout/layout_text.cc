@@ -338,30 +338,6 @@ Vector<LayoutText::TextBoxInfo> LayoutText::GetTextBoxInfo() const {
   return results;
 }
 
-base::Optional<FloatPoint> LayoutText::GetUpperLeftCorner() const {
-  DCHECK(!IsBR());
-  if (HasLegacyTextBoxes()) {
-    if (StyleRef().IsHorizontalWritingMode()) {
-      return FloatPoint(LinesBoundingBox().X(),
-                        FirstTextBox()->Root().LineTop().ToFloat());
-    }
-    return FloatPoint(FirstTextBox()->Root().LineTop().ToFloat(),
-                      LinesBoundingBox().Y());
-  }
-  auto fragments = NGPaintFragment::InlineFragmentsFor(this);
-  if (!fragments.IsEmpty()) {
-    const NGPaintFragment* line_box = fragments.begin()->ContainerLineBox();
-    DCHECK(line_box);
-    if (StyleRef().IsHorizontalWritingMode()) {
-      return FloatPoint(LinesBoundingBox().X(),
-                        line_box->InlineOffsetToContainerBox().top.ToFloat());
-    }
-    return FloatPoint(line_box->InlineOffsetToContainerBox().left.ToFloat(),
-                      LinesBoundingBox().Y());
-  }
-  return base::nullopt;
-}
-
 bool LayoutText::HasTextBoxes() const {
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
     auto fragments = NGPaintFragment::InlineFragmentsFor(this);
@@ -1600,19 +1576,18 @@ UChar32 LayoutText::LastCharacterAfterWhitespaceCollapsing() const {
   return 0;
 }
 
-FloatPoint LayoutText::FirstRunOrigin() const {
-  if (const NGPaintFragment* fragment = FirstInlineFragment()) {
-    LayoutPoint origin = fragment->InlineOffsetToContainerBox().ToLayoutPoint();
+LayoutPoint LayoutText::FirstLineBoxTopLeft() const {
+  if (const NGPaintFragment* fragment = FirstInlineFragment())
+    return fragment->InlineOffsetToContainerBox().ToLayoutPoint();
+  if (const auto* text_box = FirstTextBox()) {
+    auto location = text_box->Location();
     if (UNLIKELY(HasFlippedBlocksWritingMode())) {
-      LayoutRect line_box_rect(origin, fragment->Size().ToLayoutSize());
-      ContainingBlock()->FlipForWritingMode(line_box_rect);
-      return FloatPoint(line_box_rect.Location());
+      location = ContainingBlock()->FlipForWritingMode(location);
+      location.Move(-text_box->Width(), LayoutUnit());
     }
-    return FloatPoint(origin);
+    return location;
   }
-  if (const auto* text_box = FirstTextBox())
-    return FloatPoint(text_box->Location());
-  return FloatPoint();
+  return LayoutPoint();
 }
 
 bool LayoutText::CanOptimizeSetText() const {

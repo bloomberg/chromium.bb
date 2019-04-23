@@ -1022,7 +1022,7 @@ void ContainerNode::CloneChildNodesFrom(const ContainerNode& node) {
 LayoutRect ContainerNode::BoundingBox() const {
   if (!GetLayoutObject())
     return LayoutRect();
-  return GetLayoutObject()->AbsoluteBoundingBoxRectHandlingEmptyAnchor();
+  return GetLayoutObject()->AbsoluteBoundingBoxRectHandlingEmptyInline();
 }
 
 // This is used by FrameSelection to denote when the active-state of the page

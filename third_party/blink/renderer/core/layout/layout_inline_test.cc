@@ -374,4 +374,95 @@ TEST_P(ParameterizedLayoutInlineTest, FocusRingRecursiveInlines) {
                                    LayoutRect(0, 55, 160, 20)));  // 'CONTENTS'
 }
 
+TEST_P(ParameterizedLayoutInlineTest,
+       AbsoluteBoundingBoxRectHandlingEmptyInline) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 30px 50px;
+        font: 20px/20px Ahem;
+      }
+    </style>
+    <br><br>
+    <span id="target1"></span><br>
+    <span id="target2"></span>after<br>
+    <span id="target3"></span><span>after</span><br>
+    <span id="target4"></span><img style="width: 16px; height: 16px"><br>
+    <span><span><span id="target5"></span></span></span><span>after</span><br>
+    <span id="target6">
+      <img style="width: 30px; height: 30px">
+      <div style="width: 100px; height: 100px"></div>
+      <img style="width: 30px; height: 30px">
+    </span>
+  )HTML");
+
+  EXPECT_EQ(LayoutRect(50, 70, 0, 0),
+            GetLayoutObjectByElementId("target1")
+                ->AbsoluteBoundingBoxRectHandlingEmptyInline());
+  EXPECT_EQ(LayoutRect(50, 90, 0, 0),
+            GetLayoutObjectByElementId("target2")
+                ->AbsoluteBoundingBoxRectHandlingEmptyInline());
+  EXPECT_EQ(LayoutRect(50, 110, 0, 0),
+            GetLayoutObjectByElementId("target3")
+                ->AbsoluteBoundingBoxRectHandlingEmptyInline());
+  EXPECT_EQ(LayoutRect(50, 130, 0, 0),
+            GetLayoutObjectByElementId("target4")
+                ->AbsoluteBoundingBoxRectHandlingEmptyInline());
+  EXPECT_EQ(LayoutRect(50, 150, 0, 0),
+            GetLayoutObjectByElementId("target5")
+                ->AbsoluteBoundingBoxRectHandlingEmptyInline());
+  // This rect covers the overflowing images and continuations.
+  // 168 = (30 + 4) * 2 + 100. 4 is the descent of the font.
+  EXPECT_EQ(LayoutRect(50, 170, 100, 168),
+            GetLayoutObjectByElementId("target6")
+                ->AbsoluteBoundingBoxRectHandlingEmptyInline());
+}
+
+TEST_P(ParameterizedLayoutInlineTest,
+       AbsoluteBoundingBoxRectHandlingEmptyInlineVerticalRL) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      body {
+        margin: 30px 50px;
+        font: 20px/20px Ahem;
+      }
+    </style>
+    <br><br>
+    <div style="width: 600px; height: 400px; writing-mode: vertical-rl">
+      <span id="target1"></span><br>
+      <span id="target2"></span>after<br>
+      <span id="target3"></span><span>after</span><br>
+      <span id="target4"></span><img style="width: 20px; height: 20px"><br>
+      <span><span><span id="target5"></span></span></span><span>after</span><br>
+      <span id="target6">
+        <img style="width: 30px; height: 30px">
+        <div style="width: 100px; height: 100px"></div>
+        <img style="width: 30px; height: 30px">
+      </span>
+    </div>
+  )HTML");
+
+  EXPECT_EQ(LayoutRect(630, 70, 0, 0),
+            GetLayoutObjectByElementId("target1")
+                ->AbsoluteBoundingBoxRectHandlingEmptyInline());
+  EXPECT_EQ(LayoutRect(610, 70, 0, 0),
+            GetLayoutObjectByElementId("target2")
+                ->AbsoluteBoundingBoxRectHandlingEmptyInline());
+  EXPECT_EQ(LayoutRect(590, 70, 0, 0),
+            GetLayoutObjectByElementId("target3")
+                ->AbsoluteBoundingBoxRectHandlingEmptyInline());
+  EXPECT_EQ(LayoutRect(570, 70, 0, 0),
+            GetLayoutObjectByElementId("target4")
+                ->AbsoluteBoundingBoxRectHandlingEmptyInline());
+  EXPECT_EQ(LayoutRect(550, 70, 0, 0),
+            GetLayoutObjectByElementId("target5")
+                ->AbsoluteBoundingBoxRectHandlingEmptyInline());
+  // This rect covers the overflowing images and continuations.
+  EXPECT_EQ(LayoutRect(390, 70, 160, 100),
+            GetLayoutObjectByElementId("target6")
+                ->AbsoluteBoundingBoxRectHandlingEmptyInline());
+}
+
 }  // namespace blink

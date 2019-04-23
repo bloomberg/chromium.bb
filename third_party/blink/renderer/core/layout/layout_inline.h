@@ -247,11 +247,15 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
                            const LayoutPoint& accumulated_offset,
                            const NGPaintFragment* parent_fragment = nullptr);
 
-  LayoutPoint FirstLineBoxTopLeft() const;
+  LayoutPoint FirstLineBoxTopLeft() const {
+    return FirstLineBoxTopLeftInternal().value_or(LayoutPoint());
+  }
 
   void MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                           TransformState&,
                           MapCoordinatesFlags mode) const override;
+
+  LayoutRect AbsoluteBoundingBoxRectHandlingEmptyInline() const final;
 
   const char* GetName() const override { return "LayoutInline"; }
 
@@ -389,6 +393,9 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   LayoutInline* Clone() const;
 
   LayoutBoxModelObject* ContinuationBefore(LayoutObject* before_child);
+
+  base::Optional<LayoutPoint> FirstLineBoxTopLeftInternal() const;
+  LayoutPoint AnchorPhysicalLocation() const;
 
   LayoutObjectChildList children_;
 
