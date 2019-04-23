@@ -86,7 +86,7 @@ TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
   policy_provider->SetWebsiteSetting(
       ContentSettingsPattern::FromString(star_google_com),
       ContentSettingsPattern::Wildcard(), kContentType, "",
-      new base::Value(CONTENT_SETTING_BLOCK));
+      std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
   policy_provider->set_read_only(true);
   content_settings::TestUtils::OverrideProvider(
       map, std::move(policy_provider), HostContentSettingsMap::POLICY_PROVIDER);
@@ -104,7 +104,7 @@ TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
   extension_provider->SetWebsiteSetting(
       ContentSettingsPattern::FromString(drive_google_com),
       ContentSettingsPattern::Wildcard(), kContentType, "",
-      new base::Value(CONTENT_SETTING_ASK));
+      std::make_unique<base::Value>(CONTENT_SETTING_ASK));
   extension_provider->set_read_only(true);
   content_settings::TestUtils::OverrideProvider(
       map, std::move(extension_provider),
@@ -194,10 +194,10 @@ TEST_F(SiteSettingsHelperTest, ContentSettingSource) {
 
   // Extension.
   auto extension_provider = std::make_unique<content_settings::MockProvider>();
-  extension_provider->SetWebsiteSetting(ContentSettingsPattern::FromURL(origin),
-                                        ContentSettingsPattern::FromURL(origin),
-                                        kContentType, "",
-                                        new base::Value(CONTENT_SETTING_BLOCK));
+  extension_provider->SetWebsiteSetting(
+      ContentSettingsPattern::FromURL(origin),
+      ContentSettingsPattern::FromURL(origin), kContentType, "",
+      std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
   extension_provider->set_read_only(true);
   content_settings::TestUtils::OverrideProvider(
       map, std::move(extension_provider),
@@ -210,10 +210,10 @@ TEST_F(SiteSettingsHelperTest, ContentSettingSource) {
 
   // Enterprise policy.
   auto policy_provider = std::make_unique<content_settings::MockProvider>();
-  policy_provider->SetWebsiteSetting(ContentSettingsPattern::FromURL(origin),
-                                     ContentSettingsPattern::FromURL(origin),
-                                     kContentType, "",
-                                     new base::Value(CONTENT_SETTING_ALLOW));
+  policy_provider->SetWebsiteSetting(
+      ContentSettingsPattern::FromURL(origin),
+      ContentSettingsPattern::FromURL(origin), kContentType, "",
+      std::make_unique<base::Value>(CONTENT_SETTING_ALLOW));
   policy_provider->set_read_only(true);
   content_settings::TestUtils::OverrideProvider(
       map, std::move(policy_provider), HostContentSettingsMap::POLICY_PROVIDER);

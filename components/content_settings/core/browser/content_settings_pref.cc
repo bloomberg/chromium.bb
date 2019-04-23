@@ -120,8 +120,8 @@ bool ContentSettingsPref::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     const ResourceIdentifier& resource_identifier,
     base::Time modified_time,
-    base::Value* in_value) {
-  DCHECK(!in_value || IsValueAllowedForType(in_value, content_type_));
+    std::unique_ptr<base::Value>&& in_value) {
+  DCHECK(!in_value || IsValueAllowedForType(in_value.get(), content_type_));
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(prefs_);
   DCHECK(primary_pattern != ContentSettingsPattern::Wildcard() ||
@@ -134,7 +134,7 @@ bool ContentSettingsPref::SetWebsiteSetting(
   DCHECK(resource_identifier.empty() || allow_resource_identifiers_);
 
   // At this point take the ownership of the |in_value|.
-  std::unique_ptr<base::Value> value(in_value);
+  std::unique_ptr<base::Value> value(std::move(in_value));
 
   // Update in memory value map.
   OriginIdentifierValueMap* map_to_modify = &incognito_value_map_;

@@ -493,9 +493,8 @@ void HostContentSettingsMap::SetWebsiteSettingCustomScope(
   for (const auto& provider_pair : content_settings_providers_) {
     if (provider_pair.second->SetWebsiteSetting(
             primary_pattern, secondary_pattern, content_type,
-            resource_identifier, value.get())) {
+            resource_identifier, std::move(value))) {
       // If successful then ownership is passed to the provider.
-      ignore_result(value.release());
       return;
     }
   }

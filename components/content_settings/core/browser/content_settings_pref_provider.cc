@@ -170,7 +170,7 @@ bool PrefProvider::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    base::Value* in_value) {
+    std::unique_ptr<base::Value>&& in_value) {
   DCHECK(CalledOnValidThread());
   DCHECK(prefs_);
 
@@ -193,7 +193,8 @@ bool PrefProvider::SetWebsiteSetting(
 
   return GetPref(content_type)
       ->SetWebsiteSetting(primary_pattern, secondary_pattern,
-                          resource_identifier, modified_time, in_value);
+                          resource_identifier, modified_time,
+                          std::move(in_value));
 }
 
 base::Time PrefProvider::GetWebsiteSettingLastModified(

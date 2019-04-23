@@ -71,7 +71,7 @@ class MockUserModifiableProvider
                     const ContentSettingsPattern&,
                     ContentSettingsType,
                     const content_settings::ResourceIdentifier&,
-                    base::Value*));
+                    std::unique_ptr<base::Value>&&));
 
   MOCK_METHOD1(ClearAllContentSettingsRules, void(ContentSettingsType));
 
@@ -2074,7 +2074,7 @@ TEST_F(HostContentSettingsMapTest, EphemeralTypeDoesntReadFromPrefProvider) {
   content_settings::PrefProvider pref_provider(profile.GetPrefs(), true, true);
   pref_provider.SetWebsiteSetting(
       pattern, pattern, ephemeral_type, std::string(),
-      std::make_unique<base::Value>(CONTENT_SETTING_ALLOW).get());
+      std::make_unique<base::Value>(CONTENT_SETTING_ALLOW));
 
   EXPECT_EQ(CONTENT_SETTING_ASK,
             map->GetContentSetting(url, url, ephemeral_type, std::string()));

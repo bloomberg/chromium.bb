@@ -52,7 +52,7 @@ class ContentSettingsPref {
                          const ContentSettingsPattern& secondary_pattern,
                          const ResourceIdentifier& resource_identifier,
                          base::Time modified_time,
-                         base::Value* value);
+                         std::unique_ptr<base::Value>&& value);
 
   // Returns the |last_modified| date of a setting.
   base::Time GetWebsiteSettingLastModified(
