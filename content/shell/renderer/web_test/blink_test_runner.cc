@@ -170,8 +170,7 @@ BlinkTestRunner::BlinkTestRunner(RenderView* render_view)
     : RenderViewObserver(render_view),
       RenderViewObserverTracker<BlinkTestRunner>(render_view),
       test_config_(mojom::ShellTestConfiguration::New()),
-      is_main_window_(false),
-      focus_on_next_commit_(false) {}
+      is_main_window_(false) {}
 
 BlinkTestRunner::~BlinkTestRunner() {}
 
@@ -698,28 +697,6 @@ bool BlinkTestRunner::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void BlinkTestRunner::Navigate(const GURL& url) {
-  focus_on_next_commit_ = true;
-}
-
-void BlinkTestRunner::DidCommitProvisionalLoad(WebLocalFrame* frame,
-                                               bool is_new_navigation) {
-  if (waiting_for_reset_ && frame == render_view()->GetWebView()->MainFrame() &&
-      GURL(frame->GetDocumentLoader()->GetUrl()).IsAboutBlank()) {
-    waiting_for_reset_ = false;
-    Send(new BlinkTestHostMsg_ResetDone(routing_id()));
-  }
-  if (!focus_on_next_commit_)
-    return;
-  focus_on_next_commit_ = false;
-  render_view()->GetWebView()->SetFocusedFrame(frame);
-}
-
-void BlinkTestRunner::DidFailProvisionalLoad(WebLocalFrame* frame,
-                                             const WebURLError& error) {
-  focus_on_next_commit_ = false;
-}
-
 // Public methods - -----------------------------------------------------------
 
 void BlinkTestRunner::Reset(bool for_new_test) {
@@ -755,6 +732,17 @@ void BlinkTestRunner::CaptureDump(
 
   dump_callback_ = std::move(callback);
   CaptureDumpComplete();
+}
+
+void BlinkTestRunner::DidCommitNavigationInMainFrame() {
+  WebFrame* main_frame = render_view()->GetWebView()->MainFrame();
+  if (!waiting_for_reset_ || !main_frame->IsWebLocalFrame())
+    return;
+  GURL url = main_frame->ToWebLocalFrame()->GetDocumentLoader()->GetUrl();
+  if (!url.IsAboutBlank())
+    return;
+  waiting_for_reset_ = false;
+  Send(new BlinkTestHostMsg_ResetDone(routing_id()));
 }
 
 // Private methods  -----------------------------------------------------------

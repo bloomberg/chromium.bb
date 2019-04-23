@@ -2919,8 +2919,6 @@ void RenderFrameImpl::DidFailProvisionalLoad(
 
 void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad(
     const blink::WebURLError& error) {
-  for (auto& observer : render_view_->observers())
-    observer.DidFailProvisionalLoad(frame_, error);
   for (auto& observer : observers_)
     observer.DidFailProvisionalLoad(error);
 }
@@ -6061,8 +6059,6 @@ void RenderFrameImpl::NotifyObserversOfNavigationCommit(
     bool is_new_navigation,
     bool is_same_document,
     ui::PageTransition transition) {
-  for (auto& observer : render_view_->observers_)
-    observer.DidCommitProvisionalLoad(frame_, is_new_navigation);
   for (auto& observer : observers_)
     observer.DidCommitProvisionalLoad(is_same_document, transition);
 }
@@ -7025,11 +7021,6 @@ void RenderFrameImpl::PrepareRenderViewForNavigation(
     const GURL& url,
     const CommitNavigationParams& commit_params) {
   DCHECK(render_view_->webview());
-
-  if (is_main_frame_) {
-    for (auto& observer : render_view_->observers_)
-      observer.Navigate(url);
-  }
 
   render_view_->history_list_offset_ =
       commit_params.current_history_list_offset;
