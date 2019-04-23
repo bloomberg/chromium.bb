@@ -128,7 +128,7 @@ function createStatsSelectionOptionElements() {
     currentGetStatsMethod = selectElement.value;
     Object.keys(peerConnectionDataStore).forEach(id => {
       const peerConnectionElement = $(id);
-      statsTable.clearStatsLists(peerConnectionElement);
+      statsTable.nukeStatsLists(peerConnectionElement);
       removeStatsReportGraphs(peerConnectionElement);
       peerConnectionDataStore[id].resetStats();
     });
@@ -353,9 +353,6 @@ function addStandardStats(data) {
  *     stat, and the odd index entry is the value.
  */
 function addLegacyStats(data) {
-  if (currentGetStatsMethod != OPTION_GETSTATS_LEGACY) {
-    return;  // Obsolete!
-  }
   var peerConnectionElement = $(getPeerConnectionId(data));
   if (!peerConnectionElement) {
     return;
