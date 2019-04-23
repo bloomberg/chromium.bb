@@ -133,7 +133,7 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
       session_id_(session_id),
       frame_id_(render_frame_id_cb.Run()) {
   DCHECK(client_callback_);
-  DCHECK_NE(frame_id_, MSG_ROUTING_NONE);
+  DCHECK(session_id_ == 0 || frame_id_ != MSG_ROUTING_NONE);
 
   media::AudioParameters hardware_params(
       device_params_cb.Run(frame_id_, session_id_, std::string()));
