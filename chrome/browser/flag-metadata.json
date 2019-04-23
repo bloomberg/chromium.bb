@@ -2799,8 +2799,8 @@
   },
   {
     "name": "silent-debugger-extension-api",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "//extensions/OWNERS" ],
+    "expiry_milestone": 77
   },
   {
     "name": "simplify-https-indicator",
