@@ -1130,18 +1130,6 @@ static bool IsRenderSurfaceCandidate(
   return false;
 }
 
-static bool MayHaveBackdropFilter(
-    const cc::EffectNode& effect,
-    const Vector<const EffectPaintPropertyNode*>& blink_effects) {
-  if (!effect.backdrop_filters.IsEmpty())
-    return true;
-  if (static_cast<size_t>(effect.id) < blink_effects.size() &&
-      blink_effects[effect.id] &&
-      blink_effects[effect.id]->HasActiveBackdropFilterAnimation())
-    return true;
-  return false;
-}
-
 // Every effect is supposed to have render surface enabled for grouping, but we
 // can omit one if the effect is opacity- or blend-mode-only, render surface is
 // not forced, and the effect has only one compositing child. This is both for
@@ -1153,40 +1141,42 @@ void PaintArtifactCompositor::UpdateRenderSurfaceForEffects(
     cc::EffectTree& effect_tree,
     const cc::LayerList& layers,
     const Vector<const EffectPaintPropertyNode*>& blink_effects) {
-  // This vector is indexed by effect node id. The value indicates whether we
-  // have seen the effect but not sure if we should create a render surface for
-  // it yet.
-  Vector<bool> pending_render_surfaces;
-  pending_render_surfaces.resize(effect_tree.size());
+  // This vector is indexed by effect node id. The value is the number of layers
+  // and sub-render-surfaces controlled by this effect.
+  Vector<int> effect_layer_counts(effect_tree.size());
+  // Initialize the vector to count directly controlled layers.
   for (const auto& layer : layers) {
-    if (!layer->DrawsContent())
-      continue;
-    bool descendant_may_have_backdrop_filter = false;
-    auto* effect = effect_tree.Node(layer->effect_tree_index());
-    bool may_have_backdrop_filter =
-        MayHaveBackdropFilter(*effect, blink_effects);
-    while (!effect->has_render_surface ||
-           // We need to check ancestor of backdrop filter to find render
-           // surface candidate.
-           may_have_backdrop_filter) {
-      if (IsRenderSurfaceCandidate(*effect, blink_effects)) {
-        // The render surface candidate is seen a second time, which means that
-        // it has more than one compositing child and needs a render surface.
-        if (pending_render_surfaces[effect->id] ||
-            // Or the opacity effect has a backdrop-filter descendant.
-            descendant_may_have_backdrop_filter) {
-          effect->has_render_surface = true;
-          if (!may_have_backdrop_filter)
-            break;
-        } else {
-          // We are not sure if the effect should have render surface for now.
-          pending_render_surfaces[effect->id] = true;
-        }
-      }
-      effect = effect_tree.Node(effect->parent_id);
-      descendant_may_have_backdrop_filter |= may_have_backdrop_filter;
-      may_have_backdrop_filter = MayHaveBackdropFilter(*effect, blink_effects);
+    if (layer->DrawsContent())
+      effect_layer_counts[layer->effect_tree_index()]++;
+  }
+
+  // In the effect tree, parent always has lower id than children, so the
+  // following loop will check descendants before parents and accumulate
+  // effect_layer_counts.
+  for (auto id = effect_tree.size() - 1;
+       id > cc::EffectTree::kSecondaryRootNodeId; id--) {
+    auto* effect = effect_tree.Node(id);
+    if (IsRenderSurfaceCandidate(*effect, blink_effects) &&
+        effect_layer_counts[id] > 1) {
+      // The render surface candidate needs a render surface because it
+      // controls more than 1 layer.
+      effect->has_render_surface = true;
     }
+
+    // We should not have visited the parent.
+    DCHECK_NE(-1, effect_layer_counts[effect->parent_id]);
+    if (effect->has_render_surface) {
+      // A sub-render-surface counts as one controlled layer of the parent.
+      effect_layer_counts[effect->parent_id]++;
+    } else {
+      // Otherwise all layers count as controlled layers of the parent.
+      effect_layer_counts[effect->parent_id] += effect_layer_counts[id];
+    }
+
+#if DCHECK_IS_ON()
+    // Mark we have visited this effect.
+    effect_layer_counts[id] = -1;
+#endif
   }
 }
 

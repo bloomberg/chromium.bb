@@ -3490,11 +3490,34 @@ TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfaces) {
   // render surface.
   EXPECT_OPACITY(effect_ids[4], 0.4f, kHasRenderSurface);
 
-  // Though all children of effect |e| have render surfaces and |e| doesn't
-  // control any compositing layer, we still give it a render surface for
-  // simplicity of the algorithm.
+  // |e| has render surface because it has 3 child render surfaces.
   EXPECT_OPACITY(effect_tree.Node(effect_ids[4])->parent_id, 0.1f,
                  kHasRenderSurface);
+}
+
+TEST_P(PaintArtifactCompositorTest, OpacityRenderSurfacesWithFilterChildren) {
+  auto opacity = CreateOpacityEffect(e0(), 0.1f);
+  CompositorFilterOperations filter;
+  filter.AppendBlurFilter(5);
+  auto filter1 = CreateFilterEffect(*opacity, filter, FloatPoint(),
+                                    CompositingReason::kActiveFilterAnimation);
+  auto filter2 = CreateFilterEffect(*opacity, filter, FloatPoint(),
+                                    CompositingReason::kActiveFilterAnimation);
+
+  FloatRect r(150, 150, 100, 100);
+  Update(TestPaintArtifact()
+             .Chunk(t0(), c0(), *filter1)
+             .RectDrawing(r, Color::kWhite)
+             .Chunk(t0(), c0(), *filter2)
+             .RectDrawing(r, Color::kWhite)
+             .Build());
+  ASSERT_EQ(2u, ContentLayerCount());
+  auto filter_id1 = ContentLayerAt(0)->effect_tree_index();
+  auto filter_id2 = ContentLayerAt(1)->effect_tree_index();
+  EXPECT_OPACITY(filter_id1, 1.f, kHasRenderSurface);
+  EXPECT_OPACITY(filter_id2, 1.f, kHasRenderSurface);
+  EXPECT_OPACITY(GetPropertyTrees().effect_tree.Node(filter_id1)->parent_id,
+                 0.1f, kHasRenderSurface);
 }
 
 TEST_P(PaintArtifactCompositorTest, OpacityAnimationRenderSurfaces) {
