@@ -2510,6 +2510,8 @@ jumbo_split_static_library("browser") {
       "android/signin/signin_utils.cc",
       "android/signin/signin_utils.h",
       "android/signin/unified_consent_service_bridge.cc",
+      "android/startup_bridge.cc",
+      "android/startup_bridge.h",
       "android/subresource_filter/test_subresource_filter_publisher.cc",
       "android/tab_android.cc",
       "android/tab_android.h",
