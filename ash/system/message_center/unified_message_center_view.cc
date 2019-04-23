@@ -441,8 +441,15 @@ void UnifiedMessageCenterView::ScrollToTarget() {
   if (!visible())
     return;
 
+  auto target_mode = model_->notification_target_mode();
+
+  // Notification views may be deleted during an animation, so wait until it
+  // finishes before scrolling to a new target (see crbug.com/954001).
+  if (message_list_view_->IsAnimating())
+    target_mode = UnifiedSystemTrayModel::NotificationTargetMode::LAST_POSITION;
+
   int position;
-  switch (model_->notification_target_mode()) {
+  switch (target_mode) {
     case UnifiedSystemTrayModel::NotificationTargetMode::LAST_POSITION:
       // Restore the previous scrolled position with matching the distance from
       // the bottom.
@@ -480,6 +487,8 @@ void UnifiedMessageCenterView::ScrollToTarget() {
   }
 
   scroller_->ScrollToPosition(scroll_bar_, position);
+  last_scroll_position_from_bottom_ =
+      scroll_bar_->GetMaxPosition() - scroller_->GetVisibleRect().y();
 }
 
 int UnifiedMessageCenterView::GetStackedNotificationCount() const {

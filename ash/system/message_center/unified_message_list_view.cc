@@ -223,6 +223,10 @@ int UnifiedMessageListView::GetTotalNotificationCount() const {
   return int{children().size()};
 }
 
+bool UnifiedMessageListView::IsAnimating() const {
+  return animation_->is_animating();
+}
+
 void UnifiedMessageListView::ChildPreferredSizeChanged(views::View* child) {
   if (ignore_size_change_)
     return;

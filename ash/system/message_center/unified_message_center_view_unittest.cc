@@ -113,11 +113,13 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
     size_changed_count_ = 0;
   }
 
-  void AnimateToMiddle() {
-    GetMessageListView()->animation_->SetCurrentValue(0.5);
+  void AnimateToValue(float value) {
+    GetMessageListView()->animation_->SetCurrentValue(value);
     GetMessageListView()->AnimationProgressed(
         GetMessageListView()->animation_.get());
   }
+
+  void AnimateToMiddle() { AnimateToValue(0.5); }
 
   void AnimateToEnd() { GetMessageListView()->animation_->End(); }
 
@@ -221,6 +223,45 @@ TEST_F(UnifiedMessageCenterViewTest, AddAndRemoveNotification) {
   EXPECT_TRUE(message_center_view()->visible());
   AnimateToEnd();
   EXPECT_FALSE(message_center_view()->visible());
+}
+
+TEST_F(UnifiedMessageCenterViewTest, RemoveNotificationAtTail) {
+  // Show message center with multiple notifications.
+  for (int i = 0; i < 10; ++i)
+    AddNotification();
+  CreateMessageCenterView();
+  EXPECT_TRUE(message_center_view()->visible());
+
+  // The message center should autoscroll to the bottom of the list (with some
+  // padding) after adding a new notification.
+  auto id_to_remove = AddNotification();
+  int scroll_position = GetScroller()->GetVisibleRect().y();
+  EXPECT_EQ(GetMessageListView()->height() - GetScroller()->height() +
+                kUnifiedNotificationCenterSpacing,
+            scroll_position);
+
+  // Remove the last notification.
+  MessageCenter::Get()->RemoveNotification(id_to_remove, true /* by_user */);
+
+  // The first animation slides the notification out of the list, and the second
+  // animation collapses the list.
+  AnimateToEnd();
+  AnimateToValue(0);
+
+  // The scroll position should not change after sliding the notification out
+  // and instead should wait until the animation finishes.
+  EXPECT_EQ(scroll_position, GetScroller()->GetVisibleRect().y());
+
+  // The scroll position should be reduced by the height of the removed
+  // notification after collapsing.
+  AnimateToEnd();
+  EXPECT_EQ(scroll_position - GetMessageViewVisibleBounds(0).height(),
+            GetScroller()->GetVisibleRect().y());
+
+  // Check that the list is still scrolled to the bottom (with some padding).
+  EXPECT_EQ(GetMessageListView()->height() - GetScroller()->height() +
+                kUnifiedNotificationCenterSpacing,
+            GetScroller()->GetVisibleRect().y());
 }
 
 TEST_F(UnifiedMessageCenterViewTest, ContentsRelayout) {

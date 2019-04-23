@@ -65,6 +65,9 @@ class ASH_EXPORT UnifiedMessageListView
   // Returns the total number of notifications in the list.
   int GetTotalNotificationCount() const;
 
+  // Returns true if an animation is currently in progress.
+  bool IsAnimating() const;
+
   // views::View:
   void ChildPreferredSizeChanged(views::View* child) override;
   void PreferredSizeChanged() override;
