@@ -574,15 +574,29 @@ struct StyleChangeData {
     kContainer = 4,
 
     kNone = 0,
+    kTextAndParent = kText | kParent,
     kParentAndAbove = kParent | kContainer,
     kAll = kText | kParentAndAbove,
   };
   unsigned needs_collect_inlines;
 } style_change_data[] = {
+    // Changing color, text-decoration, etc. should not re-run
+    // |CollectInlines()|.
     {"#parent.after { color: red; }", StyleChangeData::kNone},
     {"#parent.after { text-decoration-line: underline; }",
      StyleChangeData::kNone},
+    // Changing fonts should re-run |CollectInlines()|.
     {"#parent.after { font-size: 200%; }", StyleChangeData::kAll},
+    // List markers are captured in |NGInlineItem|.
+    {"#parent.after { display: list-item; }", StyleChangeData::kContainer},
+    {"#parent { display: list-item; list-style-type: none; }"
+     "#parent.after { list-style-type: disc; }",
+     StyleChangeData::kTextAndParent},
+    {"#parent { display: list-item; }"
+     "#container.after { list-style-type: none; }",
+     StyleChangeData::kTextAndParent},
+    // Changing properties related with bidi resolution should re-run
+    // |CollectInlines()|.
     {"#parent.after { unicode-bidi: bidi-override; }",
      StyleChangeData::kParentAndAbove},
     {"#container.after { unicode-bidi: bidi-override; }",
@@ -626,12 +640,14 @@ TEST_P(StyleChangeTest, NeedsCollectInlinesOnStyle) {
   GetDocument().UpdateStyleAndLayoutTree();
 
   // The text and ancestors up to the container should be marked.
-  EXPECT_EQ(text->GetLayoutObject()->NeedsCollectInlines(),
-            !!(data.needs_collect_inlines & StyleChangeData::kText));
-  EXPECT_EQ(parent->GetLayoutObject()->NeedsCollectInlines(),
-            !!(data.needs_collect_inlines & StyleChangeData::kParent));
-  EXPECT_EQ(container->GetLayoutObject()->NeedsCollectInlines(),
-            !!(data.needs_collect_inlines & StyleChangeData::kContainer));
+  unsigned changes = StyleChangeData::kNone;
+  if (text->GetLayoutObject()->NeedsCollectInlines())
+    changes |= StyleChangeData::kText;
+  if (parent->GetLayoutObject()->NeedsCollectInlines())
+    changes |= StyleChangeData::kParent;
+  if (container->GetLayoutObject()->NeedsCollectInlines())
+    changes |= StyleChangeData::kContainer;
+  EXPECT_EQ(changes, data.needs_collect_inlines);
 
   // Siblings of |parent| should stay clean.
   Element* previous = GetElementById("previous");

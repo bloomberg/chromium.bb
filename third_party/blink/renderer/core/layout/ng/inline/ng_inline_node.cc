@@ -242,7 +242,7 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
       builder->ClearInlineFragment(node);
 
     } else if (node->IsAtomicInlineLevel()) {
-      if (node->IsLayoutNGListMarker() || node->IsListMarker()) {
+      if (node->IsListMarkerIncludingNG()) {
         // LayoutNGListItem produces the 'outside' list marker as an inline
         // block. This is an out-of-flow item whose position is computed
         // automatically.
@@ -255,9 +255,8 @@ void CollectInlinesInternal(LayoutBlockFlow* block,
 
         if (marker && marker->HandleAtomicInline(ToLayoutBox(node)))
           marker = nullptr;
-
-        builder->ClearInlineFragment(node);
       }
+      builder->ClearInlineFragment(node);
 
     } else {
       // Because we're collecting from LayoutObject tree, block-level children
