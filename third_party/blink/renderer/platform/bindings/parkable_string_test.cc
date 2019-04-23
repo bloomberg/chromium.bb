@@ -968,6 +968,12 @@ TEST_F(ParkableStringForegroundParkingTest,
 TEST_F(ParkableStringForegroundParkingTest, ReportTotalUnparkingTime) {
   base::HistogramTester histogram_tester;
 
+  // On some platforms, initialization takes time, though it happens when
+  // base::ThreadTicks is used. To prevent flakiness depending on test execution
+  // ordering, force initialization.
+  if (base::ThreadTicks::IsSupported())
+    base::ThreadTicks::WaitUntilInitialized();
+
   // Need to make the string really large, otherwise unparking takes less than
   // 1ms, and the 0 bucket is populated.
   const size_t original_size = 5 * 1000 * 1000;
