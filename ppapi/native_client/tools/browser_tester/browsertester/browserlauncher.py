@@ -269,7 +269,6 @@ class ChromeLauncher(BrowserLauncher):
             # on Windows (see
             # https://code.google.com/p/chromium/issues/detail?id=171836)
             '--enable-logging',
-            '--disable-web-resources',
             # This prevents Chrome from making "hidden" network requests at
             # startup and navigation.  These requests could be a source of
             # non-determinism, and they also add noise to the netlogs.
