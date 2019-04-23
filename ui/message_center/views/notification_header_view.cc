@@ -67,6 +67,9 @@ constexpr wchar_t kNotificationHeaderDivider[] = L" \u2022 ";
 // "Roboto-Regular, 12sp" is specified in the mock.
 constexpr int kHeaderTextFontSize = 12;
 
+// Minimum spacing before the control buttons.
+constexpr int kControlButtonSpacing = 16;
+
 // ExpandButtton forwards all mouse and key events to NotificationHeaderView,
 // but takes tab focus for accessibility purpose.
 class ExpandButton : public views::ImageView {
@@ -156,7 +159,7 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
 
   const views::FlexSpecification kSpacerFlex =
       views::FlexSpecification::ForSizeRule(
-          views::MinimumFlexSizeRule::kScaleToZero,
+          views::MinimumFlexSizeRule::kScaleToMinimum,
           views::MaximumFlexSizeRule::kUnbounded)
           .WithOrder(2);
 
@@ -229,13 +232,16 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
 
   // Spacer between left-aligned views and right-aligned views
   views::View* spacer = new views::View;
-  spacer->SetPreferredSize(gfx::Size(1, kInnerHeaderHeight));
+  spacer->SetPreferredSize(
+      gfx::Size(kControlButtonSpacing, kInnerHeaderHeight));
   AddChildView(spacer);
   layout->SetFlexForView(spacer, kSpacerFlex);
 
   SetAccentColor(accent_color_);
   SetPreferredSize(gfx::Size(kNotificationWidth, kHeaderHeight));
 }
+
+NotificationHeaderView::~NotificationHeaderView() = default;
 
 void NotificationHeaderView::SetAppIcon(const gfx::ImageSkia& img) {
   app_icon_view_->SetImage(img);
@@ -305,7 +311,7 @@ void NotificationHeaderView::SetTimestamp(base::Time timestamp) {
                                          &relative_time, &next_update);
 
   timestamp_view_->SetText(relative_time);
-  has_timestamp_ = true;
+  timestamp_ = timestamp;
   UpdateSummaryTextVisibility();
 
   // Unretained is safe as the timer cancels the task on destruction.
@@ -315,9 +321,14 @@ void NotificationHeaderView::SetTimestamp(base::Time timestamp) {
                      base::Unretained(this), timestamp));
 }
 
-void NotificationHeaderView::ClearTimestamp() {
-  has_timestamp_ = false;
-  timestamp_update_timer_.Stop();
+void NotificationHeaderView::SetTimestampVisible(bool visible) {
+  timestamp_visible_ = visible;
+
+  if (visible && timestamp_)
+    SetTimestamp(timestamp_.value());
+  else
+    timestamp_update_timer_.Stop();
+
   UpdateSummaryTextVisibility();
 }
 
@@ -391,11 +402,15 @@ const base::string16& NotificationHeaderView::timestamp_for_testing() const {
 }
 
 void NotificationHeaderView::UpdateSummaryTextVisibility() {
-  const bool visible = !summary_text_view_->text().empty();
-  summary_text_divider_->SetVisible(visible);
-  summary_text_view_->SetVisible(visible);
-  timestamp_divider_->SetVisible(!has_progress_ && has_timestamp_);
-  timestamp_view_->SetVisible(!has_progress_ && has_timestamp_);
+  const bool summary_visible = !summary_text_view_->text().empty();
+  summary_text_divider_->SetVisible(summary_visible);
+  summary_text_view_->SetVisible(summary_visible);
+
+  const bool timestamp_visible =
+      !has_progress_ && timestamp_visible_ && timestamp_;
+  timestamp_divider_->SetVisible(timestamp_visible);
+  timestamp_view_->SetVisible(timestamp_visible);
+
   Layout();
 }
 

@@ -1148,6 +1148,10 @@ void NotificationViewMD::CreateOrUpdateInlineSettingsViews(
 }
 
 bool NotificationViewMD::IsExpandable() {
+  // Inline settings can not be expanded.
+  if (GetMode() == Mode::SETTING)
+    return false;
+
   // Expandable if the message exceeds one line.
   if (message_view_ && message_view_->visible() &&
       message_view_->GetLinesForWidthAndLimit(message_view_->width(), -1) > 1) {
@@ -1230,6 +1234,7 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
 
   settings_row_->SetVisible(inline_settings_visible);
   content_row_->SetVisible(!inline_settings_visible);
+  header_row_->SetTimestampVisible(!inline_settings_visible);
 
   // Always check "Don't block" when inline settings is shown.
   // If it's already blocked, users should not see inline settings.
