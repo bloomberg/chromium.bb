@@ -835,12 +835,16 @@ class PaygenBuild(object):
                       True)
                      for payload in payloads]
 
-    # delta_generator can eat gigs of RAM so we need to constrain the total
-    # number of such processes running at the same time. Also note that some
-    # other instances of this could be running at the same time so this
-    # number could have an additional multiplier applied to it.
+    # Most of the operations in paygen for one single payload is single threaded
+    # and mostly IO bound (downloading images, extracting partitions, waiting
+    # for signers, signing payload, etc). The only part that requires special
+    # attention is generating an unsigned payload which internally has a
+    # massively parallel implementation. So, here we allow multiple processes to
+    # run simultenously and we restrict the number of processes that do the
+    # unsigned payload generation to only two (look at _semaphore in
+    # paygen_payload_lib.py).
     parallel.RunTasksInProcessPool(paygen_payload_lib.CreateAndUploadPayload,
-                                   payloads_args, processes=2)
+                                   payloads_args, processes=8)
 
   def _FindFullTestPayloads(self, channel, version):
     """Returns a list of full test payloads for a given version.
