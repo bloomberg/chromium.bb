@@ -8,6 +8,7 @@
 #include <windows.ui.input.spatial.h>
 #include <wrl.h>
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -42,6 +43,8 @@ struct ParsedInputState {
   ParsedInputState(ParsedInputState&& other);
 };
 
+class WMRInputManager;
+class WMRInputSourceState;
 class MixedRealityInputHelper {
  public:
   MixedRealityInputHelper(HWND hwnd);
@@ -64,9 +67,7 @@ class MixedRealityInputHelper {
   bool EnsureSpatialInteractionManager();
 
   ParsedInputState LockedParseWindowsSourceState(
-      Microsoft::WRL::ComPtr<
-          ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceState>
-          state,
+      const WMRInputSourceState& state,
       Microsoft::WRL::ComPtr<
           ABI::Windows::Perception::Spatial::ISpatialCoordinateSystem> origin);
 
@@ -86,9 +87,7 @@ class MixedRealityInputHelper {
   void SubscribeEvents();
   void UnsubscribeEvents();
 
-  Microsoft::WRL::ComPtr<
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionManager>
-      spatial_interaction_manager_;
+  std::unique_ptr<WMRInputManager> input_manager_;
   EventRegistrationToken pressed_token_;
   EventRegistrationToken released_token_;
 
@@ -99,9 +98,7 @@ class MixedRealityInputHelper {
   std::unordered_map<uint32_t, ControllerState> controller_states_;
   HWND hwnd_;
 
-  std::vector<Microsoft::WRL::ComPtr<
-      ABI::Windows::UI::Input::Spatial::ISpatialInteractionSourceState>>
-      pending_voice_states_;
+  std::vector<WMRInputSourceState> pending_voice_states_;
 
   base::Lock lock_;
 

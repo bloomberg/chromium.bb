@@ -149,6 +149,18 @@ if (enable_vr) {
         "windows_mixed_reality/mixed_reality_renderloop.h",
         "windows_mixed_reality/mixed_reality_statics.cc",
         "windows_mixed_reality/mixed_reality_statics.h",
+        "windows_mixed_reality/wrappers/wmr_input_location.cc",
+        "windows_mixed_reality/wrappers/wmr_input_location.h",
+        "windows_mixed_reality/wrappers/wmr_input_manager.cc",
+        "windows_mixed_reality/wrappers/wmr_input_manager.h",
+        "windows_mixed_reality/wrappers/wmr_input_source.cc",
+        "windows_mixed_reality/wrappers/wmr_input_source.h",
+        "windows_mixed_reality/wrappers/wmr_input_source_state.cc",
+        "windows_mixed_reality/wrappers/wmr_input_source_state.h",
+        "windows_mixed_reality/wrappers/wmr_pointer_pose.cc",
+        "windows_mixed_reality/wrappers/wmr_pointer_pose.h",
+        "windows_mixed_reality/wrappers/wmr_pointer_source_pose.cc",
+        "windows_mixed_reality/wrappers/wmr_pointer_source_pose.h",
       ]
     }
 
