@@ -190,6 +190,17 @@ const char* BubbleDialogDelegateView::GetClassName() const {
   return kViewClassName;
 }
 
+bool BubbleDialogDelegateView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  if (accelerator.key_code() == ui::VKEY_DOWN ||
+      accelerator.key_code() == ui::VKEY_UP) {
+    // Move the focus up or down.
+    GetFocusManager()->AdvanceFocus(accelerator.key_code() != ui::VKEY_DOWN);
+    return true;
+  }
+  return DialogDelegateView::AcceleratorPressed(accelerator);
+}
+
 void BubbleDialogDelegateView::OnWidgetClosing(Widget* widget) {
   // To prevent keyboard focus traversal issues, the anchor view's
   // kAnchoredDialogKey property is cleared immediately upon Close(). This
@@ -452,6 +463,12 @@ void BubbleDialogDelegateView::UpdateColorsFromTheme(
   SetBackground(layer() && layer()->fills_bounds_opaquely()
                     ? CreateSolidBackground(color())
                     : nullptr);
+}
+
+void BubbleDialogDelegateView::EnableUpDownKeyboardAccelerators() {
+  // The arrow keys can be used to tab between items.
+  AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, ui::EF_NONE));
+  AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
 }
 
 void BubbleDialogDelegateView::HandleVisibilityChanged(Widget* widget,

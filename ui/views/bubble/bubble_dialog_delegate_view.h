@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/view_tracker.h"
 #include "ui/views/widget/widget.h"
@@ -24,6 +25,10 @@
 namespace gfx {
 class Rect;
 }
+
+namespace ui {
+class Accelerator;
+}  // namespace ui
 
 namespace views {
 
@@ -54,6 +59,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   ClientView* CreateClientView(Widget* widget) override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
   const char* GetClassName() const override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
   // WidgetObserver:
   void OnWidgetClosing(Widget* widget) override;
@@ -163,6 +169,9 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   virtual void SizeToContents();
 
   BubbleFrameView* GetBubbleFrameView() const;
+
+  // Allows the up and down arrow keys to tab between items.
+  void EnableUpDownKeyboardAccelerators();
 
  private:
   friend class BubbleBorderDelegate;

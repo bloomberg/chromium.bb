@@ -44,7 +44,6 @@ class ExtensionsMenuView : public views::ButtonListener,
   // views::BubbleDialogDelegateView:
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   int GetDialogButtons() const override;
   bool ShouldSnapFrameWidth() const override;
 

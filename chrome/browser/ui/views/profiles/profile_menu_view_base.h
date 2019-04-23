@@ -104,7 +104,6 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // views::BubbleDialogDelegateView:
   void WindowClosing() override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
-  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   int GetDialogButtons() const override;
   ax::mojom::Role GetAccessibleWindowRole() override;
 

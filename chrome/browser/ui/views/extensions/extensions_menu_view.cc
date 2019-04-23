@@ -51,8 +51,8 @@ ExtensionsMenuView::ExtensionsMenuView(views::View* anchor_view,
   model_observer_.Add(model_);
   set_margins(gfx::Insets(0));
 
-  AddAccelerator(ui::Accelerator(ui::VKEY_DOWN, ui::EF_NONE));
-  AddAccelerator(ui::Accelerator(ui::VKEY_UP, ui::EF_NONE));
+  EnableUpDownKeyboardAccelerators();
+
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   Repopulate();
@@ -74,17 +74,6 @@ base::string16 ExtensionsMenuView::GetWindowTitle() const {
 }
 
 bool ExtensionsMenuView::ShouldShowCloseButton() const {
-  return true;
-}
-
-bool ExtensionsMenuView::AcceleratorPressed(
-    const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() != ui::VKEY_DOWN &&
-      accelerator.key_code() != ui::VKEY_UP)
-    return BubbleDialogDelegateView::AcceleratorPressed(accelerator);
-
-  // Move the focus up or down.
-  GetFocusManager()->AdvanceFocus(accelerator.key_code() != ui::VKEY_DOWN);
   return true;
 }
 
