@@ -514,6 +514,10 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
         constants.ANDROID_PI_BUILD_BRANCH).keys():
       self.assertTrue(t in acls)
+    # Test that all QT targets have their ACLS set.
+    for t in cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_QT_BUILD_BRANCH).keys():
+      self.assertTrue(t in acls)
     # Test that all VMPI targets have their ACLS set.
     for t in cros_mark_android_as_stable.MakeBuildTargetDict(
         constants.ANDROID_VMPI_BUILD_BRANCH).keys():
@@ -566,6 +570,22 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
     for target in constants.ANDROID_PI_BUILD_TARGETS:
       self.assertEquals(targets[target],
                         constants.ANDROID_PI_BUILD_TARGETS[target])
+
+  def testMakeBuildTargetDictQT(self):
+    """Test generation of QT build target dictionary.
+
+    If the number of targets is correct and QT-specific targets are
+    present, then the dictionary is correct.
+    """
+    targets = cros_mark_android_as_stable.MakeBuildTargetDict(
+        constants.ANDROID_QT_BUILD_BRANCH)
+    # Test the number of targets.
+    self.assertEquals(len(targets),
+                      len(constants.ANDROID_QT_BUILD_TARGETS))
+    # Test that all QT-specific targets are in the dictionary.
+    for target in constants.ANDROID_QT_BUILD_TARGETS:
+      self.assertEquals(targets[target],
+                        constants.ANDROID_QT_BUILD_TARGETS[target])
 
   def testMakeBuildTargetDictVMPI(self):
     """Test generation of VMPI build target dictionary.
