@@ -18,23 +18,34 @@
 // python script gypv8sh.py.
 if (arguments.length != 6) {
   print('usage: ' +
-        arguments[0] +
-        ' path-to-testfile.js testfile.js path_to_deps.js output.cc test-type');
+      arguments[0] +
+      ' path-to-testfile.js path-to-src-root/ path-to-deps.js output.cc' +
+      ' test-type');
   quit(-1);
 }
 
 /**
- * Full path to the test input file.
+ * Full path to the test input file, relative to the current working directory.
  * @type {string}
  */
-var jsFile = arguments[1];
+var fullTestFilePath = arguments[1];
 
 /**
- * Relative path to the test input file appropriate for use in the
- * C++ TestFixture's addLibrary method.
+ * Path to source-root, relative to the current working directory.
  * @type {string}
  */
-var jsFileBase = arguments[2];
+var srcRootPath = arguments[2];
+
+if (!fullTestFilePath.startsWith(srcRootPath)) {
+  print('Test file must be a descendant of source root directory');
+  quit(-1);
+}
+
+/**
+ * Path to test input file, relative to source root directory.
+ * @type {string}
+ */
+var testFile = fullTestFilePath.substr(srcRootPath.length);
 
 /**
  * Path to Closure library style deps.js file.
@@ -75,8 +86,8 @@ var testF;
 var typedeffedCppFixtures = {};
 
 /**
- * Maintains a list of relative file paths to add to each gtest body
- * for inclusion at runtime before running each JavaScript test.
+ * Maintains a list of file paths (relative to source-root directory) to add
+ * to each gtest body for inclusion at runtime before running each JS test.
  * @type {Array<string>}
  */
 var genIncludes = [];
@@ -197,29 +208,46 @@ var pathStack = [];
 
 
 /**
- * Convert the |includeFile| to paths appropriate for immediate
- * inclusion (path) and runtime inclusion (base).
+ * Get the path (relative to source root directory) of the given include-file.
+ * The include must either be relative to the file it is included from,
+ * or a source-absolute path starting with '//'.
+ *
  * @param {string} includeFile The file to include.
- * @return {{path: string, base: string}} Object describing the paths
- *     for |includeFile|. |path| is relative to cwd; |base| is relative to
- *     source root.
+ * @return {string} Path of the file, relative to source root directory.
  */
-function includeFileToPaths(includeFile) {
-  paths = pathStack[pathStack.length - 1];
-  return {
-    path: paths.path.replace(/[^\/\\]+$/, includeFile),
-    base: paths.base.replace(/[^\/\\]+$/, includeFile),
-  };
+function includeFileToPath(includeFile) {
+  if (includeFile.startsWith('//')) {
+    return includeFile.substr(2);  // Path is already relative to source-root.
+  } else if (includeFile.startsWith('/')) {
+    print('Error including ' + includeFile);
+    print('Only relative "foo/bar" or source-absolute "//foo/bar" paths are '
+          + 'supported - not file-system absolute: "/foo/bar"');
+    quit(-1);
+  } else {
+    // The include-file path is relative to the file that included it.
+    var currentPath = pathStack[pathStack.length - 1];
+    return currentPath.replace(/[^\/\\]+$/, includeFile)
+  }
 }
 
 /**
  * Returns the content of a javascript file with a sourceURL comment
  * appended to facilitate better stack traces.
- * @param {string} path Relative path name.
+ * @param {string} path Path to JS file, relative to current working dir.
  * return {string}
  */
 function readJsFile(path) {
   return read(path) + '\n//# sourceURL=' + path;
+}
+
+/**
+ * Returns the content of a javascript file with a sourceURL comment
+ * appended to facilitate better stack traces.
+ * @param {string} path Path to JS file, relative to source root.
+ * return {string}
+ */
+function readSourceAbsoluteJsFile(path) {
+  return readJsFile(srcRootPath + path);
 }
 
 
@@ -334,12 +362,12 @@ function GEN(code) {
  */
 function GEN_INCLUDE(includes) {
   for (var i = 0; i < includes.length; i++) {
-    var includePaths = includeFileToPaths(includes[i]);
-    var js = readJsFile(includePaths.path);
-    pathStack.push(includePaths);
+    var includePath = includeFileToPath(includes[i]);
+    var js = readSourceAbsoluteJsFile(includePath);
+    pathStack.push(includePath);
     ('global', eval)(js);
     pathStack.pop();
-    genIncludes.push(includePaths.base);
+    genIncludes.push(includePath);
   }
 }
 
@@ -380,11 +408,9 @@ function TEST_F(testFixture, testFunction, testBody, opt_preamble) {
   var testShouldFail = this[testFixture].prototype.testShouldFail;
   var testPredicate = testShouldFail ? 'ASSERT_FALSE' : 'ASSERT_TRUE';
   var extraLibraries = genIncludes.concat(
-      this[testFixture].prototype.extraLibraries.map(
-          function(includeFile) {
-            return includeFileToPaths(includeFile).base;
-          }),
-      resolveClosureModuleDeps(this[testFixture].prototype.closureModuleDeps));
+      this[testFixture].prototype.extraLibraries.map(includeFileToPath),
+      resolveClosureModuleDeps(this[testFixture].prototype.closureModuleDeps),
+      [testFile]);
   var testFLine = getTestDeclarationLineNumber();
 
   if (typedefCppFixture && !(testFixture in typedeffedCppFixtures)) {
@@ -477,19 +503,16 @@ class ${testFixture} : public ${typedefCppFixture} {
 
   var outputLine = countOutputLines() + 3;
   output(`
-#line ${testFLine} "${jsFile}"
+#line ${testFLine} "${testFile}"
 ${testF}(${testFixture}, ${testFunction}) {
 #line ${outputLine} "${outputFile}"`);
 
-  for (var i = 0; i < extraLibraries.length; i++) {
+for (var i = 0; i < extraLibraries.length; i++) {
     var libraryName = extraLibraries[i].replace(/\\/g, '/');
     output(`
   AddLibrary(base::FilePath(FILE_PATH_LITERAL(
       "${libraryName}")));`);
   }
-  output(`
-  AddLibrary(base::FilePath(FILE_PATH_LITERAL(
-      "${jsFileBase.replace(/\\/g, '/')}")));`);
   if (addSetPreloadInfo) {
     output(`
   set_preload_test_fixture("${testFixture}");
@@ -530,9 +553,9 @@ function TEST_F_WITH_PREAMBLE(preamble, testFixture, testFunction, testBody) {
   TEST_F(testFixture, testFunction, testBody, preamble);
 }
 
-// Now that generation functions are defined, load in |jsFile|.
-var js = readJsFile(jsFile);
-pathStack.push({path: jsFile, base: jsFileBase});
+// Now that generation functions are defined, load in |testFile|.
+var js = readSourceAbsoluteJsFile(testFile);
+pathStack.push(testFile);
 eval(js);
 pathStack.pop();
 print(pendingOutput);

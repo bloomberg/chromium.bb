@@ -85,7 +85,7 @@ template("js2gtest") {
     }
     args += [
       "{{source}}",
-      "{{source_root_relative_dir}}/{{source_file_part}}",
+      rebase_path("//", root_build_dir),  # Path to source root.
       gen_source_pattern,
       rebase_path(copied_source_pattern, root_build_dir),
     ]
