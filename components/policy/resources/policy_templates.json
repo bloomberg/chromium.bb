@@ -14531,7 +14531,6 @@
     {
       'id': 494,
       'name': 'AlternativeBrowserPath',
-      'future': True,
       'type': 'string',
       'schema': {'type': 'string'},
       'features': {
@@ -14557,7 +14556,6 @@
     {
       'id': 495,
       'name': 'AlternativeBrowserParameters',
-      'future': True,
       'type': 'list',
       'schema': {
         'type': 'array',
