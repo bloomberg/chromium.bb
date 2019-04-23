@@ -63,15 +63,12 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestProfileListTest, PrioritizeCompleteness) {
   views::View* sheet = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
   ASSERT_EQ(2u, sheet->children().size());
-  views::View* first_label = sheet->child_at(0)->GetViewByID(
-      static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1));
-  views::View* second_label = sheet->child_at(1)->GetViewByID(
-      static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1));
-
-  EXPECT_EQ(base::ASCIIToUTF16("John H. Doe"),
-            static_cast<views::Label*>(first_label)->text());
-  EXPECT_EQ(base::ASCIIToUTF16("Jane A. Smith"),
-            static_cast<views::Label*>(second_label)->text());
+  const auto get_label = [sheet](int num) {
+    constexpr int kId = static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1);
+    return static_cast<views::Label*>(sheet->child_at(num)->GetViewByID(kId));
+  };
+  EXPECT_EQ(base::ASCIIToUTF16("John H. Doe"), get_label(0)->text());
+  EXPECT_EQ(base::ASCIIToUTF16("Jane A. Smith"), get_label(1)->text());
 }
 
 }  // namespace payments

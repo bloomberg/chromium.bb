@@ -413,7 +413,7 @@ IntentPickerLabelButton* IntentPickerBubbleView::GetIntentPickerLabelButtonAt(
 }
 
 bool IntentPickerBubbleView::HasCandidates() const {
-  return app_info_.size() > 0;
+  return !app_info_.empty();
 }
 
 void IntentPickerBubbleView::RunCallback(

@@ -88,19 +88,19 @@ gfx::Size DesktopMediaListView::CalculatePreferredSize() const {
 }
 
 void DesktopMediaListView::Layout() {
-  int x = 0;
-  int y = 0;
-
-  for (size_t i = 0; i < children().size(); ++i) {
-    if (i > 0 && i % active_style_->columns == 0) {
-      x = 0;
-      y += active_style_->item_size.height();
+  // Children lay out in a grid, all with the same size and without padding.
+  const int width = active_style_->item_size.width();
+  const int height = active_style_->item_size.height();
+  auto i = children().begin();
+  // Child order is left-to-right, top-to-bottom, so lay out row-major.  The
+  // last row may not be full, so the inner loop will need to be careful about
+  // the child count anyway, so don't bother to compute a row count.
+  for (int y = 0;; y += height) {
+    for (int x = 0, col = 0; col < active_style_->columns; ++col, x += width) {
+      if (i == children().end())
+        return;
+      (*i++)->SetBounds(x, y, width, height);
     }
-
-    child_at(i)->SetBounds(x, y, active_style_->item_size.width(),
-                           active_style_->item_size.height());
-
-    x += active_style_->item_size.width();
   }
 }
 

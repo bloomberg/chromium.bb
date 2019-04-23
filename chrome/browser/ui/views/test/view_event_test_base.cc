@@ -42,11 +42,8 @@ class TestView : public views::View {
     // Permit a test to remove the view being tested from the hierarchy, then
     // still handle a _NET_WM_STATE event on Linux during teardown that triggers
     // layout.
-    if (children().empty())
-      return;
-
-    View* child_view = child_at(0);
-    child_view->SetBounds(0, 0, width(), height());
+    if (!children().empty())
+      child_at(0)->SetBoundsRect(GetLocalBounds());
   }
 
  private:
@@ -57,7 +54,7 @@ class TestView : public views::View {
 
 }  // namespace
 
-ViewEventTestBase::ViewEventTestBase() : window_(NULL), content_view_(NULL) {
+ViewEventTestBase::ViewEventTestBase() {
   // The TestingBrowserProcess must be created in the constructor because there
   // are tests that require it before SetUp() is called.
   TestingBrowserProcess::CreateInstance();

@@ -417,8 +417,7 @@ gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
 void OmniboxPopupContentsView::LayoutChildren() {
   gfx::Rect contents_rect = GetContentsBounds();
   int top = contents_rect.y();
-  for (size_t i = 0; i < AutocompleteResult::GetMaxMatches(); ++i) {
-    View* v = child_at(i);
+  for (View* v : children()) {
     if (v->visible()) {
       v->SetBounds(contents_rect.x(), top, contents_rect.width(),
                    v->GetPreferredSize().height());

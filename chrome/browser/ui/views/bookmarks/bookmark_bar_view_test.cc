@@ -1902,7 +1902,7 @@ class BookmarkBarViewTest21 : public BookmarkBarViewEventTestBase {
     ASSERT_EQ(1u, submenu->children().size());
 
     views::View* view = submenu->child_at(0);
-    ASSERT_TRUE(view != NULL);
+    ASSERT_NE(nullptr, view);
     EXPECT_EQ(views::MenuItemView::kEmptyMenuItemViewID, view->id());
 
     // Right click on the first child to get its context menu.

@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -40,9 +41,13 @@ namespace {
 // A View that positions itself over another View to intercept clicks.
 class ClickTrackingOverlayView : public views::View {
  public:
-  explicit ClickTrackingOverlayView(views::View* over) {
-    SetBoundsRect(over->bounds());
-    over->parent()->AddChildView(this);
+  explicit ClickTrackingOverlayView(OmniboxResultView* result) {
+    // |result|'s parent is the OmniboxPopupContentsView, which expects that all
+    // its children are OmniboxResultViews.  So skip over it and add this to the
+    // OmniboxPopupContentsView's parent.
+    auto* contents = result->parent();
+    SetBoundsRect(contents->ConvertRectToParent(result->bounds()));
+    contents->parent()->AddChildView(this);
   }
 
   // views::View:
@@ -90,9 +95,8 @@ class OmniboxPopupContentsViewTest : public InProcessBrowserTest {
   }
 
   LocationBarView* location_bar() {
-    return BrowserView::GetBrowserViewForBrowser(browser())
-        ->toolbar()
-        ->location_bar();
+    auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+    return browser_view->toolbar()->location_bar();
   }
   OmniboxViewViews* omnibox_view() { return location_bar()->omnibox_view(); }
   OmniboxEditModel* edit_model() { return omnibox_view()->model(); }
@@ -113,7 +117,11 @@ views::Widget* OmniboxPopupContentsViewTest::CreatePopupForTestQuery() {
   EXPECT_FALSE(GetPopupWidget());
 
   edit_model()->SetUserText(base::ASCIIToUTF16("foo"));
-  edit_model()->StartAutocomplete(false, false);
+  AutocompleteInput input(
+      base::ASCIIToUTF16("foo"), metrics::OmniboxEventProto::BLANK,
+      ChromeAutocompleteSchemeClassifier(browser()->profile()));
+  input.set_want_asynchronous_matches(false);
+  popup_model()->autocomplete_controller()->Start(input);
 
   EXPECT_FALSE(popup_model()->result().empty());
   EXPECT_TRUE(popup_view()->IsOpen());

@@ -434,17 +434,16 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestCreateExtraViewImageAndText) {
 
   std::unique_ptr<views::View> extra_view(TestCreateExtraView());
   ASSERT_TRUE(extra_view);
-  EXPECT_EQ("View", std::string(extra_view->GetClassName()));
-  ASSERT_EQ(2u, extra_view->children().size());
+  EXPECT_STREQ("View", extra_view->GetClassName());
+  EXPECT_EQ(2u, extra_view->children().size());
 
-  for (int i = 0; i < 2; i++) {
-    const views::View* v = extra_view->child_at(i);
+  for (const views::View* v : extra_view->children()) {
     std::string class_name = v->GetClassName();
-    ASSERT_TRUE(class_name == "Label" || class_name == "ImageView");
     if (class_name == "Label") {
       EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALLED_BY_ADMIN),
                 static_cast<const views::Label*>(v)->text());
     } else {
+      ASSERT_EQ("ImageView", class_name);
       EXPECT_TRUE(gfx::test::AreImagesEqual(
           gfx::Image(static_cast<const views::ImageView*>(v)->GetImage()),
           gfx::Image(gfx::CreateVectorIcon(vector_icons::kBusinessIcon,
