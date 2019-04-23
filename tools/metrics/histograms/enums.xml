@@ -35085,6 +35085,15 @@ from previous Chrome versions.
   <int value="6" label="IME tray"/>
 </enum>
 
+<enum name="LoginSessionExitType">
+  <int value="0" label="NormalExit">
+    Session ended normally, or for a reason not listed below.
+  </int>
+  <int value="1" label="LoginCrashLoop">
+    Session ended because Chrome crashed repeatedly.
+  </int>
+</enum>
+
 <enum name="LoginStateKeyGenerationStatus">
   <summary>The result of a state key generation operation.</summary>
   <int value="0" label="GENERATION_METHOD_IDENTIFIER_HASH">
