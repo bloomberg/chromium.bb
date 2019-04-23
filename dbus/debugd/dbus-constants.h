@@ -22,7 +22,6 @@ const char kGetPerfOutput[] = "GetPerfOutput";
 const char kGetPerfOutputFd[] = "GetPerfOutputFd";
 const char kStopPerf[] = "StopPerf";
 const char kGetRoutes[] = "GetRoutes";
-const char kGetWiMaxStatus[] = "GetWiMaxStatus";
 const char kSetDebugMode[] = "SetDebugMode";
 const char kSystraceStart[] = "SystraceStart";
 const char kSystraceStop[] = "SystraceStop";
