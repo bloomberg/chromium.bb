@@ -2652,8 +2652,8 @@
   },
   {
     "name": "per-method-can-make-payment-quota",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "rouslan" ],
+    "expiry_milestone": 78
   },
   {
     "name": "postscript-printing",
