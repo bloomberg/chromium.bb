@@ -16,6 +16,14 @@
 # $ for i in $(ls -1 testing/buildbot/filters/*.browser_tests.*filter ); \
 #   do echo "    \"//$i\","; done | sort
 
+source_set("blink_web_tests_filter") {
+  testonly = true
+
+  data = [
+    "//testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter",
+  ]
+}
+
 source_set("browser_tests_filters") {
   testonly = true
 

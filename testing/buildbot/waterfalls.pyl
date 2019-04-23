@@ -2654,6 +2654,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
+          'isolated_scripts': 'gpu_blink_web_tests',
         },
       },
       'Linux FYI dEQP Release (Intel HD 630)': {
