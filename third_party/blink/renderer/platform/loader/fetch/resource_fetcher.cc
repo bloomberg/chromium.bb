@@ -122,6 +122,8 @@ ResourceLoadPriority TypeToPriority(ResourceType type) {
       // Also parser-blocking scripts (set explicitly in loadPriority)
       return ResourceLoadPriority::kVeryHigh;
     case ResourceType::kXSLStyleSheet:
+      DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
+      FALLTHROUGH;
     case ResourceType::kRaw:
     case ResourceType::kImportResource:
     case ResourceType::kScript:
@@ -267,6 +269,8 @@ mojom::RequestContextType ResourceFetcher::DetermineRequestContext(
          (type == ResourceType::kImage && is_image_set == kImageIsImageSet));
   switch (type) {
     case ResourceType::kXSLStyleSheet:
+      DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
+      FALLTHROUGH;
     case ResourceType::kCSSStyleSheet:
       return mojom::RequestContextType::STYLE;
     case ResourceType::kScript:

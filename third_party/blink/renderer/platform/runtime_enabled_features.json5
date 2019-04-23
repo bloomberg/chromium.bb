@@ -1614,5 +1614,9 @@
       name: "WorkerTaskQueue",
       status: "experimental"
     },
+    {
+      name: "XSLT",
+      status: "stable",
+    },
   ],
 }

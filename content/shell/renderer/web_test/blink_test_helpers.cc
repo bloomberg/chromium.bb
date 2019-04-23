@@ -105,6 +105,7 @@ void ApplyWebTestDefaultPreferences(WebPreferences* prefs) {
   prefs->allow_universal_access_from_file_urls = true;
   prefs->dom_paste_enabled = true;
   prefs->javascript_can_access_clipboard = true;
+  prefs->xslt_enabled = true;
   prefs->xss_auditor_enabled = false;
 #if defined(OS_MACOSX)
   prefs->editing_behavior = EDITING_BEHAVIOR_MAC;

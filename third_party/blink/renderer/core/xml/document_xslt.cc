@@ -30,6 +30,7 @@ class DOMContentLoadedListener final
       : processing_instruction_(pi) {}
 
   void Invoke(ExecutionContext* execution_context, Event* event) override {
+    DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     DCHECK_EQ(event->type(), "DOMContentLoaded");
 
     Document& document = *To<Document>(execution_context);
@@ -110,6 +111,9 @@ bool DocumentXSLT::ProcessingInstructionInsertedIntoDocument(
   if (!pi->IsXSL())
     return false;
 
+  if (!RuntimeEnabledFeatures::XSLTEnabled() || !document.GetFrame())
+    return true;
+
   auto* listener = MakeGarbageCollected<DOMContentLoadedListener>(pi);
   document.addEventListener(event_type_names::kDOMContentLoaded, listener,
                             false);
@@ -127,6 +131,7 @@ bool DocumentXSLT::ProcessingInstructionRemovedFromDocument(
   if (!pi->EventListenerForXSLT())
     return true;
 
+  DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
   document.removeEventListener(event_type_names::kDOMContentLoaded,
                                pi->EventListenerForXSLT(), false);
   pi->ClearEventListenerForXSLT();
@@ -137,8 +142,8 @@ bool DocumentXSLT::SheetLoaded(Document& document, ProcessingInstruction* pi) {
   if (!pi->IsXSL())
     return false;
 
-  if (!document.Parsing() && !pi->IsLoading() &&
-      !DocumentXSLT::HasTransformSourceDocument(document)) {
+  if (RuntimeEnabledFeatures::XSLTEnabled() && !document.Parsing() &&
+      !pi->IsLoading() && !DocumentXSLT::HasTransformSourceDocument(document)) {
     if (FindXSLStyleSheet(document) == pi)
       ApplyXSLTransform(document, pi);
   }

@@ -78,6 +78,7 @@ WebPreferences::WebPreferences()
       allow_scripts_to_close_windows(false),
       remote_fonts_enabled(true),
       javascript_can_access_clipboard(false),
+      xslt_enabled(true),
       xss_auditor_enabled(true),
       dns_prefetching_enabled(true),
       data_saver_enabled(false),

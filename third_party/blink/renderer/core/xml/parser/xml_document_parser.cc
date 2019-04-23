@@ -72,6 +72,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/utf8.h"
@@ -1164,6 +1165,9 @@ void XMLDocumentParser::GetProcessingInstruction(const String& target,
 
   if (pi->IsCSS())
     saw_css_ = true;
+
+  if (!RuntimeEnabledFeatures::XSLTEnabled())
+    return;
 
   saw_xsl_transform_ = !saw_first_element_ && pi->IsXSL();
   if (saw_xsl_transform_ &&

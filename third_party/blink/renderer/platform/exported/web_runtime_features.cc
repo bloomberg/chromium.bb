@@ -415,6 +415,10 @@ void WebRuntimeFeatures::EnableWebGLImageChromium(bool enable) {
   RuntimeEnabledFeatures::SetWebGLImageChromiumEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableXSLT(bool enable) {
+  RuntimeEnabledFeatures::SetXSLTEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableOverlayScrollbars(bool enable) {
   RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(enable);
 }
