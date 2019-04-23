@@ -37,9 +37,11 @@
 #include "components/content_settings/core/common/cookie_settings_base.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -332,8 +334,9 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
 GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
     const GURL& original_url) {
   DCHECK(original_url.is_valid());
-  std::string experiment_id =
-      previews::params::LitePageRedirectPreviewExperiment();
+  std::string experiment_id = variations::GetVariationParamValue(
+      data_reduction_proxy::params::GetServerExperimentsFieldTrialName(),
+      data_reduction_proxy::kExperimentsOption);
 
   // Allow the command line to override any variations-provided experiment.
   std::string cmd_line_experiment =
