@@ -38,9 +38,10 @@ void PaintTimingDetector::NotifyPaintFinished() {
 void PaintTimingDetector::NotifyBackgroundImagePaint(
     const Node* node,
     const Image* image,
-    const StyleImage* cached_image,
+    const ImageResourceContent* cached_image,
     const PropertyTreeState& current_paint_chunk_properties) {
   DCHECK(image);
+  DCHECK(cached_image);
   if (!node)
     return;
   LayoutObject* object = node->GetLayoutObject();
@@ -48,21 +49,14 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
     return;
   if (!ImagePaintTimingDetector::IsBackgroundImageContentful(*object, *image))
     return;
-  // TODO(crbug/936149): This check is needed because the |image| and the
-  // background images in node could have inconsistent state. This can be
-  // resolved by tracking each background image separately. We will no longer
-  // need to find background images from a node's layers.
-  if (!ImagePaintTimingDetector::HasBackgroundImage(*object))
-    return;
   LocalFrameView* frame_view = object->GetFrameView();
   if (!frame_view)
     return;
   if (!cached_image)
     return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
-  detector.GetImagePaintTimingDetector().RecordImage(
-      *object, image->Size(), cached_image->IsLoaded(),
-      current_paint_chunk_properties);
+  detector.GetImagePaintTimingDetector().RecordBackgroundImage(
+      *object, image->Size(), cached_image, current_paint_chunk_properties);
 }
 
 // static
@@ -78,8 +72,7 @@ void PaintTimingDetector::NotifyImagePaint(
     return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   detector.GetImagePaintTimingDetector().RecordImage(
-      object, intrinsic_size, cached_image->IsLoaded(),
-      current_paint_chunk_properties);
+      object, intrinsic_size, cached_image, current_paint_chunk_properties);
 }
 
 // static
@@ -100,6 +93,16 @@ void PaintTimingDetector::NotifyNodeRemoved(const LayoutObject& object) {
     return;
   text_paint_timing_detector_->NotifyNodeRemoved(node_id);
   image_paint_timing_detector_->NotifyNodeRemoved(node_id);
+}
+
+void PaintTimingDetector::NotifyBackgroundImageRemoved(
+    const LayoutObject& object,
+    const ImageResourceContent* cached_image) {
+  DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(object.GetNode());
+  if (node_id == kInvalidDOMNodeId)
+    return;
+  image_paint_timing_detector_->NotifyBackgroundImageRemoved(node_id,
+                                                             cached_image);
 }
 
 void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {

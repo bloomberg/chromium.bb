@@ -3858,6 +3858,12 @@ void LayoutObject::NotifyImageFullyRemoved(ImageResourceContent* image) {
                                                                      image);
     }
   }
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+    if (LocalFrameView* frame_view = GetFrameView()) {
+      frame_view->GetPaintTimingDetector().NotifyBackgroundImageRemoved(*this,
+                                                                        image);
+    }
+  }
 }
 
 PositionWithAffinity LayoutObject::CreatePositionWithAffinity(

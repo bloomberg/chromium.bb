@@ -18,7 +18,6 @@ class ImageResourceContent;
 class LayoutObject;
 class LocalFrameView;
 class PropertyTreeState;
-class StyleImage;
 class TextPaintTimingDetector;
 
 // PaintTimingDetector contains some of paint metric detectors,
@@ -33,13 +32,10 @@ class CORE_EXPORT PaintTimingDetector
  public:
   PaintTimingDetector(LocalFrameView*);
 
-  // TODO(crbug/936124): the detector no longer need to look for background
-  // images in each layer.
-  // Notify the paint of background image.
   static void NotifyBackgroundImagePaint(
       const Node*,
       const Image*,
-      const StyleImage* cached_image,
+      const ImageResourceContent* cached_image,
       const PropertyTreeState& current_paint_chunk_properties);
   static void NotifyImagePaint(
       const LayoutObject&,
@@ -47,13 +43,14 @@ class CORE_EXPORT PaintTimingDetector
       const ImageResourceContent* cached_image,
       const PropertyTreeState& current_paint_chunk_properties);
 
-  static void NotifyTextPaint(const LayoutObject& object,
-                              const PropertyTreeState&);
+  static void NotifyTextPaint(const LayoutObject&, const PropertyTreeState&);
   void NotifyNodeRemoved(const LayoutObject&);
+  void NotifyBackgroundImageRemoved(const LayoutObject&,
+                                    const ImageResourceContent*);
   void NotifyPaintFinished();
   void NotifyInputEvent(WebInputEvent::Type);
   bool NeedToNotifyInputOrScroll();
-  void NotifyScroll(ScrollType scroll_type);
+  void NotifyScroll(ScrollType);
   void DidChangePerformanceTiming();
 
   // |visual_rect| should be an object's bounding rect in the space of

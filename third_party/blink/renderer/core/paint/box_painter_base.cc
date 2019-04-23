@@ -549,7 +549,7 @@ inline bool PaintFastBottomLayer(Node* node,
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
     if (info.image && info.image->IsImageResource()) {
       PaintTimingDetector::NotifyBackgroundImagePaint(
-          node, image, info.image,
+          node, image, info.image->CachedImage(),
           paint_info.context.GetPaintController()
               .CurrentPaintChunkProperties());
     }
@@ -682,7 +682,7 @@ void PaintFillLayerBackground(GraphicsContext& context,
     if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
       if (info.image && info.image->IsImageResource()) {
         PaintTimingDetector::NotifyBackgroundImagePaint(
-            node, image, info.image,
+            node, image, info.image->CachedImage(),
             context.GetPaintController().CurrentPaintChunkProperties());
       }
     }
