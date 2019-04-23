@@ -6113,6 +6113,10 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "saturation_margin": "5",
+                        "use_peaks_not_rms": "false"
+                    },
                     "enable_features": [
                         "WebRtcHybridAgc"
                     ]
