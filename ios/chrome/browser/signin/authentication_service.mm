@@ -252,42 +252,42 @@ void AuthenticationService::MigrateAccountsStoredInPrefsIfNeeded() {
   }
 
   std::vector<std::string> account_ids = GetAccountsInPrefs();
-  base::ListValue accounts_pref_value;
+  std::vector<base::Value> accounts_pref_value;
   for (const std::string& account_id : account_ids) {
     if (identity_manager_->HasAccountWithRefreshToken(account_id)) {
-      accounts_pref_value.AppendString(account_id);
+      accounts_pref_value.emplace_back(account_id);
     } else {
       // The account for |email| was removed since the last application cold
       // start. Insert |kFakeAccountIdForRemovedAccount| to ensure
       // |have_accounts_changed_| will be set to true and the removal won't be
       // silently ignored.
-      accounts_pref_value.AppendString(kFakeAccountIdForRemovedAccount);
+      accounts_pref_value.emplace_back(kFakeAccountIdForRemovedAccount);
     }
   }
-  pref_service_->Set(prefs::kSigninLastAccounts, accounts_pref_value);
+  pref_service_->Set(prefs::kSigninLastAccounts,
+                     base::Value(std::move(accounts_pref_value)));
   pref_service_->SetBoolean(prefs::kSigninLastAccountsMigrated, true);
 }
 
 void AuthenticationService::StoreAccountsInPrefs() {
   std::vector<CoreAccountInfo> accounts(
       identity_manager_->GetAccountsWithRefreshTokens());
-  base::ListValue accounts_pref_value;
+  std::vector<base::Value> accounts_pref_value;
   for (const CoreAccountInfo& account_info : accounts)
-    accounts_pref_value.AppendString(account_info.account_id);
-  pref_service_->Set(prefs::kSigninLastAccounts, accounts_pref_value);
+    accounts_pref_value.emplace_back(account_info.account_id);
+  pref_service_->Set(prefs::kSigninLastAccounts,
+                     base::Value(std::move(accounts_pref_value)));
 }
 
 std::vector<std::string> AuthenticationService::GetAccountsInPrefs() {
-  std::vector<std::string> accounts;
-  const base::ListValue* accounts_pref =
+  const base::Value* accounts_pref =
       pref_service_->GetList(prefs::kSigninLastAccounts);
-  for (size_t i = 0; i < accounts_pref->GetSize(); ++i) {
-    std::string account;
-    if (accounts_pref->GetString(i, &account) && !account.empty()) {
-      accounts.push_back(account);
-    } else {
-      NOTREACHED();
-    }
+
+  std::vector<std::string> accounts;
+  for (const auto& value : accounts_pref->GetList()) {
+    DCHECK(value.is_string());
+    DCHECK(!value.GetString().empty());
+    accounts.push_back(value.GetString());
   }
   return accounts;
 }
