@@ -47,7 +47,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
       DBusMethodCallback<std::vector<std::string>> callback) override;
   void GetNetworkStatus(DBusMethodCallback<std::string> callback) override;
   void GetModemStatus(DBusMethodCallback<std::string> callback) override;
-  void GetWiMaxStatus(DBusMethodCallback<std::string> callback) override;
   void GetNetworkInterfaces(DBusMethodCallback<std::string> callback) override;
   void GetPerfOutput(base::TimeDelta duration,
                      const std::vector<std::string>& perf_args,

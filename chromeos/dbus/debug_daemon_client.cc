@@ -200,15 +200,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetWiMaxStatus(DBusMethodCallback<std::string> callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kGetWiMaxStatus);
-    debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnStringMethod,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
   void GetNetworkInterfaces(DBusMethodCallback<std::string> callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetInterfaces);

@@ -66,9 +66,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
   // Gets information about modem status as json.
   virtual void GetModemStatus(DBusMethodCallback<std::string> callback) = 0;
 
-  // Gets information about WiMAX status as json.
-  virtual void GetWiMaxStatus(DBusMethodCallback<std::string> callback) = 0;
-
   // Gets information about network interfaces as json.
   // For details, please refer to
   // http://gerrit.chromium.org/gerrit/#/c/28045/5/src/helpers/netif.cc
