@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -23,7 +22,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/shill/fake_shill_manager_client.h"
@@ -50,17 +48,7 @@ OobeBaseTest::~OobeBaseTest() {}
 void OobeBaseTest::RegisterAdditionalRequestHandlers() {}
 
 void OobeBaseTest::SetUp() {
-  base::FilePath test_data_dir;
-  base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-  embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
-
   RegisterAdditionalRequestHandlers();
-
-
-  // Don't spin up the IO thread yet since no threads are allowed while
-  // spawning sandbox host process. See crbug.com/322732.
-  ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
-
   MixinBasedInProcessBrowserTest::SetUp();
 }
 
@@ -77,10 +65,7 @@ void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
 }
 
 void OobeBaseTest::SetUpOnMainThread() {
-  // Start the accept thread as the sandbox host process has already been
-  // spawned.
   host_resolver()->AddRule("*", "127.0.0.1");
-  embedded_test_server()->StartAcceptingConnections();
 
   login_screen_load_observer_.reset(new content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
@@ -95,14 +80,7 @@ void OobeBaseTest::SetUpOnMainThread() {
   if (ShouldWaitForOobeUI()) {
     WaitForOobeUI();
   }
-
   MixinBasedInProcessBrowserTest::SetUpOnMainThread();
-}
-
-void OobeBaseTest::TearDownOnMainThread() {
-  MixinBasedInProcessBrowserTest::TearDownOnMainThread();
-  // Embedded test server should always be shutdown after any https forwarders.
-  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 }
 
 bool OobeBaseTest::ShouldForceWebUiLogin() {

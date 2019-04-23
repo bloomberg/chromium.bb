@@ -1891,6 +1891,8 @@ test("browser_tests") {
         "../browser/chromeos/login/test/active_directory_login_mixin.h",
         "../browser/chromeos/login/test/device_state_mixin.cc",
         "../browser/chromeos/login/test/device_state_mixin.h",
+        "../browser/chromeos/login/test/embedded_test_server_mixin.cc",
+        "../browser/chromeos/login/test/embedded_test_server_mixin.h",
         "../browser/chromeos/login/test/enrollment_helper_mixin.cc",
         "../browser/chromeos/login/test/enrollment_helper_mixin.h",
         "../browser/chromeos/login/test/enrollment_ui_mixin.cc",

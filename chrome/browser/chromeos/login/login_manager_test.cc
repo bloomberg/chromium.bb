@@ -10,8 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/path_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -19,7 +17,6 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
-#include "chrome/common/chrome_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
@@ -60,24 +57,6 @@ LoginManagerTest::LoginManagerTest(bool should_launch_browser,
 
 LoginManagerTest::~LoginManagerTest() {}
 
-void LoginManagerTest::SetUp() {
-  base::FilePath test_data_dir;
-  base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
-  embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
-
-  // Don't spin up the IO thread yet since no threads are allowed while
-  // spawning sandbox host process. See crbug.com/322732.
-  ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
-
-  MixinBasedInProcessBrowserTest::SetUp();
-}
-
-void LoginManagerTest::TearDownOnMainThread() {
-  MixinBasedInProcessBrowserTest::TearDownOnMainThread();
-
-  EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
-}
-
 void LoginManagerTest::SetUpCommandLine(base::CommandLine* command_line) {
   if (force_webui_login_) {
     command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
@@ -91,10 +70,7 @@ void LoginManagerTest::SetUpCommandLine(base::CommandLine* command_line) {
 void LoginManagerTest::SetUpOnMainThread() {
   LoginDisplayHostWebUI::DisableRestrictiveProxyCheckForTest();
 
-  // Start the accept thread as the sandbox host process has already been
-  // spawned.
   host_resolver()->AddRule("*", "127.0.0.1");
-  embedded_test_server()->StartAcceptingConnections();
 
   if (should_initialize_webui_) {
     content::WindowedNotificationObserver(
