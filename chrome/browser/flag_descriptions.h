@@ -1777,6 +1777,9 @@ extern const char kArcGraphicBuffersVisualizationToolDescription[];
 extern const char kArcNativeBridgeExperimentName[];
 extern const char kArcNativeBridgeExperimentDescription[];
 
+extern const char kArcPrintSpoolerExperimentName[];
+extern const char kArcPrintSpoolerExperimentDescription[];
+
 extern const char kArcUsbHostName[];
 extern const char kArcUsbHostDescription[];
 

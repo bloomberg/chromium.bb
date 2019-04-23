@@ -56,6 +56,10 @@ const base::Feature kNativeBridgeExperimentFeature {
     "ArcNativeBridgeExperiment", base::FEATURE_ENABLED_BY_DEFAULT
 };
 
+// Controls experimental print spooler feature for ARC.
+const base::Feature kPrintSpoolerExperimentFeature{
+    "ArcPrintSpoolerExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls Smart Text Selection for Chrome.
 // When enabled, the context menu will show contextual quick actions based on
 // the current text selection.
