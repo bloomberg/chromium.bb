@@ -96,7 +96,8 @@ class TestPaintArtifact {
   TestPaintArtifact& ScrollHitTest(
       const TransformPaintPropertyNode& scroll_offset);
 
-  TestPaintArtifact& ForeignLayer(scoped_refptr<cc::Layer> layer);
+  TestPaintArtifact& ForeignLayer(scoped_refptr<cc::Layer> layer,
+                                  const FloatPoint& offset);
 
   // Add display item with the specified client in the chunk.
   TestPaintArtifact& RectDrawing(FakeDisplayItemClient&,

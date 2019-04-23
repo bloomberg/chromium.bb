@@ -22,7 +22,9 @@ class GraphicsContext;
 // GraphicsLayer tree.
 class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
  public:
-  ForeignLayerDisplayItem(Type, scoped_refptr<cc::Layer>);
+  ForeignLayerDisplayItem(Type,
+                          scoped_refptr<cc::Layer>,
+                          const FloatPoint& offset);
   ~ForeignLayerDisplayItem() override;
 
   cc::Layer* GetLayer() const;
@@ -32,6 +34,11 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
 #if DCHECK_IS_ON()
   void PropertiesAsJSON(JSONObject&) const override;
 #endif
+
+  FloatPoint Offset() const { return offset_; }
+
+ private:
+  FloatPoint offset_;
 };
 
 // Records a foreign layer into a GraphicsContext.
@@ -40,6 +47,7 @@ PLATFORM_EXPORT void RecordForeignLayer(
     GraphicsContext&,
     DisplayItem::Type,
     scoped_refptr<cc::Layer>,
+    const FloatPoint& offset,
     const base::Optional<PropertyTreeState>& = base::nullopt);
 
 }  // namespace blink

@@ -228,7 +228,7 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
       layer_->SetBounds(gfx::Size(frame_overlay.Size()));
       RecordForeignLayer(graphics_context,
                          DisplayItem::kForeignLayerDevToolsOverlay, layer_,
-                         PropertyTreeState::Root());
+                         FloatPoint(), PropertyTreeState::Root());
       return;
     }
 

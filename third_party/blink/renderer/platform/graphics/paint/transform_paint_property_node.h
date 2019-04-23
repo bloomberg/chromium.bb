@@ -279,11 +279,33 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return state_.flattens_inherited_transform;
   }
 
-  // Returns the local BackfaceVisibility value set on this node.
-  // See |IsBackfaceHidden()| for computing whether this transform node is
-  // hidden or not.
-  BackfaceVisibility GetBackfaceVisibility() const {
+  // Returns the local BackfaceVisibility value set on this node. To be used
+  // for testing only; use |BackfaceVisibilitySameAsParent()| or
+  // |IsBackfaceHidden()| for production code.
+  BackfaceVisibility GetBackfaceVisibilityForTesting() const {
     return state_.backface_visibility;
+  }
+
+  // Returns true if the backface visibility for this node is the same as that
+  // of its parent. This will be true for the Root node.
+  bool BackfaceVisibilitySameAsParent() const {
+    if (IsRoot())
+      return true;
+    if (state_.backface_visibility == BackfaceVisibility::kInherited)
+      return true;
+    if (state_.backface_visibility ==
+        Parent()->Unalias().state_.backface_visibility)
+      return true;
+    return IsBackfaceHidden() == Parent()->Unalias().IsBackfaceHidden();
+  }
+
+  // Returns true if the flattens inherited transform setting for this node is
+  // the same as that of its parent. This will be true for the Root node.
+  bool FlattensInheritedTransformSameAsParent() const {
+    if (IsRoot())
+      return true;
+    return state_.flattens_inherited_transform ==
+           Parent()->Unalias().state_.flattens_inherited_transform;
   }
 
   // Returns the first non-inherited BackefaceVisibility value along the
@@ -293,13 +315,18 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
   bool IsBackfaceHidden() const {
     const auto* node = this;
     while (node &&
-           node->GetBackfaceVisibility() == BackfaceVisibility::kInherited)
+           node->state_.backface_visibility == BackfaceVisibility::kInherited)
       node = node->Parent();
-    return node && node->GetBackfaceVisibility() == BackfaceVisibility::kHidden;
+    return node &&
+           node->state_.backface_visibility == BackfaceVisibility::kHidden;
   }
 
   bool HasDirectCompositingReasons() const {
     return DirectCompositingReasons() != CompositingReason::kNone;
+  }
+
+  bool HasDirectCompositingReasonsOtherThan3dTransform() const {
+    return DirectCompositingReasons() & ~CompositingReason::k3DTransform;
   }
 
   // TODO(crbug.com/900241): Use HaveActiveTransformAnimation() instead of this

@@ -2574,6 +2574,7 @@ static void RecordGraphicsLayerAsForeignLayer(
   graphics_layer->CcLayer()->RemoveAllChildren();
   RecordForeignLayer(context, DisplayItem::kForeignLayerWrapper,
                      graphics_layer->CcLayer(),
+                     FloatPoint(graphics_layer->GetOffsetFromTransformNode()),
                      graphics_layer->GetPropertyTreeState());
 }
 
@@ -2602,7 +2603,9 @@ static void CollectDrawableLayersForLayerListRecursively(
 
   if (auto* contents_layer = layer->ContentsLayer()) {
     RecordForeignLayer(context, DisplayItem::kForeignLayerContentsWrapper,
-                       contents_layer, layer->GetContentsPropertyTreeState());
+                       contents_layer,
+                       FloatPoint(layer->GetContentsOffsetFromTransformNode()),
+                       layer->GetContentsPropertyTreeState());
   }
 
   DCHECK(!layer->ContentsClippingMaskLayer());
@@ -2622,8 +2625,9 @@ static void CollectLinkHighlightLayersForLayerListRecursively(
   for (auto* highlight : layer->GetLinkHighlights()) {
     auto property_tree_state = layer->GetPropertyTreeState();
     property_tree_state.SetEffect(highlight->Effect());
-    RecordForeignLayer(context, DisplayItem::kForeignLayerLinkHighlight,
-                       highlight->Layer(), property_tree_state);
+    RecordForeignLayer(
+        context, DisplayItem::kForeignLayerLinkHighlight, highlight->Layer(),
+        highlight->GetOffsetFromTransformNode(), property_tree_state);
   }
 
   for (const auto* child : layer->Children())

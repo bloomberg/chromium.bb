@@ -178,13 +178,13 @@ class PaintArtifactCompositorTest : public testing::Test,
       const auto* scroll_node = scroll_offset.ScrollNode();
       scoped_refptr<cc::Layer> layer = cc::Layer::Create();
       auto rect = scroll_node->ContainerRect();
-      layer->SetOffsetToTransformParent(gfx::Vector2dF(rect.X(), rect.Y()));
       layer->SetScrollable(gfx::Size(rect.Size()));
       layer->SetBounds(gfx::Size(rect.Size()));
       layer->SetElementId(scroll_node->GetCompositorElementId());
       layer->set_did_scroll_callback(
           paint_artifact_compositor_->scroll_callback_);
-      artifact.Chunk(scroll_offset, clip, effect).ForeignLayer(layer);
+      artifact.Chunk(scroll_offset, clip, effect)
+          .ForeignLayer(layer, FloatPoint(rect.Location()));
       return;
     }
     // Scroll hit test layers are marked as scrollable for hit testing but are
@@ -412,7 +412,7 @@ TEST_P(PaintArtifactCompositorTest, TransformCombining) {
                       FloatPoint3D(10, 10, 0), CompositingReason::k3DTransform);
   auto transform2 =
       CreateTransform(*transform1, TransformationMatrix().Translate(5, 5),
-                      FloatPoint3D(), CompositingReason::k3DTransform);
+                      FloatPoint3D(), CompositingReason::kWillChangeTransform);
 
   TestPaintArtifact artifact;
   artifact.Chunk(*transform1, c0(), e0())
@@ -591,7 +591,7 @@ TEST_P(PaintArtifactCompositorTest, SortingContextID) {
   TransformPaintPropertyNode::State transform2_3_state;
   transform2_3_state.rendering_context_id = 1;
   transform2_3_state.direct_compositing_reasons =
-      CompositingReason::k3DTransform;
+      CompositingReason::kWillChangeTransform;
   auto transform2 = TransformPaintPropertyNode::Create(
       *transform1, std::move(transform2_3_state));
   // Extends the 3D rendering context of transform2.
@@ -600,7 +600,8 @@ TEST_P(PaintArtifactCompositorTest, SortingContextID) {
   // Establishes a 3D rendering context distinct from transform2.
   TransformPaintPropertyNode::State transform4_state;
   transform4_state.rendering_context_id = 2;
-  transform4_state.direct_compositing_reasons = CompositingReason::k3DTransform;
+  transform4_state.direct_compositing_reasons =
+      CompositingReason::kWillChangeTransform;
   auto transform4 = TransformPaintPropertyNode::Create(
       *transform2, std::move(transform4_state));
 
@@ -914,12 +915,11 @@ TEST_P(PaintArtifactCompositorTest, SiblingClipsWithAlias) {
 TEST_P(PaintArtifactCompositorTest, ForeignLayerPassesThrough) {
   scoped_refptr<cc::Layer> layer = cc::Layer::Create();
   layer->SetIsDrawable(true);
-  layer->SetOffsetToTransformParent(gfx::Vector2dF(50, 60));
   layer->SetBounds(gfx::Size(400, 300));
 
   TestPaintArtifact test_artifact;
   test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kWhite);
-  test_artifact.Chunk().ForeignLayer(layer);
+  test_artifact.Chunk().ForeignLayer(layer, FloatPoint(50, 60));
   test_artifact.Chunk().RectDrawing(FloatRect(0, 0, 100, 100), Color::kGray);
 
   auto artifact = test_artifact.Build();
@@ -1098,7 +1098,7 @@ TEST_P(PaintArtifactCompositorTest, TransformUnderScrollNode) {
 
   auto transform =
       CreateTransform(*scroll_translation, TransformationMatrix(),
-                      FloatPoint3D(), CompositingReason::k3DTransform);
+                      FloatPoint3D(), CompositingReason::kWillChangeTransform);
 
   TestPaintArtifact artifact;
   artifact.Chunk(*scroll_translation, c0(), e0())
