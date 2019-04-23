@@ -25,6 +25,7 @@
 #include "avfilter.h"
 #include "audio.h"
 #include "formats.h"
+#include "window_func.h"
 
 typedef struct AudioSurroundContext {
     const AVClass *class;
@@ -38,6 +39,30 @@ typedef struct AudioSurroundContext {
     float fc_out;
     float lfe_in;
     float lfe_out;
+    int   lfe_mode;
+    int   win_func;
+    float overlap;
+
+    float all_x;
+    float all_y;
+
+    float fc_x;
+    float fl_x;
+    float fr_x;
+    float bl_x;
+    float br_x;
+    float sl_x;
+    float sr_x;
+    float bc_x;
+
+    float fc_y;
+    float fl_y;
+    float fr_y;
+    float bl_y;
+    float br_y;
+    float sl_y;
+    float sr_y;
+    float bc_y;
 
     float *input_levels;
     float *output_levels;
@@ -234,12 +259,13 @@ static void stereo_position(float a, float p, float *x, float *y)
 }
 
 static inline void get_lfe(int output_lfe, int n, float lowcut, float highcut,
-                           float *lfe_mag, float *mag_total)
+                           float *lfe_mag, float *mag_total, int lfe_mode)
 {
     if (output_lfe && n < highcut) {
         *lfe_mag    = n < lowcut ? 1.f : .5f*(1.f+cosf(M_PI*(lowcut-n)/(lowcut-highcut)));
         *lfe_mag   *= *mag_total;
-        *mag_total -= *lfe_mag;
+        if (lfe_mode)
+            *mag_total -= *lfe_mag;
     } else {
         *lfe_mag = 0.f;
     }
@@ -258,7 +284,7 @@ static void upmix_1_0(AVFilterContext *ctx,
 
     dst = (float *)s->output->extended_data[0];
 
-    mag = sqrtf(1.f - fabsf(x)) * ((y + 1.f) * .5f) * mag_total;
+    mag = powf(1.f - fabsf(x), s->fc_x) * powf((y + 1.f) * .5f, s->fc_y) * mag_total;
 
     dst[2 * n    ] = mag * cosf(c_phase);
     dst[2 * n + 1] = mag * sinf(c_phase);
@@ -278,8 +304,8 @@ static void upmix_stereo(AVFilterContext *ctx,
     dstl = (float *)s->output->extended_data[0];
     dstr = (float *)s->output->extended_data[1];
 
-    l_mag = sqrtf(.5f * ( x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    r_mag = sqrtf(.5f * (-x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
+    l_mag = powf(.5f * ( x + 1.f), s->fl_x) * powf((y + 1.f) * .5f, s->fl_y) * mag_total;
+    r_mag = powf(.5f * (-x + 1.f), s->fr_x) * powf((y + 1.f) * .5f, s->fr_y) * mag_total;
 
     dstl[2 * n    ] = l_mag * cosf(l_phase);
     dstl[2 * n + 1] = l_mag * sinf(l_phase);
@@ -303,10 +329,10 @@ static void upmix_2_1(AVFilterContext *ctx,
     dstr = (float *)s->output->extended_data[1];
     dstlfe = (float *)s->output->extended_data[2];
 
-    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &mag_total);
+    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &mag_total, s->lfe_mode);
 
-    l_mag = sqrtf(.5f * ( x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    r_mag = sqrtf(.5f * (-x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
+    l_mag = powf(.5f * ( x + 1.f), s->fl_x) * powf((y + 1.f) * .5f, s->fl_y) * mag_total;
+    r_mag = powf(.5f * (-x + 1.f), s->fr_x) * powf((y + 1.f) * .5f, s->fr_y) * mag_total;
 
     dstl[2 * n    ] = l_mag * cosf(l_phase);
     dstl[2 * n + 1] = l_mag * sinf(l_phase);
@@ -333,9 +359,9 @@ static void upmix_3_0(AVFilterContext *ctx,
     dstr = (float *)s->output->extended_data[1];
     dstc = (float *)s->output->extended_data[2];
 
-    c_mag = sqrtf(1.f - fabsf(x))   * ((y + 1.f) * .5f) * mag_total;
-    l_mag = sqrtf(.5f * ( x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    r_mag = sqrtf(.5f * (-x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
+    c_mag = powf(1.f - fabsf(x),   s->fc_x) * powf((y + 1.f) * .5f, s->fc_y) * mag_total;
+    l_mag = powf(.5f * ( x + 1.f), s->fl_x) * powf((y + 1.f) * .5f, s->fl_y) * mag_total;
+    r_mag = powf(.5f * (-x + 1.f), s->fr_x) * powf((y + 1.f) * .5f, s->fr_y) * mag_total;
 
     dstl[2 * n    ] = l_mag * cosf(l_phase);
     dstl[2 * n + 1] = l_mag * sinf(l_phase);
@@ -363,11 +389,11 @@ static void upmix_3_1(AVFilterContext *ctx,
     dstc = (float *)s->output->extended_data[2];
     dstlfe = (float *)s->output->extended_data[3];
 
-    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &mag_total);
+    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &mag_total, s->lfe_mode);
 
-    c_mag = sqrtf(1.f - fabsf(x))   * ((y + 1.f) * .5f) * mag_total;
-    l_mag = sqrtf(.5f * ( x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    r_mag = sqrtf(.5f * (-x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
+    c_mag = powf(1.f - fabsf(x),   s->fc_x) * powf((y + 1.f) * .5f, s->fc_y) * mag_total;
+    l_mag = powf(.5f * ( x + 1.f), s->fl_x) * powf((y + 1.f) * .5f, s->fl_y) * mag_total;
+    r_mag = powf(.5f * (-x + 1.f), s->fr_x) * powf((y + 1.f) * .5f, s->fr_y) * mag_total;
 
     dstl[2 * n    ] = l_mag * cosf(l_phase);
     dstl[2 * n + 1] = l_mag * sinf(l_phase);
@@ -399,10 +425,10 @@ static void upmix_3_1_surround(AVFilterContext *ctx,
     dstc = (float *)s->output->extended_data[2];
     dstlfe = (float *)s->output->extended_data[3];
 
-    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &c_mag);
+    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &c_mag, s->lfe_mode);
 
-    l_mag = sqrtf(.5f * ( x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    r_mag = sqrtf(.5f * (-x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
+    l_mag = powf(.5f * ( x + 1.f), s->fl_x) * powf((y + 1.f) * .5f, s->fl_y) * mag_total;
+    r_mag = powf(.5f * (-x + 1.f), s->fr_x) * powf((y + 1.f) * .5f, s->fr_y) * mag_total;
 
     dstl[2 * n    ] = l_mag * cosf(l_phase);
     dstl[2 * n + 1] = l_mag * sinf(l_phase);
@@ -425,18 +451,18 @@ static void upmix_4_0(AVFilterContext *ctx,
                       float x, float y,
                       int n)
 {
-    float b_mag, l_mag, r_mag, c_mag, *dstc, *dstl, *dstr, *dstb;
     AudioSurroundContext *s = ctx->priv;
+    float b_mag, l_mag, r_mag, c_mag, *dstc, *dstl, *dstr, *dstb;
 
     dstl = (float *)s->output->extended_data[0];
     dstr = (float *)s->output->extended_data[1];
     dstc = (float *)s->output->extended_data[2];
     dstb = (float *)s->output->extended_data[3];
 
-    c_mag = sqrtf(1.f - fabsf(x))   * ((y + 1.f) * .5f) * mag_total;
-    b_mag = sqrtf(1.f - fabsf(x))   * ((1.f - y) * .5f) * mag_total;
-    l_mag = sqrtf(.5f * ( x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    r_mag = sqrtf(.5f * (-x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
+    c_mag = powf(1.f - fabsf(x),   s->fc_x) * powf((y + 1.f) * .5f, s->fc_y) * mag_total;
+    b_mag = powf(1.f - fabsf(x),   s->bc_x) * powf((1.f - y) * .5f, s->bc_y) * mag_total;
+    l_mag = powf(.5f * ( x + 1.f), s->fl_x) * powf((y + 1.f) * .5f, s->fl_y) * mag_total;
+    r_mag = powf(.5f * (-x + 1.f), s->fr_x) * powf((y + 1.f) * .5f, s->fr_y) * mag_total;
 
     dstl[2 * n    ] = l_mag * cosf(l_phase);
     dstl[2 * n + 1] = l_mag * sinf(l_phase);
@@ -459,8 +485,8 @@ static void upmix_4_1(AVFilterContext *ctx,
                       float x, float y,
                       int n)
 {
-    float lfe_mag, b_mag, l_mag, r_mag, c_mag, *dstc, *dstl, *dstr, *dstb, *dstlfe;
     AudioSurroundContext *s = ctx->priv;
+    float lfe_mag, b_mag, l_mag, r_mag, c_mag, *dstc, *dstl, *dstr, *dstb, *dstlfe;
 
     dstl = (float *)s->output->extended_data[0];
     dstr = (float *)s->output->extended_data[1];
@@ -468,15 +494,15 @@ static void upmix_4_1(AVFilterContext *ctx,
     dstlfe = (float *)s->output->extended_data[3];
     dstb = (float *)s->output->extended_data[4];
 
-    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &mag_total);
+    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &mag_total, s->lfe_mode);
 
     dstlfe[2 * n    ] = lfe_mag * cosf(c_phase);
     dstlfe[2 * n + 1] = lfe_mag * sinf(c_phase);
 
-    c_mag = sqrtf(1.f - fabsf(x))   * ((y + 1.f) * .5f) * mag_total;
-    b_mag = sqrtf(1.f - fabsf(x))   * ((1.f - y) * .5f) * mag_total;
-    l_mag = sqrtf(.5f * ( x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    r_mag = sqrtf(.5f * (-x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
+    c_mag = powf(1.f - fabsf(x),   s->fc_x) * powf((y + 1.f) * .5f, s->fc_y) * mag_total;
+    b_mag = powf(1.f - fabsf(x),   s->bc_x) * powf((1.f - y) * .5f, s->bc_y) * mag_total;
+    l_mag = powf(.5f * ( x + 1.f), s->fl_x) * powf((y + 1.f) * .5f, s->fl_y) * mag_total;
+    r_mag = powf(.5f * (-x + 1.f), s->fr_x) * powf((y + 1.f) * .5f, s->fr_y) * mag_total;
 
     dstl[2 * n    ] = l_mag * cosf(l_phase);
     dstl[2 * n + 1] = l_mag * sinf(l_phase);
@@ -499,8 +525,8 @@ static void upmix_5_0_back(AVFilterContext *ctx,
                            float x, float y,
                            int n)
 {
-    float l_mag, r_mag, ls_mag, rs_mag, c_mag, *dstc, *dstl, *dstr, *dstls, *dstrs;
     AudioSurroundContext *s = ctx->priv;
+    float l_mag, r_mag, ls_mag, rs_mag, c_mag, *dstc, *dstl, *dstr, *dstls, *dstrs;
 
     dstl  = (float *)s->output->extended_data[0];
     dstr  = (float *)s->output->extended_data[1];
@@ -508,11 +534,11 @@ static void upmix_5_0_back(AVFilterContext *ctx,
     dstls = (float *)s->output->extended_data[3];
     dstrs = (float *)s->output->extended_data[4];
 
-    c_mag  = sqrtf(1.f - fabsf(x))   * ((y + 1.f) * .5f) * mag_total;
-    l_mag  = sqrtf(.5f * ( x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    r_mag  = sqrtf(.5f * (-x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    ls_mag = sqrtf(.5f * ( x + 1.f)) * (1.f - ((y + 1.f) * .5f)) * mag_total;
-    rs_mag = sqrtf(.5f * (-x + 1.f)) * (1.f - ((y + 1.f) * .5f)) * mag_total;
+    c_mag  = powf(1.f - fabsf(x),   s->fc_x) * powf((y + 1.f) * .5f, s->fc_y) * mag_total;
+    l_mag  = powf(.5f * ( x + 1.f), s->fl_x) * powf((y + 1.f) * .5f, s->fl_y) * mag_total;
+    r_mag  = powf(.5f * (-x + 1.f), s->fr_x) * powf((y + 1.f) * .5f, s->fr_y) * mag_total;
+    ls_mag = powf(.5f * ( x + 1.f), s->bl_x) * powf(1.f - ((y + 1.f) * .5f), s->bl_y) * mag_total;
+    rs_mag = powf(.5f * (-x + 1.f), s->br_x) * powf(1.f - ((y + 1.f) * .5f), s->br_y) * mag_total;
 
     dstl[2 * n    ] = l_mag * cosf(l_phase);
     dstl[2 * n + 1] = l_mag * sinf(l_phase);
@@ -538,8 +564,8 @@ static void upmix_5_1_back(AVFilterContext *ctx,
                            float x, float y,
                            int n)
 {
-    float lfe_mag, l_mag, r_mag, ls_mag, rs_mag, c_mag, *dstc, *dstl, *dstr, *dstls, *dstrs, *dstlfe;
     AudioSurroundContext *s = ctx->priv;
+    float lfe_mag, l_mag, r_mag, ls_mag, rs_mag, c_mag, *dstc, *dstl, *dstr, *dstls, *dstrs, *dstlfe;
 
     dstl  = (float *)s->output->extended_data[0];
     dstr  = (float *)s->output->extended_data[1];
@@ -548,13 +574,13 @@ static void upmix_5_1_back(AVFilterContext *ctx,
     dstls = (float *)s->output->extended_data[4];
     dstrs = (float *)s->output->extended_data[5];
 
-    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &mag_total);
+    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &mag_total, s->lfe_mode);
 
-    c_mag  = sqrtf(1.f - fabsf(x))   * ((y + 1.f) * .5f) * mag_total;
-    l_mag  = sqrtf(.5f * ( x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    r_mag  = sqrtf(.5f * (-x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    ls_mag = sqrtf(.5f * ( x + 1.f)) * (1.f - ((y + 1.f) * .5f)) * mag_total;
-    rs_mag = sqrtf(.5f * (-x + 1.f)) * (1.f - ((y + 1.f) * .5f)) * mag_total;
+    c_mag  = powf(1.f - fabsf(x),   s->fc_x) * powf((y + 1.f) * .5f, s->fc_y) * mag_total;
+    l_mag  = powf(.5f * ( x + 1.f), s->fl_x) * powf((y + 1.f) * .5f, s->fl_y) * mag_total;
+    r_mag  = powf(.5f * (-x + 1.f), s->fr_x) * powf((y + 1.f) * .5f, s->fr_y) * mag_total;
+    ls_mag = powf(.5f * ( x + 1.f), s->bl_x) * powf(1.f - ((y + 1.f) * .5f), s->bl_y) * mag_total;
+    rs_mag = powf(.5f * (-x + 1.f), s->br_x) * powf(1.f - ((y + 1.f) * .5f), s->br_y) * mag_total;
 
     dstl[2 * n    ] = l_mag * cosf(l_phase);
     dstl[2 * n + 1] = l_mag * sinf(l_phase);
@@ -595,12 +621,12 @@ static void upmix_5_1_back_surround(AVFilterContext *ctx,
     dstls = (float *)s->output->extended_data[4];
     dstrs = (float *)s->output->extended_data[5];
 
-    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &c_mag);
+    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &c_mag, s->lfe_mode);
 
-    l_mag = sqrtf(.5f * ( x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    r_mag = sqrtf(.5f * (-x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    ls_mag = sqrtf(.5f * ( x + 1.f)) * (1.f - ((y + 1.f) * .5f)) * mag_total;
-    rs_mag = sqrtf(.5f * (-x + 1.f)) * (1.f - ((y + 1.f) * .5f)) * mag_total;
+    l_mag = powf(.5f * ( x + 1.f),  s->fl_x) * powf((y + 1.f) * .5f, s->fl_y) * mag_total;
+    r_mag = powf(.5f * (-x + 1.f),  s->fr_x) * powf((y + 1.f) * .5f, s->fr_y) * mag_total;
+    ls_mag = powf(.5f * ( x + 1.f), s->bl_x) * powf(1.f - ((y + 1.f) * .5f), s->bl_y) * mag_total;
+    rs_mag = powf(.5f * (-x + 1.f), s->br_x) * powf(1.f - ((y + 1.f) * .5f), s->br_y) * mag_total;
 
     dstl[2 * n    ] = l_mag * cosf(l_phase);
     dstl[2 * n + 1] = l_mag * sinf(l_phase);
@@ -642,11 +668,11 @@ static void upmix_5_1_back_2_1(AVFilterContext *ctx,
     dstls = (float *)s->output->extended_data[4];
     dstrs = (float *)s->output->extended_data[5];
 
-    c_mag  = sqrtf(1.f - fabsf(x))   * ((y + 1.f) * .5f) * mag_total;
-    l_mag  = sqrtf(.5f * ( x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    r_mag  = sqrtf(.5f * (-x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    ls_mag = sqrtf(.5f * ( x + 1.f)) * (1.f - ((y + 1.f) * .5f)) * mag_total;
-    rs_mag = sqrtf(.5f * (-x + 1.f)) * (1.f - ((y + 1.f) * .5f)) * mag_total;
+    c_mag  = powf(1.f - fabsf(x),   s->fc_x) * powf((y + 1.f) * .5f, s->fc_y) * mag_total;
+    l_mag  = powf(.5f * ( x + 1.f), s->fl_x) * powf((y + 1.f) * .5f, s->fl_y) * mag_total;
+    r_mag  = powf(.5f * (-x + 1.f), s->fr_x) * powf((y + 1.f) * .5f, s->fr_y) * mag_total;
+    ls_mag = powf(.5f * ( x + 1.f), s->bl_x) * powf(1.f - ((y + 1.f) * .5f), s->bl_y) * mag_total;
+    rs_mag = powf(.5f * (-x + 1.f), s->br_x) * powf(1.f - ((y + 1.f) * .5f), s->br_y) * mag_total;
 
     dstl[2 * n    ] = l_mag * cosf(l_phase);
     dstl[2 * n + 1] = l_mag * sinf(l_phase);
@@ -687,13 +713,13 @@ static void upmix_7_0(AVFilterContext *ctx,
     dstls = (float *)s->output->extended_data[5];
     dstrs = (float *)s->output->extended_data[6];
 
-    c_mag  = sqrtf(1.f - fabsf(x))   * ((y + 1.f) * .5f) * mag_total;
-    l_mag  = sqrtf(.5f * ( x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    r_mag  = sqrtf(.5f * (-x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    lb_mag = sqrtf(.5f * ( x + 1.f)) * (1.f - ((y + 1.f) * .5f)) * mag_total;
-    rb_mag = sqrtf(.5f * (-x + 1.f)) * (1.f - ((y + 1.f) * .5f)) * mag_total;
-    ls_mag = sqrtf(.5f * ( x + 1.f)) * (1.f - fabsf(y)) * mag_total;
-    rs_mag = sqrtf(.5f * (-x + 1.f)) * (1.f - fabsf(y)) * mag_total;
+    c_mag  = powf(1.f - fabsf(x),   s->fc_x) * powf((y + 1.f) * .5f, s->fc_y) * mag_total;
+    l_mag  = powf(.5f * ( x + 1.f), s->fl_x) * powf((y + 1.f) * .5f, s->fl_y) * mag_total;
+    r_mag  = powf(.5f * (-x + 1.f), s->fr_x) * powf((y + 1.f) * .5f, s->fr_y) * mag_total;
+    lb_mag = powf(.5f * ( x + 1.f), s->bl_x) * powf(1.f - ((y + 1.f) * .5f), s->bl_y) * mag_total;
+    rb_mag = powf(.5f * (-x + 1.f), s->br_x) * powf(1.f - ((y + 1.f) * .5f), s->br_y) * mag_total;
+    ls_mag = powf(.5f * ( x + 1.f), s->sl_x) * powf(1.f - fabsf(y), s->sl_y) * mag_total;
+    rs_mag = powf(.5f * (-x + 1.f), s->sr_x) * powf(1.f - fabsf(y), s->sr_y) * mag_total;
 
     dstl[2 * n    ] = l_mag * cosf(l_phase);
     dstl[2 * n + 1] = l_mag * sinf(l_phase);
@@ -738,15 +764,15 @@ static void upmix_7_1(AVFilterContext *ctx,
     dstls = (float *)s->output->extended_data[6];
     dstrs = (float *)s->output->extended_data[7];
 
-    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &mag_total);
+    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &mag_total, s->lfe_mode);
 
-    c_mag  = sqrtf(1.f - fabsf(x))   * ((y + 1.f) * .5f) * mag_total;
-    l_mag  = sqrtf(.5f * ( x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    r_mag  = sqrtf(.5f * (-x + 1.f)) * ((y + 1.f) * .5f) * mag_total;
-    lb_mag = sqrtf(.5f * ( x + 1.f)) * (1.f - ((y + 1.f) * .5f)) * mag_total;
-    rb_mag = sqrtf(.5f * (-x + 1.f)) * (1.f - ((y + 1.f) * .5f)) * mag_total;
-    ls_mag = sqrtf(.5f * ( x + 1.f)) * (1.f - fabsf(y)) * mag_total;
-    rs_mag = sqrtf(.5f * (-x + 1.f)) * (1.f - fabsf(y)) * mag_total;
+    c_mag  = powf(1.f - fabsf(x), s->fc_x)   * powf((y + 1.f) * .5f, s->fc_y) * mag_total;
+    l_mag  = powf(.5f * ( x + 1.f), s->fl_x) * powf((y + 1.f) * .5f, s->fl_y) * mag_total;
+    r_mag  = powf(.5f * (-x + 1.f), s->fr_x) * powf((y + 1.f) * .5f, s->fr_y) * mag_total;
+    lb_mag = powf(.5f * ( x + 1.f), s->bl_x) * powf(1.f - ((y + 1.f) * .5f), s->bl_y) * mag_total;
+    rb_mag = powf(.5f * (-x + 1.f), s->br_x) * powf(1.f - ((y + 1.f) * .5f), s->br_y) * mag_total;
+    ls_mag = powf(.5f * ( x + 1.f), s->sl_x) * powf(1.f - fabsf(y), s->sl_y) * mag_total;
+    rs_mag = powf(.5f * (-x + 1.f), s->sr_x) * powf(1.f - fabsf(y), s->sr_y) * mag_total;
 
     dstl[2 * n    ] = l_mag * cosf(l_phase);
     dstl[2 * n + 1] = l_mag * sinf(l_phase);
@@ -799,14 +825,14 @@ static void upmix_7_1_5_0_side(AVFilterContext *ctx,
 
     c_phase = atan2f(c_im, c_re);
 
-    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &mag_total);
+    get_lfe(s->output_lfe, n, s->lowcut, s->highcut, &lfe_mag, &mag_total, s->lfe_mode);
 
-    fl_mag = sqrtf(.5f * (xl + 1.f)) * ((yl + 1.f) * .5f) * mag_totall;
-    fr_mag = sqrtf(.5f * (xr + 1.f)) * ((yr + 1.f) * .5f) * mag_totalr;
-    lb_mag = sqrtf(.5f * (-xl + 1.f)) * ((yl + 1.f) * .5f) * mag_totall;
-    rb_mag = sqrtf(.5f * (-xr + 1.f)) * ((yr + 1.f) * .5f) * mag_totalr;
-    ls_mag = sqrtf(1.f - fabsf(xl)) * ((yl + 1.f) * .5f) * mag_totall;
-    rs_mag = sqrtf(1.f - fabsf(xr)) * ((yr + 1.f) * .5f) * mag_totalr;
+    fl_mag = powf(.5f * (xl + 1.f), s->fl_x) * powf((yl + 1.f) * .5f, s->fl_y) * mag_totall;
+    fr_mag = powf(.5f * (xr + 1.f), s->fr_x) * powf((yr + 1.f) * .5f, s->fr_y) * mag_totalr;
+    lb_mag = powf(.5f * (-xl + 1.f), s->bl_x) * powf((yl + 1.f) * .5f, s->bl_y) * mag_totall;
+    rb_mag = powf(.5f * (-xr + 1.f), s->br_x) * powf((yr + 1.f) * .5f, s->br_y) * mag_totalr;
+    ls_mag = powf(1.f - fabsf(xl), s->sl_x) * powf((yl + 1.f) * .5f, s->sl_y) * mag_totall;
+    rs_mag = powf(1.f - fabsf(xr), s->sr_x) * powf((yr + 1.f) * .5f, s->sr_y) * mag_totalr;
 
     dstl[2 * n    ] = fl_mag * cosf(fl_phase);
     dstl[2 * n + 1] = fl_mag * sinf(fl_phase);
@@ -857,12 +883,12 @@ static void upmix_7_1_5_1(AVFilterContext *ctx,
     dstls = (float *)s->output->extended_data[6];
     dstrs = (float *)s->output->extended_data[7];
 
-    fl_mag = sqrtf(.5f * (xl + 1.f)) * ((yl + 1.f) * .5f) * mag_totall;
-    fr_mag = sqrtf(.5f * (xr + 1.f)) * ((yr + 1.f) * .5f) * mag_totalr;
-    lb_mag = sqrtf(.5f * (-xl + 1.f)) * ((yl + 1.f) * .5f) * mag_totall;
-    rb_mag = sqrtf(.5f * (-xr + 1.f)) * ((yr + 1.f) * .5f) * mag_totalr;
-    ls_mag = sqrtf(1.f - fabsf(xl)) * ((yl + 1.f) * .5f) * mag_totall;
-    rs_mag = sqrtf(1.f - fabsf(xr)) * ((yr + 1.f) * .5f) * mag_totalr;
+    fl_mag = powf(.5f * (xl + 1.f), s->fl_x) * powf((yl + 1.f) * .5f, s->fl_y) * mag_totall;
+    fr_mag = powf(.5f * (xr + 1.f), s->fr_x) * powf((yr + 1.f) * .5f, s->fr_y) * mag_totalr;
+    lb_mag = powf(.5f * (-xl + 1.f), s->bl_x) * powf((yl + 1.f) * .5f, s->bl_y) * mag_totall;
+    rb_mag = powf(.5f * (-xr + 1.f), s->br_x) * powf((yr + 1.f) * .5f, s->br_y) * mag_totalr;
+    ls_mag = powf(1.f - fabsf(xl), s->sl_x) * powf((yl + 1.f) * .5f, s->sl_y) * mag_totall;
+    rs_mag = powf(1.f - fabsf(xr), s->sl_x) * powf((yr + 1.f) * .5f, s->sr_y) * mag_totalr;
 
     dstl[2 * n    ] = fl_mag * cosf(fl_phase);
     dstl[2 * n + 1] = fl_mag * sinf(fl_phase);
@@ -907,7 +933,8 @@ static void filter_stereo(AVFilterContext *ctx)
         float l_phase = atan2f(l_im, l_re);
         float r_phase = atan2f(r_im, r_re);
         float phase_dif = fabsf(l_phase - r_phase);
-        float mag_dif = (l_mag - r_mag) / (l_mag + r_mag);
+        float mag_sum = l_mag + r_mag;
+        float mag_dif = mag_sum < 0.000001 ? 0.f : (l_mag - r_mag) / mag_sum;
         float mag_total = hypotf(l_mag, r_mag);
         float x, y;
 
@@ -941,7 +968,8 @@ static void filter_surround(AVFilterContext *ctx)
         float l_phase = atan2f(l_im, l_re);
         float r_phase = atan2f(r_im, r_re);
         float phase_dif = fabsf(l_phase - r_phase);
-        float mag_dif = (l_mag - r_mag) / (l_mag + r_mag);
+        float mag_sum = l_mag + r_mag;
+        float mag_dif = mag_sum < 0.000001 ? 0.f : (l_mag - r_mag) / mag_sum;
         float mag_total = hypotf(l_mag, r_mag);
         float x, y;
 
@@ -974,7 +1002,8 @@ static void filter_2_1(AVFilterContext *ctx)
         float l_phase = atan2f(l_im, l_re);
         float r_phase = atan2f(r_im, r_re);
         float phase_dif = fabsf(l_phase - r_phase);
-        float mag_dif = (l_mag - r_mag) / (l_mag + r_mag);
+        float mag_sum = l_mag + r_mag;
+        float mag_dif = mag_sum < 0.000001 ? 0.f : (l_mag - r_mag) / mag_sum;
         float mag_total = hypotf(l_mag, r_mag);
         float x, y;
 
@@ -1015,8 +1044,10 @@ static void filter_5_0_side(AVFilterContext *ctx)
         float sr_phase = atan2f(sr_im, sr_re);
         float phase_difl = fabsf(fl_phase - sl_phase);
         float phase_difr = fabsf(fr_phase - sr_phase);
-        float mag_difl = (fl_mag - sl_mag) / (fl_mag + sl_mag);
-        float mag_difr = (fr_mag - sr_mag) / (fr_mag + sr_mag);
+        float magl_sum = fl_mag + sl_mag;
+        float magr_sum = fr_mag + sr_mag;
+        float mag_difl = magl_sum < 0.000001 ? 0.f : (fl_mag - sl_mag) / magl_sum;
+        float mag_difr = magr_sum < 0.000001 ? 0.f : (fr_mag - sr_mag) / magr_sum;
         float mag_totall = hypotf(fl_mag, sl_mag);
         float mag_totalr = hypotf(fr_mag, sr_mag);
         float bl_phase = atan2f(fl_im + sl_im, fl_re + sl_re);
@@ -1072,8 +1103,10 @@ static void filter_5_1_side(AVFilterContext *ctx)
         float sr_phase = atan2f(sr_im, sr_re);
         float phase_difl = fabsf(fl_phase - sl_phase);
         float phase_difr = fabsf(fr_phase - sr_phase);
-        float mag_difl = (fl_mag - sl_mag) / (fl_mag + sl_mag);
-        float mag_difr = (fr_mag - sr_mag) / (fr_mag + sr_mag);
+        float magl_sum = fl_mag + sl_mag;
+        float magr_sum = fr_mag + sr_mag;
+        float mag_difl = magl_sum < 0.000001 ? 0.f : (fl_mag - sl_mag) / magl_sum;
+        float mag_difr = magr_sum < 0.000001 ? 0.f : (fr_mag - sr_mag) / magr_sum;
         float mag_totall = hypotf(fl_mag, sl_mag);
         float mag_totalr = hypotf(fr_mag, sr_mag);
         float bl_phase = atan2f(fl_im + sl_im, fl_re + sl_re);
@@ -1129,8 +1162,10 @@ static void filter_5_1_back(AVFilterContext *ctx)
         float br_phase = atan2f(br_im, br_re);
         float phase_difl = fabsf(fl_phase - bl_phase);
         float phase_difr = fabsf(fr_phase - br_phase);
-        float mag_difl = (fl_mag - bl_mag) / (fl_mag + bl_mag);
-        float mag_difr = (fr_mag - br_mag) / (fr_mag + br_mag);
+        float magl_sum = fl_mag + bl_mag;
+        float magr_sum = fr_mag + br_mag;
+        float mag_difl = magl_sum < 0.000001 ? 0.f : (fl_mag - bl_mag) / magl_sum;
+        float mag_difr = magr_sum < 0.000001 ? 0.f : (fr_mag - br_mag) / magr_sum;
         float mag_totall = hypotf(fl_mag, bl_mag);
         float mag_totalr = hypotf(fr_mag, br_mag);
         float sl_phase = atan2f(fl_im + bl_im, fl_re + bl_re);
@@ -1288,10 +1323,20 @@ fail:
     if (!s->window_func_lut)
         return AVERROR(ENOMEM);
 
+    generate_window_func(s->window_func_lut, s->buf_size, s->win_func, &overlap);
+    if (s->overlap == 1)
+        s->overlap = overlap;
+
     for (i = 0; i < s->buf_size; i++)
-        s->window_func_lut[i] = sqrtf(0.5 * (1 - cosf(2 * M_PI * i / s->buf_size)) / s->buf_size);
-    overlap = .5;
-    s->hop_size = s->buf_size * (1. - overlap);
+        s->window_func_lut[i] = sqrtf(s->window_func_lut[i] / s->buf_size);
+    s->hop_size = s->buf_size * (1. - s->overlap);
+    if (s->hop_size <= 0)
+        return AVERROR(EINVAL);
+
+    if (s->all_x >= 0.f)
+        s->fc_x = s->fl_x = s->fr_x = s->bc_x = s->sl_x = s->sr_x = s->bl_x = s->br_x = s->all_x;
+    if (s->all_y >= 0.f)
+        s->fc_y = s->fl_y = s->fr_y = s->bc_y = s->sl_y = s->sr_y = s->bl_y = s->br_y = s->all_y;
 
     return 0;
 }
@@ -1445,10 +1490,54 @@ static const AVOption surround_options[] = {
     { "lfe",       "output LFE",                OFFSET(output_lfe),             AV_OPT_TYPE_BOOL,   {.i64=1},     0,   1, FLAGS },
     { "lfe_low",   "LFE low cut off",           OFFSET(lowcutf),                AV_OPT_TYPE_INT,    {.i64=128},   0, 256, FLAGS },
     { "lfe_high",  "LFE high cut off",          OFFSET(highcutf),               AV_OPT_TYPE_INT,    {.i64=256},   0, 512, FLAGS },
+    { "lfe_mode",  "set LFE channel mode",      OFFSET(lfe_mode),               AV_OPT_TYPE_INT,    {.i64=0},     0,   1, FLAGS, "lfe_mode" },
+    {  "add",      "just add LFE channel",                  0,                  AV_OPT_TYPE_CONST,  {.i64=0},     0,   1, FLAGS, "lfe_mode" },
+    {  "sub",      "substract LFE channel with others",     0,                  AV_OPT_TYPE_CONST,  {.i64=1},     0,   1, FLAGS, "lfe_mode" },
     { "fc_in",     "set front center channel input level",  OFFSET(fc_in),      AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  10, FLAGS },
     { "fc_out",    "set front center channel output level", OFFSET(fc_out),     AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  10, FLAGS },
     { "lfe_in",    "set lfe channel input level",  OFFSET(lfe_in),              AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  10, FLAGS },
     { "lfe_out",   "set lfe channel output level", OFFSET(lfe_out),             AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  10, FLAGS },
+    { "allx",      "set all channel's x spread",         OFFSET(all_x),         AV_OPT_TYPE_FLOAT,  {.dbl=-1},   -1,  15, FLAGS },
+    { "ally",      "set all channel's y spread",         OFFSET(all_y),         AV_OPT_TYPE_FLOAT,  {.dbl=-1},   -1,  15, FLAGS },
+    { "fcx",       "set front center channel x spread",  OFFSET(fc_x),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "flx",       "set front left channel x spread",    OFFSET(fl_x),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "frx",       "set front right channel x spread",   OFFSET(fr_x),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "blx",       "set back left channel x spread",     OFFSET(bl_x),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "brx",       "set back right channel x spread",    OFFSET(br_x),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "slx",       "set side left channel x spread",     OFFSET(sl_x),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "srx",       "set side right channel x spread",    OFFSET(sr_x),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "bcx",       "set back center channel x spread",   OFFSET(bc_x),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "fcy",       "set front center channel y spread",  OFFSET(fc_y),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "fly",       "set front left channel y spread",    OFFSET(fl_y),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "fry",       "set front right channel y spread",   OFFSET(fr_y),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "bly",       "set back left channel y spread",     OFFSET(bl_y),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "bry",       "set back right channel y spread",    OFFSET(br_y),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "sly",       "set side left channel y spread",     OFFSET(sl_y),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "sry",       "set side right channel y spread",    OFFSET(sr_y),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "bcy",       "set back center channel y spread",   OFFSET(bc_y),          AV_OPT_TYPE_FLOAT,  {.dbl=1},     0,  15, FLAGS },
+    { "win_func", "set window function", OFFSET(win_func), AV_OPT_TYPE_INT, {.i64 = WFUNC_HANNING}, 0, NB_WFUNC-1, FLAGS, "win_func" },
+        { "rect",     "Rectangular",      0, AV_OPT_TYPE_CONST, {.i64=WFUNC_RECT},     0, 0, FLAGS, "win_func" },
+        { "bartlett", "Bartlett",         0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BARTLETT}, 0, 0, FLAGS, "win_func" },
+        { "hann",     "Hann",             0, AV_OPT_TYPE_CONST, {.i64=WFUNC_HANNING},  0, 0, FLAGS, "win_func" },
+        { "hanning",  "Hanning",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_HANNING},  0, 0, FLAGS, "win_func" },
+        { "hamming",  "Hamming",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_HAMMING},  0, 0, FLAGS, "win_func" },
+        { "blackman", "Blackman",         0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BLACKMAN}, 0, 0, FLAGS, "win_func" },
+        { "welch",    "Welch",            0, AV_OPT_TYPE_CONST, {.i64=WFUNC_WELCH},    0, 0, FLAGS, "win_func" },
+        { "flattop",  "Flat-top",         0, AV_OPT_TYPE_CONST, {.i64=WFUNC_FLATTOP},  0, 0, FLAGS, "win_func" },
+        { "bharris",  "Blackman-Harris",  0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BHARRIS},  0, 0, FLAGS, "win_func" },
+        { "bnuttall", "Blackman-Nuttall", 0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BNUTTALL}, 0, 0, FLAGS, "win_func" },
+        { "bhann",    "Bartlett-Hann",    0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BHANN},    0, 0, FLAGS, "win_func" },
+        { "sine",     "Sine",             0, AV_OPT_TYPE_CONST, {.i64=WFUNC_SINE},     0, 0, FLAGS, "win_func" },
+        { "nuttall",  "Nuttall",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_NUTTALL},  0, 0, FLAGS, "win_func" },
+        { "lanczos",  "Lanczos",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_LANCZOS},  0, 0, FLAGS, "win_func" },
+        { "gauss",    "Gauss",            0, AV_OPT_TYPE_CONST, {.i64=WFUNC_GAUSS},    0, 0, FLAGS, "win_func" },
+        { "tukey",    "Tukey",            0, AV_OPT_TYPE_CONST, {.i64=WFUNC_TUKEY},    0, 0, FLAGS, "win_func" },
+        { "dolph",    "Dolph-Chebyshev",  0, AV_OPT_TYPE_CONST, {.i64=WFUNC_DOLPH},    0, 0, FLAGS, "win_func" },
+        { "cauchy",   "Cauchy",           0, AV_OPT_TYPE_CONST, {.i64=WFUNC_CAUCHY},   0, 0, FLAGS, "win_func" },
+        { "parzen",   "Parzen",           0, AV_OPT_TYPE_CONST, {.i64=WFUNC_PARZEN},   0, 0, FLAGS, "win_func" },
+        { "poisson",  "Poisson",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_POISSON},  0, 0, FLAGS, "win_func" },
+        { "bohman",   "Bohman",           0, AV_OPT_TYPE_CONST, {.i64=WFUNC_BOHMAN},   0, 0, FLAGS, "win_func" },
+    { "overlap", "set window overlap", OFFSET(overlap), AV_OPT_TYPE_FLOAT, {.dbl=0.5}, 0, 1, FLAGS },
     { NULL }
 };
 

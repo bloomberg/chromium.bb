@@ -1397,8 +1397,8 @@ static void compute_pkt_fields(AVFormatContext *s, AVStream *st,
         st->cur_dts = pkt->dts;
 
     if (s->debug & FF_FDEBUG_TS)
-        av_log(s, AV_LOG_DEBUG, "OUTdelayed:%d/%d pts:%s, dts:%s cur_dts:%s\n",
-            presentation_delayed, delay, av_ts2str(pkt->pts), av_ts2str(pkt->dts), av_ts2str(st->cur_dts));
+        av_log(s, AV_LOG_DEBUG, "OUTdelayed:%d/%d pts:%s, dts:%s cur_dts:%s st:%d (%d)\n",
+            presentation_delayed, delay, av_ts2str(pkt->pts), av_ts2str(pkt->dts), av_ts2str(st->cur_dts), st->index, st->id);
 
     /* update flags */
     if (st->codecpar->codec_type == AVMEDIA_TYPE_DATA || is_intra_only(st->codecpar->codec_id))
@@ -4725,7 +4725,7 @@ void av_url_split(char *proto, int proto_size,
                   char *hostname, int hostname_size,
                   int *port_ptr, char *path, int path_size, const char *url)
 {
-    const char *p, *ls, *ls2, *at, *at2, *col, *brk;
+    const char *p, *ls, *ls2, *ls3, *at, *at2, *col, *brk;
 
     if (port_ptr)
         *port_ptr = -1;
@@ -4755,6 +4755,9 @@ void av_url_split(char *proto, int proto_size,
     /* separate path from hostname */
     ls = strchr(p, '/');
     ls2 = strchr(p, '?');
+    ls3 = strchr(p, '@');
+    if (ls3 && ls3 > ls && (!ls2 || ls2 > ls3))
+        ls = strchr(ls3, '/');
     if (!ls)
         ls = ls2;
     else if (ls && ls2)

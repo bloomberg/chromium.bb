@@ -47,6 +47,7 @@ retry:
         pnmctx.bytestream       = (uint8_t *) buf + skip; /* casts avoid warnings */
         pnmctx.bytestream_end   = (uint8_t *) buf + buf_size - skip;
     }
+    next = END_NOT_FOUND;
     if (ff_pnm_decode_header(avctx, &pnmctx) < 0) {
         if (pnmctx.bytestream < pnmctx.bytestream_end) {
             if (pc->index) {
@@ -58,17 +59,28 @@ retry:
             }
             goto retry;
         }
-        next = END_NOT_FOUND;
     } else if (pnmctx.type < 4) {
-        next = END_NOT_FOUND;
+              uint8_t *bs  = pnmctx.bytestream;
+        const uint8_t *end = pnmctx.bytestream_end;
+
+        while (bs < end) {
+            int c = *bs++;
+            if (c == '#')  {
+                while (c != '\n' && bs < end)
+                    c = *bs++;
+            } else if (c == 'P') {
+                next = bs - pnmctx.bytestream_start + skip - 1;
+                break;
+            }
+        }
     } else {
         next = pnmctx.bytestream - pnmctx.bytestream_start + skip
                + av_image_get_buffer_size(avctx->pix_fmt, avctx->width, avctx->height, 1);
-        if (pnmctx.bytestream_start != buf + skip)
-            next -= pc->index;
-        if (next > buf_size)
-            next = END_NOT_FOUND;
     }
+    if (next != END_NOT_FOUND && pnmctx.bytestream_start != buf + skip)
+        next -= pc->index;
+    if (next > buf_size)
+        next = END_NOT_FOUND;
 
     if (ff_combine_frame(pc, next, &buf, &buf_size) < 0) {
         *poutbuf      = NULL;

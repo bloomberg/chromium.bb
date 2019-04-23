@@ -658,7 +658,7 @@ static int open_url(AVFormatContext *s, AVIOContext **pb, const char *url,
         } else if (ret < 0) {
             if (ret != AVERROR_EOF)
                 av_log(s, AV_LOG_WARNING,
-                    "keepalive request failed for '%s', retrying with new connection: %s\n",
+                    "keepalive request failed for '%s' when opening url, retrying with new connection: %s\n",
                     url, av_err2str(ret));
             ret = s->io_open(s, pb, url, AVIO_FLAG_READ, &tmp);
         }
@@ -715,7 +715,7 @@ static int parse_playlist(HLSContext *c, const char *url,
         } else if (ret < 0) {
             if (ret != AVERROR_EOF)
                 av_log(c->ctx, AV_LOG_WARNING,
-                    "keepalive request failed for '%s', retrying with new connection: %s\n",
+                    "keepalive request failed for '%s' when parsing playlist, retrying with new connection: %s\n",
                     url, av_err2str(ret));
             in = NULL;
         }
@@ -2318,14 +2318,14 @@ static const AVOption hls_options[] = {
 };
 
 static const AVClass hls_class = {
-    .class_name = "hls,applehttp",
+    .class_name = "hls demuxer",
     .item_name  = av_default_item_name,
     .option     = hls_options,
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
 AVInputFormat ff_hls_demuxer = {
-    .name           = "hls,applehttp",
+    .name           = "hls",
     .long_name      = NULL_IF_CONFIG_SMALL("Apple HTTP Live Streaming"),
     .priv_class     = &hls_class,
     .priv_data_size = sizeof(HLSContext),

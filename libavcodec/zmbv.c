@@ -303,7 +303,7 @@ static int zmbv_decode_xor_24(ZmbvContext *c)
         prev += stride * c->bh;
     }
     if (src - c->decomp_buf != c->decomp_len)
-        av_log(c->avctx, AV_LOG_ERROR, "Used %i of %i bytes\n",
+        av_log(c->avctx, AV_LOG_ERROR, "Used %"PTRDIFF_SPECIFIER" of %i bytes\n",
                src-c->decomp_buf, c->decomp_len);
     return 0;
 }
@@ -473,7 +473,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame, AVPac
             c->bpp = 24;
             decode_intra = zmbv_decode_intra;
             c->decode_xor = zmbv_decode_xor_24;
-            avctx->pix_fmt = AV_PIX_FMT_RGB24;
+            avctx->pix_fmt = AV_PIX_FMT_BGR24;
             c->stride = c->width * 3;
             break;
 #endif //ZMBV_ENABLE_24BPP
