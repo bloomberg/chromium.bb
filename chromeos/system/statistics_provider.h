@@ -42,6 +42,12 @@ COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kDevSwitchBootValueDev[];
 COMPONENT_EXPORT(CHROMEOS_SYSTEM)
 extern const char kDevSwitchBootValueVerified[];
 
+// Dock MAC address key.
+COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kDockMacAddressKey[];
+
+// Ethernet MAC address key.
+COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kEthernetMacAddressKey[];
+
 // Firmware write protect switch value.
 COMPONENT_EXPORT(CHROMEOS_SYSTEM)
 extern const char kFirmwareWriteProtectBootKey[];
@@ -70,6 +76,9 @@ COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kHardwareClassKey[];
 COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kIsVmKey[];
 COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kIsVmValueFalse[];
 COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kIsVmValueTrue[];
+
+// Manufacture date key.
+COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kManufactureDateKey[];
 
 // OEM customization flag that permits exiting enterprise enrollment flow in
 // OOBE when 'oem_enterprise_managed' flag is set.

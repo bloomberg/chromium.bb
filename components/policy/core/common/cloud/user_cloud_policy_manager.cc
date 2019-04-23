@@ -78,7 +78,9 @@ UserCloudPolicyManager::CreateCloudPolicyClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   return std::make_unique<CloudPolicyClient>(
       std::string() /* machine_id */, std::string() /* machine_model */,
-      std::string() /* brand_code */, device_management_service,
+      std::string() /* brand_code */, std::string() /* ethernet_mac_address */,
+      std::string() /* dock_mac_address */,
+      std::string() /* manufacture_date */, device_management_service,
       std::move(url_loader_factory), nullptr /* signing_service */,
       CloudPolicyClient::DeviceDMTokenCallback());
 }
