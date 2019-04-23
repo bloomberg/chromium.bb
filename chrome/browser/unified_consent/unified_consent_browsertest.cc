@@ -118,8 +118,9 @@ IN_PROC_BROWSER_TEST_F(
       "UnifiedConsent.SyncAndGoogleServicesSettings", 1);
 }
 
+// Flakes on all platforms. http://crbug.com/954167
 IN_PROC_BROWSER_TEST_F(UnifiedConsentBrowserTest,
-                       SettingsOptInTakeOverServicePrefChanges) {
+                       DISABLED_SettingsOptInTakeOverServicePrefChanges) {
   std::string pref_A = prefs::kSearchSuggestEnabled;
   std::string pref_B = prefs::kAlternateErrorPagesEnabled;
 
