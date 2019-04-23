@@ -29,7 +29,7 @@ namespace scheduler {
   "RendererScheduler.TaskDurationPerTaskType2"
 #define COUNT_PER_FRAME_METRIC_NAME "RendererScheduler.TaskCountPerFrameType"
 #define COUNT_PER_FRAME_METRIC_NAME_WITH_SAFEPOINT \
-  "RendererScheduler.TaskCountPerFrameType.HasSafepoint"
+  "RendererScheduler.TaskCountPerFrameType.HasSafePoint"
 #define DURATION_PER_TASK_USE_CASE_NAME \
   "RendererScheduler.TaskDurationPerUseCase2"
 
