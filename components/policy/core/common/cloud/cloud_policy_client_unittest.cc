@@ -46,6 +46,9 @@ const char kClientID[] = "fake-client-id";
 const char kMachineID[] = "fake-machine-id";
 const char kMachineModel[] = "fake-machine-model";
 const char kBrandCode[] = "fake-brand-code";
+const char kEthernetMacAddress[] = "fake-ethernet-mac-address";
+const char kDockMacAddress[] = "fake-dock-mac-address";
+const char kManufactureDate[] = "fake-manufacture-date";
 const char kOAuthToken[] = "fake-oauth-token";
 const char kDMToken[] = "fake-dm-token";
 const char kDMToken2[] = "fake-dm-token-2";
@@ -125,6 +128,9 @@ class CloudPolicyClientTest : public testing::Test {
     register_request->set_machine_id(kMachineID);
     register_request->set_machine_model(kMachineModel);
     register_request->set_brand_code(kBrandCode);
+    register_request->set_ethernet_mac_address(kEthernetMacAddress);
+    register_request->set_dock_mac_address(kDockMacAddress);
+    register_request->set_manufacture_date(kManufactureDate);
     register_request->set_lifetime(
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE);
     register_request->set_flavor(
@@ -136,6 +142,9 @@ class CloudPolicyClientTest : public testing::Test {
     reregister_request->set_machine_id(kMachineID);
     reregister_request->set_machine_model(kMachineModel);
     reregister_request->set_brand_code(kBrandCode);
+    reregister_request->set_ethernet_mac_address(kEthernetMacAddress);
+    reregister_request->set_dock_mac_address(kDockMacAddress);
+    reregister_request->set_manufacture_date(kManufactureDate);
     reregister_request->set_lifetime(
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE);
     reregister_request->set_flavor(
@@ -153,6 +162,9 @@ class CloudPolicyClientTest : public testing::Test {
     request->set_machine_id(kMachineID);
     request->set_machine_model(kMachineModel);
     request->set_brand_code(kBrandCode);
+    request->set_ethernet_mac_address(kEthernetMacAddress);
+    request->set_dock_mac_address(kDockMacAddress);
+    request->set_manufacture_date(kManufactureDate);
     request->set_lifetime(em::DeviceRegisterRequest::LIFETIME_INDEFINITE);
     request->set_flavor(
         em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_ATTESTATION);
@@ -306,7 +318,8 @@ class CloudPolicyClientTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
     client_ = std::make_unique<CloudPolicyClient>(
-        kMachineID, kMachineModel, kBrandCode, &service_,
+        kMachineID, kMachineModel, kBrandCode, kEthernetMacAddress,
+        kDockMacAddress, kManufactureDate, &service_,
         shared_url_loader_factory_, &fake_signing_service_,
         base::BindRepeating(
             &MockDeviceDMTokenCallbackObserver::OnDeviceDMTokenRequested,

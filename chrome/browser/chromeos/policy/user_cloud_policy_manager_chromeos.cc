@@ -227,7 +227,10 @@ void UserCloudPolicyManagerChromeOS::Connect(
   std::unique_ptr<CloudPolicyClient> cloud_policy_client =
       std::make_unique<CloudPolicyClient>(
           std::string() /* machine_id */, std::string() /* machine_model */,
-          std::string() /* brand_code */, device_management_service,
+          std::string() /* brand_code */,
+          std::string() /* ethernet_mac_address */,
+          std::string() /* dock_mac_address */,
+          std::string() /* manufacture_date */, device_management_service,
           system_url_loader_factory, nullptr /* signing_service */,
           chromeos::GetDeviceDMTokenForUserPolicyGetter(account_id_));
   CreateComponentCloudPolicyService(
