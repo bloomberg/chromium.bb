@@ -67,13 +67,6 @@ bool ConvertAnimationEffects(
     }
   }
 
-  Document& target_document = keyframe_effects.at(0)->target()->GetDocument();
-  for (const auto& effect : keyframe_effects) {
-    if (effect->target()->GetDocument() != target_document) {
-      error_string = "All effects must target elements in the same document";
-      return false;
-    }
-  }
   return true;
 }
 
