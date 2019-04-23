@@ -415,7 +415,7 @@ base::string16 ResourceBundle::MaybeMangleLocalizedString(
   if (!mangle_localized_strings_)
     return str;
 
-  // IDS_DEFAULT_FONT_SIZE and friends are localization "strings" that are
+  // IDS_MINIMUM_FONT_SIZE and friends are localization "strings" that are
   // actually integral constants. These should not be mangled or they become
   // impossible to parse.
   int ignored;

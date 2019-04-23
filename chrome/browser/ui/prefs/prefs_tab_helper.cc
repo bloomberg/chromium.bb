@@ -411,10 +411,8 @@ void PrefsTabHelper::RegisterProfilePrefs(
 #if !defined(OS_ANDROID)
   RegisterFontFamilyPrefs(registry, fonts_with_defaults);
 
-  RegisterLocalizedFontPref(registry, prefs::kWebKitDefaultFontSize,
-                            IDS_DEFAULT_FONT_SIZE);
-  RegisterLocalizedFontPref(registry, prefs::kWebKitDefaultFixedFontSize,
-                            IDS_DEFAULT_FIXED_FONT_SIZE);
+  registry->RegisterIntegerPref(prefs::kWebKitDefaultFontSize, 16);
+  registry->RegisterIntegerPref(prefs::kWebKitDefaultFixedFontSize, 13);
   RegisterLocalizedFontPref(registry, prefs::kWebKitMinimumFontSize,
                             IDS_MINIMUM_FONT_SIZE);
   RegisterLocalizedFontPref(registry, prefs::kWebKitMinimumLogicalFontSize,
