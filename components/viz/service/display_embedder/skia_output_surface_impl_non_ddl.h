@@ -104,7 +104,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
       ResourceFormat format,
       bool mipmap,
       sk_sp<SkColorSpace> color_space) override;
-  void ReleaseCachedPromiseSkImages(std::vector<ResourceId> ids) override;
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
   void CopyOutput(RenderPassId id,
                   const copy_output::RenderPassGeometry& geometry,
@@ -112,6 +111,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
                   std::unique_ptr<CopyOutputRequest> request) override;
   void AddContextLostObserver(ContextLostObserver* observer) override;
   void RemoveContextLostObserver(ContextLostObserver* observer) override;
+
+  // ExternalUseClient implementation:
+  void ReleaseCachedResources(const std::vector<ResourceId>& ids) override;
 
  private:
   GrContext* gr_context() { return shared_context_state_->gr_context(); }

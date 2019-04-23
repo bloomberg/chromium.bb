@@ -446,6 +446,13 @@ INSTANTIATE_TEST_SUITE_P(DisplayResourceProviderTests,
                          DisplayResourceProviderTest,
                          ::testing::Values(false, true));
 
+class MockExternalUseClient : public ExternalUseClient {
+ public:
+  MockExternalUseClient() = default;
+  MOCK_METHOD1(ReleaseCachedResources,
+               void(const std::vector<ResourceId>& resource_ids));
+};
+
 TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
   // TODO(penghuang): consider supporting SW mode.
   if (!use_gpu())
@@ -479,13 +486,17 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
 
   unsigned parent_id = resource_map[list.front().id];
 
+  testing::StrictMock<MockExternalUseClient> client;
   DisplayResourceProvider::LockSetForExternalUse lock_set(
-      resource_provider_.get(), /*client=*/nullptr);
+      resource_provider_.get(), &client);
 
   ResourceMetadata metadata = lock_set.LockResource(parent_id);
   ASSERT_EQ(metadata.mailbox_holder.mailbox, mailbox);
   ASSERT_TRUE(metadata.mailbox_holder.sync_token.HasData());
 
+  // Expect the resource to be passed to ReleaseCachedResources when no longer
+  // used.
+  EXPECT_CALL(client, ReleaseCachedResources(testing::ElementsAre(parent_id)));
   resource_provider_->DeclareUsedResourcesFromChild(child_id, ResourceIdSet());
   // The resource should not be returned due to the external use lock.
   EXPECT_EQ(0u, returned_to_child.size());
@@ -494,8 +505,12 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
                              gpu::CommandBufferId::FromUnsafeValue(0x234),
                              0x456);
   sync_token2.SetVerifyFlush();
+
+  // We will get a second release of |parent_id| now that we've released our
+  // external lock.
+  EXPECT_CALL(client, ReleaseCachedResources(testing::ElementsAre(parent_id)));
+  // UnlockResources will also call DeclareUsedResourcesFromChild.
   lock_set.UnlockResources(sync_token2);
-  resource_provider_->DeclareUsedResourcesFromChild(child_id, ResourceIdSet());
   // The resource should be returned after the lock is released.
   EXPECT_EQ(1u, returned_to_child.size());
   EXPECT_EQ(sync_token2, returned_to_child[0].sync_token);

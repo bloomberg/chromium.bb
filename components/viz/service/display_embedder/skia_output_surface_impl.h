@@ -96,7 +96,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       ResourceFormat format,
       bool mipmap,
       sk_sp<SkColorSpace> color_space) override;
-  void ReleaseCachedPromiseSkImages(std::vector<ResourceId> ids) override;
 
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
   void CopyOutput(RenderPassId id,
@@ -105,6 +104,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                   std::unique_ptr<CopyOutputRequest> request) override;
   void AddContextLostObserver(ContextLostObserver* observer) override;
   void RemoveContextLostObserver(ContextLostObserver* observer) override;
+
+  // ExternalUseClient implementation:
+  void ReleaseCachedResources(const std::vector<ResourceId>& ids) override;
 
  protected:
   // Set the fields of |capabilities_| and propagates to |impl_on_gpu_|. Should

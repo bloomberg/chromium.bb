@@ -344,8 +344,8 @@ sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakePromiseSkImageFromYUV(
       kTopLeft_GrSurfaceOrigin, dst_color_space);
 }
 
-void SkiaOutputSurfaceImplNonDDL::ReleaseCachedPromiseSkImages(
-    std::vector<ResourceId> ids) {
+void SkiaOutputSurfaceImplNonDDL::ReleaseCachedResources(
+    const std::vector<ResourceId>& ids) {
   if (ids.empty())
     return;
   DCHECK_EQ(order_num_, 0u);
@@ -353,7 +353,8 @@ void SkiaOutputSurfaceImplNonDDL::ReleaseCachedPromiseSkImages(
   sync_point_order_data_->BeginProcessingOrderNumber(order_num_);
   for (auto id : ids) {
     auto it = promise_image_cache_.find(id);
-    DCHECK(it != promise_image_cache_.end());
+    if (it == promise_image_cache_.end())
+      continue;
     it->second->image = nullptr;
     promise_image_cache_.erase(it);
   }

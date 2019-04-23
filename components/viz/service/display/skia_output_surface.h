@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "components/viz/common/resources/resource_format.h"
+#include "components/viz/service/display/external_use_client.h"
 #include "components/viz/service/display/output_surface.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
@@ -33,7 +34,8 @@ struct RenderPassGeometry;
 // SkiaRenderer will be the only renderer. When other renderers are removed,
 // we will replace OutputSurface with SkiaOutputSurface, and remove all
 // OutputSurface's methods which are not useful for SkiaRenderer.
-class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
+class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
+                                             public ExternalUseClient {
  public:
   SkiaOutputSurface();
   ~SkiaOutputSurface() override;
@@ -67,11 +69,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface {
       SkYUVColorSpace yuv_color_space,
       sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) = 0;
-
-  // Release SkImages created by MakePromiseSkImage on the thread on which
-  // it was fulfilled. SyncToken represents point after which SkImage is
-  // released.
-  virtual void ReleaseCachedPromiseSkImages(std::vector<ResourceId> ids) = 0;
 
   // Swaps the current backbuffer to the screen.
   virtual void SkiaSwapBuffers(OutputSurfaceFrame frame) = 0;

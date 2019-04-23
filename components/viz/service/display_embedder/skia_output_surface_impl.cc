@@ -400,14 +400,15 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
   return image;
 }
 
-void SkiaOutputSurfaceImpl::ReleaseCachedPromiseSkImages(
-    std::vector<ResourceId> ids) {
+void SkiaOutputSurfaceImpl::ReleaseCachedResources(
+    const std::vector<ResourceId>& ids) {
   if (ids.empty())
     return;
   std::vector<std::unique_ptr<ImageContext>> image_contexts;
   for (auto id : ids) {
     auto it = promise_image_cache_.find(id);
-    DCHECK(it != promise_image_cache_.end());
+    if (it == promise_image_cache_.end())
+      continue;
     auto& image_context = it->second;
     image_context->image = nullptr;
     image_contexts.push_back(std::move(image_context));

@@ -35,6 +35,7 @@ viz_component("service") {
     "display/draw_polygon.h",
     "display/dynamic_geometry_binding.cc",
     "display/dynamic_geometry_binding.h",
+    "display/external_use_client.h",
     "display/frame_rate_decider.cc",
     "display/frame_rate_decider.h",
     "display/geometry_binding.cc",
