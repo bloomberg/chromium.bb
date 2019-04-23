@@ -609,6 +609,10 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
     }
   }
 
+  // Inline boxes that produce DisplayItemClient should do full paint
+  // invalidations.
+  item->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+
   box.MoveOutOfFlowDescendantCandidatesToDescendants();
   return box.ToInlineBoxFragment();
 }

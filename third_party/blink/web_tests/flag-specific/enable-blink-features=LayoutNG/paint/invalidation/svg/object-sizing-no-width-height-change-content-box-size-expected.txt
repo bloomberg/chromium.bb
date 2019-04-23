@@ -23,14 +23,14 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutEmbeddedObject object",
-          "rect": [9, 9, 400, 400],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutSVGRoot svg",
           "rect": [9, 9, 400, 400],
           "reason": "paint property change"
+        },
+        {
+          "object": "LayoutEmbeddedObject object",
+          "rect": [209, 9, 200, 400],
+          "reason": "incremental"
         },
         {
           "object": "LayoutSVGRoot svg",

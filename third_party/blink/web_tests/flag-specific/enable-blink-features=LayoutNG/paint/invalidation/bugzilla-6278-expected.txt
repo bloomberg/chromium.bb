@@ -18,11 +18,6 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
-          "rect": [10, 138, 292, 160],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutNGBlockFlow DIV",
           "rect": [10, 303, 292, 50],
           "reason": "geometry"
@@ -68,11 +63,6 @@
           "reason": "geometry"
         },
         {
-          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
-          "rect": [10, 138, 242, 200],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutNGBlockFlow DIV",
           "rect": [10, 343, 242, 50],
           "reason": "geometry"
@@ -80,6 +70,11 @@
         {
           "object": "LayoutNGTableCell TD id='col1'",
           "rect": [10, 353, 242, 40],
+          "reason": "incremental"
+        },
+        {
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
+          "rect": [10, 298, 242, 40],
           "reason": "incremental"
         },
         {
@@ -135,6 +130,11 @@
         {
           "object": "LayoutNGTableCell TD id='col1'",
           "rect": [252, 138, 50, 215],
+          "reason": "incremental"
+        },
+        {
+          "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV",
+          "rect": [252, 138, 50, 160],
           "reason": "incremental"
         }
       ]

@@ -267,14 +267,6 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
     // If the LayoutObject are the same, the new paint fragment should have the
     // same DisplayItemClient identity as the previous instance.
     if (previous_instance->GetLayoutObject() == fragment->GetLayoutObject()) {
-      // If our fragment has changed size or location, mark ourselves as
-      // requiring a full paint invalidation. We always require a full paint
-      // invalidation if we aren't a box, e.g. a text fragment.
-      if (previous_instance->physical_fragment_->Size() != fragment->Size() ||
-          previous_instance->offset_ != offset ||
-          fragment->Type() != NGPhysicalFragment::kFragmentBox)
-        previous_instance->SetShouldDoFullPaintInvalidation();
-
       previous_instance->physical_fragment_ = std::move(fragment);
       previous_instance->offset_ = offset;
       previous_instance->next_for_same_layout_object_ = nullptr;
@@ -287,7 +279,6 @@ scoped_refptr<NGPaintFragment> NGPaintFragment::CreateOrReuse(
 
   scoped_refptr<NGPaintFragment> new_instance =
       base::AdoptRef(new NGPaintFragment(std::move(fragment), offset, parent));
-  new_instance->SetShouldDoFullPaintInvalidation();
   return new_instance;
 }
 

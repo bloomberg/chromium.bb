@@ -193,11 +193,6 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutNGBlockFlow (floating) SPAN id='greenFloat'",
-          "rect": [372, 403, 48, 81],
-          "reason": "geometry"
-        },
-        {
           "object": "LayoutNGBlockFlow (floating) SPAN id='blueFloat'",
           "rect": [14, 363, 48, 65],
           "reason": "disappeared"

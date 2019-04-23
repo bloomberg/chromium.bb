@@ -164,8 +164,8 @@
         },
         {
           "object": "LayoutNGBlockFlow (floating) DIV id='pinkFloat'",
-          "rect": [378, 18, 70, 150],
-          "reason": "geometry"
+          "rect": [378, 138, 70, 30],
+          "reason": "incremental"
         },
         {
           "object": "NGPhysicalTextFragment 'the Queen'",

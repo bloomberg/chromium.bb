@@ -19,8 +19,8 @@
       "paintInvalidations": [
         {
           "object": "NGPhysicalBoxFragment LayoutNGBlockFlow DIV id='firstLine'",
-          "rect": [8, 8, 100, 200],
-          "reason": "geometry"
+          "rect": [8, 108, 100, 100],
+          "reason": "incremental"
         },
         {
           "object": "NGPhysicalTextFragment 'not run'",

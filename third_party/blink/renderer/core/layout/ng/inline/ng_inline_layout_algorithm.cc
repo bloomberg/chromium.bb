@@ -96,8 +96,10 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::HandleCloseTag(
     box->EnsureTextMetrics(*item.Style(), baseline_type_);
   box = box_states_->OnCloseTag(&line_box_, box, baseline_type_,
                                 item.HasEndEdge());
-  item.GetLayoutObject()->SetShouldDoFullPaintInvalidation();
-  ClearNeedsLayoutIfNeeded(item.GetLayoutObject());
+  // Just clear |NeedsLayout| flags. Culled inline boxes do not need paint
+  // invalidations. If this object produces box fragments,
+  // |NGInlineBoxStateStack| takes care of invalidations.
+  item.GetLayoutObject()->ClearNeedsLayoutWithoutPaintInvalidation();
   return box;
 }
 
@@ -239,7 +241,8 @@ void NGInlineLayoutAlgorithm::CreateLine(
       }
       line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
                          item_result.inline_size, item.BidiLevel());
-      ClearNeedsLayoutIfNeeded(item.GetLayoutObject());
+      // Text boxes always need full paint invalidations.
+      item.GetLayoutObject()->ClearNeedsLayoutWithFullPaintInvalidation();
     } else if (item.Type() == NGInlineItem::kControl) {
       PlaceControlItem(item, *line_info, &item_result, box);
     } else if (item.Type() == NGInlineItem::kOpenTag) {

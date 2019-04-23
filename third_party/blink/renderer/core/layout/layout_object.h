@@ -1231,7 +1231,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       LayoutInvalidationReasonForTracing,
       MarkingBehavior = kMarkContainerChain,
       SubtreeLayoutScope* = nullptr);
+
+  void ClearNeedsLayoutWithoutPaintInvalidation();
+  // |ClearNeedsLayout()| calls |SetShouldCheckForPaintInvalidation()|.
   void ClearNeedsLayout();
+  void ClearNeedsLayoutWithFullPaintInvalidation();
+
   void SetChildNeedsLayout(MarkingBehavior = kMarkContainerChain,
                            SubtreeLayoutScope* = nullptr);
   void SetNeedsPositionedMovementLayout();
@@ -3109,10 +3114,9 @@ inline void LayoutObject::SetNeedsLayoutAndFullPaintInvalidation(
   SetShouldDoFullPaintInvalidation();
 }
 
-inline void LayoutObject::ClearNeedsLayout() {
+inline void LayoutObject::ClearNeedsLayoutWithoutPaintInvalidation() {
   // Set flags for later stages/cycles.
   SetEverHadLayout();
-  SetShouldCheckForPaintInvalidation();
 
   // Clear needsLayout flags.
   SetSelfNeedsLayoutForStyle(false);
@@ -3128,6 +3132,16 @@ inline void LayoutObject::ClearNeedsLayout() {
 #endif
 
   SetScrollAnchorDisablingStyleChanged(false);
+}
+
+inline void LayoutObject::ClearNeedsLayout() {
+  ClearNeedsLayoutWithoutPaintInvalidation();
+  SetShouldCheckForPaintInvalidation();
+}
+
+inline void LayoutObject::ClearNeedsLayoutWithFullPaintInvalidation() {
+  ClearNeedsLayoutWithoutPaintInvalidation();
+  SetShouldDoFullPaintInvalidation();
 }
 
 inline void LayoutObject::SetChildNeedsLayout(MarkingBehavior mark_parents,
