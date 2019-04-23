@@ -447,7 +447,6 @@ Background.prototype = {
             return f.role == RoleType.EMBEDDED_OBJECT ||
                 f.role == RoleType.IFRAME;
           })
-          .reverse()
           .forEach((container) => {
             if (!container.state[StateType.FOCUSED])
               container.focus();
