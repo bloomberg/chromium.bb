@@ -132,10 +132,6 @@ class VIEWS_EXPORT MenuController
   // with the various parameters.
   void Cancel(ExitType type);
 
-  // An alternative to Cancel(ExitType::kAll) that can be used with a
-  // OneShotTimer.
-  void CancelAll() { Cancel(ExitType::kAll); }
-
   // When is_nested_run() this will add a delegate to the stack. The most recent
   // delegate will be notified. It will be removed upon the exiting of the
   // nested menu. Ownership is not taken.

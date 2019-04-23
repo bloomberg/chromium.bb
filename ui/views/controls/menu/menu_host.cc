@@ -231,7 +231,7 @@ void MenuHost::OnMouseCaptureLost() {
   MenuController* menu_controller =
       submenu_->GetMenuItem()->GetMenuController();
   if (menu_controller && !menu_controller->drag_in_progress())
-    menu_controller->CancelAll();
+    menu_controller->Cancel(MenuController::ExitType::kAll);
   Widget::OnMouseCaptureLost();
 }
 
@@ -252,7 +252,7 @@ void MenuHost::OnOwnerClosing() {
   MenuController* menu_controller =
       submenu_->GetMenuItem()->GetMenuController();
   if (menu_controller && !menu_controller->drag_in_progress())
-    menu_controller->CancelAll();
+    menu_controller->Cancel(MenuController::ExitType::kAll);
 }
 
 void MenuHost::OnDragWillStart() {

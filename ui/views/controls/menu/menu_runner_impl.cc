@@ -96,7 +96,7 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
   if (controller) {
     if ((run_types & MenuRunner::IS_NESTED) != 0) {
       if (controller->for_drop()) {
-        controller->CancelAll();
+        controller->Cancel(MenuController::ExitType::kAll);
         controller = nullptr;
       } else {
         // Only nest the delegate when not cancelling drag-and-drop. When
@@ -106,7 +106,7 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
       }
     } else {
       // There's some other menu open and we're not nested. Cancel the menu.
-      controller->CancelAll();
+      controller->Cancel(MenuController::ExitType::kAll);
       if ((run_types & MenuRunner::FOR_DROP) == 0) {
         // We can't open another menu, otherwise the message loop would become
         // twice nested. This isn't necessarily a problem, but generally isn't

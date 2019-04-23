@@ -474,8 +474,8 @@ void MenuController::Run(Widget* parent,
   }
 
 #if defined(OS_MACOSX)
-  menu_cocoa_watcher_ = std::make_unique<MenuCocoaWatcherMac>(
-      base::BindOnce(&MenuController::CancelAll, base::Unretained(this)));
+  menu_cocoa_watcher_ = std::make_unique<MenuCocoaWatcherMac>(base::BindOnce(
+      &MenuController::Cancel, base::Unretained(this), ExitType::kAll));
 #endif
 
   // Reset current state.
@@ -1188,7 +1188,7 @@ ui::PostDispatchAction MenuController::OnWillDispatchKeyEvent(
     return ui::POST_DISPATCH_NONE;
   }
   if (result == ViewsDelegate::ProcessMenuAcceleratorResult::CLOSE_MENU) {
-    CancelAll();
+    Cancel(ExitType::kAll);
     event->StopPropagation();
     return ui::POST_DISPATCH_NONE;
   }
@@ -2121,9 +2121,10 @@ void MenuController::StopShowTimer() {
 }
 
 void MenuController::StartCancelAllTimer() {
-  cancel_all_timer_.Start(FROM_HERE,
-                          TimeDelta::FromMilliseconds(kCloseOnExitTime), this,
-                          &MenuController::CancelAll);
+  cancel_all_timer_.Start(
+      FROM_HERE, TimeDelta::FromMilliseconds(kCloseOnExitTime),
+      base::BindOnce(&MenuController::Cancel, base::Unretained(this),
+                     ExitType::kAll));
 }
 
 void MenuController::StopCancelAllTimer() {

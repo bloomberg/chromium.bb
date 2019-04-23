@@ -704,7 +704,7 @@ class BookmarkBarViewTest3 : public BookmarkBarViewEventTestBase {
     EXPECT_EQ(GURL(), navigator_.last_url());
 
     // Hide menu.
-    menu->GetMenuController()->CancelAll();
+    menu->GetMenuController()->Cancel(views::MenuController::ExitType::kAll);
 
     Done();
   }
@@ -1018,7 +1018,8 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
     ASSERT_NE(start_y_, menu_loc.y());
 
     // Hide menu.
-    bb_view_->GetMenu()->GetMenuController()->CancelAll();
+    bb_view_->GetMenu()->GetMenuController()->Cancel(
+        views::MenuController::ExitType::kAll);
 
     // On linux, Cancelling menu will call Quit on the message loop,
     // which can interfere with Done. We need to run Done in the
@@ -1507,7 +1508,8 @@ class BookmarkBarViewTest15 : public BookmarkBarViewEventTestBase {
     // And the deleted_menu_id_ should have been removed.
     ASSERT_TRUE(menu->GetMenuItemByID(deleted_menu_id_) == NULL);
 
-    bb_view_->GetMenu()->GetMenuController()->CancelAll();
+    bb_view_->GetMenu()->GetMenuController()->Cancel(
+        views::MenuController::ExitType::kAll);
 
     Done();
   }
@@ -1625,7 +1627,8 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu != NULL);
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
-    bb_view_->GetMenu()->GetMenuController()->CancelAll();
+    bb_view_->GetMenu()->GetMenuController()->Cancel(
+        views::MenuController::ExitType::kAll);
 
     Done();
   }
@@ -1681,7 +1684,7 @@ class BookmarkBarViewTest18 : public BookmarkBarViewEventTestBase {
     EXPECT_EQ(views::Button::STATE_NORMAL,
               bb_view_->other_bookmarks_button()->state());
 
-    menu->GetMenuController()->CancelAll();
+    menu->GetMenuController()->Cancel(views::MenuController::ExitType::kAll);
 
     Done();
   }
@@ -1755,7 +1758,7 @@ class BookmarkBarViewTest19 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(menu != NULL);
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
-    menu->GetMenuController()->CancelAll();
+    menu->GetMenuController()->Cancel(views::MenuController::ExitType::kAll);
 
     Done();
   }

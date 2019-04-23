@@ -258,7 +258,7 @@ class CancelMenuOnMousePressView : public View {
 
   // View:
   bool OnMousePressed(const ui::MouseEvent& event) override {
-    controller_->CancelAll();
+    controller_->Cancel(MenuController::ExitType::kAll);
     return true;
   }
 
@@ -429,7 +429,7 @@ class MenuControllerTest : public ViewsTestBase {
 
   // Tests that the menu does not destroy itself when canceled during a drag.
   void TestCancelAllDuringDrag() {
-    menu_controller_->CancelAll();
+    menu_controller_->Cancel(MenuController::ExitType::kAll);
     EXPECT_EQ(0, menu_controller_delegate_->on_menu_closed_called());
   }
 
@@ -1243,7 +1243,7 @@ TEST_F(MenuControllerTest, AsynchronousCancelAll) {
   TestMenuControllerDelegate* delegate = menu_controller_delegate();
   EXPECT_EQ(0, delegate->on_menu_closed_called());
 
-  controller->CancelAll();
+  controller->Cancel(MenuController::ExitType::kAll);
   EXPECT_EQ(1, delegate->on_menu_closed_called());
   EXPECT_EQ(nullptr, delegate->on_menu_closed_menu());
   EXPECT_EQ(0, delegate->on_menu_closed_mouse_event_flags());
@@ -1266,7 +1266,7 @@ TEST_F(MenuControllerTest, AsynchronousNestedDelegate) {
   controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
                   MenuAnchorPosition::kTopLeft, false, false);
 
-  controller->CancelAll();
+  controller->Cancel(MenuController::ExitType::kAll);
   EXPECT_EQ(delegate, GetCurrentDelegate());
   EXPECT_EQ(1, delegate->on_menu_closed_called());
   EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
@@ -1323,7 +1323,7 @@ TEST_F(MenuControllerTest, AsynchronousCancelDuringDrag) {
   TestDragCompleteThenDestroyOnMenuClosed();
 
   controller->OnDragWillStart();
-  controller->CancelAll();
+  controller->Cancel(MenuController::ExitType::kAll);
   controller->OnDragComplete(true);
 
   TestMenuControllerDelegate* controller_delegate = menu_controller_delegate();
@@ -1381,7 +1381,7 @@ TEST_F(MenuControllerTest, DoubleAsynchronousNested) {
   controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
                   MenuAnchorPosition::kTopLeft, false, false);
 
-  controller->CancelAll();
+  controller->Cancel(MenuController::ExitType::kAll);
   EXPECT_EQ(1, delegate->on_menu_closed_called());
   EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
 }

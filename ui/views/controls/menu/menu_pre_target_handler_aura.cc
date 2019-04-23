@@ -50,7 +50,7 @@ void MenuPreTargetHandlerAura::OnWindowActivated(
     aura::Window* gained_active,
     aura::Window* lost_active) {
   if (!controller_->drag_in_progress())
-    controller_->CancelAll();
+    controller_->Cancel(MenuController::ExitType::kAll);
 }
 
 void MenuPreTargetHandlerAura::OnWindowDestroying(aura::Window* window) {
@@ -58,7 +58,7 @@ void MenuPreTargetHandlerAura::OnWindowDestroying(aura::Window* window) {
 }
 
 void MenuPreTargetHandlerAura::OnCancelMode(ui::CancelModeEvent* event) {
-  controller_->CancelAll();
+  controller_->Cancel(MenuController::ExitType::kAll);
 }
 
 void MenuPreTargetHandlerAura::OnKeyEvent(ui::KeyEvent* event) {
