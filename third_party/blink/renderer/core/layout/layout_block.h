@@ -36,7 +36,7 @@ struct PaintInfo;
 class LineLayoutBox;
 class WordMeasurement;
 
-typedef WTF::ListHashSet<LayoutBox*> TrackedLayoutBoxListHashSet;
+typedef WTF::ListHashSet<LayoutBox*, 16> TrackedLayoutBoxListHashSet;
 typedef WTF::HashMap<const LayoutBlock*,
                      std::unique_ptr<TrackedLayoutBoxListHashSet>>
     TrackedDescendantsMap;
