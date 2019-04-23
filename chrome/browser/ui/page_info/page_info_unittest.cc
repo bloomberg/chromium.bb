@@ -44,6 +44,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/origin.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/android_theme_resources.h"
@@ -121,7 +122,7 @@ class MockPageInfoUI : public PageInfoUI {
 
 class PageInfoTest : public ChromeRenderViewHostTestHarness {
  public:
-  PageInfoTest() : url_("http://www.example.com") {}
+  PageInfoTest() { SetURL("http://www.example.com"); }
 
   ~PageInfoTest() override {}
 
@@ -156,7 +157,10 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
     EXPECT_CALL(*mock_ui, SetCookieInfo(_));
   }
 
-  void SetURL(const std::string& url) { url_ = GURL(url); }
+  void SetURL(const std::string& url) {
+    url_ = GURL(url);
+    origin_ = url::Origin::Create(url_);
+  }
 
   void SetPermissionInfo(const PermissionInfoList& permission_info_list,
                          ChosenObjectInfoList chosen_object_info_list) {
@@ -184,6 +188,7 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   }
 
   const GURL& url() const { return url_; }
+  const url::Origin& origin() const { return origin_; }
   scoped_refptr<net::X509Certificate> cert() { return cert_; }
   MockPageInfoUI* mock_ui() { return mock_ui_.get(); }
   security_state::SecurityLevel security_level() { return security_level_; }
@@ -221,6 +226,7 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<MockPageInfoUI> mock_ui_;
   scoped_refptr<net::X509Certificate> cert_;
   GURL url_;
+  url::Origin origin_;
   std::vector<std::unique_ptr<PageInfoUI::ChosenObjectInfo>>
       last_chosen_object_info_;
   PermissionInfoList last_permission_info_list_;
@@ -406,7 +412,7 @@ TEST_F(PageInfoTest, OnChosenObjectDeleted) {
 
   auto device_info = usb_device_manager.CreateAndAddDevice(
       0, 0, "Google", "Gizmo", "1234567890");
-  store->GrantDevicePermission(url(), url(), *device_info);
+  store->GrantDevicePermission(origin(), origin(), *device_info);
 
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
@@ -422,7 +428,7 @@ TEST_F(PageInfoTest, OnChosenObjectDeleted) {
   page_info()->OnSiteChosenObjectDeleted(info->ui_info,
                                          info->chooser_object->value);
 
-  EXPECT_FALSE(store->HasDevicePermission(url(), url(), *device_info));
+  EXPECT_FALSE(store->HasDevicePermission(origin(), origin(), *device_info));
   EXPECT_EQ(0u, last_chosen_object_info().size());
 }
 

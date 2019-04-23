@@ -30,9 +30,8 @@ WebUsbServiceImpl::WebUsbServiceImpl(
       content::WebContents::FromRenderFrameHost(render_frame_host_);
   // This class is destroyed on cross-origin navigations and so it is safe to
   // cache these values.
-  requesting_origin_ = render_frame_host_->GetLastCommittedURL().GetOrigin();
-  embedding_origin_ =
-      web_contents->GetMainFrame()->GetLastCommittedURL().GetOrigin();
+  requesting_origin_ = render_frame_host_->GetLastCommittedOrigin();
+  embedding_origin_ = web_contents->GetMainFrame()->GetLastCommittedOrigin();
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   chooser_context_ = UsbChooserContextFactory::GetForProfile(profile);
@@ -131,8 +130,8 @@ void WebUsbServiceImpl::SetClient(
 
 void WebUsbServiceImpl::OnPermissionRevoked(const GURL& requesting_origin,
                                             const GURL& embedding_origin) {
-  if (requesting_origin_ != requesting_origin ||
-      embedding_origin_ != embedding_origin) {
+  if (requesting_origin_.GetURL() != requesting_origin ||
+      embedding_origin_.GetURL() != embedding_origin) {
     return;
   }
 

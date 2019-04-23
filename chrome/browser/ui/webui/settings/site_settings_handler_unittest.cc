@@ -1444,9 +1444,9 @@ TEST_F(SiteSettingsHandlerTest, BlockAutoplay_Update) {
 
 namespace {
 
-const GURL kAndroidOrigin("https://android.com");
-const GURL kChromiumOrigin("https://chromium.org");
-const GURL kGoogleOrigin("https://google.com");
+const GURL kAndroidUrl("https://android.com");
+const GURL kChromiumUrl("https://chromium.org");
+const GURL kGoogleUrl("https://google.com");
 
 constexpr char kUsbPolicySetting[] = R"(
     [
@@ -1506,6 +1506,10 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
         base::DoNothing::Once<std::vector<device::mojom::UsbDeviceInfoPtr>>());
     base::RunLoop().RunUntilIdle();
 
+    const auto kAndroidOrigin = url::Origin::Create(kAndroidUrl);
+    const auto kChromiumOrigin = url::Origin::Create(kChromiumUrl);
+    const auto kGoogleOrigin = url::Origin::Create(kGoogleUrl);
+
     // Add the user granted permissions for testing.
     // These two persistent device permissions should be lumped together with
     // the policy permissions, since they apply to the same device and URL.
@@ -1544,6 +1548,8 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
         base::DoNothing::Once<std::vector<device::mojom::UsbDeviceInfoPtr>>());
     base::RunLoop().RunUntilIdle();
 
+    const auto kAndroidOrigin = url::Origin::Create(kAndroidUrl);
+    const auto kChromiumOrigin = url::Origin::Create(kChromiumUrl);
     chooser_context->GrantDevicePermission(kChromiumOrigin, kAndroidOrigin,
                                            *off_the_record_device_);
 
@@ -1708,8 +1714,8 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   const std::string kUsbChooserGroupName =
       site_settings::ContentSettingsTypeToGroupName(
           CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA);
-  const std::string kAndroidOriginStr = kAndroidOrigin.GetOrigin().spec();
-  const std::string kChromiumOriginStr = kChromiumOrigin.GetOrigin().spec();
+  const std::string kAndroidOriginStr = kAndroidUrl.GetOrigin().spec();
+  const std::string kChromiumOriginStr = kChromiumUrl.GetOrigin().spec();
 
   {
     const base::Value& exceptions = GetChooserExceptionListFromWebUiCallData(
@@ -1730,7 +1736,7 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
                              CONTENT_SETTINGS_TYPE_USB_GUARD,
                              CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
-  EXPECT_CALL(observer_, OnPermissionRevoked(kAndroidOrigin, kChromiumOrigin));
+  EXPECT_CALL(observer_, OnPermissionRevoked(kAndroidUrl, kChromiumUrl));
   handler()->HandleResetChooserExceptionForSite(&args);
 
   // The HandleResetChooserExceptionForSite() method should have also caused the
@@ -1777,7 +1783,7 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
                              CONTENT_SETTINGS_TYPE_USB_GUARD,
                              CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
-  EXPECT_CALL(observer_, OnPermissionRevoked(kChromiumOrigin, kChromiumOrigin));
+  EXPECT_CALL(observer_, OnPermissionRevoked(kChromiumUrl, kChromiumUrl));
   handler()->HandleResetChooserExceptionForSite(&args);
 
   // The HandleResetChooserExceptionForSite() method should have also caused the
@@ -1818,7 +1824,7 @@ TEST_F(SiteSettingsHandlerChooserExceptionTest,
   EXPECT_CALL(observer_, OnChooserObjectPermissionChanged(
                              CONTENT_SETTINGS_TYPE_USB_GUARD,
                              CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA));
-  EXPECT_CALL(observer_, OnPermissionRevoked(kAndroidOrigin, kAndroidOrigin));
+  EXPECT_CALL(observer_, OnPermissionRevoked(kAndroidUrl, kAndroidUrl));
   handler()->HandleResetChooserExceptionForSite(&args);
 
   // The HandleResetChooserExceptionForSite() method should have also caused the

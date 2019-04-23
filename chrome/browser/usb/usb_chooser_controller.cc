@@ -78,8 +78,8 @@ UsbChooserController::UsbChooserController(
       observer_(this),
       weak_factory_(this) {
   RenderFrameHost* main_frame = web_contents_->GetMainFrame();
-  requesting_origin_ = render_frame_host->GetLastCommittedURL().GetOrigin();
-  embedding_origin_ = main_frame->GetLastCommittedURL().GetOrigin();
+  requesting_origin_ = render_frame_host->GetLastCommittedOrigin();
+  embedding_origin_ = main_frame->GetLastCommittedOrigin();
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   chooser_context_ =

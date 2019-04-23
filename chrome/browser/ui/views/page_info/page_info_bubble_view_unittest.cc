@@ -282,7 +282,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
   constexpr size_t kExpectedChildren = 0;
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->children().size());
 
-  const GURL origin = GURL(kUrl).GetOrigin();
+  const auto origin = url::Origin::Create(GURL(kUrl));
 
   // Connect the UsbChooserContext with FakeUsbDeviceManager.
   device::FakeUsbDeviceManager usb_device_manager;
@@ -382,7 +382,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
   constexpr size_t kExpectedChildren = 0;
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->children().size());
 
-  const GURL origin = GURL(kUrl).GetOrigin();
+  const auto origin = url::Origin::Create(GURL(kUrl));
 
   // Add the policy setting to prefs.
   Profile* profile = web_contents_helper_.profile();
@@ -400,7 +400,7 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
       0, 0, "Google", "Gizmo", "1234567890");
   store->GrantDevicePermission(origin, origin, *device_info);
 
-  auto objects = store->GetGrantedObjects(origin, origin);
+  auto objects = store->GetGrantedObjects(origin.GetURL(), origin.GetURL());
   EXPECT_EQ(objects.size(), 2u);
 
   PermissionInfoList list;

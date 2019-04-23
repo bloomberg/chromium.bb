@@ -20,6 +20,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
+#include "url/origin.h"
 
 namespace content {
 class RenderFrameHost;
@@ -81,8 +82,8 @@ class WebUsbServiceImpl : public blink::mojom::WebUsbService,
   content::RenderFrameHost* const render_frame_host_;
   base::WeakPtr<WebUsbChooser> usb_chooser_;
   UsbChooserContext* chooser_context_;
-  GURL requesting_origin_;
-  GURL embedding_origin_;
+  url::Origin requesting_origin_;
+  url::Origin embedding_origin_;
 
   // Used to bind with Blink.
   mojo::BindingSet<blink::mojom::WebUsbService> bindings_;

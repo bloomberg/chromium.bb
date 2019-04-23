@@ -6409,7 +6409,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbDefault) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
-  const GURL kTestUrl("https://foo.com:443");
+  const auto kTestOrigin = url::Origin::Create(GURL("https://foo.com:443"));
   scoped_refptr<device::UsbDevice> device =
       base::MakeRefCounted<device::MockUsbDevice>(0, 0, "Google", "Gizmo",
                                                   "123ABC");
@@ -6417,10 +6417,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
 
   // Expect the default permission value to be empty.
   auto* context = UsbChooserContextFactory::GetForProfile(browser()->profile());
-  EXPECT_FALSE(context->HasDevicePermission(kTestUrl, kTestUrl, *device_info));
+  EXPECT_FALSE(
+      context->HasDevicePermission(kTestOrigin, kTestOrigin, *device_info));
 
-  // Update policy to add an entry to the permission value to allow |kTestUrl|
-  // to access the device described by |device_info|.
+  // Update policy to add an entry to the permission value to allow
+  // |kTestOrigin| to access the device described by |device_info|.
   PolicyMap policies;
 
   base::Value device_value(base::Value::Type::DICTIONARY);
@@ -6444,14 +6445,16 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
             std::move(policy_value));
   UpdateProviderPolicy(policies);
 
-  EXPECT_TRUE(context->HasDevicePermission(kTestUrl, kTestUrl, *device_info));
+  EXPECT_TRUE(
+      context->HasDevicePermission(kTestOrigin, kTestOrigin, *device_info));
 
   // Remove the policy to ensure that it can be dynamically updated.
   SetPolicy(&policies, key::kWebUsbAllowDevicesForUrls,
             std::make_unique<base::Value>(base::Value::Type::LIST));
   UpdateProviderPolicy(policies);
 
-  EXPECT_FALSE(context->HasDevicePermission(kTestUrl, kTestUrl, *device_info));
+  EXPECT_FALSE(
+      context->HasDevicePermission(kTestOrigin, kTestOrigin, *device_info));
 }
 
 // Handler for embedded http-server, returns a small page with javascript

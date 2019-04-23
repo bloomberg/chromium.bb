@@ -141,7 +141,7 @@ void ExpectDevicesAndThen(const std::set<std::string>& expected_guids,
 }  // namespace
 
 TEST_F(WebUsbServiceImplTest, NoPermissionDevice) {
-  GURL origin(kDefaultTestUrl);
+  const auto origin = url::Origin::Create(GURL(kDefaultTestUrl));
 
   auto device1 = base::MakeRefCounted<FakeUsbDeviceInfo>(
       0x1234, 0x5678, "ACME", "Frobinator", "ABCDEF");
@@ -211,7 +211,7 @@ TEST_F(WebUsbServiceImplTest, NoPermissionDevice) {
 }
 
 TEST_F(WebUsbServiceImplTest, ReconnectDeviceManager) {
-  GURL origin(kDefaultTestUrl);
+  const auto origin = url::Origin::Create(GURL(kDefaultTestUrl));
 
   auto* context = GetChooserContext();
   auto device = base::MakeRefCounted<FakeUsbDeviceInfo>(0x1234, 0x5678, "ACME",
@@ -289,7 +289,8 @@ TEST_F(WebUsbServiceImplTest, ReconnectDeviceManager) {
 }
 
 TEST_F(WebUsbServiceImplTest, RevokeDevicePermission) {
-  GURL origin(kDefaultTestUrl);
+  GURL url(kDefaultTestUrl);
+  const auto origin = url::Origin::Create(url);
 
   auto* context = GetChooserContext();
   auto device_info = device_manager()->CreateAndAddDevice(
@@ -316,8 +317,8 @@ TEST_F(WebUsbServiceImplTest, RevokeDevicePermission) {
   device_ptr.set_connection_error_handler(
       base::BindLambdaForTesting([&]() { device_ptr.reset(); }));
 
-  auto objects = context->GetGrantedObjects(origin, origin);
-  context->RevokeObjectPermission(origin, origin, objects[0]->value);
+  auto objects = context->GetGrantedObjects(url, url);
+  context->RevokeObjectPermission(url, url, objects[0]->value);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(device_ptr);
