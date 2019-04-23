@@ -51,12 +51,10 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
           ->toolbar()->browser_actions();
 
   // The order of the child views should be the same.
-  EXPECT_EQ(container->GetViewForId(extension_a()->id()),
-            container->child_at(0));
-  EXPECT_EQ(container->GetViewForId(extension_b()->id()),
-            container->child_at(1));
-  EXPECT_EQ(container->GetViewForId(extension_c()->id()),
-            container->child_at(2));
+  const auto& children = container->children();
+  EXPECT_EQ(container->GetViewForId(extension_a()->id()), children[0]);
+  EXPECT_EQ(container->GetViewForId(extension_b()->id()), children[1]);
+  EXPECT_EQ(container->GetViewForId(extension_c()->id()), children[2]);
 
   // Simulate a drag and drop to the right.
   ui::OSExchangeData drop_data;
@@ -77,12 +75,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(2));
-  EXPECT_EQ(container->GetViewForId(extension_b()->id()),
-            container->child_at(0));
-  EXPECT_EQ(container->GetViewForId(extension_a()->id()),
-            container->child_at(1));
-  EXPECT_EQ(container->GetViewForId(extension_c()->id()),
-            container->child_at(2));
+  EXPECT_EQ(container->GetViewForId(extension_b()->id()), children[0]);
+  EXPECT_EQ(container->GetViewForId(extension_a()->id()), children[1]);
+  EXPECT_EQ(container->GetViewForId(extension_c()->id()), children[2]);
 
   const extensions::ExtensionSet& extension_set =
       extensions::ExtensionRegistry::Get(profile())->enabled_extensions();
@@ -112,12 +107,9 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
   EXPECT_EQ(extension_a()->id(), browser_actions_bar()->GetExtensionId(0));
   EXPECT_EQ(extension_b()->id(), browser_actions_bar()->GetExtensionId(1));
   EXPECT_EQ(extension_c()->id(), browser_actions_bar()->GetExtensionId(2));
-  EXPECT_EQ(container->GetViewForId(extension_a()->id()),
-            container->child_at(0));
-  EXPECT_EQ(container->GetViewForId(extension_b()->id()),
-            container->child_at(1));
-  EXPECT_EQ(container->GetViewForId(extension_c()->id()),
-            container->child_at(2));
+  EXPECT_EQ(container->GetViewForId(extension_a()->id()), children[0]);
+  EXPECT_EQ(container->GetViewForId(extension_b()->id()), children[1]);
+  EXPECT_EQ(container->GetViewForId(extension_c()->id()), children[2]);
 
   // Shrink the size of the container so we have an overflow menu.
   toolbar_model()->SetVisibleIconCount(2u);

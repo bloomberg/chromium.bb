@@ -134,9 +134,9 @@ bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
     int new_index = base::ClampToRange(index + position_increment, 0,
                                        int{children().size()} - 1);
     if (index != new_index)
-      new_selected = child_at(new_index);
+      new_selected = children()[size_t{new_index}];
   } else if (!children().empty()) {
-    new_selected = child_at(0);
+    new_selected = children().front();
   }
 
   if (new_selected)
@@ -210,7 +210,7 @@ void DesktopMediaListView::OnSourceRemoved(size_t index) {
 }
 
 void DesktopMediaListView::OnSourceMoved(size_t old_index, size_t new_index) {
-  ReorderChildView(child_at(old_index), new_index);
+  ReorderChildView(children()[old_index], new_index);
   PreferredSizeChanged();
 }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 
 #include <memory>
+#include <numeric>
 
 #include "base/bind.h"
 #include "build/build_config.h"
@@ -268,8 +269,8 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     }
   }
 
-  for (size_t i = result_size; i < AutocompleteResult::GetMaxMatches(); ++i)
-    child_at(i)->SetVisible(false);
+  for (auto i = children().begin() + result_size; i != children().end(); ++i)
+    (*i)->SetVisible(false);
 
   gfx::Rect new_target_bounds = GetTargetBounds();
 
@@ -387,9 +388,11 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
 
 gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
   DCHECK_GE(children().size(), model_->result().size());
-  int popup_height = 0;
-  for (size_t i = 0; i < model_->result().size(); ++i)
-    popup_height += child_at(i)->GetPreferredSize().height();
+  int popup_height = std::accumulate(
+      children().cbegin(), children().cbegin() + model_->result().size(), 0,
+      [](int height, const auto* v) {
+        return height + v->GetPreferredSize().height();
+      });
   // Add enough space on the top and bottom so it looks like there is the same
   // amount of space between the text and the popup border as there is in the
   // interior between each row of text.
@@ -452,7 +455,7 @@ size_t OmniboxPopupContentsView::GetIndexForPoint(const gfx::Point& point) {
 }
 
 OmniboxResultView* OmniboxPopupContentsView::result_view_at(size_t i) {
-  return static_cast<OmniboxResultView*>(child_at(static_cast<int>(i)));
+  return static_cast<OmniboxResultView*>(children()[i]);
 }
 
 void OmniboxPopupContentsView::GetAccessibleNodeData(

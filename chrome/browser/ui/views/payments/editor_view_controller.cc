@@ -493,7 +493,7 @@ void EditorViewController::AddOrUpdateErrorMessageForField(
     } else {
       // The error view is the only child, and has a Label as only child itself.
       static_cast<views::Label*>(
-          label_view_it->second->child_at(0)->child_at(0))
+          label_view_it->second->children().front()->children().front())
           ->SetText(error_message);
     }
   }

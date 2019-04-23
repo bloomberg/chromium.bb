@@ -408,8 +408,8 @@ void IntentPickerBubbleView::Initialize(bool show_remember_selection) {
 
 IntentPickerLabelButton* IntentPickerBubbleView::GetIntentPickerLabelButtonAt(
     size_t index) {
-  views::View* temp_contents = scroll_view_->contents();
-  return static_cast<IntentPickerLabelButton*>(temp_contents->child_at(index));
+  const auto& children = scroll_view_->contents()->children();
+  return static_cast<IntentPickerLabelButton*>(children[index]);
 }
 
 bool IntentPickerBubbleView::HasCandidates() const {

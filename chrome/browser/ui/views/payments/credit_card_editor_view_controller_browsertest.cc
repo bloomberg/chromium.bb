@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingMaskedCard) {
   EXPECT_TRUE(list_view);
   EXPECT_EQ(1u, list_view->children().size());
 
-  views::View* edit_button = list_view->child_at(0)->GetViewByID(
+  views::View* edit_button = list_view->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
 
   ResetEventWaiter(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
@@ -337,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest,
   EXPECT_TRUE(list_view);
   EXPECT_EQ(1u, list_view->children().size());
 
-  views::View* edit_button = list_view->child_at(0)->GetViewByID(
+  views::View* edit_button = list_view->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
 
   ResetEventWaiter(DialogEvent::CREDIT_CARD_EDITOR_OPENED);
@@ -551,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCreditCardEditorTest, EditingExpiredCard) {
   EXPECT_TRUE(list_view);
   EXPECT_EQ(1u, list_view->children().size());
 
-  views::View* edit_button = list_view->child_at(0)->GetViewByID(
+  views::View* edit_button = list_view->children().front()->GetViewByID(
       static_cast<int>(DialogViewID::EDIT_ITEM_BUTTON));
 
   ResetEventWaiter(DialogEvent::CREDIT_CARD_EDITOR_OPENED);

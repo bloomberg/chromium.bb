@@ -216,7 +216,7 @@ void MenuViewDragAndDropTest::DoTestWithMenuOpen() {
   ASSERT_EQ(3u, submenu->GetMenuItems().size());
   const views::View* first_view = submenu->GetMenuItemAt(0);
   ASSERT_EQ(1u, first_view->children().size());
-  const views::View* child_view = first_view->child_at(0);
+  const views::View* child_view = first_view->children().front();
   EXPECT_EQ(child_view, target_view_);
 
   // The menu is showing, so it has a widget we can observe now.
@@ -393,7 +393,7 @@ void MenuViewDragAndDropTestNestedDrag::OnWidgetDragWillStart(
     views::Widget* widget) {
   // Enqueue an event to drag the target's first child to its second, which
   // should result in calling OnDragEntered().
-  const views::View* drop_target_view = target_view()->child_at(1);
+  const views::View* drop_target_view = target_view()->children()[1];
   const gfx::Point target =
       ui_test_utils::GetCenterInScreenCoordinates(drop_target_view);
   GetDragTaskRunner()->PostTask(
@@ -425,10 +425,10 @@ void MenuViewDragAndDropTestNestedDrag::DoTestWithMenuOpen() {
 
   // Cause the target's second child to trigger a mouse up when dragged over.
   ASSERT_EQ(2u, target_view()->children().size());
-  SetStopDraggingView(target_view()->child_at(1));
+  SetStopDraggingView(target_view()->children()[1]);
 
   // We're going to drag the target's first child.
-  views::View* drag_view = target_view()->child_at(0);
+  views::View* drag_view = target_view()->children()[0];
   ASSERT_NE(nullptr, drag_view);
   ui_test_utils::MoveMouseToCenterAndPress(
       drag_view, ui_controls::LEFT, ui_controls::DOWN,
@@ -445,7 +445,7 @@ void MenuViewDragAndDropTestNestedDrag::OnDragEntered() {
 void MenuViewDragAndDropTestNestedDrag::StartDrag() {
   // Begin dragging the target's first child, which should result in calling
   // OnWidgetDragWillStart().
-  const views::View* drag_view = target_view()->child_at(0);
+  const views::View* drag_view = target_view()->children().front();
   const gfx::Point current_position =
       ui_test_utils::GetCenterInScreenCoordinates(drag_view);
   EXPECT_TRUE(ui_controls::SendMouseMove(current_position.x() + 10,

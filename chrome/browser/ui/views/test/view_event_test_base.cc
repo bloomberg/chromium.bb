@@ -43,7 +43,7 @@ class TestView : public views::View {
     // still handle a _NET_WM_STATE event on Linux during teardown that triggers
     // layout.
     if (!children().empty())
-      child_at(0)->SetBoundsRect(GetLocalBounds());
+      children().front()->SetBoundsRect(GetLocalBounds());
   }
 
  private:

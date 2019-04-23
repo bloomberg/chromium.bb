@@ -302,17 +302,17 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
 
   ChosenObjectView* object_view = static_cast<ChosenObjectView*>(
       api_->permissions_view()->children()[kExpectedChildren]);
-  EXPECT_EQ(4u, object_view->children().size());
+  const auto& children = object_view->children();
+  EXPECT_EQ(4u, children.size());
 
-  views::Label* label = static_cast<views::Label*>(object_view->child_at(1));
+  views::Label* label = static_cast<views::Label*>(children[1]);
   EXPECT_EQ(base::ASCIIToUTF16("Gizmo"), label->text());
 
-  views::Button* button = static_cast<views::Button*>(object_view->child_at(2));
+  views::Button* button = static_cast<views::Button*>(children[2]);
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                              ui::EventTimeForNow(), 0, 0);
-  views::ButtonListener* button_listener =
-      static_cast<views::ButtonListener*>(object_view);
-  button_listener->ButtonPressed(button, event);
+  static_cast<views::ButtonListener*>(object_view)
+      ->ButtonPressed(button, event);
   api_->SetPermissionInfo(list);
   EXPECT_EQ(kExpectedChildren, api_->permissions_view()->children().size());
   EXPECT_FALSE(store->HasDevicePermission(origin, origin, *device_info));
@@ -352,17 +352,17 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithPolicyUsbDevices) {
 
   ChosenObjectView* object_view = static_cast<ChosenObjectView*>(
       api_->permissions_view()->children()[kExpectedChildren]);
-  EXPECT_EQ(4u, object_view->children().size());
+  const auto& children = object_view->children();
+  EXPECT_EQ(4u, children.size());
 
-  views::Label* label = static_cast<views::Label*>(object_view->child_at(1));
+  views::Label* label = static_cast<views::Label*>(children[1]);
   EXPECT_EQ(base::ASCIIToUTF16("Unknown product 0x162E from Google Inc."),
             label->text());
 
-  views::Button* button = static_cast<views::Button*>(object_view->child_at(2));
+  views::Button* button = static_cast<views::Button*>(children[2]);
   EXPECT_EQ(button->state(), views::Button::STATE_DISABLED);
 
-  views::Label* desc_label =
-      static_cast<views::Label*>(object_view->child_at(3));
+  views::Label* desc_label = static_cast<views::Label*>(children[3]);
   EXPECT_EQ(base::ASCIIToUTF16("USB device allowed by your administrator"),
             desc_label->text());
 
@@ -414,17 +414,16 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
   {
     ChosenObjectView* object_view = static_cast<ChosenObjectView*>(
         api_->permissions_view()->children()[kExpectedChildren]);
-    EXPECT_EQ(4u, object_view->children().size());
+    const auto& children = object_view->children();
+    EXPECT_EQ(4u, children.size());
 
-    views::Label* label = static_cast<views::Label*>(object_view->child_at(1));
+    views::Label* label = static_cast<views::Label*>(children[1]);
     EXPECT_EQ(base::ASCIIToUTF16("Gizmo"), label->text());
 
-    views::Button* button =
-        static_cast<views::Button*>(object_view->child_at(2));
+    views::Button* button = static_cast<views::Button*>(children[2]);
     EXPECT_NE(button->state(), views::Button::STATE_DISABLED);
 
-    views::Label* desc_label =
-        static_cast<views::Label*>(object_view->child_at(3));
+    views::Label* desc_label = static_cast<views::Label*>(children[3]);
     EXPECT_EQ(base::ASCIIToUTF16("USB device"), desc_label->text());
 
     views::ButtonListener* button_listener =
@@ -441,18 +440,17 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
   {
     ChosenObjectView* object_view = static_cast<ChosenObjectView*>(
         api_->permissions_view()->children()[kExpectedChildren]);
-    EXPECT_EQ(4u, object_view->children().size());
+    const auto& children = object_view->children();
+    EXPECT_EQ(4u, children.size());
 
-    views::Label* label = static_cast<views::Label*>(object_view->child_at(1));
+    views::Label* label = static_cast<views::Label*>(children[1]);
     EXPECT_EQ(base::ASCIIToUTF16("Unknown product 0x162E from Google Inc."),
               label->text());
 
-    views::Button* button =
-        static_cast<views::Button*>(object_view->child_at(2));
+    views::Button* button = static_cast<views::Button*>(children[2]);
     EXPECT_EQ(button->state(), views::Button::STATE_DISABLED);
 
-    views::Label* desc_label =
-        static_cast<views::Label*>(object_view->child_at(3));
+    views::Label* desc_label = static_cast<views::Label*>(children[3]);
     EXPECT_EQ(base::ASCIIToUTF16("USB device allowed by your administrator"),
               desc_label->text());
 
@@ -573,19 +571,18 @@ TEST_F(PageInfoBubbleViewTest, ChangingFlashSettingForSiteIsRemembered) {
 
   // Check the Flash permission is now showing since it's non-default.
   api_->CreateView();
-  views::Label* label =
-      static_cast<views::Label*>(api_->permissions_view()->child_at(1));
+  const auto& children = api_->permissions_view()->children();
+  views::Label* label = static_cast<views::Label*>(children[1]);
   EXPECT_EQ(base::ASCIIToUTF16("Flash"), label->text());
 
   // Change the Flash setting back to the default.
   map->SetContentSettingDefaultScope(url, url, CONTENT_SETTINGS_TYPE_PLUGINS,
                                      std::string(), CONTENT_SETTING_DEFAULT);
-  EXPECT_EQ(kViewsPerPermissionRow,
-            api_->permissions_view()->children().size());
+  EXPECT_EQ(kViewsPerPermissionRow, children.size());
 
   // Check the Flash permission is still showing since the user changed it
   // previously.
-  label = static_cast<views::Label*>(api_->permissions_view()->child_at(1));
+  label = static_cast<views::Label*>(children[1]);
   EXPECT_EQ(base::ASCIIToUTF16("Flash"), label->text());
 }
 #endif

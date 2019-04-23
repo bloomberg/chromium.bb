@@ -993,7 +993,7 @@ class BookmarkBarViewTest9 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(scroll_container != NULL);
     scroll_container = scroll_container->parent();
     ASSERT_TRUE(scroll_container != NULL);
-    views::View* scroll_down_button = scroll_container->child_at(1);
+    views::View* scroll_down_button = scroll_container->children()[1];
     ASSERT_TRUE(scroll_down_button);
     gfx::Point loc(scroll_down_button->width() / 2,
                    scroll_down_button->height() / 2);
@@ -1901,7 +1901,7 @@ class BookmarkBarViewTest21 : public BookmarkBarViewEventTestBase {
     ASSERT_TRUE(submenu->IsShowing());
     ASSERT_EQ(1u, submenu->children().size());
 
-    views::View* view = submenu->child_at(0);
+    views::View* view = submenu->children().front();
     ASSERT_NE(nullptr, view);
     EXPECT_EQ(views::MenuItemView::kEmptyMenuItemViewID, view->id());
 

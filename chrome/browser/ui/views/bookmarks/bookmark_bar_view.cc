@@ -1999,18 +1999,18 @@ void BookmarkBarView::InsertBookmarkButtonAtIndex(views::View* button,
 // they're not visible. The order should be: [Apps shortcut] [Managed bookmark
 // button] ..bookmark buttons.. [Overflow chevron] [Other bookmarks]
 #if DCHECK_IS_ON()
-  int view_index = 0;
-  DCHECK_EQ(child_at(view_index++), apps_page_shortcut_);
-  DCHECK_EQ(child_at(view_index++), managed_bookmarks_button_);
-  views::View* child = nullptr;
-  do {
-    child = child_at(view_index++);
-  } while ((child->GetClassName() == BookmarkButton::kViewClassName ||
-            child->GetClassName() == BookmarkFolderButton::kViewClassName)
-           // Overflow and Other Bookmarks are folder buttons
-           && (child != overflow_button_ && child != other_bookmarks_button_));
-  DCHECK_EQ(child, overflow_button_);
-  DCHECK_EQ(child_at(view_index++), other_bookmarks_button_);
+  auto i = children().cbegin();
+  DCHECK_EQ(*i++, apps_page_shortcut_);
+  DCHECK_EQ(*i++, managed_bookmarks_button_);
+  const auto is_bookmark_button = [this](const auto* v) {
+    const char* class_name = v->GetClassName();
+    return (class_name == BookmarkButton::kViewClassName ||
+            class_name == BookmarkFolderButton::kViewClassName) &&
+           v != overflow_button_ && v != other_bookmarks_button_;
+  };
+  i = std::find_if_not(i, children().cend(), is_bookmark_button);
+  DCHECK_EQ(*i++, overflow_button_);
+  DCHECK_EQ(*i++, other_bookmarks_button_);
 #endif
   AddChildViewAt(button, GetIndexOf(managed_bookmarks_button_) + 1 + index);
 }

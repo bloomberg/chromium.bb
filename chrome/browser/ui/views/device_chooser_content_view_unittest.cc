@@ -266,8 +266,8 @@ TEST_F(DeviceChooserContentViewTest, ClickHelpButton) {
   EXPECT_CALL(*controller(), OpenHelpCenterUrl()).Times(1);
   // The content view doesn't have a direct reference to the help button, so we
   // need to find it. It's on the left (in LTR) so it should be the first child.
-  views::ImageButton* help_button =
-      static_cast<views::ImageButton*>(extra_views_container_->child_at(0));
+  auto* help_button = static_cast<views::ImageButton*>(
+      extra_views_container_->children().front());
   const gfx::Point point(10, 10);
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, point, point,
                              ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,

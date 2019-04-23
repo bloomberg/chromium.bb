@@ -357,7 +357,7 @@ bool InfoBarView::ShouldDrawSeparator() const {
   // There will be no parent when this infobar is not in a container, e.g. if
   // it's in a background tab.  It's still possible to reach here in that case,
   // e.g. if ElevationIconSetter triggers a Layout().
-  return parent() && parent()->child_at(0) != this;
+  return parent() && parent()->children().front() != this;
 }
 
 int InfoBarView::GetSeparatorHeightDip() const {

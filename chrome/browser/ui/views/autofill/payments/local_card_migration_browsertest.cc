@@ -784,10 +784,10 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
   EXPECT_TRUE(card_list_view->visible());
   ASSERT_EQ(2u, card_list_view->children().size());
   // Cards will be added to database in a reversed order.
-  EXPECT_EQ(static_cast<MigratableCardView*>(card_list_view->child_at(0))
+  EXPECT_EQ(static_cast<MigratableCardView*>(card_list_view->children()[0])
                 ->GetNetworkAndLastFourDigits(),
             second_card.NetworkAndLastFourDigits());
-  EXPECT_EQ(static_cast<MigratableCardView*>(card_list_view->child_at(1))
+  EXPECT_EQ(static_cast<MigratableCardView*>(card_list_view->children()[1])
                 ->GetNetworkAndLastFourDigits(),
             first_card.NetworkAndLastFourDigits());
 }

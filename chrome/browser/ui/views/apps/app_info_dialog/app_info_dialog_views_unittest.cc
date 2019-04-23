@@ -59,7 +59,7 @@ class AppInfoDialogTestApi {
   explicit AppInfoDialogTestApi(AppInfoDialog* dialog) : dialog_(dialog) {}
 
   AppInfoHeaderPanel* header_panel() {
-    return static_cast<AppInfoHeaderPanel*>(dialog_->child_at(0));
+    return static_cast<AppInfoHeaderPanel*>(dialog_->children().front());
   }
 
   views::Link* view_in_store_link() {

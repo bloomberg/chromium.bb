@@ -63,9 +63,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestProfileListTest, PrioritizeCompleteness) {
   views::View* sheet = dialog_view()->GetViewByID(
       static_cast<int>(DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW));
   ASSERT_EQ(2u, sheet->children().size());
-  const auto get_label = [sheet](int num) {
+  const auto get_label = [sheet](size_t num) {
     constexpr int kId = static_cast<int>(DialogViewID::PROFILE_LABEL_LINE_1);
-    return static_cast<views::Label*>(sheet->child_at(num)->GetViewByID(kId));
+    return static_cast<views::Label*>(sheet->children()[num]->GetViewByID(kId));
   };
   EXPECT_EQ(base::ASCIIToUTF16("John H. Doe"), get_label(0)->text());
   EXPECT_EQ(base::ASCIIToUTF16("Jane A. Smith"), get_label(1)->text());

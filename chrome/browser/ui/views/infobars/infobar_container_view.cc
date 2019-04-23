@@ -134,7 +134,7 @@ void InfoBarContainerView::PlatformSpecificInfoBarStateChanged(
   // doing unnecessary work on the second infobar in those cases is harmless.
   if (!is_animating && children().size() > 2) {
     // Dropping the separator may change the height.
-    auto* infobar = static_cast<InfoBarView*>(child_at(1));
+    auto* infobar = static_cast<InfoBarView*>(children()[1]);
     infobar->RecalculateHeight();
 
     // We need to force a paint whether or not the height actually changed.
