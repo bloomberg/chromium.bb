@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "content/public/test/browser_test_utils.h"
 
 namespace chromeos {
@@ -42,13 +41,8 @@ constexpr char kCloseButtonId[] = "closeButton";
 }  // namespace
 
 ActiveDirectoryLoginMixin::ActiveDirectoryLoginMixin(
-    InProcessBrowserTestMixinHost* host,
-    const std::string& realm)
-    : InProcessBrowserTestMixin(host),
-      install_attributes_(
-          chromeos::StubInstallAttributes::CreateActiveDirectoryManaged(
-              realm,
-              "device_id")) {}
+    InProcessBrowserTestMixinHost* host)
+    : InProcessBrowserTestMixin(host) {}
 
 void ActiveDirectoryLoginMixin::SetUpInProcessBrowserTestFixture() {
   AuthPolicyClient::InitializeFake();

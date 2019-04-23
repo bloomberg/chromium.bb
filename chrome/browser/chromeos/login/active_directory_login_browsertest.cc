@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
 #include "chrome/browser/chromeos/login/test/active_directory_login_mixin.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chromeos/dbus/auth_policy/fake_auth_policy_client.h"
@@ -71,7 +72,10 @@ class ActiveDirectoryLoginTest : public OobeBaseTest {
 
   const std::string test_realm_;
   const std::string test_user_;
-  ActiveDirectoryLoginMixin ad_login_{&mixin_host_, test_realm_};
+  DeviceStateMixin device_state_{
+      &mixin_host_,
+      DeviceStateMixin::State::OOBE_COMPLETED_ACTIVE_DIRECTORY_ENROLLED};
+  ActiveDirectoryLoginMixin ad_login_{&mixin_host_};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryLoginTest);

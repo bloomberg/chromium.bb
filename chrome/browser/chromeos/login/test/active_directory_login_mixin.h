@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/test/browser_test_utils.h"
@@ -23,8 +22,7 @@ namespace chromeos {
 // password change screen.
 class ActiveDirectoryLoginMixin : public InProcessBrowserTestMixin {
  public:
-  explicit ActiveDirectoryLoginMixin(InProcessBrowserTestMixinHost* host,
-                                     const std::string& realm);
+  explicit ActiveDirectoryLoginMixin(InProcessBrowserTestMixinHost* host);
   ~ActiveDirectoryLoginMixin() override;
 
   // InProcessBrowserTestMixin:
@@ -87,7 +85,6 @@ class ActiveDirectoryLoginMixin : public InProcessBrowserTestMixin {
 
   std::string autocomplete_realm_;
   std::unique_ptr<content::DOMMessageQueue> message_queue_;
-  chromeos::ScopedStubInstallAttributes install_attributes_;
 
   DISALLOW_COPY_AND_ASSIGN(ActiveDirectoryLoginMixin);
 };

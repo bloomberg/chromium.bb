@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -29,7 +30,6 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
@@ -367,10 +367,9 @@ class SiteIsolationFlagHandlingTest
   // This will be set to |true| when chrome has requested a restart.
   bool attempt_restart_called_ = false;
 
-  // Set up fake install attributes to pretend the machine is enrolled. This
-  // is important because ephemeral users only work on enrolled machines.
-  ScopedStubInstallAttributes test_install_attributes_{
-      StubInstallAttributes::CreateCloudManaged("example.com", "fake-id")};
+  // This is important because ephemeral users only work on enrolled machines.
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 
   // Observes for user session start.
   std::unique_ptr<content::WindowedNotificationObserver>

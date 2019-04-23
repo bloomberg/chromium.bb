@@ -21,6 +21,8 @@ namespace {
 constexpr char kFakeDomain[] = "example.com";
 constexpr char kFakeDeviceId[] = "device_id";
 
+bool g_instance_created = false;
+
 cryptohome::SerializedInstallAttributes BuildInstallAttributes(
     const std::string& mode,
     const std::string& domain,
@@ -50,7 +52,10 @@ cryptohome::SerializedInstallAttributes BuildInstallAttributes(
 
 DeviceStateMixin::DeviceStateMixin(InProcessBrowserTestMixinHost* host,
                                    State initial_state)
-    : InProcessBrowserTestMixin(host), state_(initial_state) {}
+    : InProcessBrowserTestMixin(host), state_(initial_state) {
+  DCHECK(!g_instance_created);
+  g_instance_created = true;
+}
 
 bool DeviceStateMixin::SetUpUserDataDirectory() {
   SetDeviceState();
@@ -83,8 +88,11 @@ void DeviceStateMixin::WriteInstallAttrFile() {
   std::string device_mode, domain, realm, device_id;
   switch (state_) {
     case DeviceStateMixin::State::BEFORE_OOBE:
-    case DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED:
+      // No file at all.
       return;
+    case DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED:
+      // Write file with empty install attributes.
+      break;
     case DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED:
       device_mode = "enterprise";
       domain = !domain_.empty() ? domain_ : kFakeDomain;

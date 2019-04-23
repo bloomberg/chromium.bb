@@ -27,6 +27,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_test_util.h"
@@ -52,7 +53,6 @@
 #include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -684,8 +684,8 @@ class UserImageManagerPolicyTest : public UserImageManagerTest,
     return policy;
   }
 
-  ScopedStubInstallAttributes test_install_attributes_{
-      StubInstallAttributes::CreateCloudManaged("fake-domain", "fake-id")};
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
   policy::UserPolicyBuilder user_policy_;
   policy::DevicePolicyBuilder device_policy_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;

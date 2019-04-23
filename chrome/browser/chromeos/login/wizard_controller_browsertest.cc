@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_shelf_test_helper.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
+#include "chrome/browser/chromeos/login/mixin_based_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
@@ -48,6 +49,7 @@
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_configuration_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -64,7 +66,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -347,18 +348,21 @@ Mock* MockScreenExpectLifecycle(std::unique_ptr<Mock> mock) {
 
 }  // namespace
 
-class WizardControllerTest : public InProcessBrowserTest {
+class WizardControllerTest : public MixinBasedInProcessBrowserTest {
  protected:
   WizardControllerTest() = default;
   ~WizardControllerTest() override = default;
 
+  // MixinBasedInProcessBrowserTest:
   void SetUpOnMainThread() override {
+    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
     AccessibilityManager::Get()->SetProfileForTest(
         ProfileHelper::GetSigninProfile());
     ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kLoginManager);
   }
 
@@ -487,6 +491,7 @@ class WizardControllerSupervisionTransitionOobeTest
  protected:
   WizardControllerSupervisionTransitionOobeTest() = default;
 
+  // WizardControllerTest:
   void SetUpOnMainThread() override {
     WizardControllerTest::SetUpOnMainThread();
     // Setup existing user session and profile.
@@ -514,6 +519,7 @@ class WizardControllerSupervisionTransitionOobeTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    WizardControllerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kLoginManager);
     command_line->AppendSwitchASCII(switches::kLoginProfile,
                                     TestingProfile::kTestUserProfileDir);
@@ -559,7 +565,7 @@ class TimeZoneTestRunner {
 class WizardControllerFlowTest : public WizardControllerTest {
  protected:
   WizardControllerFlowTest() {}
-  // Overriden from InProcessBrowserTest:
+  // WizardControllerTest:
   void SetUpOnMainThread() override {
     WizardControllerTest::SetUpOnMainThread();
 
@@ -1054,6 +1060,7 @@ class WizardControllerUpdateAfterCompletedOobeTest
  protected:
   WizardControllerUpdateAfterCompletedOobeTest() = default;
 
+  // WizardControllerFlowTest:
   void SetUpOnMainThread() override {
     StartupUtils::MarkOobeCompleted();  // Pretend OOBE was complete.
     WizardControllerFlowTest::SetUpOnMainThread();
@@ -1134,6 +1141,7 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
     loop.Run();
   }
 
+  // WizardControllerFlowTest:
   void SetUpInProcessBrowserTestFixture() override {
     WizardControllerFlowTest::SetUpInProcessBrowserTestFixture();
 
@@ -1177,8 +1185,8 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
  private:
-  ScopedStubInstallAttributes test_install_attributes_{
-      StubInstallAttributes::CreateUnset()};
+  DeviceStateMixin device_state_{&mixin_host_,
+                                 DeviceStateMixin::State::BEFORE_OOBE};
 
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 
@@ -1286,6 +1294,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   EXPECT_CALL(*device_disabled_screen_view_, Show()).Times(1);
   mock_auto_enrollment_check_screen_->ExitScreen();
 
+  base::RunLoop().RunUntilIdle();
   ResetAutoEnrollmentCheckScreen();
 
   // Make sure the device disabled screen is shown.
@@ -1309,6 +1318,7 @@ class WizardControllerDeviceStateExplicitRequirementTest
  protected:
   WizardControllerDeviceStateExplicitRequirementTest() {}
 
+  // WizardControllerDeviceStateTest:
   void SetUpOnMainThread() override {
     WizardControllerDeviceStateTest::SetUpOnMainThread();
 
@@ -2033,6 +2043,7 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
   WizardControllerBrokenLocalStateTest() = default;
   ~WizardControllerBrokenLocalStateTest() override = default;
 
+  // WizardControllerTest:
   void SetUpOnMainThread() override {
     PrefServiceFactory factory;
     factory.set_user_prefs(base::MakeRefCounted<PrefStoreStub>());
@@ -2082,7 +2093,7 @@ class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {
                       base::FilePath()) {}
   ~WizardControllerProxyAuthOnSigninTest() override {}
 
-  // Overridden from WizardControllerTest:
+  // WizardControllerTest:
   void SetUp() override {
     ASSERT_TRUE(proxy_server_.Start());
     WizardControllerTest::SetUp();
@@ -2095,6 +2106,7 @@ class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    WizardControllerTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(::switches::kProxyServer,
                                     proxy_server_.host_port_pair().ToString());
   }
@@ -2124,7 +2136,7 @@ class WizardControllerKioskFlowTest : public WizardControllerFlowTest {
  protected:
   WizardControllerKioskFlowTest() {}
 
-  // Overridden from InProcessBrowserTest:
+  // MixinBasedInProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WizardControllerFlowTest::SetUpCommandLine(command_line);
     base::FilePath test_data_dir;
@@ -2243,7 +2255,7 @@ class WizardControllerEnableDebuggingTest : public WizardControllerFlowTest {
  protected:
   WizardControllerEnableDebuggingTest() {}
 
-  // Overridden from InProcessBrowserTest:
+  // MixinBasedInProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WizardControllerFlowTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kSystemDevMode);
@@ -2292,7 +2304,7 @@ class WizardControllerDemoSetupTest : public WizardControllerFlowTest {
   WizardControllerDemoSetupTest() = default;
   ~WizardControllerDemoSetupTest() override = default;
 
-  // InProcessBrowserTest:
+  // MixinBasedInProcessBrowserTest:
   void SetUpOnMainThread() override {
     WizardControllerFlowTest::SetUpOnMainThread();
     testing::Mock::VerifyAndClearExpectations(mock_welcome_screen_);
@@ -2607,7 +2619,7 @@ class WizardControllerDemoSetupDeviceDisabledTest
   WizardControllerDemoSetupDeviceDisabledTest() = default;
   ~WizardControllerDemoSetupDeviceDisabledTest() override = default;
 
-  // InProcessBrowserTest:
+  // MixinBasedInProcessBrowserTest:
   void SetUpOnMainThread() override {
     WizardControllerDeviceStateTest::SetUpOnMainThread();
     testing::Mock::VerifyAndClearExpectations(mock_welcome_screen_);
@@ -2708,7 +2720,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
 class WizardControllerOobeResumeTest : public WizardControllerTest {
  protected:
   WizardControllerOobeResumeTest() {}
-  // Overriden from InProcessBrowserTest:
+  // WizardControllerTest:
   void SetUpOnMainThread() override {
     WizardControllerTest::SetUpOnMainThread();
 
@@ -2785,6 +2797,7 @@ class WizardControllerCellularFirstTest : public WizardControllerFlowTest {
  protected:
   WizardControllerCellularFirstTest() {}
 
+  // WizardControllerFlowTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WizardControllerFlowTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kCellularFirst);
@@ -2802,6 +2815,7 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
  protected:
   WizardControllerOobeConfigurationTest() {}
 
+  // WizardControllerTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WizardControllerTest ::SetUpCommandLine(command_line);
 
@@ -2813,7 +2827,7 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
                                    configuration_file);
   }
 
-  // Overriden from InProcessBrowserTest:
+  // WizardControllerTest:
   void SetUpOnMainThread() override {
     WizardControllerTest::SetUpOnMainThread();
 

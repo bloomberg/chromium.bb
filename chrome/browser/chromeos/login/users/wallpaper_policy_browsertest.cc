@@ -23,6 +23,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -45,7 +46,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -325,9 +325,6 @@ class WallpaperPolicyTest : public LoginManagerTest,
         true /* success */);
   }
 
-  ScopedStubInstallAttributes test_install_attributes_{
-      StubInstallAttributes::CreateCloudManaged("fake-domain", "fake-id")};
-
   base::FilePath test_data_dir_;
   std::unique_ptr<base::RunLoop> run_loop_;
   int wallpaper_change_count_ = 0;
@@ -336,6 +333,8 @@ class WallpaperPolicyTest : public LoginManagerTest,
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
   std::vector<AccountId> testUsers_;
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 
  private:
   // The binding this instance uses to implement ash::mojom::WallpaperObserver.
@@ -350,8 +349,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
   DISALLOW_COPY_AND_ASSIGN(WallpaperPolicyTest);
 };
 
-// Disabled due to flakiness: https://crbug.com/873908.
-IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, DISABLED_PRE_SetResetClear) {
+IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PRE_SetResetClear) {
   RegisterUser(testUsers_[0]);
   RegisterUser(testUsers_[1]);
   StartupUtils::MarkOobeCompleted();
