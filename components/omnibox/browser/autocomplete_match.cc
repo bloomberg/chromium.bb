@@ -244,7 +244,9 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
 
     case Type::SEARCH_HISTORY: {
       if (base::FeatureList::IsEnabled(
-              omnibox::kOmniboxSuggestionTransparencyOptions)) {
+              omnibox::kOmniboxSuggestionTransparencyOptions) ||
+          base::FeatureList::IsEnabled(
+              omnibox::kOmniboxUICuesForSearchHistoryMatches)) {
         return omnibox::kClockIcon;
       }
       return vector_icons::kSearchIcon;

@@ -117,6 +117,12 @@ const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
 const base::Feature kOmniboxSuggestionTransparencyOptions{
     "OmniboxSuggestionTransparencyOptions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature that shows UI cues to differentiate Search History matches from
+// other search suggestions provided by the default search provider. This
+// feature is a narrow subset of kOmniboxSuggestionTransparencyOptions.
+const base::Feature kOmniboxUICuesForSearchHistoryMatches{
+    "OmniboxUICuesForSearchHistoryMatches", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature to enable clipboard provider to suggest copied text.
 const base::Feature kEnableClipboardProviderTextSuggestions{
     "OmniboxEnableClipboardProviderTextSuggestions",
