@@ -1348,7 +1348,7 @@ Node* Document::adoptNode(Node* source, ExceptionState& exception_state) {
                                             "', which may not be adopted.");
       return nullptr;
     case kAttributeNode: {
-      Attr* attr = ToAttr(source);
+      auto* attr = To<Attr>(source);
       if (Element* owner_element = attr->ownerElement())
         owner_element->removeAttributeNode(attr, exception_state);
       break;

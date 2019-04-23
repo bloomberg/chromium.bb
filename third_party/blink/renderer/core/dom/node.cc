@@ -1627,11 +1627,12 @@ bool Node::isEqualNode(Node* other) const {
   if (nodeValue() != other->nodeValue())
     return false;
 
-  if (IsAttributeNode()) {
-    if (ToAttr(this)->localName() != ToAttr(other)->localName())
+  if (auto* this_attr = DynamicTo<Attr>(this)) {
+    auto* other_attr = To<Attr>(other);
+    if (this_attr->localName() != other_attr->localName())
       return false;
 
-    if (ToAttr(this)->namespaceURI() != ToAttr(other)->namespaceURI())
+    if (this_attr->namespaceURI() != other_attr->namespaceURI())
       return false;
   } else if (IsElementNode()) {
     if (ToElement(this)->TagQName() != ToElement(other)->TagQName())
@@ -1711,7 +1712,7 @@ const AtomicString& Node::lookupPrefix(
       context = nullptr;
       break;
     case kAttributeNode:
-      context = ToAttr(this)->ownerElement();
+      context = To<Attr>(this)->ownerElement();
       break;
     default:
       context = parentElement();
@@ -1781,7 +1782,7 @@ const AtomicString& Node::lookupNamespaceURI(
     case kDocumentFragmentNode:
       return g_null_atom;
     case kAttributeNode: {
-      const Attr* attr = ToAttr(this);
+      const auto* attr = To<Attr>(this);
       if (attr->ownerElement())
         return attr->ownerElement()->lookupNamespaceURI(prefix);
       return g_null_atom;
@@ -1801,8 +1802,8 @@ String Node::textContent(bool convert_brs_to_newlines) const {
     return ToCharacterData(this)->data();
 
   // Attribute nodes have their attribute values as textContent.
-  if (IsAttributeNode())
-    return ToAttr(this)->value();
+  if (auto* attr = DynamicTo<Attr>(this))
+    return attr->value();
 
   // Documents and non-container nodes (that are not CharacterData)
   // have null textContent.
@@ -1883,10 +1884,8 @@ uint16_t Node::compareDocumentPosition(const Node* other_node,
   if (other_node == this)
     return kDocumentPositionEquivalent;
 
-  const Attr* attr1 = getNodeType() == kAttributeNode ? ToAttr(this) : nullptr;
-  const Attr* attr2 = other_node->getNodeType() == kAttributeNode
-                          ? ToAttr(other_node)
-                          : nullptr;
+  const auto* attr1 = DynamicTo<Attr>(this);
+  const Attr* attr2 = DynamicTo<Attr>(other_node);
 
   const Node* start1 = attr1 ? attr1->ownerElement() : this;
   const Node* start2 = attr2 ? attr2->ownerElement() : other_node;

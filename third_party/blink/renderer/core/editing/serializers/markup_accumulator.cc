@@ -161,7 +161,7 @@ void MarkupAccumulator::AppendStartMarkup(const Node& node) {
     case Node::kAttributeNode:
       // Only XMLSerializer can pass an Attr.  So, |documentIsHTML| flag is
       // false.
-      formatter_.AppendAttributeValue(markup_, ToAttr(node).value(), false);
+      formatter_.AppendAttributeValue(markup_, To<Attr>(node).value(), false);
       break;
     default:
       formatter_.AppendStartMarkup(markup_, node);

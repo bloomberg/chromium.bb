@@ -1074,7 +1074,7 @@ Response InspectorDOMAgent::performSearch(
           break;
 
         if (node->getNodeType() == Node::kAttributeNode)
-          node = ToAttr(node)->ownerElement();
+          node = To<Attr>(node)->ownerElement();
         result_collector.insert(node);
       }
     }
@@ -1437,7 +1437,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
         node_value = node_value.Left(kMaxTextSize) + kEllipsisUChar;
       break;
     case Node::kAttributeNode:
-      local_name = ToAttr(node)->localName();
+      local_name = To<Attr>(node)->localName();
       break;
     case Node::kElementNode:
       local_name = ToElement(node)->localName();
@@ -1541,7 +1541,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     value->setPublicId(doc_type->publicId());
     value->setSystemId(doc_type->systemId());
   } else if (node->IsAttributeNode()) {
-    Attr* attribute = ToAttr(node);
+    auto* attribute = To<Attr>(node);
     value->setName(attribute->name());
     value->setValue(attribute->value());
   } else if (auto* shadow_root = DynamicTo<ShadowRoot>(node)) {

@@ -61,8 +61,8 @@ Node* V8GCController::OpaqueRootForGC(v8::Isolate*, Node* node) {
   if (node->isConnected())
     return &node->GetDocument().MasterDocument();
 
-  if (node->IsAttributeNode()) {
-    Node* owner_element = ToAttr(node)->ownerElement();
+  if (auto* attr = DynamicTo<Attr>(node)) {
+    Node* owner_element = attr->ownerElement();
     if (!owner_element)
       return node;
     node = owner_element;
