@@ -111,7 +111,17 @@ void AutoEnrollmentCheckScreen::Show() {
   auto_enrollment_state_ = new_auto_enrollment_state;
 
   // Make sure gears are in motion in the background.
-  auto_enrollment_controller_->Start();
+  // Note that if a previous auto-enrollment check ended with a failure,
+  // IsCompleted() would still return false, and Show would not report result
+  // early. In that case auto-enrollment check should be retried.
+  if (auto_enrollment_controller_->state() ==
+          policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR ||
+      auto_enrollment_controller_->state() ==
+          policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR) {
+    auto_enrollment_controller_->Retry();
+  } else {
+    auto_enrollment_controller_->Start();
+  }
   network_portal_detector::GetInstance()->StartPortalDetection(
       false /* force */);
 }

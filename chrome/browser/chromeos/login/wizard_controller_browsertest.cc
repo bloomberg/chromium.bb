@@ -2629,9 +2629,8 @@ class WizardControllerDemoSetupDeviceDisabledTest
   DISALLOW_COPY_AND_ASSIGN(WizardControllerDemoSetupDeviceDisabledTest);
 };
 
-// Flaky https://crbug.com/894384.
 IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
-                       DISABLED_OnlineDemoSetup) {
+                       OnlineDemoSetup) {
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_WELCOME);
   EXPECT_FALSE(DemoSetupController::IsOobeDemoSetupFlowInProgress());
   WaitUntilJSIsReady();
@@ -2698,8 +2697,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
   WaitForAutoEnrollmentState(policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR);
 
   // The error screen shows up if device state could not be retrieved.
-  EXPECT_EQ(GetErrorScreen(),
-            WizardController::default_controller()->current_screen());
+  CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
+            GetErrorScreen()->GetParentScreen());
   base::DictionaryValue device_state;
   device_state.SetString(policy::kDeviceStateMode,
                          policy::kDeviceStateRestoreModeDisabled);
@@ -2709,6 +2709,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
 
   EXPECT_CALL(*device_disabled_screen_view_, Show()).Times(1);
   mock_auto_enrollment_check_screen_->ExitScreen();
+
+  base::RunLoop().RunUntilIdle();
 
   ResetAutoEnrollmentCheckScreen();
   CheckCurrentScreen(OobeScreen::SCREEN_DEVICE_DISABLED);
