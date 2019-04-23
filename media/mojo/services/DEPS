@@ -5,5 +5,8 @@ specific_include_rules = {
   "cros_mojo_jpeg_encode_accelerator_service\.h": [
     "+components/chromeos_camera/common",
   ],
+  "cros_mojo_mjpeg_decode_accelerator_service\.h": [
+    "+components/chromeos_camera/common",
+  ],
 }
 

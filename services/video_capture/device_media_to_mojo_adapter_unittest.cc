@@ -27,10 +27,16 @@ class DeviceMediaToMojoAdapterTest : public ::testing::Test {
         std::make_unique<MockReceiver>(mojo::MakeRequest(&receiver_));
     auto mock_device = std::make_unique<media::MockDevice>();
     mock_device_ptr_ = mock_device.get();
+#if defined(OS_CHROMEOS)
     adapter_ = std::make_unique<DeviceMediaToMojoAdapter>(
         std::unique_ptr<service_manager::ServiceContextRef>(),
         std::move(mock_device), base::DoNothing(),
         base::ThreadTaskRunnerHandle::Get());
+#else
+    adapter_ = std::make_unique<DeviceMediaToMojoAdapter>(
+        std::unique_ptr<service_manager::ServiceContextRef>(),
+        std::move(mock_device));
+#endif  // defined(OS_CHROMEOS)
   }
 
   void TearDown() override {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_SERVICES_MOJO_MJPEG_DECODE_ACCELERATOR_SERVICE_H_
-#define MEDIA_MOJO_SERVICES_MOJO_MJPEG_DECODE_ACCELERATOR_SERVICE_H_
+#ifndef MEDIA_MOJO_SERVICES_CROS_MOJO_MJPEG_DECODE_ACCELERATOR_SERVICE_H_
+#define MEDIA_MOJO_SERVICES_CROS_MOJO_MJPEG_DECODE_ACCELERATOR_SERVICE_H_
 
 #include <stdint.h>
 
@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom.h"
 #include "media/gpu/gpu_mjpeg_decode_accelerator_factory.h"
-#include "media/mojo/interfaces/mjpeg_decode_accelerator.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"
 #include "media/video/mjpeg_decode_accelerator.h"
 
@@ -21,13 +21,13 @@ namespace media {
 
 // Implementation of a mojom::MjpegDecodeAccelerator which runs in the GPU
 // process, and wraps a JpegDecodeAccelerator.
-class MEDIA_MOJO_EXPORT MojoMjpegDecodeAcceleratorService
+class MEDIA_MOJO_EXPORT CrOSMojoMjpegDecodeAcceleratorService
     : public mojom::MjpegDecodeAccelerator,
       public MjpegDecodeAccelerator::Client {
  public:
   static void Create(mojom::MjpegDecodeAcceleratorRequest request);
 
-  ~MojoMjpegDecodeAcceleratorService() override;
+  ~CrOSMojoMjpegDecodeAcceleratorService() override;
 
   // MjpegDecodeAccelerator::Client implementation.
   void VideoFrameReady(int32_t buffer_id) override;
@@ -40,7 +40,7 @@ class MEDIA_MOJO_EXPORT MojoMjpegDecodeAcceleratorService
   // This constructor internally calls
   // GpuMjpegDecodeAcceleratorFactory::GetAcceleratorFactories() to
   // fill |accelerator_factory_functions_|.
-  MojoMjpegDecodeAcceleratorService();
+  CrOSMojoMjpegDecodeAcceleratorService();
 
   // mojom::MjpegDecodeAccelerator implementation.
   void Initialize(InitializeCallback callback) override;
@@ -72,9 +72,9 @@ class MEDIA_MOJO_EXPORT MojoMjpegDecodeAcceleratorService
 
   THREAD_CHECKER(thread_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(MojoMjpegDecodeAcceleratorService);
+  DISALLOW_COPY_AND_ASSIGN(CrOSMojoMjpegDecodeAcceleratorService);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_SERVICES_MOJO_MJPEG_DECODE_ACCELERATOR_SERVICE_H_
+#endif  // MEDIA_MOJO_SERVICES_CROS_MOJO_MJPEG_DECODE_ACCELERATOR_SERVICE_H_

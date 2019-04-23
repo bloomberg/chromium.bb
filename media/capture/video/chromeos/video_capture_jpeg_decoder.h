@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_JPEG_DECODER_H_
-#define MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_JPEG_DECODER_H_
+#ifndef MEDIA_CAPTURE_VIDEO_CHROMEOS_VIDEO_CAPTURE_JPEG_DECODER_H_
+#define MEDIA_CAPTURE_VIDEO_CHROMEOS_VIDEO_CAPTURE_JPEG_DECODER_H_
 
 #include "base/callback.h"
 #include "media/capture/capture_export.h"
@@ -53,4 +53,4 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoder {
 
 }  // namespace media
 
-#endif  // MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_JPEG_DECODER_H_
+#endif  // MEDIA_CAPTURE_VIDEO_CHROMEOS_VIDEO_CAPTURE_JPEG_DECODER_H_

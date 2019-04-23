@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/mojo/services/mojo_mjpeg_decode_accelerator_service.h"
+#include "media/mojo/services/cros_mojo_mjpeg_decode_accelerator_service.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -18,12 +18,12 @@ namespace media {
 static const int32_t kArbitraryBitstreamBufferId = 123;
 
 // Test fixture for the unit that is created via the mojom interface for
-// class MojoMjpegDecodeAcceleratorService. Uses a FakeJpegDecodeAccelerator to
-// simulate the actual decoding without the need for special hardware.
-class MojoMjpegDecodeAcceleratorServiceTest : public ::testing::Test {
+// class CrOSMojoMjpegDecodeAcceleratorService. Uses a FakeJpegDecodeAccelerator
+// to simulate the actual decoding without the need for special hardware.
+class CrOSMojoMjpegDecodeAcceleratorServiceTest : public ::testing::Test {
  public:
-  MojoMjpegDecodeAcceleratorServiceTest() = default;
-  ~MojoMjpegDecodeAcceleratorServiceTest() override = default;
+  CrOSMojoMjpegDecodeAcceleratorServiceTest() = default;
+  ~CrOSMojoMjpegDecodeAcceleratorServiceTest() override = default;
 
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -48,13 +48,14 @@ class MojoMjpegDecodeAcceleratorServiceTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
-TEST_F(MojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
+TEST_F(CrOSMojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
   mojom::MjpegDecodeAcceleratorPtr jpeg_decoder;
-  MojoMjpegDecodeAcceleratorService::Create(mojo::MakeRequest(&jpeg_decoder));
+  CrOSMojoMjpegDecodeAcceleratorService::Create(
+      mojo::MakeRequest(&jpeg_decoder));
 
   base::RunLoop run_loop;
   jpeg_decoder->Initialize(
-      base::Bind(&MojoMjpegDecodeAcceleratorServiceTest::OnInitializeDone,
+      base::Bind(&CrOSMojoMjpegDecodeAcceleratorServiceTest::OnInitializeDone,
                  base::Unretained(this), run_loop.QuitClosure()));
   run_loop.Run();
 
@@ -83,7 +84,7 @@ TEST_F(MojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
   jpeg_decoder->Decode(
       bitstream_buffer, kDummyFrameCodedSize, std::move(output_frame_handle),
       base::checked_cast<uint32_t>(kOutputFrameSizeInBytes),
-      base::Bind(&MojoMjpegDecodeAcceleratorServiceTest::OnDecodeAck,
+      base::Bind(&CrOSMojoMjpegDecodeAcceleratorServiceTest::OnDecodeAck,
                  base::Unretained(this), run_loop2.QuitClosure()));
   run_loop2.Run();
 }

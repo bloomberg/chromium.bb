@@ -34,11 +34,14 @@
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_device_client.h"
-#include "media/capture/video/video_capture_jpeg_decoder_impl.h"
 #include "media/capture/video/video_frame_receiver_on_task_runner.h"
 #include "media/capture/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/video_capture_jpeg_decoder_impl.h"
+#endif  // defined(OS_CHROMEOS)
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -160,12 +163,21 @@ class VideoCaptureControllerTest
     buffer_pool_ = new media::VideoCaptureBufferPoolImpl(
         std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(),
         kPoolSize);
+#if defined(OS_CHROMEOS)
     device_client_.reset(new media::VideoCaptureDeviceClient(
         media::VideoCaptureBufferType::kSharedMemory,
         std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
             controller_->GetWeakPtrForIOThread(),
             base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
         buffer_pool_, media::VideoCaptureJpegDecoderFactoryCB()));
+#else
+    device_client_.reset(new media::VideoCaptureDeviceClient(
+        media::VideoCaptureBufferType::kSharedMemory,
+        std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
+            controller_->GetWeakPtrForIOThread(),
+            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})),
+        buffer_pool_));
+#endif  // defined(OS_CHROMEOS)
   }
 
   void SendStubFrameToDeviceClient(const media::VideoCaptureFormat format) {

@@ -14,7 +14,6 @@ typemaps = [
   "//media/mojo/interfaces/hdr_metadata.typemap",
   "//media/mojo/interfaces/media_drm_storage.typemap",
   "//media/mojo/interfaces/media_types.typemap",
-  "//media/mojo/interfaces/mjpeg_decode_accelerator.typemap",
   "//media/mojo/interfaces/pipeline_statistics.typemap",
   "//media/mojo/interfaces/video_color_space.typemap",
   "//media/mojo/interfaces/video_decoder.typemap",

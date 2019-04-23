@@ -7,6 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("common") {
   sources = [
     "jpeg_encode_accelerator.mojom",
+    "mjpeg_decode_accelerator.mojom",
   ]
 
   public_deps = [

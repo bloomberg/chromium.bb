@@ -115,7 +115,6 @@ jumbo_source_set("browser") {
     "//media/midi",
     "//media/midi:mojo",
     "//media/mojo:buildflags",
-    "//media/mojo/clients:jpeg_decode_accelerator",
     "//media/mojo/interfaces",
     "//media/mojo/interfaces:constants",
     "//media/mojo/services",
@@ -952,7 +951,6 @@ jumbo_source_set("browser") {
     "gpu/browser_gpu_client_delegate.h",
     "gpu/compositor_util.cc",
     "gpu/compositor_util.h",
-    "gpu/delegate_to_browser_gpu_service_accelerator_factory.cc",
     "gpu/gpu_client.cc",
     "gpu/gpu_data_manager_impl.cc",
     "gpu/gpu_data_manager_impl.h",
@@ -970,8 +968,6 @@ jumbo_source_set("browser") {
     "gpu/gpu_process_host.h",
     "gpu/shader_cache_factory.cc",
     "gpu/shader_cache_factory.h",
-    "gpu/video_capture_dependencies.cc",
-    "gpu/video_capture_dependencies.h",
     "histogram_controller.cc",
     "histogram_controller.h",
     "histogram_subscriber.h",
@@ -1982,7 +1978,10 @@ jumbo_source_set("browser") {
       "tracing/cros_tracing_agent.cc",
       "tracing/cros_tracing_agent.h",
     ]
-    deps += [ "//chromeos/resources" ]
+    deps += [
+      "//chromeos/resources",
+      "//media/mojo/clients:cros_mjpeg_decode_accelerator",
+    ]
   } else {
     sources += [
       "memory/memory_monitor_linux.cc",
@@ -2502,6 +2501,12 @@ jumbo_source_set("browser") {
   }
 
   if (is_chromeos) {
+    sources += [
+      "gpu/chromeos/delegate_to_browser_gpu_service_accelerator_factory.cc",
+      "gpu/chromeos/video_capture_dependencies.cc",
+      "gpu/chromeos/video_capture_dependencies.h",
+    ]
+
     deps += [
       "//chromeos/assistant:buildflags",
       "//chromeos/audio",

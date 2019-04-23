@@ -20,9 +20,11 @@ void MockDeviceFactoryProvider::ConnectToVideoSourceProvider(
   DoConnectToVideoSourceProvider(request);
 }
 
+#if defined(OS_CHROMEOS)
 void MockDeviceFactoryProvider::InjectGpuDependencies(
     video_capture::mojom::AcceleratorFactoryPtr accelerator_factory) {
   DoInjectGpuDependencies(accelerator_factory);
 }
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace video_capture

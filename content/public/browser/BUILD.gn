@@ -112,7 +112,6 @@ jumbo_source_set("browser_sources") {
     "cors_exempt_headers.h",
     "cors_origin_pattern_setter.cc",
     "cors_origin_pattern_setter.h",
-    "delegate_to_browser_gpu_service_accelerator_factory.h",
     "desktop_capture.cc",
     "desktop_capture.h",
     "desktop_media_id.cc",
@@ -450,5 +449,10 @@ jumbo_source_set("browser_sources") {
       "host_zoom_map.h",
       "zoom_level_delegate.h",
     ]
+  }
+
+  if (is_chromeos) {
+    sources +=
+        [ "chromeos/delegate_to_browser_gpu_service_accelerator_factory.h" ]
   }
 }

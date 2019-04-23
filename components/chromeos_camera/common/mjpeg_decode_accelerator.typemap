@@ -2,18 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-mojom = "//media/mojo/interfaces/mjpeg_decode_accelerator.mojom"
+mojom = "//components/chromeos_camera/common/mjpeg_decode_accelerator.mojom"
 
 public_headers = [
   "//media/base/bitstream_buffer.h",
   "//media/video/mjpeg_decode_accelerator.h",
 ]
 
-traits_headers =
-    [ "//media/mojo/interfaces/mjpeg_decode_accelerator_mojom_traits.h" ]
+traits_headers = [
+  "//components/chromeos_camera/common/mjpeg_decode_accelerator_mojom_traits.h",
+]
 
 sources = [
-  "//media/mojo/interfaces/mjpeg_decode_accelerator_mojom_traits.cc",
+  "//components/chromeos_camera/common/mjpeg_decode_accelerator_mojom_traits.cc",
 ]
 
 deps = [

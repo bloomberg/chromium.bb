@@ -109,11 +109,16 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
 
  protected:
   void SetUp() override {
+#if defined(OS_CHROMEOS)
     provider_ = std::make_unique<ServiceVideoCaptureProvider>(
         base::BindRepeating([]() {
           return std::unique_ptr<video_capture::mojom::AcceleratorFactory>();
         }),
         connector_factory_.GetDefaultConnector(), kIgnoreLogMessageCB);
+#else
+    provider_ = std::make_unique<ServiceVideoCaptureProvider>(
+        connector_factory_.GetDefaultConnector(), kIgnoreLogMessageCB);
+#endif  // defined(OS_CHROMEOS)
 
     ON_CALL(fake_video_capture_service_, BindFactoryProvider(_))
         .WillByDefault(Invoke(

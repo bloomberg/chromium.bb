@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/gpu/video_capture_dependencies.h"
+#include "content/browser/gpu/chromeos/video_capture_dependencies.h"
 
 #include "base/bind.h"
 #include "base/task/post_task.h"

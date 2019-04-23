@@ -17,10 +17,13 @@
 #include "media/capture/video/mock_video_frame_receiver.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
-#include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/video_capture_jpeg_decoder.h"
+#endif  // defined(OS_CHROMEOS)
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -33,9 +36,11 @@ namespace media {
 
 namespace {
 
+#if defined(OS_CHROMEOS)
 std::unique_ptr<VideoCaptureJpegDecoder> ReturnNullPtrAsJpecDecoder() {
   return nullptr;
 }
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 
@@ -54,9 +59,15 @@ class VideoCaptureDeviceClientTest : public ::testing::Test {
     receiver_ = controller.get();
     gpu_memory_buffer_manager_ =
         std::make_unique<unittest_internal::MockGpuMemoryBufferManager>();
+#if defined(OS_CHROMEOS)
     device_client_ = std::make_unique<VideoCaptureDeviceClient>(
         VideoCaptureBufferType::kSharedMemory, std::move(controller),
         buffer_pool, base::BindRepeating(&ReturnNullPtrAsJpecDecoder));
+#else
+    device_client_ = std::make_unique<VideoCaptureDeviceClient>(
+        VideoCaptureBufferType::kSharedMemory, std::move(controller),
+        buffer_pool);
+#endif  // defined(OS_CHROMEOS)
   }
   ~VideoCaptureDeviceClientTest() override = default;
 

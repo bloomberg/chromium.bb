@@ -47,9 +47,14 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
 
     auto video_capture_system = std::make_unique<media::VideoCaptureSystemImpl>(
         std::move(mock_device_factory));
+#if defined(OS_CHROMEOS)
     service_device_factory_ = std::make_unique<DeviceFactoryMediaToMojoAdapter>(
         std::move(video_capture_system), base::DoNothing(),
         base::ThreadTaskRunnerHandle::Get());
+#else
+    service_device_factory_ = std::make_unique<DeviceFactoryMediaToMojoAdapter>(
+        std::move(video_capture_system));
+#endif  // defined(OS_CHROMEOS)
     service_device_factory_->SetServiceRef(service_keepalive_.CreateRef());
     source_provider_ = std::make_unique<VideoSourceProviderImpl>(
         service_device_factory_.get(), base::DoNothing());

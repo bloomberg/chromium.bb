@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/delegate_to_browser_gpu_service_accelerator_factory.h"
+#include "content/public/browser/chromeos/delegate_to_browser_gpu_service_accelerator_factory.h"
 
-#include "content/browser/gpu/video_capture_dependencies.h"
+#include "content/browser/gpu/chromeos/video_capture_dependencies.h"
 
 namespace content {
 

@@ -197,6 +197,7 @@ void GpuClient::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
                      weak_factory_.GetWeakPtr()));
 }
 
+#if defined(OS_CHROMEOS)
 void GpuClient::CreateJpegDecodeAccelerator(
     media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
   if (auto* gpu_host = delegate_->EnsureGpuHost()) {
@@ -204,6 +205,7 @@ void GpuClient::CreateJpegDecodeAccelerator(
         std::move(jda_request));
   }
 }
+#endif  // defined(OS_CHROMEOS)
 
 void GpuClient::CreateVideoEncodeAcceleratorProvider(
     media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request) {

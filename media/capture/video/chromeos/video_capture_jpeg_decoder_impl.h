@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_JPEG_DECODER_IMPL_H_
-#define MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_JPEG_DECODER_IMPL_H_
+#ifndef MEDIA_CAPTURE_VIDEO_CHROMEOS_VIDEO_CAPTURE_JPEG_DECODER_IMPL_H_
+#define MEDIA_CAPTURE_VIDEO_CHROMEOS_VIDEO_CAPTURE_JPEG_DECODER_IMPL_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -17,9 +17,10 @@
 #include "base/sequence_checker.h"
 #include "gpu/config/gpu_info.h"
 #include "media/capture/capture_export.h"
+#include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
+#include "media/capture/video/chromeos/video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_capture_device_factory.h"
-#include "media/capture/video/video_capture_jpeg_decoder.h"
-#include "media/mojo/clients/mojo_mjpeg_decode_accelerator.h"
+#include "media/mojo/clients/cros_mojo_mjpeg_decode_accelerator.h"
 
 namespace media {
 
@@ -111,4 +112,4 @@ class CAPTURE_EXPORT VideoCaptureJpegDecoderImpl
 
 }  // namespace media
 
-#endif  // MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_JPEG_DECODER_IMPL_H_
+#endif  // MEDIA_CAPTURE_VIDEO_CHROMEOS_VIDEO_CAPTURE_JPEG_DECODER_IMPL_H_

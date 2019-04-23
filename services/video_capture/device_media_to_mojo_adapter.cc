@@ -7,16 +7,20 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/capture/video/scoped_video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
-#include "media/capture/video/video_capture_jpeg_decoder_impl.h"
 #include "media/capture/video/video_frame_receiver_on_task_runner.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/video_capture/receiver_mojo_to_media_adapter.h"
 
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/scoped_video_capture_jpeg_decoder.h"
+#include "media/capture/video/chromeos/video_capture_jpeg_decoder_impl.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
+#if defined(OS_CHROMEOS)
 std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
     media::MojoMjpegDecodeAcceleratorFactoryCB jpeg_decoder_factory_callback,
@@ -28,11 +32,13 @@ std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
           std::move(decode_done_cb), std::move(send_log_message_cb)),
       decoder_task_runner);
 }
+#endif  // defined(OS_CHROMEOS)
 
 }  // anonymous namespace
 
 namespace video_capture {
 
+#if defined(OS_CHROMEOS)
 DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
     std::unique_ptr<service_manager::ServiceContextRef> service_ref,
     std::unique_ptr<media::VideoCaptureDevice> device,
@@ -44,6 +50,15 @@ DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
       jpeg_decoder_task_runner_(std::move(jpeg_decoder_task_runner)),
       device_started_(false),
       weak_factory_(this) {}
+#else
+DeviceMediaToMojoAdapter::DeviceMediaToMojoAdapter(
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref,
+    std::unique_ptr<media::VideoCaptureDevice> device)
+    : service_ref_(std::move(service_ref)),
+      device_(std::move(device)),
+      device_started_(false),
+      weak_factory_(this) {}
+#endif  // defined(OS_CHROMEOS)
 
 DeviceMediaToMojoAdapter::~DeviceMediaToMojoAdapter() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -80,7 +95,7 @@ void DeviceMediaToMojoAdapter::Start(
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool(
       new media::VideoCaptureBufferPoolImpl(std::move(buffer_tracker_factory),
                                             max_buffer_pool_buffer_count()));
-
+#if defined(OS_CHROMEOS)
   auto device_client = std::make_unique<media::VideoCaptureDeviceClient>(
       requested_settings.buffer_type, std::move(media_receiver), buffer_pool,
       base::BindRepeating(
@@ -91,6 +106,10 @@ void DeviceMediaToMojoAdapter::Start(
               receiver_->GetWeakPtr())),
           media::BindToCurrentLoop(base::BindRepeating(
               &media::VideoFrameReceiver::OnLog, receiver_->GetWeakPtr()))));
+#else
+  auto device_client = std::make_unique<media::VideoCaptureDeviceClient>(
+      requested_settings.buffer_type, std::move(media_receiver), buffer_pool);
+#endif  // defined(OS_CHROMEOS)
 
   device_->AllocateAndStart(requested_settings, std::move(device_client));
   device_started_ = true;

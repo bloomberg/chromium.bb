@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_INTERFACES_MJPEG_DECODE_ACCELERATOR_MOJOM_TRAITS_H_
-#define MEDIA_MOJO_INTERFACES_MJPEG_DECODE_ACCELERATOR_MOJOM_TRAITS_H_
+#ifndef COMPONENTS_CHROMEOS_CAMERA_COMMON_MJPEG_DECODE_ACCELERATOR_MOJOM_TRAITS_H_
+#define COMPONENTS_CHROMEOS_CAMERA_COMMON_MJPEG_DECODE_ACCELERATOR_MOJOM_TRAITS_H_
 
 #include "base/numerics/safe_conversions.h"
+#include "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom.h"
 #include "media/base/bitstream_buffer.h"
-#include "media/mojo/interfaces/mjpeg_decode_accelerator.mojom.h"
 #include "media/video/mjpeg_decode_accelerator.h"
 
 namespace mojo {
@@ -61,4 +61,4 @@ struct StructTraits<media::mojom::BitstreamBufferDataView,
 
 }  // namespace mojo
 
-#endif  // MEDIA_MOJO_INTERFACES_MJPEG_DECODE_ACCELERATOR_MOJOM_TRAITS_H_
+#endif  // COMPONENTS_CHROMEOS_CAMERA_COMMON_MJPEG_DECODE_ACCELERATOR_MOJOM_TRAITS_H_

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/capture/video/video_capture_jpeg_decoder_impl.h"
+#include "media/capture/video/chromeos/video_capture_jpeg_decoder_impl.h"
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "media/base/media_switches.h"
+#include "media/mojo/clients/cros_mojo_mjpeg_decode_accelerator.h"
 
 namespace media {
 
@@ -198,7 +199,7 @@ void VideoCaptureJpegDecoderImpl::FinishInitialization() {
   jpeg_decoder_factory_.Run(mojo::MakeRequest(&remote_decoder));
 
   base::AutoLock lock(lock_);
-  decoder_ = std::make_unique<media::MojoMjpegDecodeAccelerator>(
+  decoder_ = std::make_unique<media::CrOSMojoMjpegDecodeAccelerator>(
       decoder_task_runner_, remote_decoder.PassInterface());
 
   decoder_->InitializeAsync(

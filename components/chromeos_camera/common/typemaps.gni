@@ -2,5 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps =
-    [ "//components/chromeos_camera/common/jpeg_encode_accelerator.typemap" ]
+typemaps = [
+  "//components/chromeos_camera/common/jpeg_encode_accelerator.typemap",
+  "//components/chromeos_camera/common/mjpeg_decode_accelerator.typemap",
+]

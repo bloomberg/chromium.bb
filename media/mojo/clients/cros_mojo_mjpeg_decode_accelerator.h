@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_CLIENTS_MOJO_MJPEG_DECODE_ACCELERATOR_H_
-#define MEDIA_MOJO_CLIENTS_MOJO_MJPEG_DECODE_ACCELERATOR_H_
+#ifndef MEDIA_MOJO_CLIENTS_CROS_MOJO_MJPEG_DECODE_ACCELERATOR_H_
+#define MEDIA_MOJO_CLIENTS_CROS_MOJO_MJPEG_DECODE_ACCELERATOR_H_
 
 #include <stdint.h>
 
 #include <memory>
 
 #include "base/macros.h"
-#include "media/mojo/interfaces/mjpeg_decode_accelerator.mojom.h"
+#include "components/chromeos_camera/common/mjpeg_decode_accelerator.mojom.h"
 #include "media/video/mjpeg_decode_accelerator.h"
 
 namespace base {
@@ -22,16 +22,16 @@ namespace media {
 // A MjpegDecodeAccelerator, for use in the browser process, that proxies to a
 // mojom::MjpegDecodeAccelerator. Created on the owner's thread, otherwise
 // operating and deleted on |io_task_runner|.
-class MojoMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
+class CrOSMojoMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
  public:
-  MojoMjpegDecodeAccelerator(
+  CrOSMojoMjpegDecodeAccelerator(
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder);
-  ~MojoMjpegDecodeAccelerator() override;
+  ~CrOSMojoMjpegDecodeAccelerator() override;
 
   // MjpegDecodeAccelerator implementation.
   // |client| is called on the IO thread, but is never called into after the
-  // MojoMjpegDecodeAccelerator is destroyed.
+  // CrOSMojoMjpegDecodeAccelerator is destroyed.
   bool Initialize(Client* client) override;
   void InitializeAsync(Client* client, InitCB init_cb) override;
   void Decode(const BitstreamBuffer& bitstream_buffer,
@@ -57,9 +57,9 @@ class MojoMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
 
   mojom::MjpegDecodeAcceleratorPtr jpeg_decoder_;
 
-  DISALLOW_COPY_AND_ASSIGN(MojoMjpegDecodeAccelerator);
+  DISALLOW_COPY_AND_ASSIGN(CrOSMojoMjpegDecodeAccelerator);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_CLIENTS_MOJO_MJPEG_DECODE_ACCELERATOR_H_
+#endif  // MEDIA_MOJO_CLIENTS_CROS_MOJO_MJPEG_DECODE_ACCELERATOR_H_
