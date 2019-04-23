@@ -4112,9 +4112,13 @@ const ComputedStyle* Element::EnsureComputedStyle(
       if (layout_parent)
         layout_parent->EnsureComputedStyle();
     }
-    scoped_refptr<ComputedStyle> new_style =
-        HasCustomStyleCallbacks() ? CustomStyleForLayoutObject()
-                                  : OriginalStyleForLayoutObject();
+    scoped_refptr<ComputedStyle> new_style = nullptr;
+    // TODO(crbug.com/953707): Avoid setting inline style during
+    // HTMLImageElement::CustomStyleForLayoutObject.
+    if (HasCustomStyleCallbacks() && !IsHTMLImageElement(*this))
+      new_style = CustomStyleForLayoutObject();
+    else
+      new_style = OriginalStyleForLayoutObject();
     element_style = new_style.get();
     element_style->SetIsEnsuredInDisplayNone();
     SetComputedStyle(std::move(new_style));
