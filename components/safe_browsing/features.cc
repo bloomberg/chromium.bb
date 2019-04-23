@@ -77,6 +77,7 @@ constexpr struct {
   bool probabilistically_enabled;
 } kExperimentalFeatures[]{
     {&kAdSamplerTriggerFeature, false},
+    {&kCaptureSafetyNetId, true},
     {&kCheckByURLLoaderThrottle, true},
     {&kCommittedSBInterstitials, true},
     {&kPasswordProtectionForSignedInUsers, true},
