@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
@@ -38,7 +39,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModel.PropertyKey;
 import org.chromium.chrome.browser.dependency_injection.ChromeAppModule;
-import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
+import org.chromium.chrome.browser.dependency_injection.ModuleOverridesRule;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.fullscreen.FullscreenManagerTestUtils;
 import org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper;
@@ -84,8 +85,17 @@ import java.util.concurrent.TimeoutException;
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
 public class ContextualSuggestionsTest {
+    private final TestRule mModuleOverridesRule = new ModuleOverridesRule()
+            .setOverride(ContextualSuggestionsModuleForTest.Factory.class,
+                    ContextualSuggestionsModuleForTest::new)
+            .setOverride(ChromeAppModule.Factory.class, ChromeAppModuleForTest::new);
+
+    private final ChromeTabbedActivityTestRule mActivityTestRule =
+            new ChromeTabbedActivityTestRule();
+
     @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    public TestRule mOverrideModulesThenLaunchRule =
+            RuleChain.outerRule(mModuleOverridesRule).around(mActivityTestRule);
     @Rule
     public ScreenShooter mScreenShooter = new ScreenShooter();
     @Rule
@@ -141,11 +151,6 @@ public class ContextualSuggestionsTest {
 
     @Before
     public void setUp() throws Exception {
-        ModuleFactoryOverrides.setOverride(ContextualSuggestionsModuleForTest.Factory.class,
-                ContextualSuggestionsModuleForTest::new);
-        ModuleFactoryOverrides.setOverride(
-                ChromeAppModule.Factory.class, ChromeAppModuleForTest::new);
-
         FetchHelper.setDisableDelayForTesting(true);
         ContextualSuggestionsMediator.setOverrideIPHTimeoutForTesting(true);
 
@@ -183,7 +188,6 @@ public class ContextualSuggestionsTest {
         mTestServer.stopAndDestroyServer();
         FetchHelper.setDisableDelayForTesting(false);
         ContextualSuggestionsMediator.setOverrideIPHTimeoutForTesting(false);
-        ModuleFactoryOverrides.clearOverrides();
     }
 
     @Test

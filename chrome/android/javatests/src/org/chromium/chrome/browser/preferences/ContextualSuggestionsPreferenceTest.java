@@ -15,13 +15,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.contextual_suggestions.EmptyEnabledStateMonitor;
 import org.chromium.chrome.browser.contextual_suggestions.EnabledStateMonitor;
 import org.chromium.chrome.browser.dependency_injection.ChromeAppModule;
-import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
+import org.chromium.chrome.browser.dependency_injection.ModuleOverridesRule;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -33,8 +35,13 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Features.DisableFeatures(SEARCH_ENGINE_PROMO_EXISTING_DEVICE)
 public class ContextualSuggestionsPreferenceTest {
+
+    private final TestRule mModuleOverridesRule = new ModuleOverridesRule()
+            .setOverride(ChromeAppModule.Factory.class, ChromeAppModuleForTest::new);
+
     @Rule
-    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
+    public final TestRule mOverrideModulesThenLaunchRule =
+            RuleChain.outerRule(mModuleOverridesRule).around(new ChromeBrowserTestRule());
 
     private ContextualSuggestionsPreference mFragment;
 
@@ -89,9 +96,6 @@ public class ContextualSuggestionsPreferenceTest {
 
     @Before
     public void setUp() {
-        ModuleFactoryOverrides.setOverride(
-                ChromeAppModule.Factory.class, ChromeAppModuleForTest::new);
-
         Preferences preferences =
                 PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                         ContextualSuggestionsPreference.class.getName());
@@ -104,7 +108,6 @@ public class ContextualSuggestionsPreferenceTest {
     @After
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> setSwitchState(mInitialSwitchState));
-        ModuleFactoryOverrides.clearOverrides();
     }
 
     @Test

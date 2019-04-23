@@ -20,6 +20,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.library_loader.LibraryLoader;
@@ -31,8 +33,9 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
+import org.chromium.chrome.browser.customtabs.dynamicmodule.CustomTabsDynamicModuleTestUtils.AppHooksModuleForTest;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.CustomTabsDynamicModuleTestUtils.IntentBuilder;
-import org.chromium.chrome.browser.dependency_injection.ModuleFactoryOverrides;
+import org.chromium.chrome.browser.dependency_injection.ModuleOverridesRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
@@ -44,8 +47,15 @@ import org.chromium.net.test.util.TestWebServer;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class CustomTabsDynamicModulePostMessageTest {
+
+    private final TestRule mModuleOverridesRule = new ModuleOverridesRule()
+            .setOverride(AppHooksModule.Factory.class, AppHooksModuleForTest::new);
+
+    private final CustomTabActivityTestRule mActivityRule = new CustomTabActivityTestRule();
+
     @Rule
-    public CustomTabActivityTestRule mActivityRule = new CustomTabActivityTestRule();
+    public final TestRule mOverrideModulesThenLaunchRule =
+            RuleChain.outerRule(mModuleOverridesRule).around(mActivityRule);
 
     private TestWebServer mServer;
 
@@ -82,14 +92,11 @@ public class CustomTabsDynamicModulePostMessageTest {
     public void setUp() throws Exception {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         mServer = TestWebServer.start();
-        ModuleFactoryOverrides.setOverride(AppHooksModule.Factory.class,
-                CustomTabsDynamicModuleTestUtils.AppHooksModuleForTest::new);
     }
 
     @After
     public void tearDown() throws Exception {
         mServer.shutdown();
-        ModuleFactoryOverrides.clearOverrides();
     }
 
     /**
