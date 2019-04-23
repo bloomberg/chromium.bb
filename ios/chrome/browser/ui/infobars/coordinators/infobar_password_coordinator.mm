@@ -83,9 +83,9 @@
   self.modalViewController = [[InfobarPasswordTableViewController alloc]
       initWithTableViewStyle:UITableViewStylePlain
                  appBarStyle:ChromeTableViewControllerStyleNoAppBar];
-  self.modalViewController.title =
-      base::SysUTF16ToNSString(self.passwordInfoBarDelegate->GetMessageText());
   self.modalViewController.infobarModalDelegate = self;
+  self.modalViewController.title =
+      self.passwordInfoBarDelegate->GetInfobarModalTitleText();
   self.modalViewController.username =
       self.passwordInfoBarDelegate->GetUserNameText();
   NSString* password = self.passwordInfoBarDelegate->GetPasswordText();

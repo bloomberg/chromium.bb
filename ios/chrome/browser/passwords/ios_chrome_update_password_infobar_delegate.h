@@ -66,6 +66,9 @@ class IOSChromeUpdatePasswordInfoBarDelegate
   bool Accept() override;
   bool Cancel() override;
 
+  // IOSChromePasswordManagerInfoBarDelegate implementation.
+  NSString* GetInfobarModalTitleText() const override;
+
   // The credential that should be displayed in the infobar, and for which the
   // password will be updated.
   base::string16 selected_account_;

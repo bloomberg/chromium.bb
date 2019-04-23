@@ -51,6 +51,9 @@ class IOSChromeSavePasswordInfoBarDelegate
   bool Accept() override;
   bool Cancel() override;
 
+  // IOSChromePasswordManagerInfoBarDelegate implementation.
+  NSString* GetInfobarModalTitleText() const override;
+
   DISALLOW_COPY_AND_ASSIGN(IOSChromeSavePasswordInfoBarDelegate);
 };
 

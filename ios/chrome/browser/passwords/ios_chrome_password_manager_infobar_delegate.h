@@ -40,6 +40,9 @@ class IOSChromePasswordManagerInfoBarDelegate : public ConfirmInfoBarDelegate {
   // The URL host for which the credentials are being saved for.
   NSString* GetURLHostText() const;
 
+  // The title for the InfobarModal being presented.
+  virtual NSString* GetInfobarModalTitleText() const;
+
  protected:
   IOSChromePasswordManagerInfoBarDelegate(
       bool is_sync_user,

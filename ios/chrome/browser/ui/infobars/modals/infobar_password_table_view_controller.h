@@ -26,7 +26,7 @@
 @property(nonatomic, copy) NSString* detailsTextMessage;
 // The URL being displayed in the InfobarModal.
 @property(nonatomic, copy) NSString* URL;
-// The text used for the save credentials button.
+// The text used for the save/update credentials button.
 @property(nonatomic, copy) NSString* saveButtonText;
 // The text used for the cancel button.
 @property(nonatomic, copy) NSString* cancelButtonText;

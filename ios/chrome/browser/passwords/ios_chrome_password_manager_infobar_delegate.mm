@@ -60,6 +60,12 @@ NSString* IOSChromePasswordManagerInfoBarDelegate::GetURLHostText() const {
   return base::SysUTF8ToNSString(form_to_save_->GetOrigin().host());
 }
 
+NSString* IOSChromePasswordManagerInfoBarDelegate::GetInfobarModalTitleText()
+    const {
+  NOTREACHED() << "Subclass must implement.";
+  return @"";
+}
+
 int IOSChromePasswordManagerInfoBarDelegate::GetIconId() const {
   return IDR_IOS_INFOBAR_SAVE_PASSWORD;
 }

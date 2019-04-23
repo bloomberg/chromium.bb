@@ -34,7 +34,7 @@ const CGFloat kButtonTitleVerticalContentInset = 8.0;
 const CGFloat kButtonCornerRadius = 8;
 // Font Size for Button Title Label.
 const CGFloat kButtonTitleFontSize = 17.0;
-
+// Default Text alignment.
 const NSTextAlignment kDefaultTextAlignment = NSTextAlignmentCenter;
 }  // namespace
 

@@ -12,12 +12,18 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Text color for the Cancel button.
+const CGFloat kCancelButtonTextColorBlue = 0x1A73E8;
+}  // namespace
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierContent = kSectionIdentifierEnumZero,
@@ -28,7 +34,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeUsername,
   ItemTypePassword,
   ItemTypeSaveCredentials,
-  ItemTypeNeverForThisSite,
+  ItemTypeCancel,
 };
 
 @interface InfobarPasswordTableViewController ()
@@ -38,8 +44,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, strong) TableViewTextEditItem* passwordItem;
 // Item that holds the SaveCredentials Button information.
 @property(nonatomic, strong) TableViewTextButtonItem* saveCredentialsItem;
-// Item that holds the Never Save for this site Button information.
-@property(nonatomic, strong) TableViewTextButtonItem* neverForThisSiteItem;
+// Item that holds the cancel Button for this Infobar. e.g. "Never Save for this
+// site".
+@property(nonatomic, strong) TableViewTextButtonItem* cancelInfobarItem;
 @end
 
 @implementation InfobarPasswordTableViewController
@@ -122,13 +129,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:self.saveCredentialsItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  self.neverForThisSiteItem =
-      [[TableViewTextButtonItem alloc] initWithType:ItemTypeNeverForThisSite];
-  self.neverForThisSiteItem.buttonText = self.cancelButtonText;
-  self.neverForThisSiteItem.buttonTextColor = [UIColor blueColor];
-  self.neverForThisSiteItem.buttonBackgroundColor = [UIColor clearColor];
-  [model addItem:self.neverForThisSiteItem
-      toSectionWithIdentifier:SectionIdentifierContent];
+  if ([self.cancelButtonText length]) {
+    self.cancelInfobarItem =
+        [[TableViewTextButtonItem alloc] initWithType:ItemTypeCancel];
+    self.cancelInfobarItem.buttonText = self.cancelButtonText;
+    self.cancelInfobarItem.buttonTextColor =
+        UIColorFromRGB(kCancelButtonTextColorBlue);
+    self.cancelInfobarItem.buttonBackgroundColor = [UIColor clearColor];
+    [model addItem:self.cancelInfobarItem
+        toSectionWithIdentifier:SectionIdentifierContent];
+  }
 }
 
 #pragma mark - UITableViewDataSource
@@ -150,7 +160,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
           forControlEvents:UIControlEventTouchUpInside];
       break;
     }
-    case ItemTypeNeverForThisSite: {
+    case ItemTypeCancel: {
       TableViewTextButtonCell* tableViewTextButtonCell =
           base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
       [tableViewTextButtonCell.button

@@ -105,14 +105,26 @@ base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetMessageText() const {
                    IDS_IOS_PASSWORD_MANAGER_UPDATE_PASSWORD);
 }
 
+NSString* IOSChromeUpdatePasswordInfoBarDelegate::GetInfobarModalTitleText()
+    const {
+  DCHECK(IsInfobarUIRebootEnabled());
+  return l10n_util::GetNSString(IDS_IOS_PASSWORD_MANAGER_UPDATE_PASSWORD_TITLE);
+}
+
 int IOSChromeUpdatePasswordInfoBarDelegate::GetButtons() const {
   return BUTTON_OK;
 }
 
 base::string16 IOSChromeUpdatePasswordInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  DCHECK_EQ(BUTTON_OK, button);
-  return l10n_util::GetStringUTF16(IDS_IOS_PASSWORD_MANAGER_UPDATE_BUTTON);
+  if (IsInfobarUIRebootEnabled()) {
+    return (button == BUTTON_OK) ? l10n_util::GetStringUTF16(
+                                       IDS_IOS_PASSWORD_MANAGER_UPDATE_BUTTON)
+                                 : base::string16();
+  } else {
+    DCHECK_EQ(BUTTON_OK, button);
+    return l10n_util::GetStringUTF16(IDS_IOS_PASSWORD_MANAGER_UPDATE_BUTTON);
+  }
 }
 
 bool IOSChromeUpdatePasswordInfoBarDelegate::Accept() {

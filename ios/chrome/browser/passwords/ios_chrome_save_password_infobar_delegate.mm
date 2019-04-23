@@ -79,11 +79,24 @@ base::string16 IOSChromeSavePasswordInfoBarDelegate::GetMessageText() const {
       IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT);
 }
 
+NSString* IOSChromeSavePasswordInfoBarDelegate::GetInfobarModalTitleText()
+    const {
+  DCHECK(IsInfobarUIRebootEnabled());
+  return l10n_util::GetNSString(IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_TITLE);
+}
+
 base::string16 IOSChromeSavePasswordInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16(
-      (button == BUTTON_OK) ? IDS_IOS_PASSWORD_MANAGER_SAVE_BUTTON
-                            : IDS_IOS_PASSWORD_MANAGER_BLACKLIST_BUTTON);
+  if (IsInfobarUIRebootEnabled()) {
+    return l10n_util::GetStringUTF16(
+        (button == BUTTON_OK)
+            ? IDS_IOS_PASSWORD_MANAGER_SAVE_BUTTON
+            : IDS_IOS_PASSWORD_MANAGER_MODAL_BLACKLIST_BUTTON);
+  } else {
+    return l10n_util::GetStringUTF16(
+        (button == BUTTON_OK) ? IDS_IOS_PASSWORD_MANAGER_SAVE_BUTTON
+                              : IDS_IOS_PASSWORD_MANAGER_BLACKLIST_BUTTON);
+  }
 }
 
 bool IOSChromeSavePasswordInfoBarDelegate::Accept() {
