@@ -38,7 +38,9 @@ GinJavaBridgeObject* GinJavaBridgeObject::InjectNamed(
   if (controller.IsEmpty())
     return NULL;
 
-  global->Set(gin::StringToV8(isolate, object_name), controller.ToV8());
+  global->Set(context, gin::StringToV8(isolate, object_name), controller.ToV8())
+      .Check();
+
   return object;
 }
 
