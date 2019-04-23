@@ -570,10 +570,6 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   DCHECK(&item_shape_result);
   item.AssertOffset(item_result->start_offset);
 
-  // TODO(kojii): We need to instantiate ShapingLineBreaker here because it
-  // has item-specific info as context. Should they be part of ShapeLine() to
-  // instantiate once, or is this just fine since instatiation is not
-  // expensive?
   DCHECK_EQ(item_shape_result.StartIndex(), item.StartOffset());
   DCHECK_EQ(item_shape_result.EndIndex(), item.EndOffset());
   struct ShapeCallbackContext {
