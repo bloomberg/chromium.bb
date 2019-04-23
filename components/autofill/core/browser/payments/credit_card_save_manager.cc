@@ -453,9 +453,12 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
         !supported_card_bin_ranges.empty() &&
         !payments::IsCreditCardSupported(upload_request_.card,
                                          supported_card_bin_ranges)) {
-      AttemptToOfferCardLocalSave(from_dynamic_change_form_,
-                                  has_non_focusable_field_,
-                                  upload_request_.card);
+      // Attempt local card save if card not already saved.
+      if (!uploading_local_card_) {
+        AttemptToOfferCardLocalSave(from_dynamic_change_form_,
+                                    has_non_focusable_field_,
+                                    upload_request_.card);
+      }
       upload_decision_metrics_ |=
           AutofillMetrics::UPLOAD_NOT_OFFERED_UNSUPPORTED_BIN_RANGE;
       LogCardUploadDecisions(upload_decision_metrics_);
