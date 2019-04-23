@@ -109,4 +109,9 @@ UIElement::UIElement(const UIElementType type,
   delegate_->OnUIElementAdded(nullptr, this);
 }
 
+bool UIElement::SetPropertiesFromString(const std::string& text) {
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace ui_devtools

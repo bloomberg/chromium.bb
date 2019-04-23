@@ -80,6 +80,11 @@ class UI_DEVTOOLS_EXPORT UIElement {
   virtual void GetVisible(bool* visible) const = 0;
   virtual void SetVisible(bool visible) = 0;
 
+  // Set this element's property values according to |text|.
+  // |text| is the string passed in through StyleDeclarationEdit::text from
+  // the frontend.
+  virtual bool SetPropertiesFromString(const std::string& text);
+
   // If element exists, returns its associated native window and its screen
   // bounds. Otherwise, returns null and empty bounds.
   virtual std::pair<gfx::NativeWindow, gfx::Rect> GetNodeWindowAndScreenBounds()

@@ -4,6 +4,7 @@
 
 #include "components/ui_devtools/views/view_element.h"
 
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/ui_devtools/Protocol.h"
 #include "components/ui_devtools/ui_element_delegate.h"
@@ -88,6 +89,39 @@ void ViewElement::GetVisible(bool* visible) const {
 
 void ViewElement::SetVisible(bool visible) {
   view_->SetVisible(visible);
+}
+
+bool ViewElement::SetPropertiesFromString(const std::string& text) {
+  std::vector<std::string> tokens = base::SplitString(
+      text, ":;", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  DCHECK_EQ(tokens.size() % 2, 0UL);
+  for (size_t i = 0; i < tokens.size() - 1; i += 2) {
+    const std::string& property_name = tokens.at(i);
+    const std::string& property_value = base::ToLowerASCII(tokens.at(i + 1));
+
+    views::metadata::ClassMetaData* metadata = view_->GetClassMetaData();
+    views::metadata::MemberMetaDataBase* member =
+        metadata->FindMemberData(property_name);
+    if (!member) {
+      DLOG(ERROR) << "UI DevTools: Can not find property " << property_name
+                  << " in MetaData.";
+      continue;
+    }
+
+    // Since DevTools frontend doesn't check the value, we do a sanity check
+    // based on its type here.
+    if (member->member_type() == "bool") {
+      if (property_value != "true" && property_value != "false") {
+        // Ignore the value.
+        continue;
+      }
+    }
+
+    member->SetValueAsString(view_, base::UTF8ToUTF16(property_value));
+  }
+
+  return true;
 }
 
 std::unique_ptr<protocol::Array<std::string>> ViewElement::GetAttributes()

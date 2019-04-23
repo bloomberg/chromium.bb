@@ -89,6 +89,36 @@ TEST_F(ViewElementTest, SettingVisibleOnElementSetsOnView) {
   EXPECT_TRUE(view()->visible());
 }
 
+TEST_F(ViewElementTest, SetPropertiesFromString) {
+  static const char* kTestProperty = "Enabled";
+
+  auto props = element()->GetCustomProperties();
+  size_t index;
+  for (index = 0; index < props.size(); ++index) {
+    if (props[index].first == kTestProperty) {
+      EXPECT_EQ(props[index].second, "true");
+      break;
+    }
+  }
+
+  // Check the property can be set accordingly.
+  element()->SetPropertiesFromString("Enabled:false");
+  props = element()->GetCustomProperties();
+  EXPECT_EQ(props[index].first, kTestProperty);
+  EXPECT_EQ(props[index].second, "false");
+
+  element()->SetPropertiesFromString("Enabled:true");
+  props = element()->GetCustomProperties();
+  EXPECT_EQ(props[index].first, kTestProperty);
+  EXPECT_EQ(props[index].second, "true");
+
+  // Test setting a non-existent property has no effect.
+  element()->SetPropertiesFromString("Enable:false");
+  props = element()->GetCustomProperties();
+  EXPECT_EQ(props[index].first, kTestProperty);
+  EXPECT_EQ(props[index].second, "true");
+}
+
 TEST_F(ViewElementTest, GetVisible) {
   bool visible;
 

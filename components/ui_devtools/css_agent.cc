@@ -157,6 +157,10 @@ Response CSSAgent::setStyleTexts(
       return Response::Error("Invalid node id");
 
     UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
+    // Handle setting properties from metadata for View.
+    if (ui_element->type() == VIEW)
+      ui_element->SetPropertiesFromString(edit->getText());
+
     gfx::Rect updated_bounds;
     bool visible = false;
     if (!GetPropertiesForUIElement(ui_element, &updated_bounds, &visible))
