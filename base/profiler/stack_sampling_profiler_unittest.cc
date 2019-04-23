@@ -88,12 +88,17 @@ struct StackConfiguration {
   NativeLibrary library;
 };
 
+// Addresses near the start and end of a function.
+struct FunctionAddressRange {
+  const void* start;
+  const void* end;
+};
+
 // Signature for a target function that is expected to appear in the stack. See
-// SignalAndWaitUntilSignaled() below. The return value should be a program
-// counter pointer near the end of the function.
-using TargetFunction = const void* (*)(WaitableEvent*,
-                                       WaitableEvent*,
-                                       const StackConfiguration*);
+// SignalAndWaitUntilSignaled() below.
+using TargetFunction = FunctionAddressRange (*)(WaitableEvent*,
+                                                WaitableEvent*,
+                                                const StackConfiguration*);
 
 // A thread to target for profiling, whose stack is guaranteed to contain
 // SignalAndWaitUntilSignaled() when coordinated with the main thread.
@@ -121,7 +126,7 @@ class TargetThread : public PlatformThread::Delegate {
   // return the program counter.  The functions are static so that we can get a
   // straightforward address for them in the tests below, rather than dealing
   // with the complexity of a member function pointer representation.
-  static const void* InvokeSetupFunction(
+  static FunctionAddressRange InvokeSetupFunction(
       WaitableEvent* thread_started_event,
       WaitableEvent* finish_event,
       const StackConfiguration* stack_config);
@@ -129,20 +134,21 @@ class TargetThread : public PlatformThread::Delegate {
   // This function is guaranteed to be executing between calls to
   // WaitForThreadStart() and SignalThreadToFinish() when invoked with
   // |thread_started_event_| and |finish_event_|.
-  static const void* SignalAndWaitUntilSignaled(
+  static FunctionAddressRange SignalAndWaitUntilSignaled(
       WaitableEvent* thread_started_event,
       WaitableEvent* finish_event,
       const StackConfiguration* stack_config);
 
   // Calls into SignalAndWaitUntilSignaled() after allocating memory on the
   // stack with alloca.
-  static const void* CallWithAlloca(WaitableEvent* thread_started_event,
-                                    WaitableEvent* finish_event,
-                                    const StackConfiguration* stack_config);
+  static FunctionAddressRange CallWithAlloca(
+      WaitableEvent* thread_started_event,
+      WaitableEvent* finish_event,
+      const StackConfiguration* stack_config);
 
   // Calls into SignalAndWaitUntilSignaled() via a function in
   // base_profiler_test_support_library.
-  static const void* CallThroughOtherLibrary(
+  static FunctionAddressRange CallThroughOtherLibrary(
       WaitableEvent* thread_started_event,
       WaitableEvent* finish_event,
       const StackConfiguration* stack_config);
@@ -193,10 +199,12 @@ void TargetThread::SignalThreadToFinish() {
 
 // static
 // Disable inlining for this function so that it gets its own stack frame.
-NOINLINE const void* TargetThread::InvokeSetupFunction(
-    WaitableEvent* thread_started_event,
-    WaitableEvent* finish_event,
-    const StackConfiguration* stack_config) {
+NOINLINE FunctionAddressRange
+TargetThread::InvokeSetupFunction(WaitableEvent* thread_started_event,
+                                  WaitableEvent* finish_event,
+                                  const StackConfiguration* stack_config) {
+  const void* start_program_counter = GetProgramCounter();
+
   if (stack_config) {
     switch (stack_config->config) {
       case StackConfiguration::NORMAL:
@@ -216,32 +224,36 @@ NOINLINE const void* TargetThread::InvokeSetupFunction(
   }
 
   // Volatile to prevent a tail call to GetProgramCounter().
-  const void* volatile program_counter = GetProgramCounter();
-  return program_counter;
+  const void* volatile end_program_counter = GetProgramCounter();
+  return {start_program_counter, end_program_counter};
 }
 
 // static
 // Disable inlining for this function so that it gets its own stack frame.
-NOINLINE const void* TargetThread::SignalAndWaitUntilSignaled(
+NOINLINE FunctionAddressRange TargetThread::SignalAndWaitUntilSignaled(
     WaitableEvent* thread_started_event,
     WaitableEvent* finish_event,
     const StackConfiguration* stack_config) {
+  const void* start_program_counter = GetProgramCounter();
+
   if (thread_started_event && finish_event) {
     thread_started_event->Signal();
     finish_event->Wait();
   }
 
   // Volatile to prevent a tail call to GetProgramCounter().
-  const void* volatile program_counter = GetProgramCounter();
-  return program_counter;
+  const void* volatile end_program_counter = GetProgramCounter();
+  return {start_program_counter, end_program_counter};
 }
 
 // static
 // Disable inlining for this function so that it gets its own stack frame.
-NOINLINE const void* TargetThread::CallWithAlloca(
-    WaitableEvent* thread_started_event,
-    WaitableEvent* finish_event,
-    const StackConfiguration* stack_config) {
+NOINLINE FunctionAddressRange
+TargetThread::CallWithAlloca(WaitableEvent* thread_started_event,
+                             WaitableEvent* finish_event,
+                             const StackConfiguration* stack_config) {
+  const void* start_program_counter = GetProgramCounter();
+
   const size_t alloca_size = 100;
   // Memset to 0 to generate a clean failure.
   std::memset(alloca(alloca_size), 0, alloca_size);
@@ -249,15 +261,17 @@ NOINLINE const void* TargetThread::CallWithAlloca(
   SignalAndWaitUntilSignaled(thread_started_event, finish_event, stack_config);
 
   // Volatile to prevent a tail call to GetProgramCounter().
-  const void* volatile program_counter = GetProgramCounter();
-  return program_counter;
+  const void* volatile end_program_counter = GetProgramCounter();
+  return {start_program_counter, end_program_counter};
 }
 
 // static
-NOINLINE const void* TargetThread::CallThroughOtherLibrary(
-    WaitableEvent* thread_started_event,
-    WaitableEvent* finish_event,
-    const StackConfiguration* stack_config) {
+NOINLINE FunctionAddressRange
+TargetThread::CallThroughOtherLibrary(WaitableEvent* thread_started_event,
+                                      WaitableEvent* finish_event,
+                                      const StackConfiguration* stack_config) {
+  const void* start_program_counter = GetProgramCounter();
+
   if (stack_config) {
     // A function whose arguments are a function accepting void*, and a void*.
     using InvokeCallbackFunction = void (*)(void (*)(void*), void*);
@@ -273,8 +287,8 @@ NOINLINE const void* TargetThread::CallThroughOtherLibrary(
   }
 
   // Volatile to prevent a tail call to GetProgramCounter().
-  const void* volatile program_counter = GetProgramCounter();
-  return program_counter;
+  const void* volatile end_program_counter = GetProgramCounter();
+  return {start_program_counter, end_program_counter};
 }
 
 // static
@@ -290,11 +304,14 @@ void TargetThread::OtherLibraryCallback(void* arg) {
 // static
 // Disable inlining for this function so that it gets its own stack frame.
 NOINLINE const void* TargetThread::GetProgramCounter() {
+  // Saving to a volatile prevents clang from assuming it can reuse the return
+  // value across multiple calls to GetProgramCounter().
 #if defined(OS_WIN)
-  return _ReturnAddress();
+  const void* volatile program_counter = _ReturnAddress();
 #else
-  return __builtin_return_address(0);
+  const void* volatile program_counter = __builtin_return_address(0);
 #endif
+  return program_counter;
 }
 
 // Profile consists of a set of frame sets and other sampling information.
@@ -536,46 +553,21 @@ size_t WaitForSamplingComplete(
                                  sampling_completed_rawptrs.size());
 }
 
-// If this executable was linked with /INCREMENTAL (the default for non-official
-// debug and release builds on Windows), function addresses do not correspond to
-// function code itself, but instead to instructions in the Incremental Link
-// Table that jump to the functions. Checks for a jump instruction and if
-// present does a little decompilation to find the function's actual starting
-// address.
-const void* MaybeFixupFunctionAddressForILT(const void* function_address) {
-#if defined(_WIN64)
-  const unsigned char* opcode =
-      reinterpret_cast<const unsigned char*>(function_address);
-  if (*opcode == 0xe9) {
-    // This is a relative jump instruction. Assume we're in the ILT and compute
-    // the function start address from the instruction offset.
-    const int32_t* offset = reinterpret_cast<const int32_t*>(opcode + 1);
-    const unsigned char* next_instruction =
-        reinterpret_cast<const unsigned char*>(offset + 1);
-    return next_instruction + *offset;
-  }
-#endif
-  return function_address;
-}
-
 // Searches through the frames in |sample|, returning an iterator to the first
 // frame that has an instruction pointer within |target_function|. Returns
 // sample.end() if no such frames are found.
 Frames::const_iterator FindFirstFrameWithinFunction(
     const Frames& frames,
     TargetFunction target_function) {
-  uintptr_t function_start =
-      reinterpret_cast<uintptr_t>(MaybeFixupFunctionAddressForILT(
-          reinterpret_cast<const void*>(target_function)));
-  uintptr_t function_end =
-      reinterpret_cast<uintptr_t>(target_function(nullptr, nullptr, nullptr));
-  for (auto it = frames.begin(); it != frames.end(); ++it) {
-    if (it->instruction_pointer >= function_start &&
-        it->instruction_pointer <= function_end) {
-      return it;
-    }
-  }
-  return frames.end();
+  FunctionAddressRange address_range =
+      target_function(nullptr, nullptr, nullptr);
+  return std::find_if(
+      frames.begin(), frames.end(), [&address_range](const Frame& frame) {
+        return frame.instruction_pointer >=
+                   reinterpret_cast<uintptr_t>(address_range.start) &&
+               frame.instruction_pointer <=
+                   reinterpret_cast<uintptr_t>(address_range.end);
+      });
 }
 
 // Formats a sample into a string that can be output for test diagnostics.
@@ -692,8 +684,8 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
       frames, &TargetThread::SignalAndWaitUntilSignaled);
   ASSERT_TRUE(end_frame != frames.end())
       << "Function at "
-      << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
-             &TargetThread::SignalAndWaitUntilSignaled))
+      << TargetThread::SignalAndWaitUntilSignaled(nullptr, nullptr, nullptr)
+             .start
       << " was not found in stack:\n"
       << FormatSampleForDiagnosticOutput(frames);
 
@@ -729,8 +721,8 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
         frames, &TargetThread::CallThroughOtherLibrary);
     ASSERT_TRUE(other_library_frame != frames.end())
         << "Function at "
-        << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
-               &TargetThread::CallThroughOtherLibrary))
+        << TargetThread::CallThroughOtherLibrary(nullptr, nullptr, nullptr)
+               .start
         << " was not found in stack:\n"
         << FormatSampleForDiagnosticOutput(frames);
 
@@ -740,8 +732,7 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
         frames, &TargetThread::InvokeSetupFunction);
     ASSERT_TRUE(invoker_frame != frames.end())
         << "Function at "
-        << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
-               &TargetThread::InvokeSetupFunction))
+        << TargetThread::InvokeSetupFunction(nullptr, nullptr, nullptr).start
         << " was not found in stack:\n"
         << FormatSampleForDiagnosticOutput(frames);
 
@@ -820,8 +811,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
       frames, &TargetThread::SignalAndWaitUntilSignaled);
   ASSERT_TRUE(end_frame != frames.end())
       << "Function at "
-      << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
-             &TargetThread::SignalAndWaitUntilSignaled))
+      << TargetThread::SignalAndWaitUntilSignaled(nullptr, nullptr, nullptr)
+             .start
       << " was not found in stack:\n"
       << FormatSampleForDiagnosticOutput(frames);
 
@@ -831,8 +822,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
       FindFirstFrameWithinFunction(frames, &TargetThread::InvokeSetupFunction);
   ASSERT_TRUE(invoker_frame != frames.end())
       << "Function at "
-      << MaybeFixupFunctionAddressForILT(
-             reinterpret_cast<const void*>(&TargetThread::InvokeSetupFunction))
+      << TargetThread::InvokeSetupFunction(nullptr, nullptr, nullptr).start
       << " was not found in stack:\n"
       << FormatSampleForDiagnosticOutput(frames);
 }
@@ -880,8 +870,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
       frames, &TargetThread::SignalAndWaitUntilSignaled);
   ASSERT_TRUE(end_frame != frames.end())
       << "Function at "
-      << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
-             &TargetThread::SignalAndWaitUntilSignaled))
+      << TargetThread::SignalAndWaitUntilSignaled(nullptr, nullptr, nullptr)
+             .start
       << " was not found in stack:\n"
       << FormatSampleForDiagnosticOutput(frames);
 
@@ -890,8 +880,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
       FindFirstFrameWithinFunction(frames, &TargetThread::CallWithAlloca);
   ASSERT_TRUE(alloca_frame != frames.end())
       << "Function at "
-      << MaybeFixupFunctionAddressForILT(
-             reinterpret_cast<const void*>(&TargetThread::CallWithAlloca))
+      << TargetThread::CallWithAlloca(nullptr, nullptr, nullptr).start
       << " was not found in stack:\n"
       << FormatSampleForDiagnosticOutput(frames);
 
@@ -901,8 +890,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
       FindFirstFrameWithinFunction(frames, &TargetThread::InvokeSetupFunction);
   ASSERT_TRUE(invoker_frame != frames.end())
       << "Function at "
-      << MaybeFixupFunctionAddressForILT(
-             reinterpret_cast<const void*>(&TargetThread::InvokeSetupFunction))
+      << TargetThread::InvokeSetupFunction(nullptr, nullptr, nullptr).start
       << " was not found in stack:\n"
       << FormatSampleForDiagnosticOutput(frames);
 
@@ -1416,8 +1404,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
       frames, &TargetThread::CallThroughOtherLibrary);
   ASSERT_TRUE(other_library_frame != frames.end())
       << "Function at "
-      << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
-             &TargetThread::CallThroughOtherLibrary))
+      << TargetThread::CallThroughOtherLibrary(nullptr, nullptr, nullptr).start
       << " was not found in stack:\n"
       << FormatSampleForDiagnosticOutput(frames);
 
@@ -1427,8 +1414,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
       frames, &TargetThread::SignalAndWaitUntilSignaled);
   ASSERT_TRUE(end_frame != frames.end())
       << "Function at "
-      << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
-             &TargetThread::SignalAndWaitUntilSignaled))
+      << TargetThread::SignalAndWaitUntilSignaled(nullptr, nullptr, nullptr)
+             .start
       << " was not found in stack:\n"
       << FormatSampleForDiagnosticOutput(frames);
 
@@ -1438,8 +1425,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
       FindFirstFrameWithinFunction(frames, &TargetThread::InvokeSetupFunction);
   ASSERT_TRUE(invoker_frame != frames.end())
       << "Function at "
-      << MaybeFixupFunctionAddressForILT(
-             reinterpret_cast<const void*>(&TargetThread::InvokeSetupFunction))
+      << TargetThread::InvokeSetupFunction(nullptr, nullptr, nullptr).start
       << " was not found in stack:\n"
       << FormatSampleForDiagnosticOutput(frames);
 
