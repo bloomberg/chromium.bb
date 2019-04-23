@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
-#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/navigation_controller.h"
@@ -78,15 +77,6 @@ views::ImageButton* CreateCloseButton(views::ButtonListener* listener,
   return close_button;
 }
 
-bool ShouldDisplayUrl(content::WebContents* contents) {
-  auto* tab_helper =
-      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-          contents);
-  if (tab_helper && tab_helper->IsDisplayingInterstitial())
-    return tab_helper->ShouldDisplayURL();
-  return true;
-}
-
 }  // namespace
 
 // Container view for laying out and rendering the title/origin of the current
@@ -129,7 +119,6 @@ class CustomTabBarTitleOriginView : public views::View {
   void Update(base::string16 title, base::string16 location) {
     title_label_->SetText(title);
     location_label_->SetText(location);
-    location_label_->SetVisible(!location.empty());
   }
 
   int GetMinimumWidth() const {
@@ -156,10 +145,6 @@ class CustomTabBarTitleOriginView : public views::View {
     gfx::Size preferred_size = views::View::CalculatePreferredSize();
     preferred_size.SetToMax(gfx::Size(GetMinimumWidth(), 0));
     return preferred_size;
-  }
-
-  bool IsShowingOriginForTesting() const {
-    return location_label_ != nullptr && location_label_->visible();
   }
 
  private:
@@ -230,18 +215,14 @@ void CustomTabBarView::TabChangedAt(content::WebContents* contents,
   base::string16 title, location;
   if (entry) {
     title = Browser::FormatTitleForDisplay(entry->GetTitleForDisplay());
-    if (ShouldDisplayUrl(contents))
-      location = url_formatter::FormatUrl(entry->GetVirtualURL().GetOrigin(),
-                                          url_formatter::kFormatUrlOmitDefaults,
-                                          net::UnescapeRule::NORMAL, nullptr,
-                                          nullptr, nullptr);
+    location = url_formatter::FormatUrl(entry->GetVirtualURL().GetOrigin(),
+                                        url_formatter::kFormatUrlOmitDefaults,
+                                        net::UnescapeRule::NORMAL, nullptr,
+                                        nullptr, nullptr);
   }
 
   title_origin_view_->Update(title, location);
   location_icon_view_->Update(/*suppress animations = */ false);
-
-  // Hide location icon if we're already hiding the origin.
-  location_icon_view_->SetVisible(!location.empty());
 
   last_title_ = title;
   last_location_ = location;
@@ -382,9 +363,4 @@ void CustomTabBarView::GoBackToApp() {
 
   // Otherwise, go back to the first in scope url.
   controller.GoToOffset(offset);
-}
-
-bool CustomTabBarView::IsShowingOriginForTesting() const {
-  return title_origin_view_ != nullptr &&
-         title_origin_view_->IsShowingOriginForTesting();
 }

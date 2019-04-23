@@ -14,12 +14,7 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/security_interstitials/content/security_interstitial_controller_client.h"
-#include "components/security_interstitials/content/security_interstitial_page.h"
-#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
-#include "components/security_interstitials/core/metrics_helper.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -113,54 +108,6 @@ void SetTitleAndLocation(content::WebContents* web_contents,
 
   title_observer.Wait();
 }
-
-// An interstitial page that requests URL hiding
-class UrlHidingInterstitialPage
-    : public security_interstitials::SecurityInterstitialPage {
- public:
-  UrlHidingInterstitialPage(content::WebContents* web_contents,
-                            const GURL& request_url)
-      : security_interstitials::SecurityInterstitialPage(
-            web_contents,
-            request_url,
-            std::make_unique<
-                security_interstitials::SecurityInterstitialControllerClient>(
-                web_contents,
-                nullptr,
-                nullptr,
-                base::i18n::GetConfiguredLocale(),
-                GURL())) {}
-  void OnInterstitialClosing() override {}
-  bool ShouldDisplayURL() const override { return false; }
-
- protected:
-  bool ShouldCreateNewNavigation() const override { return false; }
-  void PopulateInterstitialStrings(
-      base::DictionaryValue* load_time_data) override {}
-};
-
-// An observer that associates a URL-hiding interstitial when a page loads when
-// |install_interstitial| is true.
-class UrlHidingWebContentsObserver : public content::WebContentsObserver {
- public:
-  UrlHidingWebContentsObserver(content::WebContents* contents)
-      : content::WebContentsObserver(contents), install_interstitial_(true) {}
-
-  void DidFinishNavigation(content::NavigationHandle* handle) override {
-    if (!install_interstitial_)
-      return;
-
-    security_interstitials::SecurityInterstitialTabHelper::
-        AssociateBlockingPage(web_contents(), handle->GetNavigationId(),
-                              std::make_unique<UrlHidingInterstitialPage>(
-                                  web_contents(), handle->GetURL()));
-  }
-
-  void StopBlocking() { install_interstitial_ = false; }
-
- private:
-  bool install_interstitial_;
-};
 
 }  // namespace
 
@@ -580,36 +527,4 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
                   ->custom_tab_bar()
                   ->close_button_for_testing()
                   ->visible());
-}
-
-// Verify that interstitials that hide origin have their preference respected.
-IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest, InterstitialCanHideOrigin) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  ASSERT_TRUE(https_server()->Start());
-
-  InstallPWA(https_server()->GetURL("app.com", "/ssl/google.html"));
-  EXPECT_TRUE(app_browser_);
-
-  BrowserView* app_view = BrowserView::GetBrowserViewForBrowser(app_browser_);
-  EXPECT_NE(app_view, browser_view_);
-
-  content::WebContents* contents = app_view->GetActiveWebContents();
-
-  // Verify origin is blanked on interstitial.
-  UrlHidingWebContentsObserver blocker(contents);
-  NavigateAndWait(contents, GURL("http://example.test/"));
-
-  EXPECT_EQ(base::string16(),
-            app_view->toolbar()->custom_tab_bar()->location_for_testing());
-  EXPECT_FALSE(
-      app_view->toolbar()->custom_tab_bar()->IsShowingOriginForTesting());
-
-  // Verify origin returns when interstitial is gone.
-  blocker.StopBlocking();
-  NavigateAndWait(contents, GURL("http://example2.test/"));
-
-  EXPECT_EQ(base::ASCIIToUTF16("example2.test"),
-            app_view->toolbar()->custom_tab_bar()->location_for_testing());
-  EXPECT_TRUE(
-      app_view->toolbar()->custom_tab_bar()->IsShowingOriginForTesting());
 }
