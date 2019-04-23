@@ -4,6 +4,7 @@
 
 #include <map>
 
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -11,9 +12,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/api/management/management_api.h"
@@ -22,6 +25,9 @@
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/manifest.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "extensions/test/result_catcher.h"
+#include "extensions/test/test_extension_dir.h"
+#include "net/dns/mock_host_resolver.h"
 
 using extensions::Extension;
 using extensions::Manifest;
@@ -139,9 +145,105 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, CreateAppShortcut) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, GenerateAppForLink) {
-  LoadExtensions();
   ASSERT_TRUE(RunExtensionSubtest("management/test",
                                   "generateAppForLink.html"));
+}
+
+class InstallReplacementWebAppApiTest : public ExtensionManagementApiTest {
+ public:
+  InstallReplacementWebAppApiTest()
+      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+  ~InstallReplacementWebAppApiTest() override = default;
+
+ protected:
+  void SetUpOnMainThread() override {
+    ExtensionManagementApiTest::SetUpOnMainThread();
+    https_test_server_.ServeFilesFromDirectory(test_data_dir_);
+    ASSERT_TRUE(https_test_server_.Start());
+  }
+
+  void RunTest(const char* web_app_path, const char* background_script) {
+    static constexpr char kManifest[] =
+        R"({
+            "name": "Management API Test",
+            "version": "0.1",
+            "manifest_version": 2,
+            "background": { "scripts": ["background.js"] },
+            "replacement_web_app": "%s"
+          })";
+    extensions::TestExtensionDir extension_dir;
+    extension_dir.WriteManifest(base::StringPrintf(
+        kManifest, https_test_server_.GetURL(web_app_path).spec().c_str()));
+    extension_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                            background_script);
+    extensions::ResultCatcher catcher;
+    ASSERT_TRUE(LoadExtension(extension_dir.UnpackedPath()));
+
+    ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  }
+
+  net::EmbeddedTestServer https_test_server_;
+};
+
+IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NoGesture) {
+  static constexpr char kBackground[] = R"(
+  chrome.management.installReplacementWebApp(function() {
+    chrome.test.assertLastError(
+        'chrome.management.installReplacementWebApp requires a user gesture.');
+    chrome.test.notifyPass();
+  });)";
+
+  RunTest("/management/install_replacement_web_app/good_web_app/index.html",
+          kBackground);
+}
+
+IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, NotInstallableWebApp) {
+  static constexpr char kBackground[] =
+      R"(chrome.test.runWithUserGesture(function() {
+           chrome.management.installReplacementWebApp(function() {
+             chrome.test.assertLastError(
+                 'Web app is not a valid installable web app.');
+             chrome.test.notifyPass();
+           });
+         });)";
+
+  RunTest("/management/install_replacement_web_app/bad_web_app/index.html",
+          kBackground);
+}
+
+IN_PROC_BROWSER_TEST_F(InstallReplacementWebAppApiTest, InstallableWebApp) {
+  static constexpr char kBackground[] =
+      R"(chrome.test.runTests([
+           function runInstall() {
+             chrome.test.runWithUserGesture(function() {
+               chrome.management.installReplacementWebApp(function() {
+                 chrome.test.assertNoLastError();
+                 chrome.test.succeed();
+               });
+             });
+           },
+           function runInstallWhenAlreadyInstalled() {
+             chrome.test.runWithUserGesture(function() {
+               chrome.management.installReplacementWebApp(function() {
+                 chrome.test.assertLastError(
+                     'Web app is already installed.');
+                 chrome.test.succeed();
+               });
+             });
+           }
+         ]);)";
+  static constexpr char kGoodWebAppURL[] =
+      "/management/install_replacement_web_app/good_web_app/index.html";
+
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
+  const GURL good_web_app_url = https_test_server_.GetURL(kGoodWebAppURL);
+  EXPECT_FALSE(extensions::BookmarkOrHostedAppInstalled(browser()->profile(),
+                                                        good_web_app_url));
+
+  RunTest(kGoodWebAppURL, kBackground);
+  EXPECT_TRUE(extensions::BookmarkOrHostedAppInstalled(browser()->profile(),
+                                                       good_web_app_url));
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
 }
 
 // Fails often on Windows dbg bots. http://crbug.com/177163
