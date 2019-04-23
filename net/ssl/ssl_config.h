@@ -83,12 +83,6 @@ struct NET_EXPORT SSLConfig {
   // disable TLS_ECDH_ECDSA_WITH_RC4_128_SHA, specify 0xC002.
   std::vector<uint16_t> disabled_cipher_suites;
 
-  // Enables the version interference probing mode. While TLS 1.3 has avoided
-  // most endpoint intolerance, middlebox interference with TLS 1.3 is
-  // rampant. This causes the connection to be discarded on success with
-  // ERR_SSL_VERSION_INTERFERENCE.
-  bool version_interference_probe;
-
   bool false_start_enabled;  // True if we'll use TLS False Start.
 
   // If true, causes only ECDHE cipher suites to be enabled.

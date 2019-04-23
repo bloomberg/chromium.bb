@@ -434,10 +434,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // Number of times the transaction was restarted via a RestartWith* call.
   size_t num_restarts_;
 
-  // The net::Error which triggered a TLS 1.3 version interference probe, or OK
-  // if none was triggered.
-  int ssl_version_interference_error_;
-
   DISALLOW_COPY_AND_ASSIGN(HttpNetworkTransaction);
 };
 

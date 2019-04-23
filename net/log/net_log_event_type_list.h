@@ -510,15 +510,6 @@ EVENT_TYPE(SSL_HANDSHAKE_ERROR)
 EVENT_TYPE(SSL_READ_ERROR)
 EVENT_TYPE(SSL_WRITE_ERROR)
 
-// An SSL connection needs to be retried with a lower protocol version to detect
-// if the error was due to a middlebox interfering with the protocol version we
-// offered.
-// The following parameters are attached to the event:
-//   {
-//     "net_error": <Net integer error code which triggered the probe>,
-//   }
-EVENT_TYPE(SSL_VERSION_INTERFERENCE_PROBE)
-
 // We found that our prediction of the server's certificates was correct and
 // we merged the verification with the SSLHostInfo. (Note: now obsolete.)
 EVENT_TYPE(SSL_VERIFICATION_MERGED)

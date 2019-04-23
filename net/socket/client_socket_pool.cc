@@ -76,10 +76,6 @@ std::string ClientSocketPool::GroupId::ToString() const {
       result = "ssl/" + result;
       break;
 
-    case ClientSocketPool::SocketType::kSslVersionInterferenceProbe:
-      result = "version-interference-probe/ssl/" + result;
-      break;
-
     case ClientSocketPool::SocketType::kFtp:
       result = "ftp/" + result;
       break;
@@ -133,10 +129,7 @@ std::unique_ptr<ConnectJob> ClientSocketPool::CreateConnectJob(
     RequestPriority request_priority,
     SocketTag socket_tag,
     ConnectJob::Delegate* delegate) {
-  bool using_ssl =
-      (group_id.socket_type() == ClientSocketPool::SocketType::kSsl ||
-       group_id.socket_type() ==
-           ClientSocketPool::SocketType::kSslVersionInterferenceProbe);
+  bool using_ssl = group_id.socket_type() == ClientSocketPool::SocketType::kSsl;
   return ConnectJob::CreateConnectJob(
       using_ssl, group_id.destination(), proxy_server,
       socket_params->proxy_annotation_tag(),

@@ -102,9 +102,6 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
     // destination, though not necessarily to the proxy, if there is one.
     kSsl,
 
-    // This is a connection for probing for SSL-breaking interference.
-    kSslVersionInterferenceProbe,
-
     // This is a connection through an HTTP proxy being used for FTP requests.
     kFtp,
   };

@@ -4544,15 +4544,6 @@ TEST_F(HttpNetworkTransactionTest,
       ProxyResolutionService::CreateFixedFromPacResult(
           "PROXY myproxy:70", TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  // When TLS 1.3 is enabled, spurious connections are made as part of the SSL
-  // version interference probes.
-  // TODO(crbug.com/906668): Correctly handle version interference probes to
-  // test TLS 1.3.
-  SSLConfig config;
-  config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
-  session_deps_.ssl_config_service =
-      std::make_unique<TestSSLConfigService>(config);
-
   auto auth_handler_factory = std::make_unique<HttpAuthHandlerMock::Factory>();
   auth_handler_factory->set_do_init_from_challenge(true);
 
@@ -7680,7 +7671,9 @@ TEST_F(HttpNetworkTransactionTest, NTLMOverHttp2) {
 
 // Test that, if we have an NTLM proxy and the origin resets the connection, we
 // do no retry forever checking for TLS version interference. This is a
-// regression test for https://crbug.com/823387.
+// regression test for https://crbug.com/823387. The version interference probe
+// has since been removed, but retain the regression test so we can update it if
+// we add future TLS retries.
 TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
   // The NTLM test data expects the proxy to be named 'server'. The origin is
   // https://origin/.
@@ -7773,13 +7766,8 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
 
   StaticSocketDataProvider data(data_reads, data_writes);
   SSLSocketDataProvider data_ssl(ASYNC, ERR_CONNECTION_RESET);
-  StaticSocketDataProvider data2(data_reads, data_writes);
-  SSLSocketDataProvider data_ssl2(ASYNC, ERR_CONNECTION_RESET);
-  data_ssl2.expected_ssl_version_max = SSL_PROTOCOL_VERSION_TLS1_2;
   session_deps_.socket_factory->AddSocketDataProvider(&data);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&data_ssl);
-  session_deps_.socket_factory->AddSocketDataProvider(&data2);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&data_ssl2);
 
   // Start the transaction. The proxy responds with an NTLM authentication
   // request.
@@ -7794,7 +7782,8 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
   ASSERT_TRUE(response);
   EXPECT_TRUE(CheckNTLMProxyAuth(response->auth_challenge));
 
-  // Configure credentials. The proxy responds with the challenge message.
+  // Configure credentials and restart. The proxy responds with the challenge
+  // message.
   rv = callback.GetResult(trans.RestartWithAuth(
       AuthCredentials(ntlm::test::kDomainUserCombined, ntlm::test::kPassword),
       callback.callback()));
@@ -7804,29 +7793,8 @@ TEST_F(HttpNetworkTransactionTest, NTLMProxyTLSHandshakeReset) {
   ASSERT_TRUE(response);
   EXPECT_FALSE(response->auth_challenge.has_value());
 
-  // Restart once more. The tunnel will be established and the the SSL handshake
-  // will reset. The TLS 1.3 version interference probe will then kick in and
-  // restart the process. The proxy responds with another NTLM authentiation
-  // request, but we don't need to provide credentials as the cached ones work/
-  rv = callback.GetResult(
-      trans.RestartWithAuth(AuthCredentials(), callback.callback()));
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(trans.IsReadyToRestartForAuth());
-  response = trans.GetResponseInfo();
-  ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge.has_value());
-
-  // The proxy responds with the NTLM challenge message.
-  rv = callback.GetResult(
-      trans.RestartWithAuth(AuthCredentials(), callback.callback()));
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(trans.IsReadyToRestartForAuth());
-  response = trans.GetResponseInfo();
-  ASSERT_TRUE(response);
-  EXPECT_FALSE(response->auth_challenge.has_value());
-
-  // Send the NTLM authenticate message. The tunnel is established and the
-  // handshake resets again. We should not retry again.
+  // Restart once more. The tunnel will be established and then the SSL
+  // handshake will reset.
   rv = callback.GetResult(
       trans.RestartWithAuth(AuthCredentials(), callback.callback()));
   EXPECT_THAT(rv, IsError(ERR_CONNECTION_RESET));

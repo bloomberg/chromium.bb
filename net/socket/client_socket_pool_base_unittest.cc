@@ -790,7 +790,6 @@ TEST_F(ClientSocketPoolBaseTest, GroupSeparation) {
   const ClientSocketPool::SocketType kSocketTypes[] = {
       ClientSocketPool::SocketType::kHttp,
       ClientSocketPool::SocketType::kSsl,
-      ClientSocketPool::SocketType::kSslVersionInterferenceProbe,
       ClientSocketPool::SocketType::kFtp,
   };
 

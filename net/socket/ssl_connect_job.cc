@@ -419,14 +419,10 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
     }
   }
 
-  // Don't double-count the version interference probes.
-  if (!params_->ssl_config().version_interference_probe) {
-    base::UmaHistogramSparse("Net.SSL_Connection_Error", std::abs(result));
-
-    if (tls13_supported) {
-      base::UmaHistogramSparse("Net.SSL_Connection_Error_TLS13Experiment",
-                               std::abs(result));
-    }
+  base::UmaHistogramSparse("Net.SSL_Connection_Error", std::abs(result));
+  if (tls13_supported) {
+    base::UmaHistogramSparse("Net.SSL_Connection_Error_TLS13Experiment",
+                             std::abs(result));
   }
 
   if (result == OK || IsCertificateError(result)) {

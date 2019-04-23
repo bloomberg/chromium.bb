@@ -27,7 +27,6 @@ TEST(ClientSocketPool, GroupIdOperators) {
   const ClientSocketPool::SocketType kSocketTypes[] = {
       ClientSocketPool::SocketType::kHttp,
       ClientSocketPool::SocketType::kSsl,
-      ClientSocketPool::SocketType::kSslVersionInterferenceProbe,
       ClientSocketPool::SocketType::kFtp,
   };
 
@@ -98,19 +97,6 @@ TEST(ClientSocketPool, GroupIdToString) {
             ClientSocketPool::GroupId(HostPortPair("bar", 80),
                                       ClientSocketPool::SocketType::kSsl,
                                       PrivacyMode::PRIVACY_MODE_ENABLED)
-                .ToString());
-
-  EXPECT_EQ("version-interference-probe/ssl/foo:443",
-            ClientSocketPool::GroupId(
-                HostPortPair("foo", 443),
-                ClientSocketPool::SocketType::kSslVersionInterferenceProbe,
-                PrivacyMode::PRIVACY_MODE_DISABLED)
-                .ToString());
-  EXPECT_EQ("pm/version-interference-probe/ssl/bar:444",
-            ClientSocketPool::GroupId(
-                HostPortPair("bar", 444),
-                ClientSocketPool::SocketType::kSslVersionInterferenceProbe,
-                PrivacyMode::PRIVACY_MODE_ENABLED)
                 .ToString());
 
   EXPECT_EQ("ftp/foo:80",

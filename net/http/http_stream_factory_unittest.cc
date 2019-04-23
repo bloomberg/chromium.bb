@@ -416,8 +416,7 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
     last_num_streams_ = -1;
     // Group ID that shouldn't match much.
     last_group_id_ = ClientSocketPool::GroupId(
-        HostPortPair(),
-        ClientSocketPool::SocketType::kSslVersionInterferenceProbe,
+        HostPortPair(), ClientSocketPool::SocketType::kSsl,
         PrivacyMode::PRIVACY_MODE_ENABLED);
   }
 

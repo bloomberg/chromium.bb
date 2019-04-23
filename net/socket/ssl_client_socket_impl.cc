@@ -964,11 +964,6 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
     return OK;
   }
 
-  if (ssl_config_.version_interference_probe) {
-    DCHECK_LT(ssl_config_.version_max, TLS1_3_VERSION);
-    return ERR_SSL_VERSION_INTERFERENCE;
-  }
-
   if (IsCachingEnabled()) {
     ssl_client_session_cache_->ResetLookupCount(GetSessionCacheKey());
   }
@@ -1625,11 +1620,7 @@ void SSLClientSocketImpl::AddCTInfoToSSLInfo(SSLInfo* ssl_info) const {
 }
 
 std::string SSLClientSocketImpl::GetSessionCacheKey() const {
-  std::string result = host_and_port_.ToString();
-
-  result.push_back('/');
-  result.push_back(ssl_config_.version_interference_probe ? '1' : '0');
-  return result;
+  return host_and_port_.ToString();
 }
 
 bool SSLClientSocketImpl::IsRenegotiationAllowed() const {

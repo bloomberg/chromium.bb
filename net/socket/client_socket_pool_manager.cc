@@ -66,7 +66,6 @@ ClientSocketPool::GroupId CreateGroupId(
     ClientSocketPoolManager::SocketGroupType group_type,
     const HostPortPair& endpoint,
     const ProxyInfo& proxy_info,
-    const SSLConfig& ssl_config_for_origin,
     PrivacyMode privacy_mode) {
   // Build the string used to uniquely identify connections of this type.
   // Determine the host and port to connect to.
@@ -77,11 +76,7 @@ ClientSocketPool::GroupId CreateGroupId(
   if (group_type == ClientSocketPoolManager::FTP_GROUP) {
     socket_type = ClientSocketPool::SocketType::kFtp;
   } else if (group_type == ClientSocketPoolManager::SSL_GROUP) {
-    if (!ssl_config_for_origin.version_interference_probe) {
-      socket_type = ClientSocketPool::SocketType::kSsl;
-    } else {
-      socket_type = ClientSocketPool::SocketType::kSslVersionInterferenceProbe;
-    }
+    socket_type = ClientSocketPool::SocketType::kSsl;
   }
 
   return ClientSocketPool::GroupId(endpoint, socket_type, privacy_mode);
@@ -97,10 +92,7 @@ scoped_refptr<ClientSocketPool::SocketParams> CreateSocketParams(
     const SSLConfig& ssl_config_for_origin,
     const SSLConfig& ssl_config_for_proxy,
     const OnHostResolutionCallback& resolution_callback) {
-  bool using_ssl =
-      (group_id.socket_type() == ClientSocketPool::SocketType::kSsl ||
-       group_id.socket_type() ==
-           ClientSocketPool::SocketType::kSslVersionInterferenceProbe);
+  bool using_ssl = group_id.socket_type() == ClientSocketPool::SocketType::kSsl;
   bool using_proxy_ssl = proxy_server.is_http_like() && !proxy_server.is_http();
   return base::MakeRefCounted<ClientSocketPool::SocketParams>(
       proxy_annotation_tag,
@@ -139,8 +131,7 @@ int InitSocketPoolHelper(
   }
 
   ClientSocketPool::GroupId connection_group =
-      CreateGroupId(group_type, origin_host_port, proxy_info,
-                    ssl_config_for_origin, privacy_mode);
+      CreateGroupId(group_type, origin_host_port, proxy_info, privacy_mode);
   scoped_refptr<ClientSocketPool::SocketParams> socket_params =
       CreateSocketParams(connection_group, proxy_info.proxy_server(),
                          proxy_info.traffic_annotation(), ssl_config_for_origin,

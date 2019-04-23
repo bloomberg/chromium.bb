@@ -10768,28 +10768,15 @@ TEST_F(HTTPSFallbackTest, TLSv1_1NoFallback) {
   ExpectFailure(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
 }
 
-// Tests that TLS 1.3 interference results in a dedicated error code.
-TEST_F(HTTPSFallbackTest, TLSv1_3Interference) {
+// Tests the TLS 1.2 fallback doesn't happen.
+TEST_F(HTTPSFallbackTest, TLSv1_2NoFallback) {
   SpawnedTestServer::SSLOptions ssl_options(
       SpawnedTestServer::SSLOptions::CERT_OK);
   ssl_options.tls_intolerant =
       SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_3;
-  ssl_config_service()->set_max_version(SSL_PROTOCOL_VERSION_TLS1_3);
 
   ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-  ExpectFailure(ERR_SSL_VERSION_INTERFERENCE);
-}
-
-// Tests that disabling TLS 1.3 leaves TLS 1.3 interference unnoticed.
-TEST_F(HTTPSFallbackTest, TLSv1_3InterferenceDisableVersion) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_OK);
-  ssl_options.tls_intolerant =
-      SpawnedTestServer::SSLOptions::TLS_INTOLERANT_TLS1_3;
-  ssl_config_service()->set_max_version(SSL_PROTOCOL_VERSION_TLS1_2);
-
-  ASSERT_NO_FATAL_FAILURE(DoFallbackTest(ssl_options));
-  ExpectConnection(SSL_CONNECTION_VERSION_TLS1_2);
+  ExpectFailure(ERR_SSL_VERSION_OR_CIPHER_MISMATCH);
 }
 
 class HTTPSSessionTest : public TestWithScopedTaskEnvironment {
