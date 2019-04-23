@@ -27,8 +27,8 @@ InProcessGpuThreadHolder::InProcessGpuThreadHolder()
 
   gpu::GPUInfo gpu_info;
   gpu::CollectGraphicsInfoForTesting(&gpu_info);
-  gpu::GpuFeatureInfo gpu_feature_info = gpu::ComputeGpuFeatureInfo(
-      gpu_info, gpu_preferences_, command_line, nullptr);
+  gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info, gpu_preferences_,
+                                                 command_line, nullptr);
 
   Start();
 }
