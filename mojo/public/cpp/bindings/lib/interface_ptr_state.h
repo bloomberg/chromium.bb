@@ -87,7 +87,8 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfacePtrStateBase {
   bool InitializeEndpointClient(
       bool passes_associated_kinds,
       bool has_sync_methods,
-      std::unique_ptr<MessageReceiver> payload_validator);
+      std::unique_ptr<MessageReceiver> payload_validator,
+      const char* interface_name);
 
  private:
   void OnQueryVersion(const base::Callback<void(uint32_t)>& callback,
@@ -228,7 +229,8 @@ class InterfacePtrState : public InterfacePtrStateBase {
 
     if (InitializeEndpointClient(
             Interface::PassesAssociatedKinds_, Interface::HasSyncMethods_,
-            std::make_unique<typename Interface::ResponseValidator_>())) {
+            std::make_unique<typename Interface::ResponseValidator_>(),
+            Interface::Name_)) {
       router()->SetMasterInterfaceName(Interface::Name_);
       proxy_ = std::make_unique<Proxy>(endpoint_client());
     }

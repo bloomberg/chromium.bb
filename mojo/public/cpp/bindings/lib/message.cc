@@ -221,6 +221,7 @@ Message::Message(Message&& other)
       serialized_(other.serialized_) {
   other.transferable_ = false;
   other.serialized_ = false;
+  heap_profiler_tag_ = other.heap_profiler_tag_;
 #if defined(ENABLE_IPC_FUZZER)
   interface_name_ = other.interface_name_;
   method_name_ = other.method_name_;
@@ -302,6 +303,7 @@ Message& Message::operator=(Message&& other) {
   other.transferable_ = false;
   serialized_ = other.serialized_;
   other.serialized_ = false;
+  other.heap_profiler_tag_ = heap_profiler_tag_;
 #if defined(ENABLE_IPC_FUZZER)
   interface_name_ = other.interface_name_;
   method_name_ = other.method_name_;
@@ -316,6 +318,7 @@ void Message::Reset() {
   associated_endpoint_handles_.clear();
   transferable_ = false;
   serialized_ = false;
+  heap_profiler_tag_ = nullptr;
 }
 
 const uint8_t* Message::payload() const {

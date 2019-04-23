@@ -117,7 +117,7 @@ void BindingStateBase::BindInternal(
   endpoint_client_.reset(new InterfaceEndpointClient(
       router_->CreateLocalEndpointHandle(kMasterInterfaceId), stub,
       std::move(request_validator), has_sync_methods,
-      std::move(sequenced_runner), interface_version));
+      std::move(sequenced_runner), interface_version, interface_name));
 
 #if BUILDFLAG(MOJO_RANDOM_DELAYS_ENABLED)
   MakeBindingRandomlyPaused(base::SequencedTaskRunnerHandle::Get(),

@@ -220,6 +220,11 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
         generic_context.release()->template SafeCast<MessageType>());
   }
 
+  const char* heap_profiler_tag() const { return heap_profiler_tag_; }
+  void set_heap_profiler_tag(const char* heap_profiler_tag) {
+    heap_profiler_tag_ = heap_profiler_tag;
+  }
+
 #if defined(ENABLE_IPC_FUZZER)
   const char* interface_name() const { return interface_name_; }
   void set_interface_name(const char* interface_name) {
@@ -257,6 +262,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
   // Indicates whether this Message object is serialized.
   bool serialized_ = false;
 
+  const char* heap_profiler_tag_ = nullptr;
 #if defined(ENABLE_IPC_FUZZER)
   const char* interface_name_ = nullptr;
   const char* method_name_ = nullptr;

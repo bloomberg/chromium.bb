@@ -24,6 +24,8 @@ namespace {
 
 const double kMojoTicksPerSecond = 1000000.0;
 
+const char kTestInterfaceName[] = "TestInterface";
+
 double MojoTicksToSeconds(MojoTimeTicks ticks) {
   return ticks / kMojoTicksPerSecond;
 }
@@ -206,10 +208,10 @@ TEST_F(MojoBindingsPerftest, MultiplexRouterPingPong) {
 
   InterfaceEndpointClient client0(
       router0->CreateLocalEndpointHandle(kMasterInterfaceId), &paddle0, nullptr,
-      false, base::ThreadTaskRunnerHandle::Get(), 0u);
+      false, base::ThreadTaskRunnerHandle::Get(), 0u, kTestInterfaceName);
   InterfaceEndpointClient client1(
       router1->CreateLocalEndpointHandle(kMasterInterfaceId), &paddle1, nullptr,
-      false, base::ThreadTaskRunnerHandle::Get(), 0u);
+      false, base::ThreadTaskRunnerHandle::Get(), 0u, kTestInterfaceName);
 
   paddle0.set_sender(&client0);
   paddle1.set_sender(&client1);
@@ -255,7 +257,7 @@ TEST_F(MojoBindingsPerftest, MultiplexRouterDispatchCost) {
   CounterReceiver receiver;
   InterfaceEndpointClient client(
       router->CreateLocalEndpointHandle(kMasterInterfaceId), &receiver, nullptr,
-      false, base::ThreadTaskRunnerHandle::Get(), 0u);
+      false, base::ThreadTaskRunnerHandle::Get(), 0u, kTestInterfaceName);
 
   static const uint32_t kIterations[] = {1000, 3000000};
 

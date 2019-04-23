@@ -74,7 +74,8 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) AssociatedBindingBase {
                 std::unique_ptr<MessageReceiver> payload_validator,
                 bool expect_sync_requests,
                 scoped_refptr<base::SequencedTaskRunner> runner,
-                uint32_t interface_version);
+                uint32_t interface_version,
+                const char* interface_name);
 
   std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
 };
@@ -118,8 +119,8 @@ class AssociatedBinding : public AssociatedBindingBase {
             scoped_refptr<base::SequencedTaskRunner> runner = nullptr) {
     BindImpl(request.PassHandle(), &stub_,
              base::WrapUnique(new typename Interface::RequestValidator_()),
-             Interface::HasSyncMethods_, std::move(runner),
-             Interface::Version_);
+             Interface::HasSyncMethods_, std::move(runner), Interface::Version_,
+             Interface::Name_);
   }
 
   // Unbinds and returns the associated interface request so it can be

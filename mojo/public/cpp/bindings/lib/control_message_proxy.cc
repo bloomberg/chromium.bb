@@ -23,6 +23,8 @@ namespace internal {
 
 namespace {
 
+const char kMessageTag[] = "ControlMessageProxy";
+
 bool ValidateControlResponse(Message* message) {
   ValidationContext validation_context(message->payload(),
                                        message->payload_num_bytes(), 0, 0,
@@ -77,6 +79,7 @@ void SendRunMessage(MessageReceiverWithResponder* receiver,
   params_ptr->input = std::move(input_ptr);
   Message message(interface_control::kRunMessageId,
                   Message::kFlagExpectsResponse, 0, 0, nullptr);
+  message.set_heap_profiler_tag(kMessageTag);
   SerializationContext context;
   interface_control::internal::RunMessageParams_Data::BufferWriter params;
   Serialize<interface_control::RunMessageParamsDataView>(
@@ -92,6 +95,7 @@ Message ConstructRunOrClosePipeMessage(
   params_ptr->input = std::move(input_ptr);
   Message message(interface_control::kRunOrClosePipeMessageId, 0, 0, 0,
                   nullptr);
+  message.set_heap_profiler_tag(kMessageTag);
   SerializationContext context;
   interface_control::internal::RunOrClosePipeMessageParams_Data::BufferWriter
       params;
@@ -104,6 +108,7 @@ void SendRunOrClosePipeMessage(
     MessageReceiverWithResponder* receiver,
     interface_control::RunOrClosePipeInputPtr input_ptr) {
   Message message(ConstructRunOrClosePipeMessage(std::move(input_ptr)));
+  message.set_heap_profiler_tag(kMessageTag);
   ignore_result(receiver->Accept(&message));
 }
 

@@ -91,6 +91,27 @@ ControllerMemoryDumpProvider& GetMemoryDumpProvider() {
   return *provider;
 }
 
+// Messages are grouped by this info when recording memory metrics.
+struct MessageMemoryDumpInfo {
+  MessageMemoryDumpInfo(const mojo::Message& message)
+      : id(message.name()), profiler_tag(message.heap_profiler_tag()) {}
+  MessageMemoryDumpInfo() = default;
+
+  bool operator==(const MessageMemoryDumpInfo& other) const {
+    return other.id == id && other.profiler_tag == profiler_tag;
+  }
+
+  uint32_t id = 0;
+  const char* profiler_tag = nullptr;
+};
+
+struct MessageMemoryDumpInfoHash {
+  size_t operator()(const MessageMemoryDumpInfo& info) const {
+    return base::HashInts32(
+        info.id, info.profiler_tag ? base::Hash(info.profiler_tag) : 0);
+  }
+};
+
 class ChannelAssociatedGroupController
     : public mojo::AssociatedGroupController,
       public mojo::MessageReceiver,
@@ -121,17 +142,21 @@ class ChannelAssociatedGroupController
     return outgoing_messages_.size();
   }
 
-  std::pair<uint32_t, size_t> GetTopQueuedMessageNameAndCount() {
-    std::unordered_map<uint32_t, size_t> counts;
-    std::pair<uint32_t, size_t> top_message_name_and_count = {0, 0};
+  void GetTopQueuedMessageMemoryDumpInfo(MessageMemoryDumpInfo* info,
+                                         size_t* count) {
+    std::unordered_map<MessageMemoryDumpInfo, size_t, MessageMemoryDumpInfoHash>
+        counts;
+    std::pair<MessageMemoryDumpInfo, size_t> top_message_info_and_count = {
+        MessageMemoryDumpInfo(), 0};
     base::AutoLock lock(outgoing_messages_lock_);
     for (const auto& message : outgoing_messages_) {
-      auto it_and_inserted = counts.emplace(message.name(), 0);
+      auto it_and_inserted = counts.emplace(MessageMemoryDumpInfo(message), 0);
       it_and_inserted.first->second++;
-      if (it_and_inserted.first->second > top_message_name_and_count.second)
-        top_message_name_and_count = *it_and_inserted.first;
+      if (it_and_inserted.first->second > top_message_info_and_count.second)
+        top_message_info_and_count = *it_and_inserted.first;
     }
-    return top_message_name_and_count;
+    *info = top_message_info_and_count.first;
+    *count = top_message_info_and_count.second;
   }
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
@@ -672,6 +697,7 @@ class ChannelAssociatedGroupController
   }
 
   bool SendMessage(mojo::Message* message) {
+    DCHECK(message->heap_profiler_tag());
     if (task_runner_->BelongsToCurrentThread()) {
       DCHECK(thread_checker_.CalledOnValidThread());
       if (!connector_ || paused_) {
@@ -991,12 +1017,22 @@ bool ControllerMemoryDumpProvider::OnMemoryDump(
     dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
                     base::trace_event::MemoryAllocatorDump::kUnitsObjects,
                     controller->GetQueuedMessageCount());
-    auto top_message_name_and_count =
-        controller->GetTopQueuedMessageNameAndCount();
-    dump->AddScalar("top_message_name", "id", top_message_name_and_count.first);
+    MessageMemoryDumpInfo info;
+    size_t count = 0;
+    controller->GetTopQueuedMessageMemoryDumpInfo(&info, &count);
+    dump->AddScalar("top_message_name", "id", info.id);
     dump->AddScalar("top_message_count",
                     base::trace_event::MemoryAllocatorDump::kUnitsObjects,
-                    top_message_name_and_count.second);
+                    count);
+
+    if (info.profiler_tag) {
+      // TODO(ssid): Memory dumps currently do not support adding string
+      // arguments in background dumps. So, add this value as a trace event for
+      // now.
+      TRACE_EVENT1(base::trace_event::MemoryDumpManager::kTraceCategory,
+                   "ControllerMemoryDumpProvider::OnMemoryDump",
+                   "top_queued_message_tag", info.profiler_tag);
+    }
   }
 
   return true;

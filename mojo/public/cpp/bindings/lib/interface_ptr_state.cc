@@ -69,7 +69,8 @@ void InterfacePtrStateBase::OnQueryVersion(
 bool InterfacePtrStateBase::InitializeEndpointClient(
     bool passes_associated_kinds,
     bool has_sync_methods,
-    std::unique_ptr<MessageReceiver> payload_validator) {
+    std::unique_ptr<MessageReceiver> payload_validator,
+    const char* interface_name) {
   // The object hasn't been bound.
   if (!handle_.is_valid())
     return false;
@@ -87,7 +88,7 @@ bool InterfacePtrStateBase::InitializeEndpointClient(
       std::move(payload_validator), false, std::move(runner_),
       // The version is only queried from the client so the value passed here
       // will not be used.
-      0u));
+      0u, interface_name));
   return true;
 }
 
