@@ -41,16 +41,6 @@ scoped_refptr<Animation> Animation::CreateImplInstance() const {
   return Animation::Create(id());
 }
 
-ElementId Animation::element_id_of_keyframe_effect(
-    KeyframeEffectId keyframe_effect_id) const {
-  DCHECK(GetKeyframeEffectById(keyframe_effect_id));
-  return GetKeyframeEffectById(keyframe_effect_id)->element_id();
-}
-
-bool Animation::IsElementAttached(ElementId id) const {
-  return base::ContainsKey(element_to_keyframe_effect_id_map_, id);
-}
-
 void Animation::SetAnimationHost(AnimationHost* animation_host) {
   animation_host_ = animation_host;
 }
