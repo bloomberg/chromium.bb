@@ -603,8 +603,10 @@ util.isComputersEntry = entry => {
 };
 
 /**
- * Creates an instance of UserDOMError with given error name that looks like a
- * FileError except that it does not have the deprecated FileError.code member.
+ * Creates an instance of UserDOMError subtype of DOMError because DOMError is
+ * deprecated and its Closure extern is wrong, doesn't have the constructor
+ * with 2 arguments. This DOMError looks like a FileError except that it does
+ * not have the deprecated FileError.code member.
  *
  * @param {string} name Error name for the file error.
  * @param {string=} opt_message optional message.
@@ -616,40 +618,44 @@ util.createDOMError = (name, opt_message) => {
 
 /**
  * Creates a DOMError-like object to be used in place of returning file errors.
- *
- * @param {string} name Error name for the file error.
- * @param {string=} opt_message Optional message for this error.
- * @extends {DOMError}
- * @constructor
  */
-util.UserDOMError = function(name, opt_message) {
+util.UserDOMError = class UserDOMError extends DOMError {
   /**
-   * @type {string}
-   * @private
+   * @param {string} name Error name for the file error.
+   * @param {string=} opt_message Optional message for this error.
+   * @suppress {checkTypes} Closure externs for DOMError doesn't have
+   * constructor with 2 args.
    */
-  this.name_ = name;
+  constructor(name, opt_message) {
+    super(name, opt_message);
 
-  /**
-   * @type {string}
-   * @private
-   */
-  this.message_ = opt_message || '';
-  Object.freeze(this);
-};
+    /**
+     * @type {string}
+     * @private
+     */
+    this.name_ = name;
 
-util.UserDOMError.prototype = {
+    /**
+     * @type {string}
+     * @private
+     */
+    this.message_ = opt_message || '';
+    Object.freeze(this);
+  }
+
   /**
    * @return {string} File error name.
    */
   get name() {
     return this.name_;
-  },
+  }
+
   /**
    * @return {string} Error message.
    */
   get message() {
     return this.message_;
-  },
+  }
 };
 
 /**
