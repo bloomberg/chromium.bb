@@ -2122,10 +2122,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest,
   VerifyKeyboardLayoutMatchesLocale();
 }
 
-// https://crbug.com/865702: Flaky (crashes intermittently) on
-// linux-chromeos-rel builder.
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest,
-                       DISABLED_TermsOfServiceWithLocaleSwitch) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
   // Specify Terms of Service URL.
   ASSERT_TRUE(embedded_test_server()->Start());
   device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(
