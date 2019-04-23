@@ -2748,6 +2748,54 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
   WaitForSessionStart();
 }
 
+IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, DeclineTermsOfService) {
+  // Specify Terms of Service URL.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(
+      embedded_test_server()
+          ->GetURL(std::string("/") + (GetParam()
+                                           ? kExistentTermsOfServicePath
+                                           : kNonexistentTermsOfServicePath))
+          .spec());
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+
+  WaitForPolicy();
+
+  ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
+
+  // Set up an observer that will quit the message loop when login has succeeded
+  // and the first wizard screen, if any, is being shown.
+  base::RunLoop login_wait_run_loop;
+  chromeos::MockAuthStatusConsumer login_status_consumer(
+      login_wait_run_loop.QuitClosure());
+  EXPECT_CALL(login_status_consumer, OnAuthSuccess(_))
+      .Times(1)
+      .WillOnce(InvokeWithoutArgs(&login_wait_run_loop, &base::RunLoop::Quit));
+
+  // Spin the loop until the observer fires. Then, unregister the observer.
+  chromeos::ExistingUserController* controller =
+      chromeos::ExistingUserController::current_controller();
+  ASSERT_TRUE(controller);
+  controller->set_login_status_consumer(&login_status_consumer);
+  login_wait_run_loop.Run();
+  controller->set_login_status_consumer(NULL);
+
+  // Verify that the Terms of Service screen is being shown.
+  chromeos::WizardController* wizard_controller =
+      chromeos::WizardController::default_controller();
+  ASSERT_TRUE(wizard_controller);
+  ASSERT_TRUE(wizard_controller->current_screen());
+  EXPECT_EQ(chromeos::OobeScreen::SCREEN_TERMS_OF_SERVICE,
+            wizard_controller->current_screen()->screen_id());
+
+  // Click the back button.
+  ASSERT_TRUE(
+      content::ExecuteScript(contents_, "$('tos-back-button').click();"));
+
+  EXPECT_TRUE(session_manager_client()->session_stopped());
+}
+
 INSTANTIATE_TEST_SUITE_P(TermsOfServiceDownloadTestInstance,
                          TermsOfServiceDownloadTest,
                          testing::Bool());

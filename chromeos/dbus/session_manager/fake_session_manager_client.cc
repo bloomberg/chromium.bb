@@ -283,7 +283,9 @@ void FakeSessionManagerClient::StartSession(
   user_sessions_[cryptohome_id.account_id()] = user_id_hash;
 }
 
-void FakeSessionManagerClient::StopSession() {}
+void FakeSessionManagerClient::StopSession() {
+  session_stopped_ = true;
+}
 
 void FakeSessionManagerClient::StartDeviceWipe() {
   start_device_wipe_call_count_++;

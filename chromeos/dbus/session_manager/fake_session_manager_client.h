@@ -234,6 +234,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
     return container_instance_id_;
   }
 
+  bool session_stopped() const { return session_stopped_; }
+
  private:
   bool supports_restart_to_apply_user_flags_ = false;
 
@@ -277,6 +279,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   login_manager::UpgradeArcContainerRequest last_upgrade_arc_request_;
 
   StubDelegate* delegate_ = nullptr;
+
+  bool session_stopped_ = false;
 
   // The last-set flags for user set through |SetFlagsForUser|.
   std::map<cryptohome::AccountIdentifier, std::vector<std::string>>
