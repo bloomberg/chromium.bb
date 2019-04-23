@@ -493,10 +493,14 @@ ImageResourceContent::UpdateImageResult ImageResourceContent::UpdateImage(
   return UpdateImageResult::kNoDecodeError;
 }
 
-// Return true if the image content is well-compressed (and not full of
-// extraneous metadata). "well-compressed" is determined by comparing the
-// image's compression ratio against a specific value that is defined by an
-// unoptimized image feature policy on |context|.
+ImageDecoder::CompressionFormat ImageResourceContent::GetCompressionFormat()
+    const {
+  if (!image_)
+    return ImageDecoder::kUndefinedFormat;
+  return ImageDecoder::GetCompressionFormat(image_->Data(),
+                                            GetResponse().HttpContentType());
+}
+
 bool ImageResourceContent::IsAcceptableCompressionRatio(
     const SecurityContext& context) {
   if (!image_)
@@ -519,26 +523,14 @@ bool ImageResourceContent::IsAcceptableCompressionRatio(
   double compression_ratio_1k = (resource_length - 1024) / pixels;
   double compression_ratio_10k = (resource_length - 10240) / pixels;
 
-  // Attempt to sniff the image content to determine the true MIME type of the
-  // image, and fall back on the provided MIME type if this is not
-  // possible.
-  //
-  // Note that if the type cannot be sniffed AND the provided type is incorrect
-  // (for example, due to a misconfigured web server), then it is possible that
-  // either the wrong policy (or no policy) will be enforced. However, this case
-  // should be exceedingly rare.
-  String mime_type =
-      image_->Data() &&
-      ImageDecoder::HasSufficientDataToSniffImageType(*image_->Data().get())
-          ? ImageDecoder::SniffImageType(image_->Data())
-          : GetResponse().HttpContentType();
-  if (MIMETypeRegistry::IsLossyImageMIMEType(mime_type)) {
+  int compression_format = GetCompressionFormat();
+  if (compression_format == ImageDecoder::kLossyFormat) {
     // Enforce the lossy image policy.
     return context.IsFeatureEnabled(
         mojom::FeaturePolicyFeature::kUnoptimizedLossyImages,
         PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure);
   }
-  if (MIMETypeRegistry::IsLosslessImageMIMEType(mime_type)) {
+  if (compression_format == ImageDecoder::kLosslessFormat) {
     // Enforce the lossless image policy.
     bool enabled_by_10k_policy = context.IsFeatureEnabled(
         mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
