@@ -113,8 +113,7 @@ TEST_F(LayoutBlockTest, ContainmentStyleChange) {
   )HTML");
 
   Element* target_element = GetDocument().getElementById("target");
-  LayoutBlockFlow* target =
-      ToLayoutBlockFlow(target_element->GetLayoutObject());
+  auto* target = To<LayoutBlockFlow>(target_element->GetLayoutObject());
   LayoutBox* contained = ToLayoutBox(GetLayoutObjectByElementId("contained"));
   EXPECT_TRUE(target->PositionedObjects()->Contains(contained));
 

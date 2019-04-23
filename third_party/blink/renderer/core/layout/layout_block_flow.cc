@@ -2847,7 +2847,7 @@ void LayoutBlockFlow::MarkSiblingsWithFloatsForLayout(
   FloatingObjectSetIterator end = floating_object_set.end();
 
   for (LayoutObject* next = NextSibling(); next; next = next->NextSibling()) {
-    LayoutBlockFlow* next_block = ToLayoutBlockFlowOrNull(next);
+    auto* next_block = DynamicTo<LayoutBlockFlow>(next);
     if (!next_block ||
         (!float_to_remove && (next_block->IsFloatingOrOutOfFlowPositioned() ||
                               next_block->CreatesNewFormattingContext())))

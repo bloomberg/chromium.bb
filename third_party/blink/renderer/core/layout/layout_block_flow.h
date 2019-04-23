@@ -1030,8 +1030,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   // END METHODS DEFINED IN LayoutBlockFlowLine
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutBlockFlow, IsLayoutBlockFlow());
-
 template <>
 struct DowncastTraits<LayoutBlockFlow> {
   static bool AllowFrom(const LayoutObject& object) {

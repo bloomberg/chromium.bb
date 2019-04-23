@@ -210,7 +210,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
   if (!CanUseNewLayout())
     return RunOldLayout(constraint_space);
 
-  LayoutBlockFlow* block_flow = ToLayoutBlockFlowOrNull(box_);
+  auto* block_flow = DynamicTo<LayoutBlockFlow>(box_);
   if (RuntimeEnabledFeatures::TrackLayoutPassesPerBlockEnabled() && block_flow)
     block_flow->IncrementLayoutPassCount();
 
@@ -618,7 +618,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     box_->SetMargin(ComputePhysicalMargins(constraint_space, Style()));
   }
 
-  LayoutBlockFlow* block_flow = ToLayoutBlockFlowOrNull(box_);
+  auto* block_flow = DynamicTo<LayoutBlockFlow>(box_);
   LayoutMultiColumnFlowThread* flow_thread = GetFlowThread(block_flow);
   if (UNLIKELY(flow_thread)) {
     PlaceChildrenInFlowThread(constraint_space, physical_fragment);
@@ -813,7 +813,7 @@ void NGBlockNode::CopyFragmentDataToLayoutBoxForInlineChildren(
 }
 
 bool NGBlockNode::ChildrenInline() const {
-  if (const auto* block = ToLayoutBlockFlowOrNull(box_))
+  if (const auto* block = DynamicTo<LayoutBlockFlow>(box_))
     return AreNGBlockFlowChildrenInline(block);
   return false;
 }
