@@ -1600,7 +1600,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     protected void showAppMenuForKeyboardEvent() {
         if (getAppMenuHandler() == null) return;
 
-        TextBubble.dismissBubbles();
         boolean hasPermanentMenuKey = ViewConfiguration.get(this).hasPermanentMenuKey();
         getAppMenuHandler().showAppMenu(
                 hasPermanentMenuKey ? null : getToolbarManager().getMenuButton(), false,
