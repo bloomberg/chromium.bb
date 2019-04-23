@@ -50,9 +50,6 @@ SearchSuggestServiceFactory::~SearchSuggestServiceFactory() = default;
 
 KeyedService* SearchSuggestServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (!base::FeatureList::IsEnabled(features::kSearchSuggestionsOnLocalNtp)) {
-    return nullptr;
-  }
   Profile* profile = Profile::FromBrowserContext(context);
   identity::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);

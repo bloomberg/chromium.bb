@@ -4,13 +4,11 @@
 
 #include <string>
 
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/instant_service_observer.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -30,15 +28,7 @@
 
 namespace {
 
-class LocalNTPCustomBackgroundsTest : public InProcessBrowserTest {
- public:
-  LocalNTPCustomBackgroundsTest() {
-    feature_list_.InitWithFeatures({features::kUseGoogleLocalNtp}, {});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
+using LocalNTPCustomBackgroundsTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
                        EmbeddedSearchAPIEndToEnd) {
@@ -233,11 +223,6 @@ IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsTest,
 
 class LocalNTPCustomBackgroundsThemeTest
     : public extensions::ExtensionBrowserTest {
- public:
-  LocalNTPCustomBackgroundsThemeTest() {
-    feature_list_.InitWithFeatures({features::kUseGoogleLocalNtp}, {});
-  }
-
  protected:
   void InstallThemeAndVerify(const std::string& theme_dir,
                              const std::string& theme_name) {
@@ -270,9 +255,6 @@ class LocalNTPCustomBackgroundsThemeTest
     ASSERT_NE(nullptr, new_theme);
     ASSERT_EQ(new_theme->name(), theme_name);
   }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(LocalNTPCustomBackgroundsThemeTest,

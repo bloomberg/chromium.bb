@@ -97,16 +97,9 @@ const base::FeatureParam<std::string>
         &kNuxOnboardingForceEnabled, "returning-user-modules",
         "nux-set-as-default"};
 
-// Our current running experiment of testing the nux-ntp-background module
-// depends on the Local NTP feature/experiment being enabled. To avoid polluting
-// our data with users who cannot use the nux-ntp-background module, we need
-// to check to make sure the Local NTP feature is enabled before running
-// any experiment or even reading any feature params from our experiment.
+// Onboarding experiments depend on Google being the default search provider.
 bool CanExperimentWithVariations(Profile* profile) {
-  return (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kForceLocalNtp) ||
-          base::FeatureList::IsEnabled(features::kUseGoogleLocalNtp)) &&
-         search::DefaultSearchProviderIsGoogle(profile);
+  return search::DefaultSearchProviderIsGoogle(profile);
 }
 
 // Must match study name in configs.

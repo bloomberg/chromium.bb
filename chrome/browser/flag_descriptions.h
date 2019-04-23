@@ -1584,15 +1584,6 @@ extern const char kAppManagementDescription[];
 extern const char kAutofillDropdownLayoutName[];
 extern const char kAutofillDropdownLayoutDescription[];
 
-extern const char kDoodlesOnLocalNtpName[];
-extern const char kDoodlesOnLocalNtpDescription[];
-
-extern const char kSearchSuggestionsOnLocalNtpName[];
-extern const char kSearchSuggestionsOnLocalNtpDescription[];
-
-extern const char kPromosOnLocalNtpName[];
-extern const char kPromosOnLocalNtpDescription[];
-
 extern const char kRemoveNtpFakeboxName[];
 extern const char kRemoveNtpFakeboxDescription[];
 
@@ -1646,9 +1637,6 @@ extern const char kProactiveTabFreezeAndDiscardDescription[];
 
 extern const char kShowManagedUiName[];
 extern const char kShowManagedUiDescription[];
-
-extern const char kUseGoogleLocalNtpName[];
-extern const char kUseGoogleLocalNtpDescription[];
 
 #if defined(GOOGLE_CHROME_BUILD)
 

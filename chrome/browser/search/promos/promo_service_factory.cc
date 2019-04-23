@@ -13,7 +13,6 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -47,10 +46,6 @@ PromoServiceFactory::~PromoServiceFactory() = default;
 
 KeyedService* PromoServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (!base::FeatureList::IsEnabled(features::kPromosOnLocalNtp)) {
-    return nullptr;
-  }
-
   Profile* profile = Profile::FromBrowserContext(context);
   GoogleURLTracker* google_url_tracker =
       GoogleURLTrackerFactory::GetForProfile(profile);

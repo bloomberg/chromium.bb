@@ -2718,12 +2718,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseNewAcceptLanguageHeaderDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kUseNewAcceptLanguageHeader)},
 
-#if !defined(OS_ANDROID)
-    {"use-google-local-ntp", flag_descriptions::kUseGoogleLocalNtpName,
-     flag_descriptions::kUseGoogleLocalNtpDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kUseGoogleLocalNtp)},
-#endif  // !defined(OS_ANDROID)
-
 #if defined(OS_CHROMEOS)
     {"handwriting-gesture", flag_descriptions::kHandwritingGestureName,
      flag_descriptions::kHandwritingGestureDescription, kOsCrOS,
@@ -2822,19 +2816,6 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if !defined(OS_ANDROID)
-    {"doodles-on-local-ntp", flag_descriptions::kDoodlesOnLocalNtpName,
-     flag_descriptions::kDoodlesOnLocalNtpDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kDoodlesOnLocalNtp)},
-
-    {"search-suggestions-on-local-ntp",
-     flag_descriptions::kSearchSuggestionsOnLocalNtpName,
-     flag_descriptions::kSearchSuggestionsOnLocalNtpDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kSearchSuggestionsOnLocalNtp)},
-
-    {"promos-on-local-ntp", flag_descriptions::kPromosOnLocalNtpName,
-     flag_descriptions::kPromosOnLocalNtpDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kPromosOnLocalNtp)},
-
     {"remove-ntp-fakebox", flag_descriptions::kRemoveNtpFakeboxName,
      flag_descriptions::kRemoveNtpFakeboxDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kRemoveNtpFakebox)},

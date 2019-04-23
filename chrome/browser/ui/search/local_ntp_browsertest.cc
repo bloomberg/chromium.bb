@@ -89,7 +89,7 @@ class LocalNTPTest : public InProcessBrowserTest {
   }
 
   LocalNTPTest()
-      : LocalNTPTest(/*enabled_features=*/{features::kUseGoogleLocalNtp},
+      : LocalNTPTest(/*enabled_features=*/{},
                      /*disabled_features=*/{features::kRemoveNtpFakebox}) {}
 
   void SetUpOnMainThread() override {

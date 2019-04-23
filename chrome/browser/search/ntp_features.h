@@ -13,11 +13,7 @@ namespace features {
 // the .cc file.
 
 extern const base::Feature kNtpCustomizationMenuV2;
-extern const base::Feature kDoodlesOnLocalNtp;
-extern const base::Feature kPromosOnLocalNtp;
 extern const base::Feature kRemoveNtpFakebox;
-extern const base::Feature kSearchSuggestionsOnLocalNtp;
-extern const base::Feature kUseGoogleLocalNtp;
 
 extern const base::Feature kFakeboxSearchIconOnNtp;
 extern const base::Feature kUseAlternateFakeboxOnNtp;

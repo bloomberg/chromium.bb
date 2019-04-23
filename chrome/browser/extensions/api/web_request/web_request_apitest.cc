@@ -7,7 +7,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
@@ -39,7 +38,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_loader.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
@@ -1999,7 +1997,6 @@ class LocalNTPInterceptionWebRequestAPITest
         base::Unretained(this)));
     ASSERT_TRUE(https_test_server_.InitializeAndListen());
     ExtensionApiTest::SetUp();
-    feature_list_.InitWithFeatures({::features::kUseGoogleLocalNtp}, {});
   }
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -2051,7 +2048,6 @@ class LocalNTPInterceptionWebRequestAPITest
   }
 
   net::EmbeddedTestServer https_test_server_;
-  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<base::RunLoop> runloop_;
 
   // Initialized on the UI thread in SetUpOnMainThread. Read on UI and Embedded

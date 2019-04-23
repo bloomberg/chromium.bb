@@ -2655,22 +2655,6 @@ const char kAppManagementName[] = "Enable App Management page";
 const char kAppManagementDescription[] =
     "Shows the new app management page at chrome://apps.";
 
-const char kDoodlesOnLocalNtpName[] = "Enable doodles on the local NTP";
-const char kDoodlesOnLocalNtpDescription[] =
-    "Show doodles on the local New Tab page if Google is the default search "
-    "engine.";
-
-const char kSearchSuggestionsOnLocalNtpName[] =
-    "Enable search suggestions on the local NTP";
-const char kSearchSuggestionsOnLocalNtpDescription[] =
-    "Show search suggestions on the local New Tab page if Google is the "
-    "default search engine.";
-
-const char kPromosOnLocalNtpName[] = "Enable promos on the local NTP";
-const char kPromosOnLocalNtpDescription[] =
-    "Show promos on the local New Tab page if Google is the "
-    "default search engine.";
-
 const char kRemoveNtpFakeboxName[] = "Remove fakebox from the NTP";
 const char kRemoveNtpFakeboxDescription[] =
     "Do not show the fakebox on the New Tab page.";
@@ -2767,10 +2751,6 @@ const char kShowManagedUiName[] = "Show managed UI for managed users";
 const char kShowManagedUiDescription[] =
     "Enabled/disable showing enterprise users a 'Managed by your organization' "
     "message in the app menu and on some chrome:// pages.";
-
-const char kUseGoogleLocalNtpName[] = "Enable using the Google local NTP";
-const char kUseGoogleLocalNtpDescription[] =
-    "Use the local New Tab page if Google is the default search engine.";
 
 #if defined(GOOGLE_CHROME_BUILD)
 

@@ -111,7 +111,6 @@ extern const char kFastStart[];
 extern const char kForceAndroidAppMode[];
 extern const char kForceAppMode[];
 extern const char kForceFirstRun[];
-extern const char kForceLocalNtp[];
 extern const char kForceStackedTabStripLayout[];
 extern const char kHomePage[];
 extern const char kIncognito[];

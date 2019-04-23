@@ -470,17 +470,6 @@ std::unique_ptr<base::DictionaryValue> ConvertLogoMetadataToDict(
     result->SetString("fullPageUrl", url);
   }
 
-  // If support for interactive Doodles is disabled, treat them as simple
-  // Doodles instead and use the full page URL as the target URL.
-  if (meta.type == search_provider_logos::LogoType::INTERACTIVE &&
-      !base::GetFieldTrialParamByFeatureAsBool(features::kDoodlesOnLocalNtp,
-                                               "local_ntp_interactive_doodles",
-                                               /*default_value=*/true)) {
-    result->SetString(
-        "type", LogoTypeToString(search_provider_logos::LogoType::SIMPLE));
-    result->SetString("onClickUrl", meta.full_page_url.spec());
-  }
-
   return result;
 }
 
@@ -750,10 +739,8 @@ LocalNtpSource::LocalNtpSource(Profile* profile)
   if (promo_service_)
     promo_service_observer_.Add(promo_service_);
 
-  if (base::FeatureList::IsEnabled(features::kDoodlesOnLocalNtp)) {
-    logo_service_ = LogoServiceFactory::GetForProfile(profile_);
-    logo_observer_ = std::make_unique<DesktopLogoObserver>();
-  }
+  logo_service_ = LogoServiceFactory::GetForProfile(profile_);
+  logo_observer_ = std::make_unique<DesktopLogoObserver>();
 
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);

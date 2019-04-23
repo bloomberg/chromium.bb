@@ -162,10 +162,7 @@ bool IsURLAllowedForSupervisedUser(const GURL& url, Profile* profile) {
 
 bool ShouldShowLocalNewTab(Profile* profile) {
 #if !defined(OS_ANDROID)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kForceLocalNtp) ||
-         (base::FeatureList::IsEnabled(features::kUseGoogleLocalNtp) &&
-          profile && DefaultSearchProviderIsGoogle(profile));
+  return DefaultSearchProviderIsGoogle(profile);
 #endif
   return false;
 }

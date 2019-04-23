@@ -622,11 +622,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "doodles-on-local-ntp",
-    "owners": [ "kmilka", "ramyan" ],
-    "expiry_milestone": 74
-  },
-  {
     "name": "double-tap-to-zoom-in-tablet-mode",
     "owners": [ "afakhry" ],
     "expiry_milestone": 80
@@ -2676,11 +2671,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "promos-on-local-ntp",
-    "owners": [ "kmilka", "ramyan" ],
-    "expiry_milestone": 74
-  },
-  {
     "name": "pull-to-refresh",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
@@ -2744,11 +2734,6 @@
     "name": "scheduler-configuration",
     "owners": [ "kerrnel", "mnissler" ],
     "expiry_milestone": 76
-  },
-  {
-    "name": "search-suggestions-on-local-ntp",
-    "owners": [ "kmilka", "ramyan" ],
-    "expiry_milestone": 74
   },
   {
     "name": "session-restore-prioritizes-background-use-cases",
@@ -2997,11 +2982,6 @@
     // promoting this to a chrome://settings entry, but it needs to be readily
     // available.
     "expiry_milestone": -1
-  },
-  {
-    "name": "use-google-local-ntp",
-    "owners": [ "ramyan" ],
-    "expiry_milestone": 75
   },
   {
     "name": "use-multilogin-endpoint",

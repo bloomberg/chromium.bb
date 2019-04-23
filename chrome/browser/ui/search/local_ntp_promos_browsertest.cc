@@ -13,8 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
-#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/promos/promo_service.h"
 #include "chrome/browser/search/promos/promo_service_factory.h"
 #include "chrome/browser/search_provider_logos/logo_service_factory.h"
@@ -59,8 +57,6 @@ class MockPromoService : public PromoService {
 
 class LocalNTPPromoTest : public InProcessBrowserTest {
  protected:
-  LocalNTPPromoTest() {}
-
   MockPromoService* promo_service() {
     return static_cast<MockPromoService*>(
         PromoServiceFactory::GetForProfile(browser()->profile()));
@@ -68,8 +64,6 @@ class LocalNTPPromoTest : public InProcessBrowserTest {
 
  private:
   void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {features::kUseGoogleLocalNtp, features::kPromosOnLocalNtp}, {});
     InProcessBrowserTest::SetUp();
   }
 
@@ -91,8 +85,6 @@ class LocalNTPPromoTest : public InProcessBrowserTest {
     PromoServiceFactory::GetInstance()->SetTestingFactory(
         context, base::BindRepeating(&LocalNTPPromoTest::CreatePromoService));
   }
-
-  base::test::ScopedFeatureList feature_list_;
 
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>
