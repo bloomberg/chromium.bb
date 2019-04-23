@@ -512,7 +512,7 @@ static unsigned LengthOfContents(const Node* node) {
     case Node::kCdataSectionNode:
     case Node::kCommentNode:
     case Node::kProcessingInstructionNode:
-      return ToCharacterData(node)->length();
+      return To<CharacterData>(node)->length();
     case Node::kElementNode:
     case Node::kDocumentNode:
     case Node::kDocumentFragmentNode:
@@ -674,7 +674,7 @@ Node* Range::ProcessContentsBetweenOffsets(ActionType action,
     case Node::kCdataSectionNode:
     case Node::kCommentNode:
     case Node::kProcessingInstructionNode:
-      end_offset = std::min(end_offset, ToCharacterData(container)->length());
+      end_offset = std::min(end_offset, To<CharacterData>(container)->length());
       if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
         CharacterData* c =
             static_cast<CharacterData*>(container->cloneNode(true));
@@ -687,7 +687,7 @@ Node* Range::ProcessContentsBetweenOffsets(ActionType action,
         }
       }
       if (action == EXTRACT_CONTENTS || action == DELETE_CONTENTS)
-        ToCharacterData(container)->deleteData(
+        To<CharacterData>(container)->deleteData(
             start_offset, end_offset - start_offset, exception_state);
       break;
     case Node::kElementNode:
@@ -953,7 +953,7 @@ String Range::toString() const {
   for (Node* n = FirstNode(); n != past_last; n = NodeTraversal::Next(*n)) {
     Node::NodeType type = n->getNodeType();
     if (type == Node::kTextNode || type == Node::kCdataSectionNode) {
-      String data = ToCharacterData(n)->data();
+      String data = To<CharacterData>(n)->data();
       unsigned length = data.length();
       unsigned start =
           (n == start_.Container()) ? std::min(start_.Offset(), length) : 0;
@@ -1050,12 +1050,12 @@ Node* Range::CheckNodeWOffset(Node* n,
     case Node::kCdataSectionNode:
     case Node::kCommentNode:
     case Node::kTextNode:
-      if (offset > ToCharacterData(n)->length()) {
+      if (offset > To<CharacterData>(n)->length()) {
         exception_state.ThrowDOMException(
             DOMExceptionCode::kIndexSizeError,
             "The offset " + String::Number(offset) +
                 " is larger than the node's length (" +
-                String::Number(ToCharacterData(n)->length()) + ").");
+                String::Number(To<CharacterData>(n)->length()) + ").");
       } else if (offset >
                  static_cast<unsigned>(std::numeric_limits<int>::max())) {
         exception_state.ThrowDOMException(

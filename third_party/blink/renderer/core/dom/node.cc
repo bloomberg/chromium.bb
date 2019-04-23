@@ -1798,8 +1798,8 @@ String Node::textContent(bool convert_brs_to_newlines) const {
   // This covers ProcessingInstruction and Comment that should return their
   // value when .textContent is accessed on them, but should be ignored when
   // iterated over as a descendant of a ContainerNode.
-  if (IsCharacterDataNode())
-    return ToCharacterData(this)->data();
+  if (auto* character_data = DynamicTo<CharacterData>(this))
+    return character_data->data();
 
   // Attribute nodes have their attribute values as textContent.
   if (auto* attr = DynamicTo<Attr>(this))

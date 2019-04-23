@@ -177,7 +177,7 @@ void MarkupFormatter::AppendStartMarkup(StringBuilder& result,
       NOTREACHED();
       break;
     case Node::kCdataSectionNode:
-      AppendCDATASection(result, ToCDATASection(node).data());
+      AppendCDATASection(result, To<CDATASection>(node).data());
       break;
     case Node::kAttributeNode:
       NOTREACHED();

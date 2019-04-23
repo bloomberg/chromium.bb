@@ -108,8 +108,8 @@ bool IsEmptyFontTag(
 }
 
 static bool OffsetIsBeforeLastNodeOffset(int offset, Node* anchor_node) {
-  if (anchor_node->IsCharacterDataNode())
-    return offset < static_cast<int>(ToCharacterData(anchor_node)->length());
+  if (auto* character_data = DynamicTo<CharacterData>(anchor_node))
+    return offset < static_cast<int>(character_data->length());
   int current_offset = 0;
   for (Node* node = NodeTraversal::FirstChild(*anchor_node);
        node && current_offset < offset;

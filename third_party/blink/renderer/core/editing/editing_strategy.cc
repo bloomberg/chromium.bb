@@ -45,8 +45,8 @@ int EditingAlgorithm<Traversal>::LastOffsetForEditing(const Node* node) {
   DCHECK(node);
   if (!node)
     return 0;
-  if (node->IsCharacterDataNode())
-    return static_cast<int>(ToCharacterData(node)->length());
+  if (auto* character_data = DynamicTo<CharacterData>(node))
+    return static_cast<int>(character_data->length());
 
   if (Traversal::HasChildren(*node))
     return Traversal::CountChildren(*node);
