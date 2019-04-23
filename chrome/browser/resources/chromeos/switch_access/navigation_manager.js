@@ -263,9 +263,10 @@ class NavigationManager {
    * @param {!SAConstants.MenuAction} action
    */
   performActionOnCurrentNode(action) {
-    if (action in chrome.automation.ActionType)
+    if (Object.values(chrome.automation.ActionType).includes(action)) {
       this.node_.performStandardAction(
           /** @type {chrome.automation.ActionType} */ (action));
+    }
   }
 
   /**
