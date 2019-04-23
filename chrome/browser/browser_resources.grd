@@ -164,7 +164,6 @@
         <if expr="optimize_webui">
           <then>
             <include name="IDR_DOWNLOADS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\downloads\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-            <include name="IDR_DOWNLOADS_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\downloads\vulcanized.p2.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
             <include name="IDR_DOWNLOADS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\downloads\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
           </then>
           <else>
@@ -288,7 +287,6 @@
         <if expr="optimize_webui">
           <then>
             <include name="IDR_BOOKMARKS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\bookmarks\vulcanized.html" use_base_dir="false" preprocess="true" type="BINDATA" compress="gzip" />
-            <include name="IDR_BOOKMARKS_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\bookmarks\vulcanized.p2.html" use_base_dir="false" preprocess="true" type="BINDATA" compress="gzip" />
             <include name="IDR_BOOKMARKS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\bookmarks\crisper.js" use_base_dir="false" preprocess="true" type="BINDATA" compress="gzip" />
           </then>
           <else>
@@ -349,10 +347,8 @@
         <if expr="optimize_webui">
           <then>
             <include name="IDR_HISTORY_APP_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\history\app.vulcanized.html" preprocess="true" type="BINDATA" compress="gzip" use_base_dir="false" />
-            <include name="IDR_HISTORY_APP_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\history\app.vulcanized.p2.html" preprocess="true" type="BINDATA" compress="gzip" use_base_dir="false" />
             <include name="IDR_HISTORY_APP_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\history\app.crisper.js" preprocess="true" type="BINDATA" compress="gzip" use_base_dir="false" />
             <include name="IDR_HISTORY_LAZY_LOAD_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\history\lazy_load.vulcanized.html" preprocess="true" type="BINDATA" compress="gzip" use_base_dir="false" />
-            <include name="IDR_HISTORY_LAZY_LOAD_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\history\lazy_load.vulcanized.p2.html" preprocess="true" type="BINDATA" compress="gzip" use_base_dir="false" />
             <include name="IDR_HISTORY_LAZY_LOAD_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\history\lazy_load.crisper.js" preprocess="true" type="BINDATA" compress="gzip" use_base_dir="false" />
           </then>
           <else>
@@ -497,7 +493,6 @@
         <if expr="optimize_webui">
           <then>
             <include name="IDR_BLUETOOTH_PAIRING_DIALOG_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\chromeos\bluetooth_pairing_dialog\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-            <include name="IDR_BLUETOOTH_PAIRING_DIALOG_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\chromeos\bluetooth_pairing_dialog\vulcanized.p2.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
             <include name="IDR_BLUETOOTH_PAIRING_DIALOG_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\bluetooth_pairing_dialog\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
           </then>
           <else>
@@ -536,10 +531,8 @@
         <if expr="optimize_webui">
           <then>
             <include name="IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\chromeos\internet_config_dialog\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-            <include name="IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\chromeos\internet_config_dialog\vulcanized.p2.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
             <include name="IDR_INTERNET_CONFIG_DIALOG_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\internet_config_dialog\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
             <include name="IDR_INTERNET_DETAIL_DIALOG_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\chromeos\internet_detail_dialog\vulcanized.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-            <include name="IDR_INTERNET_DETAIL_DIALOG_VULCANIZED_P2_HTML" file="${root_gen_dir}\chrome\browser\resources\chromeos\internet_detail_dialog\vulcanized.p2.html" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
             <include name="IDR_INTERNET_DETAIL_DIALOG_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\internet_detail_dialog\crisper.js" use_base_dir="false" flattenhtml="true" type="BINDATA" compress="gzip" />
           </then>
           <else>

@@ -145,7 +145,7 @@ InternetConfigDialogUI::InternetConfigDialogUI(content::WebUI* web_ui)
   source->SetJsonPath("strings.js");
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->UseGzip();
-  source->SetDefaultResource(IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_P2_HTML);
+  source->SetDefaultResource(IDR_INTERNET_CONFIG_DIALOG_VULCANIZED_HTML);
   source->AddResourcePath("crisper.js", IDR_INTERNET_CONFIG_DIALOG_CRISPER_JS);
 #else
   source->SetDefaultResource(IDR_INTERNET_CONFIG_DIALOG_HTML);

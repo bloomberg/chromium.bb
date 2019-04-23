@@ -141,7 +141,7 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("images/folder.svg", IDR_BOOKMARKS_IMAGES_FOLDER_SVG);
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_BOOKMARKS_CRISPER_JS);
-  source->SetDefaultResource(IDR_BOOKMARKS_VULCANIZED_P2_HTML);
+  source->SetDefaultResource(IDR_BOOKMARKS_VULCANIZED_HTML);
   source->UseGzip(base::BindRepeating([](const std::string& path) {
     return path != "images/folder_open.svg" && path != "images/folder.svg";
   }));

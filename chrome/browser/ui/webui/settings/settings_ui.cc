@@ -316,8 +316,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath("lazy_load.crisper.js",
                                IDR_SETTINGS_LAZY_LOAD_CRISPER_JS);
   html_source->AddResourcePath("lazy_load.html",
-                               IDR_SETTINGS_LAZY_LOAD_VULCANIZED_P2_HTML);
-  html_source->SetDefaultResource(IDR_SETTINGS_VULCANIZED_P2_HTML);
+                               IDR_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
+  html_source->SetDefaultResource(IDR_SETTINGS_VULCANIZED_HTML);
   html_source->UseGzip(base::BindRepeating(
       [](const std::vector<std::string>& excluded_paths,
          const std::string& path) {

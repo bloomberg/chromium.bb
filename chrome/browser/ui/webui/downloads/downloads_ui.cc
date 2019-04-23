@@ -146,7 +146,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   }));
 
   source->AddResourcePath("crisper.js", IDR_DOWNLOADS_CRISPER_JS);
-  source->SetDefaultResource(IDR_DOWNLOADS_VULCANIZED_P2_HTML);
+  source->SetDefaultResource(IDR_DOWNLOADS_VULCANIZED_HTML);
 #else
   source->AddResourcePath("browser_proxy.html",
                           IDR_DOWNLOADS_BROWSER_PROXY_HTML);

@@ -443,7 +443,7 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
   source->SetJsonPath("strings.js");
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_PRINT_PREVIEW_CRISPER_JS);
-  source->SetDefaultResource(IDR_PRINT_PREVIEW_VULCANIZED_P2_HTML);
+  source->SetDefaultResource(IDR_PRINT_PREVIEW_VULCANIZED_HTML);
   std::vector<std::string> exclude_from_gzip = SetupPrintPreviewPlugin(source);
   source->UseGzip(base::BindRepeating(
       [](const std::vector<std::string>& excluded_paths,

@@ -174,10 +174,10 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
       std::move(exclude_from_gzip)));
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->AddResourcePath("app.html", IDR_HISTORY_APP_VULCANIZED_P2_HTML);
+  source->AddResourcePath("app.html", IDR_HISTORY_APP_VULCANIZED_HTML);
   source->AddResourcePath("app.crisper.js", IDR_HISTORY_APP_CRISPER_JS);
   source->AddResourcePath("lazy_load.html",
-                          IDR_HISTORY_LAZY_LOAD_VULCANIZED_P2_HTML);
+                          IDR_HISTORY_LAZY_LOAD_VULCANIZED_HTML);
   source->AddResourcePath("lazy_load.crisper.js",
                           IDR_HISTORY_LAZY_LOAD_CRISPER_JS);
 #endif
