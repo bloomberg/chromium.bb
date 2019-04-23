@@ -587,6 +587,17 @@ bool ContentSettingSensorsImageModel::UpdateAndGetVisibility(
   if (!blocked && !allowed)
     return false;
 
+  HostContentSettingsMap* map = HostContentSettingsMapFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+
+  // Do not show any indicator if sensors are allowed by default and they were
+  // not blocked in this page.
+  if (!blocked && content_type() == CONTENT_SETTINGS_TYPE_SENSORS &&
+      map->GetDefaultContentSetting(content_type(), nullptr) ==
+          CONTENT_SETTING_ALLOW) {
+    return false;
+  }
+
   set_icon(kSensorsIcon, allowed ? gfx::kNoneIcon : kBlockedBadgeIcon);
   set_tooltip(l10n_util::GetStringUTF16(allowed ? IDS_SENSORS_ALLOWED_TOOLTIP
                                                 : IDS_SENSORS_BLOCKED_TOOLTIP));
