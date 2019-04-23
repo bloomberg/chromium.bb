@@ -1609,9 +1609,5 @@
       name: "WorkerTaskQueue",
       status: "experimental"
     },
-    {
-      name: "WritableFiles",
-      status: "experimental",
-    },
   ],
 }
