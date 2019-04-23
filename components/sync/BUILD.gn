@@ -446,8 +446,6 @@ static_library("test_support_base") {
     "base/model_type_test_util.h",
     "base/test_unrecoverable_error_handler.cc",
     "base/test_unrecoverable_error_handler.h",
-    "js/js_test_util.cc",
-    "js/js_test_util.h",
     "test/callback_counter.h",
     "test/mock_invalidation.cc",
     "test/mock_invalidation.h",
@@ -460,12 +458,32 @@ static_library("test_support_base") {
 
   public_deps = [
     "//base",
+    "//components/sync/base",
     "//testing/gmock",
     "//testing/gtest",
   ]
 
   deps = [
-    ":sync",
+    # For test_matchers.h, which should probably be split up.
+    ":rest_of_sync",
+  ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+}
+
+static_library("test_support_js") {
+  testonly = true
+  sources = [
+    "js/js_test_util.cc",
+    "js/js_test_util.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/sync/base",
+    "//components/sync/js",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -478,8 +496,12 @@ static_library("test_support_engine") {
     "engine/fake_model_type_connector.h",
     "engine/fake_model_type_processor.cc",
     "engine/fake_model_type_processor.h",
+    "engine/fake_sync_engine.cc",
+    "engine/fake_sync_engine.h",
     "engine/fake_sync_manager.cc",
     "engine/fake_sync_manager.h",
+    "engine/mock_sync_engine.cc",
+    "engine/mock_sync_engine.h",
     "engine/sync_engine_host_stub.cc",
     "engine/sync_engine_host_stub.h",
     "engine/sync_manager_factory_for_profile_sync_test.cc",
@@ -544,6 +566,8 @@ static_library("test_support_engine") {
 static_library("test_support_model") {
   testonly = true
   sources = [
+    "model/change_processor_mock.cc",
+    "model/change_processor_mock.h",
     "model/data_type_error_handler_mock.cc",
     "model/data_type_error_handler_mock.h",
     "model/fake_model_type_change_processor.cc",
@@ -616,12 +640,6 @@ static_library("test_support_driver") {
     "driver/test_sync_service.h",
     "driver/test_sync_user_settings.cc",
     "driver/test_sync_user_settings.h",
-    "engine/fake_sync_engine.cc",
-    "engine/fake_sync_engine.h",
-    "engine/mock_sync_engine.cc",
-    "engine/mock_sync_engine.h",
-    "model/change_processor_mock.cc",
-    "model/change_processor_mock.h",
   ]
 
   public_deps = [
@@ -771,6 +789,7 @@ source_set("unit_tests") {
     ":test_support_base",
     ":test_support_driver",
     ":test_support_engine",
+    ":test_support_js",
     ":test_support_model",
     ":test_support_user_events",
     "//base",
