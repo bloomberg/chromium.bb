@@ -2078,4 +2078,23 @@ TEST_F(ClientControlledShellSurfaceTest,
   EXPECT_TRUE(split_view_controller->IsSplitViewModeActive());
 }
 
+TEST_F(ClientControlledShellSurfaceTest, DoNotReplayWindowStateRequest) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  auto shell_surface =
+      exo_test_helper()->CreateClientControlledShellSurface(surface.get());
+
+  shell_surface->set_state_changed_callback(base::BindRepeating(
+      [](ash::mojom::WindowStateType, ash::mojom::WindowStateType) {
+        // This callback must not be called when a widget is created.
+        EXPECT_TRUE(false);
+      }));
+
+  shell_surface->SetMinimized();
+  surface->Attach(buffer.get());
+  surface->Commit();
+}
+
 }  // namespace exo

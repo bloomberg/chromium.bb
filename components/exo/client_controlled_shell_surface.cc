@@ -446,7 +446,9 @@ void ClientControlledShellSurface::SetResizeOutset(int outset) {
 void ClientControlledShellSurface::OnWindowStateChangeEvent(
     ash::mojom::WindowStateType current_state,
     ash::mojom::WindowStateType next_state) {
-  if (state_changed_callback_)
+  // Android already knows this state change. Don't send state change to Android
+  // that it is about to do anyway.
+  if (state_changed_callback_ && pending_window_state_ != next_state)
     state_changed_callback_.Run(current_state, next_state);
 }
 

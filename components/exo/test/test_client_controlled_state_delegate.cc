@@ -28,6 +28,10 @@ void TestClientControlledStateDelegate::HandleWindowStateRequest(
       views::Widget::GetWidgetForNativeWindow(window_state->window());
   ClientControlledShellSurface* shell_surface =
       static_cast<ClientControlledShellSurface*>(widget->widget_delegate());
+
+  shell_surface->OnWindowStateChangeEvent(window_state->GetStateType(),
+                                          next_state);
+
   switch (next_state) {
     case ash::mojom::WindowStateType::NORMAL:
     case ash::mojom::WindowStateType::DEFAULT:
