@@ -57,68 +57,66 @@ Object.freeze(ProgressItemType);
 
 /**
  * Item of the progress center.
- * @constructor
- * @struct
  */
-const ProgressCenterItem = function() {
-  /**
-   * Item ID.
-   * @type {?string}
-   * @private
-   */
-  this.id_ = null;
+class ProgressCenterItem {
+  constructor() {
+    /**
+     * Item ID.
+     * @type {?string}
+     * @private
+     */
+    this.id_ = null;
 
-  /**
-   * State of the progress item.
-   * @type {ProgressItemState}
-   */
-  this.state = ProgressItemState.PROGRESSING;
+    /**
+     * State of the progress item.
+     * @type {ProgressItemState}
+     */
+    this.state = ProgressItemState.PROGRESSING;
 
-  /**
-   * Message of the progress item.
-   * @type {string}
-   */
-  this.message = '';
+    /**
+     * Message of the progress item.
+     * @type {string}
+     */
+    this.message = '';
 
-  /**
-   * Max value of the progress.
-   * @type {number}
-   */
-  this.progressMax = 0;
+    /**
+     * Max value of the progress.
+     * @type {number}
+     */
+    this.progressMax = 0;
 
-  /**
-   * Current value of the progress.
-   * @type {number}
-   */
-  this.progressValue = 0;
+    /**
+     * Current value of the progress.
+     * @type {number}
+     */
+    this.progressValue = 0;
 
-  /**
-   * Type of progress item.
-   * @type {?ProgressItemType}
-   */
-  this.type = null;
+    /**
+     * Type of progress item.
+     * @type {?ProgressItemType}
+     */
+    this.type = null;
 
-  /**
-   * Whether the item represents a single item or not.
-   * @type {boolean}
-   */
-  this.single = true;
+    /**
+     * Whether the item represents a single item or not.
+     * @type {boolean}
+     */
+    this.single = true;
 
-  /**
-   * If the property is true, only the message of item shown in the progress
-   * center and the notification of the item is created as priority = -1.
-   * @type {boolean}
-   */
-  this.quiet = false;
+    /**
+     * If the property is true, only the message of item shown in the progress
+     * center and the notification of the item is created as priority = -1.
+     * @type {boolean}
+     */
+    this.quiet = false;
 
-  /**
-   * Callback function to cancel the item.
-   * @type {?function()}
-   */
-  this.cancelCallback = null;
-};
+    /**
+     * Callback function to cancel the item.
+     * @type {?function()}
+     */
+    this.cancelCallback = null;
+  }
 
-ProgressCenterItem.prototype = /** @struct */ {
   /**
    * Setter of Item ID.
    * @param {string} value New value of ID.
@@ -129,7 +127,7 @@ ProgressCenterItem.prototype = /** @struct */ {
     } else {
       console.error('The ID is already set. (current ID: ' + this.id_ + ')');
     }
-  },
+  }
 
   /**
    * Getter of Item ID.
@@ -137,7 +135,7 @@ ProgressCenterItem.prototype = /** @struct */ {
    */
   get id() {
     return this.id_;
-  },
+  }
 
   /**
    * Gets progress rate in percent.
@@ -156,7 +154,7 @@ ProgressCenterItem.prototype = /** @struct */ {
       default:
         return ~~(100 * this.progressValue / this.progressMax);
     }
-  },
+  }
 
   /**
    * Whether the item can be canceled or not.
@@ -167,22 +165,22 @@ ProgressCenterItem.prototype = /** @struct */ {
         this.state == ProgressItemState.PROGRESSING && this.cancelCallback &&
         this.single);
   }
-};
 
-/**
- * Clones the item.
- * @return {ProgressCenterItem} New item having the same properties with this.
- */
-ProgressCenterItem.prototype.clone = function() {
-  const newItem = new ProgressCenterItem();
-  newItem.id = this.id;
-  newItem.state = this.state;
-  newItem.message = this.message;
-  newItem.progressMax = this.progressMax;
-  newItem.progressValue = this.progressValue;
-  newItem.type = this.type;
-  newItem.single = this.single;
-  newItem.quiet = this.quiet;
-  newItem.cancelCallback = this.cancelCallback;
-  return newItem;
-};
+  /**
+   * Clones the item.
+   * @return {ProgressCenterItem} New item having the same properties with this.
+   */
+  clone() {
+    const newItem = new ProgressCenterItem();
+    newItem.id = this.id;
+    newItem.state = this.state;
+    newItem.message = this.message;
+    newItem.progressMax = this.progressMax;
+    newItem.progressValue = this.progressValue;
+    newItem.type = this.type;
+    newItem.single = this.single;
+    newItem.quiet = this.quiet;
+    newItem.cancelCallback = this.cancelCallback;
+    return newItem;
+  }
+}
