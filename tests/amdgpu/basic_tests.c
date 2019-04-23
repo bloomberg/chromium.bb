@@ -329,14 +329,15 @@ static const uint32_t preamblecache_gfx9[] = {
 	0xc0016900, 0x2d5, 0x10000, 0xc0016900,  0x2dc, 0x0,
 	0xc0066900, 0x2de, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xc0026900, 0x2e5, 0x0, 0x0,
 	0xc0056900, 0x2f9, 0x5, 0x3f800000, 0x3f800000, 0x3f800000, 0x3f800000,
-	0xc0026900, 0x311,  0x3, 0x0, 0xc0026900, 0x316, 0x1e, 0x20,
+	0xc0036900, 0x311, 0x3, 0, 0x100000, 0xc0026900, 0x316, 0x1e, 0x20,
 	0xc0016900, 0x349, 0x0, 0xc0016900, 0x358, 0x0, 0xc0016900, 0x367, 0x0,
 	0xc0016900, 0x376, 0x0, 0xc0016900, 0x385, 0x0, 0xc0016900, 0x19, 0x0,
 	0xc0056900, 0xe8, 0x0, 0x0, 0x0, 0x0, 0x0,
 	0xc0076900, 0x1e1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
 	0xc0026900, 0x204, 0x90000, 0x4, 0xc0046900, 0x20c, 0x0, 0x0, 0x0, 0x0,
 	0xc0016900, 0x2b2, 0x0, 0xc0026900, 0x30e, 0xffffffff, 0xffffffff,
-	0xc0016900, 0x314, 0x0, 0xc0002f00, 0x1, 0xc0016900, 0x1, 0x1,
+	0xc0016900, 0x314, 0x0, 0xc0016900, 0x2a6, 0, 0xc0016900, 0x210, 0,
+	0xc0002f00, 0x1, 0xc0016900, 0x1, 0x1,
 	0xc0016900, 0x18, 0x2, 0xc0016900, 0x206, 0x300, 0xc0017900, 0x20000243, 0x0,
 	0xc0017900, 0x248, 0xffffffff, 0xc0017900, 0x249, 0x0, 0xc0017900, 0x24a, 0x0,
 	0xc0017900, 0x24b, 0x0
@@ -450,7 +451,7 @@ static const uint32_t cached_cmd_gfx9[] = {
 	0xc0016900, 0x0, 0x0, 0xc0026900, 0x3, 0x2a, 0x0,
 	0xc0046900, 0xa, 0x0, 0x0, 0x0, 0x200020,
 	0xc0016900, 0x83, 0xffff, 0xc0026900, 0x8e, 0xf, 0xf,
-	0xc0056900, 0x105, 0x0, 0x0,  0x0, 0x0, 0x12,
+	0xc0056900, 0x105, 0x0, 0x0,  0x0, 0x0, 0x1a,
 	0xc0026900, 0x10b, 0x0, 0x0, 0xc0016900, 0x1e0, 0x0,
 	0xc0036900, 0x200, 0x0, 0x10000, 0xcc0011,
 	0xc0026900, 0x292, 0x20, 0x60201b8,
@@ -2094,10 +2095,7 @@ static int amdgpu_dispatch_init(uint32_t *ptr, uint32_t ip_type)
 	ptr[i++] = PACKET3_COMPUTE(PKT3_SET_SH_REG, 3);
 	ptr[i++] = 0x204;
 	i += 3;
-	/* clear mmCOMPUTE_RESOURCE_LIMITS */
-	ptr[i++] = PACKET3_COMPUTE(PKT3_SET_SH_REG, 1);
-	ptr[i++] = 0x215;
-	ptr[i++] = 0;
+
 	/* clear mmCOMPUTE_TMPRING_SIZE */
 	ptr[i++] = PACKET3_COMPUTE(PKT3_SET_SH_REG, 1);
 	ptr[i++] = 0x218;
@@ -2184,6 +2182,7 @@ static void amdgpu_memset_dispatch_test(amdgpu_device_handle device_handle,
 					&bo_shader, &ptr_shader,
 					&mc_address_shader, &va_shader);
 	CU_ASSERT_EQUAL(r, 0);
+	memset(ptr_shader, 0, bo_shader_size);
 
 	r = amdgpu_dispatch_load_cs_shader(ptr_shader, CS_BUFFERCLEAR);
 	CU_ASSERT_EQUAL(r, 0);
@@ -2219,6 +2218,11 @@ static void amdgpu_memset_dispatch_test(amdgpu_device_handle device_handle,
 	ptr_cmd[i++] = 0x22222222;
 	ptr_cmd[i++] = 0x22222222;
 	ptr_cmd[i++] = 0x22222222;
+
+	/* clear mmCOMPUTE_RESOURCE_LIMITS */
+	ptr_cmd[i++] = PACKET3_COMPUTE(PKT3_SET_SH_REG, 1);
+	ptr_cmd[i++] = 0x215;
+	ptr_cmd[i++] = 0;
 
 	/* dispatch direct command */
 	ptr_cmd[i++] = PACKET3_COMPUTE(PACKET3_DISPATCH_DIRECT, 3);
@@ -2321,6 +2325,7 @@ static void amdgpu_memcpy_dispatch_test(amdgpu_device_handle device_handle,
 					&bo_shader, &ptr_shader,
 					&mc_address_shader, &va_shader);
 	CU_ASSERT_EQUAL(r, 0);
+	memset(ptr_shader, 0, bo_shader_size);
 
 	r = amdgpu_dispatch_load_cs_shader(ptr_shader, CS_BUFFERCOPY );
 	CU_ASSERT_EQUAL(r, 0);
@@ -2364,6 +2369,11 @@ static void amdgpu_memcpy_dispatch_test(amdgpu_device_handle device_handle,
 	ptr_cmd[i++] = (mc_address_dst >> 32) | 0x100000;
 	ptr_cmd[i++] = 0x400;
 	ptr_cmd[i++] = 0x74fac;
+
+	/* clear mmCOMPUTE_RESOURCE_LIMITS */
+	ptr_cmd[i++] = PACKET3_COMPUTE(PKT3_SET_SH_REG, 1);
+	ptr_cmd[i++] = 0x215;
+	ptr_cmd[i++] = 0;
 
 	/* dispatch direct command */
 	ptr_cmd[i++] = PACKET3_COMPUTE(PACKET3_DISPATCH_DIRECT, 3);
@@ -2438,6 +2448,8 @@ static void amdgpu_dispatch_test(void)
 
 	r = amdgpu_query_hw_ip_info(device_handle, AMDGPU_HW_IP_COMPUTE, 0, &info);
 	CU_ASSERT_EQUAL(r, 0);
+	if (!info.available_rings)
+		printf("SKIP ... as there's no compute ring\n");
 
 	for (ring_id = 0; (1 << ring_id) & info.available_rings; ring_id++) {
 		amdgpu_memset_dispatch_test(device_handle, AMDGPU_HW_IP_COMPUTE, ring_id);
@@ -2446,6 +2458,8 @@ static void amdgpu_dispatch_test(void)
 
 	r = amdgpu_query_hw_ip_info(device_handle, AMDGPU_HW_IP_GFX, 0, &info);
 	CU_ASSERT_EQUAL(r, 0);
+	if (!info.available_rings)
+		printf("SKIP ... as there's no graphics ring\n");
 
 	for (ring_id = 0; (1 << ring_id) & info.available_rings; ring_id++) {
 		amdgpu_memset_dispatch_test(device_handle, AMDGPU_HW_IP_GFX, ring_id);
@@ -2901,12 +2915,14 @@ static void amdgpu_memset_draw_test(amdgpu_device_handle device_handle,
 					&bo_shader_ps, &ptr_shader_ps,
 					&mc_address_shader_ps, &va_shader_ps);
 	CU_ASSERT_EQUAL(r, 0);
+	memset(ptr_shader_ps, 0, bo_shader_size);
 
 	r = amdgpu_bo_alloc_and_map(device_handle, bo_shader_size, 4096,
 					AMDGPU_GEM_DOMAIN_VRAM, 0,
 					&bo_shader_vs, &ptr_shader_vs,
 					&mc_address_shader_vs, &va_shader_vs);
 	CU_ASSERT_EQUAL(r, 0);
+	memset(ptr_shader_vs, 0, bo_shader_size);
 
 	r = amdgpu_draw_load_ps_shader(ptr_shader_ps, PS_CONST);
 	CU_ASSERT_EQUAL(r, 0);
@@ -2996,7 +3012,7 @@ static void amdgpu_memcpy_draw(amdgpu_device_handle device_handle,
 	ptr_cmd[i++] = 0x92;
 	i += 3;
 
-	ptr_cmd[i++] = PACKET3(PKT3_SET_SH_REG, 1);
+	ptr_cmd[i++] = PACKET3(PACKET3_SET_CONTEXT_REG, 1);
 	ptr_cmd[i++] = 0x191;
 	ptr_cmd[i++] = 0;
 
@@ -3074,12 +3090,14 @@ static void amdgpu_memcpy_draw_test(amdgpu_device_handle device_handle, uint32_t
 					&bo_shader_ps, &ptr_shader_ps,
 					&mc_address_shader_ps, &va_shader_ps);
 	CU_ASSERT_EQUAL(r, 0);
+	memset(ptr_shader_ps, 0, bo_shader_size);
 
 	r = amdgpu_bo_alloc_and_map(device_handle, bo_shader_size, 4096,
 					AMDGPU_GEM_DOMAIN_VRAM, 0,
 					&bo_shader_vs, &ptr_shader_vs,
 					&mc_address_shader_vs, &va_shader_vs);
 	CU_ASSERT_EQUAL(r, 0);
+	memset(ptr_shader_vs, 0, bo_shader_size);
 
 	r = amdgpu_draw_load_ps_shader(ptr_shader_ps, PS_TEX);
 	CU_ASSERT_EQUAL(r, 0);
@@ -3105,6 +3123,8 @@ static void amdgpu_draw_test(void)
 
 	r = amdgpu_query_hw_ip_info(device_handle, AMDGPU_HW_IP_GFX, 0, &info);
 	CU_ASSERT_EQUAL(r, 0);
+	if (!info.available_rings)
+		printf("SKIP ... as there's no graphics ring\n");
 
 	for (ring_id = 0; (1 << ring_id) & info.available_rings; ring_id++) {
 		amdgpu_memset_draw_test(device_handle, ring_id);
