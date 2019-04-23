@@ -32,18 +32,17 @@ class MockOverlayRequestQueueImplObserver
 class OverlayRequestQueueImplTest : public PlatformTest {
  public:
   OverlayRequestQueueImplTest() : PlatformTest() {
-    OverlayRequestQueueImpl::CreateForWebState(&web_state_);
-    queue_impl()->AddObserver(&observer_);
+    OverlayRequestQueueImpl::Container::CreateForWebState(&web_state_);
+    queue()->AddObserver(&observer_);
   }
   ~OverlayRequestQueueImplTest() override {
-    queue_impl()->RemoveObserver(&observer_);
+    queue()->RemoveObserver(&observer_);
   }
 
-  OverlayRequestQueueImpl* queue_impl() {
-    return OverlayRequestQueueImpl::FromWebState(&web_state_);
-  }
-  OverlayRequestQueue* queue() {
-    return OverlayRequestQueue::FromWebState(&web_state_);
+  OverlayRequestQueueImpl* queue() {
+    // Use the kWebContentArea queue for testing.
+    return OverlayRequestQueueImpl::Container::FromWebState(&web_state_)
+        ->QueueForModality(OverlayModality::kWebContentArea);
   }
   MockOverlayRequestQueueImplObserver& observer() { return observer_; }
 
@@ -61,11 +60,11 @@ TEST_F(OverlayRequestQueueImplTest, AddAndPopRequest) {
   // Add the request and verify that it's exposed by the queue and received by
   // the observer.
   EXPECT_CALL(observer(), OnRequestAdded(queue(), request_ptr));
-  queue_impl()->AddRequest(std::move(request));
+  queue()->AddRequest(std::move(request));
   EXPECT_EQ(queue()->front_request(), request_ptr);
   // Remove the request and verify that it's no longer in the queue and the
   // observer callback has been executed.
   EXPECT_CALL(observer(), OnRequestRemoved(queue(), request_ptr));
-  queue_impl()->PopRequest();
+  queue()->PopRequest();
   ASSERT_FALSE(queue()->front_request());
 }

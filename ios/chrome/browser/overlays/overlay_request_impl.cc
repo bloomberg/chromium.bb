@@ -14,8 +14,8 @@ std::unique_ptr<OverlayRequest> OverlayRequest::Create() {
 OverlayRequestImpl::OverlayRequestImpl() {}
 OverlayRequestImpl::~OverlayRequestImpl() {}
 
-base::SupportsUserData& OverlayRequestImpl::data() {
-  return *this;
+base::SupportsUserData* OverlayRequestImpl::data() {
+  return this;
 }
 
 void OverlayRequestImpl::set_response(

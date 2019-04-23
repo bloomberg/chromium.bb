@@ -16,7 +16,7 @@ class OverlayResponseImpl : public OverlayResponse,
 
  private:
   // OverlayResponse:
-  base::SupportsUserData& data() override;
+  base::SupportsUserData* data() override;
 };
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_RESPONSE_IMPL_H_

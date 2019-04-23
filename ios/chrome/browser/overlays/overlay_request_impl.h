@@ -20,7 +20,7 @@ class OverlayRequestImpl : public OverlayRequest,
   // OverlayRequest:
   void set_response(std::unique_ptr<OverlayResponse> response) override;
   OverlayResponse* response() const override;
-  base::SupportsUserData& data() override;
+  base::SupportsUserData* data() override;
 
   // The response containing the user interaction information for the overlay
   // resulting from this response.

@@ -25,8 +25,7 @@ class OverlayResponse {
   template <class InfoType, typename... Args>
   static std::unique_ptr<OverlayResponse> CreateWithInfo(Args&&... args) {
     std::unique_ptr<OverlayResponse> response = OverlayResponse::Create();
-    response->data().SetUserData(InfoType::UserDataKey(),
-                                 InfoType::Create(std::forward<Args>(args)...));
+    InfoType::CreateForUserData(response->data(), std::forward<Args>(args)...);
     return response;
   }
 
@@ -37,7 +36,7 @@ class OverlayResponse {
   // response->GetInfo<Info>();
   template <class InfoType>
   InfoType* GetInfo() {
-    return static_cast<InfoType*>(data().GetUserData(InfoType::UserDataKey()));
+    return InfoType::FromUserData(data());
   }
 
  private:
@@ -45,7 +44,7 @@ class OverlayResponse {
   static std::unique_ptr<OverlayResponse> Create();
 
   // The container used to hold the user data.
-  virtual base::SupportsUserData& data() = 0;
+  virtual base::SupportsUserData* data() = 0;
 };
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_RESPONSE_H_

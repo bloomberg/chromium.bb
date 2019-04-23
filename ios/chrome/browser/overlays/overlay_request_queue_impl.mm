@@ -6,28 +6,29 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/overlays/overlay_request.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-WEB_STATE_USER_DATA_KEY_IMPL(OverlayRequestQueue)
+#pragma mark - OverlayRequestQueueImpl::Container
 
-// static
-void OverlayRequestQueueImpl::CreateForWebState(web::WebState* web_state) {
-  DCHECK(web_state);
-  if (!FromWebState(web_state))
-    web_state->SetUserData(UserDataKey(),
-                           base::WrapUnique(new OverlayRequestQueueImpl()));
+WEB_STATE_USER_DATA_KEY_IMPL(OverlayRequestQueueImpl::Container)
+
+OverlayRequestQueueImpl::Container::Container(web::WebState* web_state) {}
+OverlayRequestQueueImpl::Container::~Container() = default;
+
+OverlayRequestQueueImpl* OverlayRequestQueueImpl::Container::QueueForModality(
+    OverlayModality modality) {
+  auto& queue = queues_[modality];
+  if (!queue)
+    queue = base::WrapUnique(new OverlayRequestQueueImpl());
+  return queue.get();
 }
 
-// static
-OverlayRequestQueueImpl* OverlayRequestQueueImpl::FromWebState(
-    web::WebState* web_state) {
-  return static_cast<OverlayRequestQueueImpl*>(
-      OverlayRequestQueue::FromWebState(web_state));
-}
+#pragma mark - OverlayRequestQueueImpl
 
 OverlayRequestQueueImpl::OverlayRequestQueueImpl() = default;
 OverlayRequestQueueImpl::~OverlayRequestQueueImpl() = default;

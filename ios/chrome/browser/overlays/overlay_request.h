@@ -11,7 +11,7 @@
 
 class OverlayResponse;
 
-// Model object used to track overlays requested for OverlayService.
+// Model object used to track overlays requested for OverlayManager.
 class OverlayRequest {
  public:
   OverlayRequest() = default;
@@ -27,9 +27,7 @@ class OverlayRequest {
   template <class ConfigType, typename... Args>
   static std::unique_ptr<OverlayRequest> CreateWithConfig(Args&&... args) {
     std::unique_ptr<OverlayRequest> request = OverlayRequest::Create();
-    request->data().SetUserData(
-        ConfigType::UserDataKey(),
-        ConfigType::Create(std::forward<Args>(args)...));
+    ConfigType::CreateForUserData(request->data(), std::forward<Args>(args)...);
     return request;
   }
 
@@ -40,8 +38,7 @@ class OverlayRequest {
   // request->GetConfig<Config>();
   template <class ConfigType>
   ConfigType* GetConfig() {
-    return static_cast<ConfigType*>(
-        data().GetUserData(ConfigType::UserDataKey()));
+    return ConfigType::FromUserData(data());
   }
 
   // Setter for the response object for this request.
@@ -56,7 +53,7 @@ class OverlayRequest {
   static std::unique_ptr<OverlayRequest> Create();
 
   // The container used to hold the user data.
-  virtual base::SupportsUserData& data() = 0;
+  virtual base::SupportsUserData* data() = 0;
 };
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_REQUEST_H_

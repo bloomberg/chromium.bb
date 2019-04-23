@@ -1,22 +1,35 @@
-# OverlayService
+# OverlayManager
 
-OverlayService is used to schedule the display of UI over the content area of a
+OverlayManager is used to schedule the display of UI over the content area of a
 WebState.
 
 ## Classes of note:
 
+##### OverlayManager
+
+OverlayManager is the public interface to the manager's functionality.  Clients
+who wish to display overlay UI alongside a WebState's content area should use
+OverlayManager::AddRequest() to schedule overlays to be displayed in the future.
+Each OverlayManager manages overlays at a different level of modality, described
+by OverlayModality.
+
+##### OverlayManagerObserver
+
+OverlayManagerObserver notifies interested classes of when overlay UI is
+presented or dismissed.
+
 ##### OverlayRequest
 
-OverlayRequests are passed to OverlayService to trigger the display of overlay
-UI over a WebState's content area.  Service clients should create
+OverlayRequests are passed to OverlayManager to trigger the display of overlay
+UI over a WebState's content area.  Manager clients should create
 OverlayRequests with an OverlayUserData subclass with the information necessary
 to configure the overlay UI.  The config user data can later be extracted from
-OverlayRequests by the service's observers and UI delegate.
+OverlayRequests by the manager's observers and UI delegate.
 
 ##### OverlayResponse
 
 OverlayResponses are provided to each OverlayRequest to describe the user's
-interaction with the overlay UI.  Service clients should create OverlayResponses
+interaction with the overlay UI.  Manager clients should create OverlayResponses
 with an OverlayUserData subclass with the overlay UI user interaction
 information necessary to execute the callback for that overlay.
 
@@ -26,7 +39,18 @@ Each WebState has an OverlayRequestQueue that stores the OverlayRequests for
 that WebState.  The public interface exposes an immutable queue where the front
 OverlayRequest is visible.  Internally, the queue is mutable and observable.
 
-## Example usage of service:
+## Setting up OverlayManager:
+
+Multiple OverlayManagers may be active for a single Browser to manage overlay UI
+at different levels of modality (i.e. modal over WebState content area, modal
+over entire browser, etc).  In order to use the manager, clients must retrieve
+the OverlayManager associated with the key corresponding with the desired
+modality.
+
+Each instance of OverlayManager must be provided with an OverlayUIDelegate that
+manages the overlay UI at the modality associated with the manager.
+
+## Example usage of manager:
 
 ### Showing an alert with a title, message, an OK button, and a Cancel button
 
@@ -63,7 +87,13 @@ An OverlayRequest for the alert can be created using:
     OverlayRequest::CreateWithConfig<AlertConfig>(
         "alert title", "message text");
 
-*TODO: insert OverlayService calls when interface is added.*
+Manager clients can then supply this request to the OverlayManager for
+scheduling over the web content area:
+
+    OverlayModality modality =
+        OverlayModality::kWebContentArea;
+    OverlayManager::FromBrowser(browser, modality)->AddRequest(
+        std::move(request), web_state);
 
 #####3. Supply a response to the request.
 
@@ -72,6 +102,6 @@ An OverlayResponse for the alert can be created using:
     OverlayResponse::CreateWithInfo<AlertInfo>(0);
 
 
-*NOTE: this service is a work-in-progress, and this file only outlines how to
+*NOTE: this manager is a work-in-progress, and this file only outlines how to
 use the files currently in the repository.  It will be updated with more
-complete instructions as more of the service lands.*
+complete instructions as more of the manager lands.*

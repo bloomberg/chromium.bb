@@ -43,15 +43,32 @@
 template <class DataType>
 class OverlayUserData : public base::SupportsUserData::Data {
  public:
-  // Creates an OverlayUserData of type DataType.  The DataType instance is
-  // constructed using the arguments passed to this function.  For example, if
-  // the constructor for an OverlayUserData of type StringData takes a string,
-  // one can be created using:
+  // Creates an OverlayUserData of type DataType and adds it to |user_data|
+  // under its key.  The DataType instance is constructed using the arguments
+  // passed after the key to this function.  If a DataType instance already
+  // exists in |user_data|, no new object is created.  For example, if the
+  // constructor for an OverlayUserData of type StringData takes a string, one
+  // can be created using:
   //
-  // StringData::Create("string");
+  // StringData::CreateForUserData(user_data, "string");
   template <typename... Args>
-  static std::unique_ptr<DataType> Create(Args&&... args) {
-    return base::WrapUnique(new DataType(std::forward<Args>(args)...));
+  static void CreateForUserData(base::SupportsUserData* user_data,
+                                Args&&... args) {
+    if (!FromUserData(user_data)) {
+      std::unique_ptr<DataType> data =
+          base::WrapUnique(new DataType(std::forward<Args>(args)...));
+      user_data->SetUserData(UserDataKey(), std::move(data));
+    }
+  }
+
+  // Retrieves the instance of type DataType that was attached to the specified
+  // user data container and returns it. If no instance of the type was
+  // attached, returns nullptr.
+  static DataType* FromUserData(base::SupportsUserData* user_data) {
+    return static_cast<DataType*>(user_data->GetUserData(UserDataKey()));
+  }
+  static const DataType* FromUserData(const base::SupportsUserData* user_data) {
+    return static_cast<const DataType*>(user_data->GetUserData(UserDataKey()));
   }
 
   // The key under which to store the user data.
