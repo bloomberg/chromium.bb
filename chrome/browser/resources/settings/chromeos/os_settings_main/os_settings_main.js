@@ -237,6 +237,7 @@ Polymer({
    * @private
    */
   showManagedHeader_: function() {
-    return !this.inSearchMode_ && !this.showingSubpage_;
+    return !this.inSearchMode_ && !this.showingSubpage_ &&
+        !this.showPages_.about;
   },
 });
