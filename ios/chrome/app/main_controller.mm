@@ -453,9 +453,6 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)lastIncognitoTabClosed;
 // Called when the last regular tab was closed.
 - (void)lastRegularTabClosed;
-// Post a notification with name |notificationName| on the first available
-// run loop cycle.
-- (void)postNotificationOnNextRunLoopCycle:(NSString*)notificationName;
 // Opens a tab in the target BVC, and switches to it in a way that's appropriate
 // to the current UI, based on the |dismissModals| flag:
 // - If a modal dialog is showing and |dismissModals| is NO, the selected tab of
@@ -2479,21 +2476,6 @@ enum class EnterTabSwitcherSnapshotResult {
 
   // Verify that no modal views are left presented.
   ios::GetChromeBrowserProvider()->LogIfModalViewsArePresented();
-}
-
-// iOS does not guarantee the order in which the observers are notified by
-// the notification center. There are different parts of the application that
-// register for UIApplication notifications so recording them in order to
-// measure the performance of the app being moved to the foreground / background
-// is not reliable. Instead we prefer using designated notifications that are
-// posted to the observers on the first available run loop cycle, which
-// guarantees that they are delivered to the observer only after UIApplication
-// notifications have been treated.
-- (void)postNotificationOnNextRunLoopCycle:(NSString*)notificationName {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    [[NSNotificationCenter defaultCenter] postNotificationName:notificationName
-                                                        object:self];
-  });
 }
 
 - (bool)mustShowRestoreInfobar {
