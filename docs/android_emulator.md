@@ -2,6 +2,13 @@
 Always use x86 emulators (or x86\_64 for testing 64-bit APKs). Although arm
 emulators exist, they are so slow that they are not worth your time.
 
+*** note
+**Note:** apps with native code must be compiled specifically for the device
+architecture, so make sure your copy of the app supports x86. Also, be aware the
+Play Store may not display ARM-only applications for an x86 emulator. The steps
+below show how to locally compile chromium-based apps for x86.
+***
+
 ## Building for Emulation
 You need to target the correct architecture via GN args:
 ```gn
@@ -27,14 +34,15 @@ testing large screens).
 ### Choosing an Image
 Android Studio's image labels roughly translate to the following:
 
-| AVD "Target" | GMS? | Build Properties |
-| --- | --- | --- |
-| Google Play | This has GMS | `user`/`release-keys` |
-| Google APIs | This has GMS | `userdebug`/`dev-keys` |
-| No label | AOSP image, does not have GMS | `eng`/`test-keys` |
+| AVD "Target" | Virtual Device Configuration tab | GMS? | Build Properties |
+| --- | --- | --- | --- |
+| Google Play | "Recommended" (the default tab) | This has GMS | `user`/`release-keys` |
+| Google APIs | "x86 Images" | This has GMS | `userdebug`/`dev-keys` |
+| No label | "x86 Images" | AOSP image, does not have GMS | `eng`/`test-keys` |
 
 *** promo
-If you're not sure which to use, **choose Google APIs**.
+**Tip:** if you're not sure which to use, choose **Google APIs** under the **x86
+Images** tab in the Virtual Device Configuration wizard.
 ***
 
 ### Configuration
