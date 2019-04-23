@@ -230,8 +230,11 @@ struct GLRenderer::DrawRenderPassDrawQuadParams {
   float edge[24];
   SkScalar color_matrix[20];
 
-  // Blending refers to modifications to the backdrop.
+  // Blending in the fragment shaders is used for modifications to the backdrop
+  // and for supporting advanced blending equation when not available by the
+  // underlying graphics API.
   bool use_shaders_for_blending = false;
+  SkBlendMode blend_mode = SkBlendMode::kSrcOver;
 
   bool use_aa = false;
 
@@ -1122,9 +1125,9 @@ static GLuint GetGLTextureIDFromSkImage(const SkImage* image,
 void GLRenderer::UpdateRPDQShadersForBlending(
     DrawRenderPassDrawQuadParams* params) {
   const RenderPassDrawQuad* quad = params->quad;
-  SkBlendMode blend_mode = quad->shared_quad_state->blend_mode;
+  params->blend_mode = quad->shared_quad_state->blend_mode;
   params->use_shaders_for_blending =
-      !CanApplyBlendModeUsingBlendFunc(blend_mode) ||
+      !CanApplyBlendModeUsingBlendFunc(params->blend_mode) ||
       ShouldApplyBackdropFilters(params->backdrop_filters) ||
       settings_->force_blending_with_shaders;
 
@@ -1170,7 +1173,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
           gl_->DeleteTextures(1, &params->background_texture);
           params->background_texture = 0;
         }
-      } else if (CanApplyBlendModeUsingBlendFunc(blend_mode) &&
+      } else if (CanApplyBlendModeUsingBlendFunc(params->blend_mode) &&
                  ShouldApplyBackdropFilters(params->backdrop_filters)) {
         // Something went wrong with applying backdrop filters to the
         // backdrop.
@@ -1181,6 +1184,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
     } else {  // params->background_rect.IsEmpty()
       DCHECK(!params->background_image_id);
       params->use_shaders_for_blending = false;
+      params->blend_mode = SkBlendMode::kSrcOver;
     }
   }
 
@@ -1330,7 +1334,7 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
 }
 
 void GLRenderer::UpdateRPDQBlendMode(DrawRenderPassDrawQuadParams* params) {
-  SkBlendMode blend_mode = params->quad->shared_quad_state->blend_mode;
+  SkBlendMode blend_mode = params->blend_mode;
   SetBlendEnabled((!params->use_shaders_for_blending &&
                    (params->quad->ShouldDrawWithBlending() ||
                     !IsDefaultBlendMode(blend_mode))) ||
@@ -1351,7 +1355,7 @@ void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params,
 
   BlendMode shader_blend_mode =
       params->use_shaders_for_blending
-          ? BlendModeFromSkXfermode(params->quad->shared_quad_state->blend_mode)
+          ? BlendModeFromSkXfermode(params->blend_mode)
           : BLEND_MODE_NONE;
 
   SamplerType sampler_type = SAMPLER_TYPE_2D;
@@ -1522,7 +1526,7 @@ void GLRenderer::DrawRPDQ(const DrawRenderPassDrawQuadParams& params) {
     gl_->Flush();
 
   if (!params.use_shaders_for_blending)
-    RestoreBlendFuncToDefault(params.quad->shared_quad_state->blend_mode);
+    RestoreBlendFuncToDefault(params.blend_mode);
 }
 
 namespace {
