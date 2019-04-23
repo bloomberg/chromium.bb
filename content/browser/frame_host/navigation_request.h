@@ -36,6 +36,7 @@ struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace content {
 
+class AppCacheNavigationHandle;
 class FrameNavigationEntry;
 class FrameTreeNode;
 class NavigationHandleImpl;
@@ -395,6 +396,18 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
     return previous_url_;
   }
 
+  bool is_same_process() const {
+    DCHECK(handle_state_ == DID_COMMIT ||
+           handle_state_ == DID_COMMIT_ERROR_PAGE);
+    return is_same_process_;
+  }
+
+  std::unique_ptr<AppCacheNavigationHandle> TakeAppCacheHandle();
+
+  // Sets the READY_TO_COMMIT -> DID_COMMIT timeout.  Resets the timeout to the
+  // default value if |timeout| is zero.
+  static void SetCommitTimeoutForTesting(const base::TimeDelta& timeout);
+
  private:
   // TODO(clamy): Transform NavigationHandleImplTest into NavigationRequestTest
   // once NavigationHandleImpl has become a wrapper around NavigationRequest.
@@ -624,7 +637,20 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // RenderProcessHostObserver implementation.
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
-  void RecordNavigationMetrics() const;
+  // Called when the navigation is ready to be committed. This will update the
+  // |state_| and inform the delegate.
+  void ReadyToCommitNavigation(bool is_error);
+
+  // Called if READY_TO_COMMIT -> COMMIT state transition takes an unusually
+  // long time.
+  void OnCommitTimeout();
+
+  // Called by the RenderProcessHost to handle the case when the process
+  // changed its state of being blocked.
+  void RenderProcessBlockedStateChanged(bool blocked);
+
+  void StopCommitTimeout();
+  void RestartCommitTimeout();
 
   FrameTreeNode* frame_tree_node_;
 
@@ -780,6 +806,25 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // navigations in the enum are valid here, since some of them don't actually
   // cause a "commit" and won't generate this notification.
   NavigationType navigation_type_ = NAVIGATION_TYPE_UNKNOWN;
+
+  // The time this navigation was ready to commit.
+  base::TimeTicks ready_to_commit_time_;
+
+  // Timer for detecting an unexpectedly long time to commit a navigation.
+  base::OneShotTimer commit_timeout_timer_;
+
+  // Manages the lifetime of a pre-created AppCacheHost until a browser side
+  // navigation is ready to be committed, i.e we have a renderer process ready
+  // to service the navigation request.
+  std::unique_ptr<AppCacheNavigationHandle> appcache_handle_;
+
+  // Set in ReadyToCommitNavigation.
+  bool is_same_process_ = true;
+
+  // The subscription to the notification of the changing of the render
+  // process's blocked state.
+  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+      render_process_blocked_state_changed_subscription_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_;
 
