@@ -527,12 +527,12 @@ void ShapeResultView::ComputePartInkBounds(
 #endif
 
   GlyphBoundsAccumulator bounds(run_advance);
-  for (unsigned i = 0; i < num_glyphs; ++i) {
-    const HarfBuzzRunGlyphData& glyph_data = part.GlyphAt(i);
+  for (unsigned j = 0; j < num_glyphs; ++j) {
+    const HarfBuzzRunGlyphData& glyph_data = part.GlyphAt(j);
 #if defined(OS_MACOSX)
     FloatRect glyph_bounds = current_font_data.BoundsForGlyph(glyph_data.glyph);
 #else
-    FloatRect glyph_bounds(bounds_list[i]);
+    FloatRect glyph_bounds(bounds_list[j]);
 #endif
     bounds.Unite<is_horizontal_run>(glyph_data, glyph_bounds);
     bounds.origin += glyph_data.advance;
