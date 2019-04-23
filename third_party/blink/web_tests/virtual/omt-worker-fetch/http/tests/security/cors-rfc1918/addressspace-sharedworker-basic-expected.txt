@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL http://localhost:8000 = 'local' assert_equals: origin expected (string) "http://localhost:8000" but got (undefined) undefined
-FAIL http://127.0.0.1:8000 = 'local' assert_equals: origin expected (string) "http://127.0.0.1:8000" but got (undefined) undefined
-PASS http://example.test:8000 = 'private'
-Harness: the test ran to completion.
-

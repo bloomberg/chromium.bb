@@ -132,6 +132,11 @@ WebSharedWorkerImpl::CreateApplicationCacheHost(
 void WebSharedWorkerImpl::OnShadowPageInitialized() {
   DCHECK(IsMainThread());
   DCHECK(!main_script_loader_);
+
+  // This shadow page's address space will be used for creating outside
+  // FetchClientSettingsObject.
+  shadow_page_->GetDocument()->SetAddressSpace(creation_address_space_);
+
   shadow_page_->DocumentLoader()->SetServiceWorkerNetworkProvider(
       client_->CreateServiceWorkerNetworkProvider());
 

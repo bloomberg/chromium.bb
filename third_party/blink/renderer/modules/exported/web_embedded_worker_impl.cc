@@ -280,6 +280,11 @@ WebEmbeddedWorkerImpl::CreateApplicationCacheHost(
 void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
   DCHECK(!asked_to_terminate_);
 
+  // This shadow page's address space will be used for creating outside
+  // FetchClientSettingsObject.
+  shadow_page_->GetDocument()->SetAddressSpace(
+      worker_start_data_.address_space);
+
   DCHECK(worker_context_client_);
   shadow_page_->DocumentLoader()->SetServiceWorkerNetworkProvider(
       worker_context_client_->CreateServiceWorkerNetworkProviderOnMainThread());

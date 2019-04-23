@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-FAIL http://localhost:8000 = 'local' assert_equals: origin expected "http://localhost:8000" but got "ReferenceError"
-FAIL http://127.0.0.1:8000 = 'local' assert_equals: origin expected "http://127.0.0.1:8000" but got "ReferenceError"
+PASS http://localhost:8000 = 'local'
+PASS http://127.0.0.1:8000 = 'local'
 FAIL https://example.test:8443 = 'private' assert_equals: addressSpace expected "private" but got "public"
 Harness: the test ran to completion.
 
