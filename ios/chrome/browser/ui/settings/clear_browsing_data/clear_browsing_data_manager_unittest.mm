@@ -14,11 +14,13 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/browsing_data/cache_counter.h"
+#include "ios/chrome/browser/browsing_data/fake_browsing_data_remover.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/browser_prefs.h"
 #include "ios/chrome/browser/signin/identity_test_environment_chrome_browser_state_adaptor.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/fake_browsing_data_counter_wrapper_producer.h"
+#import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,10 +30,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-@interface ClearBrowsingDataManager (ExposedForTesting)
-- (void)loadModel:(ListModel*)model;
-@end
 
 namespace {
 
@@ -61,11 +59,15 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
         new IdentityTestEnvironmentChromeBrowserStateAdaptor(
             browser_state_.get()));
 
-    model_ = [[CollectionViewModel alloc] init];
+    model_ = [[TableViewModel alloc] init];
+    remover_ = std::make_unique<FakeBrowsingDataRemover>();
     manager_ = [[ClearBrowsingDataManager alloc]
-        initWithBrowserState:browser_state_.get()
-                    listType:ClearBrowsingDataListType::
-                                 kListTypeCollectionView];
+                      initWithBrowserState:browser_state_.get()
+                                  listType:ClearBrowsingDataListType::
+                                               kListTypeCollectionView
+                       browsingDataRemover:remover_.get()
+        browsingDataCounterWrapperProducer:
+            [[FakeBrowsingDataCounterWrapperProducer alloc] init]];
 
     test_sync_service_ = static_cast<syncer::TestSyncService*>(
         ProfileSyncServiceFactory::GetForBrowserState(browser_state_.get()));
@@ -79,7 +81,8 @@ class ClearBrowsingDataManagerTest : public PlatformTest {
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<IdentityTestEnvironmentChromeBrowserStateAdaptor>
       identity_test_env_adaptor_;
-  CollectionViewModel* model_;
+  TableViewModel* model_;
+  std::unique_ptr<BrowsingDataRemover> remover_;
   ClearBrowsingDataManager* manager_;
   syncer::TestSyncService* test_sync_service_;
   web::TestWebThreadBundle thread_bundle_;

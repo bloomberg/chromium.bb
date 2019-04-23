@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #import "ios/chrome/browser/browsing_data/browsing_data_remover_observer_bridge.h"
+#import "ios/chrome/browser/ui/settings/clear_browsing_data/browsing_data_counter_wrapper_producer.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_consumer.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/time_range_selector_table_view_controller.h"
 
@@ -79,10 +80,17 @@ enum class ClearBrowsingDataListType {
 @property(nonatomic, strong) id<CollectionViewFooterLinkDelegate> linkDelegate;
 
 // Default init method. |browserState| can't be nil and
-// |managingList| determines what kind of items to populate model with.
+// |listType| determines what kind of items to populate model with.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                            listType:(ClearBrowsingDataListType)listType
-    NS_DESIGNATED_INITIALIZER;
+                            listType:(ClearBrowsingDataListType)listType;
+
+// Designated initializer to allow dependency injection (in tests).
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                              listType:(ClearBrowsingDataListType)listType
+                   browsingDataRemover:(BrowsingDataRemover*)remover
+    browsingDataCounterWrapperProducer:
+        (BrowsingDataCounterWrapperProducer*)producer NS_DESIGNATED_INITIALIZER;
+
 - (instancetype)init NS_UNAVAILABLE;
 
 // Fills |model| with appropriate sections and items.

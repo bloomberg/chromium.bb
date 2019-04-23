@@ -127,6 +127,9 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
 @property(nonatomic, strong) TableViewDetailIconItem* tableViewTimeRangeItem;
 
+@property(nonatomic, strong)
+    BrowsingDataCounterWrapperProducer* counterWrapperProducer;
+
 @end
 
 @implementation ClearBrowsingDataManager
@@ -141,10 +144,24 @@ static NSDictionary* _imageNamesByItemTypes = @{
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                             listType:(ClearBrowsingDataListType)listType {
+  return [self initWithBrowserState:browserState
+                                listType:listType
+                     browsingDataRemover:BrowsingDataRemoverFactory::
+                                             GetForBrowserState(browserState)
+      browsingDataCounterWrapperProducer:[[BrowsingDataCounterWrapperProducer
+                                             alloc] init]];
+}
+
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+                              listType:(ClearBrowsingDataListType)listType
+                   browsingDataRemover:(BrowsingDataRemover*)remover
+    browsingDataCounterWrapperProducer:
+        (BrowsingDataCounterWrapperProducer*)producer {
   self = [super init];
   if (self) {
     _browserState = browserState;
     _listType = listType;
+    _counterWrapperProducer = producer;
 
     _timeRangePref.Init(browsing_data::prefs::kDeleteTimePeriod,
                         _browserState->GetPrefs());
@@ -154,8 +171,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
       scoped_observer_ = std::make_unique<
           ScopedObserver<BrowsingDataRemover, BrowsingDataRemoverObserver>>(
           observer_.get());
-      scoped_observer_->Add(
-          BrowsingDataRemoverFactory::GetForBrowserState(self.browserState));
+      scoped_observer_->Add(remover);
     }
   }
   return self;
@@ -445,16 +461,20 @@ static NSDictionary* _imageNamesByItemTypes = @{
         __weak ClearBrowsingDataManager* weakSelf = self;
         __weak ClearBrowsingDataItem* weakCollectionClearDataItem =
             collectionClearDataItem;
-        std::unique_ptr<BrowsingDataCounterWrapper> counter =
-            BrowsingDataCounterWrapper::CreateCounterWrapper(
-                prefName, self.browserState, prefs,
-                base::BindRepeating(^(
-                    const browsing_data::BrowsingDataCounter::Result& result) {
+        BrowsingDataCounterWrapper::UpdateUICallback callback =
+            base::BindRepeating(
+                ^(const browsing_data::BrowsingDataCounter::Result& result) {
                   weakCollectionClearDataItem.detailText =
                       [weakSelf counterTextFromResult:result];
                   [weakSelf.consumer
                       updateCellsForItem:weakCollectionClearDataItem];
-                }));
+                });
+        std::unique_ptr<BrowsingDataCounterWrapper> counter =
+            [self.counterWrapperProducer
+                createCounterWrapperWithPrefName:prefName
+                                    browserState:self.browserState
+                                     prefService:prefs
+                                updateUiCallback:callback];
         _countersByMasks.emplace(mask, std::move(counter));
       }
     }
@@ -480,15 +500,19 @@ static NSDictionary* _imageNamesByItemTypes = @{
         __weak ClearBrowsingDataManager* weakSelf = self;
         __weak TableViewClearBrowsingDataItem* weakTableClearDataItem =
             tableViewClearDataItem;
-        std::unique_ptr<BrowsingDataCounterWrapper> counter =
-            BrowsingDataCounterWrapper::CreateCounterWrapper(
-                prefName, self.browserState, prefs,
-                base::BindRepeating(^(
-                    const browsing_data::BrowsingDataCounter::Result& result) {
+        BrowsingDataCounterWrapper::UpdateUICallback callback =
+            base::BindRepeating(
+                ^(const browsing_data::BrowsingDataCounter::Result& result) {
                   weakTableClearDataItem.detailText =
                       [weakSelf counterTextFromResult:result];
                   [weakSelf.consumer updateCellsForItem:weakTableClearDataItem];
-                }));
+                });
+        std::unique_ptr<BrowsingDataCounterWrapper> counter =
+            [self.counterWrapperProducer
+                createCounterWrapperWithPrefName:prefName
+                                    browserState:self.browserState
+                                     prefService:prefs
+                                updateUiCallback:callback];
         _countersByMasks.emplace(mask, std::move(counter));
       }
     }
