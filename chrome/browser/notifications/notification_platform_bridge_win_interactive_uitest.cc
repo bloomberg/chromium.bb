@@ -324,6 +324,33 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleSettings) {
   EXPECT_EQ(base::nullopt, last_by_user_);
 }
 
+IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleClose) {
+  if (base::win::GetVersion() < kMinimumWindowsVersion)
+    return;
+
+  base::RunLoop run_loop;
+  display_service_tester_->SetProcessNotificationOperationDelegate(
+      base::BindRepeating(&NotificationPlatformBridgeWinUITest::HandleOperation,
+                          base::Unretained(this), run_loop.QuitClosure()));
+
+  // Simulate notification close.
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchNative(
+      switches::kNotificationLaunchId,
+      L"3|0|Default|0|https://example.com/|notification_id");
+  NotificationPlatformBridgeWin::HandleActivation(command_line);
+  run_loop.Run();
+
+  // Validate the values.
+  EXPECT_EQ(NotificationCommon::OPERATION_CLOSE, last_operation_);
+  EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT, last_notification_type_);
+  EXPECT_EQ(GURL("https://example.com/"), last_origin_);
+  EXPECT_EQ("notification_id", last_notification_id_);
+  EXPECT_EQ(base::nullopt, last_action_index_);
+  EXPECT_EQ(base::nullopt, last_reply_);
+  EXPECT_EQ(true, last_by_user_);
+}
+
 IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, GetDisplayed) {
   if (base::win::GetVersion() < kMinimumWindowsVersion)
     return;
