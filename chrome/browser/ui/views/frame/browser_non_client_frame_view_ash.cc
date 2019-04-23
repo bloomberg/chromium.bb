@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -58,6 +59,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/events/gestures/gesture_recognizer.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/controls/label.h"
@@ -74,7 +76,10 @@ namespace {
 
 // The color used for the frame when showing a non-tabbed WebUI, such as
 // the Settings window.
+// TODO(hsuregan): Replace kMdWebUiFrameColor's value with
+// kUpdatedMdWebUiFrameColor's value once complete.
 constexpr SkColor kMdWebUiFrameColor = SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
+constexpr SkColor kUpdatedMdWebUiFrameColor = gfx::kGoogleGrey100;
 
 // Color for the window title text.
 constexpr SkColor kNormalWindowTitleTextColor = SkColorSetRGB(40, 40, 40);
@@ -812,7 +817,10 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
     active_color =
         browser_view()->browser()->web_app_controller()->GetThemeColor();
   } else if (!browser_view()->browser()->is_app()) {
-    active_color = kMdWebUiFrameColor;
+    active_color =
+        base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
+            ? kUpdatedMdWebUiFrameColor
+            : kMdWebUiFrameColor;
   }
 
   if (active_color) {
