@@ -570,8 +570,10 @@ sandbox::ResultCode SetJobMemoryLimit(const base::CommandLine& cmd_line,
 
   // Note that this command line flag hasn't been fetched by all
   // callers of SetJobLevel, only those in this file.
-  if (service_manager::SandboxTypeFromCommandLine(cmd_line) ==
-      service_manager::SANDBOX_TYPE_GPU) {
+  SandboxType sandbox_type =
+      service_manager::SandboxTypeFromCommandLine(cmd_line);
+  if (sandbox_type == service_manager::SANDBOX_TYPE_GPU ||
+      sandbox_type == service_manager::SANDBOX_TYPE_RENDERER) {
     int64_t GB = 1024 * 1024 * 1024;
     // Allow the GPU process's sandbox to access more physical memory if
     // it's available on the system.
