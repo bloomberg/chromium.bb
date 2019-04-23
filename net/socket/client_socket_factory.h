@@ -67,7 +67,6 @@ class NET_EXPORT ClientSocketFactory {
       bool using_spdy,
       NextProto negotiated_protocol,
       ProxyDelegate* proxy_delegate,
-      bool is_https_proxy,
       const NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
   // Returns the default ClientSocketFactory.

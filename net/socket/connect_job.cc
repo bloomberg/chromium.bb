@@ -212,10 +212,6 @@ ConnectionAttempts ConnectJob::GetConnectionAttempts() const {
   return ConnectionAttempts();
 }
 
-std::unique_ptr<StreamSocket> ConnectJob::PassProxySocketOnFailure() {
-  return nullptr;
-}
-
 bool ConnectJob::IsSSLError() const {
   return false;
 }

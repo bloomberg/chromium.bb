@@ -655,29 +655,6 @@ void HttpNetworkTransaction::OnNeedsClientAuth(
   OnIOComplete(ERR_SSL_CLIENT_AUTH_CERT_NEEDED);
 }
 
-void HttpNetworkTransaction::OnHttpsProxyTunnelResponseRedirect(
-    const HttpResponseInfo& response_info,
-    const SSLConfig& used_ssl_config,
-    const ProxyInfo& used_proxy_info,
-    std::unique_ptr<HttpStream> stream) {
-  DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);
-
-  CopyConnectionAttemptsFromStreamRequest();
-
-  headers_valid_ = true;
-  response_ = response_info;
-  server_ssl_config_ = used_ssl_config;
-  proxy_info_ = used_proxy_info;
-  if (stream_) {
-    total_received_bytes_ += stream_->GetTotalReceivedBytes();
-    total_sent_bytes_ += stream_->GetTotalSentBytes();
-  }
-  stream_ = std::move(stream);
-  stream_->SetRequestHeadersCallback(request_headers_callback_);
-  stream_request_.reset();  // we're done with the stream request
-  OnIOComplete(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT);
-}
-
 void HttpNetworkTransaction::OnQuicBroken() {
   net_error_details_.quic_broken = true;
 }
@@ -861,21 +838,12 @@ int HttpNetworkTransaction::DoCreateStream() {
 }
 
 int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
-  // If |result| is ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT, then
-  // DoCreateStreamComplete is being called from
-  // OnHttpsProxyTunnelResponseRedirect, which resets the stream request first.
-  // Therefore, we have to grab the connection attempts in *that* function
-  // instead of here in that case.
-  if (result != ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT)
-    CopyConnectionAttemptsFromStreamRequest();
-
+  CopyConnectionAttemptsFromStreamRequest();
   if (result == OK) {
     next_state_ = STATE_INIT_STREAM;
     DCHECK(stream_.get());
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     result = HandleCertificateRequest(result);
-  } else if (result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT) {
-    return DoCreateStreamCompletedTunnelResponseRedirect();
   } else if (result == ERR_HTTP_1_1_REQUIRED ||
              result == ERR_PROXY_HTTP_1_1_REQUIRED) {
     return HandleHttp11Required(result);
@@ -1947,34 +1915,6 @@ bool HttpNetworkTransaction::ContentEncodingsValid() const {
   }
 
   return result;
-}
-
-static HttpNetworkTransaction::TunnelRedirectHistogramValue
-GetTunnelRedirectHistogramValue(bool is_main_frame, bool was_auto_detected) {
-  if (!is_main_frame && !was_auto_detected)
-    return HttpNetworkTransaction::kSubresourceByExplicitProxy;
-  if (is_main_frame && !was_auto_detected)
-    return HttpNetworkTransaction::kMainFrameByExplicitProxy;
-  if (!is_main_frame && was_auto_detected)
-    return HttpNetworkTransaction::kSubresourceByAutoDetectedProxy;
-  return HttpNetworkTransaction::kMainFrameByAutoDetectedProxy;
-}
-
-// TODO(https://crbug.com/928551): Support for redirect on CONNECT is
-// deprecated. Should remove the ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT error
-// code and supporting plumbing + histogram once this change sticks on Stable.
-int HttpNetworkTransaction::DoCreateStreamCompletedTunnelResponseRedirect() {
-  bool is_main_frame = (request_->load_flags & LOAD_MAIN_FRAME_DEPRECATED) ==
-                       LOAD_MAIN_FRAME_DEPRECATED;
-  bool was_auto_detected = proxy_info_.did_use_auto_detected_pac_script();
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Net.Proxy.RedirectDuringConnect",
-      GetTunnelRedirectHistogramValue(is_main_frame, was_auto_detected));
-
-  // Fail the request.
-  stream_.reset();
-  return ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT;
 }
 
 }  // namespace net

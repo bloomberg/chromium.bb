@@ -409,17 +409,6 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
       next_state_ = STATE_OPEN;
       return OK;
 
-    case 302:  // Found / Moved Temporarily
-      // Try to return a sanitized response so we can follow auth redirects.
-      // If we can't, fail the tunnel connection.
-      if (!SanitizeProxyRedirect(&response_))
-        return ERR_TUNNEL_CONNECTION_FAILED;
-
-      // Note that this triggers a spdy::ERROR_CODE_CANCEL.
-      spdy_stream_->DetachDelegate();
-      next_state_ = STATE_DISCONNECTED;
-      return ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT;
-
     case 407:  // Proxy Authentication Required
       next_state_ = STATE_OPEN;
       if (!SanitizeProxyAuth(&response_))

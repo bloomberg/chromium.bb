@@ -39,7 +39,6 @@ HttpProxyClientSocket::HttpProxyClientSocket(
     bool using_spdy,
     NextProto negotiated_protocol,
     ProxyDelegate* proxy_delegate,
-    bool is_https_proxy,
     const NetworkTrafficAnnotationTag& traffic_annotation)
     : io_callback_(base::BindRepeating(&HttpProxyClientSocket::OnIOComplete,
                                        base::Unretained(this))),
@@ -51,7 +50,6 @@ HttpProxyClientSocket::HttpProxyClientSocket(
       tunnel_(tunnel),
       using_spdy_(using_spdy),
       negotiated_protocol_(negotiated_protocol),
-      is_https_proxy_(is_https_proxy),
       proxy_server_(proxy_server),
       proxy_delegate_(proxy_delegate),
       traffic_annotation_(traffic_annotation),
@@ -459,19 +457,6 @@ int HttpProxyClientSocket::DoReadHeadersComplete(int result) {
       // The only safe thing to do here is to fail the connection because our
       // client is expecting an SSL protected response.
       // See http://crbug.com/7338.
-
-    case 302:  // Found / Moved Temporarily
-      // Attempt to follow redirects from HTTPS proxies, but only if we can
-      // sanitize the response.  This still allows a rogue HTTPS proxy to
-      // redirect an HTTPS site load to a similar-looking site, but no longer
-      // allows it to impersonate the site the user requested.
-      if (!is_https_proxy_ || !SanitizeProxyRedirect(&response_))
-        return ERR_TUNNEL_CONNECTION_FAILED;
-
-      http_stream_parser_.reset();
-      socket_.reset();
-      is_reused_ = false;
-      return ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT;
 
     case 407:  // Proxy Authentication Required
       // We need this status code to allow proxy authentication.  Our

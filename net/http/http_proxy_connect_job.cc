@@ -562,7 +562,7 @@ int HttpProxyConnectJob::DoHttpProxyConnect() {
       ProxyServer(GetProxyServerScheme(), GetDestination()),
       http_auth_controller_.get(), params_->tunnel(), using_spdy_,
       negotiated_protocol_, common_connect_job_params()->proxy_delegate,
-      params_->ssl_params() != nullptr, params_->traffic_annotation());
+      params_->traffic_annotation());
   nested_connect_job_.reset();
   return transport_socket_->Connect(base::BindOnce(
       &HttpProxyConnectJob::OnIOComplete, base::Unretained(this)));
@@ -789,7 +789,7 @@ void HttpProxyConnectJob::OnTimedOutInternal() {
 }
 
 int HttpProxyConnectJob::HandleConnectResult(int result) {
-  if (result == OK || result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT)
+  if (result == OK)
     SetSocket(std::move(transport_socket_));
   return result;
 }

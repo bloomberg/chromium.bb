@@ -9591,7 +9591,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaHttpsProxy) {
   data.Resume();
 
   rv = callback.WaitForResult();
-  EXPECT_THAT(rv, IsError(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT));
+  EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
 }
 
 // Test that an HTTPS Proxy cannot redirect a CONNECT request for subresources.
@@ -9638,11 +9638,7 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_THAT(rv, IsError(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT));
-
-  histograms.ExpectUniqueSample(
-      "Net.Proxy.RedirectDuringConnect",
-      HttpNetworkTransaction::kSubresourceByExplicitProxy, 1);
+  EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
 }
 
 // Test that an HTTPS Proxy which was auto-detected cannot redirect a CONNECT
@@ -9691,11 +9687,7 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   rv = callback.WaitForResult();
-  EXPECT_THAT(rv, IsError(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT));
-
-  histograms.ExpectUniqueSample(
-      "Net.Proxy.RedirectDuringConnect",
-      HttpNetworkTransaction::kMainFrameByAutoDetectedProxy, 1);
+  EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
 }
 
 // Tests that an HTTPS (SPDY) Proxy's cannot redirect a CONNECT request for main
@@ -9768,11 +9760,7 @@ TEST_F(HttpNetworkTransactionTest, RedirectOfHttpsConnectViaSpdyProxy) {
   FastForwardBy(kTimeIncrement);
   data.Resume();
   rv = callback.WaitForResult();
-  EXPECT_THAT(rv, IsError(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT));
-
-  histograms.ExpectUniqueSample(
-      "Net.Proxy.RedirectDuringConnect",
-      HttpNetworkTransaction::kMainFrameByExplicitProxy, 1);
+  EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
 }
 
 // Test that an HTTPS proxy's response to a CONNECT request is filtered.

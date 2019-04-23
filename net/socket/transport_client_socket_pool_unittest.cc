@@ -1564,36 +1564,9 @@ TEST_F(TransportClientSocketPoolTest, HttpTunnelSetupRedirect) {
                            NetLogWithSource());
       rv = callback.GetResult(rv);
 
-      if (!use_https_proxy) {
-        // We don't trust 302 responses to CONNECT from HTTP proxies.
-        EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
-        EXPECT_FALSE(handle.is_initialized());
-        EXPECT_FALSE(handle.release_pending_http_proxy_socket());
-      } else {
-        // Expect ProxyClientSocket to return the proxy's response, sanitized.
-        EXPECT_THAT(rv, IsError(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT));
-        EXPECT_FALSE(handle.is_initialized());
-
-        std::unique_ptr<StreamSocket> stream_socket =
-            handle.release_pending_http_proxy_socket();
-        ASSERT_TRUE(stream_socket);
-        const ProxyClientSocket* tunnel_socket =
-            static_cast<ProxyClientSocket*>(stream_socket.get());
-        const HttpResponseInfo* response =
-            tunnel_socket->GetConnectResponseInfo();
-        const HttpResponseHeaders* headers = response->headers.get();
-
-        // Make sure Set-Cookie header was stripped.
-        EXPECT_FALSE(headers->HasHeader("set-cookie"));
-
-        // Make sure Content-Length: 0 header was added.
-        EXPECT_TRUE(headers->HasHeaderValue("content-length", "0"));
-
-        // Make sure Location header was included and correct.
-        std::string location;
-        EXPECT_TRUE(headers->IsRedirect(&location));
-        EXPECT_EQ(location, kRedirectTarget);
-      }
+      // We don't trust 302 responses to CONNECT.
+      EXPECT_THAT(rv, IsError(ERR_TUNNEL_CONNECTION_FAILED));
+      EXPECT_FALSE(handle.is_initialized());
     }
   }
 }

@@ -659,7 +659,6 @@ class MockClientSocketFactory : public ClientSocketFactory {
       bool using_spdy,
       NextProto negotiated_protocol,
       ProxyDelegate* proxy_delegate,
-      bool is_https_proxy,
       const NetworkTrafficAnnotationTag& traffic_annotation) override;
   const std::vector<uint16_t>& udp_client_socket_ports() const {
     return udp_client_socket_ports_;

@@ -100,7 +100,6 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
                         base::OnceClosure restart_with_auth_callback,
                         ConnectJob* job) override;
   ConnectionAttempts GetConnectionAttempts() const override;
-  std::unique_ptr<StreamSocket> PassProxySocketOnFailure() override;
   bool IsSSLError() const override;
   scoped_refptr<SSLCertRequestInfo> GetCertRequestInfo() override;
 
@@ -158,9 +157,6 @@ class NET_EXPORT_PRIVATE SSLConnectJob : public ConnectJob,
   bool ssl_negotiation_started_;
 
   scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info_;
-
-  // True if a proxy returned a redirect, resulting in an error.
-  bool proxy_redirect_;
 
   ConnectionAttempts connection_attempts_;
   // The address of the server the connect job is connected to. Populated if

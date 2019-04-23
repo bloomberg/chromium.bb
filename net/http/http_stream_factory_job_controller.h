@@ -109,15 +109,6 @@ class HttpStreamFactory::JobController
                           const SSLConfig& used_ssl_config,
                           const SSLInfo& ssl_info) override;
 
-  // Invoked when |job| has a failure of the CONNECT request (due to 302
-  // redirect) through an HTTPS proxy.
-  void OnHttpsProxyTunnelResponseRedirect(
-      Job* job,
-      const HttpResponseInfo& response_info,
-      const SSLConfig& used_ssl_config,
-      const ProxyInfo& used_proxy_info,
-      std::unique_ptr<HttpStream> stream) override;
-
   // Invoked when |job| raises failure for SSL Client Auth.
   void OnNeedsClientAuth(Job* job,
                          const SSLConfig& used_ssl_config,

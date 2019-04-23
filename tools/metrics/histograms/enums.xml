@@ -55431,6 +55431,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="TunnelRedirectHistogramValue">
+  <obsolete>
+    Removed in Chrome 76.
+  </obsolete>
   <int value="0" label="Subresource fetched using an explicit proxy"/>
   <int value="1" label="Mainframe fetched using an explicit proxy"/>
   <int value="2" label="Subresource fetched using an auto-detected proxy"/>

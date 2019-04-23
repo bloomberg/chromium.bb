@@ -33,7 +33,6 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_stream_factory.h"
-#include "net/http/proxy_connect_redirect_http_stream.h"
 #include "net/http/proxy_fallback.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
@@ -484,17 +483,6 @@ void HttpStreamFactory::Job::OnNeedsClientAuthCallback(
   // |this| may be deleted after this call.
 }
 
-void HttpStreamFactory::Job::OnHttpsProxyTunnelResponseRedirectCallback(
-    const HttpResponseInfo& response_info,
-    std::unique_ptr<HttpStream> stream) {
-  DCHECK_NE(job_type_, PRECONNECT);
-  DCHECK(!spdy_session_request_);
-
-  delegate_->OnHttpsProxyTunnelResponseRedirect(
-      this, response_info, server_ssl_config_, proxy_info_, std::move(stream));
-  // |this| may be deleted after this call.
-}
-
 void HttpStreamFactory::Job::OnPreconnectsComplete() {
   delegate_->OnPreconnectsComplete(this);
   // |this| may be deleted after this call.
@@ -562,32 +550,6 @@ void HttpStreamFactory::Job::RunLoop(int result) {
               &Job::OnNeedsClientAuthCallback, ptr_factory_.GetWeakPtr(),
               base::RetainedRef(connection_->ssl_cert_request_info())));
       return;
-
-    case ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT: {
-      DCHECK(connection_.get());
-      DCHECK(establishing_tunnel_);
-
-      LoadTimingInfo load_timing_info;
-      bool have_load_timing_info = connection_->GetLoadTimingInfo(
-          connection_->is_reused(), &load_timing_info);
-
-      std::unique_ptr<StreamSocket> socket =
-          connection_->release_pending_http_proxy_socket();
-      DCHECK(socket);
-
-      connection_.reset();
-      ProxyClientSocket* proxy_socket =
-          static_cast<ProxyClientSocket*>(socket.get());
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              &Job::OnHttpsProxyTunnelResponseRedirectCallback,
-              ptr_factory_.GetWeakPtr(),
-              *proxy_socket->GetConnectResponseInfo(),
-              std::make_unique<ProxyConnectRedirectHttpStream>(
-                  have_load_timing_info ? &load_timing_info : nullptr)));
-      return;
-    }
 
     case OK:
       next_state_ = STATE_DONE;
@@ -1017,11 +979,6 @@ int HttpStreamFactory::Job::DoInitConnectionComplete(int result) {
       negotiated_protocol_ = proxy_socket->GetProxyNegotiatedProtocol();
       using_spdy_ = true;
     }
-  }
-
-  if (result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT) {
-    DCHECK(!ssl_started);
-    return result;
   }
 
   if (proxy_info_.is_quic() && using_quic_ && result < 0)

@@ -108,20 +108,13 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
     RemoveHigherLayeredPool(higher_pool_);
   pool_ = nullptr;
   idle_time_ = base::TimeDelta();
-  // Connection timing is still needed for handling
-  // ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT errors.
-  //
-  // TODO(mmenke): Remove once ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT no
-  // longer results in following a redirect.
-  if (!pending_http_proxy_socket_)
-    connect_timing_ = LoadTimingInfo::ConnectTiming();
+  connect_timing_ = LoadTimingInfo::ConnectTiming();
   group_generation_ = -1;
 }
 
 void ClientSocketHandle::ResetErrorState() {
   is_ssl_error_ = false;
   ssl_cert_request_info_ = nullptr;
-  pending_http_proxy_socket_.reset();
 }
 
 LoadState ClientSocketHandle::GetLoadState() const {
@@ -172,12 +165,6 @@ bool ClientSocketHandle::GetLoadTimingInfo(
     LoadTimingInfo* load_timing_info) const {
   if (socket_) {
     load_timing_info->socket_log_id = socket_->NetLog().source().id;
-  } else if (pending_http_proxy_socket_) {
-    // TODO(mmenke): This case is only needed for timing for redirects in the
-    // case of ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT. Remove this code once
-    // we no longer follow those redirects.
-    load_timing_info->socket_log_id =
-        pending_http_proxy_socket_->NetLog().source().id;
   } else {
     // Only return load timing information when there's a socket.
     return false;
@@ -206,16 +193,6 @@ void ClientSocketHandle::SetSocket(std::unique_ptr<StreamSocket> s) {
 
 void ClientSocketHandle::SetAdditionalErrorState(ConnectJob* connect_job) {
   connection_attempts_ = connect_job->GetConnectionAttempts();
-
-  // TODO(mmenke): Once redirects are no longer followed on
-  // ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT, remove this code.
-  pending_http_proxy_socket_ = connect_job->PassProxySocketOnFailure();
-  if (pending_http_proxy_socket_) {
-    // Connection timing is only set when a socket was actually established. In
-    // this particular case, there is a socket being returned, just not through
-    // the normal path, so need to set timing information here.
-    connect_timing_ = connect_job->connect_timing();
-  }
 
   is_ssl_error_ = connect_job->IsSSLError();
   ssl_cert_request_info_ = connect_job->GetCertRequestInfo();

@@ -381,29 +381,6 @@ void HttpStreamFactory::JobController::OnCertificateError(
   delegate_->OnCertificateError(status, used_ssl_config, ssl_info);
 }
 
-void HttpStreamFactory::JobController::OnHttpsProxyTunnelResponseRedirect(
-    Job* job,
-    const HttpResponseInfo& response_info,
-    const SSLConfig& used_ssl_config,
-    const ProxyInfo& used_proxy_info,
-    std::unique_ptr<HttpStream> stream) {
-  MaybeResumeMainJob(job, base::TimeDelta());
-
-  if (IsJobOrphaned(job)) {
-    // We have bound a job to the associated HttpStreamRequest, |job| has been
-    // orphaned.
-    OnOrphanedJobComplete(job);
-    return;
-  }
-
-  if (!bound_job_)
-    BindJob(job);
-  if (!request_)
-    return;
-  delegate_->OnHttpsProxyTunnelResponseRedirect(
-      response_info, used_ssl_config, used_proxy_info, std::move(stream));
-}
-
 void HttpStreamFactory::JobController::OnNeedsClientAuth(
     Job* job,
     const SSLConfig& used_ssl_config,

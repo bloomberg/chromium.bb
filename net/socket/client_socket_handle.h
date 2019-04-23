@@ -160,9 +160,6 @@ class NET_EXPORT ClientSocketHandle {
       scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info) {
     ssl_cert_request_info_ = std::move(ssl_cert_request_info);
   }
-  void set_pending_http_proxy_socket(std::unique_ptr<StreamSocket> socket) {
-    pending_http_proxy_socket_ = std::move(socket);
-  }
   void set_connection_attempts(const ConnectionAttempts& attempts) {
     connection_attempts_ = attempts;
   }
@@ -177,10 +174,6 @@ class NET_EXPORT ClientSocketHandle {
   // is set.
   scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info() const {
     return ssl_cert_request_info_;
-  }
-
-  std::unique_ptr<StreamSocket> release_pending_http_proxy_socket() {
-    return std::move(pending_http_proxy_socket_);
   }
 
   // If the connection failed, returns the connection attempts made. (If it
@@ -237,7 +230,6 @@ class NET_EXPORT ClientSocketHandle {
   int64_t group_generation_;
   bool is_ssl_error_;
   scoped_refptr<SSLCertRequestInfo> ssl_cert_request_info_;
-  std::unique_ptr<StreamSocket> pending_http_proxy_socket_;
   std::vector<ConnectionAttempt> connection_attempts_;
 
   NetLogSource requesting_source_;

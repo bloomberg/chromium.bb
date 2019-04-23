@@ -218,11 +218,6 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // proxy.
   virtual ConnectionAttempts GetConnectionAttempts() const;
 
-  // On connect failure, returns the nested proxy socket, if there is one.
-  // Returns nullptr otherwise. Only returns a non-null value for SSL sockets on
-  // top of proxy sockets.
-  virtual std::unique_ptr<StreamSocket> PassProxySocketOnFailure();
-
   // If the ConnectJob failed, returns true if the failure occurred after SSL
   // negotiation started. If the ConnectJob succeeded, the returned value is
   // undefined.

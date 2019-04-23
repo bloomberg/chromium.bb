@@ -115,8 +115,7 @@ SSLConnectJob::SSLConnectJob(
       params_(std::move(params)),
       callback_(base::BindRepeating(&SSLConnectJob::OnIOComplete,
                                     base::Unretained(this))),
-      ssl_negotiation_started_(false),
-      proxy_redirect_(false) {}
+      ssl_negotiation_started_(false) {}
 
 SSLConnectJob::~SSLConnectJob() {
   // In the case the job was canceled, need to delete nested job first to
@@ -178,12 +177,6 @@ void SSLConnectJob::OnNeedsProxyAuth(
 
 ConnectionAttempts SSLConnectJob::GetConnectionAttempts() const {
   return connection_attempts_;
-}
-
-std::unique_ptr<StreamSocket> SSLConnectJob::PassProxySocketOnFailure() {
-  if (proxy_redirect_)
-    return std::move(nested_socket_);
-  return nullptr;
 }
 
 bool SSLConnectJob::IsSSLError() const {
@@ -322,9 +315,6 @@ int SSLConnectJob::DoTunnelConnectComplete(int result) {
     // |GetAdditionalErrorState|, we can easily set the state.
     if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
       ssl_cert_request_info_ = nested_connect_job_->GetCertRequestInfo();
-    } else if (result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT) {
-      proxy_redirect_ = true;
-      connect_timing_ = nested_connect_job_->connect_timing();
     }
     return result;
   }

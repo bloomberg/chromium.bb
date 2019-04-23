@@ -674,6 +674,7 @@ TEST_P(QuicProxyClientSocketTest, ConnectWithAuthCredentials) {
   ASSERT_EQ(200, response->headers->response_code());
 }
 
+// Tests that a redirect response from a CONNECT fails.
 TEST_P(QuicProxyClientSocketTest, ConnectRedirects) {
   mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructSettingsPacket(1));
   mock_quic_data_.AddWrite(SYNCHRONOUS, ConstructConnectRequestPacket(2));
@@ -686,15 +687,14 @@ TEST_P(QuicProxyClientSocketTest, ConnectRedirects) {
 
   Initialize();
 
-  AssertConnectFails(ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT);
+  AssertConnectFails(ERR_TUNNEL_CONNECTION_FAILED);
 
   const HttpResponseInfo* response = sock_->GetConnectResponseInfo();
   ASSERT_TRUE(response != nullptr);
 
   const HttpResponseHeaders* headers = response->headers.get();
   ASSERT_EQ(302, headers->response_code());
-  ASSERT_FALSE(headers->HasHeader("set-cookie"));
-  ASSERT_TRUE(headers->HasHeaderValue("content-length", "0"));
+  ASSERT_TRUE(headers->HasHeader("set-cookie"));
 
   std::string location;
   ASSERT_TRUE(headers->IsRedirect(&location));
