@@ -11,6 +11,7 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
@@ -109,6 +110,8 @@ PreviewsService::PreviewsService(content::BrowserContext* browser_context)
               browser_context)),
       previews_lite_page_decider_(
           std::make_unique<PreviewsLitePageDecider>(browser_context)),
+      previews_offline_helper_(
+          std::make_unique<PreviewsOfflineHelper>(browser_context)),
       previews_url_loader_factory_(
           content::BrowserContext::GetDefaultStoragePartition(
               Profile::FromBrowserContext(browser_context))
@@ -152,7 +155,11 @@ void PreviewsService::Initialize(
 }
 
 void PreviewsService::Shutdown() {
-  previews_lite_page_decider_->Shutdown();
+  if (previews_lite_page_decider_)
+    previews_lite_page_decider_->Shutdown();
+
+  if (previews_offline_helper_)
+    previews_offline_helper_->Shutdown();
 }
 
 void PreviewsService::ClearBlackList(base::Time begin_time,

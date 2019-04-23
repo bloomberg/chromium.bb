@@ -19,6 +19,7 @@
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
+#include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -238,6 +239,12 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   if (!is_data_saver_user)
     return previews_state;
 
+  auto* previews_service =
+      navigation_handle
+          ? PreviewsServiceFactory::GetForProfile(Profile::FromBrowserContext(
+                navigation_handle->GetWebContents()->GetBrowserContext()))
+          : nullptr;
+
   // Offline previews state should not be updated during a redirect. The Offline
   // Previews URLLoader will not receive an updated PreviewsState, so the state
   // should stay consistent throughout the navigation.
@@ -247,10 +254,21 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
     // Keep the same OFFLINE previews bit as the original URL.
     previews_state |=
         (previews_data->allowed_previews_state() & content::OFFLINE_PAGE_ON);
-  } else if (previews_decider->ShouldAllowPreviewAtNavigationStart(
-                 previews_data, url, is_reload,
-                 previews::PreviewsType::OFFLINE)) {
-    previews_state |= content::OFFLINE_PAGE_ON;
+  } else {
+    bool allow_offline = true;
+    // If |previews_service| is null, skip the previews offline helper check.
+    // This only happens in testing.
+    if (previews_service) {
+      allow_offline = previews_service->previews_offline_helper()
+                          ->ShouldAttemptOfflinePreview(url);
+    }
+    allow_offline =
+        allow_offline &&
+        previews_decider->ShouldAllowPreviewAtNavigationStart(
+            previews_data, url, is_reload, previews::PreviewsType::OFFLINE);
+
+    if (allow_offline)
+      previews_state |= content::OFFLINE_PAGE_ON;
   }
 
   // Check PageHint preview types first.

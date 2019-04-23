@@ -108,5 +108,11 @@ const base::Feature kPreviewsReloadsAreSoftOptOuts{
 const base::Feature kOptimizationHintsFetching{
     "OptimizationHintsFetching", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the use of a pref to only trigger Offline Previews when there is a
+// high chance that there is one to serve.
+const base::Feature kOfflinePreviewsFalsePositivePrevention{
+    "OfflinePreviewsFalsePositivePrevention",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace previews

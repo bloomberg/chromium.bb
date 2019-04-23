@@ -39,6 +39,8 @@ class PreviewsTopHostProviderImpl;
 class PreviewsUIService;
 }
 
+class PreviewsOfflineHelper;
+
 // Keyed service that owns a previews::PreviewsUIService. PreviewsService lives
 // on the UI thread.
 class PreviewsService : public KeyedService {
@@ -79,6 +81,10 @@ class PreviewsService : public KeyedService {
     return previews_lite_page_decider_.get();
   }
 
+  PreviewsOfflineHelper* previews_offline_helper() {
+    return previews_offline_helper_.get();
+  }
+
   // Returns the enabled PreviewsTypes with their version.
   static blacklist::BlacklistData::AllowedTypesAndVersions GetAllowedPreviews();
 
@@ -92,6 +98,9 @@ class PreviewsService : public KeyedService {
 
   // The server lite page preview decider.
   std::unique_ptr<PreviewsLitePageDecider> previews_lite_page_decider_;
+
+  // The offline previews helper.
+  std::unique_ptr<PreviewsOfflineHelper> previews_offline_helper_;
 
   // URL Factory for the Previews Optimization Guide's Hints Fetcher.
   scoped_refptr<network::SharedURLLoaderFactory> previews_url_loader_factory_;
