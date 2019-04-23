@@ -112,6 +112,7 @@ public class IncognitoNewTabPage
     public void destroy() {
         assert !ViewCompat
                 .isAttachedToWindow(getView()) : "Destroy called before removed from window";
+        super.destroy();
     }
 
     @Override
