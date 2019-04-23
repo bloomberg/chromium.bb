@@ -134,7 +134,7 @@ class CertNetFetcherImplTest : public PlatformTest {
   CertNetFetcher* fetcher() const { return fetcher_.get(); }
 
   void CreateFetcherOnNetworkThread(base::WaitableEvent* done) {
-    fetcher_ = CreateCertNetFetcher(&state_->context);
+    fetcher_ = base::MakeRefCounted<CertNetFetcherImpl>(&state_->context);
     done->Signal();
   }
 

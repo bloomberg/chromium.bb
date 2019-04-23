@@ -2077,8 +2077,8 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
 #endif
 #if defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
-    net::SetGlobalCertNetFetcher(
-        net::CreateCertNetFetcher(result.url_request_context.get()));
+    net::SetGlobalCertNetFetcher(base::MakeRefCounted<net::CertNetFetcherImpl>(
+        result.url_request_context.get()));
 #endif
   }
 

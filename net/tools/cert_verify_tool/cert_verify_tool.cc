@@ -61,7 +61,8 @@ void SetUpOnNetworkThread(std::unique_ptr<net::URLRequestContext>* context,
 #if defined(USE_NSS_CERTS)
   net::SetURLRequestContextForNSSHttpIO(context->get());
 #endif
-  net::SetGlobalCertNetFetcher(net::CreateCertNetFetcher(context->get()));
+  net::SetGlobalCertNetFetcher(
+      base::MakeRefCounted<net::CertNetFetcherImpl>(context->get()));
   initialization_complete_event->Signal();
 }
 

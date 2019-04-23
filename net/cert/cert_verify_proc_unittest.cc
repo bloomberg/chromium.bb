@@ -2667,7 +2667,8 @@ class CertVerifyProcInternalWithNetFetchingTest
 #if defined(USE_NSS_CERTS)
     SetURLRequestContextForNSSHttpIO(context->get());
 #endif
-    SetGlobalCertNetFetcherForTesting(CreateCertNetFetcher(context->get()));
+    SetGlobalCertNetFetcherForTesting(
+        base::MakeRefCounted<CertNetFetcherImpl>(context->get()));
     initialization_complete_event->Signal();
   }
 

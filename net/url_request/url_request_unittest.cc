@@ -10787,7 +10787,8 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
     test_root_.reset(new ScopedTestRoot(root_cert.get()));
 
 #if defined(OS_ANDROID) || defined(USE_BUILTIN_CERT_VERIFIER)
-    SetGlobalCertNetFetcherForTesting(net::CreateCertNetFetcher(&context_));
+    SetGlobalCertNetFetcherForTesting(
+        base::MakeRefCounted<CertNetFetcherImpl>(&context_));
 #endif
 
 #if defined(USE_NSS_CERTS)
