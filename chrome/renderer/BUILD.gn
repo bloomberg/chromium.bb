@@ -51,8 +51,6 @@ jumbo_static_library("renderer") {
     "chrome_render_frame_observer.h",
     "chrome_render_thread_observer.cc",
     "chrome_render_thread_observer.h",
-    "chrome_render_view_observer.cc",
-    "chrome_render_view_observer.h",
     "content_settings_observer.cc",
     "content_settings_observer.h",
     "custom_menu_commands.h",

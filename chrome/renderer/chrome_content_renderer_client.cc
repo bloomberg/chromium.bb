@@ -46,7 +46,6 @@
 #include "chrome/renderer/benchmarking_extension.h"
 #include "chrome/renderer/chrome_render_frame_observer.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
-#include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/media/flash_embed_rewrite.h"
@@ -437,7 +436,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 void ChromeContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   ChromeRenderFrameObserver* render_frame_observer =
-      new ChromeRenderFrameObserver(render_frame);
+      new ChromeRenderFrameObserver(render_frame, web_cache_impl_.get());
   service_manager::BinderRegistry* registry = render_frame_observer->registry();
 
   bool should_whitelist_for_content_settings =
@@ -567,8 +566,6 @@ void ChromeContentRendererClient::RenderFrameCreated(
 void ChromeContentRendererClient::RenderViewCreated(
     content::RenderView* render_view) {
   new prerender::PrerendererClient(render_view);
-
-  new ChromeRenderViewObserver(render_view, web_cache_impl_.get());
 }
 
 SkBitmap* ChromeContentRendererClient::GetSadPluginBitmap() {
