@@ -5998,8 +5998,7 @@ void LayoutBox::LogicalExtentAfterUpdatingLogicalWidth(
 }
 
 ShapeOutsideInfo* LayoutBox::GetShapeOutsideInfo() const {
-  return ShapeOutsideInfo::IsEnabledFor(*this) ? ShapeOutsideInfo::Info(*this)
-                                               : nullptr;
+  return ShapeOutsideInfo::Info(*this);
 }
 
 void LayoutBox::ClearPreviousVisualRects() {

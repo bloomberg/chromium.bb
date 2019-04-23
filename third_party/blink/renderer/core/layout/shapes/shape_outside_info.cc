@@ -478,10 +478,4 @@ FloatPoint ShapeOutsideInfo::ShapeToLayoutObjectPoint(FloatPoint point) const {
   return result;
 }
 
-FloatSize ShapeOutsideInfo::ShapeToLayoutObjectSize(FloatSize size) const {
-  if (!layout_box_.StyleRef().IsHorizontalWritingMode())
-    return size.TransposedSize();
-  return size;
-}
-
 }  // namespace blink
