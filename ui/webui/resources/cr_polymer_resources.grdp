@@ -47,6 +47,8 @@
   <structure name="IDR_WEBUI_JS_CR_UI_FOCUS_WITHOUT_INK"
              file="js/cr/ui/focus_without_ink.js" type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_WEBUI_JS_CRISPER_LOADER"
+             file="js/crisper_loader.js" type="chrome_html" compress="gzip" />
   <structure name="IDR_WEBUI_JS_FIND_SHORTCUT_BEHAVIOR"
              file="js/find_shortcut_behavior.js" type="chrome_html"
              compress="gzip" />
