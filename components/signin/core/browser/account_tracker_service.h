@@ -46,9 +46,8 @@ void SimulateSuccessfulFetchOfAccountInfo(IdentityManager*,
                                           const std::string&);
 }
 
-// AccountTrackerService is a KeyedService that retrieves and caches GAIA
-// information about Google Accounts.
-class AccountTrackerService : public KeyedService {
+// Retrieves and caches GAIA information about Google Accounts.
+class AccountTrackerService {
  public:
   // Clients of AccountTrackerService can implement this interface and register
   // with AddObserver() to learn about account information changes.
@@ -72,13 +71,12 @@ class AccountTrackerService : public KeyedService {
   };
 
   AccountTrackerService();
-  ~AccountTrackerService() override;
+  ~AccountTrackerService();
 
   // Registers the preferences used by AccountTrackerService.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // KeyedService implementation.
-  void Shutdown() override;
+  void Shutdown();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

@@ -37,6 +37,10 @@ specific_include_rules = {
   "accounts_mutator_unittest.cc": [
     "+services/network/test/test_url_loader_factory.h",
   ],
+  "identity_test_environment.cc": [
+    "+components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h",
+    "+components/signin/ios/browser/profile_oauth2_token_service_ios_provider.h",
+  ],
   "identity_manager_unittest.cc": [
     "+google_apis/gaia/oauth2_token_service_delegate.h",
     "+services/network/test/test_cookie_manager.h",

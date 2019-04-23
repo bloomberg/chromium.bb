@@ -28,7 +28,7 @@ class IdentityManagerWrapper : public KeyedService,
                                public identity::IdentityManager {
  public:
   IdentityManagerWrapper(
-      AccountTrackerService* account_tracker_service,
+      std::unique_ptr<AccountTrackerService> account_tracker_service,
       std::unique_ptr<ProfileOAuth2TokenService> token_service,
       std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
       std::unique_ptr<SigninManagerBase> signin_manager,

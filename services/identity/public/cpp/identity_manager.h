@@ -194,11 +194,11 @@ class IdentityManager : public SigninManagerBase::Observer,
   };
 
   IdentityManager(
+      std::unique_ptr<AccountTrackerService> account_tracker_service,
       std::unique_ptr<ProfileOAuth2TokenService> token_service,
       std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service,
       std::unique_ptr<SigninManagerBase> signin_manager,
       std::unique_ptr<AccountFetcherService> account_fetcher_service,
-      AccountTrackerService* account_tracker_service,
       std::unique_ptr<PrimaryAccountMutator> primary_account_mutator,
       std::unique_ptr<AccountsMutator> accounts_mutator,
       std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator,
@@ -651,11 +651,11 @@ class IdentityManager : public SigninManagerBase::Observer,
   // these classes in the IdentityManager implementation, as all such
   // synchronous access will become impossible when IdentityManager is
   // backed by the Identity Service.
+  std::unique_ptr<AccountTrackerService> account_tracker_service_;
   std::unique_ptr<ProfileOAuth2TokenService> token_service_;
   std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service_;
   std::unique_ptr<SigninManagerBase> signin_manager_;
   std::unique_ptr<AccountFetcherService> account_fetcher_service_;
-  AccountTrackerService* account_tracker_service_;
 
   // PrimaryAccountMutator instance. May be null if mutation of the primary
   // account state is not supported on the current platform.

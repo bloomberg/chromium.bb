@@ -11,6 +11,7 @@ namespace content {
 class BrowserContext;
 }
 
+class AccountTrackerService;
 class ProfileOAuth2TokenService;
 class IdentityManagerFactory;
 
@@ -18,7 +19,8 @@ class ProfileOAuth2TokenServiceBuilder {
  private:
   // Builds a ProfileOAuth2TokenService instance for use by IdentityManager.
   static std::unique_ptr<ProfileOAuth2TokenService> BuildInstanceFor(
-      content::BrowserContext* context);
+      content::BrowserContext* context,
+      AccountTrackerService* account_tracker_service);
 
   friend IdentityManagerFactory;
 };

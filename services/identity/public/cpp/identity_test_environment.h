@@ -6,6 +6,7 @@
 #define SERVICES_IDENTITY_PUBLIC_CPP_IDENTITY_TEST_ENVIRONMENT_H_
 
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "services/identity/public/cpp/accounts_cookie_mutator_impl.h"
 #include "services/identity/public/cpp/diagnostics_provider_impl.h"
@@ -20,6 +21,10 @@ class IdentityTestEnvironmentChromeBrowserStateAdaptor;
 class IdentityTestEnvironmentProfileAdaptor;
 class PrefService;
 class TestSigninClient;
+
+#if defined(OS_IOS)
+class ProfileOAuth2TokenServiceIOSProvider;
+#endif
 
 namespace sync_preferences {
 class TestingPrefServiceSyncable;
@@ -337,10 +342,6 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   // IdentityTestEnvironment's constructor.
   std::unique_ptr<TestSigninClient> owned_signin_client_;
 
-  // This will be null if a AccountTrackerService was provided to
-  // IdentityTestEnvironment's constructor.
-  std::unique_ptr<AccountTrackerService> owned_account_tracker_service_;
-
   // Depending on which constructor is used, exactly one of these will be
   // non-null. See the documentation on the constructor wherein IdentityManager
   // is passed in for required lifetime invariants in that case.
@@ -353,11 +354,17 @@ class IdentityTestEnvironment : public IdentityManager::DiagnosticsObserver {
   std::vector<AccessTokenRequestState> requesters_;
 
   // Create an IdentityManager instance for tests.
+  // Note: |token_service_ios_provider| is an iOS-specific parameter; if
+  // non-null, an iOS delegate instance will be constructed for the token
+  // service as opposed to the default fake delegate.
   static std::unique_ptr<IdentityManagerWrapper> BuildIdentityManagerForTests(
       SigninClient* signin_client,
       PrefService* pref_service,
-      std::unique_ptr<FakeProfileOAuth2TokenService> token_service,
-      AccountTrackerService* account_tracker_service,
+      base::FilePath user_data_dir,
+#if defined(OS_IOS)
+      std::unique_ptr<ProfileOAuth2TokenServiceIOSProvider>
+          token_service_ios_provider,
+#endif
       signin::AccountConsistencyMethod account_consistency =
           signin::AccountConsistencyMethod::kDisabled,
       network::TestURLLoaderFactory* test_url_loader_factory = nullptr);

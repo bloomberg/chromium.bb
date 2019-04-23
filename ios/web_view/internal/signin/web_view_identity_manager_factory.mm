@@ -19,7 +19,6 @@
 #include "components/signin/ios/browser/profile_oauth2_token_service_ios_delegate.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
-#include "ios/web_view/internal/signin/web_view_account_tracker_service_factory.h"
 #include "ios/web_view/internal/signin/web_view_profile_oauth2_token_service_ios_provider_impl.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -38,7 +37,8 @@ namespace ios_web_view {
 namespace {
 
 std::unique_ptr<ProfileOAuth2TokenService> BuildTokenService(
-    WebViewBrowserState* browser_state) {
+    WebViewBrowserState* browser_state,
+    AccountTrackerService* account_tracker_service) {
   IOSWebViewSigninClient* signin_client =
       WebViewSigninClientFactory::GetForBrowserState(browser_state);
   auto token_service_provider =
@@ -46,9 +46,17 @@ std::unique_ptr<ProfileOAuth2TokenService> BuildTokenService(
           signin_client);
   auto delegate = std::make_unique<ProfileOAuth2TokenServiceIOSDelegate>(
       signin_client, std::move(token_service_provider),
-      WebViewAccountTrackerServiceFactory::GetForBrowserState(browser_state));
+      account_tracker_service);
   return std::make_unique<ProfileOAuth2TokenService>(browser_state->GetPrefs(),
                                                      std::move(delegate));
+}
+
+std::unique_ptr<AccountTrackerService> BuildAccountTrackerService(
+    WebViewBrowserState* browser_state) {
+  auto account_tracker_service = std::make_unique<AccountTrackerService>();
+  account_tracker_service->Initialize(browser_state->GetPrefs(),
+                                      base::FilePath());
+  return account_tracker_service;
 }
 
 std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
@@ -64,6 +72,7 @@ std::unique_ptr<AccountFetcherService> BuildAccountFetcherService(
 
 std::unique_ptr<SigninManager> BuildSigninManager(
     WebViewBrowserState* browser_state,
+    AccountTrackerService* account_tracker_service,
     ProfileOAuth2TokenService* token_service,
     GaiaCookieManagerService* gaia_cookie_manager_service) {
   // Clearing the sign in state on start up greatly simplifies the management of
@@ -75,9 +84,8 @@ std::unique_ptr<SigninManager> BuildSigninManager(
 
   std::unique_ptr<SigninManager> service = std::make_unique<SigninManager>(
       WebViewSigninClientFactory::GetForBrowserState(browser_state),
-      token_service,
-      WebViewAccountTrackerServiceFactory::GetForBrowserState(browser_state),
-      gaia_cookie_manager_service, signin::AccountConsistencyMethod::kDisabled);
+      token_service, account_tracker_service, gaia_cookie_manager_service,
+      signin::AccountConsistencyMethod::kDisabled);
   service->Initialize(ApplicationContext::GetInstance()->GetLocalState());
   return service;
 }
@@ -92,7 +100,6 @@ WebViewIdentityManagerFactory::WebViewIdentityManagerFactory()
     : BrowserStateKeyedServiceFactory(
           "IdentityManager",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(WebViewAccountTrackerServiceFactory::GetInstance());
   DependsOn(WebViewSigninClientFactory::GetInstance());
 }
 
@@ -114,7 +121,6 @@ WebViewIdentityManagerFactory* WebViewIdentityManagerFactory::GetInstance() {
 // static
 void WebViewIdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt() {
   WebViewIdentityManagerFactory::GetInstance();
-  WebViewAccountTrackerServiceFactory::GetInstance();
   WebViewSigninClientFactory::GetInstance();
 }
 
@@ -125,22 +131,23 @@ WebViewIdentityManagerFactory::BuildServiceInstanceFor(
       WebViewBrowserState::FromBrowserState(context);
 
   // Construct the dependencies that IdentityManager will own.
+  std::unique_ptr<AccountTrackerService> account_tracker_service =
+      BuildAccountTrackerService(browser_state);
+
   std::unique_ptr<ProfileOAuth2TokenService> token_service =
-      BuildTokenService(browser_state);
+      BuildTokenService(browser_state, account_tracker_service.get());
 
   auto gaia_cookie_manager_service = std::make_unique<GaiaCookieManagerService>(
       token_service.get(),
       WebViewSigninClientFactory::GetForBrowserState(browser_state));
 
   std::unique_ptr<SigninManager> signin_manager = BuildSigninManager(
-      browser_state, token_service.get(), gaia_cookie_manager_service.get());
-
-  AccountTrackerService* account_tracker_service =
-      WebViewAccountTrackerServiceFactory::GetForBrowserState(browser_state);
+      browser_state, account_tracker_service.get(), token_service.get(),
+      gaia_cookie_manager_service.get());
 
   auto primary_account_mutator =
       std::make_unique<identity::PrimaryAccountMutatorImpl>(
-          account_tracker_service, signin_manager.get());
+          account_tracker_service.get(), signin_manager.get());
 
   auto accounts_cookie_mutator =
       std::make_unique<identity::AccountsCookieMutatorImpl>(
@@ -153,10 +160,10 @@ WebViewIdentityManagerFactory::BuildServiceInstanceFor(
   std::unique_ptr<AccountFetcherService> account_fetcher_service =
       BuildAccountFetcherService(
           WebViewSigninClientFactory::GetForBrowserState(browser_state),
-          token_service.get(), account_tracker_service);
+          token_service.get(), account_tracker_service.get());
 
   return std::make_unique<IdentityManagerWrapper>(
-      account_tracker_service, std::move(token_service),
+      std::move(account_tracker_service), std::move(token_service),
       std::move(gaia_cookie_manager_service), std::move(signin_manager),
       std::move(account_fetcher_service), std::move(primary_account_mutator),
       /*accounts_mutator=*/nullptr, std::move(accounts_cookie_mutator),

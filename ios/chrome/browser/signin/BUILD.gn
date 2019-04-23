@@ -11,8 +11,6 @@ source_set("signin") {
     "account_consistency_service_factory.mm",
     "account_reconcilor_factory.cc",
     "account_reconcilor_factory.h",
-    "account_tracker_service_factory.cc",
-    "account_tracker_service_factory.h",
     "authentication_service.h",
     "authentication_service.mm",
     "authentication_service_delegate.h",

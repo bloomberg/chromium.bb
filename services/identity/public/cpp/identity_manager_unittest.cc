@@ -211,11 +211,9 @@ class TestIdentityManagerDiagnosticsObserver
 class IdentityManagerTest : public testing::Test {
  protected:
   IdentityManagerTest() : signin_client_(&pref_service_) {
-    AccountTrackerService::RegisterPrefs(pref_service_.registry());
     IdentityManager::RegisterProfilePrefs(pref_service_.registry());
     IdentityManager::RegisterLocalStatePrefs(pref_service_.registry());
 
-    account_tracker_.Initialize(&pref_service_, base::FilePath());
     RecreateIdentityManager(signin::AccountConsistencyMethod::kDisabled,
                             SigninManagerSetup::kWithAuthenticatedAccout);
   }
@@ -223,7 +221,6 @@ class IdentityManagerTest : public testing::Test {
   ~IdentityManagerTest() override {
     identity_manager_->Shutdown();
     signin_client_.Shutdown();
-    account_tracker_.Shutdown();
   }
 
   void SetUp() override {
@@ -242,7 +239,9 @@ class IdentityManagerTest : public testing::Test {
     return identity_manager_diagnostics_observer_.get();
   }
 
-  AccountTrackerService* account_tracker() { return &account_tracker_; }
+  AccountTrackerService* account_tracker() {
+    return identity_manager()->GetAccountTrackerService();
+  }
 
   CustomFakeProfileOAuth2TokenService* token_service() {
     return static_cast<CustomFakeProfileOAuth2TokenService*>(
@@ -292,19 +291,22 @@ class IdentityManagerTest : public testing::Test {
                 },
                 test_url_loader_factory()));
 
+    auto account_tracker_service = std::make_unique<AccountTrackerService>();
+    account_tracker_service->Initialize(&pref_service_, base::FilePath());
+
     auto account_fetcher_service = std::make_unique<AccountFetcherService>();
     account_fetcher_service->Initialize(
-        &signin_client_, token_service.get(), &account_tracker_,
+        &signin_client_, token_service.get(), account_tracker_service.get(),
         std::make_unique<image_fetcher::FakeImageDecoder>());
 
 #if defined(OS_CHROMEOS)
     DCHECK_EQ(account_consistency, signin::AccountConsistencyMethod::kDisabled)
         << "AccountConsistency is not used by SigninManagerBase";
     auto signin_manager = std::make_unique<SigninManagerBase>(
-        &signin_client_, token_service.get(), &account_tracker_);
+        &signin_client_, token_service.get(), account_tracker_service.get());
 #else
     auto signin_manager = std::make_unique<SigninManager>(
-        &signin_client_, token_service.get(), &account_tracker_,
+        &signin_client_, token_service.get(), account_tracker_service.get(),
         gaia_cookie_manager_service.get(), account_consistency);
 #endif
 
@@ -327,10 +329,10 @@ class IdentityManagerTest : public testing::Test {
         token_service.get(), gaia_cookie_manager_service.get());
 
     identity_manager_.reset(new IdentityManager(
-        std::move(token_service), std::move(gaia_cookie_manager_service),
-        std::move(signin_manager), std::move(account_fetcher_service),
-        &account_tracker_, nullptr, nullptr, std::move(accounts_cookie_mutator),
-        std::move(diagnostics_provider)));
+        std::move(account_tracker_service), std::move(token_service),
+        std::move(gaia_cookie_manager_service), std::move(signin_manager),
+        std::move(account_fetcher_service), nullptr, nullptr,
+        std::move(accounts_cookie_mutator), std::move(diagnostics_provider)));
     identity_manager_observer_.reset(
         new TestIdentityManagerObserver(identity_manager_.get()));
     identity_manager_diagnostics_observer_.reset(
@@ -371,7 +373,6 @@ class IdentityManagerTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  AccountTrackerService account_tracker_;
   TestSigninClient signin_client_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<IdentityManager> identity_manager_;
