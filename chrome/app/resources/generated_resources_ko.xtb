@@ -2003,7 +2003,6 @@
 <translation id="4109135793348361820">창을 <ph name="USER_NAME" />(<ph name="USER_EMAIL" />)님에게로 이동</translation>
 <translation id="4110490973560452005">다운로드 완료: <ph name="FILE_NAME" />. 다운로드바 영역으로 이동하려면 Shift+F6를 누르세요.</translation>
 <translation id="4110895898888439383">고대비 모드로 웹 탐색</translation>
-<translation id="4112221174576828331">이미지에 유용한 설명이 없으면 Chrome에서 자동으로 설명을 제공합니다. Google에서 이미지를 스캔합니다.</translation>
 <translation id="4115002065223188701">네트워크 범위를 벗어남</translation>
 <translation id="4115080753528843955">일부 콘텐츠 서비스는 보호된 콘텐츠에 액세스 권한을 부여할 수 있도록 고유 식별자를 사용합니다.</translation>
 <translation id="4118579674665737931">기기를 재부팅한 후 다시 시도해 주세요.</translation>
@@ -4456,6 +4455,7 @@
 <translation id="8008356846765065031">인터넷 연결이 끊겼습니다. 인터넷 연결을 확인하세요.</translation>
 <translation id="8009225694047762179">비밀번호 관리</translation>
 <translation id="8012382203418782830">페이지가 번역되었습니다.</translation>
+<translation id="8013993649590906847">이미지에 유용한 설명이 없으면 Chrome에서 자동으로 설명을 제공하려고 시도합니다. 설명을 생성하기 위해 이미지가 Google로 전송됩니다.</translation>
 <translation id="8014154204619229810">업데이터가 현재 실행 중입니다. 잠시 후에 새로고침하여 다시 확인해 주세요.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" />을(를) 이전에 설치한 버전으로 되돌릴 수 없습니다. 대신 기기를 Powerwash해 보세요.</translation>
 <translation id="8014210335923519270">시스템 정보와 사용 기록을 Google에 전송하여 <ph name="IDS_SHORT_PRODUCT_NAME" /> 및 보안 개선</translation>
@@ -5025,7 +5025,6 @@
 <translation id="891365694296252935">사용 및 진단 데이터를 보냅니다. 이 기기는 현재 진단, 기기 및 앱 사용 데이터를 Google에 자동으로 보내고 있습니다. 이 데이터는 자녀를 식별하는 용도로 사용되지 않으며, 시스템 및 앱 안정성 등을 개선하는 데 활용됩니다. 일부 수집 데이터는 Google 앱과 파트너(Android 개발자 등)에게도 도움을 줍니다. 이 설정은 소유자가 지정합니다. 자녀의 추가 웹 및 앱 활동이 사용 설정되어 있다면 이 데이터가 자녀의 Google 계정에 저장될 수 있습니다. <ph name="BEGIN_LINK1" />자세히 알아보기<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">추천 단어 로드 중...</translation>
 <translation id="8916476537757519021">시크릿 모드 서브프레임: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917490105272468696">사용</translation>
 <translation id="8919275547519617350">저장된 비밀번호를 어느 기기에서나 사용하려면 로그인하여 동기화를 사용 설정하세요.</translation>
 <translation id="8921366488406707015">보안 키 인증 중...</translation>
 <translation id="8922013791253848639">이 사이트의 광고 항상 허용</translation>
@@ -5123,7 +5122,6 @@
 <translation id="9065203028668620118">수정</translation>
 <translation id="9066773882585798925">소리 내어 읽은 텍스트 듣기</translation>
 <translation id="9066782832737749352">텍스트 음성 변환</translation>
-<translation id="907264006778172906">Linux에 USB 기기 액세스 권한을 부여합니다. Linux는 삭제된 USB 기기를 기억하지 않습니다.</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">블루투스</translation>
 <translation id="9074836595010225693">USB 마우스 연결됨</translation>

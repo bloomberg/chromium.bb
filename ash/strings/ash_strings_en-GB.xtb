@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Toggle Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Access all your activity in this session</translation>
 <translation id="1608626060424371292">Remove this user</translation>
-<translation id="1621499497873603021">Time left until battery is empty, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Start a voice query</translation>
 <translation id="1658406695958299976">Sorry, your password still couldn't be verified. Note: If you changed your password recently, your new password will be applied once you sign out. Please use the old password here.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> left</translation>
@@ -139,7 +138,6 @@
 <translation id="2996462380875591307">Docked Magnifier enabled. Press Ctrl+Search+D again to toggle it off.</translation>
 <translation id="3000461861112256445">Mono audio</translation>
 <translation id="3009178788565917040">Output</translation>
-<translation id="3019353588588144572">Time remaining until battery is fully charged, <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Your supervised user profile will be removed soon. Sign in to find out more.</translation>
 <translation id="3055162170959710888">You used this device for <ph name="USED_TIME" /> today</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -369,7 +367,6 @@
 <translation id="6715542151869432661">No mobile devices found.</translation>
 <translation id="6723839937902243910">Power</translation>
 <translation id="6751826523481687655">Performance tracing is turned on</translation>
-<translation id="6785414152754474415">Battery is <ph name="PERCENTAGE" />% full and charging.</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="6803622936009808957">Could not mirror displays since no supported resolutions found. Entered extended desktop instead.</translation>
 <translation id="6820676911989879663">Take a break!</translation>
@@ -525,7 +522,6 @@
 <translation id="9179259655489829027">This feature allows you to quickly access any signed-in user without requiring a password. Only use this feature with accounts that you trust.</translation>
 <translation id="9193626018745640770">Casting on an unknown receiver</translation>
 <translation id="9194617393863864469">Sign in another user...</translation>
-<translation id="9201131092683066720">Battery is <ph name="PERCENTAGE" />% full.</translation>
 <translation id="9210037371811586452">Exiting unified desktop mode</translation>
 <translation id="9215934040295798075">Set wallpaper</translation>
 <translation id="921989828232331238">Your parent locked your device for the day</translation>

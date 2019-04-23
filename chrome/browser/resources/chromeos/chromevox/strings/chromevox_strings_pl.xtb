@@ -214,6 +214,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="2626530649491650971">klikalny</translation>
 <translation id="2628764385451019380">Brak poprzedniego pola złożonego.</translation>
 <translation id="2637227747952042642">Matematyczny</translation>
+<translation id="2638785836053527382">Pobieranie wznowione: <ph name="FILE_NAME" /></translation>
 <translation id="2639750663247012216">Modyfikator ChromeVox</translation>
 <translation id="2644542693584024604">błędny zapis</translation>
 <translation id="2661530546602071611">Uwaga</translation>
@@ -253,6 +254,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="287383510823843610">Ciemnopomarańczowy</translation>
 <translation id="2879867157561757640">Przesuń trzema palcami w dół</translation>
 <translation id="288178314850623291">Użyj poleceń nawigacji, by przejść do elementu określonego typu. Aby przejść do następnego nagłówka, naciśnij Wyszukaj + H. Aby przejść do poprzedniego nagłówka, naciśnij Wyszukaj + Shift + H.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{minuta}few{minuty}many{minut}other{minuty}}</translation>
 <translation id="2894654529758326923">Informacje</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{lewy nawias klamrowy}few{# lewe nawiasy klamrowe}many{# lewych nawiasów klamrowych}other{# left braces}}</translation>
 <translation id="2911433807131383493">Otwórz samouczek ChromeVox</translation>
@@ -287,6 +289,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="3084806535845658316">bez odczytywania podczas pisania</translation>
 <translation id="3086746722712840547">note</translation>
 <translation id="308895241372589742">Brak następnego wyrażenia matematycznego.</translation>
+<translation id="3090227230165225418">Powiadamiaj głosowo o pobieraniu</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Następny punkt orientacyjny</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -439,6 +442,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4148180433151187540">{COUNT,plural, =1{prawy nawias klamrowy}few{# prawe nawiasy klamrowe}many{# prawych nawiasów klamrowych}other{# right braces}}</translation>
 <translation id="4158704014418536539">Rozróżnianie wielkości liter.</translation>
 <translation id="4159784952369912983">Purpurowy</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{sekunda}few{sekundy}many{sekund}other{sekundy}}</translation>
 <translation id="4161663686871496107">Powiadamianie głosowe ChromeVox jest gotowe</translation>
 <translation id="4173994908659439270">Brak następnego pola tekstowego do edytowania.</translation>
 <translation id="4176463684765177261">Wyłączone</translation>
@@ -619,6 +623,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="5349770431644471053">Link zwrotny</translation>
 <translation id="536031132345979795">Cofnij podczas ciągłego czytania</translation>
 <translation id="5368000168321181111">Ikony akustyczne są wyłączone</translation>
+<translation id="5368505757342402527">Pobrano <ph name="PROGRESS" />% pliku <ph name="FILE_NAME" />. Pozostało około <ph name="TIME" /> <ph name="UNITS" />.</translation>
 <translation id="5374320867641260420">Brak przycisku Dalej.</translation>
 <translation id="5376407118396657359">Naciśnij klawisz wyszukiwania + Ctrl + Alt i przechodź między komórkami za pomocą klawiszy strzałek.</translation>
 <translation id="5382299583965267720">Brak następnego nagłówka poziomu 1.</translation>
@@ -801,6 +806,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6688209025607531203">Alert nie w oknie modalnym</translation>
 <translation id="6689672606256159458">Ciemny łososiowy</translation>
+<translation id="669617842401078250">Pobieranie wstrzymane: <ph name="FILE_NAME" /></translation>
 <translation id="6696967141280706829">Wstęp</translation>
 <translation id="6697092096875747123">Poprzednie pole złożone</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{wykrzyknik}few{# wykrzykniki}many{# wykrzykników}other{# wykrzyknika}}</translation>
@@ -939,6 +945,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="7641134354185483015">Brak poprzedniego nagłówka poziomu 3.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, pole tekstowe</translation>
 <translation id="7663318257180412551">Nagłówek 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{godzina}few{godziny}many{godzin}other{godziny}}</translation>
 <translation id="7674576868851035240">Następny link</translation>
 <translation id="7674768236845044097">zaznaczenie</translation>
 <translation id="7684431668231950609">Edytowanie tekstu, podanie URL-a</translation>
@@ -953,6 +960,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912">Rozpoczęto pobieranie pliku <ph name="FILE_NAME" /></translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, pole tekstowe hasła</translation>
 <translation id="7776293189010177726">Otwórz menu ChromeVox</translation>
 <translation id="7800558923657349506">Epilog</translation>
@@ -1077,6 +1085,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="8096975275316362544">Miętowokremowy</translation>
 <translation id="8098587210054821856">Szaroniebieski</translation>
 <translation id="8110647606445335195">Brak punktów orientacyjnych ARIA.</translation>
+<translation id="812886159861361726">Zatrzymano pobieranie pliku <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Kliknij</translation>
 <translation id="8153880621934657047">Poza tabelą.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podkreślenie}few{# znaki podkreślenia}many{# znaków podkreślenia}other{# underscores}}</translation>
@@ -1146,6 +1155,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="8743786158317878347">otwórz treści strukturalne, na przykład tabele</translation>
 <translation id="8747966237988593539">Lista numerowana</translation>
 <translation id="8749988712346667988">Srebrny</translation>
+<translation id="875769700429317857">Zakończono pobieranie pliku <ph name="FILE_NAME" /></translation>
 <translation id="8759334257841767240">Brak następnego linku.</translation>
 <translation id="8767968232364267681">Następny nagłówek poziomu 4</translation>
 <translation id="8770473310765924354">zamknij treści strukturalne, na przykład tabele</translation>

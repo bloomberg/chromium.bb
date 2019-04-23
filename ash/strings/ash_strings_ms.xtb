@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Togol Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Akses semua aktiviti anda dalam sesi ini</translation>
 <translation id="1608626060424371292">Alih keluar pengguna ini</translation>
-<translation id="1621499497873603021">Masa yang tinggal sehingga bateri kosong, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Mulakan pertanyaan suara</translation>
 <translation id="1658406695958299976">Maaf, kata laluan anda masih tidak dapat disahkan. Perhatian: jika anda menukar kata laluan anda baru-baru ini, kata laluan baharu anda akan digunakan apabila anda log keluar, sila gunakan kata laluan yang lama di sini.</translation>
 <translation id="1677472565718498478">Berbaki <ph name="TIME" /></translation>
@@ -138,7 +137,6 @@
 <translation id="2996462380875591307">Penggadang Didok didayakan. Tekan Ctrl+Cari+D semula untuk mematikannya.</translation>
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Output</translation>
-<translation id="3019353588588144572">Masa yang tinggal sehingga bateri dicas sepenuhnya, <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Profil pengguna di bawah seliaan anda akan dialih keluar tidak lama lagi. Log masuk untuk mengetahui lebih lanjut.</translation>
 <translation id="3055162170959710888">Anda menggunakan peranti ini selama <ph name="USED_TIME" /> hari ini</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -365,7 +363,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6715542151869432661">Peranti mudah alih tidak ditemui.</translation>
 <translation id="6723839937902243910">Kuasa</translation>
 <translation id="6751826523481687655">Pengesanan prestasi dihidupkan</translation>
-<translation id="6785414152754474415">Bateri <ph name="PERCENTAGE" />% penuh dan sedang dicas.</translation>
 <translation id="6790428901817661496">Mainkan</translation>
 <translation id="6803622936009808957">Tidak dapat membalikkan paparan memandangkan tiada peleraian disokong ditemui. Sebaliknya, memasuki mod desktop yang dilanjutkan.</translation>
 <translation id="6820676911989879663">Berehatlah!</translation>
@@ -520,7 +517,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="9179259655489829027">Ciri ini membolehkan anda mengakses dengan cepat mana-mana pengguna yang telah log masuk tanpa memerlukan kata laluan. Gunakan ciri ini dengan akaun yang dipercayai sahaja.</translation>
 <translation id="9193626018745640770">Menghantar pada penerima yang tidak diketahui</translation>
 <translation id="9194617393863864469">Log masuk pengguna lain...</translation>
-<translation id="9201131092683066720">Bateri <ph name="PERCENTAGE" />% penuh.</translation>
 <translation id="9210037371811586452">Keluar daripada mod desktop bersatu</translation>
 <translation id="9215934040295798075">Tetapkan kertas dinding</translation>
 <translation id="921989828232331238">Ibu/bapa anda mengunci peranti untuk hari ini</translation>

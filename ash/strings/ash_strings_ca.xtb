@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Activa o desactiva el Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Accedir a tota la teva activitat d'aquesta sessió.</translation>
 <translation id="1608626060424371292">Suprimeix aquest usuari</translation>
-<translation id="1621499497873603021">Temps que queda fins que no s'esgoti la bateria: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Inicia una consulta per veu</translation>
 <translation id="1658406695958299976">Encara no s'ha pogut verificar la contrasenya. Nota: si fa poc que has canviat la contrasenya, la nova s'aplicarà un cop hagis tancat la sessió. Fes servir la contrasenya anterior aquí.</translation>
 <translation id="1677472565718498478">Temps restant: <ph name="TIME" /></translation>
@@ -138,7 +137,6 @@
 <translation id="2996462380875591307">La lupa acoblada està activada. Torna a prémer Ctrl+Cerca+D per desactivar-la.</translation>
 <translation id="3000461861112256445">Àudio mono</translation>
 <translation id="3009178788565917040">Sortida</translation>
-<translation id="3019353588588144572">Temps restant fins que la bateria no estigui totalment carregada: <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">El perfil del teu usuari supervisat se suprimirà aviat. Inicia la sessió per obtenir més informació.</translation>
 <translation id="3055162170959710888">Avui has fet servir aquest dispositiu durant <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">maj</translation>
@@ -364,7 +362,6 @@
 <translation id="6715542151869432661">No s'ha trobat cap dispositiu mòbil.</translation>
 <translation id="6723839937902243910">Bateria</translation>
 <translation id="6751826523481687655">La traça del rendiment està activada</translation>
-<translation id="6785414152754474415">La bateria està carregada fins al <ph name="PERCENTAGE" />% i s'està carregant.</translation>
 <translation id="6790428901817661496">Reprodueix</translation>
 <translation id="6803622936009808957">No s'ha pogut fer la rèplica de les pantalles, perquè no s'ha trobat cap resolució compatible. S'està entrant al mode d'escriptori ampliat.</translation>
 <translation id="6820676911989879663">Fes una pausa</translation>
@@ -519,7 +516,6 @@
 <translation id="9179259655489829027">Aquesta funció et permet accedir ràpidament als usuaris que han iniciat la sessió sense haver d'introduir la contrasenya. Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="9193626018745640770">S'està emetent contingut en un receptor desconegut</translation>
 <translation id="9194617393863864469">Inicia la sessió amb un altre usuari...</translation>
-<translation id="9201131092683066720">La bateria està carregada fins al <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">S'està sortint del mode d'escriptori unificat</translation>
 <translation id="9215934040295798075">Estableix fons de pantalla</translation>
 <translation id="921989828232331238">El teu pare o la teva mare han bloquejat el dispositiu per a tot el dia</translation>

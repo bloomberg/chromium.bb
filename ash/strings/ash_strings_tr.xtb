@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Bluetooth'u aç/kapat. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Bu oturumdaki tüm etkinliğinize erişme</translation>
 <translation id="1608626060424371292">Bu kullanıcıyı kaldır</translation>
-<translation id="1621499497873603021">Pilin boşalması için kalan süre, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Sesli sorgu başlat</translation>
 <translation id="1658406695958299976">Maalesef şifreniz hâlâ doğrulanamadı. Not: Şifrenizi yakın zamanda değiştirdiyseniz, yeni şifreniz oturumu kapatmanızdan sonra geçerli olacaktır. Lütfen burada eski şifrenizi kullanın.</translation>
 <translation id="1677472565718498478">Kalan süre: <ph name="TIME" /></translation>
@@ -138,7 +137,6 @@
 <translation id="2996462380875591307">Yerleştirilmiş Büyüteç etkinleştirildi. Kapatmak için tekrar Ctrl+Arama+H tuşlarına basın.</translation>
 <translation id="3000461861112256445">Mono ses</translation>
 <translation id="3009178788565917040">Çıkış</translation>
-<translation id="3019353588588144572">Pilin tam olarak şarj olması için kalan süre, <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Denetlenen kullanıcı profiliniz yakında kaldırılacak. Daha fazla bilgi edinmek için oturum açın.</translation>
 <translation id="3055162170959710888">Bugün bu cihazı <ph name="USED_TIME" /> kullandınız</translation>
 <translation id="3077734595579995578">üstkrktr</translation>
@@ -365,7 +363,6 @@
 <translation id="6715542151869432661">Mobil cihaz bulunamadı.</translation>
 <translation id="6723839937902243910">Güç</translation>
 <translation id="6751826523481687655">Performans izleme açık</translation>
-<translation id="6785414152754474415">Pil %<ph name="PERCENTAGE" /> dolu ve şarj oluyor.</translation>
 <translation id="6790428901817661496">Oynat</translation>
 <translation id="6803622936009808957">Desteklenen bir çözünürlük bulunamadığı için ekranlar yansıtılamıyor. Bunun yerine genişletilmiş masaüstüne geçiliyor.</translation>
 <translation id="6820676911989879663">Mola verin!</translation>
@@ -520,7 +517,6 @@
 <translation id="9179259655489829027">Bu özellik oturum açmış tüm kullanıcılara şifre gerektirmeden hızlı bir şekilde erişmenize olanak verir. Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="9193626018745640770">Bilinmeyen bir alıcıya yayınlanıyor</translation>
 <translation id="9194617393863864469">Başka bir kullanıcı olarak oturum aç...</translation>
-<translation id="9201131092683066720">Pil %<ph name="PERCENTAGE" /> dolu.</translation>
 <translation id="9210037371811586452">Birleşik masaüstü modundan çıkılıyor</translation>
 <translation id="9215934040295798075">Duvar kağıdını ayarla</translation>
 <translation id="921989828232331238">Ebeveyniniz cihazınızı bugün için kilitledi</translation>

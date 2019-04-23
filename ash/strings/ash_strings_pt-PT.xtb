@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Ativar/desativar Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Aceda a toda a sua atividade nesta sessão.</translation>
 <translation id="1608626060424371292">Remover este utilizador</translation>
-<translation id="1621499497873603021">Tempo restante até a bateria terminar, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Iniciar uma consulta de voz</translation>
 <translation id="1658406695958299976">Lamentamos, mas ainda não foi possível validar a sua palavra-passe. Nota: se alterou a palavra-passe recentemente, a nova palavra-passe será aplicada quando terminar sessão. Utilize a palavra-passe antiga aqui.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
@@ -86,6 +85,7 @@
 <translation id="225680501294068881">A procurar dispositivos...</translation>
 <translation id="2268130516524549846">Bluetooth desativado</translation>
 <translation id="2268813581635650749">Terminar sessão de todos</translation>
+<translation id="2277103315734023688">Procurar para a frente</translation>
 <translation id="2292698582925480719">Escala de apresentação</translation>
 <translation id="2302092602801625023">Esta conta é gerida pelo Family Link</translation>
 <translation id="2303600792989757991">Ativar/desativar vista geral das janelas</translation>
@@ -138,7 +138,6 @@
 <translation id="2996462380875591307">Lupa ancorada ativada. Prima Ctrl + Pesquisa + D novamente para a desativar.</translation>
 <translation id="3000461861112256445">Áudio mono</translation>
 <translation id="3009178788565917040">Saída</translation>
-<translation id="3019353588588144572">Tempo restante até a bateria estar totalmente carregada: <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">O seu perfil de utilizador supervisionado será removido brevemente. Inicie sessão para saber mais.</translation>
 <translation id="3055162170959710888">Utilizou este dispositivo durante <ph name="USED_TIME" /> hoje.</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -166,6 +165,7 @@
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal do lado direito)</translation>
 <translation id="3400357268283240774">Definições adicionais</translation>
 <translation id="3413817803639110246">Ainda não existe nada para ver</translation>
+<translation id="343571671045587506">Editar lembrete</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3454224730401036106">A sua ligação mudou para uma rede mais segura.</translation>
 <translation id="3465223694362104965">Foi ligado outro teclado a este dispositivo desde o seu último acesso. Certifique-se de que confia neste teclado antes de o utilizar.</translation>
@@ -198,12 +198,14 @@
 <translation id="3900355044994618856">A sessão termina dentro de <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">A ligar a <ph name="NAME" /></translation>
 <translation id="394485226368336402">Definições de áudio</translation>
+<translation id="3962859241508114581">Faixa anterior</translation>
 <translation id="397105322502079400">A calcular...</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira do lado direito)</translation>
 <translation id="4017989525502048489">Ponteiro de laser</translation>
 <translation id="4042660782729322247">Está a partilhar o seu ecrã</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desativado para uma aplicação}other{Desativado para # aplicações}}</translation>
 <translation id="4072264167173457037">Sinal médio</translation>
+<translation id="4112140312785995938">Procurar para trás</translation>
 <translation id="4129129681837227511">Para ver notificações no ecrã de bloqueio, desbloqueie o mesmo para alterar a definição</translation>
 <translation id="4146833061457621061">Tocar música</translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -227,6 +229,7 @@
 <translation id="4421231901400348175">A partilhar o controlo do seu ecrã com <ph name="HELPER_NAME" /> através da Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Não mostrar de novo</translation>
+<translation id="4477350412780666475">Faixa seguinte</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Dispositivos dessincronizados</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: A ligar...</translation>
@@ -364,7 +367,6 @@
 <translation id="6715542151869432661">Não foram encontrados dispositivos móveis.</translation>
 <translation id="6723839937902243910">Alimentação</translation>
 <translation id="6751826523481687655">O rastreio do desempenho está ativado.</translation>
-<translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE" />% cheia e a carregar.</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os ecrãs, porque não foram encontradas resoluções suportadas. Em vez disso, entrou no ambiente de trabalho expandido.</translation>
 <translation id="6820676911989879663">Faça uma pausa!</translation>
@@ -392,6 +394,7 @@
 <translation id="7222902781030499995">Parar temporizador</translation>
 <translation id="7256634071279256947">Microfone posterior</translation>
 <translation id="726276584504105859">Arraste para aqui para utilizar o ecrã dividido</translation>
+<translation id="7262906531272962081">Criar lembrete</translation>
 <translation id="7303365578352795231">A responder noutro dispositivo…</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Teclado no ecrã</translation>
@@ -519,7 +522,6 @@
 <translation id="9179259655489829027">Esta funcionalidade permite-lhe aceder rapidamente a qualquer utilizador com a sessão iniciada sem ser necessária uma palavra-passe. Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="9193626018745640770">A transmitir para um recetor desconhecido…</translation>
 <translation id="9194617393863864469">Iniciar sessão com outro utilizador...</translation>
-<translation id="9201131092683066720">A bateria está <ph name="PERCENTAGE" />% cheia.</translation>
 <translation id="9210037371811586452">A sair do Modo de ambiente de trabalho unificado</translation>
 <translation id="9215934040295798075">Definir imagem de fundo</translation>
 <translation id="921989828232331238">Os teus pais bloquearam o dispositivo para o resto do dia</translation>

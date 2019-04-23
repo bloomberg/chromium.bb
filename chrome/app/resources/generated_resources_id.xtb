@@ -2021,7 +2021,6 @@
 <translation id="4109135793348361820">Pindahkan jendela ke <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Download selesai: <ph name="FILE_NAME" />. Tekan Shift+F6 untuk masuk ke area kotak download</translation>
 <translation id="4110895898888439383">Akses web dalam mode kontras tinggi</translation>
-<translation id="4112221174576828331">Jika gambar tidak memiliki deskripsi yang berguna, Chrome akan memberikan deskripsi untuk Anda. Gambar akan dipindai oleh Google.</translation>
 <translation id="4115002065223188701">Jaringan di luar jangkauan</translation>
 <translation id="4115080753528843955">Beberapa layanan konten menggunakan pengenal unik untuk memberi otorisasi akses ke konten yang dilindungi</translation>
 <translation id="4118579674665737931">Harap reboot perangkat, lalu coba lagi.</translation>
@@ -4490,6 +4489,7 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8008356846765065031">Internet terputus. Periksa sambungan internet Anda.</translation>
 <translation id="8009225694047762179">Kelola Kata sandi</translation>
 <translation id="8012382203418782830">Halaman ini telah diterjemahkan.</translation>
+<translation id="8013993649590906847">Jika gambar tidak memiliki deskripsi yang berguna, Chrome akan mencoba memberikan deskripsi untuk Anda. Untuk membuat deskripsi, gambar akan dikirim ke Google.</translation>
 <translation id="8014154204619229810">Alat pembaru sedang berjalan. Segarkan dalam satu menit untuk memeriksa lagi.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> tidak dapat mengembalikan ke versi yang terpasang sebelumnya. Coba lagi untuk melakukan Powerwash perangkat Anda.</translation>
 <translation id="8014210335923519270">Sempurnakan <ph name="IDS_SHORT_PRODUCT_NAME" /> dan keamanannya dengan mengirimkan informasi dan penggunaan sistem ke Google</translation>
@@ -5062,7 +5062,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="891365694296252935">Kirim data penggunaan dan diagnostik. Perangkat ini saat ini otomatis mengirim data diagnostik, perangkat, dan penggunaan aplikasi ke Google. Data ini tidak akan digunakan untuk mengidentifikasi anak Anda serta akan membantu sistem dan stabilitas aplikasi serta penyempurnaan lainnya. Beberapa data gabungan juga akan membantu aplikasi dan partner Google, seperti developer Android. Setelan ini diterapkan oleh pemilik. Jika Aktivitas Web &amp; Aplikasi tambahan diaktifkan untuk anak Anda, data ini mungkin akan disimpan ke Akun Google miliknya. <ph name="BEGIN_LINK1" />Pelajari Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Memuat saran</translation>
 <translation id="8916476537757519021">Subframe Mode Penyamaran: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917490105272468696">Ya, Saya Setuju</translation>
 <translation id="8919275547519617350">Untuk mendapatkan semua sandi di semua perangkat, login dan aktifkan sinkronisasi.</translation>
 <translation id="8921366488406707015">Memverifikasi kunci keamanan...</translation>
 <translation id="8922013791253848639">Selalu izinkan iklan di situs ini</translation>
@@ -5161,7 +5160,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9066773882585798925">Mendengar teks dibacakan dengan keras</translation>
 <translation id="9066782832737749352">Text-to-Speech</translation>
-<translation id="907264006778172906">Berikan izin kepada Linux untuk mengakses perangkat USB. Linux tidak akan mengingat perangkat USB setelah perangkat tersebut dilepas.</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9074836595010225693">Mouse USB tersambung</translation>

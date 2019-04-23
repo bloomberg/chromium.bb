@@ -51,6 +51,13 @@ Pokud je nastavena na hodnotu true nebo nastavena není, statistiky hlášeny bu
 <translation id="1049138910114524876">Konfiguruje jazyk používaný povinně na přihlašovací obrazovce systému <ph name="PRODUCT_OS_NAME" />.
 
       Je-li nastavena tato zásada, přihlašovací obrazovka se vždy zobrazí v jazyce, který je určen první hodnotou této zásady (z důvodu kompatibility s budoucími verzemi je zásada definována jako seznam). Pokud tato zásada není nastavena nebo je nastavena na prázdný seznam, zobrazí se přihlašovací obrazovka v jazyce poslední uživatelské návštěvy. Pokud je tato zásada nastavena na hodnotu, která není platným jazykem, zobrazí se přihlašovací obrazovka v záložním jazyce (aktuálně americká angličtina).</translation>
+<translation id="1052499923181221200">Tato zásada se projeví jen v případě, že je zásada SamlInSessionPasswordChangeEnabled nastavená na hodnotu true.
+      Pokud je nastavená na hodnotu true a tato zásada je nastavená například na hodnotu 14, uživatelům SAML se 14 dní předem zobrazí oznámení, že platnost jejich hesla k určitému datu vyprší.
+      Ihned to budou moci vyřešit tím, že provedou změnu během relace a aktualizují heslo dříve, než jeho platnost vyprší.
+      Tato oznámení se však zobrazí pouze v případě, že poskytovatel identity SAML do zařízení během přihlašovacího procesu SAML odesílá informace o vypršení platnosti.
+      Pokud tuto zásadu nastavíte na nulu, oznámení se uživatelům předem nezobrazí. Zobrazí se jim až po vypršení platnosti hesla.
+
+      Pokud je tato zásada nastavená, uživatel ji nemůže změnit ani přepsat.</translation>
 <translation id="1062011392452772310">Povolit vzdálené ověření identity zařízení</translation>
 <translation id="1062407476771304334">Nahradit</translation>
 <translation id="1079801999187584280">Zakázat používání Nástrojů pro vývojáře</translation>
@@ -198,6 +205,7 @@ Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vyt
       Pokud je tato zásada zapnutá, Asistent Google bude mít povolen přístup ke kontextu obrazovky.
       Pokud je tato zásada zakázaná, Asistent Google ke kontextu obrazovky přístup mít nebude.
       Pokud tato zásada není nastavená, uživatelé se mohou rozhodnout, zda Asistentovi Google povolí přístup ke kontextu obrazovky, či nikoliv.</translation>
+<translation id="1376119291123231789">Zapnout rozšířený režim nabíjení baterie</translation>
 <translation id="1383493480903114193">Tato zásada vynucuje spuštění kódu pro sítě v procesu prohlížeče.
 
       Tato zásada je ve výchozím nastavení vypnutá. Pokud ji zapnete, budou uživatelé po přesunutí procesu pro sítě do izolovaného prostoru vystaveni bezpečnostním rizikům.
@@ -290,6 +298,18 @@ Pokud je tato zásada nastavena na hodnotu false nebo ponechána bez nastavení,
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Zapnout blokování vkládání softwaru třetích stran</translation>
 <translation id="1504431521196476721">Vzdálené ověření identity</translation>
+<translation id="1507382822467487898">
+          Určuje, která adresa MAC (Media Access Control) se použije, když k zařízení bude připojený dok.
+
+          U některých modelů zařízení se při připojení k doku k identifikaci zařízení v síti Ethernet ve výchozím nastavení používá speciální adresa MAC pro dok. Pomocí této zásady administrátor zdroj adresy MAC používané při připojení k doku může změnit.
+
+          Pokud je vybrána možnost DeviceDockMacAddress nebo je zásada ponechána nenastavená, použije se speciální adresa MAC zařízení pro dok.
+
+          Pokud je vybrána možnost DeviceNicMacAddress použije se adresa MAC řadiče síťového rozhraní (NIC) zařízení.
+
+          Pokud je vybrána možnost DockNicMacAddress, použije se adresa MAC NIC doku.
+
+          Uživatel toto nastavení nemůže změnit.</translation>
 <translation id="1507957856411744193">Je-li tato zásada nastavena na hodnotu true, bude se <ph name="PRODUCT_NAME" /> připojovat k zařízením Cast na všech IP adresách, nikoliv pouze na soukromých adresách RFC1918/RFC4193.
 
           Je-li tato zásada nastavena na hodnotu false, bude se <ph name="PRODUCT_NAME" /> připojovat pouze k zařízením Cast na soukromých adresách RFC1918/RFC4193.
@@ -710,6 +730,17 @@ U zařízení spravovaných pomocí služby Active Directory tato zásada podpo
 <translation id="2303795211377219696">Povolit automatické vyplňování pro platební karty</translation>
 <translation id="2309390639296060546">Výchozí nastavení geolokace</translation>
 <translation id="2327252517317514801">Definování domén, kterým je povolen přístup ke službám G Suite</translation>
+<translation id="2356878440219553005">Určuje zásadu řízení spotřeby pro režim nabíjení baterie.
+
+          Umožňuje dynamicky ovládat nabíjení baterie tak, aby se minimalizovalo její opotřebení a prodloužila její životnost.
+
+          Pokud je vybrán vlastní režim nabíjení baterie, musí být zadány zásady DeviceBatteryChargeCustomStartCharging a DeviceBatteryChargeCustomStopCharging.
+
+          Pokud je tato zásada nastavená, režim nabíjení baterie se použije v případě, že je na zařízení podporován.
+
+          Pokud je tato zásada ponechána nenastavená a zásada je na zařízení podporována, použije se standardní režim nabíjení baterie a uživatel ho nebude moci změnit.
+
+          Poznámka: Pokud je zadána zásada <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />, přepíše tuto zásadu.</translation>
 <translation id="237494535617297575">Umožňuje nastavit seznam vzorů adres URL webových stránek, které mají povoleno nastavovat upozornění.
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultNotificationsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
@@ -747,6 +778,7 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
 
       Pokud má tato zásada hodnotu False, automatické přihlašování s nulovou prodlevou (je-li nastaveno) nelze obejít.</translation>
 <translation id="2454228136871844693">Optimalizovat pro stabilitu.</translation>
+<translation id="2463034609187171371">Povolit v TLS šifrovací sady DHE</translation>
 <translation id="2463365186486772703">Jazyk aplikace</translation>
 <translation id="2466131534462628618">Ověření captive portálu ignoruje proxy server</translation>
 <translation id="2482676533225429905">Zasílání nativních zpráv</translation>
@@ -927,6 +959,7 @@ Pokud je zásada nastavena na hodnotu False nebo nastavena není, budou ikony vi
 <translation id="2769952903507981510">Konfigurovat povinný název domény pro hostitele vzdáleného přístupu</translation>
 <translation id="2787173078141616821">Hlásit informace o stavu systému Android</translation>
 <translation id="2799297758492717491">Povolit automatické přehrávání médií zahrnutých v seznamu vzorů povolených adres URL</translation>
+<translation id="2801155097555584385">Nastavit vlastní úroveň nabití baterie pro zahájení nabíjení v procentech</translation>
 <translation id="2801230735743888564">Povolit uživatelům hrát hru s dinosaurem, když je zařízení offline.
 
       Je-li tato zásada nastavena na hodnotu False, uživatelé nemohou hrát hru s dinosaurem, když je zařízení offline. Pokud je tato zásada nastavena na hodnotu True, uživatelé hru s dinosaurem hrát mohou. Pokud tato zásada není nastavena, v zaregistrovaném systému Chrome OS uživatelé hru s dinosaurem hrát nemohou, ale za všech jiných okolností ji hrát mohou.</translation>
@@ -1000,6 +1033,7 @@ Platné jsou tyto specifikace vzorů adres URL:
       Pokud toto nastavení zakážete nebo nenastavíte žádnou hodnotu, bude Náhled tisku jako výchozí cíl používat naposledy použitou tiskárnu.
 
       Pokud aktivujete toto nastavení, bude Náhled tisku jako výchozí cíl používat výchozí tiskárnu systému.</translation>
+<translation id="285627849510728211">Nastavení denní konfigurace rozšířeného režimu nabíjení baterie</translation>
 <translation id="2856674246949497058">Pokud je verze operačního systému novější než cílová verze, vrátit se zpět k cílové verzi a zachovat ji. Během tohoto procesu spustit Powerwash.</translation>
 <translation id="2872961005593481000">Vypnout</translation>
 <translation id="2873651257716068683">Přepíše výchozí velikost stránky tisku. Pokud velikost stránky není k dispozici, zásada bude ignorována.</translation>
@@ -1131,12 +1165,26 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
 <translation id="3072045631333522102">Spořič obrazovky, který bude použit na přihlašovací obrazovce v režimu pro obchody</translation>
 <translation id="3072847235228302527">Nastavit smluvní podmínky pro účet v zařízení</translation>
 <translation id="3077183141551274418">Povolí nebo zakáže životní cykly karet</translation>
+<translation id="3079417254871857650">Určuje akci, která se má podniknout v případě, že byl domovský adresář uživatele vytvořen se šifrováním ecryptfs.
+
+      Pokud tuto zásadu nastavíte na hodnotu „DisallowArc“, uživatel nebude moci používat aplikace pro Android a neprovede se žádná migrace ze šifrování ecryptfs na šifrování ext4. Pokud domovský adresář šifrování ext4 již používá, spouštění aplikací pro Android zakázáno nebude.
+
+      Pokud tuto zásadu nastavíte na hodnotu „Migrate“, domovské adresáře se šifrováním ecryptfs se při přihlášení automaticky převedou na šifrování ext4, aniž by byl uživatel požádán o souhlas.
+
+      Pokud tuto zásadu nastavíte na hodnotu „Wipe“, domovské adresáře se šifrováním ecryptfs se při přihlášení smažou a namísto nich se vytvoří nové domovské adresáře se šifrováním ext4. Upozornění: Při této operaci budou odstraněna místní data uživatele.
+
+      Pokud tuto zásadu nastavíte na hodnotu „MinimalMigrate“, domovské adresáře se šifrováním ecryptfs se při přihlášení smažou a namísto nich se vytvoří nové domovské adresáře se šifrováním ext4. Systém se však pokusí zachovat přihlašovací tokeny, aby se uživatel nemusel znovu přihlašovat. Upozornění: Při této operaci budou odstraněna místní data uživatele.
+
+      Pokud tuto zásadu nastavíte na možnost, která již není podporována („AskUser“ nebo „AskForEcryptfsArcUsers“), bude se tato zásada chovat stejně, jako kdybyste vybrali možnost „Migrate“.
+
+      Tato zásada se nevztahuje na uživatele veřejných terminálů. Pokud tato zásada nebude nastavena, bude se zařízení chovat, jako kdyby byla vybrána hodnota DisallowArc.</translation>
 <translation id="3086995894968271156">Nakonfigurujte přijímač Cast ve službě <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Umožňuje nastavit seznam vzorů adres URL webových stránek, které mají povoleno zobrazovat obrázky.
 
           Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultImageSetting (pokud je nastavena), nebo z osobního nastavení uživatele.
 
           Dříve tato zásada byla omylem k dispozici na zařízeních Android, ale tato funkce v systému Android nikdy nebyla plně podporována.</translation>
+<translation id="3091832372132789233">Nabíjet baterie zařízení, která jsou primárně připojená k externímu zdroji napájení.</translation>
 <translation id="3096595567015595053">Seznam aktivovaných pluginů</translation>
 <translation id="3101501961102569744">Zvolit způsob konfigurace nastavení proxy serveru</translation>
 <translation id="3101709781009526431">Datum a čas</translation>
@@ -1162,6 +1210,7 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
           Pokud je toto nastavení zakázáno, <ph name="PRODUCT_NAME" /> bude používat pouze hostitele zasílání nativních zpráv nainstalované na úrovni systému.
 
           Pokud toto nastavení ponecháte nenastavené, povolí prohlížeč <ph name="PRODUCT_NAME" /> použití hostitelů zasílání nativních zpráv nastavených na úrovni uživatele.</translation>
+<translation id="3177802893484440532">U místních kotev důvěry vyžadovat kontroly OCSP/CRL</translation>
 <translation id="3185009703220253572">od verze <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Aplikace Android k podnikovým klíčům nemají přístup. Tato zásada na ně nemá vliv.</translation>
 <translation id="3205825995289802549">Při prvním spuštění maximalizovat první okno prohlížeče</translation>
@@ -1175,6 +1224,7 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
 <translation id="3220624000494482595">Je-li terminálová aplikace aplikace Android, nebude mít nad verzí systému <ph name="PRODUCT_OS_NAME" /> kontrolu ani v případě, že je tato zásada nastavena na hodnotu <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Vzory adres URL, ze kterých je možné instalovat rozšíření, aplikace a uživatelské skripty</translation>
 <translation id="3240609035816615922">Zásada přístupu ke konfiguraci tiskáren.</translation>
+<translation id="3240655340884151271">Adresa MAC NIC vestavěného v doku</translation>
 <translation id="3243309373265599239">Udává dobu nečinnosti uživatele, po které bude při napájení ze sítě snížen jas obrazovky.
 
           Pokud je tato zásada nastavena hodnotu větší než nula, jedná se o dobu, po kterou musí uživatel zůstat v nečinnosti, než systém <ph name="PRODUCT_OS_NAME" /> sníží jas obrazovku.
@@ -1196,6 +1246,12 @@ Pokud je tato zásada zakázána nebo není nakonfigurována, funkce WebDriver n
       Pokud je toto nastavení aktivované nebo není nakonfigurované, mohou uživatelé proxy server pro tisk z cloudu aktivovat ověřením pomocí účtu Google.
 
       Pokud je toto nastavení deaktivováno, uživatelé proxy server nebudou moci aktivovat a počítač nebude moci sdílet připojené tiskárny se službou <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3312206664202507568">Zapne stránku na adrese chrome://password-change, na které mohou uživatelé SAML měnit svá hesla SAML během relace. Zajišťuje se tím, aby heslo SAML a heslo na obrazovce uzamčení zařízení byla synchronizována.
+
+      Tato zásada také povoluje oznámení, která uživatele SAML upozorňují na brzké vypršení platnosti hesel SAML. Uživatelé tak tuto záležitost mohou ihned vyřešit tím, že heslo během relace změní.
+      Tato oznámení se však zobrazí pouze v případě, že poskytovatel identity SAML do zařízení během přihlašovacího procesu SAML odesílá informace o vypršení platnosti.
+
+      Pokud je tato zásada nastavená, uživatel ji nemůže změnit ani přepsat.</translation>
 <translation id="3322771899429619102">Umožňuje nastavit seznam vzorů adres URL webových stránek, které mají povoleno generovat klíče. Vzory adres URL uvedené v zásadě KeygenBlockedForUrls tyto výjimky přepíšou.
 
 Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultKeygenSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
@@ -1279,6 +1335,7 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 
           Pokud je tato zásada nastavena na hodnotu False nebo je ponechána nenastavená, prodlevy správy obsahu a limit délky návštěvy začnou běžet ihned po zahájení návštěvy.</translation>
 <translation id="3478024346823118645">Při odhlášení smazat uživatelská data</translation>
+<translation id="3480961938508521469">Úplně baterii nabít standardní rychlostí.</translation>
 <translation id="348495353354674884">Aktivovat virtuální klávesnici</translation>
 <translation id="3487623755010328395">
         Pokud je tato zásada nastavena, pokusí se <ph name="PRODUCT_NAME" /> zaregistrovat a použít pro všechny profily přidružené zásady použití cloudu.
@@ -1322,6 +1379,8 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
 <translation id="355118380775352753">Weby, které se mají otevírat v alternativním prohlížeči</translation>
 <translation id="3554984410014457319">Povolit Asistentovi Google naslouchat hlasové aktivační frázi</translation>
+<translation id="356579196325389849">Uživatelé mohou nakonfigurovat kanál verzí systému Chrome OS</translation>
+<translation id="3575011234198230041">Ověření HTTP</translation>
 <translation id="3577251398714997599">Nastavení reklam pro weby s rušivými reklamami</translation>
 <translation id="357917253161699596">Povolit uživatelům spravovat uživatelské certifikáty</translation>
 <translation id="3583230441447348508">Určuje seznam předem nakonfigurovaných síťových sdílených úložišť.
@@ -1352,6 +1411,7 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
 
         Tato zásada se používá k registraci cloudových zásad pro počítač. V systému Windows ji lze nastavit pomocí registru nebo objektů zásad skupiny, na počítačích Mac pomocí souboru plist a v Linuxu pomocí souboru JSON se zásadami.</translation>
 <translation id="3660562134618097814">Přenos souborů cookie od poskytovatele identity SAML při přihlášení</translation>
+<translation id="3668151900457104753">Odinstalovat rozšíření na seznamu zakázaných</translation>
 <translation id="3701121231485832347">Ovládá nastavení specifická pro zařízení <ph name="PRODUCT_OS_NAME" /> spravovaná službou <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Podpora pole s jedním řádkem byla ukončena. Začněte používat níže uvedené textové pole s více řádky.)</translation>
 <translation id="3709266154059827597">Konfigurace seznamu zakázaných položek instalace rozšíření</translation>
@@ -1433,6 +1493,16 @@ Tuto zásadu lze nastavit pouze jako doporučenou. Zásada slouží k přesunut
           Pokud ji ponecháte nenastavenou, softwarová klávesnice bude ve výchozím nastavení zakázána, ale uživatelé ji budou moci kdykoli povolit.</translation>
 <translation id="382476126209906314">Konfigurovat předponu TalkGadget pro hostitele vzdáleného přístupu</translation>
 <translation id="3824972131618513497">Ovládá nastavení související s řízením spotřeby a restartováním.</translation>
+<translation id="3826475866868158882">Služby určování polohy Google povoleny</translation>
+<translation id="3831054243924627613">Tato zásada ovládá počáteční stav zálohování a obnovení systému Android.
+
+      Když tato zásada není nakonfigurovaná nebo je nastavená na hodnotu <ph name="BR_DISABLED" />, je zálohování a obnovení systému Android v počátečním stavu vypnuté.
+
+      Když je tato zásada nastavená na hodnotu <ph name="BR_ENABLED" />, je zálohování a obnovení systému Android v počátečním stavu zapnuté.
+
+      Když je tato zásada nastavená na hodnotu <ph name="BR_UNDER_USER_CONTROL" />, zobrazí se uživateli dotaz, zda chce zálohování a obnovení systému Android používat. Pokud uživatel zálohování a obnovení zapne, data aplikací Android se budou nahrávat na zálohovací servery Android a při opětovných instalacích kompatibilních aplikací se z nich budou obnovovat.
+
+      Upozorňujeme, že tato zásada ovládá pouze stav zálohování a obnovení systému Android při počátečním nastavení. Uživatel následně může otevřít nastavení systému Android a zálohování a obnovení systému Android zapnout nebo vypnout.</translation>
 <translation id="3831376478177535007">Když je toto nastavení aktivováno, povoluje <ph name="PRODUCT_NAME" /> důvěřovat certifikátům vydaným pomocí operací starší infrastruktury PKI společnosti Symantec (pokud je jinak možné je úspěšně ověřit a propojit s uznávaným certifikátem CA).
 
       Upozorňujeme, že tato zásada závisí na tom, zda operační systém stále uznává certifikáty ze starší infrastruktury společnosti Symantec. Jestliže při aktualizaci operačního systému dojde ke změně zpracování takových certifikátů operačním systémem, tato zásada již nebude fungovat. Tato zásada je určena jako dočasné řešení, které má podnikům poskytnout více času k přechodu ze starších certifikátů Symantec na jiné. Kolem 1. ledna 2019 bude odstraněna.
@@ -1514,6 +1584,15 @@ Existující nepřihlášené profily po zapnutí této zásady budou uzamčeny 
 
           Pokud má tato zásada hodnotu False nebo není nastavena, uživatelé budou moci přenášet soubory na Disk Google.</translation>
 <translation id="3915395663995367577">Adresa URL souboru PAC proxy serveru</translation>
+<translation id="3920892052017026701">Nastavuje vlastní úroveň nabití baterie pro zahájení nabíjení v procentech.
+
+          Jakmile se baterie vybije na vlastní úroveň pro zahájení nabíjení, začne se nabíjet.
+
+          Hodnota DeviceBatteryChargeCustomStartCharging musí být menší než hodnota DeviceBatteryChargeCustomStopCharging.
+
+          Tato zásada se používá jen v případě, že je zásada DeviceBatteryChargeMode nastavená na možnost Vlastní.
+
+          Pokud tato zásada není nakonfigurovaná nebo je ponechána nenastavená, použije se standardní režim nabíjení baterie.</translation>
 <translation id="3925377537407648234">Nastavit rozlišení a měřítko obrazovky</translation>
 <translation id="3939893074578116847">Odesílá na server správy síťové pakety ke sledování stavu online, což serveru umožňuje zjistit, zda zařízení není offline.
 
@@ -1643,6 +1722,7 @@ K dispozici jsou také samostatná nastavení pro napájení ze sítě a z bater
 <translation id="4150201353443180367">Displej</translation>
 <translation id="4157003184375321727">Hlásit verzi operačního systému a firmwaru</translation>
 <translation id="4157594634940419685">Povolit přístup k nativním tiskárnám CUPS</translation>
+<translation id="4160962198980004898">Zdroj adresy MAC zařízení při vložení do doku</translation>
 <translation id="4163705126749612234">Slouží ke konfiguraci povinných názvů klientských domén, které budou vyžadovány u klientů vzdáleného přístupu, a brání uživatelům, aby je změnili.
 
           Pokud je toto nastavení aktivováno, k hostiteli se budou moci připojit pouze klienti ze zadaných domén.
@@ -1719,6 +1799,7 @@ Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, j
       Upozorňujeme, že zásada obsahující ID aplikace nutně neznamená, že uživatel bude moci určitou aplikaci povolit jako aplikaci k přidávání poznámek na obrazovku uzamčení. Například v Chromu verze 61 jsou dostupné aplikace navíc omezeny ze strany platformy.
 
       Pokud zásada nebude nastavena, nebudou na základě zásady uplatňována žádná omezení ohledně sady aplikací, které uživatel může na obrazovce uzamčení povolit.</translation>
+<translation id="4313767483634435271">Adresa MAC zařízení pro dok</translation>
 <translation id="4322842393287974810">Povolit automaticky spouštěné terminálové aplikaci s nulovým zpožděním ovládat verzi systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Přidat na hlavní panel systému tlačítko pro odhlášení</translation>
 <translation id="4332177773549877617">Protokolovat události při instalaci aplikací pro Android</translation>
@@ -1750,6 +1831,7 @@ Je-li tato zásada použita, bude mít uživatel k dispozici pouze tiskárny, j
 <translation id="4360826270668210664">Pokud je tato zásada nastavená, bude připojení hostitele vzdáleného přístupu vyžadovat, aby ověřovaní klienti získali token ověření z této adresy URL. Je třeba používat spolu se zásadou RemoteAccessHostTokenValidationUrl.
 
           Tato funkce je v současné době na straně serveru zakázaná.</translation>
+<translation id="4363057787588706121">Povolit sloučení zásad se seznamy z různých zdrojů</translation>
 <translation id="436581050240847513">Odesílat informace o síťových rozhraních zařízení</translation>
 <translation id="4372704773119750918">Nepovolí podnikovým uživatelům být součástí multiprofilu (primárního či sekundárního)</translation>
 <translation id="4377599627073874279">Povolit všem webům zobrazování všech obrázků</translation>
@@ -1923,6 +2005,7 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 <translation id="4826326557828204741">Akce, která bude provedena, pokud bude dosaženo limitu doby nečinnosti při provozu na baterii</translation>
 <translation id="4832852360828533362">Hlášení uživatelů a zařízení</translation>
 <translation id="4834526953114077364">Bude odstraněno tolik uživatelů, od jejichž posledního použití uplynula nejdelší doba, kolik bude potřeba k uvolnění dostatečného množství volného místa. Odstraněni budou pouze uživatelé, kteří se během posledních 3 měsíců nepřihlásili.</translation>
+<translation id="4835622243021053389">Povolit ověřování PovoliNTLMv2.</translation>
 <translation id="4858735034935305895">Povolení režimu celé obrazovky</translation>
 <translation id="4861767323695239729">Nakonfigurovat metody zadávání povolené v uživatelské relaci</translation>
 <translation id="487460824085252184">Migrovat automaticky, nežádat uživatele o souhlas.</translation>
@@ -2041,6 +2124,11 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
 
       Na rozdíl od zásady <ph name="URL_LIST_POLICY_NAME" /> fungují pravidla oběma směry, tj. když je přítomen a zapnut doplněk prohlížeče Internet Explorer, tato zásada také určuje, zda má <ph name="IE_PRODUCT_NAME" /> tyto adresy URL otevírat v prohlížeči <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Zapnout spuštění při připojení k napájení ze sítě</translation>
+<translation id="5131211790949066746">Umožňuje sloučení zásad se seznamy pro instalaci rozšíření <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> a <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
+
+      Pokud aktivujete toto nastavení, hodnoty ze zásady platformy pro počítač, cloudové zásady pro počítač a zásady platformy pro uživatele se sloučí do jednoho seznamu a namísto použití hodnot z jednoho zdroje s nejvyšší prioritou se použijí jako celek.
+
+      Pokud toto nastavení deaktivujete nebo ponecháte nenastavené, použijí se pouze položky seznamu ze zdroje s nejvyšší prioritou. Všechny ostatní zdroje budou uvedeny jako konflikty a budou ignorovány.</translation>
 <translation id="5141670636904227950">Nastavení výchozího typu lupy, který je aktivován na přihlašovací obrazovce</translation>
 <translation id="5142301680741828703">Následující vzory adres URL vykreslovat vždy v pluginu <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Umožňuje nastavit dodatečné parametry, které plugin <ph name="PRODUCT_FRAME_NAME" /> při spouštění aplikace <ph name="PRODUCT_NAME" /> použije.
@@ -2162,6 +2250,7 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
 
       Pokud tato zásada není nastavena nebo je nastavena na prázdný řetězec nebo neplatný rozsah portů, má rozhraní WebRTC povoleno používat libovolný dostupný místní port UDP.</translation>
 <translation id="5290940294294002042">Určete seznam pluginů, které uživatel může povolit nebo zakázat</translation>
+<translation id="5306186200045823863">Povolit důvěřování trust in starší infrastruktuře PKI společnosti Symantec</translation>
 <translation id="5307432759655324440">Dostupnost anonymního režimu</translation>
 <translation id="5318185076587284965">Povolit použití předávacích serverů hostitelem vzdáleného přístupu</translation>
 <translation id="5323128137188992869">Umožňuje odesílání obsahu do zařízení pomocí služby <ph name="PRODUCT_NAME" />.
@@ -2258,6 +2347,7 @@ Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledá
       Pokud si pravidla vzájemně odporují, použije <ph name="PRODUCT_NAME" /> to nejkonkrétnější z nich.</translation>
 <translation id="5475361623548884387">Povolit tisk</translation>
 <translation id="547601067149622666">Nepovolovat reklamy na webech s rušivými reklamami</translation>
+<translation id="5483065054530244863">Povolit certifikáty podepsané algoritmem SHA-1 vydané místními kotvami důvěry</translation>
 <translation id="5483777239978559943">Podpora této zásady byla ukončena. K určení dostupnosti pluginu Flash použijte zásadu <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> a k určení, zda se mají soubory PDF otevírat v integrovaném prohlížeči souborů PDF, použijte zásadu <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" />.
 
       Určuje seznam pluginů, které uživatel v prohlížeči <ph name="PRODUCT_NAME" /> může povolit nebo zakázat.
@@ -2370,6 +2460,17 @@ Pokud tuto zásadu ponecháte nenastavenou, uživatelé budou moci nastavit auto
           Pokud tuto zásadu aktivujete nebo ji nenastavíte, uživatelé budou ve správci hesel moci zobrazit uložená hesla jako čitelný text.</translation>
 <translation id="5620392548325769024">Aktivovat při prvním spuštění prohlížeče po přechodu na vyšší verzi OS zobrazení uvítací stránky</translation>
 <translation id="5630352020869108293">Obnovit poslední relaci</translation>
+<translation id="5643906875497889108">Určuje, jaké typy aplikací nebo rozšíření lze instalovat, a omezuje přístup k běhovému prostředí.
+
+          Toto nastavení uvádí seznam povolených rozšíření nebo aplikací, které lze nainstalovat do prohlížeče <ph name="PRODUCT_NAME" />, a hostitelů, se kterými mohou komunikovat. Hodnota představuje seznam řetězců. Musí se jednat o řetězce z následujícího výčtu: extension, theme, user_script, hosted_app, legacy_packaged_app, platform_app. Další informace o těchto typech naleznete v dokumentaci k rozšířením prohlížeče <ph name="PRODUCT_NAME" />.
+
+          Tato zásada se vztahuje i na rozšíření a aplikace, jejichž instalace je vynucena prostřednictvím zásady ExtensionInstallForcelist.
+
+          Pokud je toto nastavení nakonfigurováno, typy rozšíření a aplikací, které nejsou na seznamu uvedeny, nebudou nainstalovány.
+
+          Pokud je toto nastavení ponecháno nenakonfigurované, žádná omezení týkající se přijatelných typů rozšíření a aplikací vynucována nebudou.
+
+          Ve verzích nižších než 75 není podporováno použití ID rozšíření oddělených čárkami a bude přeskočeno. Zbytek zásady se použije.</translation>
 <translation id="5645779841392247734">Povolit soubory cookie na těchto stránkách</translation>
 <translation id="5689430183304951538">Výchozí velikost stránky tisku</translation>
 <translation id="5693469654327063861">Povolit migraci dat</translation>
@@ -2409,6 +2510,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, prohlíž
 <translation id="5765780083710877561">Popis:</translation>
 <translation id="5770738360657678870">Verze pro vývojáře (mohou být nestabilní)</translation>
 <translation id="5774856474228476867">Adresa URL vyhledávání výchozího poskytovatele vyhledávání</translation>
+<translation id="5775235485119094648">Nabít baterii, když je v určitém rozmezí.</translation>
 <translation id="5776485039795852974">Dotázat se vždy, když se webové stránky snaží zobrazit oznámení na ploše</translation>
 <translation id="5781412041848781654">Určuje knihovnu GSSAPI, která bude použita pro ověření v protokolu HTTP. Nastavit lze buď pouze název knihovny, nebo celou cestu.
 
@@ -2476,6 +2578,7 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 <translation id="5893553533827140852">Pokud je toto nastavení povoleno, žádosti gnubby o ověření budou zprostředkovány přes připojení ke vzdálenému hostiteli.
 
           Pokud je toto nastavení zakázáno nebo není nakonfigurováno, žádosti gnubby o ověření nebudou zprostředkovány.</translation>
+<translation id="5897913798715600338">Nabíjet baterii technologií rychlého nabíjení.</translation>
 <translation id="5898486742390981550">Když je přihlášeno několik uživatelů, může aplikace Android používat pouze primární uživatel.</translation>
 <translation id="5900196529149231477">
       Tato zásada platí pro přihlašovací obrazovku. Prostudujte si také zásadu <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, která platí pro uživatelskou relaci. Obě zásady doporučujeme nastavit na stejnou hodnotu. Pokud se hodnoty neshodují, může při zahajování uživatelské návštěvy dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
@@ -2484,12 +2587,14 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
       Pokud tuto zásadu ponecháte nenakonfigurovanou, použije se pro přihlašovací obrazovku výchozí nastavení platformy týkající se izolace webů.
       </translation>
 <translation id="5901427587865226597">Pouze oboustranný tisk</translation>
+<translation id="5905473632148429217">Zapnout online kontroly OCSP/CRL</translation>
 <translation id="5906199912611534122">Umožňuje aktivovat nebo deaktivovat omezení rychlosti sítě.
       Toto nastavení platí pro všechny uživatele a všechna rozhraní v zařízení. Jakmile je omezení nastaveno,
       zůstane aktivní, dokud nebude deaktivováno změnou této zásady.
 
       Je-li tato zásada nastavena na hodnotu False, omezení je vypnuto.
       Je-li nastavena na hodnotu True, bude systém omezen tak, aby bylo dosaženo zadaných rychlostí nahrávání a stahování (v kilobitech za sekundu).</translation>
+<translation id="591088232153082363">Nabíjet baterii adaptivně podle vzorce využití baterie.</translation>
 <translation id="5921713479449475707">Povolení stahování automatických aktualizací prostřednictvím protokolu HTTP</translation>
 <translation id="5921888683953999946">Nastavuje výchozí stav funkce usnadnění přístupu pomocí velkého kurzoru na přihlašovací obrazovce.
 
@@ -2511,6 +2616,7 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 <translation id="5950205771952201658">Vzhledem k tomu, že online kontroly zamítnutých certifikátů nepřinášejí žádné efektivní bezpečnostní výhody a také snadno selhávají, jsou v prohlížeči <ph name="PRODUCT_NAME" /> verze 19 a vyšší ve výchozím nastavení deaktivovány. Nastavíte-li tuto zásadu na hodnotu True, obnoví se předchozí chování a budou prováděny online kontroly OCSP/CRL.
 
 Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> nebude u verzí <ph name="PRODUCT_NAME" /> 19 a novějších provádět online kontroly zamítnutých certifikátů.</translation>
+<translation id="5961137303188584693">Adresa MAC NIC vestavěného v zařízení</translation>
 <translation id="5966615072639944554">Rozšíření, která mohou používat rozhraní API vzdáleného ověření identity</translation>
 <translation id="5983708779415553259">Výchozí chování pro stránky, které nejsou součástí žádného obsahového balíčku</translation>
 <translation id="5997543603646547632">Ve výchozím nastavení použít 24hodinový formát</translation>
@@ -2601,6 +2707,17 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, <ph name=
 <translation id="6111936128861357925">Povolit hru s dinosaurem</translation>
 <translation id="6114416803310251055">zastaralé</translation>
 <translation id="6133088669883929098">Povolit všem webům generovat klíče</translation>
+<translation id="6136537398661737682">Tato zásada ovládá počáteční stav služeb určování polohy Google.
+
+      Když tato zásada není nakonfigurovaná nebo je nastavená na možnost <ph name="GLS_DISABLED" />, služby určování polohy Google jsou v počáteční stavu vypnuté.
+
+      Když je tato zásada nastavená na možnost <ph name="GLS_ENABLED" />, jsou služby určování polohy Google v počátečním stavu zapnuté.
+
+      Když je tato zásada nastavená na možnost <ph name="GLS_UNDER_USER_CONTROL" />, zobrazí se uživateli dotaz, zda chce služby určování polohy Google používat. Pokud tyto služby budou zapnuté, aplikace pro Android pomocí nich budou moci zjišťovat polohu zařízení, a také se budou odesílat anonymní údaje o poloze do Googlu.
+
+      Tato zásada ovládá pouze stav služeb určování polohy Google při počátečním nastavení. Uživatel následně může otevřít nastavení systému Android a služby určování polohy Google zapnout nebo vypnout.
+
+      Když je zásada <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> nastavená na možnost <ph name="BLOCK_GEOLOCATION_SETTING" />, tato zásada se ignoruje a služby určování polohy Google jsou vždy vypnuté.</translation>
 <translation id="6141402445226505817">Vždy používat hrubé zjišťování časového pásma</translation>
 <translation id="6145799962557135888">Umožňuje nastavit seznam vzorů adres URL stránek, kterým je povoleno spouštět JavaScript.
 
@@ -2663,9 +2780,17 @@ Klíč platformy určený k podnikovému použití může rozšíření k podepi
 Je-li zásada deaktivovaná, k importu dat automatického vyplňování formulářů nedojde.
 
 Není-li zásada nastavena, může se uživatelům zobrazit výzva, zda chtějí data importovat, nebo může import probíhat automaticky.</translation>
+<translation id="6221175752766085998">Povolit certifikáty vydané místními kotvami důvěryhodnosti bez rozšíření subjectAlternativeName</translation>
 <translation id="6224304369267200483">Adresy URL/domény s automatickým povolením k přímé atestaci bezpečnostních klíčů</translation>
 <translation id="6233173491898450179">Nastavit adresář pro stahování</translation>
 <translation id="6244210204546589761">Adresy URL otevírané při spuštění</translation>
+<translation id="6255387031094435995">Umožňuje sloučení vybraných zásad, když pocházejí z různých zdrojů se stejným rozsahem a úrovní.
+
+        Pokud je zásada v seznamu a dojde ke konfliktu mezi dvěma zdroji se stejným rozsahem a úrovní, sloučí se hodnoty do nového seznamu zásad.
+
+        Pokud je zásada v seznamu a dojde ke konfliktu mezi dvěma zdroji, ale také mezi různými rozsahy či úrovněmi, použije se zásada s nejvyšší prioritou.
+
+        Pokud zásada není v seznamu a dojde ke konfliktu mezi zdroji, rozsahy nebo úrovněmi použije se zásada s nejvyšší prioritou.</translation>
 <translation id="6258193603492867656">Určuje, zda by měl vygenerovaný hlavní název služby (SPN) protokolu Kerberos obsahovat nestandardní port. 
    
             Pokud toto nastavení aktivujete a bude zadán nestandardní port (tedy jiný port než 80 nebo 443), bude zahrnut do vygenerovaného hlavního názvu služby (SPN) protokolu Kerberos.
@@ -2866,6 +2991,7 @@ Pokud bude tato zásada ponechána nenastavená nebo bude seznam prázdný, bude
 <translation id="6757438632136860443">Umožňuje nastavit seznam vzorů adres URL webů, které mají povoleno spouštět plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Pokud tuto zásadu nenastavíte, použije se pro všechny weby globální výchozí hodnota buď ze zásady DefaultPluginsSetting (pokud je nastavena), nebo z osobní konfigurace uživatele.</translation>
+<translation id="6757613329154374267">Zálohování a obnovení povoleno</translation>
 <translation id="6762235610019366960">Umožňuje ovládat prezentaci propagačního nebo vzdělávacího obsahu na celou kartu v prohlížeči <ph name="PRODUCT_NAME" />.
 
       Pokud tato zásada není nakonfigurována nebo je povolena (nastavena na hodnotu true), může <ph name="PRODUCT_NAME" /> uživatelům ukazovat obsah na celou kartu s informacemi o službách.
@@ -2888,6 +3014,7 @@ Pokud bude tato zásada ponechána nenastavená nebo bude seznam prázdný, bude
       Řetězec může obsahovat proměnné ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR} a ${MACHINE_NAME}, které se v zařízení nahradí hodnotami, čímž vznikne název hostitele. Po nahrazení by měl vzniknout platný název hostitele (odpovídající sekci 3.1 specifikace RFC 1035).
 
       Pokud tato zásada není nastavena nebo název hostitele po nahrazení nebude platný, v požadavku DHCP žádný název hostitele nastaven nebude. </translation>
+<translation id="6833988859168635883">Spuštění, domovská stránka a stránka Nová karta</translation>
 <translation id="6835883744948188639">Zobrazovat uživateli opakovaně výzvu s oznámením, že je doporučen restart</translation>
 <translation id="6837480141980366278">Určuje, zda se v prohlížeči <ph name="PRODUCT_NAME" /> používá integrovaný klient DNS.
 
@@ -2996,6 +3123,17 @@ Tato zásada se používá pouze v případě, že jsou povoleny aplikace pro L
 
       Když se má obrazovka ztmavit, chytrý model ztmavování posoudí, zda by se ztmavení obrazovky nemělo odložit. Pokud chytrý model ztmavování ztmavení obrazovky odloží, prodlouží se tím doba do ztmavení obrazovky. Prodlevy vypnutí obrazovky, uzamčení obrazovky a nečinnosti se v tomto případě upraví tak, aby mezi nimi a prodlevou ztmavení zůstala původně nakonfigurovaná doba.
       Pokud je tato zásada nastavená na hodnotu True nebo není nastavená, bude chytrý model ztmavování zapnut a bude mít povoleno prodloužit dobu do ztmavení obrazovky. Pokud je tato zásada nastavená na hodnotu False, chytrý model ztmavování na ztmavení obrazovky nebude mít vliv.</translation>
+<translation id="6967394885063085697">Zapne zásadu řízení spotřeby, pro rozšířené režimy nabíjení baterie.
+
+          Rozšířený režim nabíjení baterie uživatelům umožňuje maximalizovat životnost baterie. V rozšířeném režimu nabíjení bude systém mimo pracovní dobu používat standardní nabíjecí algoritmus a další techniky k maximalizaci životnosti baterie. V pracovní době se bude používat expresní nabíjení. Pomocí expresního nabíjení lze baterii nabít rychleji, to znamená, že bude dříve úplně nabitá. Doba nejintenzivnějšího používání systému se pro každý den zadává pomocí času zahájení a trvání.
+
+          Pokud je tato zásada nastavená na hodnotu true a je nastavená také zásada DeviceAdvancedBatteryChargeModeDayConfig, bude rozšířený režim nabíjení baterie povolen vždy (pokud ho zařízení podporuje).
+
+          Pokud je tato zásada nastavená na hodnotu false, rozšířený režim nabíjení baterie bude vždy vypnutý.
+
+          Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
+
+          Pokud tuto zásadu ponecháte nenastavenou, bude rozšířený režim nabíjení baterie vypnutý a uživatel jej nebude moci zapnout.</translation>
 <translation id="6972540544240464302">Vybrat konfiguraci plánovače úloh</translation>
 <translation id="6979158407327259162">Disk Google</translation>
 <translation id="6994082778848658360">Udává, jak lze integrovaný bezpečnostní hardwarový prvek používat k dvoufaktorovému ověření, pokud je s touto funkcí kompatibilní. Ke zjištění fyzické přítomnosti uživatele se používá vypínač počítače.
@@ -3073,6 +3211,17 @@ Tato zásada se používá pouze v případě, že jsou povoleny aplikace pro L
       Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé je nebudou moci změnit ani přepsat.
 
       Pokud tuto zásadu ponecháte nenastavenou, uživatel bude moci zvolit, zda výzvu k odemknutí zařízení zadáním hesla chce zobrazovat, či nikoliv.</translation>
+<translation id="7107148737865880402">Zapne zásadu řízení spotřeby pro sdílení energie přes USB.
+
+          Některá zařízení mají speciální port USB označený obrázkem blesku nebo baterie, pomocí kterého lze ze systémové baterie nabíjet zařízení, jako je mobilní telefon. Tato zásada určuje nabíjecí chování tohoto portu v době, kdy je systém v režimu spánku nebo vypnutý. Tato zásada nemá vliv na jiné porty USB ani na nabíjecí chování v době, kdy je systém aktivní.
+
+          Když je zařízení aktivní, bude port USB energii poskytovat vždy.
+
+          Když je zařízení v režimu spánku a tato zásada nastavená na hodnotu true, bude se do portu USB dodávat energie jen v případě, že je zařízení připojené do zásuvky nebo že je baterie nabitá na více než 50 %. Jinak se energie dodávat nebude.
+
+          Když je zařízení vypnuté a tato zásada nastavená na hodnotu true, bude se do portu USB dodávat energie jen v případě, že je zařízení připojené do zásuvky. Jinak se energie dodávat nebude.
+
+          Pokud tuto zásadu ponecháte nenastavenou, bude zapnutá a uživatel ji nebude moci vypnout.</translation>
 <translation id="7115494316187648452">Určuje, zda je proces <ph name="PRODUCT_NAME" /> spuštěn při přihlášení do operačního systému a zda pokračuje v běhu i po uzavření posledního okna prohlížeče (což umožňuje, aby zůstaly aktivní aplikace na pozadí i aktuální návštěvy prohlížení včetně všech souborů cookie). Proces na pozadí zobrazuje ikonu na hlavním panelu systému, kde jej lze kdykoli zavřít.
 
 Pokud je tato zásada nastavena na hodnotu true, režim na pozadí je aktivován a uživatel jej nemůže ovládat v nastaveních prohlížeče.
@@ -3119,6 +3268,7 @@ Pokud tato zásada není nastavená, budou se do zařízení moci přihlašovat 
           Pokud je tato zásada nastavená na hodnotu true nebo není nastavená a zásada AllowWakeLocks není nastavená na hodnotu false, bude blokování přechodu obrazovky do režimu spánku při řízení spotřeby dodržováno.
 
           Pokud je tato zásada nastavená na hodnotu false, budou žádosti o blokování přechodu obrazovky do režimu spánku změněny na žádosti o blokování přechodu systému do režimu spánku.</translation>
+<translation id="7177857088692019405">Rychlé odemknutí</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Typy připojení, pro které jsou povoleny aktualizace</translation>
 <translation id="7194407337890404814">Název výchozího poskytovatele vyhledávání</translation>
@@ -3182,6 +3332,7 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 <translation id="7273823081800296768">Pokud je toto nastavení aktivní nebo není nakonfigurováno, uživatelé mohou zapnout párování klientů a hostitelů při připojování. Pak nebude nutné zadávat pokaždé kód PIN.
 
           Pokud je toto nastavení deaktivováno, tato funkce nebude dostupná.</translation>
+<translation id="7274077256421167535">Povolit sdílení energie přes USB</translation>
 <translation id="7275334191706090484">Spravované záložky</translation>
 <translation id="7291084543582732020">Pokud toto nastavení aktivujete, uživatelé budou moci používat funkci Smart Lock (za předpokladu, že budou splněny požadavky funkce).
 
@@ -3195,6 +3346,7 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 
           Tato zásada platí pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="7302043767260300182">Prodleva uzamčení obrazovky při napájení ze sítě</translation>
+<translation id="7305262223970835999">Povoluje stránku pro změnu hesla během relace pro uživatele SAML.</translation>
 <translation id="7311458740754205918">Pokud je tato zásada nastavena na hodnotu True nebo je ponechána nenastavená, na stránce Nová karta se mohou zobrazovat návrhy obsahu na základě historie procházení, zájmů nebo polohy uživatele.
 
       Pokud je tato zásada nastavena na hodnotu False, automaticky generované návrhy obsahu se na stránce Nová karta nezobrazují.</translation>
@@ -3321,6 +3473,15 @@ Pokud je tato zásada nastavena na hodnotu false, použití protokolu QUIC je za
       Pokud pro tuto zásadu nastavíte hodnotu 0, bude použita výchozí velikost mezipaměti, ale uživatel ji nebude moci změnit.
 
       Pokud tuto zásadu nenastavíte, bude použita výchozí velikost a uživatel ji bude moci přepsat pomocí příznaku  „--disk-cache-size“.</translation>
+<translation id="759389052790680884">Nastavit vlastní procento nabití baterie, při němž se má nabíjení zastavit.
+
+          Když baterie dosáhne vlastní hodnoty úrovně nabití pro zastavení nabíjení, přestane se nabíjet.
+
+          Hodnota DeviceBatteryChargeCustomStartCharging musí být menší než hodnota DeviceBatteryChargeCustomStopCharging.
+
+          Tato zásada se používá jen v případě, že je zásada DeviceBatteryChargeMode nastavená na možnost Vlastní.
+
+          Pokud tato zásada není nakonfigurovaná nebo je ponechána nenastavená, použije se standardní režim nabíjení baterie.</translation>
 <translation id="759957074386651883">Nastavení Bezpečného prohlížení</translation>
 <translation id="7604169113182304895">Aplikace Android se mohou samy rozhodnout, zda se tímto seznamem budou řídit. Nelze to u nich vynutit.</translation>
 <translation id="7612157962821894603">Celosystémové příznaky, které se použití při spuštění prohlížeče <ph name="PRODUCT_NAME" /></translation>
@@ -3398,6 +3559,15 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 <translation id="7712109699186360774">Dotázat se vždy, když se web snaží získat přístup ke kameře nebo mikrofonu</translation>
 <translation id="7713608076604149344">Omezení stahování</translation>
 <translation id="7715711044277116530">Procento prodloužení prodlevy ztmavení obrazovky v režimu prezentace</translation>
+<translation id="7716781462866245042">Nastavit denní konfiguraci rozšířeného režimu nabíjení baterie.
+
+          Tato zásada se používá jen v případě, že je zásada DeviceAdvancedBatteryChargeModeEnabled nastavená na hodnotu true.
+
+          Pokud tato zásada není nakonfigurovaná nebo je ponechána nenastavená, bude rozšířený režim nabíjení baterie vždy vypnutý.
+
+          Poznámka: Hodnota <ph name="CHARGE_START_TIME_FIELD_NAME" /> musí být menší než hodnota <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+
+          Poznámka: V poli <ph name="MINUTE_FIELD_NAME" /> v polích <ph name="CHARGE_START_TIME_FIELD_NAME" /> a <ph name="CHARGE_END_TIME_FIELD_NAME" /> jsou povoleny tyto hodnoty: 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Konfiguruje funkce usnadnění přístupu v systému <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7724994675283793633">Tato zásada povolí protokol HTTP/0.9 na portech jiných než 80 pro HTTP a 443 pro HTTPS.
 
@@ -3469,6 +3639,7 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
       Určuje ID rozšíření, které se použije jako spořič obrazovky na přihlašovací obrazovce. Rozšíření musí být součásti balíčku AppPack, který je pro tuto doménu nakonfigurován v rámci zásady DeviceAppPack.</translation>
 <translation id="7882857838942884046">Deaktivace služby Google Sync způsobí, že zálohování a obnovení systému Android nebude fungovat správně.</translation>
 <translation id="7882890448959833986">Potlačit upozornění ohledně nepodporovaného operačního systému</translation>
+<translation id="7895553628261067384">Vzdálený přístup</translation>
 <translation id="7902255855035461275">Vzory v tomto seznamu budou porovnány s žádající adresou URL. Pokud bude nalezena shoda, přístup k zařízením pro záznam videa bude udělen bez zobrazení výzvy.
 
       POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veřejného terminálu.</translation>
@@ -3480,6 +3651,11 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 <translation id="7937491150792971922">Sloučit zásady se seznamy pro instalaci rozšíření z několika zdrojů</translation>
 <translation id="7937766917976512374">Povolit nebo zakázat záznam videa</translation>
 <translation id="7941975817681987555">Nepředvídat síťové akce u žádných síťových připojení</translation>
+<translation id="7952007677054834789">Konfiguruje stránky, které se mají načíst při spuštění, výchozí domovskou stránku a výchozí stránku Nová karta v prohlížeči <ph name="PRODUCT_NAME" /> a brání uživatelům ve změně těchto nastavení.
+
+      Nastavení domovské stránky uživatele jsou zcela uzamčena pouze v případě, že jako domovskou stránku nastavíte buď stránku Nová karta, nebo adresu URL, kterou zadáte. Pokud adresu URL domovské stránky nezadáte, uživatel bude moci domovskou stránku změnit na stránku Nová karta tím, že zadá adresu „chrome://newtab“.
+
+      Zásada „Adresy URL otevírané při spuštění“ se projeví pouze v případě, že v části „Akce při spuštění“ zvolíte „Otevřít seznam adres URL“.</translation>
 <translation id="7952958573604504839">Ve verzi M48 byla podpora této zásady ukončena a byla nahrazena zásadou <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" />, ve verzi M54 tato zásada byla odstraněna.
 
       Aktivuje v prohlížeči <ph name="PRODUCT_NAME" /> předvídání síťových akcí a zabraňuje uživatelům ve změně tohoto nastavení.
@@ -3622,6 +3798,7 @@ Pokud ji ponecháte nenastavenou, režim vysokého kontrastu bude ve výchozím 
 <translation id="8176035528522326671">Povolit firemnímu uživateli být pouze primárním uživatelem s více profily (výchozí chování pro uživatele spravované firmou)</translation>
 <translation id="8214600119442850823">Konfiguruje správce hesel.</translation>
 <translation id="8217516105848565518">Podpora této zásady byla ukončena. Použijte namísto ní zásadu RemoteAccessHostDomainList.</translation>
+<translation id="8244171102276095471">Povolit v TLS šifrovací sady RC4</translation>
 <translation id="8244525275280476362">Maximální zpoždění načítání po zneplatnění zásady</translation>
 <translation id="8256688113167012935">Řídí, jaký název účtu systém <ph name="PRODUCT_OS_NAME" /> zobrazí na přihlašovací obrazovce pro odpovídající místní účet v zařízení.
 
@@ -3662,6 +3839,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, uživatel
 <translation id="8312129124898414409">Umožňuje nastavit, zda weby mohou generovat klíče. Generování klíčů je možné všem webům buď povolit, nebo zakázat.
 
 Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji bude moci změnit.</translation>
+<translation id="8320149248919453401">Režim nabíjení baterie</translation>
 <translation id="8329984337216493753">Tato zásada je aktivní pouze v režimu pro obchody.
 
       Pokud je určena zásada DeviceIdleLogoutTimeout, určuje tato zásada, jak dlouho před odhlášením se bude uživateli zobrazovat okno s upozorněním a časovačem.
@@ -3811,6 +3989,7 @@ Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjisti
       Pokud tuto zásadu nenastavíte, použije se pro systém <ph name="PRODUCT_OS_NAME" /> výchozí doba 345 600 000 milisekund (čtyři dny) a pro prohlížeč <ph name="PRODUCT_NAME" /> 604 800 000 milisekund (jeden týden).</translation>
 <translation id="8685024486845674965">Ochrana hesla – upozornění je spouštěno opětovným použitím hesla</translation>
 <translation id="8693243869659262736">Použít integrovaného klienta DNS</translation>
+<translation id="8698286761337647563">Kolik dní předem mají být uživatelé SAML informováni o tom, že brzy vyprší platnost jejich hesla</translation>
 <translation id="8703488928438047864">Nahlásit stav panelu</translation>
 <translation id="8703872185032220081">Nastavuje denní konfiguraci režimu napájení Peak Shift.
 
@@ -3863,6 +4042,7 @@ Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjisti
       Pokud je toto nastavení vypnuté nebo není nastavené, bude služba pro ochranu hesel uživatele za účelem změny hesla odesílat na adresu https://myaccounts.google.com.
       Tato zásada je k dispozici jen v instancích systému Windows, které jsou připojené k doméně <ph name="MS_AD_NAME" />, nebo v instancích systému Windows 10 Pro nebo Enterprise, které jsou zaregistrované ke správě zařízení.</translation>
 <translation id="8798099450830957504">Výchozí</translation>
+<translation id="8800453707696044281">Nastavit vlastní procento nabití baterie, při němž se má zastavit nabíjení</translation>
 <translation id="8801680448782904838">Oznamovat uživateli, že je doporučen nebo vyžadován restart prohlížeče nebo zařízení</translation>
 <translation id="8818173863808665831">Oznámí zeměpisnou polohu zařízení.
 
@@ -3974,6 +4154,11 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
       Tato zásada má vliv pouze na uživatele, kteří provedli ověření pomocí technologie SAML.
 
       Hodnota zásady se zadává v sekundách.</translation>
+<translation id="9018338365267278833">Tato zásada odstraní rozšíření uvedená v zásadě <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> a rozšíření uvedená v zásadě <ph name="EXTENSION_SETTINGS_POLICY_NAME" />, která mají režim instalace nastavený na blokování. Vymaže při tom také místní data uživatele.  Informace o tom, co se může stát s daty uživatele, která nejsou uložena místně, najdete v zásadách ochrany soukromí nebo v zásadách uchovávání dat rozšíření.
+
+      Když je zásada nastavená na možnost Aktivováno a v zařízení již jsou nainstalována některá rozšíření z výše uvedených seznamů, budou z počítače zcela odstraněna (včetně místních dat uživatele).
+
+      Když je tato zásada nastavená na možnost Deaktivováno nebo je ponechána nenastavená a v zařízení již jsou nainstalována některá rozšíření z výše uvedených seznamů (uvedená v seznamu zakázaných v zásadě <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />), budou na počítači zakázána, ale neodinstalují se.</translation>
 <translation id="9027787254195333560">Tato zásada umožňuje nakonfigurovat obrázek avatara, který na přihlašovací obrazovce představuje uživatele. Zásadu nastavíte zadáním adresy URL, ze které systém <ph name="PRODUCT_OS_NAME" /> může obrázek avatara stáhnout, a kryptografické hodnoty hash, která slouží k ověření integrity staženého obsahu. Obrázek musí být ve formátu JPEG a jeho velikost nesmí překročit 512 kB. Adresa URL musí být přístupná bez ověření.
 
       Obrázek avatara se stáhne a uloží do mezipaměti. Při každé změně adresy URL nebo hodnoty hash se stáhne znovu.

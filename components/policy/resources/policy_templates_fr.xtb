@@ -589,7 +589,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
           Si cette règle n'est pas définie, les quatre modèles seront utilisés.</translation>
 <translation id="2067011586099792101">Bloquer l'accès aux sites en dehors des packs de contenu</translation>
 <translation id="2073552873076775140">Autoriser la connexion à <ph name="PRODUCT_NAME" /></translation>
-<translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
+<translation id="2077129598763517140">Utiliser l'accélération matérielle si disponible</translation>
 <translation id="2077273864382355561">Délai d'arrêt de l'écran (batterie)</translation>
 <translation id="2082205219176343977">Configurer la version Chrome minimale autorisée de l'appareil.</translation>
 <translation id="209586405398070749">Version stable</translation>

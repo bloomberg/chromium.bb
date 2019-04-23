@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Aktivera och inaktivera Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Få tillgång till all aktivitet i sessionen</translation>
 <translation id="1608626060424371292">Ta bort den här användaren</translation>
-<translation id="1621499497873603021">Tid som återstår tills batteriet är tomt: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Säg en sökfråga</translation>
 <translation id="1658406695958299976">Det gick inte att verifiera lösenordet. Obs! Om du nyligen har bytt lösenord börjar det nya lösenordet att gälla först när du loggar ut. Använd det gamla lösenordet här.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> kvar</translation>
@@ -86,6 +85,7 @@
 <translation id="225680501294068881">Söker efter enheter ...</translation>
 <translation id="2268130516524549846">Bluetooth inaktiverad</translation>
 <translation id="2268813581635650749">Logga ut alla</translation>
+<translation id="2277103315734023688">Sök framåt</translation>
 <translation id="2292698582925480719">Skala på skärmen</translation>
 <translation id="2302092602801625023">Det här kontot hanteras av Family Link</translation>
 <translation id="2303600792989757991">Växla fönsteröversikt</translation>
@@ -138,7 +138,6 @@
 <translation id="2996462380875591307">Dockad skärmförstoring har aktiverats. Tryck på Ctrl + Sök + D igen om du vill inaktivera funktionen.</translation>
 <translation id="3000461861112256445">Monoljud</translation>
 <translation id="3009178788565917040">Utgång</translation>
-<translation id="3019353588588144572">Tid som återstår tills batteriet är fulladdat: <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Din profil som kontrollerad användare tas snart bort. Logga in och läs mer.</translation>
 <translation id="3055162170959710888">Du har använt den här enheten i <ph name="USED_TIME" /> i dag</translation>
 <translation id="3077734595579995578">skift</translation>
@@ -166,6 +165,7 @@
 <translation id="3371140690572404006">USB-C-enhet (främre porten på högra sidan)</translation>
 <translation id="3400357268283240774">Ytterligare inställningar</translation>
 <translation id="3413817803639110246">Det finns inget att se här ännu</translation>
+<translation id="343571671045587506">Redigera påminnelse</translation>
 <translation id="3445925074670675829">USB-C-enhet</translation>
 <translation id="3454224730401036106">Anslutningen har flyttats till ett säkrare nätverk</translation>
 <translation id="3465223694362104965">Ett annat tangentbord har anslutits till den här enheten sedan du loggade in senast. Försäkra dig om att det är ett tangentbord du litar på innan du använder det.</translation>
@@ -198,12 +198,14 @@
 <translation id="3900355044994618856">Sessionen avslutas om <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Ansluter till <ph name="NAME" /></translation>
 <translation id="394485226368336402">Ljudinställningar</translation>
+<translation id="3962859241508114581">Föregående spår</translation>
 <translation id="397105322502079400">Beräknar ...</translation>
 <translation id="3995138139523574647">USB-C-enhet (bakre porten på högra sidan)</translation>
 <translation id="4017989525502048489">Laserpekare</translation>
 <translation id="4042660782729322247">Skärmen delas</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Av för en app}other{Av för # appar}}</translation>
 <translation id="4072264167173457037">medelstark signal</translation>
+<translation id="4112140312785995938">Sök bakåt</translation>
 <translation id="4129129681837227511">Lås upp enheten för att ändra inställningen för aviseringar på låsskärmen</translation>
 <translation id="4146833061457621061">Spela upp musik</translation>
 <translation id="4181841719683918333">Språk</translation>
@@ -227,6 +229,7 @@
 <translation id="4421231901400348175">Dela kontroll över skärmen med <ph name="HELPER_NAME" /> via Fjärrhjälp.</translation>
 <translation id="4430019312045809116">Volym</translation>
 <translation id="4450893287417543264">Visa inte igen</translation>
+<translation id="4477350412780666475">Nästa spår</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Frånkopplade enheter</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: ansluter ...</translation>
@@ -364,7 +367,6 @@
 <translation id="6715542151869432661">Inga mobila enheter hittades.</translation>
 <translation id="6723839937902243910">Batteri</translation>
 <translation id="6751826523481687655">Prestandaspårning har aktiverats</translation>
-<translation id="6785414152754474415">Batteriet är fullt till <ph name="PERCENTAGE" /> % och laddas.</translation>
 <translation id="6790428901817661496">Spela</translation>
 <translation id="6803622936009808957">Det gick inte att spegla visningar eftersom inga upplösningar som stöds hittades. Utökat skrivbordsläge används i stället.</translation>
 <translation id="6820676911989879663">Ta en paus!</translation>
@@ -392,6 +394,7 @@
 <translation id="7222902781030499995">Stoppa timer</translation>
 <translation id="7256634071279256947">Mikrofonen på baksidan</translation>
 <translation id="726276584504105859">Dra hit för att dela upp skärmen</translation>
+<translation id="7262906531272962081">Skapa påminnelse</translation>
 <translation id="7303365578352795231">Svarar på en annan enhet.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Skärmtangentbord</translation>
@@ -519,7 +522,6 @@
 <translation id="9179259655489829027">Med den här funktionen kan du snabbt öppna en inloggad användare utan att behöva ange lösenordet. Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="9193626018745640770">Castar till en okänd mottagare</translation>
 <translation id="9194617393863864469">Logga in med en annan användare ...</translation>
-<translation id="9201131092683066720">Batteriet är fullt till <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Enhetligt skrivbordsläge avslutas</translation>
 <translation id="9215934040295798075">Ange bakgrund</translation>
 <translation id="921989828232331238">Din förälder har låst enheten för dagen</translation>

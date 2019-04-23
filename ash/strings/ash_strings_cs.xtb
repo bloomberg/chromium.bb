@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Přepnout Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Získat přístup k veškeré vaší aktivitě v této relaci</translation>
 <translation id="1608626060424371292">Odebrat tohoto uživatele</translation>
-<translation id="1621499497873603021">Čas zbývající do vybití baterie: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Zahájit hlasový dotaz</translation>
 <translation id="1658406695958299976">Je nám líto, vaše heslo se stále nedaří ověřit. Poznámka: Pokud jste heslo nedávno změnili, bude nové heslo možné použít až po odhlášení. Zde použijte staré heslo.</translation>
 <translation id="1677472565718498478">zbývající čas: <ph name="TIME" /></translation>
@@ -86,6 +85,7 @@
 <translation id="225680501294068881">Vyhledávání zařízení…</translation>
 <translation id="2268130516524549846">Rozhraní Bluetooth deaktivováno</translation>
 <translation id="2268813581635650749">Odhlásit vše</translation>
+<translation id="2277103315734023688">Přetočit dopředu</translation>
 <translation id="2292698582925480719">Měřítko displeje</translation>
 <translation id="2302092602801625023">Tento účet spravuje služba Family Link</translation>
 <translation id="2303600792989757991">Přepnutí přehledu okna</translation>
@@ -138,7 +138,6 @@
 <translation id="2996462380875591307">Zadokovaná lupa je zapnutá. Vypnete ji opětovným stisknutím kombinace kláves Ctrl+Hledat+D.</translation>
 <translation id="3000461861112256445">Zvuk mono</translation>
 <translation id="3009178788565917040">Výstup</translation>
-<translation id="3019353588588144572">Čas zbývající do úplného nabití baterie: <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Váš dozorovaný uživatelský profil bude brzy odstraněn. Chcete-li se dozvědět více, přihlaste se.</translation>
 <translation id="3055162170959710888">Toto zařízení jsi dnes používal(a) <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -166,6 +165,7 @@
 <translation id="3371140690572404006">Zařízení USB Type-C (pravý přední port)</translation>
 <translation id="3400357268283240774">Další nastavení</translation>
 <translation id="3413817803639110246">Zatím tu není nic k vidění</translation>
+<translation id="343571671045587506">Upravit připomenutí</translation>
 <translation id="3445925074670675829">Zařízení USB Type-C</translation>
 <translation id="3454224730401036106">Vaše připojení se přepnulo na bezpečnější síť</translation>
 <translation id="3465223694362104965">K tomuto zařízení je připojena jiná klávesnice než při vašem posledním přihlášení. Před použitím této klávesnice se ujistěte, že jí můžete důvěřovat.</translation>
@@ -198,12 +198,14 @@
 <translation id="3900355044994618856">Relace skončí za <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Připojování k síti <ph name="NAME" /></translation>
 <translation id="394485226368336402">Nastavení zvuku</translation>
+<translation id="3962859241508114581">Předchozí skladba</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
 <translation id="3995138139523574647">Zařízení USB Type-C (pravý zadní port)</translation>
 <translation id="4017989525502048489">Laserové ukazovátko</translation>
 <translation id="4042660782729322247">Sdílíte svou obrazovku</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Vypnuto pro aplikaci}few{Vypnuto pro # aplikace}many{Vypnuto pro # aplikace}other{Vypnuto pro # aplikací}}</translation>
 <translation id="4072264167173457037">Střední signál</translation>
+<translation id="4112140312785995938">Přetočit dozadu</translation>
 <translation id="4129129681837227511">Chcete-li zobrazovat oznámení na obrazovce uzamčení, odemkněte zařízení a změňte příslušné nastavení.</translation>
 <translation id="4146833061457621061">Přehrát hudbu</translation>
 <translation id="4181841719683918333">Jazyky</translation>
@@ -227,6 +229,7 @@
 <translation id="4421231901400348175">Ovládání obrazovky je prostřednictvím Vzdálené pomoci sdíleno s uživatelem <ph name="HELPER_NAME" />.</translation>
 <translation id="4430019312045809116">Hlasitost</translation>
 <translation id="4450893287417543264">Tuto zprávu již nezobrazovat</translation>
+<translation id="4477350412780666475">Další skladba</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Nespárovaná zařízení</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Připojování...</translation>
@@ -364,7 +367,6 @@
 <translation id="6715542151869432661">Nebyla nalezena žádná mobilní zařízení.</translation>
 <translation id="6723839937902243910">Napájení</translation>
 <translation id="6751826523481687655">Trasování výkonu je zapnuté</translation>
-<translation id="6785414152754474415">Baterie je nabita na <ph name="PERCENTAGE" /> % a nabíjí se.</translation>
 <translation id="6790428901817661496">Přehrát</translation>
 <translation id="6803622936009808957">Zobrazení nelze zrcadlit, protože nebyla nalezena podporovaná rozlišení. Místo toho se spustil režim rozšířené pracovní plochy.</translation>
 <translation id="6820676911989879663">Dejte si pauzu.</translation>
@@ -392,6 +394,7 @@
 <translation id="7222902781030499995">Zastavit časovač</translation>
 <translation id="7256634071279256947">Zadní mikrofon</translation>
 <translation id="726276584504105859">Chcete-li použít rozdělenou obrazovku, přetáhněte okno sem</translation>
+<translation id="7262906531272962081">Vytvořit připomenutí</translation>
 <translation id="7303365578352795231">Odpověď dostanete v jiném zařízení.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Softwarová klávesnice</translation>
@@ -519,7 +522,6 @@
 <translation id="9179259655489829027">Tato funkce umožňuje rychle získat přístup ke kterémukoliv přihlášenému uživateli, aniž by bylo potřeba zadávat heslo. Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="9193626018745640770">Odesílání do neznámého přijímače</translation>
 <translation id="9194617393863864469">Přihlásit dalšího uživatele...</translation>
-<translation id="9201131092683066720">Baterie je nabita na <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Ukončování režimu jednotné plochy</translation>
 <translation id="9215934040295798075">Nastavit tapetu</translation>
 <translation id="921989828232331238">Rodič zařízení na celý den uzamkl</translation>

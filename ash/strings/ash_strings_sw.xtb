@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Washa au uzime Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Fikia shughuli zako zote katika kipindi hiki</translation>
 <translation id="1608626060424371292">Ondoa mtumiaji huyu</translation>
-<translation id="1621499497873603021">Muda unaosalia mpaka betri inapoisha, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Anza kutamka hoja ya utafutaji</translation>
 <translation id="1658406695958299976">Samahani, tumeshindwa kuthibitisha nenosiri lako. Kumbuka: ikiwa ulibadilisha nenosiri lako hivi karibuni, nenosiri lako jipya litaanza kutumika pindi utakapoondoka kwenye akaunti, tafadhali tumia nenosiri la awali hapa.</translation>
 <translation id="1677472565718498478">Zimesalia <ph name="TIME" /></translation>
@@ -138,7 +137,6 @@
 <translation id="2996462380875591307">Umewasha Kikuzaji Kilichoambatishwa. Bonyeza Ctrl+Search+D tena ili ukizime.</translation>
 <translation id="3000461861112256445">Kipengele cha sauti moja</translation>
 <translation id="3009178788565917040">Towe</translation>
-<translation id="3019353588588144572">Muda unaosalia hadi betri itakapochajiwa kikamilifu, <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Tutaondoa wasifu wako wa mtumiaji anayesimamiwa hivi karibuni. Ingia katika akaunti ili upate maelezo zaidi.</translation>
 <translation id="3055162170959710888">Leo umetumia kifaa hiki kwa <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -364,7 +362,6 @@
 <translation id="6715542151869432661">Hakuna vifaa vya mkononi vilivyopatikana.</translation>
 <translation id="6723839937902243910">Nishati</translation>
 <translation id="6751826523481687655">Kipengele cha ufuatiliaji wa utendaji kimewashwa</translation>
-<translation id="6785414152754474415">Betri imejaa <ph name="PERCENTAGE" />% na inachaji.</translation>
 <translation id="6790428901817661496">Cheza</translation>
 <translation id="6803622936009808957">Haikuweza kuakisi maonyesho kwa kuwa hakuna misongo inayoweza kutumiwa iliyopatikana. Badala yake imeingia eneo-kazi lililopanuliwa.</translation>
 <translation id="6820676911989879663">Pumzika kidogo!</translation>
@@ -520,7 +517,6 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="9179259655489829027">Kipengele hiki kinakuruhusu ufikie kwa haraka mtumiaji yeyote aliyeingia katika akaunti bila ya kuweka nenosiri. Tumia kipengele hiki katika akaunti unazoamini pekee.</translation>
 <translation id="9193626018745640770">Inatuma kwenye kifaa au kwa mpokeaji usiyemjua</translation>
 <translation id="9194617393863864469">Ongeza akaunti nyingine...</translation>
-<translation id="9201131092683066720">Betri imejaa <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Mfumo unaondoka kwenye hali ya eneo-kazi lililounganishwa</translation>
 <translation id="9215934040295798075">Weka mandhari</translation>
 <translation id="921989828232331238">Kifaa chako kimefungwa na mzazi wako kwa leo</translation>

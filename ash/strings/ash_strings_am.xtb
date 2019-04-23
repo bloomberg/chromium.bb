@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">ብሉቱዝን አብራ ወይም አጥፋ። <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">በዚህ ክፍለ-ጊዜ ውስጥ ያለው ሁሉንም እንቅስቃሴዎን ይድረሱ</translation>
 <translation id="1608626060424371292">ይህን ተጠቃሚ አስወግድ</translation>
-<translation id="1621499497873603021">ባትሪ ባዶ እስኪሆን ድረስ የቀረው ጊዜ፣ <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">የድምጽ መጠይቅ ይጀምሩ</translation>
 <translation id="1658406695958299976">ይቅርታ፣ የይለፍ ቃልዎ አሁንም ሊረጋገጥ አልቻለም። ማሳሰቢያ፦ የይለፍ ቃልዎን በቅርብ ጊዜ ቀይረው ከሆነ አዲስ የይለፍ ቃልዎ የሚተገበረው ሲወጡ ነው፣ እባክዎ የድሮውን ይለፍ ቃል እዚህ ይጠቀሙ።</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ቀርቷል</translation>
@@ -138,7 +137,6 @@
 <translation id="2996462380875591307">የተተከለ ማጉያ ነቅቷል። እንደገና እንዲጠፋ አድርጎ ለመቀያየር Ctrl+ፍለጋ+D ይጫኑ።</translation>
 <translation id="3000461861112256445">ሞኖ ኦዲዮ</translation>
 <translation id="3009178788565917040">ውጽዓት</translation>
-<translation id="3019353588588144572">ባትሪ ሙሉ ኃይል እስኪኖረው ድረስ የሚቀረው ጊዜ፣ <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">የእርስዎ ክትትል የሚደረግበት የተጠቃሚ መገለጫ በቅርቡ ይወገዳል። ተጨማሪ ለማወቅ በመለያ ይግቡ።</translation>
 <translation id="3055162170959710888">ይህን መሣሪያ ዛሬ ለ<ph name="USED_TIME" /> ተጠቅመውበታል</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -364,7 +362,6 @@
 <translation id="6715542151869432661">ምንም ተንቀሳቃሽ መሣሪያዎች አልተገኙም።</translation>
 <translation id="6723839937902243910">ኃይል</translation>
 <translation id="6751826523481687655">የአፈጻጸም ክትትል በርቷል</translation>
-<translation id="6785414152754474415">ባትሪው <ph name="PERCENTAGE" />% ሙሉ ሆኖ በተጨማሪም ኃይል እየሞላ ነው።</translation>
 <translation id="6790428901817661496">አጫውት</translation>
 <translation id="6803622936009808957">ምንም የሚደገፉ ጥራቶች ስላልተገኙ ማሳያዎችን ማሳየት አልተቻለም። ይልቁንስ ወደ የተስፋፋ ዴስክቶፕ ሁነታ ተገብቷል።</translation>
 <translation id="6820676911989879663">እረፍት ይውሰዱ!</translation>
@@ -519,7 +516,6 @@
 <translation id="9179259655489829027">ይህ ባህሪ የይለፍ ቃል ሳያስፈልገዎት ማንኛውም ወደ መለያ የገባ ተጠቃሚን በፍጥነት እንዲደርሱ ያስችልዎታል። ይህን ባህሪ በሚያምኗቸው መለያዎች ላይ ብቻ ይጠቀሙበት።</translation>
 <translation id="9193626018745640770">በማይታወቅ ተቀባይ ላይ Cast በማድረግ ላይ</translation>
 <translation id="9194617393863864469">ሌላ ተጠቃሚ በመለያ አስገባ...</translation>
-<translation id="9201131092683066720">ባትሪው <ph name="PERCENTAGE" />% ሙሉ ነው።</translation>
 <translation id="9210037371811586452">ከተዋሃደ የዴስክቶፕ ሁነታ በመውጣት ላይ</translation>
 <translation id="9215934040295798075">ልጣፍ ያዘጋጁ</translation>
 <translation id="921989828232331238">የእርስዎ ወላጅ ለቀኑ መሣሪያውን ቆልፈውታል</translation>

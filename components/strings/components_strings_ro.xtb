@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="1001338328714563407">Fiind managerul dispozitivului și contului, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Nu acum</translation>
 <translation id="1010200102790553230">Încarcă pagina mai târziu</translation>
 <translation id="1015730422737071372">Specifică detalii suplimentare</translation>
@@ -308,6 +309,7 @@
 <translation id="2586657967955657006">Clipboard</translation>
 <translation id="2587730715158995865">De la <ph name="ARTICLE_PUBLISHER" />. Citește acest articol și încă <ph name="OTHER_ARTICLE_COUNT" />.</translation>
 <translation id="2587841377698384444">ID-ul API-ului Directory:</translation>
+<translation id="2595719060046994702">Dispozitivul și contul nu sunt gestionate de o companie sau o altă organizație.</translation>
 <translation id="2597378329261239068">Acest document este protejat cu parolă. Introdu o parolă.</translation>
 <translation id="2609632851001447353">Modificări</translation>
 <translation id="2618023639789766142">C10 (Plic)</translation>
@@ -342,6 +344,7 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Conexiunea a fost resetată.</translation>
 <translation id="2788784517760473862">Carduri de credit acceptate</translation>
+<translation id="2792012897584536778">Administratorii acestui dispozitiv au configurat certificate de securitate cu care pot vedea conținutul site-urilor pe care le accesezi.</translation>
 <translation id="2794233252405721443">Site blocat</translation>
 <translation id="2799020568854403057">Site-ul pe care urmează să îl accesezi conține aplicații dăunătoare</translation>
 <translation id="2799223571221894425">Repornește</translation>
@@ -358,6 +361,7 @@
 <translation id="2903493209154104877">Adrese</translation>
 <translation id="290376772003165898">Pagina nu este în <ph name="LANGUAGE" />?</translation>
 <translation id="2909946352844186028">A fost detectată o schimbare a rețelei.</translation>
+<translation id="2910133103376701357">Dispozitivul și contul sunt gestionate de <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2916038427272391327">închide celelalte programe;</translation>
 <translation id="2922350208395188000">Certificatul serverului nu poate fi verificat.</translation>
 <translation id="2925673989565098301">Metodă de livrare</translation>
@@ -368,6 +372,7 @@
 <translation id="2948083400971632585">Puteți să dezactivați serverele proxy configurate pentru o conexiune din pagina de setări.</translation>
 <translation id="2955913368246107853">Închide Bara de căutare</translation>
 <translation id="2969319727213777354">Pentru a stabili o conexiune securizată, ceasul trebuie să fie setat corect, deoarece certificatele pe care site-urile le folosesc pentru a se identifica sunt valabile numai pentru anumite intervale de timp. Din moment ce ora de pe dispozitiv este incorectă, Google Chrome nu poate verifica aceste certificate.</translation>
+<translation id="2970515157925768593">Poate să modifice de la distanță configurarea dispozitivului și a contului.</translation>
 <translation id="2972581237482394796">&amp;Repetă</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" /> selectat(ă). <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Șterge datele</translation>
@@ -379,6 +384,7 @@
 <translation id="3005723025932146533">Afișați o copie salvată</translation>
 <translation id="3008447029300691911">Introdu codul CVC pentru <ph name="CREDIT_CARD" />. După ce confirmi, acest site va avea acces la detaliile cardului tău.</translation>
 <translation id="3010559122411665027">Intrarea din listă „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
+<translation id="3014389611820813634">Fiind managerul dispozitivului, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Blocată automat</translation>
 <translation id="3023071826883856138">You4 (Plic)</translation>
 <translation id="3024663005179499861">Tip de politică greșit</translation>
@@ -424,6 +430,7 @@
 <translation id="3287510313208355388">Descarcă când ești online</translation>
 <translation id="3293642807462928945">Află mai multe despre politica <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Nu s-au găsit rezultate de căutare</translation>
+<translation id="3311730110465560799">Poate modifica de la distanță configurarea dispozitivului.</translation>
 <translation id="3320021301628644560">Adaugă o adresă de facturare</translation>
 <translation id="3324983252691184275">Roșu aprins</translation>
 <translation id="3338095232262050444">Securizat</translation>
@@ -518,6 +525,7 @@
 <translation id="3761718714832595332">Ascunde starea</translation>
 <translation id="3765032636089507299">Pagina Navigare sigură este în construcție.</translation>
 <translation id="3778403066972421603">Dorești să salvezi acest card în Contul Google și pe acest dispozitiv?</translation>
+<translation id="3779973883630527594">Compania, școala sau organizația care gestionează acest cont:</translation>
 <translation id="3781428340399460090">Roz aprins</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Expiră în <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -558,6 +566,7 @@
 <translation id="4072486802667267160">A apărut o eroare la procesarea comenzii. Încearcă din nou.</translation>
 <translation id="4075732493274867456">Clientul și serverul nu acceptă o versiune a protocolului SSL sau o suită de codificare obișnuită.</translation>
 <translation id="4079302484614802869">Configurația pentru proxy este setată să utilizeze o adresă URL pentru scripturi .pac, și nu servere proxy fixe.</translation>
+<translation id="4082393374666368382">Setări - Administrator</translation>
 <translation id="4092411512356034591">Accesezi <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">Urmează un site înșelător</translation>
 <translation id="4103249731201008433">Numărul de serie al gadgetului este nevalid</translation>
@@ -690,6 +699,7 @@
 <translation id="4759118997339041434">Completarea automată pentru plată este dezactivată</translation>
 <translation id="4764776831041365478">Pagina web de la <ph name="URL" /> poate fi temporar nefuncțională sau a fost mutată definitiv la o nouă adresă web.</translation>
 <translation id="4771973620359291008">A apărut o eroare necunoscută.</translation>
+<translation id="4780900888022378816">Dispozitivul este gestionat de <ph name="ENROLLMENT_DOMAIN" />, iar contul este gestionat de <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Comută la această filă</translation>
 <translation id="4798078619018708837">Introdu data de expirare și codul CVC pentru <ph name="CREDIT_CARD" /> ca să actualizezi detaliile cardului. După ce confirmi, acest site va avea acces la detaliile cardului tău din Contul Google.</translation>
 <translation id="4800132727771399293">Verifică data de expirare și codul CVC și încearcă din nou</translation>
@@ -714,6 +724,7 @@
 <translation id="4926159001844873046"><ph name="SITE" /> afișează mesajul</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Nu există rezultate</translation>
+<translation id="4945672369594656571">Stabilește modul în care sunt gestionate datele dispozitivului și ale contului. Google prelucrează datele dispozitivului și ale contului numai sub îndrumarea managerului de dispozitiv și de cont și numai în scopurile indicate de managerul de dispozitiv și de cont.</translation>
 <translation id="4950898438188848926">Butonul Comută între file, apasă pe Enter pentru a comuta la fila deschisă, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Acțiuni</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -727,6 +738,7 @@
 <translation id="5017554619425969104">Textul copiat de tine</translation>
 <translation id="5018422839182700155">Pagina nu poate fi deschisă</translation>
 <translation id="5019198164206649151">Depozit de fundal în stare nevalidă</translation>
+<translation id="5020154601324912079">Stabilește cum sunt gestionate datele dispozitivului. Google prelucrează datele dispozitivului numai sub îndrumarea managerului de dispozitiv și numai în scopurile indicate de acesta.</translation>
 <translation id="5023310440958281426">Consultați politicile administratorului</translation>
 <translation id="5029568752722684782">Șterge copia</translation>
 <translation id="503069730517007720">Un certificat rădăcină pentru „<ph name="SOFTWARE_NAME" />” este necesar, dar nu este instalat. Administratorul IT trebuie să verifice instrucțiunile de configurare pentru „<ph name="SOFTWARE_NAME" />” ca să remedieze problema. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -884,6 +896,7 @@
 <translation id="5838278095973806738">Nu ar trebui să introduci informații sensibile pe acest site (de exemplu, parole sau carduri de credit), deoarece ar putea fi furate de atacatori.</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
 <translation id="5863847714970149516">Următoarea pagină poate să genereze costuri</translation>
+<translation id="5865951947699094510">Poate să modifice de la distanță crearea contului.</translation>
 <translation id="5866257070973731571">Adaugă un număr de telefon</translation>
 <translation id="5869405914158311789">Acest site nu poate fi accesat</translation>
 <translation id="5869522115854928033">Parole salvate</translation>
@@ -904,6 +917,7 @@
 <translation id="5977976211062815271">Pe acest dispozitiv</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Nu se poate deschide aplicația de plată</translation>
+<translation id="5988826871883769516">Dispozitivul este gestionat de <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">Nu sunt specificate nici servere proxy fixe și nici o adresă URL pentru scripturi .pac.</translation>
 <translation id="5990559369517809815">Solicitările trimise la server au fost blocate de o extensie.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -921,6 +935,7 @@
 <translation id="6047233362582046994">Dacă îți asumi riscurile de securitate, poți să <ph name="BEGIN_LINK" />accesezi acest site<ph name="END_LINK" /> înainte ca aplicațiile dăunătoare să fie eliminate.</translation>
 <translation id="6047927260846328439">Acest conținut ar putea încerca să te păcălească să instalezi software sau să dezvălui informații cu caracter personal. <ph name="BEGIN_LINK" />Afișează oricum<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Nu poți accesa <ph name="SITE" /> acum, deoarece site-ul folosește fixarea certificatelor. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
+<translation id="6052284303005792909">•</translation>
 <translation id="6058977677006700226">Folosești cardurile pe toate dispozitivele?</translation>
 <translation id="6059925163896151826">Dispozitive USB</translation>
 <translation id="6080696365213338172">Ați accesat conținut utilizând un certificat oferit de administrator. Datele pe care le transmiteți către <ph name="DOMAIN" /> pot fi interceptate de administratorul dvs.</translation>
@@ -990,6 +1005,7 @@
 <translation id="6508722015517270189">repornește Chrome;</translation>
 <translation id="6529602333819889595">&amp;Repetați ștergerea</translation>
 <translation id="6534179046333460208">Sugestii pentru Webul material</translation>
+<translation id="6554795675067793129">Contul tău este administrat de <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Repetă</translation>
 <translation id="6563469144985748109">Administratorul nu l-a aprobat încă</translation>
 <translation id="6569060085658103619">Se afișează pagina unei extensii</translation>
@@ -1074,6 +1090,7 @@
 <translation id="7062635574500127092">Albastru verzui</translation>
 <translation id="7064851114919012435">Informații de contact</translation>
 <translation id="7079718277001814089">Acest site conține programe malware</translation>
+<translation id="7081564429925484109">Atenție: această politică nu a fost îmbinată așa cum este indicat în politica PolicyListMultipleSourceMergeList, deoarece nu este o listă.</translation>
 <translation id="7087282848513945231">Comitat</translation>
 <translation id="7090678807593890770">Caută <ph name="LINK" /> pe Google</translation>
 <translation id="7108338896283013870">Ascunde</translation>
@@ -1150,6 +1167,7 @@ Detalii suplimentare:
 <translation id="741007362987735528">Format-Larg</translation>
 <translation id="7416351320495623771">Gestionează parolele…</translation>
 <translation id="7419106976560586862">Calea profilului</translation>
+<translation id="7424427397225027541">Stabilește cum sunt gestionate datele contului. Google prelucrează datele contului numai sub îndrumarea managerului contului și numai în scopurile indicate de acesta.</translation>
 <translation id="7437289804838430631">Adaugă informații de contact</translation>
 <translation id="7440140511386898319">Explorează în timp ce ești offline</translation>
 <translation id="7441627299479586546">Subiectul politicii este greșit</translation>
@@ -1236,6 +1254,7 @@ Detalii suplimentare:
 <translation id="780301667611848630">Nu, mulțumesc</translation>
 <translation id="7805768142964895445">Stare</translation>
 <translation id="7806344367022510803">Modifică setările motorului de căutare în Chrome</translation>
+<translation id="7810209002420871817">Fiind managerul contului tău, <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Elimini sugestia pentru formular din Chrome?</translation>
 <translation id="7815407501681723534">S-au găsit <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> pentru „<ph name="SEARCH_STRING" />”</translation>

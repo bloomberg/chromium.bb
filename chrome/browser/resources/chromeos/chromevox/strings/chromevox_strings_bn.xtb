@@ -214,6 +214,7 @@
 <translation id="2626530649491650971">ক্লিক যোগ্য</translation>
 <translation id="2628764385451019380">কোনো পূর্ববর্তী কম্বোবক্স ল্যান্ডমার্ক নেই৷</translation>
 <translation id="2637227747952042642">গণিত</translation>
+<translation id="2638785836053527382"><ph name="FILE_NAME" /> আবার ডাউনলোড করা শুরু হয়েছে</translation>
 <translation id="2639750663247012216">ChromeVox সংশোধক</translation>
 <translation id="2644542693584024604">misspelled</translation>
 <translation id="2661530546602071611">বিজ্ঞপ্তি</translation>
@@ -253,6 +254,7 @@
 <translation id="287383510823843610">গাঢ় কমলা</translation>
 <translation id="2879867157561757640">তিন আঙ্গুল দিয়ে নিচের দিকে সোয়াইপ করুন</translation>
 <translation id="288178314850623291">নির্দিষ্ট ধরনের উপাদানে যাওয়ার জন্য জাম্প কমান্ডগুলি ব্যবহার করুন। শিরোনামের মধ্যে জাম্প করে অগ্রবর্তী হতে সার্চ + H, পিছনে জাম্প করতে সার্চ + Shift + H টিপুন।</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{মিনিট}one{মিনিট}other{মিনিট}}</translation>
 <translation id="2894654529758326923">তথ্য</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{বাঁ দ্বিতীয় বন্ধনী}one{#টি বাঁ দ্বিতীয় বন্ধনী}other{#টি বাঁ দ্বিতীয় বন্ধনী}}</translation>
 <translation id="2911433807131383493">ChromeVox টিউটোরিয়াল খুলুন</translation>
@@ -287,6 +289,7 @@
 <translation id="3084806535845658316">কোনো টাইপিং ইকো নেই</translation>
 <translation id="3086746722712840547">দ্রষ্টব্য</translation>
 <translation id="308895241372589742">এরপরে কোনো গাণিতিক অভিব্যক্তি নেই৷</translation>
+<translation id="3090227230165225418">ডাউনলোড করার বিজ্ঞপ্তি ঘোষণা করুন</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">পরবর্তী ল্যান্ডমার্ক</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -439,6 +442,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{ডান দ্বিতীয় বন্ধনী}one{#টি ডান দ্বিতীয় বন্ধনী}other{#টি ডান দ্বিতীয় বন্ধনী}}</translation>
 <translation id="4158704014418536539">কেস সংবেদনশীল।</translation>
 <translation id="4159784952369912983">বেগুনি</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{সেকেন্ড}one{সেকেন্ড}other{সেকেন্ড}}</translation>
 <translation id="4161663686871496107">ChromeVox কথ্য প্রতিক্রিয়া প্রস্তুত</translation>
 <translation id="4173994908659439270">কোনো পরবর্তী সম্পাদনযোগ্য পাঠ্য ক্ষেত্র নেই৷</translation>
 <translation id="4176463684765177261">অক্ষম</translation>
@@ -619,6 +623,7 @@
 <translation id="5349770431644471053">ফিরে যাওয়ার লিঙ্ক</translation>
 <translation id="536031132345979795">একটানা পড়ার সময় ছেড়ে পিছনে যান</translation>
 <translation id="5368000168321181111">Earcons বন্ধ আছে</translation>
+<translation id="5368505757342402527"><ph name="FILE_NAME" /> এখনও পর্যন্ত <ph name="PROGRESS" /> শতাংশ ডাউনলোড করা হয়েছে। প্রায় <ph name="TIME" /> <ph name="UNITS" /> বাকি আছে।</translation>
 <translation id="5374320867641260420">কোনো পরবর্তী বোতাম নেই৷</translation>
 <translation id="5376407118396657359">কক্ষের মাধ্যমে নেভিগেট করতে তীরচিহ্ন সহ Search+Ctrl+Alt টিপুন।</translation>
 <translation id="5382299583965267720">কোনো পূর্ববর্তী স্তর ১ শিরোলেখ নেই৷</translation>
@@ -801,6 +806,7 @@
 <translation id="667999046851023355">দস্তাবেজ</translation>
 <translation id="6688209025607531203">একটি অ-মোডাল সতর্কতা</translation>
 <translation id="6689672606256159458">গাঢ় স্যালমন</translation>
+<translation id="669617842401078250"><ph name="FILE_NAME" />-এর ডাউনলোড পজ করা হয়েছে</translation>
 <translation id="6696967141280706829">মুখবন্ধ</translation>
 <translation id="6697092096875747123">পূর্ববর্তী কম্বো বাক্স</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{টি বিস্ময়সূচক চিহ্ন}one{#টি বিস্ময়সূচক চিহ্ন}other{#টি বিস্ময়সূচক চিহ্ন}}</translation>
@@ -939,6 +945,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="7641134354185483015">কোনো পূর্ববর্তী স্তর ৩ শিরোনাম নেই৷</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, পাঠ্য বাক্স</translation>
 <translation id="7663318257180412551">শিরোনাম ২</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{ঘণ্টা}one{ঘণ্টা}other{ঘণ্টা}}</translation>
 <translation id="7674576868851035240">পরবর্তী লিঙ্ক</translation>
 <translation id="7674768236845044097">চিহ্নিত</translation>
 <translation id="7684431668231950609">URL এন্ট্রি, পাঠ্য সম্পাদনা করুন</translation>
@@ -953,6 +960,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912"><ph name="FILE_NAME" /> ডাউনলোড করা শুরু হয়েছে</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, পাসওয়ার্ড পাঠ্য বাক্স</translation>
 <translation id="7776293189010177726">ChromeVox মেনুগুলি খুলুন</translation>
 <translation id="7800558923657349506">উপসংহার</translation>
@@ -1077,6 +1085,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="8096975275316362544">মিন্ট ক্রিম</translation>
 <translation id="8098587210054821856">স্লেট ধূসর</translation>
 <translation id="8110647606445335195">কোনো ARIA ল্যান্ডমার্ক নেই৷</translation>
+<translation id="812886159861361726"><ph name="FILE_NAME" /> ডাউনলোড করা বন্ধ হয়ে গেছে</translation>
 <translation id="8138880386467279117">স্পর্শ</translation>
 <translation id="8153880621934657047">সারণীর ভিতরে নয়৷</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{আন্ডারস্কোর}one{#টি আন্ডারস্কোর}other{#টি আন্ডারস্কোর}}</translation>
@@ -1146,6 +1155,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="8743786158317878347">সংগঠিত সামগ্রী লিখুন, যেমন সারণীগুলি</translation>
 <translation id="8747966237988593539">ক্রমযুক্ত তালিকা</translation>
 <translation id="8749988712346667988">রূপালী</translation>
+<translation id="875769700429317857"><ph name="FILE_NAME" /> ডাউনলোড করা হয়ে গেছে</translation>
 <translation id="8759334257841767240">কোনো পরবর্তী লিঙ্ক নেই৷</translation>
 <translation id="8767968232364267681">পরবর্তী স্তর ৪ শিরোনাম</translation>
 <translation id="8770473310765924354">সংগঠিত সামগ্রী বের করুন, যেমন সারণী</translation>

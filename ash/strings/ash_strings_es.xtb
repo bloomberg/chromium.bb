@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Activa o desactiva el Bluetooth. <ph name="STATE_TEXT" />.</translation>
 <translation id="1589090746204042747">Acceder a toda tu actividad de esta sesión</translation>
 <translation id="1608626060424371292">Eliminar este usuario</translation>
-<translation id="1621499497873603021">Tiempo restante hasta que se agote la batería: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Iniciar una consulta por voz</translation>
 <translation id="1658406695958299976">Aún no se ha podido verificar tu contraseña. Nota: Si has cambiado la contraseña recientemente, la nueva contraseña se aplicará una vez que hayas cerrado sesión. Utiliza la antigua contraseña aquí.</translation>
 <translation id="1677472565718498478">Queda: <ph name="TIME" /></translation>
@@ -138,7 +137,6 @@
 <translation id="2996462380875591307">Se ha habilitado la lupa fijada. Pulsa Ctrl + tecla de búsqueda + D de nuevo para desactivarla.</translation>
 <translation id="3000461861112256445">Audio en mono</translation>
 <translation id="3009178788565917040">Salida</translation>
-<translation id="3019353588588144572">Tiempo restante hasta que se cargue la batería por completo: <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Tu perfil de usuario supervisado se eliminará pronto. Inicia sesión para obtener más información.</translation>
 <translation id="3055162170959710888">Hoy has utilizado este dispositivo durante <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">mayús</translation>
@@ -365,7 +363,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6715542151869432661">No se han encontrado dispositivos móviles.</translation>
 <translation id="6723839937902243910">Batería</translation>
 <translation id="6751826523481687655">El control del rendimiento está activado</translation>
-<translation id="6785414152754474415">La batería se está cargando y está al <ph name="PERCENTAGE" />%.</translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="6803622936009808957">No se han podido duplicar las pantallas porque no se han encontrado resoluciones compatibles. Se ha utilizado el modo de escritorio ampliado en su lugar.</translation>
 <translation id="6820676911989879663">Haz una pausa</translation>
@@ -520,7 +517,6 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="9179259655489829027">Esta función te permite acceder rápidamente a cualquier usuario que haya iniciado sesión sin tener que introducir una contraseña. Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="9193626018745640770">Se está enviando contenido a un receptor desconocido</translation>
 <translation id="9194617393863864469">Iniciar sesión de otro usuario...</translation>
-<translation id="9201131092683066720">La batería está al <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Saliendo del modo de escritorio unificado</translation>
 <translation id="9215934040295798075">Establecer fondo de pantalla</translation>
 <translation id="921989828232331238">Tu padre, madre o tutor han bloqueado tu dispositivo todo el día</translation>

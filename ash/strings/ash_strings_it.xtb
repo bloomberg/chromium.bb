@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Attiva/disattiva Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Accedere a tutte le tue attività in questa sessione.</translation>
 <translation id="1608626060424371292">Rimuovi questo utente</translation>
-<translation id="1621499497873603021">Tempo rimanente all'esaurimento della batteria: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Avvia una query vocale</translation>
 <translation id="1658406695958299976">Non è stato ancora possibile verificare la password. Nota: se l'hai modificata di recente, la nuova password verrà applicata quando esci dall'account. Utilizza qui la tua vecchia password.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> rimanenti</translation>
@@ -138,7 +137,6 @@
 <translation id="2996462380875591307">Lente d'ingrandimento ancorata attivata. Premi di nuovo CTRL + tasto per la ricerca + D per disattivarla.</translation>
 <translation id="3000461861112256445">Audio in formato mono</translation>
 <translation id="3009178788565917040">Uscita</translation>
-<translation id="3019353588588144572">Tempo rimanente al caricamento completo della batteria: <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Il profilo dell'utente supervisionato verrà rimosso a breve. Accedi per avere ulteriori informazioni.</translation>
 <translation id="3055162170959710888">Oggi hai utilizzato questo dispositivo per <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">maiusc</translation>
@@ -365,7 +363,6 @@
 <translation id="6715542151869432661">Nessun dispositivo mobile trovato.</translation>
 <translation id="6723839937902243910">Alimentazione</translation>
 <translation id="6751826523481687655">La traccia delle prestazioni è attiva</translation>
-<translation id="6785414152754474415">Percentuale di caricamento batteria: <ph name="PERCENTAGE" />%. La batteria è in carica.</translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="6803622936009808957">Impossibile duplicare i display perché non sono state trovate risoluzioni supportate. È stato attivato il desktop esteso.</translation>
 <translation id="6820676911989879663">Fai una pausa!</translation>
@@ -520,7 +517,6 @@
 <translation id="9179259655489829027">Questa funzione consente di accedere rapidamente a qualsiasi utente che abbia effettuato l'accesso, senza bisogno di una password. Utilizza questa funzione solo con gli account che consideri attendibili.</translation>
 <translation id="9193626018745640770">Trasmissione a un ricevitore sconosciuto</translation>
 <translation id="9194617393863864469">Accedi con un altro account utente...</translation>
-<translation id="9201131092683066720">Percentuale di caricamento della batteria: <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Uscita dalla modalità Desktop unificato</translation>
 <translation id="9215934040295798075">Imposta sfondo</translation>
 <translation id="921989828232331238">Uno dei tuoi genitori ha bloccato il tuo dispositivo per tutto il giorno</translation>

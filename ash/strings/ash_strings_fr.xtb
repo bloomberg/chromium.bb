@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Activer/Désactiver le Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Accéder à toutes vos activités dans cette session</translation>
 <translation id="1608626060424371292">Supprimer cet utilisateur</translation>
-<translation id="1621499497873603021">Temps restant avant que la batterie ne soit vide : <ph name="TIME_LEFT" />.</translation>
 <translation id="1654477262762802994">Soumettre une requête vocale</translation>
 <translation id="1658406695958299976">Impossible de valider le mot de passe. Remarque : si vous l'avez modifié dernièrement, votre nouveau mot de passe ne sera appliqué qu'une fois que vous vous serez déconnecté. Veuillez donc utiliser votre ancien mot de passe.</translation>
 <translation id="1677472565718498478">Temps restant : <ph name="TIME" /></translation>
@@ -138,7 +137,6 @@
 <translation id="2996462380875591307">Le mode Loupe ancrée est activé. Appuyez de nouveau sur Ctrl+Recherche+D pour le désactiver.</translation>
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Sortie</translation>
-<translation id="3019353588588144572">Temps restant avant chargement complet de la batterie : <ph name="TIME_REMAINING" />.</translation>
 <translation id="3051128274746680507">Votre profil d'utilisateur supervisé sera bientôt supprimé. Connectez-vous pour en savoir plus.</translation>
 <translation id="3055162170959710888">Vous avez utilisé l'appareil pendant <ph name="USED_TIME" /> aujourd'hui</translation>
 <translation id="3077734595579995578">maj</translation>
@@ -365,7 +363,6 @@
 <translation id="6715542151869432661">Aucun appareil mobile détecté.</translation>
 <translation id="6723839937902243910">Alimentation</translation>
 <translation id="6751826523481687655">Le suivi des performances est activé</translation>
-<translation id="6785414152754474415">La batterie est chargée à <ph name="PERCENTAGE" /> % et en charge.</translation>
 <translation id="6790428901817661496">Lire</translation>
 <translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>
 <translation id="6820676911989879663">Faites une pause !</translation>
@@ -520,7 +517,6 @@
 <translation id="9179259655489829027">Cette fonctionnalité vous permet d'accéder rapidement à tout compte connecté sans avoir à indiquer le mot de passe. N'utilisez cette fonctionnalité que pour les comptes auxquels vous pouvez faire confiance.</translation>
 <translation id="9193626018745640770">Destinataire de la diffusion inconnu</translation>
 <translation id="9194617393863864469">Se connecter avec un autre compte utilisateur…</translation>
-<translation id="9201131092683066720">La batterie est chargée à <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Sortie du mode Bureau unifié</translation>
 <translation id="9215934040295798075">Définir le fond d'écran</translation>
 <translation id="921989828232331238">Ton parent a verrouillé ton appareil pour la journée</translation>

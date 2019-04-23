@@ -382,12 +382,14 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6903907808598579934">Ativar sincronização</translation>
 <translation id="6914583639806229067">Pesquisar imagem que copiou</translation>
 <translation id="6914783257214138813">As suas palavras-passe serão visíveis para todas as pessoas que consigam ver o ficheiro exportado.</translation>
+<translation id="692898627499215142">A configuração da sincronização inicial não foi concluída. Para iniciar a sincronização, ative o botão de ativar/desativar Sincronizar.</translation>
 <translation id="6944369514868857500">Selecionar outra conta</translation>
 <translation id="6945221475159498467">Selecionar</translation>
 <translation id="6973630695168034713">Pastas</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Separadores recentes</translation>
 <translation id="7006788746334555276">Definições de Conteúdo</translation>
+<translation id="7015203776128479407">A configuração da sincronização inicial não foi concluída. A sincronização está desativada.</translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
 <translation id="7031882061095297553">Sincronizar com</translation>
 <translation id="7053983685419859001">Bloquear</translation>
@@ -399,6 +401,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7136892417564438900">A câmara não está disponível</translation>
 <translation id="7159472599653637159">Pedir site para dispositivos móveis</translation>
 <translation id="7167621057293532233">Tipos de dados</translation>
+<translation id="7173114856073700355">Abrir Definições</translation>
 <translation id="7189598951263744875">Partilhar...</translation>
 <translation id="7192050974311852563">Iniciar registo</translation>
 <translation id="7203585745079012652">Ouvir Respostas</translation>
@@ -475,6 +478,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="850600235656508448">Abrir no modo de navegação anónima</translation>
 <translation id="8517375800490286174">Licenças de Código Aberto</translation>
 <translation id="8524799873541103884">Separadores <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> a <ph name="LAST_VISIBLE_TAB" /> de <ph name="NUMBER_OF_OPEN_TABS" /></translation>
+<translation id="8529767659511976195">Novo</translation>
 <translation id="8532105204136943229">Ano de validade</translation>
 <translation id="8534481786647257214">Publicação no Google+ concluído.</translation>
 <translation id="8548878600947630424">Localizar na página...</translation>

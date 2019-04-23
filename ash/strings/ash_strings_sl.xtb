@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Preklop Bluetootha. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">dostop do vse dejavnosti v seji;</translation>
 <translation id="1608626060424371292">Odstrani tega uporabnika</translation>
-<translation id="1621499497873603021">Preostali čas do izpraznitve akumulatorja, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Začetek glasovne poizvedbe</translation>
 <translation id="1658406695958299976">Vašega gesla še ni bilo mogoče preveriti. Opomba: če ste nedavno spremenili geslo, bo novo geslo začelo veljati, ko se odjavite. Tu uporabite starega.</translation>
 <translation id="1677472565718498478">Še <ph name="TIME" /></translation>
@@ -138,7 +137,6 @@
 <translation id="2996462380875591307">Zasidrana lupa je omogočena. Če jo želite izklopiti, znova pritisnite Ctrl + tipko za iskanje + D.</translation>
 <translation id="3000461861112256445">Mono zvok</translation>
 <translation id="3009178788565917040">Izhod</translation>
-<translation id="3019353588588144572">Preostali čas do napolnitve akumulatorja, <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Profil nadzorovanega uporabnika bo kmalu odstranjen. Če želite izvedeti več, se prijavite.</translation>
 <translation id="3055162170959710888">To napravo si danes uporabljal <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -364,7 +362,6 @@
 <translation id="6715542151869432661">Ni mobilnih naprav.</translation>
 <translation id="6723839937902243910">Napajanje</translation>
 <translation id="6751826523481687655">Sledenje učinkovitosti delovanja je vklopljeno</translation>
-<translation id="6785414152754474415">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> % – polnjenje še poteka.</translation>
 <translation id="6790428901817661496">Predvajanje</translation>
 <translation id="6803622936009808957">Zaslonov ni bilo mogoče zrcaliti, ker ni bilo najdene nobene podprte ločljivosti. Uporabljeno je razširjeno namizje.</translation>
 <translation id="6820676911989879663">Čas za odmor!</translation>
@@ -519,7 +516,6 @@
 <translation id="9179259655489829027">S to funkcijo lahko hitro dostopate do poljubnega prijavljenega uporabnika, ne da bi vam bilo treba vnesti geslo. Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="9193626018745640770">Predvajanje v neznanem sprejemniku</translation>
 <translation id="9194617393863864469">Prijava drugega uporabnika ...</translation>
-<translation id="9201131092683066720">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Izhod iz načina enotnega namizja</translation>
 <translation id="9215934040295798075">Nastavi sliko za ozadje</translation>
 <translation id="921989828232331238">Tvoj starš je zaklenil napravo za ves dan</translation>

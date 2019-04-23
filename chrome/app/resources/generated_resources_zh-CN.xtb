@@ -1997,7 +1997,6 @@
 <translation id="4109135793348361820">将窗口移至<ph name="USER_NAME" />(<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">下载完成：<ph name="FILE_NAME" />。按 Shift+F6 可切换到下载内容栏区域。</translation>
 <translation id="4110895898888439383">以高反差模式浏览网页</translation>
-<translation id="4112221174576828331">如果图片缺少有用的说明，则 Chrome 会为您提供一条说明。Google 会对图片进行扫描。</translation>
 <translation id="4115002065223188701">检测不到网络</translation>
 <translation id="4115080753528843955">有些内容服务会使用独一无二的标识符来授予对受保护内容的访问权限</translation>
 <translation id="4118579674665737931">请重新启动此设备，然后重试。</translation>
@@ -3239,7 +3238,7 @@
 <translation id="6122095009389448667">继续禁止此网站查看剪贴板</translation>
 <translation id="6122875415561139701">禁止在“<ph name="DEVICE_NAME" />”上执行写入操作。</translation>
 <translation id="6124650939968185064">需先安装此扩展程序，下列扩展程序才能正常使用：</translation>
-<translation id="6124698108608891449">此网站需要更多权限。</translation>
+<translation id="6124698108608891449">该网站需要更多权限。</translation>
 <translation id="6125479973208104919">抱歉，您需要再次向此 <ph name="DEVICE_TYPE" /> 添加您的帐号。</translation>
 <translation id="6129691635767514872">系统已从 Chrome 和同步的设备中移除了您所选的数据。不过，您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能还有其他形式的浏览记录（例如，在其他 Google 服务中的搜索记录和活动记录）。</translation>
 <translation id="6129938384427316298">Netscape 证书评论</translation>
@@ -3419,7 +3418,7 @@
 <translation id="641081527798843608">主题匹配</translation>
 <translation id="6412931879992742813">打开新的无痕式窗口</translation>
 <translation id="6415900369006735853">通过手机连接到互联网</translation>
-<translation id="6416743254476733475">允许或禁止在您的计算机上使用 VR 头戴式设备。</translation>
+<translation id="6416743254476733475">请在您的计算机上允许或禁止。</translation>
 <translation id="6417265370957905582">Google 助理</translation>
 <translation id="6418160186546245112">正在还原到之前安装的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 版本</translation>
 <translation id="6418481728190846787">永久删除对所有应用的访问权限</translation>
@@ -4448,6 +4447,7 @@
 <translation id="8008356846765065031">网络已断开，请检查您的互联网连接是否正常。</translation>
 <translation id="8009225694047762179">管理密码</translation>
 <translation id="8012382203418782830">此网页内容已经过翻译。</translation>
+<translation id="8013993649590906847">如果图片缺少有用的说明，则 Chrome 会尝试为您提供一条说明。为便于创建说明，系统会将图片发送给 Google。</translation>
 <translation id="8014154204619229810">更新程序正在运行，请稍后刷新并再次查看。</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" />无法还原到之前安装的版本。请重新尝试对您的设备执行 Powerwash 操作。</translation>
 <translation id="8014210335923519270">将系统信息和使用情况数据发送给 Google，帮助改进 <ph name="IDS_SHORT_PRODUCT_NAME" /> 并提高其安全性</translation>
@@ -5016,7 +5016,6 @@
 <translation id="891365694296252935">发送使用情况数据和诊断数据。目前，此设备会自动向 Google 发送诊断数据、设备数据和应用使用情况数据。这些数据不会被用来辨识您孩子的身份，而是会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。这项设置是由此设备的所有者强制指定的。如果您已为孩子开启“其他网络与应用活动记录”设置，这些数据可能会被保存到其 Google 帐号中。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">正在加载建议</translation>
 <translation id="8916476537757519021">隐身辅助框架：<ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917490105272468696">我同意</translation>
 <translation id="8919275547519617350">要想将您的所有密码同步到您的所有设备上，请登录您的帐号并开启同步功能。</translation>
 <translation id="8921366488406707015">正在验证您的安全密钥…</translation>
 <translation id="8922013791253848639">在此网站上始终允许显示广告</translation>
@@ -5114,7 +5113,6 @@
 <translation id="9065203028668620118">编辑</translation>
 <translation id="9066773882585798925">让系统大声朗读文字</translation>
 <translation id="9066782832737749352">文字转语音</translation>
-<translation id="907264006778172906">授权 Linux 访问 USB 设备。Linux 不会记住已被拔出的 USB 设备。</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">蓝牙</translation>
 <translation id="9074836595010225693">USB鼠标已连接</translation>

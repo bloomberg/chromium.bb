@@ -214,6 +214,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="2626530649491650971">klikbart</translation>
 <translation id="2628764385451019380">Ingen tidligere kombifelter.</translation>
 <translation id="2637227747952042642">Matematik</translation>
+<translation id="2638785836053527382">Download af <ph name="FILE_NAME" /> er genoptaget</translation>
 <translation id="2639750663247012216">Ændringstast til ChromeVox</translation>
 <translation id="2644542693584024604">stavefejl</translation>
 <translation id="2661530546602071611">Meddelelse</translation>
@@ -253,6 +254,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="287383510823843610">Mørk orange</translation>
 <translation id="2879867157561757640">Stryg nedad med tre fingre</translation>
 <translation id="288178314850623291">Brug hoppekommandoer til at springe til bestemte typer elementer. Tryk på Søg+H for at hoppe fremad mellem overskrifter, og tryk på Søg+Shift+H for at hoppe tilbage.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{minut}one{minut}other{minutter}}</translation>
 <translation id="2894654529758326923">Oplysninger</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{venstre klammeparentes}one{# venstre klammeparenteser}other{# venstre klammeparenteser}}</translation>
 <translation id="2911433807131383493">Åbn ChromeVox-selvstudie</translation>
@@ -287,6 +289,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="3084806535845658316">intet indtastningsekko</translation>
 <translation id="3086746722712840547">bmrk</translation>
 <translation id="308895241372589742">Der er ikke flere matematiske udtryk.</translation>
+<translation id="3090227230165225418">Vis notifikationer om downloads</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Næste orienteringspunkt</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -439,6 +442,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4148180433151187540">{COUNT,plural, =1{højre klammeparentes}one{# højre klammeparenteser}other{# højre klammeparenteser}}</translation>
 <translation id="4158704014418536539">Der er forskel på store og små bogstaver.</translation>
 <translation id="4159784952369912983">Lilla</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{sekund}one{sekund}other{sekunder}}</translation>
 <translation id="4161663686871496107">Talefeedback via ChromeVox er klar</translation>
 <translation id="4173994908659439270">Ikke flere redigerbare tekstfelter.</translation>
 <translation id="4176463684765177261">Deaktiveret</translation>
@@ -605,7 +609,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="520883772648104506">Ikke flere alternativknapper.</translation>
 <translation id="5263034204789987535">Majshår</translation>
 <translation id="5263344797180442561">h2</translation>
-<translation id="528468243742722775">End</translation>
+<translation id="528468243742722775">Afslut</translation>
 <translation id="5291783959063340370">Objekt</translation>
 <translation id="5302089807023311274">Reference i bibliografi</translation>
 <translation id="5304943142864553931">fanen <ph name="TITLE" /></translation>
@@ -619,6 +623,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="5349770431644471053">Backlink</translation>
 <translation id="536031132345979795">Spring tilbage under kontinuerlig læsning</translation>
 <translation id="5368000168321181111">Earcons fra</translation>
+<translation id="5368505757342402527"><ph name="PROGRESS" /> % af download af <ph name="FILE_NAME" /> er fuldført. Der er ca. <ph name="TIME" /> <ph name="UNITS" /> tilbage.</translation>
 <translation id="5374320867641260420">Ikke flere knapper.</translation>
 <translation id="5376407118396657359">Tryk på søgetasten+Ctrl+Alt og pilene for at navigere efter celle.</translation>
 <translation id="5382299583965267720">Ikke flere niveau 1-overskrifter.</translation>
@@ -801,6 +806,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6688209025607531203">En ikke-modal advarsel</translation>
 <translation id="6689672606256159458">Mørk laksefarvet</translation>
+<translation id="669617842401078250">Download af <ph name="FILE_NAME" /> er sat på pause</translation>
 <translation id="6696967141280706829">Forord</translation>
 <translation id="6697092096875747123">Forrige kombifelt</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{udråbstegn}one{# udråbstegn}other{# udråbstegn}}</translation>
@@ -939,6 +945,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="7641134354185483015">Ingen tidligere niveau 3-overskrifter.</translation>
 <translation id="7659376057562985921">Tekstfeltet <ph name="NAME" />, <ph name="VALUE" /></translation>
 <translation id="7663318257180412551">Overskrift 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{time}one{time}other{timer}}</translation>
 <translation id="7674576868851035240">Næste link</translation>
 <translation id="7674768236845044097">marker</translation>
 <translation id="7684431668231950609">Rediger tekst, webadresseindtastning</translation>
@@ -953,6 +960,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912">Download af <ph name="FILE_NAME" /> er påbegyndt</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, adgangskodetekstfelt</translation>
 <translation id="7776293189010177726">Åbn ChromeVox-menuer</translation>
 <translation id="7800558923657349506">Epilog</translation>
@@ -1077,6 +1085,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="8096975275316362544">Mintgrøn</translation>
 <translation id="8098587210054821856">Skifergrå</translation>
 <translation id="8110647606445335195">Ingen ARIA-orienteringspunkter.</translation>
+<translation id="812886159861361726">Download af <ph name="FILE_NAME" /> er stoppet</translation>
 <translation id="8138880386467279117">Berøring</translation>
 <translation id="8153880621934657047">Ikke i tabel.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{understregning}one{# understregninger}other{# understregninger}}</translation>
@@ -1146,6 +1155,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="8743786158317878347">angiv struktureret indhold, f.eks. tabeller</translation>
 <translation id="8747966237988593539">Sorteret liste</translation>
 <translation id="8749988712346667988">Sølvfarvet</translation>
+<translation id="875769700429317857">Download af <ph name="FILE_NAME" /> er gennemført</translation>
 <translation id="8759334257841767240">Ikke flere links.</translation>
 <translation id="8767968232364267681">Næste niveau 4-overskrift</translation>
 <translation id="8770473310765924354">luk struktureret indhold, som f.eks. tabeller</translation>

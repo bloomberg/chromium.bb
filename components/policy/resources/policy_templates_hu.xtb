@@ -51,6 +51,13 @@
 <translation id="1049138910114524876">Beállítja a(z) <ph name="PRODUCT_OS_NAME" /> bejelentkezési képernyőjén kényszerített nyelv- és országkódot.
 
       Ha be van állítva a házirend, a bejelentkezési képernyő mindig a házirend első értékeként megadott nyelv- és országkódnak megfelelően jelenik meg (az előre kompatibilitás miatt a házirend listaként van meghatározva). Ha a házirend nincs beállítva, vagy üres listára van állítva, a bejelentkezési képernyő a legutóbbi felhasználói munkamenet nyelv- és országkódjának megfelelően jelenik meg. Ha a házirend beállított értéke érvénytelen nyelv- és országkód, a bejelentkezési képernyő a tartalék nyelv- és országkódnak megfelelően jelenik meg (jelenleg: „en-US”).</translation>
+<translation id="1052499923181221200">Ez a házirend csak akkor alkalmazható, ha a SamlInSessionPasswordChangeEnabled házirend beállítása igaz.
+      Ha annak a házirendnek a beállítása igaz, ennek a házirendnek a beállítása pedig (például) 14, az azt jelenti, hogy az SAML-felhasználók 14 nappal azelőtt értesítést kapnak, hogy jelszavuk lejárna egy adott dátumon.
+      Ekkor azonnal cselekedhetnek, és a munkamenetben történő jelszómódosítás segítségével frissíthetik jelszavukat, mielőtt lejárna.
+      Ezek az értesítések azonban csak akkor jelennek meg, ha az SAML-identitásszolgáltató elküldi az eszköznek a jelszó lejáratával kapcsolatos információkat az SAML-bejelentkezési folyamat során.
+      Ha nullára állítja a házirend értékét, akkor a felhasználók nem kapnak előzetes értesítést; a rendszer csak akkor tájékoztatja őket, ha jelszavuk már lejárt.
+
+      Ha a házirend be van állítva, a felhasználó nem módosíthatja és nem bírálhatja felül.</translation>
 <translation id="1062011392452772310">Az eszköz távoli tanúsításának engedélyezése</translation>
 <translation id="1062407476771304334">Csere</translation>
 <translation id="1079801999187584280">A Fejlesztői eszközök használatának letiltása</translation>
@@ -211,6 +218,7 @@
       Ha a házirend engedélyezve van, a Google Segéd hozzáférhet a képernyőn látható kontextushoz.
       Ha a házirend le van tiltva, a Google Segéd nem férhet hozzá a képernyőn látható kontextushoz.
       Ha nincs beállítva, akkor a felhasználó döntheti el, hogy engedélyezi-e a Google Segéd számára a képernyőn lévő kontextus elérését.</translation>
+<translation id="1376119291123231789">Speciális akkumulátortöltési üzemmód engedélyezése</translation>
 <translation id="1383493480903114193">Ez a házirend arra kényszeríti a hálózati kódot, hogy a böngészőfolyamatban fusson.
 
       Ez a házirend alapértelmezés szerint le van tiltva, engedélyezése esetén pedig a felhasználók védtelenek maradnak a hálózati problémákkal szemben, amint a hálózati folyamat a sandboxba kerül.
@@ -309,6 +317,18 @@
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">A harmadik felek szoftverbeszúrás-tiltásának engedélyezése</translation>
 <translation id="1504431521196476721">Távoli tanúsítás</translation>
+<translation id="1507382822467487898">
+          Konfigurálja, hogy a rendszer melyik MAC-címet használja, amikor dokkolót csatlakoztatnak az eszközhöz.
+
+          Amikor egyes eszközmodellekhez dokkolót csatlakoztatnak, akkor az eszköz dokkolójának MAC-címe szolgál az eszköznek a hálózaton való azonosítására. Ez a házirend lehetővé teszi a rendszergazda számára a MAC-cím forrásának módosítását, amikor az eszköz dokkolt állapotban van.
+
+          Ha a házirend nincs beállítva, vagy ha értéke „DeviceDockMacAddress”, akkor a rendszer az eszköz dokkolójának MAC-címét használja.
+
+          „DeviceNicMacAddress” beállítás esetén az eszköz hálózati kártyájának MAC-címét használja.
+
+          „DockNicMacAddress” beállítás esetén a dokkoló hálózati kártyájának MAC-címét használja.
+
+          A felhasználó nem módosíthatja ezt a beállítást.</translation>
 <translation id="1507957856411744193">Ha a házirend igaz értékre van állítva, a <ph name="PRODUCT_NAME" /> minden IP-cím esetén csatlakozik a Cast-eszközökhöz, nem csak RFC1918/RFC4193 privát címek esetén.
 
           Ha a házirend értéke hamis, a <ph name="PRODUCT_NAME" /> csak RFC1918/RFC4193 privát címeken lévő Cast-eszközökhöz csatlakozik.
@@ -739,6 +759,17 @@
 <translation id="2303795211377219696">Automatikus kitöltés engedélyezése hitelkártyákhoz</translation>
 <translation id="2309390639296060546">Helymeghatározás alapértelmezett beállítása</translation>
 <translation id="2327252517317514801">Meghatározza, hogy mely domainek férhetnek hozzá a G Suite szolgáltatáshoz</translation>
+<translation id="2356878440219553005">Meghatározza az akkumulátortöltési üzemmód energiagazdálkodási házirendjét.
+
+          Az akkumulátor töltésének dinamikus szabályozása az akkumulátor-igénybevétel miatti elhasználódás minimalizálása és az akkumulátor-élettartam növelése céljából.
+
+          Egyéni akkumulátortöltési mód kiválasztásakor meg kell adni a DeviceBatteryChargeCustomStartCharging és a DeviceBatteryChargeCustomStopCharging értékét is.
+
+          Ha a házirend be van állítva, a rendszer alkalmazza az akkumulátortöltési üzemmódot, amennyiben támogatja az eszköz.
+
+          Ha a házirend nincs beállítva, az eszköz pedig támogatja a házirendet, akkor a rendszer a normál akkumulátortöltési üzemmódot használja, és ezt a felhasználó nem módosíthatja.
+
+          Megjegyzés: Ha meg van adva, a <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> felülbírálja ezt a házirendet.</translation>
 <translation id="237494535617297575">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek jeleníthetnek meg értesítéseket. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultNotificationsSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="2386362615870139244">Képernyőébresztés zárolásainak engedélyezése</translation>
 <translation id="2411817661175306360">A jelszóvédelemmel kapcsolatos figyelmeztetés kikapcsolva</translation>
@@ -774,6 +805,7 @@
 
       Ha a házirend értéke hamis, akkor a késleltetésmentes automatikus bejelentkezés (ha konfigurálva van) nem léphető át.</translation>
 <translation id="2454228136871844693">Stabilitásközpontú optimalizálás.</translation>
+<translation id="2463034609187171371">DHE rejtjelezési csomagok engedélyezése a TLS protokollban</translation>
 <translation id="2463365186486772703">Alkalmazás nyelv- és országkódja</translation>
 <translation id="2466131534462628618">A hitelesítési portál a hitelesítéskor figyelmen kívül hagyja a proxyt</translation>
 <translation id="2482676533225429905">Natív üzenetküldő</translation>
@@ -945,6 +977,7 @@
 <translation id="2769952903507981510">Beállítja a távoli hozzáférésű gazdagép szükséges domainnevét</translation>
 <translation id="2787173078141616821">Az Android állapotával kapcsolatos információk jelentése</translation>
 <translation id="2799297758492717491">A médiatartalmak automatikus lejátszásának engedélyezése az engedélyezőlistán található URL-minták számára</translation>
+<translation id="2801155097555584385">Az akkumulátor töltésének beállítása úgy, hogy elkezdje a töltést a megadott százalékos érték elérésekor</translation>
 <translation id="2801230735743888564">A felhasználók játszhatnak a rejtett dinoszauruszos játékkal, amikor az eszköz offline állapotban van.
 
       Ha a házirend értéke hamis, akkor a felhasználók nem tudnak játszani a rejtett dinoszauruszos játékkal, amikor az eszköz offline állapotban van. Ha a házirend értéke igaz, akkor a felhasználók játszhatnak a játékkal. Ha nincs beállítva, akkor a regisztrált vállalati Chrome OS-t használók nem játszhatnak a játékkal, más körülmények között azonban játszhatnak vele a felhasználók.</translation>
@@ -1018,6 +1051,7 @@
       Ha letiltja ezt a beállítást, illetve nem adja meg az értékét, a nyomtatási előnézet a legutóbb használt nyomtatót választja ki alapértelmezettként.
 
       Ha engedélyezi ezt a beállítást, a nyomtatási előnézet az operációs rendszer alapértelmezett nyomtatóját használja alapértelmezettként.</translation>
+<translation id="285627849510728211">A speciális akkumulátortöltési üzemmód napi konfigurációjának beállítása</translation>
 <translation id="2856674246949497058">Visszaállítás és a célverzió megtartása, ha az operációs rendszer verziója újabb a célverziónál. A folyamat során powerwash művelet elvégzése.</translation>
 <translation id="2872961005593481000">Leállítás</translation>
 <translation id="2873651257716068683">Felülbírálja a nyomtatás alapértelmezett oldalméretét. Ha nem áll rendelkezésre az oldalméret, akkor a rendszer figyelmen kívül hagyja ezt a házirendet.</translation>
@@ -1150,12 +1184,26 @@
 <translation id="3072045631333522102">A használandó képernyőkímélő a bejelentkezési képernyőn kiállító módban</translation>
 <translation id="3072847235228302527">Általános Szerződési Feltételek beállítása egy eszközszinten helyi fiók számára</translation>
 <translation id="3077183141551274418">Letiltja vagy engedélyezi a lapéletciklus funkciót</translation>
+<translation id="3079417254871857650">Meghatározza, hogy milyen műveletet kell elvégezni, ha a felhasználó kezdőkönyvtára ecryptfs titkosítással lett létrehozva.
+
+      Ha a házirend beállítása „DisallowArc”, az Android-alkalmazások le lesznek tiltva a felhasználónál, és nem történik meg az ecryptfs titkosításról ext4 titkosításra való átállás. Ha a kezdőkönyvtár már ext4 titkosítással rendelkezik, akkor a házirend nem akadályozza meg az Android-alkalmazások futtatását.
+
+      Ha a házirend beállítása „Migrate”, akkor bejelentkezéskor – a felhasználó hozzájárulása nélkül – automatikusan megtörténik az ecryptfs titkosítású kezdőkönyvtárak átállítása ext4 titkosításra.
+
+      Ha a házirend beállítása „Wipe”, az ecryptfs titkosítású kezdőkönyvtárak törlődnek a bejelentkezéskor, és új, ext4 titkosítású kezdőkönyvtárak jönnek létre helyettük. Figyelem: Ez a művelet törli a felhasználó helyi adatait.
+
+      Ha a házirend beállítása „MinimalMigrate”, az ecryptfs titkosítású kezdőkönyvtárak törlődnek a bejelentkezéskor, és új, ext4 titkosítású kezdőkönyvtárak jönnek létre helyettük. Mindazonáltal a rendszer igyekszik megőrizni a bejelentkezési tokeneket, hogy a felhasználónak ne kelljen újra bejelentkeznie. Figyelem: Ez a művelet törli a felhasználó helyi adatait.
+
+      Ha a házirendet a már nem támogatott lehetőségek („AskUser” vagy „AskForEcryptfsArcUsers”) egyikére állítja, a rendszer úgy értelmezi, hogy a „Migrate” beállítást adta meg.
+
+      Ez a házirend nem érvényes a kioszkfelhasználókra. Ha a házirend nincs beállítva, az eszköz úgy viselkedik, mintha a „DisallowArc” beállítás lenne kiválasztva.</translation>
 <translation id="3086995894968271156">A Cast-erősítő konfigurálása itt: <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Lehetővé teszi, hogy megadja az URL-minták azon listáját, amely meghatározza, mely webhelyek jeleníthetnek meg képeket.
 
           Ha a házirend konfigurálatlanul marad, akkor a rendszer a „DefaultImagesSetting” házirend globális alapértelmezett értékét használja valamennyi webhelyre vonatkozóan (ha az be van állítva), vagy pedig a felhasználó saját személyes beállítását.
 
           Megjegyzés: Korábban ez a házirend tévesen engedélyezve volt az Android rendszeren, de a funkcióit sosem támogatta teljesen ez az operációs rendszer.</translation>
+<translation id="3091832372132789233">Az akkumulátor töltése azoknál az eszközöknél, amelyek elsődlegesen külső áramforráshoz vannak csatlakoztatva.</translation>
 <translation id="3096595567015595053">Engedélyezett bővítmények listája</translation>
 <translation id="3101501961102569744">Válassza ki, hogyan adja meg a proxyszerver beállításait</translation>
 <translation id="3101709781009526431">Dátum és idő</translation>
@@ -1181,6 +1229,7 @@
           Ha a beállítás le van tiltva, akkor a <ph name="PRODUCT_NAME" /> csak a rendszerszinten telepített natív üzenetváltási gazdagépeket használja.
 
           Ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> engedélyezi a felhasználói szintű natív üzenetváltási gazdagépek használatát.</translation>
+<translation id="3177802893484440532">Online OCSP/CRL-ellenőrzéseket igényel a helyi megbízhatósági horgonyoknál</translation>
 <translation id="3185009703220253572">a(z) <ph name="SINCE_VERSION" /> verzió óta</translation>
 <translation id="3187220842205194486">Az androidos alkalmazások nem szerezhetnek hozzáférést a vállalati kulcsokhoz. A házirend nem vonatkozik rájuk.</translation>
 <translation id="3205825995289802549">Az első böngészőablak nagy méretre állítása az első indításkor</translation>
@@ -1190,6 +1239,7 @@
 <translation id="3220624000494482595">Ha a kioszkalkalmazás Android-alkalmazás, nem tudja befolyásolni a <ph name="PRODUCT_OS_NAME" />-verziót, még akkor sem, ha a házirend beállítása <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">URL-minták a következő helyről a bővítmények, alkalmazások és felhasználói szkriptek telepítésének lehetővé tételéhez:</translation>
 <translation id="3240609035816615922">Nyomtatóbeállítások hozzáférési házirendje.</translation>
+<translation id="3240655340884151271">A dokkoló beépített hálózati kártyájának (NIC) MAC-címe</translation>
 <translation id="3243309373265599239">Megadja azt a felhasználói bevitel nélküli időtartamot, amely után a rendszer elsötétíti a képernyőt, ha hálózati áramról működik.
 
           Ha a házirend nullánál nagyobb értékre van állítva, megadja azt az időtartamot, ameddig a felhasználónak tétlennek kell maradnia, mielőtt a(z) <ph name="PRODUCT_OS_NAME" /> elsötétíti a képernyőt.
@@ -1211,6 +1261,12 @@
       Ha ez a beállítás be van kapcsolva vagy nincs megadva, a felhasználók Google Fiókjuk érvényesítésével bekapcsolhatják a cloud print proxyt.
 
       Ha a beállítás ki van kapcsolva, a felhasználók nem kapcsolhatják be a proxyt, és a számítógép számára nem lesz engedélyezett a nyomtatók megosztása a(z) <ph name="CLOUD_PRINT_NAME" /> szolgáltatással.</translation>
+<translation id="3312206664202507568">A chrome://password-change beállításai között engedélyez egy adott oldalt, ahol az SAML-felhasználók munkamenet közben is módosíthatják SAML-jelszavukat, így biztosítva, hogy az SAML-jelszó és az eszköz lezárási képernyőjének jelszava szinkronizálva vannak.
+
+      A házirend ezenkívül engedélyezi az értesítéseket is, amelyek figyelmeztetik az SAML-felhasználókat, ha SAML-jelszavuk hamarosan lejár. A felhasználók így azonnal, a munkamenet közben meg tudják változtatni jelszavukat.
+      Ezek az értesítések azonban csak akkor jelennek meg, ha az SAML-identitásszolgáltató elküldi az eszköznek a jelszó lejáratával kapcsolatos információkat az SAML-bejelentkezési folyamat során.
+
+      Ha a házirend be van állítva, a felhasználó nem módosíthatja és nem bírálhatja felül.</translation>
 <translation id="3322771899429619102">Lehetővé teszi, hogy létrehozza az olyan webhelyeket megadó URL-minták egy listáját, ahol engedélyezett a kulcslétrehozás. Ha valamelyik URL-minta a „KeygenBlockedForUrls” házirendben található, akkor az felülírja ezen kivételeket.
 
           Ha a házirend konfigurálatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja a „DefaultKeygenSetting” házirendből (ha az be van állítva), egyéb esetben pedig a felhasználó saját személyes beállításából.</translation>
@@ -1294,6 +1350,7 @@
 
           Ha az irányelv értéke Hamis, vagy nincs beállítva, akkor az energiagazdálkodási késleltetések és a munkamenet hosszúsági korlátja rögtön egy munkamenet megkezdésekor elindul.</translation>
 <translation id="3478024346823118645">Felhasználói adatok törlése a kijelentkezésnél</translation>
+<translation id="3480961938508521469">Akkumulátor teljes töltése normál tempóval.</translation>
 <translation id="348495353354674884">Virtuális billentyűzet engedélyezése</translation>
 <translation id="3487623755010328395">
         Ha a házirend be van állítva, a <ph name="PRODUCT_NAME" /> megpróbálja regisztrálni magát, és alkalmazza a társított felhőházirendet az összes profilra.
@@ -1340,6 +1397,8 @@
 <translation id="3547954654003013442">Proxybeállítások</translation>
 <translation id="355118380775352753">Az alternatív böngészőben megnyíló webhelyek</translation>
 <translation id="3554984410014457319">A Google Segéd figyelheti a hangalapú aktiválásra szolgáló kifejezést</translation>
+<translation id="356579196325389849">A felhasználók konfigurálhatják a Chrome OS kiadási csatornáját</translation>
+<translation id="3575011234198230041">HTTP-hitelesítés</translation>
 <translation id="3577251398714997599">Hirdetésbeállítások a tolakodó hirdetéseket tartalmazó webhelyekre vonatkozóan</translation>
 <translation id="357917253161699596">A felhasználók kezelhetik a felhasználói tanúsítványokat</translation>
 <translation id="3583230441447348508">Előre konfigurált hálózati fájlmegosztásokat határoz meg.
@@ -1370,6 +1429,7 @@
 
         Ez a házirend a gépek hatókörére vonatkozó, felhővel kapcsolatos házirend asztali környezetben való regisztrációjánál használható. Beállítása Windows rendszeren beállításjegyzék vagy GPO, Mac rendszeren plist, Linux esetében pedig JSON-házirendfájl használatával lehetséges.</translation>
 <translation id="3660562134618097814">SAML IdP cookie-k átadása a bejelentkezés során</translation>
+<translation id="3668151900457104753">A tiltólistán lévő bővítmények eltávolítása</translation>
 <translation id="3701121231485832347">A(z) <ph name="MS_AD_NAME" /> által kezelt <ph name="PRODUCT_OS_NAME" />-eszközök beállításainak módosítására szolgál.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Az egysoros mező megszűnt, és a jövőben eltávolítjuk. Kérjük, használja az alábbi többsoros szövegmezőt.)</translation>
 <translation id="3709266154059827597">Bővítménytelepítési feketelista beállítása</translation>
@@ -1451,6 +1511,16 @@
           Ha nem állítja be ezt a házirendet, akkor a képernyő-billentyűzet kezdetben le lesz tiltva, de a felhasználó bármikor engedélyezheti.</translation>
 <translation id="382476126209906314">Beállítja a távoli hozzáférésű gazdagép TalkGadget előtagját</translation>
 <translation id="3824972131618513497">Energiagazdálkodással és újraindítással kapcsolatos beállítások kezelését szolgálja.</translation>
+<translation id="3826475866868158882">A Google helyszolgáltatásai engedélyezve vannak</translation>
+<translation id="3831054243924627613">Ez a házirend szabályozza az Android biztonsági mentés és visszaállítás funkciójának kezdeti állapotát.
+
+      Ha a házirend nincs beállítva, vagy ha beállítása <ph name="BR_DISABLED" />, akkor az Android biztonsági mentés és visszaállítás funkciója kezdetben le van tiltva.
+
+      Ha a házirend beállítása <ph name="BR_ENABLED" />, akkor az Android biztonsági mentés és visszaállítás funkciója kezdetben engedélyezve van.
+
+      Ha a házirend beállítása <ph name="BR_UNDER_USER_CONTROL" />, akkor a rendszer megkérdezi a felhasználót, hogy szeretné-e használni az Android biztonsági mentés és visszaállítás funkcióját. Ha a felhasználó engedélyezi a biztonsági mentés és visszaállítás funkciót, a rendszer feltölti az Android-alkalmazásadatokat az Android biztonsági másolatokat tartalmazó szervereire, és helyreállítja őket az alkalmazások újratelepítésekor a kompatibilis alkalmazások esetén.
+
+      Ez a házirend csak a kezdeti beállításra vonatkozóan szabályozza az Android biztonsági mentés és visszaállítás funkciójának állapotát. Később a felhasználó az Android beállításai között be- vagy kikapcsolhatja a biztonsági mentés és visszaállítás funkciót.</translation>
 <translation id="3831376478177535007">Ha engedélyezve van ez a beállítás, a <ph name="PRODUCT_NAME" /> engedélyezi a Symantec Corporation régi PKI-műveletei által kibocsátott tanúsítványok megbízhatóként való elfogadását, ha azok más módon sikeresen hitelesítettek, és elismert CA-tanúsítványhoz tartoznak.
 
       Felhívjuk figyelmét arra, hogy ez a házirend függ attól, hogy az adott operációs rendszer továbbra is felismeri-e a Symantec régi infrastruktúrájából származó tanúsítványokat. Ha az operációs rendszer valamelyik frissítése módosítja az ilyen tanúsítványok kezelésének módját, akkor ez a házirend a továbbiakban hatástalan lesz. Továbbá ez a házirend csak ideiglenes megoldásként szolgál, hogy a vállalatoknak több idejük legyen áttérni a Symantec régi tanúsítványairól. Ez a házirend 2019. január 1-je körül eltávolításra kerül.
@@ -1529,6 +1599,15 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
           Ha nincs beállítva, vagy ha az értéke hamis, akkor a felhasználók átvihetnek fájlokat a Google Drive-ra.</translation>
 <translation id="3915395663995367577">URL egy proxy .pac fájlhoz</translation>
+<translation id="3920892052017026701">Az akkumulátor töltésének beállítása úgy, hogy elkezdje a töltést a megadott százalékos érték elérésekor.
+
+          Az akkumulátor töltése elkezdődik, amikor eléri az egyénileg beállított töltésindítási értéket.
+
+          A DeviceBatteryChargeCustomStartCharging értéknek kisebbnek kell lennie, mint a DeviceBatteryChargeCustomStopCharging értéknek.
+
+          Ez a házirend csak akkor használható, ha a DeviceBatteryChargeMode beállítása egyéni.
+
+          Ha ez a házirend nincs konfigurálva vagy aktiválva, akkor a rendszer a normál akkumulátortöltési üzemmódot használja.</translation>
 <translation id="3925377537407648234">A képernyőfelbontás és a skálázási tényező beállítása</translation>
 <translation id="3939893074578116847">Hálózati csomagok küldése a kezelőszervernek az online állapot ellenőrzése céljából;
       ezáltal a szerver észleli, ha az eszköz offline állapotban van.
@@ -1657,6 +1736,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4150201353443180367">Megjelenítés</translation>
 <translation id="4157003184375321727">Az operációs rendszer és a firmware verziójának jelentése</translation>
 <translation id="4157594634940419685">Hozzáférés engedélyezése a natív CUPS-nyomtatókhoz</translation>
+<translation id="4160962198980004898">Az eszköz MAC-címének forrása dokkolt állapotban</translation>
 <translation id="4163705126749612234">Beállítja a távoli hozzáférésű ügyfelek kötelező domainneveit, és megakadályozza, hogy a felhasználók módosítsák őket.
 
           Ha a beállítás aktiválva van, kizárólag a megadott domainek valamelyikéhez tartozó ügyfelek tudnak kapcsolódni a gazdagéphez.
@@ -1734,6 +1814,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Felhívjuk figyelmét, hogy az alkalmazásazonosítót tartalmazó házirend nem jelenti feltétlenül azt, hogy a felhasználó jegyzetkészítő alkalmazásként tudja majd engedélyezni az alkalmazást a lezárási képernyőn. Chrome 61-en például a platform tovább korlátozza a rendelkezésre álló alkalmazások készletét.
 
       Ha nem állítja be ezt a házirendet, akkor a házirend által előírt korlátozások nem vonatkoznak majd a felhasználó által a lezárási képernyőn engedélyezhető alkalmazások készletére.</translation>
+<translation id="4313767483634435271">Az eszköz dokkolójának MAC-címe</translation>
 <translation id="4322842393287974810">Annak engedélyezése, hogy a <ph name="PRODUCT_OS_NAME" /> verziójának ellenőrzését a késés nélkül, automatikusan indított kioszkalkalmazás végezze.</translation>
 <translation id="4325690621216251241">Kijelentkezés gomb elhelyezése a tálcán</translation>
 <translation id="4332177773549877617">Az Android-alkalmazások telepítéseivel kapcsolatos események naplózása</translation>
@@ -1765,6 +1846,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4360826270668210664">Ha a házirend be van állítva, a távoli hozzáférésű gazdagép megköveteli, hogy a hitelesítést végrehajtó ügyfelek erről az URL-ről szerezzék be a kapcsolódáshoz szükséges hitelesítési tokent. A RemoteAccessHostTokenValidationUrl házirenddel együtt kell használni.
 
           Ez a funkció jelenleg le van tiltva a szerveroldalon.</translation>
+<translation id="4363057787588706121">Különböző forrásokból származó listaházirendek egyesítésének engedélyezése.</translation>
 <translation id="436581050240847513">Hálózati eszközinterfészek bejelentése</translation>
 <translation id="4372704773119750918">A vállalati felhasználó ne használhassa a többprofilos módot (elsődleges vagy másodlagos)</translation>
 <translation id="4377599627073874279">Az összes kép megjelenítésének engedélyezése valamennyi webhely számára</translation>
@@ -1930,6 +2012,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="4826326557828204741">Végrehajtandó művelet a tétlenségi késleltetés elérésekor akkumulátorról történő üzemelés során</translation>
 <translation id="4832852360828533362">Felhasználó- és eszközjelentések</translation>
 <translation id="4834526953114077364">A legrégebben használt, az utóbbi 3 hónapban nem bejelentkezett felhasználók eltávolítása, amíg elegendő szabad terület nem lesz</translation>
+<translation id="4835622243021053389">NTLMv2-hitelesítés engedélyezése.</translation>
 <translation id="4858735034935305895">Teljes képernyős mód engedélyezése</translation>
 <translation id="4861767323695239729">A felhasználói munkamenetben engedélyezett beviteli módok konfigurálása</translation>
 <translation id="487460824085252184">Automatikus áttelepítés, felhasználói beleegyezés kérése nélkül.</translation>
@@ -2048,6 +2131,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       A(z) <ph name="URL_LIST_POLICY_NAME" /> házirendtől eltérően a szabályok mindkét irányban érvényesek. Ez azt jelenti, hogy amikor az Internet Explorer-bővítmény jelen van és engedélyezett, a házirend azt is vezérli, hogy az <ph name="IE_PRODUCT_NAME" /> a <ph name="PRODUCT_NAME" /> böngészőben nyissa-e meg ezeket az URL-eket.</translation>
 <translation id="5124368997194894978">Hálózati áramforrás esetén történő rendszerindítás engedélyezése</translation>
+<translation id="5131211790949066746">Engedélyezi az <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> és <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> bővítménytelepítési listákra vonatkozó házirendek összevonását.
+
+      Ha engedélyezi ezt a beállítást, a rendszer egyetlen listába vonja össze a gépi platform, a gépi felhő és a felhasználói platform házirendjeinek értékeit, és egy egész listaként kezeli őket ahelyett, hogy csak a legmagasabb prioritással rendelkező forrás értékeit használná.
+
+      Ha letiltja vagy konfigurálatlanul hagyja a beállítást, a rendszer csak a legmagasabb prioritású forrás listabejegyzéseit veszi figyelembe, míg az összes többi forrás ütközésként jelenik meg, és figyelmen kívül hagyja őket a rendszer.</translation>
 <translation id="5141670636904227950">A bejelentkezési képernyőn engedélyezett alapértelmezett nagyítótípus beállítása</translation>
 <translation id="5142301680741828703">Mindig a <ph name="PRODUCT_FRAME_NAME" /> segítségével jelenítse meg a következő URL-mintákat</translation>
 <translation id="5148753489738115745">Lehetővé teszi további paraméterek megadását, amelyeket a(z) <ph name="PRODUCT_FRAME_NAME" /> használ a(z) <ph name="PRODUCT_NAME" /> indításakor.
@@ -2157,6 +2245,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha az irányelvet nem állítja be, vagy üres karakterláncot, illetve érvénytelen porttartományt ad meg, akkor a WebRTC bármelyik rendelkezésre álló helyi UDP-portot használhatja.</translation>
 <translation id="5290940294294002042">Adja meg a felhasználó által be- vagy kikapcsolható bővítmények listáját</translation>
+<translation id="5306186200045823863">A Symantec Corporation régi PKI-infrastruktúrájának megbízhatóként való elfogadása</translation>
 <translation id="5307432759655324440">Inkognitómód elérhetősége</translation>
 <translation id="5318185076587284965">Relay szerverek használatának engedélyezése a távoli gazdagép számára</translation>
 <translation id="5323128137188992869">A tartalom átküldésének az engedélyezése az eszközre a következő használatával <ph name="PRODUCT_NAME" />.
@@ -2252,6 +2341,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a szabályok ellentmondanak egymásnak, a <ph name="PRODUCT_NAME" /> a legpontosabban körülírt szabályt használja.</translation>
 <translation id="5475361623548884387">Nyomtatás engedélyezése</translation>
 <translation id="547601067149622666">Hirdetések tiltása a tolakodó hirdetéseket tartalmazó webhelyeken</translation>
+<translation id="5483065054530244863">A helyi bizalmi horgonyok által kibocsátott, SHA-1-aláírással rendelkező tanúsítványok engedélyezése</translation>
 <translation id="5483777239978559943">Ez a házirend elavult. Kérjük, a <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> segítségével ellenőrizze a Flash beépülő modul rendelkezésre állását, az <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> segítségével pedig határozza meg azt, hogy a beépített PDF-olvasót kívánja-e használni a PDF-fájlok megnyitásához.
 
       Megadja azon beépülő modulok listáját, amelyeket a felhasználó engedélyezhet vagy letilthat a <ph name="PRODUCT_NAME" /> böngészőben.
@@ -2368,6 +2458,17 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
           Ha bekapcsolja, vagy nem állítja be ezt a beállítást, a felhasználók megtekinthetik egyszerű szövegként a tárolt jelszavakat a jelszókezelőben.</translation>
 <translation id="5620392548325769024">Az üdvözlőoldal megjelenítésének engedélyezése az operációs rendszer frissítését követő első böngészőindításkor</translation>
 <translation id="5630352020869108293">Utolsó munkamenet visszaállítása</translation>
+<translation id="5643906875497889108">Azt szabályozza, mely alkalmazás- vagy bővítménytípusokat lehet telepíteni, valamint korlátozza a futásidőben történő hozzáférést.
+
+          Ez a beállítás engedélyezőlistára teszi azokat a bővítmény- vagy alkalmazástípusokat, amelyek telepíthetők a <ph name="PRODUCT_NAME" /> alatt, és amelyekkel a gazdagépek interakcióba léphetnek. Az érték karakterláncok listája, melyek mindegyikének a következők egyikének kell lennie: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. A <ph name="PRODUCT_NAME" /> bővítményekre vonatkozó dokumentációjából többet is megtudhat ezekről a típusokról.
+
+          Felhívjuk figyelmét, hogy ez a házirend azokra a bővítményekre és alkalmazásokra is hatással van, amelyeket az ExtensionInstallForcelist házirend révén kényszerítve telepítettek.
+
+          Ha ez a beállítás konfigurálva van, nem telepíthetők olyan bővítmények és alkalmazások, amelyek típusa nem szerepel a listán.
+
+          Ha a beállítás nincs konfigurálva, akkor nincsenek korlátozva az elfogadható bővítmény- és alkalmazástípusok.
+
+          A 75-ös verzió előtt nem támogatott több, vesszővel elválasztott bővítményazonosító használata, ezért ezeket kihagyja a rendszer. A házirend többi része továbbra is érvényes marad.</translation>
 <translation id="5645779841392247734">Cookie-k engedélyezése ezeken a webhelyeken</translation>
 <translation id="5689430183304951538">Nyomtatás alapértelmezett oldalmérete</translation>
 <translation id="5693469654327063861">Adatmigráció engedélyezése</translation>
@@ -2407,6 +2508,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5765780083710877561">Leírás:</translation>
 <translation id="5770738360657678870">Fejlesztői csatorna (instabil lehet)</translation>
 <translation id="5774856474228476867">Az alapértelmezett keresési szolgáltató kereső URL-je</translation>
+<translation id="5775235485119094648">Akkumulátor töltése, ha a rögzített intervallumon belül van.</translation>
 <translation id="5776485039795852974">Kérdezzen rá minden alkalommal, amikor egy webhely asztali értesítéseket akar mutatni</translation>
 <translation id="5781412041848781654">Megadja, hogy a rendszer melyik GSSAPI könyvtárat használja a HTTP-hitelesítéshez. Megadhat csak könyvtárnevet, illetve teljes elérési utat is.
 
@@ -2468,6 +2570,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5893553533827140852">Ha ez a beállítás engedélyezett, akkor a gnubby hitelesítési kéréseket a rendszer távoli szerverkapcsolaton keresztül proxyzza.
 
           Ha a beállítás tiltva van, vagy nincs konfigurálva, akkor a rendszer nem proxyzza a gnubby hitelesítési kéréseket.</translation>
+<translation id="5897913798715600338">Akkumulátor töltése a gyors töltési technológiával.</translation>
 <translation id="5898486742390981550">Ha több felhasználó van bejelentkezve, csak az elsődleges felhasználó használhat Android-alkalmazásokat.</translation>
 <translation id="5900196529149231477">
       Ez a házirend a bejelentkezési képernyőre vonatkozik. A felhasználói munkamenetre az <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> házirend érvényes. Azt javasoljuk, hogy mindkét házirendet ugyanarra az értékre állítsa. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
@@ -2476,6 +2579,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha nem állítja be a házirendet, a platform alapértelmezett webhely-elszigetelési beállításai lépnek érvénybe a bejelentkezési képernyőnél.
       </translation>
 <translation id="5901427587865226597">Csak kétoldalas nyomtatás</translation>
+<translation id="5905473632148429217">Online OCSP/CRL-ellenőrzések engedélyezése</translation>
 <translation id="5906199912611534122">Lehetővé teszi a hálózatszabályozás engedélyezését és letiltását.
       Minden felhasználóra és az eszköz minden felületére vonatkozik. A beállítást
       követően a szabályozás a házirend kikapcsolásáig érvényben marad.
@@ -2483,6 +2587,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend értéke hamis, akkor nincs szabályozás.
       Ha a házirend értéke igaz, akkor szabályozza a rendszert a megadott
       feltöltési és letöltési sebességének eléréséhez (kbit/s értékben megadva).</translation>
+<translation id="591088232153082363">Alkalmazkodó akkumulátortöltés az akkumulátorhasználati minta alapján.</translation>
 <translation id="5921713479449475707">Automatikus frissítési letöltések engedélyezése HTTP-n keresztül</translation>
 <translation id="5921888683953999946">A nagy egérmutató kisegítő lehetőség alapértelmezett állapotának megadása a bejelentkezési képernyőn.
 
@@ -2504,6 +2609,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5950205771952201658">Tekintettel arra, hogy a hibatűrő, online visszavonási ellenőrzések nem nyújtanak biztonsági előnyöket, a <ph name="PRODUCT_NAME" /> 19-es és újabb verzióiban ezek alapértelmezés szerint ki vannak kapcsolva. A házirend igaz értékre állításával visszaállítható a korábbi viselkedés, és a böngésző online OCSP-/CRL-ellenőrzéseket végez.
 
       Ha a házirend értéke hamis, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> nem végez online visszavonási ellenőrzéseket a <ph name="PRODUCT_NAME" /> 19-es és újabb verzióiban.</translation>
+<translation id="5961137303188584693">Az eszköz beépített hálózati kártyájának (NIC) MAC-címe</translation>
 <translation id="5966615072639944554">A távoli tanúsítási API használatára engedélyezett bővítmények</translation>
 <translation id="5983708779415553259">Alapértelmezett viselkedés a tartalomcsomagban nem lévő webhelyek esetében</translation>
 <translation id="5997543603646547632">24 órás formátum használata alapértelmezés szerint</translation>
@@ -2594,6 +2700,17 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6111936128861357925">A rejtett dinoszauruszos játék engedélyezése</translation>
 <translation id="6114416803310251055">elavult</translation>
 <translation id="6133088669883929098">Kulcsgenerálás használatának engedélyezése minden webhelyen</translation>
+<translation id="6136537398661737682">Ez a házirend szabályozza a Google helyszolgáltatásainak kezdeti állapotát.
+
+      Ha a házirend nincs beállítva, vagy ha beállítása <ph name="GLS_DISABLED" />, akkor a Google helyszolgáltatásai kezdetben le vannak tiltva.
+
+      Ha a házirend beállítása <ph name="GLS_ENABLED" />, akkor a Google helyszolgáltatásai kezdetben engedélyezve vannak.
+
+      Ha a házirend beállítása <ph name="GLS_UNDER_USER_CONTROL" />, akkor a rendszer megkérdezi a felhasználót, hogy szeretné-e használni a Google helyszolgáltatásait. Ez lehetővé teszi az Android-alkalmazások számára a szolgáltatások használatát az eszköz tartózkodási helyének lekérdezésére, valamint engedélyezi a névtelen helyadatok elküldését a Google-nak.
+
+      Ez a házirend csak a kezdeti beállításra vonatkozóan szabályozza a Google helyszolgáltatásainak állapotát. Később a felhasználó az Android beállításai között be- vagy kikapcsolhatja a Google helyszolgáltatásait.
+
+      Felhívjuk figyelmét, hogy ha a <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> házirend beállítása <ph name="BLOCK_GEOLOCATION_SETTING" />, akkor a rendszer figyelmen kívül hagyja ezt a házirendet, és mindig letiltja a Google helyszolgáltatásait.</translation>
 <translation id="6141402445226505817">Mindig használja a durva időzóna-érzékelést</translation>
 <translation id="6145799962557135888">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek futtathatnak JavaScriptet. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultImagesSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="614662973812186053">Ez a házirend szabályozza az Android használati és diagnosztikai adatainak gyűjtését is.</translation>
@@ -2667,9 +2784,17 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Letiltása esetén az automatikus kitöltés űrlapadatainak importálása nem történik meg.
 
       Ha nincs beállítva, akkor a böngésző vagy megkérdezi a felhasználótól, hogy legyen-e importálás, vagy automatikusan végrehajtja azt.</translation>
+<translation id="6221175752766085998">A helyi bizalmi horgonyok kibocsátott, de a subjectAlternativeName bővítménnyel nem rendelkező tanúsítványok engedélyezése</translation>
 <translation id="6224304369267200483">Biztonsági hardverkulccsal történő közvetlen hitelesítésre automatikusan jogosult URL-ek, illetve domainek</translation>
 <translation id="6233173491898450179">Letöltési könyvtár megadása</translation>
 <translation id="6244210204546589761">Indításkor megnyitandó URL-ek</translation>
+<translation id="6255387031094435995">Lehetővé teszi a kiválasztott házirendek egyesítését, ha forrásuk eltérő, de hatókörük és szintjük egyezik.
+
+        Ha valamelyik házirend szerepel a listán, és ütközés van két forrás között, akkor – amennyiben hatókörük és szintjük egyezik – a rendszer egyesíti az értékeket egy új házirendlistában.
+
+        Ha valamelyik házirend szerepel a listán, és ütközés van két forrás között, akkor – amennyiben hatókörük és/vagy szintjük nem egyezik – a rendszer a legmagasabb prioritású házirendet alkalmazza.
+
+        Ha valamelyik házirend nem szerepel a listán, és ütközés van két forrás, hatókör és/vagy szint között, akkor a rendszer a legmagasabb prioritású házirendet alkalmazza.</translation>
 <translation id="6258193603492867656">Megadja, hogy a generált Kerberos SPN-nek tartalmaznia kell-e egy nem szabványos portot. Ha engedélyezi ezt a beállítást, és megad egy nem szabványos portot (azaz a 80-as vagy 443-as porttól eltérőt), az szerepelni fog a generált Kerberos SPN-ben. Ha letiltja vagy konfigurálatlanul hagyja a beállítást, a generált Kerberos SPN semmilyen esetben sem fogja tartalmazni a portot.</translation>
 <translation id="6261643884958898336">Készülékazonosítási adatok jelentése</translation>
 <translation id="6281043242780654992">A Natív üzenetküldés házirendjeit konfigurálja. A tiltólistán szereplő natív üzenetkezelő gazdagépeket a rendszer nem engedélyezi, hacsak nem szerepelnek az engedélyezőlistán.</translation>
@@ -2867,6 +2992,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6757438632136860443">Lehetővé teszi URL-minták olyan listájának megadását, amely meghatározza, hogy mely webhelyek futtathatják a(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modult.
 
           Ha nem állítja be ezt a házirendet, akkor a böngésző valamennyi webhelyre vonatkozóan a globális alapértelmezett értéket használja a „DefaultPluginsSetting” házirend (ha be van állítva) vagy a felhasználó személyes konfigurációja alapján.</translation>
+<translation id="6757613329154374267">A biztonsági mentés és visszaállítás engedélyezve van</translation>
 <translation id="6762235610019366960">Engedélyezi a teljes lapot kitöltő promóciós és/vagy oktatási célú tartalmak megjelenítésének szabályozását a <ph name="PRODUCT_NAME" /> böngészőben.
 
       Ha nincs konfigurálva, vagy engedélyezve van (igaz értékre van állítva), a <ph name="PRODUCT_NAME" /> megjeleníthet teljes lapot kitöltő tartalmakat a felhasználók számára termékinformációk bemutatásának céljából.
@@ -2889,6 +3015,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       A karakterlánc tartalmazhat változókat: ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME}. A rendszer a megfelelő értékekkel helyettesíti a változókat, mielőtt a karakterláncot gazdagépnévként használná. A helyettesítés után érvényes gazdagépnévnek kell előállnia (az RFC 1035 című dokumentum 3.1-es szakasza szerint).
 
       Ha a házirend nincs beállítva, vagy ha a helyettesítés érvénytelen gazdagépnevet eredményez, nem kerül sor a DHCP-kérés gazdagépnevének beállítására. </translation>
+<translation id="6833988859168635883">Indítás, kezdőoldal és Új lap oldal</translation>
 <translation id="6835883744948188639">Ismétlődő értesítés megjelenítése a felhasználónak arról, hogy ajánlott az újraindítás</translation>
 <translation id="6837480141980366278">Azt szabályozza, hogy a <ph name="PRODUCT_NAME" /> a beépített DNS-ügyfelet használja-e.
 
@@ -3001,6 +3128,17 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 
       Amikor a képernyő elsötétítésére kerül sor, az intelligens elsötétítési modell megállapítja, hogy el kell-e halasztani az elsötétítést. Ha a halasztás mellett dönt, meghosszabbítja az elsötétítésig hátralévő időt. Ebben az esetben a képernyő kikapcsolását és lezárását, illetve az üresjárati késleltetést úgy korrigálja, hogy megtartsa a képernyő elsötétítésénél eredetileg beállított időtávolságot.
       Ha a házirend értéke Igaz, vagy ha nincs beállítva, akkor az intelligens elsötétítési modell aktiválódik, és lehetővé teszi a képernyő elsötétítéséig hátralévő idő növelését. Ha a házirend értéke Hamis, akkor az intelligens elsötétítési modell nem befolyásolja a képernyő elsötétítését.</translation>
+<translation id="6967394885063085697">A speciális akkumulátortöltési üzemmódra vonatkozó energiagazdálkodási házirend engedélyezése.
+
+          A speciális akkumulátortöltési üzemmód lehetővé teszi a felhasználó számára az akkumulátor élettartamának maximalizálását. Speciális töltési üzemmódban a rendszer hagyományos töltési algoritmusokat és más módszereket használ a munkaidőn kívül az akkumulátor élettartamának maximalizálása érdekében. Munkaidőben a gyors töltési módot használja. Ez a gyors töltési mód lehetővé teszi az akkumulátor gyorsabb feltöltését, így az akkumulátor hamarabb eléri a teljes töltöttséget. A kezdési idő és az időtartam minden napra vonatkozóan meghatározza, hogy mikor használják legtöbbet a rendszert.
+
+          Ha a házirend beállítása igaz, és ha a DeviceAdvancedBatteryChargeModeDayConfig házirend be van állítva, akkor a speciális akkumulátortöltési üzemmód mindig engedélyezve lesz az ezt támogató eszközökön.
+
+          Ha a házirend beállítása hamis, akkor a speciális akkumulátortöltési üzemmód mindig le lesz tiltva.
+
+          Ha beállítja ezt a házirendet, a felhasználó nem módosíthatja vagy bírálhatja felül.
+
+          Ha a házirend nincs beállítva, a speciális akkumulátortöltési üzemmód le van tiltva, és a felhasználó nem engedélyezheti.</translation>
 <translation id="6972540544240464302">Feladatkezelő-beállítás kiválasztása</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6994082778848658360">Meghatározza, hogyan használható az integrált biztonságos hardverelem a kétlépcsős azonosítás biztosítására, amennyiben kompatibilis ezzel a funkcióval. A készülék bekapcsológombja használható a felhasználó fizikai jelenlétének észlelésére.
@@ -3066,6 +3204,17 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Ha engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem módosíthatják és nem írhatják felül.
 
       Ha nem állítja be ezt a házirendet, a felhasználó döntheti el, hogy kívánja-e az eszköz feloldását jelszóhoz kötni.</translation>
+<translation id="7107148737865880402">Az USB-s energiaellátásra vonatkozó energiagazdálkodási házirend engedélyezése.
+
+          Egyes eszközök USB-csatlakozója villámot vagy akkumulátort ábrázoló képpel van megjelölve, amely azt jelzi, hogy a rendszer akkumulátora használható eszközök (például mobiltelefonok) töltésére. Ez a házirend a csatlakozó viselkedését befolyásolja abban az esetben, ha a rendszer alvó vagy kikapcsolt állapotban van. Nincs hatással a többi USB-csatlakozóra, illetve a rendszer ébrenléti állapotában történő töltési viselkedésre.
+
+          Ha a rendszer ébren van, az USB-csatlakozó mindig biztosít energiát.
+
+          Ha a házirend beállítása igaz, akkor alvó állapotban az USB-csatlakozó mindig kap energiát, amennyiben az eszköz csatlakoztatva van hálózati áramforrásra, vagy az akkumulátor töltöttségi szintje 50%-nál nagyobb. Máskülönben nem kap energiát.
+
+          Ha a házirend beállítása igaz, akkor kikapcsolt állapotban az USB-csatlakozó mindig kap energiát, amennyiben az eszköz csatlakoztatva van hálózati áramforrásra. Máskülönben nem kap energiát.
+
+          Ha nincs beállítva ez a házirend, akkor mindig engedélyezve van, és a felhasználó nem tilthatja le.</translation>
 <translation id="7115494316187648452">Meghatározza, hogy elinduljon-e a <ph name="PRODUCT_NAME" /> folyamata az operációs rendszerbe való bejelentkezéskor, és az utolsó böngészőablak bezárásakor is futásban hagyja, lehetővé téve a háttéralkalmazások és az aktuális böngészési munkamenet számára, hogy aktívak maradjanak, a munkamenetek esetleges cookie-jaival együtt. A háttérfolyamat egy ikont jelenít meg a tálcán, ahonnan mindig bezárható.
 
       Ha a házirend értéke True (igaz), akkor a háttérmód engedélyezve van, a felhasználó pedig ezt nem tudja módosítani a böngésző beállításaiban.
@@ -3116,6 +3265,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
           Ha a házirend beállítása igaz, vagy ha nincs beállítva, a rendszer figyelembe veszi a képernyő-ébrentartási kéréseket az energiagazdálkodás során, amennyiben az AllowWakeLocks házirend nincs hamis értékre állítva.
 
           Ha a házirend beállítása hamis, a képernyő-ébrentartási kéréseket rendszer-ébrentartási kérésekre fokozza le a rendszer.</translation>
+<translation id="7177857088692019405">Gyorsfeloldás</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Frissítésekhez engedélyezett csatlakozási típusok</translation>
 <translation id="7194407337890404814">Az alapértelmezett keresési szolgáltató neve</translation>
@@ -3180,6 +3330,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 <translation id="7273823081800296768">Ha ez a beállítás engedélyezve van, vagy nincs konfigurálva, akkor a felhasználók párosíthatják a klienseket és a gazdagépeket a kapcsolódáskor, így nincs szükség minden alkalommal a PIN-kód megadására.
 
           Ha a beállítás le van tiltva, akkor ez a funkció nem lesz elérhető.</translation>
+<translation id="7274077256421167535">USB-s energiaellátás engedélyezése</translation>
 <translation id="7275334191706090484">Kezelt könyvjelzők</translation>
 <translation id="7291084543582732020">Ha engedélyezi ezt a beállítást, a felhasználók használhatják a Smart Lock funkciót, amennyiben minden megfelel a vonatkozó követelményeknek.
 
@@ -3193,6 +3344,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 
           Az alkalmazás csak akkor veszi figyelembe ezt a házirendet, ha a „DefaultSearchProviderEnabled” házirend is engedélyezve van.</translation>
 <translation id="7302043767260300182">Képernyőzár késleltetése hálózati áramról való működés során</translation>
+<translation id="7305262223970835999">Lehetővé teszi az oldalak számára a munkameneten belüli jelszómódosítást SAML-felhasználók esetében.</translation>
 <translation id="7311458740754205918">Ha igazra van állítva, vagy ha nincs beállítva, az Új lap oldalon megjelenhetnek javaslatok a felhasználó böngészési előzményei, érdeklődési körei vagy tartózkodási helye alapján.
 
       Ha a beállítás hamis, akkor nem jelennek meg automatikusan generált tartalomjavaslatok az Új lap oldalon.</translation>
@@ -3315,6 +3467,15 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Ha a házirend értéke 0, a rendszer az alapértelmezett méretet használja a gyorsítótárhoz, és ezt a felhasználó nem tudja megváltoztatni.
 
       Ha a házirend nincs beállítva, a rendszer az alapértelmezett méretet használja, és azt a felhasználó felülbírálhatja a „--disk-cache-size” jelölővel.</translation>
+<translation id="759389052790680884">Az akkumulátor töltésének beállítása úgy, hogy abbahagyja a töltést a megadott százalékos érték elérésekor.
+
+          Az akkumulátor töltése leáll, amikor eléri az egyénileg beállított töltésleállítási értéket.
+
+          A DeviceBatteryChargeCustomStartCharging értéknek kisebbnek kell lennie, mint a DeviceBatteryChargeCustomStopCharging értéknek.
+
+          Ez a házirend csak akkor használható, ha a DeviceBatteryChargeMode beállítása egyéni.
+
+          Ha ez a házirend nincs konfigurálva vagy aktiválva, akkor a rendszer a normál akkumulátortöltési üzemmódot használja.</translation>
 <translation id="759957074386651883">A Biztonságos Böngészés beállításai</translation>
 <translation id="7604169113182304895">Az Android-alkalmazások saját belátásuk szerint tarthatják be ezt a listát, és nem kényszeríthetők a lista betartására.</translation>
 <translation id="7612157962821894603">A <ph name="PRODUCT_NAME" /> indításakor alkalmazandó rendszerszintű jelölők</translation>
@@ -3389,6 +3550,15 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 <translation id="7712109699186360774">Kérdezzen rá minden alkalommal, amikor egy webhely megpróbálja elérni a kamerát és/vagy mikrofont</translation>
 <translation id="7713608076604149344">Letöltési korlátozások</translation>
 <translation id="7715711044277116530">Az a százalék, amellyel a képernyő-sötétedési késleltetés skálázódik prezentációs módban</translation>
+<translation id="7716781462866245042">A speciális akkumulátortöltési üzemmód napi konfigurációjának beállítása.
+
+          Ez a házirend csak akkor használatos, ha a DeviceAdvancedBatteryChargeModeEnabled igaz értékre van beállítva.
+
+          Ha a házirend nincs konfigurálva vagy aktiválva, akkor a speciális akkumulátortöltési üzemmód mindig le lesz tiltva.
+
+          Megjegyzés: A <ph name="CHARGE_START_TIME_FIELD_NAME" /> értékének kisebbnek kell lennie, mint a <ph name="CHARGE_END_TIME_FIELD_NAME" /> értékének.
+
+          Megjegyzés: A <ph name="MINUTE_FIELD_NAME" /> mező lehetséges értékei a <ph name="CHARGE_START_TIME_FIELD_NAME" /> és <ph name="CHARGE_END_TIME_FIELD_NAME" /> beállításokban a következők: 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">A <ph name="PRODUCT_OS_NAME" /> kisegítő funkcióinak konfigurálása.</translation>
 <translation id="7724994675283793633">Ez a házirend a HTTP/0.9 protokoll használatát más portokon is engedélyezi a HTTP 80-as és a HTTPS 443-as portja mellett.
 
@@ -3462,6 +3632,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
       Meghatározza a bejelentkezési képernyőn képernyőkímélőként használni kívánt bővítmény azonosítóját. A bővítménynek abban az alkalmazáscsomagban kell lennie, amely meg van határozva ennél a domainnél az DeviceAppPack házirend használatával.</translation>
 <translation id="7882857838942884046">A Google Sync szolgáltatása esetén az Android Backup és az Android Restore szolgáltatás nem fog megfelelően működni.</translation>
 <translation id="7882890448959833986">A nem támogatott operációs rendszerre vonatkozó figyelmeztetés elrejtése</translation>
+<translation id="7895553628261067384">Távoli hozzáférés</translation>
 <translation id="7902255855035461275">A listában szereplő mintákat a böngésző egyezteti a kérelmező URL
       biztonsági eredetével. Egyezés esetén a videorögzítő
       eszközökhöz való hozzáférést kérdés nélkül engedélyezi.
@@ -3475,6 +3646,11 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 <translation id="7937491150792971922">Több forrásból származó bővítménytelepítési listákra vonatkozó házirendek összevonása</translation>
 <translation id="7937766917976512374">Videorögzítés engedélyezése vagy tiltása</translation>
 <translation id="7941975817681987555">A hálózati műveletek előrejelzése semmilyen hálózaton ne történjen meg</translation>
+<translation id="7952007677054834789">Az indításkor betöltődő oldalakat, az alapértelmezett kezdőoldalt és az alapértelmezett új lap oldalt konfigurálja a <ph name="PRODUCT_NAME" /> böngészőben, és megakadályozza, hogy a felhasználók módosítsák őket.
+
+      A felhasználó kezdőoldalának beállításai csak akkor lesznek teljesen lezárva, ha a kezdőoldalt választja az új lap oldalnak, vagy ha URL-re állítja be, és megadja a kezdőoldal-URL-t. Ha nem ad meg kezdőoldal-URL-t, akkor a felhasználó továbbra is be tudja állítani kezdőoldalnak az új lap oldalt a „chrome://newtab” meghatározásával.
+
+      Az „Indításkor megnyitandó URL-ek” házirendet figyelmen kívül hagyja a böngésző, kivéve akkor, ha a „Teendő indításkor” részben a „Nyisson meg egy URL-listát” lehetőség lett kiválasztva.</translation>
 <translation id="7952958573604504839">Ez a házirend az M48-as verzióban megszűnt, helyét a <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" /> vette át; az M54-es verzióból pedig teljesen eltávolítottuk.
 
       Bekapcsolja a hálózati előrejelzést a <ph name="PRODUCT_NAME" /> böngészőben, és megakadályozza, hogy a felhasználók megváltoztassák ezt a beállítást.
@@ -3613,6 +3789,7 @@ Ha az irányelv igaz értékre van beállítva, akkor a rendszer a beépített D
 <translation id="8176035528522326671">A vállalati felhasználók csak elsődleges többprofilú felhasználók lehetnek (alapértelmezett működés vállalati kezelésű felhasználók esetén)</translation>
 <translation id="8214600119442850823">A jelszókezelőt konfigurálja</translation>
 <translation id="8217516105848565518">Ez a házirend elavult. Használja helyette a RemoteAccessHostDomainList házirendet.</translation>
+<translation id="8244171102276095471">RC4 rejtjelezési csomagok engedélyezése a TLS protokollban</translation>
 <translation id="8244525275280476362">Maximális lehívási késleltetés házirend-érvénytelenítés után</translation>
 <translation id="8256688113167012935">A(z) <ph name="PRODUCT_OS_NAME" /> által az eszköz megfelelő helyi fiókjának a bejelentkezési képernyőn megjelenített fióknevét szabályozza.
 
@@ -3653,6 +3830,7 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="8312129124898414409">Lehetővé teszi annak beállítását, hogy a webhelyek használhatják-e a kulcslétrehozás funkciót. A kulcslétrehozás funkció használatát egyszerre lehet engedélyezni vagy letiltani az összes webhelynél.
 
           Ha a házirend beállítatlanul marad, a rendszer a „BlockKeygen” értéket használja, és ezt a felhasználó módosíthatja.</translation>
+<translation id="8320149248919453401">Akkumulátortöltési mód</translation>
 <translation id="8329984337216493753">Ez a házirend csak kiállító módban aktív.
 
       Ha meg van határozva a DeviceIdleLogoutTimeout, akkor ez a házirend adja meg, hogy mennyi ideig legyen látható a figyelmeztető mező a visszaszámlálóval, mielőtt megtörténne a felhasználó kijelentkeztetése.
@@ -3819,6 +3997,7 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Ha nincs beállítva, akkor <ph name="PRODUCT_OS_NAME" />-eszközök esetében 345 600 000 ezredmásodperc (négy nap), míg a <ph name="PRODUCT_NAME" /> esetében 604 800 000 ezredmásodperc (egy hét) az alapértelmezett időszak.</translation>
 <translation id="8685024486845674965">Jelszóvédelemmel kapcsolatos figyelmeztetést aktivál a jelszó újrafelhasználása</translation>
 <translation id="8693243869659262736">Beépített DNS-ügyfél használata</translation>
+<translation id="8698286761337647563">Meghatározza, hogy a jelszó lejárta előtt hány nappal történjen az SAML-felhasználók értesítése</translation>
 <translation id="8703488928438047864">Az összetevők állapotának bejelentése</translation>
 <translation id="8703872185032220081">Az energiaellátási peak shift funkció napjainak konfigurálása.
 
@@ -3863,6 +4042,7 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Ha a beállítás le van tiltva, vagy ha nincs konfigurálva, akkor a jelszóvédelmi szolgáltatás a https://myaccounts.google.com webhelyre küldi a felhasználókat jelszómódosítás céljából.
       Ez a házirend csak olyan Windows-példányokon hozzáférhető, amelyek csatlakoznak <ph name="MS_AD_NAME" />-domainhez, illetve csak olyan Windows 10 Pro- vagy Enterprise-példányokon használható, amelyeken aktiválva van az eszközkezelés.</translation>
 <translation id="8798099450830957504">Alapértelmezett</translation>
+<translation id="8800453707696044281">Az akkumulátor töltésének beállítása úgy, hogy abbahagyja a töltést a megadott százalékos érték elérésekor</translation>
 <translation id="8801680448782904838">A felhasználó értesítése arról, hogy ajánlott, illetve szükséges a böngésző vagy az eszköz újraindítása</translation>
 <translation id="8818173863808665831">Az eszköz földrajzi helyének jelentése.
 
@@ -3991,6 +4171,11 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
       Ez a házirend csak azokra a felhasználókra vonatkozik, akik SAML használatával hitelesítik magukat.
 
       A házirend értékét másodpercben kell megadni.</translation>
+<translation id="9018338365267278833">Ez eltávolítja az <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> listán vagy az <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> házirendben szereplő azon bővítményeket, amelyek telepítési módját letiltották, és ezzel együtt törli a helyi felhasználói adatokat is.  A bővítmény adatvédelmi vagy adatmegőrzési irányelvei nyújtanak tájékoztatást arról, mi történik a nem helyben tárolt felhasználói adatokkal.
+
+      Ha a házirend engedélyezve van, akkor a fent említett listákon szereplő bővítményeket (amennyiben már telepítve vannak) a rendszer teljesen eltávolítja az adott eszközről (a helyi felhasználói adatokkal együtt).
+
+      Ha a házirend le van tiltva, vagy ha nincs beállítva, akkor a fent említett listákon szereplő bővítményeket (amennyiben már telepítve vannak, valamint szerepelnek az <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> házirend tiltólistáján) a rendszer letiltja, de nem távolítja el a gépről.</translation>
 <translation id="9027787254195333560">Ez a házirend lehetővé teszi a felhasználó bejelentkezési képernyőn megjelenő avatarképének konfigurálását. A házirend annak az URL-nek a megadásával állítható be, ahonnan a <ph name="PRODUCT_OS_NAME" /> letöltheti az avatarképet és a letöltés integritásának ellenőrzésére szolgáló kriptográfiai hash-értéket. A képnek JPEG-formátumban kell lennie, mérete pedig nem haladhatja meg az 512 kB-ot. Az URL-nek hitelesítés nélkül is hozzáférhetőnek kell lennie.
 
       A letöltés után az avatarkép a gyorsítótárba kerül. Ha az URL vagy a hash megváltozik, a rendszer újra letölti az avatarképet.

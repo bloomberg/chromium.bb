@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Lülitab Bluetoothi sisse või välja. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Juurdepääs kõigile teie tegevustele selle seansi ajal</translation>
 <translation id="1608626060424371292">Eemalda see kasutaja</translation>
-<translation id="1621499497873603021">Aku tühjenemiseni on aega <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Häälpäringu alustamine</translation>
 <translation id="1658406695958299976">Kahjuks ei saanud teie parooli kinnitada. Märkus: kui muutsite parooli hiljuti, rakendub uus parool pärast väljalogimist. Kasutage siin vana parooli.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> tühjenemiseni</translation>
@@ -86,6 +85,7 @@
 <translation id="225680501294068881">Seadmete skannimine ...</translation>
 <translation id="2268130516524549846">Bluetooth on keelatud</translation>
 <translation id="2268813581635650749">Logi kõik kasutajad välja</translation>
+<translation id="2277103315734023688">Keri edasi</translation>
 <translation id="2292698582925480719">Ekraani skaala</translation>
 <translation id="2302092602801625023">Kontot haldab Family Link</translation>
 <translation id="2303600792989757991">Akna ülevaate sisse- ja väljalülitamine</translation>
@@ -138,7 +138,6 @@
 <translation id="2996462380875591307">Dokitud luup on lubatud. Vajutage selle väljalülitamiseks klahvikombinatsiooni Ctrl + otsinguklahv + D.</translation>
 <translation id="3000461861112256445">Monoheli</translation>
 <translation id="3009178788565917040">Väljund</translation>
-<translation id="3019353588588144572">Aku täitumiseni on aega <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Teie jälgitava kasutaja profiil eemaldatakse peagi. Lisateabe saamiseks logige sisse.</translation>
 <translation id="3055162170959710888">Kasutasite seda seadet täna <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">tõstuklahv</translation>
@@ -166,6 +165,7 @@
 <translation id="3371140690572404006">C-tüüpi USB-seade (eesmine parempoolne port)</translation>
 <translation id="3400357268283240774">Lisaseaded</translation>
 <translation id="3413817803639110246">Veel ei ole midagi kuvada</translation>
+<translation id="343571671045587506">Meeldetuletuse muutmine</translation>
 <translation id="3445925074670675829">C-tüüpi USB-seade</translation>
 <translation id="3454224730401036106">Teie ühendus on lülitatud turvalisemale võrgule</translation>
 <translation id="3465223694362104965">Pärast teie viimast sisselogimist lõi muu klaviatuur seadmega ühenduse. Enne klaviatuuri kasutamist veenduge, et see oleks usaldusväärne.</translation>
@@ -199,12 +199,14 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="3900355044994618856">Teie seanss lõpeb <ph name="SESSION_TIME_REMAINING" /> pärast</translation>
 <translation id="3901991538546252627">Võrguga <ph name="NAME" /> ühenduse loomine</translation>
 <translation id="394485226368336402">Heliseaded</translation>
+<translation id="3962859241508114581">Eelmine lugu</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
 <translation id="3995138139523574647">C-tüüpi USB-seade (tagumine parempoolne port)</translation>
 <translation id="4017989525502048489">Laserkursor</translation>
 <translation id="4042660782729322247">Jagate oma ekraanikuva</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Rakenduse puhul välja lülitatud}other{# rakenduse puhul välja lülitatud}}</translation>
 <translation id="4072264167173457037">Keskmine signaal</translation>
+<translation id="4112140312785995938">Keri tagasi</translation>
 <translation id="4129129681837227511">Lukustuskuval märguannete nägemiseks avage ekraan ja muutke seadet</translation>
 <translation id="4146833061457621061">Esita muusikat</translation>
 <translation id="4181841719683918333">Keeled</translation>
@@ -228,6 +230,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4421231901400348175">Ekraani juhtimise jagamine isikuga <ph name="HELPER_NAME" /> kaugabi kaudu.</translation>
 <translation id="4430019312045809116">Helitugevus</translation>
 <translation id="4450893287417543264">Ära kuva uuesti</translation>
+<translation id="4477350412780666475">Järgmine lugu</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Sidumata seadmed</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: ühendamine ...</translation>
@@ -365,7 +368,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="6715542151869432661">Mobiilseadmeid ei leitud.</translation>
 <translation id="6723839937902243910">Toide</translation>
 <translation id="6751826523481687655">Toimivuse jälgimine on sisse lülitatud</translation>
-<translation id="6785414152754474415">Aku on <ph name="PERCENTAGE" />% täis ja seda laetakse.</translation>
 <translation id="6790428901817661496">Esita</translation>
 <translation id="6803622936009808957">Ei saanud kuvasid peegeldada, kuna toetatud eraldusvõimeid ei leitud. Selle asemel siseneti laiendatud töölaua režiimi.</translation>
 <translation id="6820676911989879663">Tehke paus!</translation>
@@ -393,6 +395,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="7222902781030499995">Peata taimer</translation>
 <translation id="7256634071279256947">Tagumine mikrofon</translation>
 <translation id="726276584504105859">Jagatud ekraani kasutamiseks lohistage siia</translation>
+<translation id="7262906531272962081">Loo meeldetuletus</translation>
 <translation id="7303365578352795231">Vastamine muus seadmes.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Ekraanil kuvatav klaviatuur</translation>
@@ -520,7 +523,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="9179259655489829027">See funktsioon võimaldab teil parooli sisestamata pääseda kiirelt juurde kõigile sisselogitud kasutajatele. Kasutage seda funktsiooni vaid kontode puhul, mida usaldate.</translation>
 <translation id="9193626018745640770">Ülekandmine tundmatus vastuvõtjas</translation>
 <translation id="9194617393863864469">Logi sisse teine kasutaja ...</translation>
-<translation id="9201131092683066720">Aku on <ph name="PERCENTAGE" />% täis.</translation>
 <translation id="9210037371811586452">Ühendatud töölaua režiimist väljumine</translation>
 <translation id="9215934040295798075">Taustapildi määramine</translation>
 <translation id="921989828232331238">Vanem lukustas sinu seadme päevaks</translation>

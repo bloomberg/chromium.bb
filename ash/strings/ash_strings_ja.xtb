@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Bluetooth を切り替えます。<ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">このセッションのすべてのアクティビティにアクセスする</translation>
 <translation id="1608626060424371292">このユーザーを削除</translation>
-<translation id="1621499497873603021">バッテリーが空になるまであと: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">音声検索を開始</translation>
 <translation id="1658406695958299976">パスワードをまだ確認できません。注: パスワードを最近変更した場合、新しいパスワードはログアウトした後に適用されます。こちらでは古いパスワードを使用してください。</translation>
 <translation id="1677472565718498478">あと <ph name="TIME" /></translation>
@@ -86,6 +85,7 @@
 <translation id="225680501294068881">デバイスをスキャンしています...</translation>
 <translation id="2268130516524549846">Bluetooth オフ</translation>
 <translation id="2268813581635650749">すべてログアウト</translation>
+<translation id="2277103315734023688">前方にシーク再生</translation>
 <translation id="2292698582925480719">表示スケール</translation>
 <translation id="2302092602801625023">このアカウントはファミリー リンクによって管理されています</translation>
 <translation id="2303600792989757991">ウィンドウ切り替えの概要</translation>
@@ -138,7 +138,6 @@
 <translation id="2996462380875591307">拡大鏡（ドッキング）がオンになっています。オフにするには Ctrl+検索+D キーをもう一度押します。</translation>
 <translation id="3000461861112256445">モノラル音声</translation>
 <translation id="3009178788565917040">出力</translation>
-<translation id="3019353588588144572">バッテリーがフル充電されるまであと: <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">管理対象のユーザー プロフィールはまもなく削除されます。ログインして詳細をご確認ください。</translation>
 <translation id="3055162170959710888">あなたは今日、このデバイスを <ph name="USED_TIME" />使用しました</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -166,6 +165,7 @@
 <translation id="3371140690572404006">USB-C デバイス（右手前のポート）</translation>
 <translation id="3400357268283240774">その他の設定</translation>
 <translation id="3413817803639110246">通知はありません</translation>
+<translation id="343571671045587506">リマインダーの編集</translation>
 <translation id="3445925074670675829">USB-C デバイス</translation>
 <translation id="3454224730401036106">より安全なネットワークに接続が切り替えられました</translation>
 <translation id="3465223694362104965">前回のログイン後に、別のキーボードがこのデバイスに接続されました。このキーボードを使用する前に信頼できるものかどうか確認してください。</translation>
@@ -198,12 +198,14 @@
 <translation id="3900355044994618856">セッションの制限時間まであと <ph name="SESSION_TIME_REMAINING" /> です</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> に接続しています</translation>
 <translation id="394485226368336402">音声設定</translation>
+<translation id="3962859241508114581">前の曲</translation>
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="3995138139523574647">USB-C デバイス（右奥のポート）</translation>
 <translation id="4017989525502048489">レーザー ポインタ</translation>
 <translation id="4042660782729322247">画面を共有しています</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{1 件のアプリでオフ}other{# 件のアプリでオフ}}</translation>
 <translation id="4072264167173457037">電波: 中程度</translation>
+<translation id="4112140312785995938">後方にシーク再生</translation>
 <translation id="4129129681837227511">ロック画面に通知を表示するには、ロックを解除して設定を変更してください</translation>
 <translation id="4146833061457621061">音楽を再生して</translation>
 <translation id="4181841719683918333">言語</translation>
@@ -227,6 +229,7 @@
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4450893287417543264">次回から表示しない</translation>
+<translation id="4477350412780666475">次の曲</translation>
 <translation id="4479639480957787382">イーサネット</translation>
 <translation id="4481530544597605423">ペア設定されていないデバイス</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: 接続しています...</translation>
@@ -364,7 +367,6 @@
 <translation id="6715542151869432661">モバイル デバイスが見つかりませんでした。</translation>
 <translation id="6723839937902243910">電源</translation>
 <translation id="6751826523481687655">パフォーマンス追跡機能が有効になっています</translation>
-<translation id="6785414152754474415">バッテリー残量: <ph name="PERCENTAGE" />%、充電しています。</translation>
 <translation id="6790428901817661496">再生</translation>
 <translation id="6803622936009808957">サポートされている解像度が見つからなかったため、ディスプレイをミラーリングできませんでした。代わりに拡張デスクトップ モードに切り替えました。</translation>
 <translation id="6820676911989879663">休憩の時間です！</translation>
@@ -392,6 +394,7 @@
 <translation id="7222902781030499995">タイマーを停止します</translation>
 <translation id="7256634071279256947">後方のマイク</translation>
 <translation id="726276584504105859">分割画面を使用するにはここにドラッグします</translation>
+<translation id="7262906531272962081">リマインダーの作成</translation>
 <translation id="7303365578352795231">別のデバイスで応答しています。</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">画面キーボード</translation>
@@ -520,7 +523,6 @@
 <translation id="9179259655489829027">この機能を使用すると、パスワードを入力せずにログイン ユーザーにすばやくアクセスできます。この機能は信頼できるアカウントにのみ使用してください。</translation>
 <translation id="9193626018745640770">不明な受信デバイスにキャストしています</translation>
 <translation id="9194617393863864469">別のユーザーとしてログイン...</translation>
-<translation id="9201131092683066720">バッテリー残量: <ph name="PERCENTAGE" />%。</translation>
 <translation id="9210037371811586452">デスクトップ統合モードの終了中</translation>
 <translation id="9215934040295798075">壁紙を設定</translation>
 <translation id="921989828232331238">保護者の方がこのデバイスを終日ロックしています</translation>

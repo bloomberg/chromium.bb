@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">روشن/خاموش کردن بلوتوث. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">به همه فعالیت‌هایتان در این جلسه دسترسی پیدا کنید</translation>
 <translation id="1608626060424371292">حذف این کاربر</translation>
-<translation id="1621499497873603021">زمان باقیمانده تا خالی‌شدن شارژ باتری، <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">شروع پُرسمان صوتی</translation>
 <translation id="1658406695958299976">متأسفیم، گذرواژه‌تان هنوز تأیید نشده است. توجه: اگر به‌تازگی گذرواژه‌تان را تغییر داده‌اید، گذرواژه جدید شما هنگامی‌که از سیستم خارج شوید، اعمال می‌شود؛ لطفاً اینجا از گذرواژه قدیمی خود استفاده کنید.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> باقی‌مانده</translation>
@@ -86,6 +85,7 @@
 <translation id="225680501294068881">درحال جستجو برای دستگاه‌ها...</translation>
 <translation id="2268130516524549846">بلوتوث غیرفعال است</translation>
 <translation id="2268813581635650749">خروج همه از سیستم</translation>
+<translation id="2277103315734023688">رفتن به جلو</translation>
 <translation id="2292698582925480719">مقیاس نمایش</translation>
 <translation id="2302092602801625023">‏این حساب با Family Link مدیریت می‌شود</translation>
 <translation id="2303600792989757991">مروری کلی بر پنجره تغییر حالت</translation>
@@ -138,7 +138,6 @@
 <translation id="2996462380875591307">‏«ذره‌بین متصل» فعال شد. برای خاموش کردن آن، Ctrl+Search+D را دوباره فشار دهید.</translation>
 <translation id="3000461861112256445">صدای مونو</translation>
 <translation id="3009178788565917040">خروجی</translation>
-<translation id="3019353588588144572">زمان باقی مانده تا شارژ کامل باتری، <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">نمایه کاربر تحت‌نظارت به‌زودی برداشته می‌شود. برای اطلاعات بیشتر به سیستم وارد شوید.</translation>
 <translation id="3055162170959710888">امروز از این دستگاه به‌مدت <ph name="USED_TIME" /> استفاده کردید</translation>
 <translation id="3077734595579995578">تبدیل</translation>
@@ -166,6 +165,7 @@
 <translation id="3371140690572404006">‏دستگاه USB-C (درگاه جلوی سمت راست)</translation>
 <translation id="3400357268283240774">تنظیمات بیشتر</translation>
 <translation id="3413817803639110246">هنوز چیزی برای دیدن وجود ندارد</translation>
+<translation id="343571671045587506">ویرایش یادآوری</translation>
 <translation id="3445925074670675829">‏دستگاه USB-C</translation>
 <translation id="3454224730401036106">اتصال شما به شبکه‌ ایمن‌تری منتقل شده است</translation>
 <translation id="3465223694362104965">از آخرین باری که به سیستم وارد شدید، صفحه‌کلید دیگری به این دستگاه متصل شده است. قبل از استفاده از این صفحه‌کلید، مطمئن شوید به آن اعتماد دارید.</translation>
@@ -198,12 +198,14 @@
 <translation id="3900355044994618856">جلسه‌تان <ph name="SESSION_TIME_REMAINING" /> دیگر به پایان می‌رسد</translation>
 <translation id="3901991538546252627">در حال اتصال به <ph name="NAME" /></translation>
 <translation id="394485226368336402">تنظیمات صوتی</translation>
+<translation id="3962859241508114581">آهنگ قبلی</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="3995138139523574647">‏دستگاه USB-C (درگاه عقب سمت راست)</translation>
 <translation id="4017989525502048489">اشاره‌گر لیزری</translation>
 <translation id="4042660782729322247">درحال اشتراک‌گذاری صفحه‌تان هستید</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{خاموش برای یک برنامه}one{خاموش برای # برنامه}other{خاموش برای # برنامه}}</translation>
 <translation id="4072264167173457037">سیگنال متوسط</translation>
+<translation id="4112140312785995938">رفتن به عقب</translation>
 <translation id="4129129681837227511">برای دیدن اعلان‌ها در صفحه قفل، ابتدا قفل را باز کنید و تنظیمات را تغییر دهید</translation>
 <translation id="4146833061457621061">‏Play music (موسیقی پخش کن)</translation>
 <translation id="4181841719683918333">زبان‌ها</translation>
@@ -228,6 +230,7 @@
 <translation id="4421231901400348175">هم‌رسانی کنترل صفحه‌تان با <ph name="HELPER_NAME" /> از طریق راهنمایی ازراه‌دور.</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
 <translation id="4450893287417543264">دیگر نشان داده نشود</translation>
+<translation id="4477350412780666475">آهنگ بعدی</translation>
 <translation id="4479639480957787382">اترنت</translation>
 <translation id="4481530544597605423">دستگاه‌های لغو ارتباط‌شده</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: در حال اتصال...</translation>
@@ -365,7 +368,6 @@
 <translation id="6715542151869432661">هیچ دستگاه همراهی پیدا نشد.</translation>
 <translation id="6723839937902243910">نیرو</translation>
 <translation id="6751826523481687655">ردیابی عملکرد روشن است</translation>
-<translation id="6785414152754474415">باتری <ph name="PERCENTAGE" /> درصد پر و درحال شارژ است.</translation>
 <translation id="6790428901817661496">پخش</translation>
 <translation id="6803622936009808957">نمایش یک تصویر واحد در چند صفحه نمایش ممکن نیست زیرا وضوح تصویر پشتیبانی شده‌ای وجود ندارد. بجای آن حالت نمایش دسک‌تاپ چند بخشی استفاده می‌شود.</translation>
 <translation id="6820676911989879663">استراحت کنید!</translation>
@@ -393,6 +395,7 @@
 <translation id="7222902781030499995">توقف تایمر</translation>
 <translation id="7256634071279256947">میکروفون پشت</translation>
 <translation id="726276584504105859">برای استفاده از تقسیم صفحه، به اینجا بکشید</translation>
+<translation id="7262906531272962081">ایجاد یادآوری</translation>
 <translation id="7303365578352795231">درحال پاسخ دادن در دستگاه دیگر.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">صفحه‌کلید روی صفحه</translation>
@@ -520,7 +523,6 @@
 <translation id="9179259655489829027">این ویژگی امکان می‌دهد بدون نیاز به گذرواژه، به هر کاربری که به سیستم واردشده به‌سرعت دسترسی داشته باشید. تنها برای حساب‌های مورد اعتمادتان از این ویژگی استفاده کنید.</translation>
 <translation id="9193626018745640770">درحال ارسال محتوا به گیرنده ناشناس</translation>
 <translation id="9194617393863864469">ورود به سیستم حسابی دیگر...</translation>
-<translation id="9201131092683066720">باتری <ph name="PERCENTAGE" /> درصد پر است.</translation>
 <translation id="9210037371811586452">خروج از حالت میزکار یکپارچه</translation>
 <translation id="9215934040295798075">تنظیم کاغذدیواری</translation>
 <translation id="921989828232331238">پدر یا مادرتان دستگاهتان را برای تمام روز قفل کرده‌ است</translation>

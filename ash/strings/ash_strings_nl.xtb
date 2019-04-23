@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Bluetooth schakelen. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Al je activiteit in deze sessie bekijken</translation>
 <translation id="1608626060424371292">Deze gebruiker verwijderen</translation>
-<translation id="1621499497873603021">Resterende tijd totdat de batterij leeg is: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Een gesproken zoekopdracht starten</translation>
 <translation id="1658406695958299976">Je wachtwoord kan nog steeds niet worden geverifieerd. Opmerking: Als je je wachtwoord onlangs hebt gewijzigd, wordt je nieuwe wachtwoord doorgevoerd wanneer je uitlogt. Gebruik hier het oude wachtwoord.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> resterend</translation>
@@ -139,7 +138,6 @@
 <translation id="2996462380875591307">'Gedockt vergrootglas' is ingeschakeld. Druk nogmaals op Ctrl+Zoeken+D om dit uit te schakelen.</translation>
 <translation id="3000461861112256445">Monogeluid</translation>
 <translation id="3009178788565917040">Uitgang</translation>
-<translation id="3019353588588144572">Resterende tijd totdat de batterij volledig is opgeladen: <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Je gebruikersprofiel met beperkte rechten wordt binnenkort verwijderd. Log in voor meer informatie.</translation>
 <translation id="3055162170959710888">Je hebt dit apparaat vandaag <ph name="USED_TIME" /> gebruikt</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -369,7 +367,6 @@
 <translation id="6715542151869432661">Geen mobiele apparaten gevonden.</translation>
 <translation id="6723839937902243910">Voeding</translation>
 <translation id="6751826523481687655">Bijhouden van prestaties is ingeschakeld</translation>
-<translation id="6785414152754474415">De batterij is <ph name="PERCENTAGE" />% vol en wordt opgeladen.</translation>
 <translation id="6790428901817661496">Spelen</translation>
 <translation id="6803622936009808957">Kan schermen niet spiegelen, omdat er geen ondersteunde resoluties zijn gevonden. Het uitgebreide bureaublad is geactiveerd.</translation>
 <translation id="6820676911989879663">Neem een pauze</translation>
@@ -525,7 +522,6 @@
 <translation id="9179259655489829027">Met deze functie kun je snel zonder wachtwoord toegang krijgen tot iedere ingelogde gebruiker. Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="9193626018745640770">Casten naar een onbekende ontvanger</translation>
 <translation id="9194617393863864469">Als andere gebruiker inloggen...</translation>
-<translation id="9201131092683066720">De batterij is <ph name="PERCENTAGE" />% vol.</translation>
 <translation id="9210037371811586452">Samengestelde desktopmodus wordt gesloten</translation>
 <translation id="9215934040295798075">Achtergrond instellen</translation>
 <translation id="921989828232331238">Je ouder heeft je apparaat de hele dag vergrendeld</translation>

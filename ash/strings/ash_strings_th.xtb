@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">เปิด/ปิดบลูทูธ <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">เข้าถึงกิจกรรมทั้งหมดของคุณในเซสชันนี้</translation>
 <translation id="1608626060424371292">ลบผู้ใช้รายนี้</translation>
-<translation id="1621499497873603021">เวลาที่เหลือกว่าแบตเตอรี่จะหมด, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">เริ่มการค้นหาด้วยเสียง</translation>
 <translation id="1658406695958299976">ขออภัย ยังคงยืนยันรหัสผ่านไม่ได้ หมายเหตุ: หากคุณเปลี่ยนแปลงรหัสผ่านไปเมื่อเร็วๆ นี้ รหัสผ่านใหม่จะมีผลเมื่อคุณออกจากระบบ โปรดใช้รหัสผ่านเดิมที่นี่</translation>
 <translation id="1677472565718498478">ใช้ได้อีก <ph name="TIME" /></translation>
@@ -86,6 +85,7 @@
 <translation id="225680501294068881">กำลังสแกนหาอุปกรณ์...</translation>
 <translation id="2268130516524549846">ปิดใช้งานบลูทูธแล้ว</translation>
 <translation id="2268813581635650749">ออกจากระบบทั้งหมด</translation>
+<translation id="2277103315734023688">ไปข้างหน้า</translation>
 <translation id="2292698582925480719">ระดับการแสดงผล</translation>
 <translation id="2302092602801625023">บัญชีนี้จัดการโดย Family Link</translation>
 <translation id="2303600792989757991">ภาพรวมการสลับหน้าต่าง</translation>
@@ -138,7 +138,6 @@
 <translation id="2996462380875591307">เปิดใช้แว่นขยายหน้าจอบางส่วนแล้ว กด Ctrl+Search+D อีกครั้งเพื่อสลับเป็นปิด</translation>
 <translation id="3000461861112256445">เสียงแบบโมโน</translation>
 <translation id="3009178788565917040">เอาต์พุต</translation>
-<translation id="3019353588588144572">เวลาที่เหลือกว่าจะชาร์จแบตเตอรี่เต็ม, <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">ระบบจะนำโปรไฟล์ผู้ใช้ภายใต้การควบคุมดูแลออกในเร็วๆ นี้ ลงชื่อเข้าใช้เพื่อดูข้อมูลเพิ่มเติม</translation>
 <translation id="3055162170959710888">วันนี้คุณใช้อุปกรณ์เครื่องนี้ไป <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -166,6 +165,7 @@
 <translation id="3371140690572404006">อุปกรณ์ USB-C (พอร์ตด้านหน้าขวา)</translation>
 <translation id="3400357268283240774">การตั้งค่าเพิ่มเติม</translation>
 <translation id="3413817803639110246">ไม่มีการแจ้งเตือนใหม่</translation>
+<translation id="343571671045587506">แก้ไขการช่วยเตือน</translation>
 <translation id="3445925074670675829">อุปกรณ์ USB-C</translation>
 <translation id="3454224730401036106">ระบบเปลี่ยนไปเชื่อมต่อกับเครือข่ายที่ปลอดภัยกว่าเดิมแล้ว</translation>
 <translation id="3465223694362104965">แป้นพิมพ์อีกรายการหนึ่งเชื่อมต่อกับอุปกรณ์นี้นับจากที่คุณลงชื่อเข้าใช้ครั้งล่าสุด โปรดตรวจสอบว่าแป้นพิมพ์นี้เชื่อถือได้ก่อนใช้งาน</translation>
@@ -198,12 +198,14 @@
 <translation id="3900355044994618856">เซสชันจะสิ้นสุดใน <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">กำลังเชื่อมต่อกับ <ph name="NAME" /></translation>
 <translation id="394485226368336402">การตั้งค่าเสียง</translation>
+<translation id="3962859241508114581">แทร็กก่อนหน้า</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="3995138139523574647">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
 <translation id="4017989525502048489">ตัวชี้เลเซอร์</translation>
 <translation id="4042660782729322247">คุณกำลังแชร์หน้าจอ</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ปิดไว้สำหรับ 1 แอป}other{ปิดไว้สำหรับ # แอป}}</translation>
 <translation id="4072264167173457037">สัญญาณแรงปานกลาง</translation>
+<translation id="4112140312785995938">ย้อนกลับ</translation>
 <translation id="4129129681837227511">หากต้องการดูการแจ้งเตือนในหน้าจอล็อก ให้ปลดล็อกเพื่อเปลี่ยนการตั้งค่า</translation>
 <translation id="4146833061457621061">เปิดเพลง</translation>
 <translation id="4181841719683918333">ภาษา</translation>
@@ -228,6 +230,7 @@
 <translation id="4421231901400348175">กำลังแชร์การควบคุมหน้าจอกับ <ph name="HELPER_NAME" /> ผ่านความช่วยเหลือระยะไกล</translation>
 <translation id="4430019312045809116">ระดับเสียง</translation>
 <translation id="4450893287417543264">ไม่ต้องแสดงอีก</translation>
+<translation id="4477350412780666475">แทร็กถัดไป</translation>
 <translation id="4479639480957787382">อีเทอร์เน็ต</translation>
 <translation id="4481530544597605423">อุปกรณ์ที่ไม่ได้จับคู่</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: กำลังเชื่อมต่อ...</translation>
@@ -365,7 +368,6 @@
 <translation id="6715542151869432661">ไม่พบอุปกรณ์เคลื่อนที่</translation>
 <translation id="6723839937902243910">พลังงาน</translation>
 <translation id="6751826523481687655">การติดตามประสิทธิภาพเปิดอยู่</translation>
-<translation id="6785414152754474415">มีแบตเตอรี่ <ph name="PERCENTAGE" />% และกำลังชาร์จ</translation>
 <translation id="6790428901817661496">เล่น</translation>
 <translation id="6803622936009808957">ไม่สามารถแสดงผลคู่ขนานได้เนื่องจากไม่พบความละเอียดที่สนับสนุน เข้าสู่เดสก์ท็อปแบบขยายแทน</translation>
 <translation id="6820676911989879663">พักสายตาหน่อย</translation>
@@ -393,6 +395,7 @@
 <translation id="7222902781030499995">หยุดตัวจับเวลา</translation>
 <translation id="7256634071279256947">ไมโครโฟนด้านหลัง</translation>
 <translation id="726276584504105859">ลากมาที่นี่เพื่อใช้การแยกหน้าจอ</translation>
+<translation id="7262906531272962081">สร้างการช่วยเตือน</translation>
 <translation id="7303365578352795231">กำลังรับสายในอุปกรณ์อื่น</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">แป้นพิมพ์บนหน้าจอ</translation>
@@ -520,7 +523,6 @@
 <translation id="9179259655489829027">ฟีเจอร์นี้ช่วยให้เข้าถึงผู้ใช้ที่ลงชื่อเข้าใช้แล้วได้อย่างรวดเร็วโดยไม่ต้องใช้รหัสผ่าน ใช้ฟีเจอร์นี้กับบัญชีที่คุณเชื่อถือเท่านั้น</translation>
 <translation id="9193626018745640770">กำลังแคสต์ไปยังเครื่องรับที่ไม่รู้จัก</translation>
 <translation id="9194617393863864469">ลงชื่อเข้าใช้ด้วยชื่อผู้ใช้อื่น...</translation>
-<translation id="9201131092683066720">มีแบตเตอรี่ <ph name="PERCENTAGE" />%</translation>
 <translation id="9210037371811586452">กำลังออกจากโหมดเดสก์ท็อปแบบรวมหลายหน้าจอ</translation>
 <translation id="9215934040295798075">ตั้งค่าวอลเปเปอร์</translation>
 <translation id="921989828232331238">ผู้ปกครองล็อกอุปกรณ์ของคุณไว้ทั้งวัน</translation>

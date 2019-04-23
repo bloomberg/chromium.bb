@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Alternar Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">acessar todas as suas atividades nesta sessão;</translation>
 <translation id="1608626060424371292">Remover este usuário</translation>
-<translation id="1621499497873603021">O tempo restante até que a bateria se esgote é de <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Iniciar uma consulta por voz</translation>
 <translation id="1658406695958299976">Ainda não foi possível confirmar sua senha. Observação: se você alterou sua senha recentemente, a nova senha será aplicada depois que você sair da conta. Use a senha antiga aqui.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
@@ -86,6 +85,7 @@
 <translation id="225680501294068881">Procurando dispositivos...</translation>
 <translation id="2268130516524549846">Bluetooth desativado</translation>
 <translation id="2268813581635650749">Desconectar todos</translation>
+<translation id="2277103315734023688">Avançar</translation>
 <translation id="2292698582925480719">Escala de exibição</translation>
 <translation id="2302092602801625023">Esta conta é gerenciada pelo Family Link</translation>
 <translation id="2303600792989757991">Visão geral da janela de alternância</translation>
@@ -138,7 +138,6 @@
 <translation id="2996462380875591307">Lupa ancorada ativada. Pressione Ctrl+Pesquisa+D novamente para desativá-la.</translation>
 <translation id="3000461861112256445">Áudio mono</translation>
 <translation id="3009178788565917040">Saída</translation>
-<translation id="3019353588588144572">O tempo restante até que a bateria esteja totalmente carregada é de <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Seu perfil de usuário supervisionado será removido em breve. Faça login para saber mais.</translation>
 <translation id="3055162170959710888">Você usou este dispositivo por <ph name="USED_TIME" /> hoje</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -166,6 +165,7 @@
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal da direita)</translation>
 <translation id="3400357268283240774">Configurações adicionais</translation>
 <translation id="3413817803639110246">Nada para ver ainda</translation>
+<translation id="343571671045587506">Editar lembrete</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3454224730401036106">Sua conexão foi alterada para uma rede mais segura</translation>
 <translation id="3465223694362104965">Outro teclado foi conectado a este dispositivo desde seu último acesso. Verifique se esse teclado é confiável antes de usá-lo.</translation>
@@ -198,12 +198,14 @@
 <translation id="3900355044994618856">Sua sessão terminará em <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Conectando-se a <ph name="NAME" /></translation>
 <translation id="394485226368336402">Configurações de áudio</translation>
+<translation id="3962859241508114581">Faixa anterior</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="4017989525502048489">Apontador laser</translation>
 <translation id="4042660782729322247">Você está compartilhando sua tela</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desativadas para um app}one{Desativadas para # app}other{Desativadas para # apps}}</translation>
 <translation id="4072264167173457037">Sinal médio</translation>
+<translation id="4112140312785995938">Retroceder</translation>
 <translation id="4129129681837227511">Para ver as notificações na sua tela de bloqueio, desbloqueie a tela e altere a configuração</translation>
 <translation id="4146833061457621061">Ouvir música</translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -228,6 +230,7 @@
 <translation id="4421231901400348175">Compartilhando o controle da sua tela com <ph name="HELPER_NAME" /> via Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Não mostrar novamente</translation>
+<translation id="4477350412780666475">Próxima faixa</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Dispositvos não pareados</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: conectando...</translation>
@@ -366,7 +369,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6715542151869432661">Nenhum dispositivo móvel encontrado.</translation>
 <translation id="6723839937902243910">Energia</translation>
 <translation id="6751826523481687655">O acompanhamento de desempenho está ativado</translation>
-<translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE" />% cheia e carregando.</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6803622936009808957">Não foi possível espelhar os displays porque não foram encontradas resoluções suportadas. Em vez disso, foi ativada a área de trabalho estendida.</translation>
 <translation id="6820676911989879663">Faça uma pausa</translation>
@@ -394,6 +396,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7222902781030499995">Parar timer</translation>
 <translation id="7256634071279256947">Microfone traseiro</translation>
 <translation id="726276584504105859">Arraste aqui para usar a tela dividida</translation>
+<translation id="7262906531272962081">Criar lembrete</translation>
 <translation id="7303365578352795231">Respondendo em outro dispositivo.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Teclado virtual</translation>
@@ -521,7 +524,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="9179259655489829027">Este recurso permite acessar rapidamente qualquer usuário conectado sem a necessidade de uma senha. Use esse recurso somente com contas em que você confia.</translation>
 <translation id="9193626018745640770">Transmitindo para um destinatário desconhecido</translation>
 <translation id="9194617393863864469">Fazer login com outro usuário...</translation>
-<translation id="9201131092683066720">A bateria está <ph name="PERCENTAGE" />% carregada.</translation>
 <translation id="9210037371811586452">Saindo do modo de área de trabalho unificada</translation>
 <translation id="9215934040295798075">Definir plano de fundo</translation>
 <translation id="921989828232331238">Seu pai/mãe bloqueou o dispositivo por hoje</translation>

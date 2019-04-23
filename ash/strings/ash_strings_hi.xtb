@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">ब्लूटूथ टॉगल करें. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">इस सत्र में अपनी सभी गतिविधि एक्सेस करें</translation>
 <translation id="1608626060424371292">इस उपयोगकर्ता को हटाएं</translation>
-<translation id="1621499497873603021">बैटरी के खाली होने में शेष समय, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">बोलकर खोजना शुरू करें</translation>
 <translation id="1658406695958299976">माफ़ करें, आपके पासवर्ड की अब भी पुष्टि नहीं हो पाई है. नोट: अगर आपने हाल ही में अपना पासवर्ड बदला है, तो आपके साइन आउट होते ही आपका नया पासवर्ड लागू हो जाएगा, कृपया यहां पुराने पासवर्ड का इस्तेमाल करें.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> शेष</translation>
@@ -86,6 +85,7 @@
 <translation id="225680501294068881">डिवाइस स्कैन किए जा रहे हैं...</translation>
 <translation id="2268130516524549846">ब्लूटूथ अक्षम किया गया</translation>
 <translation id="2268813581635650749">सभी प्रस्थान करें</translation>
+<translation id="2277103315734023688">आगे बढ़ाएं</translation>
 <translation id="2292698582925480719">डिसप्ले पैमाना</translation>
 <translation id="2302092602801625023">यह खाता Family Link के ज़रिए प्रबंधित किया जाता है</translation>
 <translation id="2303600792989757991">टॉगल विंडो का संक्षिप्त विवरण</translation>
@@ -138,7 +138,6 @@
 <translation id="2996462380875591307">सामग्री को बड़ा दिखाने की डॉक की गई सुविधा चालू है. उसे बंद पर टॉगल करने के लिए Ctrl+Search+D फिर से दबाएं.</translation>
 <translation id="3000461861112256445">मोनो ऑडियो</translation>
 <translation id="3009178788565917040">आउटपुट</translation>
-<translation id="3019353588588144572">बैटरी के पूरी तरह से चार्ज होने में शेष समय, <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">निगरानी में रखी गई आपकी उपयोगकर्ता प्रोफ़ाइल जल्द ही हटा दी जाएगी. ज़्यादा जानने के लिए साइन इन करें.</translation>
 <translation id="3055162170959710888">आपने आज इस डिवाइस का <ph name="USED_TIME" /> तक इस्तेमाल कर लिया है</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -166,6 +165,7 @@
 <translation id="3371140690572404006">USB-C डिवाइस (दायां सामने वाला पोर्ट)</translation>
 <translation id="3400357268283240774">अतिरिक्त सेटिंग</translation>
 <translation id="3413817803639110246">अभी देखने के लिए कुछ भी नहीं है</translation>
+<translation id="343571671045587506">रिमाइंडर बदलें</translation>
 <translation id="3445925074670675829">USB-C डिवाइस</translation>
 <translation id="3454224730401036106">आपका कनेक्शन ज़्यादा सुरक्षित नेटवर्क पर स्विच कर दिया गया है</translation>
 <translation id="3465223694362104965">आपके अंतिम बार साइन इन किए जाने के समय से इस डिवाइस से कोई और कीबोर्ड कनेक्ट किया गया है. इस कीबोर्ड का इस्तेमाल करने से पहले पक्का करें कि यह भरोसेमंद है.</translation>
@@ -199,12 +199,14 @@
 <translation id="3900355044994618856">आपका सत्र <ph name="SESSION_TIME_REMAINING" /> में खत्म होने वाला है</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> से कनेक्‍ट हो रहा है</translation>
 <translation id="394485226368336402">ऑडियो सेटिंग</translation>
+<translation id="3962859241508114581">पिछला ट्रैक</translation>
 <translation id="397105322502079400">गणना की जा रही है...</translation>
 <translation id="3995138139523574647">USB-C डिवाइस (दायां पिछला पोर्ट)</translation>
 <translation id="4017989525502048489">लेज़र पॉइंटर</translation>
 <translation id="4042660782729322247">आप अपनी स्क्रीन शेयर कर रहे हैं</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{एक ऐप्लिकेशन के लिए बंद है}one{# ऐप्लिकेशन के लिए बंद है}other{# ऐप्लिकेशन के लिए बंद है}}</translation>
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
+<translation id="4112140312785995938">पीछे जाएं</translation>
 <translation id="4129129681837227511">अपनी लॉक स्क्रीन पर सूचनाएं देखने की सेटिंग बदलने के लिए स्क्रीन अनलॉक करें</translation>
 <translation id="4146833061457621061">गाने चलाओ</translation>
 <translation id="4181841719683918333">भाषाएं</translation>
@@ -228,6 +230,7 @@
 <translation id="4421231901400348175">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायक के द्वारा <ph name="HELPER_NAME" /> से शेयर किया जा रहा है.</translation>
 <translation id="4430019312045809116">मात्रा</translation>
 <translation id="4450893287417543264">फिर से न दिखाएं</translation>
+<translation id="4477350412780666475">अगला ट्रैक</translation>
 <translation id="4479639480957787382">इथरनेट</translation>
 <translation id="4481530544597605423">अयुग्मित किए गए डिवाइस</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: कनेक्ट हो रहा है...</translation>
@@ -365,7 +368,6 @@
 <translation id="6715542151869432661">कोई मोबाइल डिवाइस नहीं मिला.</translation>
 <translation id="6723839937902243910">पावर</translation>
 <translation id="6751826523481687655">'परफ़ॉर्मेंस ट्रेसिंग' चालू कर दी गई है</translation>
-<translation id="6785414152754474415">बैटरी <ph name="PERCENTAGE" />% भरी हुई है और चार्ज हो रही है.</translation>
 <translation id="6790428901817661496">चलाएं</translation>
 <translation id="6803622936009808957">प्रदर्शनों को मिरर नहीं किया जा सका क्योंकि कोई समर्थित रिज़ॉल्यूशन नहीं मिला. इसके बजाय विस्तारित डेस्कटॉप में चला गया है.</translation>
 <translation id="6820676911989879663">आज के लिए इतना ही!</translation>
@@ -393,6 +395,7 @@
 <translation id="7222902781030499995">टाइमर बंद करें</translation>
 <translation id="7256634071279256947">पीछे वाला माइक्रोफ़ोन</translation>
 <translation id="726276584504105859">दो स्क्रीन का इस्तेमाल करने के लिए यहां खींचें और छोडें</translation>
+<translation id="7262906531272962081">रिमाइंडर लगाएं</translation>
 <translation id="7303365578352795231">दूसरे डिवाइस पर जवाब देना.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">ऑन-स्‍क्रीन कीबोर्ड</translation>
@@ -520,7 +523,6 @@
 <translation id="9179259655489829027">यह फ़ीचर आपको पासवर्ड के बिना किसी भी साइन इन किए हुए उपयोगकर्ता को जल्दी से एक्सेस करने देता है. इस फ़ीचर का इस्तेमाल सिर्फ़ अपने भरोसेमंद खातों के साथ करें.</translation>
 <translation id="9193626018745640770">ऐसे रिसीवर पर कास्ट किया जा रहा है जिसकी जानकारी नहीं है</translation>
 <translation id="9194617393863864469">किसी दूसरे उपयोगकर्ता के रूप में साइन इन करें...</translation>
-<translation id="9201131092683066720">बैटरी <ph name="PERCENTAGE" />% भरी हुई है.</translation>
 <translation id="9210037371811586452">संयुक्त डेस्कटॉप मोड से बाहर निकाला जा रहा है</translation>
 <translation id="9215934040295798075">वॉलपेपर सेट करें</translation>
 <translation id="921989828232331238">आपके अभिभावक ने आज के लिए यह डिवाइस लॉक कर दिया है</translation>

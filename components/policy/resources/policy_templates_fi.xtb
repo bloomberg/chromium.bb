@@ -1341,7 +1341,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
      Jos käytännön arvoksi on asetettu DeveloperToolsDisallowed (arvo 2), kehittäjätyökaluja ei voi käyttää eikä verkkosivustojen elementtejä enää voi tarkastaa. Kehittäjän työkalut tai JavaScript-konsolin avaavat pikanäppäimet ja valikkokohteet poistetaan käytöstä.</translation>
 <translation id="3547954654003013442">Välityspalvelimen asetukset</translation>
 <translation id="355118380775352753">Sivustot, jotka avataan vaihtoehtoisessa selaimessa</translation>
-<translation id="3554984410014457319">Salli Google Assistantin kuunnella puhekomento</translation>
+<translation id="3554984410014457319">Salli Google Assistantin kuunnella äänikomento</translation>
 <translation id="3577251398714997599">Häiritseviä mainoksia sisältävien sivustojen mainosasetukset</translation>
 <translation id="357917253161699596">Anna käyttäjien määrittää käyttäjävarmenteet</translation>
 <translation id="3583230441447348508">Määrittää luettelon ennalta määritetyistä verkon tiedostojaoista.
@@ -1574,11 +1574,11 @@ ylläpitäjän tai SyncDisabled-käytännön estämä. BrowserGuestModeEnabled-k
       Tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävät laitteet hakevat päivityksiä automaattisesti, jos tätä asetusta ei ole määritetty tai sen arvo on epätosi.
 
       Varoitus: suosittelemme pitämään automaattiset päivitykset käytössä, jotta käyttäjät saavat ohjelmistopäivitykset ja kriittiset suojauspäivitykset. Automaattisten päivitysten poistaminen käytöstä voi vaarantaa käyttäjiä.</translation>
-<translation id="4018000735882846261">Tämä käytäntö antaa Google Assistantille luvan kuunnella puhekomennon.
+<translation id="4018000735882846261">Tämä käytäntö antaa Google Assistantille luvan kuunnella äänikomennon.
 
-      Jos käytäntö on käytössä, Google Assistant kuuntelee puhekomennon.
-      Jos käytäntö ei ole käytössä, Google Assistant ei kuuntele puhekomentoa.
-      Jos käytäntöä ei ole määritetty, Google Assistant ei kuuntele puhekomentoa.
+      Jos käytäntö on käytössä, Google Assistant kuuntelee äänikomennon.
+      Jos käytäntö ei ole käytössä, Google Assistant ei kuuntele äänikomentoa.
+      Jos käytäntöä ei ole määritetty, Google Assistant ei kuuntele äänikomentoa.
       </translation>
 <translation id="4020682745012723568">Android-sovellukset eivät voi käyttää käyttäjän profiiliin siirrettyjä evästeitä.</translation>
 <translation id="402759845255257575">Älä salli sivustojen käyttää JavaScriptiä</translation>

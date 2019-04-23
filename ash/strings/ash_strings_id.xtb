@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Alihkan Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Akses semua aktivitas Anda di sesi ini</translation>
 <translation id="1608626060424371292">Hapus pengguna ini</translation>
-<translation id="1621499497873603021">Waktu yang tersisa hingga baterai kosong, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Mulai kueri suara</translation>
 <translation id="1658406695958299976">Maaf, sandi Anda masih belum dapat diverifikasi. Catatan: jika Anda baru saja mengubah sandi, sandi yang baru akan diterapkan saat Anda logout, gunakan sandi lama di sini.</translation>
 <translation id="1677472565718498478">Sisa waktu <ph name="TIME" /></translation>
@@ -139,7 +138,6 @@
 <translation id="2996462380875591307">Kaca Pembesar yang Dipasang ke Dok diaktifkan. Tekan Ctrl+Search+D lagi untuk menonaktifkannya.</translation>
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Keluaran</translation>
-<translation id="3019353588588144572">Waktu yang tersisa hingga baterai terisi penuh, <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Profil pengguna yang dilindungi akan segera dihapus. Login untuk mempelajari lebih lanjut.</translation>
 <translation id="3055162170959710888">Anda menggunakan perangkat ini selama <ph name="USED_TIME" /> hari ini</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -369,7 +367,6 @@
 <translation id="6715542151869432661">Perangkat seluler tidak ditemukan.</translation>
 <translation id="6723839937902243910">Daya</translation>
 <translation id="6751826523481687655">Pelacakan performa diaktifkan</translation>
-<translation id="6785414152754474415">Baterai sudah terisi <ph name="PERCENTAGE" />% dan masih mengisi.</translation>
 <translation id="6790428901817661496">Putar</translation>
 <translation id="6803622936009808957">Tidak dapat menggandakan tampilan karena tidak ditemukan resolusi yang didukung. Memasuki desktop yang diperluas sebagai gantinya.</translation>
 <translation id="6820676911989879663">Istirahatlah sebentar</translation>
@@ -525,7 +522,6 @@
 <translation id="9179259655489829027">Dengan fitur ini, Anda dapat dengan cepat mengakses setiap pengguna yang sudah login, tanpa perlu menggunakan sandi. Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="9193626018745640770">Mentransmisi pada penerima yang tidak dikenal</translation>
 <translation id="9194617393863864469">Masukkan pengguna lain...</translation>
-<translation id="9201131092683066720">Baterai terisi <ph name="PERCENTAGE" />%.</translation>
 <translation id="9210037371811586452">Keluar dari mode desktop terpadu</translation>
 <translation id="9215934040295798075">Setel wallpaper</translation>
 <translation id="921989828232331238">Orang tuamu mengunci perangkat untuk hari ini</translation>

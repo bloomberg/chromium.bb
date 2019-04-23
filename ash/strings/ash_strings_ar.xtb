@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">تبديل البلوتوث. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">الوصول إلى جميع أنشطتك في جلسة واحدة</translation>
 <translation id="1608626060424371292">إزالة هذا المستخدم</translation>
-<translation id="1621499497873603021">الوقت المتبقي حتى تصبح البطارية فارغة <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">بدء طلب بحث صوتي</translation>
 <translation id="1658406695958299976">عذرًا، لا يمكن التحقق من كلمة المرور حتى الآن. ملاحظة: في حال تغيير كلمة المرور مؤخرًا، سيتم تطبيق كلمة المرور الجديدة بعد تسجيل الخروج، يُرجى استخدام كلمة المرور القديمة هنا.</translation>
 <translation id="1677472565718498478">الوقت المتبقي <ph name="TIME" /></translation>
@@ -86,6 +85,7 @@
 <translation id="225680501294068881">جارٍ البحث عن أجهزة...</translation>
 <translation id="2268130516524549846">تم إيقاف البلوتوث</translation>
 <translation id="2268813581635650749">خروج من كل الحسابات</translation>
+<translation id="2277103315734023688">الانتقال للأمام</translation>
 <translation id="2292698582925480719">مقياس العرض</translation>
 <translation id="2302092602801625023">‏تتم إدارة هذا الحساب من خلال Family Link</translation>
 <translation id="2303600792989757991">نظرة عامة لنافذة التبديل</translation>
@@ -138,7 +138,6 @@
 <translation id="2996462380875591307">‏تم تفعيل المكبّر. يمكنك إيقافه بالضغط على Ctrl+Search+D مرة أخرى.</translation>
 <translation id="3000461861112256445">صوت أحادي</translation>
 <translation id="3009178788565917040">الإخراج</translation>
-<translation id="3019353588588144572">الوقت المتبقي حتى يتم شحن البطارية بالكامل <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">ستتم إزالة الملف الشخصي للمستخدم تحت الإشراف قريبًا. يمكنك تسجيل الدخول  للتعرُّف على مزيد من المعلومات.</translation>
 <translation id="3055162170959710888">استخدمت هذا الجهاز لمدة <ph name="USED_TIME" /> اليوم</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -166,6 +165,7 @@
 <translation id="3371140690572404006">‏جهاز USB-C (المنفذ الأمامي الأيمن)</translation>
 <translation id="3400357268283240774">إعدادات إضافية</translation>
 <translation id="3413817803639110246">ليس لديك شيء للمشاهدة حتى الآن</translation>
+<translation id="343571671045587506">تعديل التذكير</translation>
 <translation id="3445925074670675829">‏جهاز USB-C</translation>
 <translation id="3454224730401036106">تم تبديل الاتصال إلى شبكة أكثر أمانًا.</translation>
 <translation id="3465223694362104965">تم ربط لوحة مفاتيح أخرى بهذا الجهاز منذ آخر مرة سجَّلت الدخول فيها. يُرجى التأكُّد من أن لوحة المفاتيح هذه موثوقة قبل استخدامها.</translation>
@@ -198,12 +198,14 @@
 <translation id="3900355044994618856">ستنتهي جلستك في غضون <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">جارٍ الاتصال بـ <ph name="NAME" /></translation>
 <translation id="394485226368336402">إعدادات الصوت</translation>
+<translation id="3962859241508114581">المقطع الصوتي السابق</translation>
 <translation id="397105322502079400">جارٍ الحساب...</translation>
 <translation id="3995138139523574647">‏جهاز USB-C (المنفذ الخلفي الأيمن)</translation>
 <translation id="4017989525502048489">مؤشر الليزر</translation>
 <translation id="4042660782729322247">أنت تشارك الشاشة</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{الإشعارات متوقفة لتطبيق واحد}zero{الإشعارات متوقفة لـ # تطبيق}two{الإشعارات متوقفة لتطبيقَين (#)}few{الإشعارات متوقفة لـ # تطبيقات}many{الإشعارات متوقفة لـ # تطبيقًا}other{الإشعارات متوقفة لـ # تطبيق}}</translation>
 <translation id="4072264167173457037">إشارة متوسطة</translation>
+<translation id="4112140312785995938">التمرير للخلف</translation>
 <translation id="4129129681837227511">للاطِّلاع على الإشعارات على شاشة التأمين، يمكنك فتح القفل لتغيير الإعداد</translation>
 <translation id="4146833061457621061">تشغيل الموسيقى</translation>
 <translation id="4181841719683918333">اللغات</translation>
@@ -227,6 +229,7 @@
 <translation id="4421231901400348175">مشاركة التحكم في شاشتك مع <ph name="HELPER_NAME" /> عن طريق المساعدة عن بُعد.</translation>
 <translation id="4430019312045809116">مستوى الصوت</translation>
 <translation id="4450893287417543264">عدم الإظهار مرة أخرى</translation>
+<translation id="4477350412780666475">المقطع الصوتي التالي</translation>
 <translation id="4479639480957787382">إيثرنت</translation>
 <translation id="4481530544597605423">الأجهزة التي تم إلغاء إقرانها</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: جارٍ الاتصال...</translation>
@@ -365,7 +368,6 @@
 <translation id="6715542151869432661">لم يتم العثور على أي أجهزة جوّال.</translation>
 <translation id="6723839937902243910">الطاقة</translation>
 <translation id="6751826523481687655">تتبّع الأداء قيْد التفعيل</translation>
-<translation id="6785414152754474415">اكتمل شحن <ph name="PERCENTAGE" />% من البطارية ويجري شحنها.</translation>
 <translation id="6790428901817661496">التشغيل</translation>
 <translation id="6803622936009808957">تعذر إجراء النسخ المطابق للعروض نظرًا لعدم العثور على درجات دقة متوافقة. تم الدخول إلى سطح المكتب الممتد بدلاً من ذلك.</translation>
 <translation id="6820676911989879663">حان وقت الاستراحة</translation>
@@ -393,6 +395,7 @@
 <translation id="7222902781030499995">إيقاف الموقّت</translation>
 <translation id="7256634071279256947">الميكروفون الخلفي</translation>
 <translation id="726276584504105859">السحب هنا لاستخدام وضع تقسيم الشاشة</translation>
+<translation id="7262906531272962081">إنشاء تذكير</translation>
 <translation id="7303365578352795231">جارٍ الرد على جهاز آخر.</translation>
 <translation id="7305884605064981971">‏شبكة EDGE</translation>
 <translation id="7348093485538360975">لوحة المفاتيح على الشاشة</translation>
@@ -520,7 +523,6 @@
 <translation id="9179259655489829027">تسمح لك هذه الميزة بالوصول بسرعة إلى أي مستخدم سجّل دخوله بدون طلب كلمة مرور. لا تستخدم هذه الميزة إلا مع الحسابات التي تثق بها.</translation>
 <translation id="9193626018745640770">إرسال إلى مستلم غير معروف</translation>
 <translation id="9194617393863864469">تسجيل دخول مستخدم آخر...</translation>
-<translation id="9201131092683066720">اكتمل شحن <ph name="PERCENTAGE" />% من البطارية.</translation>
 <translation id="9210037371811586452">جارٍ الخروج من وضع سطح المكتب الموحد</translation>
 <translation id="9215934040295798075">تعيين خلفية</translation>
 <translation id="921989828232331238">قفّل أحد الوالدين جهازك لليوم</translation>

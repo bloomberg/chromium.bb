@@ -2006,7 +2006,6 @@
 <translation id="4109135793348361820">Alihkan tetingkap ke <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Muat turun selesai: <ph name="FILE_NAME" />. Tekan Shift+F6 untuk pergi ke kawasan bar muat turun.</translation>
 <translation id="4110895898888439383">Semak imbas web dalam mod kontras tinggi</translation>
-<translation id="4112221174576828331">Jika imej tiada perihalan yang berguna, Chrome akan memberikan perihalan untuk anda. Imej diimbas oleh Google.</translation>
 <translation id="4115002065223188701">Rangkaian di luar liputan</translation>
 <translation id="4115080753528843955">Sesetengah perkhidmatan kandungan menggunakan pengecam unik bagi tujuan membenarkan akses kepada kandungan yang dilindungi</translation>
 <translation id="4118579674665737931">Sila but semula peranti dan cuba lagi.</translation>
@@ -4459,6 +4458,7 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8008356846765065031">Internet terputus sambungan. Sila periksa sambungan internet anda.</translation>
 <translation id="8009225694047762179">Urus Kata Laluan</translation>
 <translation id="8012382203418782830">Halaman ini telah diterjemahkan.</translation>
+<translation id="8013993649590906847">Jika imej tiada perihalan yang berguna, Chrome akan cuba memberikan perihalan untuk anda. Untuk membuat perihalan, imej dihantar kepada Google.</translation>
 <translation id="8014154204619229810">Pengemaskinian sedang dijalankan. Muatkan semula dalam satu minit untuk memeriksa lagi.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> tidak dapat kembali kepada versi yang dipasang sebelumnya. Sila cuba Powerwash peranti anda lagi.</translation>
 <translation id="8014210335923519270">Tingkatkan <ph name="IDS_SHORT_PRODUCT_NAME" /> dan keselamatannya dengan menghantar maklumat sistem dan penggunaan kepada Google</translation>
@@ -5029,7 +5029,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="891365694296252935">Hantar data penggunaan dan diagnostik. Pada masa ini, peranti ini menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Tetapan ini dikuatkuasakan oleh pemilik. Jika Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan ke Akaun Googlenya. <ph name="BEGIN_LINK1" />Ketahui Lebih Lanjut<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Memuatkan cadangan</translation>
 <translation id="8916476537757519021">Subbingkai Inkognito: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917490105272468696">Ya, Saya Ikut Serta</translation>
 <translation id="8919275547519617350">Log masuk dan hidupkan penyegerakan untuk mendapatkan semua kata laluan anda pada semua peranti anda.</translation>
 <translation id="8921366488406707015">Mengesahkan kunci keselamatan anda...</translation>
 <translation id="8922013791253848639">Sentiasa benarkan iklan di tapak ini</translation>
@@ -5127,7 +5126,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9066773882585798925">Dengar teks dibaca dengan lantang</translation>
 <translation id="9066782832737749352">Teks kepada Pertuturan</translation>
-<translation id="907264006778172906">Beri Linux kebenaran untuk mengakses peranti USB. Linux tidak akan mengingat peranti USB selepas peranti itu dikeluarkan.</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9074836595010225693">Tetikus USB disambungkan</translation>

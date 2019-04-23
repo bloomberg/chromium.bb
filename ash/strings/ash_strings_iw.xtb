@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">‏הפעלה או השבתה של Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">גישה לכל הפעילות שלך בסשן הזה</translation>
 <translation id="1608626060424371292">הסר את המשתמש הזה</translation>
-<translation id="1621499497873603021">הזמן שנותר עד להתרוקנות הסוללה, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">הפעלה של שאילתה קולית</translation>
 <translation id="1658406695958299976">מצטערים, עדיין אי אפשר לאמת את הסיסמה שלך. חשוב לדעת: אם שינית לאחרונה את הסיסמה, הסיסמה החדשה תיכנס לתוקף רק אחרי יציאה מהחשבון. צריך להשתמש כאן בסיסמה הישנה.</translation>
 <translation id="1677472565718498478">זמן נותר - <ph name="TIME" /></translation>
@@ -138,7 +137,6 @@
 <translation id="2996462380875591307">‏הזכוכית המגדלת במצב עגינה הופעלה. כדי לכבות אותה, יש להקיש שוב על Ctrl+Search+D.</translation>
 <translation id="3000461861112256445">אודיו במונו</translation>
 <translation id="3009178788565917040">פלט</translation>
-<translation id="3019353588588144572">הזמן שנותר עד לטעינה מלאה של הסוללה, <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">פרופיל המשתמש בפיקוח שלך יוסר בקרוב. יש להיכנס לחשבון כדי לקבל מידע נוסף.</translation>
 <translation id="3055162170959710888">השתמשת היום במכשיר הזה במשך <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -364,7 +362,6 @@
 <translation id="6715542151869432661">לא נמצאו מכשירים ניידים.</translation>
 <translation id="6723839937902243910">חשמל</translation>
 <translation id="6751826523481687655">מעקב הביצועים פועל</translation>
-<translation id="6785414152754474415">‏הסוללה טעונה ברמה של ‎<ph name="PERCENTAGE" />%‎ ומתבצעת טעינה.</translation>
 <translation id="6790428901817661496">הפעל</translation>
 <translation id="6803622936009808957">לא ניתן היה לשקף מסכים מכיוון שלא נמצאה רזולוציה נתמכת. במקום זאת התצוגה עברה למצב שולחן עבודה מורחב.</translation>
 <translation id="6820676911989879663">הגיע הזמן להפסקה</translation>
@@ -523,7 +520,6 @@
 יש להשתמש בתכונה הזו רק עם חשבונות מהימנים.</translation>
 <translation id="9193626018745640770">מתבצעת העברה במכשיר לא ידוע</translation>
 <translation id="9194617393863864469">הוסף משתמש אחר...</translation>
-<translation id="9201131092683066720">‏הסוללה טעונה ברמה של ‎<ph name="PERCENTAGE" />%‎.</translation>
 <translation id="9210037371811586452">‏יציאה ממצב Unified Desktop</translation>
 <translation id="9215934040295798075">הגדר טפט</translation>
 <translation id="921989828232331238">הורה נעל את המכשיר שלך להיום</translation>

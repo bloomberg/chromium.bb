@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Slå av/på Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">se all aktiviteten din i denne økten</translation>
 <translation id="1608626060424371292">Fjern denne brukeren</translation>
-<translation id="1621499497873603021">Gjenværende tid til batteriet er tomt – <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Start et talesøk</translation>
 <translation id="1658406695958299976">Beklager, men passordet ditt kunne fremdeles ikke bekreftes. Merk: Hvis du endret passordet ditt nylig, trer det nye passordet ditt i kraft så snart du logger av. Bruk det gamle passordet ditt her.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> igjen</translation>
@@ -138,7 +137,6 @@
 <translation id="2996462380875591307">Dokket lupe er slått på. Trykk på Ctrl + Søk + D igjen for å slå det av.</translation>
 <translation id="3000461861112256445">Monolyd</translation>
 <translation id="3009178788565917040">Utdata</translation>
-<translation id="3019353588588144572">Tid som gjenstår til batteriet er fulladet – <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Den administrerte brukerprofilen din fjernes snart. Logg på for å finne ut mer.</translation>
 <translation id="3055162170959710888">Du har brukt denne enheten i <ph name="USED_TIME" /> i dag</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -364,7 +362,6 @@
 <translation id="6715542151869432661">Fant ingen mobilenheter.</translation>
 <translation id="6723839937902243910">Strøm</translation>
 <translation id="6751826523481687655">Ytelsessporing er slått på</translation>
-<translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % fullt og til lading.</translation>
 <translation id="6790428901817661496">Spill av</translation>
 <translation id="6803622936009808957">Kunne ikke speile skjermene fordi ingen støttede oppløsninger ble funnet. Utvidet skrivebord ble brukt i stedet.</translation>
 <translation id="6820676911989879663">Ta en pause!</translation>
@@ -519,7 +516,6 @@
 <translation id="9179259655489829027">Med denne funksjonen får du rask tilgang til påloggede brukere uten å måtte skrive inn passord. Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="9193626018745640770">Caster på en ukjent mottaker</translation>
 <translation id="9194617393863864469">Logg på en annen bruker</translation>
-<translation id="9201131092683066720">Batteriet er <ph name="PERCENTAGE" /> % fullt</translation>
 <translation id="9210037371811586452">Avslutter enhetlig skrivebordsmodus</translation>
 <translation id="9215934040295798075">Velg bakgrunn</translation>
 <translation id="921989828232331238">Forelderen din har låst enheten din for dagen</translation>

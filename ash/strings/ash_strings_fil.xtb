@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">I-toggle ang Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">I-access ang lahat ng iyong aktibidad sa session na ito</translation>
 <translation id="1608626060424371292">Alisin ang user na ito</translation>
-<translation id="1621499497873603021">Natitirang oras bago maubos ang baterya, <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Magsimula ng query gamit ang boses</translation>
 <translation id="1658406695958299976">Paumanhin, hindi pa rin ma-verify ang iyong password. Tandaan: kung pinalitan mo kamakailan ang iyong password, malalapat ang bago mong password kapag nag-sign out ka, pakigamit ang lumang password dito.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> na lang ang natitira</translation>
@@ -138,7 +137,6 @@
 <translation id="2996462380875591307">Na-enable ang Naka-dock na Magnifier. Pinduting muli ang Ctrl+Search+D para i-off ito.</translation>
 <translation id="3000461861112256445">Mono audio</translation>
 <translation id="3009178788565917040">Output</translation>
-<translation id="3019353588588144572">Natitirang oras bago ganap na ma-charge ang baterya, <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Malapit nang alisin ang iyong profile ng pinangangasiwaang user. Mag-sign in para matuto pa.</translation>
 <translation id="3055162170959710888">Ginamit mo ang device na ito nang <ph name="USED_TIME" /> ngayong araw</translation>
 <translation id="3077734595579995578">shift</translation>
@@ -364,7 +362,6 @@
 <translation id="6715542151869432661">Walang nahanap na mobile device.</translation>
 <translation id="6723839937902243910">Power</translation>
 <translation id="6751826523481687655">Naka-on ang pag-trace ng performance</translation>
-<translation id="6785414152754474415">Ang baterya ay <ph name="PERCENTAGE" />% na puno at nagcha-charge.</translation>
 <translation id="6790428901817661496">I-play</translation>
 <translation id="6803622936009808957">Hindi ma-mirror ang mga display dahil walang mga sinusuportahang resolusyon na nakita. Pumasok na lang sa pinalawak na desktop.</translation>
 <translation id="6820676911989879663">Magpahinga!</translation>
@@ -519,7 +516,6 @@
 <translation id="9179259655489829027">Nagbibigay-daan sa iyo ang feature na ito para mabilis na ma-access ang anumang na-sign in na user nang hindi nangangailangan ng password. Gamitin lang ang feature na ito sa mga account na iyong pinagkakatiwalaan.</translation>
 <translation id="9193626018745640770">Nagka-cast sa isang hindi pa natutukoy na tagatanggap</translation>
 <translation id="9194617393863864469">Mag-sign in ng isa pang user...</translation>
-<translation id="9201131092683066720">Ang baterya ay <ph name="PERCENTAGE" />% na puno.</translation>
 <translation id="9210037371811586452">Lumalabas sa unified desktop mode</translation>
 <translation id="9215934040295798075">Magtakda ng wallpaper</translation>
 <translation id="921989828232331238">Ni-lock ng iyong magulang ang device mo para sa araw na ito</translation>

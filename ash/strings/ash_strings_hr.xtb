@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Prebacivanje Bluetootha. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Pristup svim vašim aktivnostima u ovoj sesiji</translation>
 <translation id="1608626060424371292">Ukloni tog korisnika</translation>
-<translation id="1621499497873603021">Baterija će se isprazniti za <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Pokrenite glasovni upit</translation>
 <translation id="1658406695958299976">Vaša zaporka i dalje nije mogla biti potvrđena. Napomena: ako ste nedavno promijenili zaporku, vaša nova zaporka primjenjivat će se nakon što se odjavite. Ovdje upotrijebite staru zaporku.</translation>
 <translation id="1677472565718498478">Još <ph name="TIME" /></translation>
@@ -86,6 +85,7 @@
 <translation id="225680501294068881">Pretraživanje uređaja...</translation>
 <translation id="2268130516524549846">Bluetooth onemogućen</translation>
 <translation id="2268813581635650749">Odjavi sve</translation>
+<translation id="2277103315734023688">Traži prema naprijed</translation>
 <translation id="2292698582925480719">Skala prikaza</translation>
 <translation id="2302092602801625023">Tim računom upravlja Family Link</translation>
 <translation id="2303600792989757991">Prebaci na prozor pregleda</translation>
@@ -138,7 +138,6 @@
 <translation id="2996462380875591307">Usidreno je povećalo omogućeno. Ponovo pritisnite Ctrl + Search + D da biste ga isključili.</translation>
 <translation id="3000461861112256445">Monoaudio</translation>
 <translation id="3009178788565917040">Izlaz</translation>
-<translation id="3019353588588144572">Baterija će se napuniti za <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Vaš profil nadziranog korisnika uskoro će se ukloniti. Prijavite se da biste saznali više.</translation>
 <translation id="3055162170959710888">Uređaj je danas korišten <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -166,6 +165,7 @@
 <translation id="3371140690572404006">USB-C uređaj (prednji desni priključak)</translation>
 <translation id="3400357268283240774">Dodatne postavke</translation>
 <translation id="3413817803639110246">Još nema ničega</translation>
+<translation id="343571671045587506">Uređivanje podsjetnika</translation>
 <translation id="3445925074670675829">USB-C uređaj</translation>
 <translation id="3454224730401036106">Sada ste povezani sa sigurnijom mrežom</translation>
 <translation id="3465223694362104965">Još je jedna tipkovnica povezana s ovim uređajem otkad ste se posljednji put prijavili. Provjerite je li riječ o pouzdanoj tipkovnici prije nego što je upotrijebite.</translation>
@@ -198,12 +198,14 @@
 <translation id="3900355044994618856">Vaša će sesija završiti za <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Povezivanje s mrežom <ph name="NAME" /></translation>
 <translation id="394485226368336402">Postavke zvuka</translation>
+<translation id="3962859241508114581">Prethodna pjesma</translation>
 <translation id="397105322502079400">Izračun u tijeku…</translation>
 <translation id="3995138139523574647">USB-C uređaj (stražnji desni priključak)</translation>
 <translation id="4017989525502048489">Laserski pokazivač</translation>
 <translation id="4042660782729322247">Dijelite zaslon</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Isključeno za jednu aplikaciju}one{Isključeno za # aplikaciju}few{Isključeno za # aplikacije}other{Isključeno za # aplikacija}}</translation>
 <translation id="4072264167173457037">Signal srednje jačine</translation>
+<translation id="4112140312785995938">Traži unatrag</translation>
 <translation id="4129129681837227511">Za prikaz obavijesti na zaključanom zaslonu otključajte zaslon da biste promijenili postavku</translation>
 <translation id="4146833061457621061">Pusti glazbu</translation>
 <translation id="4181841719683918333">Jezici</translation>
@@ -227,6 +229,7 @@
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> i vi dijelite kontrolu nad zaslonom putem Daljinske pomoći.</translation>
 <translation id="4430019312045809116">Glasnoća</translation>
 <translation id="4450893287417543264">Ne prikazuj ponovo</translation>
+<translation id="4477350412780666475">Sljedeća pjesma</translation>
 <translation id="4479639480957787382">Eternet</translation>
 <translation id="4481530544597605423">Neupareni uređaji</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: povezivanje...</translation>
@@ -364,7 +367,6 @@
 <translation id="6715542151869432661">Nije pronađen nijedan mobilni uređaj.</translation>
 <translation id="6723839937902243910">Napajanje</translation>
 <translation id="6751826523481687655">Uključeno je praćenje izvedbe</translation>
-<translation id="6785414152754474415">Baterija je <ph name="PERCENTAGE" />% puna i puni se.</translation>
 <translation id="6790428901817661496">Reproduciraj</translation>
 <translation id="6803622936009808957">Nije bilo moguće zrcaliti zaslone jer nije pronađena nijedna podržana razlučivost. Umjesto toga proširena je radna površina.</translation>
 <translation id="6820676911989879663">Odmorite se!</translation>
@@ -392,6 +394,7 @@
 <translation id="7222902781030499995">Zaustavi odbrojavanje</translation>
 <translation id="7256634071279256947">Stražnji mikrofon</translation>
 <translation id="726276584504105859">Povucite ovdje da biste upotrebljavali podijeljeni zaslon</translation>
+<translation id="7262906531272962081">Izrada podsjetnika</translation>
 <translation id="7303365578352795231">Odgovaranje na drugom uređaju.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Tipkovnica na zaslonu</translation>
@@ -519,7 +522,6 @@
 <translation id="9179259655489829027">Ta vam značajka omogućuje brzi pristup bilo kojem prijavljenom korisniku bez zahtijevanja zaporke. Tu značajku upotrebljavajte samo s pouzdanim računima.</translation>
 <translation id="9193626018745640770">Emitiranje na nepoznatom prijamniku</translation>
 <translation id="9194617393863864469">Prijavljivanje drugog korisnika...</translation>
-<translation id="9201131092683066720">Baterija je <ph name="PERCENTAGE" />% puna.</translation>
 <translation id="9210037371811586452">Izlaz iz načina jedinstvene radne površine</translation>
 <translation id="9215934040295798075">Postavi pozadinu</translation>
 <translation id="921989828232331238">Tvoj je roditelj zaključao ovaj uređaj za danas</translation>

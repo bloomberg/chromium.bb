@@ -47,7 +47,6 @@
 <translation id="1570871743947603115">Perjungti „Bluetooth“. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Pasiekti visą šios sesijos veiklą</translation>
 <translation id="1608626060424371292">Pašalinti šį naudotoją</translation>
-<translation id="1621499497873603021">Laikas, likęs iki akumuliatoriaus išsikrovimo: <ph name="TIME_LEFT" /></translation>
 <translation id="1654477262762802994">Pradėti užklausą balsu</translation>
 <translation id="1658406695958299976">Deja, jūsų slaptažodžio patvirtinti vis tiek nepavyko. Pastaba: jei neseniai pakeitėte slaptažodį, naujas slaptažodis bus taikomas, kai atsijungsite. Čia naudokite senąjį slaptažodį.</translation>
 <translation id="1677472565718498478">Liko <ph name="TIME" /></translation>
@@ -139,7 +138,6 @@
 <translation id="2996462380875591307">Prie doko prijungtas didintuvas įgalintas. Dar kartą paspauskite „Ctrl“ + paieškos klavišą + D, kad išjungtumėte režimą.</translation>
 <translation id="3000461861112256445">Monofoninis garsas</translation>
 <translation id="3009178788565917040">Išvestis</translation>
-<translation id="3019353588588144572">Laikas, likęs iki akumuliatoriaus įkrovimo: <ph name="TIME_REMAINING" /></translation>
 <translation id="3051128274746680507">Jūsų prižiūrimo naudotojo profilis netrukus bus pašalintas. Prisijunkite, kad sužinotumėte daugiau.</translation>
 <translation id="3055162170959710888">Šį įrenginį šiandien naudojote <ph name="USED_TIME" /></translation>
 <translation id="3077734595579995578">shift</translation>
@@ -370,7 +368,6 @@
 <translation id="6715542151869432661">Nerasta jokių mobiliųjų įrenginių.</translation>
 <translation id="6723839937902243910">Maitinimas</translation>
 <translation id="6751826523481687655">Našumo stebėjimas įjungtas</translation>
-<translation id="6785414152754474415">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE" /> %. Jis įkraunamas.</translation>
 <translation id="6790428901817661496">Žaisti</translation>
 <translation id="6803622936009808957">Nepavyko dubliuoti vaizdų, nes nepavyko rasti palaikomų skyrų. Vietoje to įjungtas išplėstinio darbalaukio režimas.</translation>
 <translation id="6820676911989879663">Padarykite pertrauką!</translation>
@@ -526,7 +523,6 @@
 <translation id="9179259655489829027">Naudodami šią funkciją galite greitai pasiekti bet kurį prisijungusį naudotoją be slaptažodžio. Šią funkciją naudokite tik su patikimomis paskyromis.</translation>
 <translation id="9193626018745640770">Perduodama į nežinomą imtuvą</translation>
 <translation id="9194617393863864469">Prisijungti kaip kitas naudotojas...</translation>
-<translation id="9201131092683066720">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE" /> %.</translation>
 <translation id="9210037371811586452">Išjungiamas sujungiamojo darbalaukio režimas</translation>
 <translation id="9215934040295798075">Nustatyti ekrano foną</translation>
 <translation id="921989828232331238">Vienas iš tėvų užrakino įrenginį dienai</translation>

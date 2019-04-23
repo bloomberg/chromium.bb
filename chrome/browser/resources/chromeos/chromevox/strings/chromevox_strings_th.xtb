@@ -213,6 +213,7 @@
 <translation id="2626530649491650971">คลิกได้</translation>
 <translation id="2628764385451019380">ไม่มีช่องตัวเลือกรวมก่อนหน้า</translation>
 <translation id="2637227747952042642">คณิตศาสตร์</translation>
+<translation id="2638785836053527382">เริ่มดาวน์โหลด <ph name="FILE_NAME" /> ต่อ</translation>
 <translation id="2639750663247012216">คีย์ตัวปรับแต่ง ChromeVox</translation>
 <translation id="2644542693584024604">สะกดผิด</translation>
 <translation id="2661530546602071611">ประกาศ</translation>
@@ -252,6 +253,7 @@
 <translation id="287383510823843610">สีส้มเข้ม</translation>
 <translation id="2879867157561757640">เลื่อน 3 นิ้วลง</translation>
 <translation id="288178314850623291">ใช้คำสั่งข้ามเพื่อข้ามไปยังประเภทองค์ประกอบที่ต้องการ หากต้องการข้ามไปข้างหน้าระหว่างส่วนหัว ให้กด Search + H หรือหากต้องการข้ามย้อนกลับ ให้กด Search + Shift + H</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{นาที}other{นาที}}</translation>
 <translation id="2894654529758326923">ข้อมูล</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{วงเล็บปีกกาซ้าย}other{# วงเล็บปีกกาซ้าย}}</translation>
 <translation id="2911433807131383493">เปิดบทแนะนำ ChromeVox</translation>
@@ -286,6 +288,7 @@
 <translation id="3084806535845658316">ไม่พูดขณะพิมพ์</translation>
 <translation id="3086746722712840547">หมายเหตุ</translation>
 <translation id="308895241372589742">ไม่มีสูตรคณิตศาสตร์ถัดไป</translation>
+<translation id="3090227230165225418">ประกาศการแจ้งเตือนการดาวน์โหลด</translation>
 <translation id="3090532668523289635">กลุ่ม</translation>
 <translation id="3093176084511590672">จุดสังเกตถัดไป</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -438,6 +441,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{วงเล็บปีกกาขวา}other{# วงเล็บปีกกาขวา}}</translation>
 <translation id="4158704014418536539">พิจารณาตัวพิมพ์เล็กและใหญ่</translation>
 <translation id="4159784952369912983">ม่วง</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{วินาที}other{วินาที}}</translation>
 <translation id="4161663686871496107">การตอบสนองด้วยเสียงของ ChromeVox พร้อมใช้งาน</translation>
 <translation id="4173994908659439270">ไม่มีช่องข้อความที่สามารถแก้ไขได้ถัดไป</translation>
 <translation id="4176463684765177261">ปิดการใช้งานแล้ว</translation>
@@ -618,6 +622,7 @@
 <translation id="5349770431644471053">ลิงก์กลับมาที่หน้า</translation>
 <translation id="536031132345979795">ข้ามไปทางด้านหลังในระหว่างการอ่านอย่างต่อเนื่อง</translation>
 <translation id="5368000168321181111">Earcons ปิด</translation>
+<translation id="5368505757342402527">ดาวน์โหลด <ph name="FILE_NAME" /> เสร็จแล้ว <ph name="PROGRESS" />% เหลืออีกประมาณ <ph name="TIME" /> <ph name="UNITS" /></translation>
 <translation id="5374320867641260420">ไม่มีปุ่มถัดไป</translation>
 <translation id="5376407118396657359">กด Search+Ctrl+Alt ด้วยลูกศรเพื่อไปยังเซลล์ต่างๆ</translation>
 <translation id="5382299583965267720">ไม่มีส่วนหัวระดับ 1 ถัดไป</translation>
@@ -800,6 +805,7 @@
 <translation id="667999046851023355">เอกสาร</translation>
 <translation id="6688209025607531203">การแจ้งเตือนที่ไม่ใช่แบบโมดัล</translation>
 <translation id="6689672606256159458">สีส้มแซลมอนเข้ม</translation>
+<translation id="669617842401078250">หยุดดาวน์โหลด <ph name="FILE_NAME" /> ไว้ชั่วคราว</translation>
 <translation id="6696967141280706829">ส่วนนำ</translation>
 <translation id="6697092096875747123">ช่องตัวเลือกรวมก่อนหน้า</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{เครื่องหมายอัศเจรีย์}other{เครื่องหมายอัศเจรีย์ # ตัว}}</translation>
@@ -938,6 +944,7 @@
 <translation id="7641134354185483015">ไม่มีส่วนหัวระดับ 3 ก่อนหน้า</translation>
 <translation id="7659376057562985921">ช่องข้อความ <ph name="NAME" /> <ph name="VALUE" /></translation>
 <translation id="7663318257180412551">ส่วนหัวระดับ 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{ชั่วโมง}other{ชั่วโมง}}</translation>
 <translation id="7674576868851035240">ลิงก์ถัดไป</translation>
 <translation id="7674768236845044097">เครื่องหมาย</translation>
 <translation id="7684431668231950609">แก้ไขข้อความ, รายการ URL</translation>
@@ -952,6 +959,7 @@
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912">เริ่มดาวน์โหลด <ph name="FILE_NAME" /> แล้ว</translation>
 <translation id="7770823902658038748">ช่องข้อความรหัสผ่าน <ph name="NAME" /> <ph name="VALUE" /></translation>
 <translation id="7776293189010177726">เปิดเมนู ChromeVox</translation>
 <translation id="7800558923657349506">ปัจฉิมบท</translation>
@@ -1076,6 +1084,7 @@
 <translation id="8096975275316362544">สีเขียวมิ้นต์ครีม</translation>
 <translation id="8098587210054821856">สีเทาอมฟ้า</translation>
 <translation id="8110647606445335195">ไม่มีจุดสังเกต ARIA</translation>
+<translation id="812886159861361726">หยุดดาวน์โหลด <ph name="FILE_NAME" /> แล้ว</translation>
 <translation id="8138880386467279117">การแตะ</translation>
 <translation id="8153880621934657047">ไม่ได้อยู่ในตาราง</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{เครื่องหมายขีดล่าง}other{# เครื่องหมายขีดล่าง}}</translation>
@@ -1145,6 +1154,7 @@
 <translation id="8743786158317878347">ป้อนเนื้อหาที่มีโครงสร้าง เช่น ตาราง</translation>
 <translation id="8747966237988593539">รายการที่มีลำดับ</translation>
 <translation id="8749988712346667988">สีเงิน</translation>
+<translation id="875769700429317857">ดาวน์โหลด <ph name="FILE_NAME" /> เสร็จสมบูรณ์แล้ว</translation>
 <translation id="8759334257841767240">ไม่มีลิงก์ถัดไป</translation>
 <translation id="8767968232364267681">ส่วนหัวระดับ 4 ถัดไป</translation>
 <translation id="8770473310765924354">ออกจากเนื้อหาที่มีโครงสร้าง เช่น ตาราง</translation>

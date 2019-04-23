@@ -214,6 +214,7 @@
 <translation id="2626530649491650971">елемент на који може да се кликне</translation>
 <translation id="2628764385451019380">Нема претходног комбинованог оквира.</translation>
 <translation id="2637227747952042642">Математика</translation>
+<translation id="2638785836053527382">Преузимање је настављено <ph name="FILE_NAME" /></translation>
 <translation id="2639750663247012216">ChromeVox модификатор</translation>
 <translation id="2644542693584024604">погрешно написано</translation>
 <translation id="2661530546602071611">Обавештење</translation>
@@ -253,6 +254,7 @@
 <translation id="287383510823843610">Тамнонаранџаста</translation>
 <translation id="2879867157561757640">Превлачите надоле помоћу три прста</translation>
 <translation id="288178314850623291">Користите команде за прелазак да бисте прелазили на одређене типове елемената. Да бисте прелазили на наслове унапред, притисните тастер за претрагу + H, а да бисте прелазили на наслове уназад, притисните тастер за претрагу + Shift + H.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{минут}one{минути}few{минути}other{минути}}</translation>
 <translation id="2894654529758326923">Информације</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{лева витичаста заграда}one{# лева витичаста заграда}few{# леве витичасте заграде}other{# левих витичастих заграда}}</translation>
 <translation id="2911433807131383493">Отварање ChromeVox водича</translation>
@@ -287,6 +289,7 @@
 <translation id="3084806535845658316">нема одјека знакова</translation>
 <translation id="3086746722712840547">белешка</translation>
 <translation id="308895241372589742">Нема следећег математичког израза.</translation>
+<translation id="3090227230165225418">Најави обавештења о преузимањима</translation>
 <translation id="3090532668523289635">група</translation>
 <translation id="3093176084511590672">Следеће обележје</translation>
 <translation id="3096671415663099226">комбиновани оквир</translation>
@@ -439,6 +442,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{десна витичаста заграда}one{# десна витичаста заграда}few{# десне витичасте заграде}other{# десних витичастих заграда}}</translation>
 <translation id="4158704014418536539">Разликује велика и мала слова.</translation>
 <translation id="4159784952369912983">Љубичаста</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{секунда}one{секунде}few{секунде}other{секунде}}</translation>
 <translation id="4161663686871496107">ChromeVox говорне повратне информације су спремне</translation>
 <translation id="4173994908659439270">Нема следећег изменљивог поља за текст.</translation>
 <translation id="4176463684765177261">Онемогућено</translation>
@@ -619,6 +623,7 @@
 <translation id="5349770431644471053">Повратна веза</translation>
 <translation id="536031132345979795">Прескакање уназад током непрекидног читања</translation>
 <translation id="5368000168321181111">Звучна обавештења су искључена</translation>
+<translation id="5368505757342402527">Завршено је <ph name="PROGRESS" />% преузимања датотеке <ph name="FILE_NAME" />. Остало је око <ph name="TIME" /> <ph name="UNITS" />.</translation>
 <translation id="5374320867641260420">Нема следећег дугмета.</translation>
 <translation id="5376407118396657359">Притисните тастер за претрагу + Ctrl + Alt и стрелице да бисте се кретали кроз ћелије.</translation>
 <translation id="5382299583965267720">Нема следећег заглавља 1. нивоа.</translation>
@@ -801,6 +806,7 @@
 <translation id="667999046851023355">Документ</translation>
 <translation id="6688209025607531203">Немодално обавештење</translation>
 <translation id="6689672606256159458">Ружичастонаранџаста</translation>
+<translation id="669617842401078250">Преузимање је паузирано <ph name="FILE_NAME" /></translation>
 <translation id="6696967141280706829">Предговор</translation>
 <translation id="6697092096875747123">Претходни комбиновани оквир</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{знак узвика}one{# знак узвика}few{# знака узвика}other{# знакова узвика}}</translation>
@@ -939,6 +945,7 @@
 <translation id="7641134354185483015">Нема претходног заглавља 3. нивоа.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, оквир за текст</translation>
 <translation id="7663318257180412551">Заглавље 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{сат}one{сати}few{сати}other{сати}}</translation>
 <translation id="7674576868851035240">Следећи линк</translation>
 <translation id="7674768236845044097">ознака</translation>
 <translation id="7684431668231950609">Измените текст, унос за URL</translation>
@@ -953,6 +960,7 @@
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">аутоматско довршавање листе</translation>
+<translation id="7763537600611320912">Преузимање је започето <ph name="FILE_NAME" /></translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, оквир за лозинку</translation>
 <translation id="7776293189010177726">Отвара ChromeVox меније</translation>
 <translation id="7800558923657349506">Епилог</translation>
@@ -1077,6 +1085,7 @@
 <translation id="8096975275316362544">Светлозелена</translation>
 <translation id="8098587210054821856">Сивоплава</translation>
 <translation id="8110647606445335195">Нема ARIA обележја.</translation>
+<translation id="812886159861361726">Преузимање је заустављено <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">За додирни екран</translation>
 <translation id="8153880621934657047">Нисте унутар табеле.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{доња црта}one{# доња црта}few{# доње црте}other{# доњих црта}}</translation>
@@ -1146,6 +1155,7 @@
 <translation id="8743786158317878347">уђите у структурирани садржај, попут табела</translation>
 <translation id="8747966237988593539">Уређена листа</translation>
 <translation id="8749988712346667988">Сребрна</translation>
+<translation id="875769700429317857">Преузимање је завршено <ph name="FILE_NAME" /></translation>
 <translation id="8759334257841767240">Нема следећег линка.</translation>
 <translation id="8767968232364267681">Следеће заглавље 4. нивоа</translation>
 <translation id="8770473310765924354">изађите из структурираног садржаја, попут табела</translation>
