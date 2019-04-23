@@ -64,27 +64,28 @@ FakeRemoteGattDescriptor::GetCharacteristic() const {
 }
 
 void FakeRemoteGattDescriptor::ReadRemoteDescriptor(
-    const ValueCallback& callback,
+    ValueCallback callback,
     ErrorCallback error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeRemoteGattDescriptor::DispatchReadResponse,
-                                weak_ptr_factory_.GetWeakPtr(), callback,
-                                std::move(error_callback)));
+      FROM_HERE,
+      base::BindOnce(&FakeRemoteGattDescriptor::DispatchReadResponse,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(error_callback)));
 }
 
 void FakeRemoteGattDescriptor::WriteRemoteDescriptor(
     const std::vector<uint8_t>& value,
-    const base::RepeatingClosure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeRemoteGattDescriptor::DispatchWriteResponse,
-                     weak_ptr_factory_.GetWeakPtr(), callback,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      std::move(error_callback), value));
 }
 
 void FakeRemoteGattDescriptor::DispatchReadResponse(
-    const ValueCallback& callback,
+    ValueCallback callback,
     ErrorCallback error_callback) {
   DCHECK(next_read_response_);
   uint16_t gatt_code = next_read_response_->gatt_code();
@@ -94,7 +95,7 @@ void FakeRemoteGattDescriptor::DispatchReadResponse(
   if (gatt_code == mojom::kGATTSuccess) {
     DCHECK(value);
     value_ = std::move(value.value());
-    callback.Run(value_);
+    std::move(callback).Run(value_);
     return;
   } else if (gatt_code == mojom::kGATTInvalidHandle) {
     DCHECK(!value);
@@ -105,7 +106,7 @@ void FakeRemoteGattDescriptor::DispatchReadResponse(
 }
 
 void FakeRemoteGattDescriptor::DispatchWriteResponse(
-    const base::RepeatingClosure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback,
     const std::vector<uint8_t>& value) {
   DCHECK(next_write_response_);
@@ -115,7 +116,7 @@ void FakeRemoteGattDescriptor::DispatchWriteResponse(
   switch (gatt_code) {
     case mojom::kGATTSuccess:
       last_written_value_ = value;
-      callback.Run();
+      std::move(callback).Run();
       break;
     case mojom::kGATTInvalidHandle:
       std::move(error_callback)

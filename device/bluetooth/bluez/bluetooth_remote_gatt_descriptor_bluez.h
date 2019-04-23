@@ -35,10 +35,10 @@ class BluetoothRemoteGattDescriptorBlueZ
   device::BluetoothRemoteGattCharacteristic* GetCharacteristic() const override;
   device::BluetoothRemoteGattCharacteristic::Permissions GetPermissions()
       const override;
-  void ReadRemoteDescriptor(const ValueCallback& callback,
+  void ReadRemoteDescriptor(ValueCallback callback,
                             ErrorCallback error_callback) override;
   void WriteRemoteDescriptor(const std::vector<uint8_t>& new_value,
-                             const base::Closure& callback,
+                             base::OnceClosure callback,
                              ErrorCallback error_callback) override;
 
  private:

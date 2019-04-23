@@ -47,10 +47,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorAndroid
   BluetoothRemoteGattCharacteristic* GetCharacteristic() const override;
   BluetoothRemoteGattCharacteristic::Permissions GetPermissions()
       const override;
-  void ReadRemoteDescriptor(const ValueCallback& callback,
+  void ReadRemoteDescriptor(ValueCallback callback,
                             ErrorCallback error_callback) override;
   void WriteRemoteDescriptor(const std::vector<uint8_t>& value,
-                             const base::Closure& callback,
+                             base::OnceClosure callback,
                              ErrorCallback error_callback) override;
 
   // Called when Read operation completes.
@@ -81,7 +81,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorAndroid
 
   // WriteRemoteCharacteristic callbacks and pending state.
   bool write_pending_ = false;
-  base::Closure write_callback_;
+  base::OnceClosure write_callback_;
   ErrorCallback write_error_callback_;
 
   std::vector<uint8_t> value_;

@@ -33,7 +33,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptor
 
   // The ValueCallback is used to return the value of a remote characteristic
   // descriptor upon a read request.
-  typedef base::Callback<void(const std::vector<uint8_t>&)> ValueCallback;
+  using ValueCallback = base::OnceCallback<void(const std::vector<uint8_t>&)>;
 
   // Returns the value of the descriptor. For remote descriptors, this is the
   // most recently cached value of the remote descriptor. For local descriptors
@@ -48,7 +48,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptor
   // Sends a read request to a remote characteristic descriptor to read its
   // value. |callback| is called to return the read value on success and
   // |error_callback| is called for failures.
-  virtual void ReadRemoteDescriptor(const ValueCallback& callback,
+  virtual void ReadRemoteDescriptor(ValueCallback callback,
                                     ErrorCallback error_callback) = 0;
 
   // Sends a write request to a remote characteristic descriptor, to modify the
@@ -57,7 +57,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptor
   // only applies to remote descriptors and will fail for those that are locally
   // hosted.
   virtual void WriteRemoteDescriptor(const std::vector<uint8_t>& new_value,
-                                     const base::Closure& callback,
+                                     base::OnceClosure callback,
                                      ErrorCallback error_callback) = 0;
 
  protected:

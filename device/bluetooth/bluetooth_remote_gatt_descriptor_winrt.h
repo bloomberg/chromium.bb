@@ -42,10 +42,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWinrt
   // BluetoothRemoteGattDescriptor:
   const std::vector<uint8_t>& GetValue() const override;
   BluetoothRemoteGattCharacteristic* GetCharacteristic() const override;
-  void ReadRemoteDescriptor(const ValueCallback& callback,
+  void ReadRemoteDescriptor(ValueCallback callback,
                             ErrorCallback error_callback) override;
   void WriteRemoteDescriptor(const std::vector<uint8_t>& value,
-                             const base::Closure& callback,
+                             base::OnceClosure callback,
                              ErrorCallback error_callback) override;
 
   ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattDescriptor*

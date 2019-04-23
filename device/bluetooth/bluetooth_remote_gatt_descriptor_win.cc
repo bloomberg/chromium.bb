@@ -70,7 +70,7 @@ BluetoothRemoteGattDescriptorWin::GetPermissions() const {
 }
 
 void BluetoothRemoteGattDescriptorWin::ReadRemoteDescriptor(
-    const ValueCallback& callback,
+    ValueCallback callback,
     ErrorCallback error_callback) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
 
@@ -81,7 +81,7 @@ void BluetoothRemoteGattDescriptorWin::ReadRemoteDescriptor(
 
 void BluetoothRemoteGattDescriptorWin::WriteRemoteDescriptor(
     const std::vector<uint8_t>& new_value,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   DCHECK(ui_task_runner_->RunsTasksInCurrentSequence());
 

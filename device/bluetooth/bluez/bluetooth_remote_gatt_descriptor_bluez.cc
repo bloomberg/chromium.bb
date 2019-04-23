@@ -82,14 +82,14 @@ BluetoothRemoteGattDescriptorBlueZ::GetPermissions() const {
 }
 
 void BluetoothRemoteGattDescriptorBlueZ::ReadRemoteDescriptor(
-    const ValueCallback& callback,
+    ValueCallback callback,
     ErrorCallback error_callback) {
   VLOG(1) << "Sending GATT characteristic descriptor read request to "
           << "descriptor: " << GetIdentifier()
           << ", UUID: " << GetUUID().canonical_value();
 
   bluez::BluezDBusManager::Get()->GetBluetoothGattDescriptorClient()->ReadValue(
-      object_path(), callback,
+      object_path(), std::move(callback),
       base::BindOnce(&BluetoothRemoteGattDescriptorBlueZ::OnError,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(error_callback)));
@@ -97,7 +97,7 @@ void BluetoothRemoteGattDescriptorBlueZ::ReadRemoteDescriptor(
 
 void BluetoothRemoteGattDescriptorBlueZ::WriteRemoteDescriptor(
     const std::vector<uint8_t>& new_value,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   VLOG(1) << "Sending GATT characteristic descriptor write request to "
           << "characteristic: " << GetIdentifier()
@@ -106,7 +106,7 @@ void BluetoothRemoteGattDescriptorBlueZ::WriteRemoteDescriptor(
 
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattDescriptorClient()
-      ->WriteValue(object_path(), new_value, callback,
+      ->WriteValue(object_path(), new_value, std::move(callback),
                    base::BindOnce(&BluetoothRemoteGattDescriptorBlueZ::OnError,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   std::move(error_callback)));

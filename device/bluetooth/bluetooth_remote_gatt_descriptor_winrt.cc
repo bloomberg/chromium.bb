@@ -98,7 +98,7 @@ BluetoothRemoteGattDescriptorWinrt::GetCharacteristic() const {
 }
 
 void BluetoothRemoteGattDescriptorWinrt::ReadRemoteDescriptor(
-    const ValueCallback& callback,
+    ValueCallback callback,
     ErrorCallback error_callback) {
   if (pending_read_callbacks_ || pending_write_callbacks_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -137,12 +137,12 @@ void BluetoothRemoteGattDescriptorWinrt::ReadRemoteDescriptor(
   }
 
   pending_read_callbacks_ = std::make_unique<PendingReadCallbacks>(
-      callback, std::move(error_callback));
+      std::move(callback), std::move(error_callback));
 }
 
 void BluetoothRemoteGattDescriptorWinrt::WriteRemoteDescriptor(
     const std::vector<uint8_t>& value,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   if (pending_read_callbacks_ || pending_write_callbacks_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -205,7 +205,7 @@ void BluetoothRemoteGattDescriptorWinrt::WriteRemoteDescriptor(
   }
 
   pending_write_callbacks_ = std::make_unique<PendingWriteCallbacks>(
-      callback, std::move(error_callback));
+      std::move(callback), std::move(error_callback));
 }
 
 IGattDescriptor* BluetoothRemoteGattDescriptorWinrt::GetDescriptorForTesting() {
@@ -307,7 +307,7 @@ void BluetoothRemoteGattDescriptorWinrt::OnReadValue(
   }
 
   value_.assign(data, data + length);
-  pending_read_callbacks->callback.Run(value_);
+  std::move(pending_read_callbacks->callback).Run(value_);
 }
 
 void BluetoothRemoteGattDescriptorWinrt::OnWriteValueWithResult(

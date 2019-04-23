@@ -50,11 +50,11 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattDescriptorClient
   std::vector<dbus::ObjectPath> GetDescriptors() override;
   Properties* GetProperties(const dbus::ObjectPath& object_path) override;
   void ReadValue(const dbus::ObjectPath& object_path,
-                 const ValueCallback& callback,
+                 ValueCallback callback,
                  ErrorCallback error_callback) override;
   void WriteValue(const dbus::ObjectPath& object_path,
                   const std::vector<uint8_t>& value,
-                  const base::Closure& callback,
+                  base::OnceClosure callback,
                   ErrorCallback error_callback) override;
 
   // Makes the descriptor with the UUID |uuid| visible under the characteristic

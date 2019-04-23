@@ -50,33 +50,34 @@ BluetoothRemoteGattDescriptorCast::GetCharacteristic() const {
 }
 
 void BluetoothRemoteGattDescriptorCast::ReadRemoteDescriptor(
-    const ValueCallback& callback,
+    ValueCallback callback,
     ErrorCallback error_callback) {
-  remote_descriptor_->Read(base::BindOnce(
-      &BluetoothRemoteGattDescriptorCast::OnReadRemoteDescriptor,
-      weak_factory_.GetWeakPtr(), callback, std::move(error_callback)));
+  remote_descriptor_->Read(
+      base::BindOnce(&BluetoothRemoteGattDescriptorCast::OnReadRemoteDescriptor,
+                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(error_callback)));
 }
 
 void BluetoothRemoteGattDescriptorCast::WriteRemoteDescriptor(
     const std::vector<uint8_t>& new_value,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback) {
   remote_descriptor_->Write(
       new_value,
       base::BindOnce(
           &BluetoothRemoteGattDescriptorCast::OnWriteRemoteDescriptor,
-          weak_factory_.GetWeakPtr(), new_value, callback,
+          weak_factory_.GetWeakPtr(), new_value, std::move(callback),
           std::move(error_callback)));
 }
 
 void BluetoothRemoteGattDescriptorCast::OnReadRemoteDescriptor(
-    const ValueCallback& callback,
+    ValueCallback callback,
     ErrorCallback error_callback,
     bool success,
     const std::vector<uint8_t>& result) {
   if (success) {
     value_ = result;
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
   std::move(error_callback).Run(BluetoothGattService::GATT_ERROR_FAILED);
@@ -84,12 +85,12 @@ void BluetoothRemoteGattDescriptorCast::OnReadRemoteDescriptor(
 
 void BluetoothRemoteGattDescriptorCast::OnWriteRemoteDescriptor(
     const std::vector<uint8_t>& written_value,
-    const base::Closure& callback,
+    base::OnceClosure callback,
     ErrorCallback error_callback,
     bool success) {
   if (success) {
     value_ = written_value;
-    callback.Run();
+    std::move(callback).Run();
     return;
   }
   std::move(error_callback).Run(BluetoothGattService::GATT_ERROR_FAILED);

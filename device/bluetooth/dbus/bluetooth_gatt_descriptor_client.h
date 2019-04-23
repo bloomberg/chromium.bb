@@ -68,7 +68,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptorClient
   using ErrorCallback =
       base::OnceCallback<void(const std::string& error_name,
                               const std::string& error_message)>;
-  typedef base::Callback<void(const std::vector<uint8_t>& value)> ValueCallback;
+  using ValueCallback =
+      base::OnceCallback<void(const std::vector<uint8_t>& value)>;
 
   ~BluetoothGattDescriptorClient() override;
 
@@ -89,7 +90,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptorClient
   // |object_path| and returns the value in |callback| on success. On error,
   // invokes |error_callback|.
   virtual void ReadValue(const dbus::ObjectPath& object_path,
-                         const ValueCallback& callback,
+                         ValueCallback callback,
                          ErrorCallback error_callback) = 0;
 
   // Issues a request to write the value of GATT descriptor with object path
@@ -97,7 +98,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptorClient
   // |error_callback| on failure.
   virtual void WriteValue(const dbus::ObjectPath& object_path,
                           const std::vector<uint8_t>& value,
-                          const base::Closure& callback,
+                          base::OnceClosure callback,
                           ErrorCallback error_callback) = 0;
 
   // Creates the instance.
