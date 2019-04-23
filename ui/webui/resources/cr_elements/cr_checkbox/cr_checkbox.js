@@ -61,6 +61,11 @@ Polymer({
     this.$.checkbox.focus();
   },
 
+  /** @return {!Element} */
+  getFocusableElement: function() {
+    return this.$.checkbox;
+  },
+
   /** @private */
   checkedChanged_: function() {
     this.$.checkbox.setAttribute(

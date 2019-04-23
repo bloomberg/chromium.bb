@@ -26,7 +26,12 @@ cr.define('cr.ui', function() {
      * @param {!Event} e
      */
     onFocus(row, e) {
-      this.listItem_.lastFocused = e.path[0];
+      const element = e.path[0];
+      const focusableElement = cr.ui.FocusRow.getFocusableElement(element);
+      if (element != focusableElement) {
+        focusableElement.focus();
+      }
+      this.listItem_.lastFocused = focusableElement;
     }
 
     /**

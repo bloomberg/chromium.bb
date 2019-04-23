@@ -202,3 +202,14 @@ PolymerTest.flushTasks = function() {
     window.setTimeout(resolve, 0);
   });
 };
+
+/**
+ * @param {!HTMLElement} element
+ * @return {!Promise} Promise that resolves when an afterNextRender()
+ *     callback on |element| is run.
+ */
+PolymerTest.afterNextRender = function(element) {
+  return new Promise(resolve => {
+    Polymer.RenderStatus.afterNextRender(element, resolve);
+  });
+};

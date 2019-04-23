@@ -266,7 +266,8 @@ cr.define('cr.ui', function() {
      */
     onKeydown_(e) {
       const elements = this.getFocusableElements();
-      const currentElement = /** @type {!Element} */ (e.currentTarget);
+      const currentElement = cr.ui.FocusRow.getFocusableElement(
+          /** @type {!Element} */ (e.currentTarget));
       const elementIndex = elements.indexOf(currentElement);
       assert(elementIndex >= 0);
 

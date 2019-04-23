@@ -186,6 +186,15 @@ Polymer({
     return this.$.dialog;
   },
 
+  /**
+   * @return {!Array<!Element>}
+   * @private
+   */
+  getOptions_: function() {
+    return Array.from(this.querySelectorAll('.dropdown-item'))
+        .map(cr.ui.FocusRow.getFocusableElement);
+  },
+
   /** @private */
   removeListeners_: function() {
     window.removeEventListener('resize', this.boundClose_);
@@ -247,9 +256,8 @@ Polymer({
     let selectNext = e.key == 'ArrowDown';
     if (e.key == 'Enter') {
       // If a menu item has focus, don't change focus or close menu on 'Enter'.
-      const options = this.querySelectorAll('.dropdown-item');
       const focusedIndex =
-          Array.prototype.indexOf.call(options, getDeepActiveElement());
+          this.getOptions_().indexOf(assert(getDeepActiveElement()));
       if (focusedIndex != -1) {
         return;
       }
@@ -313,10 +321,9 @@ Polymer({
     // hidden/disabled.
     let counter = 0;
     let nextOption = null;
-    const options = this.querySelectorAll('.dropdown-item');
+    const options = this.getOptions_();
     const numOptions = options.length;
-    let focusedIndex =
-        Array.prototype.indexOf.call(options, getDeepActiveElement());
+    let focusedIndex = options.indexOf(assert(getDeepActiveElement()));
 
     // Handle case where nothing is focused and up is pressed.
     if (focusedIndex === -1 && step === -1) {
