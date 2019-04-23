@@ -10,8 +10,10 @@
 #include "ash/public/interfaces/night_light_controller.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
+#include "chromeos/settings/timezone_settings.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
@@ -24,7 +26,8 @@ class SharedURLLoaderFactory;
 
 // Periodically requests the IP-based geolocation and provides it to the
 // NightLightController running in ash.
-class NightLightClient : public ash::mojom::NightLightClient {
+class NightLightClient : public ash::mojom::NightLightClient,
+                         public chromeos::system::TimezoneSettings::Observer {
  public:
   explicit NightLightClient(
       scoped_refptr<network::SharedURLLoaderFactory> factory);
@@ -39,10 +42,17 @@ class NightLightClient : public ash::mojom::NightLightClient {
   void OnScheduleTypeChanged(
       ash::mojom::NightLightController::ScheduleType new_type) override;
 
+  // chromeos::system::TimezoneSettings::Observer:
+  void TimezoneChanged(const icu::TimeZone& timezone) override;
+
   const base::OneShotTimer& timer() const { return *timer_; }
 
   base::Time last_successful_geo_request_time() const {
     return last_successful_geo_request_time_;
+  }
+
+  const base::string16& current_timezone_id() const {
+    return current_timezone_id_;
   }
 
   bool using_geoposition() const { return using_geoposition_; }
@@ -57,6 +67,8 @@ class NightLightClient : public ash::mojom::NightLightClient {
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
 
   void SetClockForTesting(base::Clock* clock);
+
+  void SetCurrentTimezoneIdForTesting(const base::string16& timezone_id);
 
  protected:
   void OnGeoposition(const chromeos::Geoposition& position,
@@ -93,6 +105,9 @@ class NightLightClient : public ash::mojom::NightLightClient {
   base::Time last_successful_geo_request_time_;
   double latitude_ = 0.0;
   double longitude_ = 0.0;
+
+  // The ID of the current timezone in the fromat similar to "America/Chicago".
+  base::string16 current_timezone_id_;
 
   // True as long as the schedule type is set to "sunset to sunrise", which
   // means this client will be retrieving the IP-based geoposition once per day.
