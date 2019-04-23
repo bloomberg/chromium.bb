@@ -136,6 +136,8 @@ jumbo_source_set("renderer") {
     "guest_view/mime_handler_view/mime_handler_view_container_manager.h",
     "guest_view/mime_handler_view/mime_handler_view_frame_container.cc",
     "guest_view/mime_handler_view/mime_handler_view_frame_container.h",
+    "guest_view/mime_handler_view/post_message_support.cc",
+    "guest_view/mime_handler_view/post_message_support.h",
     "i18n_hooks_delegate.cc",
     "i18n_hooks_delegate.h",
     "id_generator_custom_bindings.cc",

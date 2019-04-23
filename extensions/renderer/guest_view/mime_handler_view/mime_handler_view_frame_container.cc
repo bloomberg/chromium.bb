@@ -10,6 +10,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_thread.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -90,6 +91,9 @@ MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
                                    resource_url),
       plugin_element_(plugin_element),
       element_instance_id_(content::RenderThread::Get()->GenerateRoutingID()),
+      is_resource_accessible_to_embedder_(
+          GetSourceFrame()->GetSecurityOrigin().CanAccess(
+              blink::WebSecurityOrigin::Create(resource_url))),
       render_frame_lifetime_observer_(
           new RenderFrameLifetimeObserver(this, GetEmbedderRenderFrame())) {
   RecordInteraction(
@@ -124,11 +128,6 @@ void MimeHandlerViewFrameContainer::DestroyFrameContainer() {
   delete this;
 }
 
-blink::WebRemoteFrame* MimeHandlerViewFrameContainer::GetGuestProxyFrame()
-    const {
-  return GetContentFrame()->ToWebRemoteFrame();
-}
-
 int32_t MimeHandlerViewFrameContainer::GetInstanceId() const {
   return element_instance_id_;
 }
@@ -140,6 +139,22 @@ gfx::Size MimeHandlerViewFrameContainer::GetElementSize() const {
 blink::WebFrame* MimeHandlerViewFrameContainer::GetContentFrame() const {
   DCHECK(is_embedded_);
   return blink::WebFrame::FromFrameOwnerElement(plugin_element_);
+}
+
+blink::WebLocalFrame* MimeHandlerViewFrameContainer::GetSourceFrame() {
+  return GetEmbedderRenderFrame()->GetWebFrame();
+}
+
+blink::WebFrame* MimeHandlerViewFrameContainer::GetTargetFrame() {
+  return GetContentFrame();
+}
+
+bool MimeHandlerViewFrameContainer::IsEmbedded() const {
+  return is_embedded_;
+}
+
+bool MimeHandlerViewFrameContainer::IsResourceAccessibleBySource() const {
+  return is_resource_accessible_to_embedder_;
 }
 
 }  // namespace extensions

@@ -46,6 +46,12 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
   void DestroyFrameContainer();
   void DidLoad();
 
+  // PostMessageHelper::Delegate.
+  blink::WebLocalFrame* GetSourceFrame() override;
+  blink::WebFrame* GetTargetFrame() override;
+  bool IsEmbedded() const override;
+  bool IsResourceAccessibleBySource() const override;
+
   int32_t element_instance_id() const { return element_instance_id_; }
 
  private:
@@ -62,7 +68,6 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
 
   // MimeHandlerViewContainerBase overrides.
   void CreateMimeHandlerViewGuestIfNecessary() final;
-  blink::WebRemoteFrame* GetGuestProxyFrame() const final;
   int32_t GetInstanceId() const final;
   gfx::Size GetElementSize() const final;
 
@@ -70,6 +75,12 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
 
   blink::WebElement plugin_element_;
   const int32_t element_instance_id_;
+  // TODO(ekaramad): This is intentionally here instead of
+  // MimeHandlerViewContainerBase because MimeHandlerViewFrameContainer will
+  // soon be refactored, and no longer a subclass of  MHVCB. This means MHVCB
+  // and MimeHandlerViewContainer should soon merge back into a MHVC class.
+  // Determines whether the embedder can access |original_url_|. Used for UMA.
+  bool is_resource_accessible_to_embedder_;
   std::unique_ptr<RenderFrameLifetimeObserver> render_frame_lifetime_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MimeHandlerViewFrameContainer);
