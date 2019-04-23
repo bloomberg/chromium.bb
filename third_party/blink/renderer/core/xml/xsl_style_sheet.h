@@ -28,7 +28,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/css/style_sheet.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -37,13 +36,11 @@ class XSLStyleSheet final : public StyleSheet {
   static XSLStyleSheet* Create(ProcessingInstruction* parent_node,
                                const String& original_url,
                                const KURL& final_url) {
-    DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     return MakeGarbageCollected<XSLStyleSheet>(parent_node, original_url,
                                                final_url, false);
   }
   static XSLStyleSheet* CreateEmbedded(ProcessingInstruction* parent_node,
                                        const KURL& final_url) {
-    DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     return MakeGarbageCollected<XSLStyleSheet>(
         parent_node, final_url.GetString(), final_url, true);
   }
@@ -55,7 +52,6 @@ class XSLStyleSheet final : public StyleSheet {
                                                Node* stylesheet_root_node,
                                                const String& original_url,
                                                const KURL& final_url) {
-    DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     return MakeGarbageCollected<XSLStyleSheet>(document, stylesheet_root_node,
                                                original_url, final_url, false);
   }

@@ -140,7 +140,7 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
     // We need to make a synthetic XSLStyleSheet that is embedded.
     // It needs to be able to kick off import/include loads that
     // can hang off some parent sheet.
-    if (is_xsl_ && RuntimeEnabledFeatures::XSLTEnabled()) {
+    if (is_xsl_) {
       KURL final_url(local_href_);
       sheet_ = XSLStyleSheet::CreateEmbedded(this, final_url);
       loading_ = false;
@@ -150,9 +150,6 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
 
   ClearResource();
 
-  if (is_xsl_ && !RuntimeEnabledFeatures::XSLTEnabled())
-    return;
-
   ResourceLoaderOptions options;
   options.initiator_info.name =
       fetch_initiator_type_names::kProcessinginstruction;
@@ -160,7 +157,6 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
                          options);
   loading_ = true;
   if (is_xsl_) {
-    DCHECK(RuntimeEnabledFeatures::XSLTEnabled());
     params.MutableResourceRequest().SetFetchRequestMode(
         network::mojom::FetchRequestMode::kSameOrigin);
     XSLStyleSheetResource::Fetch(params, GetDocument().Fetcher(), this);

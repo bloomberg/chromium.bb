@@ -33,7 +33,6 @@
 [
     Constructor,
     ConstructorCallWith=Document,
-    RuntimeEnabled=XSLT,
     MeasureAs=XSLTProcessor
 ] interface XSLTProcessor {
 

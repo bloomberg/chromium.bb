@@ -1610,8 +1610,8 @@
       status: "experimental"
     },
     {
-      name: "XSLT",
-      status: "stable",
+      name: "WritableFiles",
+      status: "experimental",
     },
   ],
 }
