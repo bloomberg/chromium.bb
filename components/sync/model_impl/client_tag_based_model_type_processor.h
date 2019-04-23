@@ -78,6 +78,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void ModelReadyToSync(std::unique_ptr<MetadataBatch> batch) override;
   bool IsTrackingMetadata() override;
   std::string TrackedAccountId() override;
+  std::string TrackedCacheGuid() override;
   void ReportError(const ModelError& error) override;
   base::Optional<ModelError> GetError() const override;
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegate() override;

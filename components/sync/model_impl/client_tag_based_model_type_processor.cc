@@ -300,6 +300,17 @@ std::string ClientTagBasedModelTypeProcessor::TrackedAccountId() {
   return model_type_state_.authenticated_account_id();
 }
 
+std::string ClientTagBasedModelTypeProcessor::TrackedCacheGuid() {
+  // Returning non-empty here despite !IsTrackingMetadata() has weird semantics,
+  // e.g. initial updates are being fetched but we haven't received the response
+  // (i.e. prior to exercising MergeSyncData()). Let's be cautious and hide the
+  // cache GUID.
+  if (!IsTrackingMetadata()) {
+    return "";
+  }
+  return model_type_state_.cache_guid();
+}
+
 void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
