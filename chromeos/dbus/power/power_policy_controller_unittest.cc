@@ -65,6 +65,7 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   prefs.wait_for_initial_user_activity = true;
   prefs.force_nonzero_brightness_for_user_activity = false;
   prefs.boot_on_ac = true;
+  prefs.usb_power_share = false;
   policy_controller_->ApplyPrefs(prefs);
 
   power_manager::PowerManagementPolicy expected_policy;
@@ -93,6 +94,7 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   expected_policy.set_wait_for_initial_user_activity(true);
   expected_policy.set_force_nonzero_brightness_for_user_activity(false);
   expected_policy.set_boot_on_ac(true);
+  expected_policy.set_usb_power_share(false);
   expected_policy.set_reason(PowerPolicyController::kPrefsReason);
   EXPECT_EQ(
       PowerPolicyController::GetPolicyDebugString(expected_policy),

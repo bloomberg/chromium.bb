@@ -435,6 +435,11 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
     values.boot_on_ac = local_state_->GetBoolean(prefs::kBootOnAcEnabled);
   }
 
+  if (local_state_->IsManagedPreference(prefs::kUsbPowerShareEnabled)) {
+    values.usb_power_share =
+        local_state_->GetBoolean(prefs::kUsbPowerShareEnabled);
+  }
+
   power_policy_controller_->ApplyPrefs(values);
 }
 
@@ -502,6 +507,8 @@ void PowerPrefs::ObserveLocalStatePrefs(PrefService* prefs) {
   local_state_registrar_->Add(prefs::kPowerPeakShiftDayConfig, update_callback);
 
   local_state_registrar_->Add(prefs::kBootOnAcEnabled, update_callback);
+
+  local_state_registrar_->Add(prefs::kUsbPowerShareEnabled, update_callback);
 
   UpdatePowerPolicyFromPrefs();
 }

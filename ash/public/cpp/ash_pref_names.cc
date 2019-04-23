@@ -361,15 +361,18 @@ const char kAssistantNumWarmerWelcomeTriggered[] =
 const char kVpnConfigAllowed[] = "vpn_config_allowed";
 
 // A boolean pref that indicates whether power peak shift is enabled.
+// Ignored unless powerd is configured to honor charging-related prefs.
 const char kPowerPeakShiftEnabled[] = "ash.power.peak_shift_enabled";
 
 // An integer pref that specifies the power peak shift battery threshold in
 // percent.
+// Ignored unless powerd is configured to honor charging-related prefs.
 const char kPowerPeakShiftBatteryThreshold[] =
     "ash.power.peak_shift_battery_threshold";
 
 // A dictionary pref that specifies the power peak shift day configs.
 // For details see "DevicePowerPeakShiftDayConfig" in policy_templates.json.
+// Ignored unless powerd is configured to honor charging-related prefs.
 const char kPowerPeakShiftDayConfig[] = "ash.power.peak_shift_day_config";
 
 // A boolean pref that indicates whether boot on AC is enabled.
@@ -377,23 +380,27 @@ const char kBootOnAcEnabled[] = "ash.power.boot_on_ac_enabled";
 
 // A boolean pref that indicates whether advanced battery charge mode is
 // enabled.
+// Ignored unless powerd is configured to honor charging-related prefs.
 const char kAdvancedBatteryChargeModeEnabled[] =
     "ash.power.advanced_battery_charge_mode_enabled";
 
 // A dictionary pref that specifies the advanced battery charge mode day config.
 // For details see "DeviceAdvancedBatteryChargeModeDayConfig" in
 // policy_templates.json.
+// Ignored unless powerd is configured to honor charging-related prefs.
 const char kAdvancedBatteryChargeModeDayConfig[] =
     "ash.power.advanced_battery_charge_mode_day_config";
 
 // An integer pref that specifies the battery charge mode.
 // For details see "DeviceBatteryChargeMode" in policy_templates.json.
+// Ignored unless powerd is configured to honor charging-related prefs.
 const char kBatteryChargeMode[] = "ash.power.battery_charge_mode";
 
 // An integer pref that specifies the battery charge custom start charging in
 // percent.
 // For details see "DeviceBatteryChargeCustomStartCharging" in
 // policy_templates.json.
+// Ignored unless powerd is configured to honor charging-related prefs.
 const char kBatteryChargeCustomStartCharging[] =
     "ash.power.battery_charge_custom_start_charging";
 
@@ -401,11 +408,13 @@ const char kBatteryChargeCustomStartCharging[] =
 // percent.
 // For details see "DeviceBatteryChargeCustomStopCharging" in
 // policy_templates.json.
+// Ignored unless powerd is configured to honor charging-related prefs.
 const char kBatteryChargeCustomStopCharging[] =
     "ash.power.battery_charge_custom_stop_charging";
 
 // A boolean pref that indicates whether USB power share is enabled.
 // For details see "DeviceUsbPowerShareEnabled" in policy_templates.json.
+// Ignored unless powerd is configured to honor charging-related prefs.
 const char kUsbPowerShareEnabled[] = "ash.power.usb_power_share_enabled";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved

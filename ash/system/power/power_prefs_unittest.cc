@@ -113,7 +113,11 @@ std::string GetExpectedPowerPolicyForPrefs(PrefService* prefs,
       prefs->GetBoolean(prefs::kPowerWaitForInitialUserActivity));
   expected_policy.set_force_nonzero_brightness_for_user_activity(
       prefs->GetBoolean(prefs::kPowerForceNonzeroBrightnessForUserActivity));
+
+  // Device-level prefs do not exist in the user-level |prefs|.
   expected_policy.set_boot_on_ac(false);
+  expected_policy.set_usb_power_share(true);
+
   expected_policy.set_reason("Prefs");
   return chromeos::PowerPolicyController::GetPolicyDebugString(expected_policy);
 }
@@ -418,6 +422,14 @@ TEST_F(PowerPrefsTest, BootOnAc) {
 
   managed_pref_store_->SetBoolean(prefs::kBootOnAcEnabled, false);
   EXPECT_FALSE(power_manager_client()->policy().boot_on_ac());
+}
+
+TEST_F(PowerPrefsTest, UsbPowerShare) {
+  managed_pref_store_->SetBoolean(prefs::kUsbPowerShareEnabled, true);
+  EXPECT_TRUE(power_manager_client()->policy().usb_power_share());
+
+  managed_pref_store_->SetBoolean(prefs::kUsbPowerShareEnabled, false);
+  EXPECT_FALSE(power_manager_client()->policy().usb_power_share());
 }
 
 }  // namespace ash
