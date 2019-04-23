@@ -206,6 +206,13 @@ bool StackingNotificationCounterView::SetCount(int total_notification_count,
 
   if (features::IsNotificationStackingBarRedesignEnabled()) {
     SetVisible(total_notification_count_ > 1);
+
+    auto tooltip = l10n_util::GetStringFUTF16Int(
+        IDS_ASH_MESSAGE_CENTER_STACKING_BAR_CLEAR_ALL_BUTTON_TOOLTIP,
+        total_notification_count_);
+    clear_all_button_->SetTooltipText(tooltip);
+    clear_all_button_->SetAccessibleName(tooltip);
+
     if (stacked_notification_count_ > 0) {
       count_label_->SetText(l10n_util::GetStringFUTF16Int(
           IDS_ASH_MESSAGE_CENTER_HIDDEN_NOTIFICATION_COUNT_LABEL,

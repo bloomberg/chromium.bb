@@ -1712,6 +1712,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_MESSAGE_CENTER_HIDDEN_NOTIFICATION_COUNT_LABEL" desc="The label text the number of hidden notifications.">
         +<ph name="COUNT">$1<ex>2</ex></ph> more
       </message>
+      <message name="IDS_ASH_MESSAGE_CENTER_STACKING_BAR_CLEAR_ALL_BUTTON_TOOLTIP" desc="The tooltip text for the top clear all button, which also has the total number of notifications. Note: This button only appears when there are 2 or more notifications.">
+        Clear all <ph name="COUNT">$1<ex>2</ex></ph> notifications
+      </message>
       <message name="IDS_ASH_MESSAGE_CENTER_SETTINGS_BUTTON_TOOLTIP" desc="The tooltip text for visiting the appropriate settings page in the footer of the message center.">
         Settings
       </message>
