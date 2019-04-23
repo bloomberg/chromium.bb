@@ -21,8 +21,8 @@
 
 namespace device {
 
-class CtapGetAssertionRequest;
-class CtapMakeCredentialRequest;
+struct CtapGetAssertionRequest;
+struct CtapMakeCredentialRequest;
 class FidoDevice;
 class FidoTask;
 

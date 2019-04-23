@@ -195,20 +195,18 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
                                     CtapMakeCredentialRequest request) {
   DCHECK(webauthn_api->IsAvailable());
 
-  base::string16 rp_id = base::UTF8ToUTF16(request.rp().rp_id());
-  base::string16 rp_name =
-      base::UTF8ToUTF16(request.rp().rp_name().value_or(""));
-  base::string16 rp_icon_url = OptionalGURLToUTF16(request.rp().rp_icon_url());
+  base::string16 rp_id = base::UTF8ToUTF16(request.rp.rp_id());
+  base::string16 rp_name = base::UTF8ToUTF16(request.rp.rp_name().value_or(""));
+  base::string16 rp_icon_url = OptionalGURLToUTF16(request.rp.rp_icon_url());
   WEBAUTHN_RP_ENTITY_INFORMATION rp_info{
       WEBAUTHN_RP_ENTITY_INFORMATION_CURRENT_VERSION, rp_id.c_str(),
       rp_name.c_str(), rp_icon_url.c_str()};
 
-  base::string16 user_name =
-      base::UTF8ToUTF16(request.user().name.value_or(""));
-  base::string16 user_icon_url = OptionalGURLToUTF16(request.user().icon_url);
+  base::string16 user_name = base::UTF8ToUTF16(request.user.name.value_or(""));
+  base::string16 user_icon_url = OptionalGURLToUTF16(request.user.icon_url);
   base::string16 user_display_name =
-      base::UTF8ToUTF16(request.user().display_name.value_or(""));
-  std::vector<uint8_t> user_id = request.user().id;
+      base::UTF8ToUTF16(request.user.display_name.value_or(""));
+  std::vector<uint8_t> user_id = request.user.id;
   WEBAUTHN_USER_ENTITY_INFORMATION user_info{
       WEBAUTHN_USER_ENTITY_INFORMATION_CURRENT_VERSION,
       user_id.size(),
@@ -221,7 +219,7 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
   std::vector<WEBAUTHN_COSE_CREDENTIAL_PARAMETER>
       cose_credential_parameter_values;
   for (const PublicKeyCredentialParams::CredentialInfo& credential_info :
-       request.public_key_credential_params().public_key_credential_params()) {
+       request.public_key_credential_params.public_key_credential_params()) {
     if (credential_info.type != CredentialType::kPublicKey) {
       continue;
     }
@@ -233,7 +231,7 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
       cose_credential_parameter_values.size(),
       cose_credential_parameter_values.data()};
 
-  std::string client_data_json = request.client_data_json();
+  std::string client_data_json = request.client_data_json;
   WEBAUTHN_CLIENT_DATA client_data{
       WEBAUTHN_CLIENT_DATA_CURRENT_VERSION, client_data_json.size(),
       const_cast<unsigned char*>(
@@ -241,7 +239,7 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
       WEBAUTHN_HASH_ALGORITHM_SHA_256};
 
   std::vector<WEBAUTHN_EXTENSION> extensions;
-  if (request.hmac_secret()) {
+  if (request.hmac_secret) {
     static BOOL kHMACSecretTrue = TRUE;
     extensions.emplace_back(
         WEBAUTHN_EXTENSION{WEBAUTHN_EXTENSIONS_IDENTIFIER_HMAC_SECRET,
@@ -249,20 +247,20 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
   }
 
   uint32_t authenticator_attachment;
-  if (request.is_u2f_only()) {
+  if (request.is_u2f_only) {
     authenticator_attachment =
         WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2;
-  } else if (request.is_incognito_mode()) {
+  } else if (request.is_incognito_mode) {
     // Disable all platform authenticators in incognito mode. We are going to
     // revisit this in crbug/908622.
     authenticator_attachment = WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM;
   } else {
     authenticator_attachment =
-        ToWinAuthenticatorAttachment(request.authenticator_attachment());
+        ToWinAuthenticatorAttachment(request.authenticator_attachment);
   }
 
   std::vector<WEBAUTHN_CREDENTIAL_EX> exclude_list_credentials =
-      ToWinCredentialExVector(request.exclude_list());
+      ToWinCredentialExVector(request.exclude_list);
   std::vector<WEBAUTHN_CREDENTIAL_EX*> exclude_list_ptrs;
   std::transform(
       exclude_list_credentials.begin(), exclude_list_credentials.end(),
@@ -277,9 +275,9 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
           0, nullptr},  // Ignored because pExcludeCredentialList is set.
       WEBAUTHN_EXTENSIONS{extensions.size(), extensions.data()},
       authenticator_attachment,
-      request.resident_key_required(),
-      ToWinUserVerificationRequirement(request.user_verification()),
-      ToWinAttestationConveyancePreference(request.attestation_preference()),
+      request.resident_key_required,
+      ToWinUserVerificationRequirement(request.user_verification),
+      ToWinAttestationConveyancePreference(request.attestation_preference),
       /*dwFlags=*/0,
       &cancellation_id,
       &exclude_credential_list,
@@ -314,8 +312,8 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
                                   CtapGetAssertionRequest request) {
   DCHECK(webauthn_api->IsAvailable());
 
-  base::string16 rp_id16 = base::UTF8ToUTF16(request.rp_id());
-  std::string client_data_json = request.client_data_json();
+  base::string16 rp_id16 = base::UTF8ToUTF16(request.rp_id);
+  std::string client_data_json = request.client_data_json;
   WEBAUTHN_CLIENT_DATA client_data{
       WEBAUTHN_CLIENT_DATA_CURRENT_VERSION, client_data_json.size(),
       const_cast<unsigned char*>(
@@ -323,14 +321,14 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
       WEBAUTHN_HASH_ALGORITHM_SHA_256};
 
   base::Optional<base::string16> opt_app_id16 = base::nullopt;
-  if (request.app_id()) {
-    opt_app_id16 = base::UTF8ToUTF16(base::StringPiece(
-        reinterpret_cast<const char*>(request.app_id()->data()),
-        request.app_id()->size()));
+  if (request.app_id) {
+    opt_app_id16 = base::UTF8ToUTF16(
+        base::StringPiece(reinterpret_cast<const char*>(request.app_id->data()),
+                          request.app_id->size()));
   }
 
   std::vector<WEBAUTHN_CREDENTIAL_EX> allow_list_credentials =
-      ToWinCredentialExVector(request.allow_list());
+      ToWinCredentialExVector(request.allow_list);
   std::vector<WEBAUTHN_CREDENTIAL_EX*> allow_list_ptrs;
   std::transform(allow_list_credentials.begin(), allow_list_credentials.end(),
                  std::back_inserter(allow_list_ptrs),
@@ -338,13 +336,13 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
   WEBAUTHN_CREDENTIAL_LIST allow_credential_list{allow_list_ptrs.size(),
                                                  allow_list_ptrs.data()};
 
-  auto legacy_credentials = ToWinCredentialVector(request.allow_list());
+  auto legacy_credentials = ToWinCredentialVector(request.allow_list);
 
   uint32_t authenticator_attachment;
   if (opt_app_id16) {
     authenticator_attachment =
         WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM_U2F_V2;
-  } else if (request.is_incognito_mode()) {
+  } else if (request.is_incognito_mode) {
     // Disable all platform authenticators in incognito mode. We are going to
     // revisit this in crbug/908622.
     authenticator_attachment = WEBAUTHN_AUTHENTICATOR_ATTACHMENT_CROSS_PLATFORM;
@@ -371,7 +369,7 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
                            legacy_credentials.data()},
       WEBAUTHN_EXTENSIONS{0, nullptr},  // None supported.
       authenticator_attachment,
-      ToWinUserVerificationRequirement(request.user_verification()),
+      ToWinUserVerificationRequirement(request.user_verification),
       /*dwFlags=*/0,
       opt_app_id16 ? opt_app_id16->data() : nullptr,
       opt_app_id16 ? &kUseAppIdTrue : &kUseAppIdFalse,

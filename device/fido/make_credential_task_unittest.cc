@@ -153,7 +153,7 @@ TEST_F(FidoMakeCredentialTaskTest, EnforceClientPinWhenUserVerificationSet) {
       test_data::kClientDataJson, std::move(rp), std::move(user),
       PublicKeyCredentialParams(
           std::vector<PublicKeyCredentialParams::CredentialInfo>(1)));
-  request.SetUserVerification(UserVerificationRequirement::kRequired);
+  request.user_verification = UserVerificationRequirement::kRequired;
   const auto task = std::make_unique<MakeCredentialTask>(
       device.get(), std::move(request), callback_receiver_.callback());
 
@@ -179,7 +179,7 @@ TEST_F(FidoMakeCredentialTaskTest, TestU2fOnly) {
       test_data::kClientDataJson, std::move(rp), std::move(user),
       PublicKeyCredentialParams(
           std::vector<PublicKeyCredentialParams::CredentialInfo>(1)));
-  request.set_is_u2f_only(true);
+  request.is_u2f_only = true;
   const auto task = std::make_unique<MakeCredentialTask>(
       device.get(), std::move(request), callback_receiver_.callback());
   make_credential_callback_receiver().WaitForCallback();

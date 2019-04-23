@@ -44,8 +44,8 @@ constexpr size_t kMaxBytes = 63;
 // RetriesRequest asks an authenticator for the number of remaining PIN attempts
 // before the device is locked.
 struct RetriesRequest {
-  std::pair<CtapRequestCommand, base::Optional<cbor::Value>> EncodeAsCBOR()
-      const;
+  static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  EncodeAsCBOR(const RetriesRequest&);
 };
 
 // RetriesResponse reflects an authenticator's response to a |RetriesRequest|.
@@ -64,8 +64,8 @@ struct RetriesResponse {
 // KeyAgreementRequest asks an authenticator for an ephemeral ECDH key for
 // encrypting PIN material in future requests.
 struct KeyAgreementRequest {
-  std::pair<CtapRequestCommand, base::Optional<cbor::Value>> EncodeAsCBOR()
-      const;
+  static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  EncodeAsCBOR(const KeyAgreementRequest&);
 };
 
 // KeyAgreementResponse reflects an authenticator's response to a
@@ -92,8 +92,8 @@ class SetRequest {
   // IsValid(pin) must be true.
   SetRequest(const std::string& pin, const KeyAgreementResponse& peer_key);
 
-  std::pair<CtapRequestCommand, base::Optional<cbor::Value>> EncodeAsCBOR()
-      const;
+  static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  EncodeAsCBOR(const SetRequest&);
 
  private:
   const KeyAgreementResponse peer_key_;
@@ -114,8 +114,8 @@ class ChangeRequest {
                 const std::string& new_pin,
                 const KeyAgreementResponse& peer_key);
 
-  std::pair<CtapRequestCommand, base::Optional<cbor::Value>> EncodeAsCBOR()
-      const;
+  static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  EncodeAsCBOR(const ChangeRequest&);
 
  private:
   const KeyAgreementResponse peer_key_;
@@ -128,8 +128,8 @@ class ChangeRequest {
 // PIN-related command, but is generally used to reset a PIN and so is
 // included here.
 struct ResetRequest {
-  std::pair<CtapRequestCommand, base::Optional<cbor::Value>> EncodeAsCBOR()
-      const;
+  static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  EncodeAsCBOR(const ResetRequest&);
 };
 
 using ResetResponse = EmptyResponse;
@@ -148,8 +148,8 @@ class TokenRequest {
   // This is needed to decrypt the response.
   const std::array<uint8_t, 32>& shared_key() const;
 
-  std::pair<CtapRequestCommand, base::Optional<cbor::Value>> EncodeAsCBOR()
-      const;
+  static std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  EncodeAsCBOR(const TokenRequest&);
 
  private:
   std::array<uint8_t, 32> shared_key_;

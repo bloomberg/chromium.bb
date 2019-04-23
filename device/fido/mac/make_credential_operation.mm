@@ -45,7 +45,7 @@ MakeCredentialOperation::MakeCredentialOperation(
 MakeCredentialOperation::~MakeCredentialOperation() = default;
 
 const std::string& MakeCredentialOperation::RpId() const {
-  return request().rp().rp_id();
+  return request().rp.rp_id();
 }
 
 void MakeCredentialOperation::Run() {
@@ -63,7 +63,7 @@ void MakeCredentialOperation::Run() {
                static_cast<int>(CoseAlgorithmIdentifier::kCoseEs256);
       };
   const auto& key_params =
-      request().public_key_credential_params().public_key_credential_params();
+      request().public_key_credential_params.public_key_credential_params();
   if (!std::any_of(key_params.begin(), key_params.end(), is_es256)) {
     DVLOG(1) << "No supported algorithm found.";
     std::move(callback())
@@ -86,8 +86,8 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
 
   // Evaluate that excludeList does not contain any credentials stored by this
   // authenticator.
-  if (request().exclude_list()) {
-    for (auto& credential : *request().exclude_list()) {
+  if (request().exclude_list) {
+    for (auto& credential : *request().exclude_list) {
       ScopedCFTypeRef<CFMutableDictionaryRef> query = DefaultKeychainQuery();
       CFDictionarySetValue(query, kSecAttrApplicationLabel,
                            [NSData dataWithBytes:credential.id().data()
@@ -115,7 +115,7 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
   // Delete the key pair for this RP + user handle if one already exists.
   base::Optional<std::string> encoded_rp_id_user_id =
       CredentialMetadata::EncodeRpIdAndUserId(metadata_secret(), RpId(),
-                                              request().user().id);
+                                              request().user.id);
   if (!encoded_rp_id_user_id) {
     // Internal error.
     std::move(callback())
@@ -201,7 +201,7 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
   AuthenticatorData authenticator_data =
       MakeAuthenticatorData(RpId(), std::move(*attested_credential_data));
   base::Optional<std::vector<uint8_t>> signature = GenerateSignature(
-      authenticator_data, request().client_data_hash(), private_key);
+      authenticator_data, request().client_data_hash, private_key);
   if (!signature) {
     FIDO_LOG(ERROR) << "MakeSignature failed";
     std::move(callback())
@@ -224,7 +224,7 @@ MakeCredentialOperation::GenerateCredentialIdForRequest() const {
   return CredentialMetadata::SealCredentialId(
       metadata_secret(), RpId(),
       CredentialMetadata::UserEntity::FromPublicKeyCredentialUserEntity(
-          request().user()));
+          request().user));
 }
 
 }  // namespace mac

@@ -42,7 +42,7 @@ GetAssertionOperation::GetAssertionOperation(CtapGetAssertionRequest request,
 GetAssertionOperation::~GetAssertionOperation() = default;
 
 const std::string& GetAssertionOperation::RpId() const {
-  return request().rp_id();
+  return request().rp_id;
 }
 
 void GetAssertionOperation::Run() {
@@ -67,8 +67,8 @@ void GetAssertionOperation::PromptTouchIdDone(bool success) {
   // Collect the credential ids from allowList. If allowList is absent, we will
   // pick the first available credential for the RP.
   std::set<std::vector<uint8_t>> allowed_credential_ids;
-  if (request().allow_list()) {
-    for (const PublicKeyCredentialDescriptor& desc : *request().allow_list()) {
+  if (request().allow_list) {
+    for (const PublicKeyCredentialDescriptor& desc : *request().allow_list) {
       if (desc.credential_type() != CredentialType::kPublicKey)
         continue;
 
@@ -111,9 +111,8 @@ void GetAssertionOperation::PromptTouchIdDone(bool success) {
 
   AuthenticatorData authenticator_data =
       MakeAuthenticatorData(RpId(), /*attested_credential_data=*/base::nullopt);
-  base::Optional<std::vector<uint8_t>> signature =
-      GenerateSignature(authenticator_data, request().client_data_hash(),
-                        credential->private_key);
+  base::Optional<std::vector<uint8_t>> signature = GenerateSignature(
+      authenticator_data, request().client_data_hash, credential->private_key);
   if (!signature) {
     FIDO_LOG(ERROR) << "GenerateSignature failed";
     std::move(callback())

@@ -23,8 +23,7 @@ bool MayFallbackToU2fWithAppIdExtension(
   bool ctap2_device_supports_u2f =
       device.device_info() &&
       base::ContainsKey(device.device_info()->versions, ProtocolVersion::kU2f);
-  return request.alternative_application_parameter() &&
-         ctap2_device_supports_u2f;
+  return request.alternative_application_parameter && ctap2_device_supports_u2f;
 }
 
 }  // namespace
@@ -38,11 +37,11 @@ GetAssertionTask::GetAssertionTask(FidoDevice* device,
       weak_factory_(this) {
   // This code assumes that user-presence is requested in order to implement
   // possible U2F-fallback.
-  DCHECK(request_.user_presence_required());
+  DCHECK(request_.user_presence_required);
 
   // The UV parameter should have been made binary by this point because CTAP2
   // only takes a binary value.
-  DCHECK_NE(request_.user_verification(),
+  DCHECK_NE(request_.user_verification,
             UserVerificationRequirement::kPreferred);
 }
 
@@ -80,12 +79,12 @@ void GetAssertionTask::StartTask() {
 }
 
 CtapGetAssertionRequest GetAssertionTask::NextSilentRequest() {
-  DCHECK(request_.allow_list() &&
-         current_credential_ < request_.allow_list()->size());
+  DCHECK(request_.allow_list &&
+         current_credential_ < request_.allow_list->size());
   CtapGetAssertionRequest request = request_;
-  request.SetAllowList({{request_.allow_list()->at(current_credential_)}});
-  request.SetUserPresenceRequired(false);
-  request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+  request.allow_list = {{request_.allow_list->at(current_credential_)}};
+  request.user_presence_required = false;
+  request.user_verification = UserVerificationRequirement::kDiscouraged;
   return request;
 }
 
@@ -97,7 +96,7 @@ void GetAssertionTask::GetAssertion() {
   // support silent probing so don't do it with them.)
   if (device()->DeviceTransport() !=
           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy &&
-      ((request_.allow_list() && request_.allow_list()->size() > 1) ||
+      ((request_.allow_list && request_.allow_list->size() > 1) ||
        MayFallbackToU2fWithAppIdExtension(*device(), request_))) {
     sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
@@ -158,7 +157,7 @@ void GetAssertionTask::HandleResponse(
 void GetAssertionTask::HandleResponseToSilentRequest(
     CtapDeviceResponseCode response_code,
     base::Optional<AuthenticatorGetAssertionResponse> response_data) {
-  DCHECK(request_.allow_list() && request_.allow_list()->size() > 0);
+  DCHECK(request_.allow_list && request_.allow_list->size() > 0);
 
   if (canceled_) {
     return;
@@ -170,7 +169,7 @@ void GetAssertionTask::HandleResponseToSilentRequest(
   // user verification configuration.
   if (response_code == CtapDeviceResponseCode::kSuccess) {
     CtapGetAssertionRequest request = request_;
-    request.SetAllowList({{request_.allow_list()->at(current_credential_)}});
+    request.allow_list = {{request_.allow_list->at(current_credential_)}};
     sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), std::move(request),
@@ -184,7 +183,7 @@ void GetAssertionTask::HandleResponseToSilentRequest(
 
   // Credential was not recognized or an error occurred. Probe the next
   // credential.
-  if (++current_credential_ < request_.allow_list()->size()) {
+  if (++current_credential_ < request_.allow_list->size()) {
     sign_operation_ = std::make_unique<Ctap2DeviceOperation<
         CtapGetAssertionRequest, AuthenticatorGetAssertionResponse>>(
         device(), NextSilentRequest(),

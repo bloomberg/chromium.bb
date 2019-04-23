@@ -20,6 +20,7 @@
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_discovery_factory.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/get_assertion_task.h"
 #include "device/fido/pin.h"
 
@@ -30,7 +31,10 @@ namespace {
 bool ResponseValid(const FidoAuthenticator& authenticator,
                    const CtapGetAssertionRequest& request,
                    const AuthenticatorGetAssertionResponse& response) {
-  if (!request.CheckResponseRpIdHash(response.GetRpIdHash())) {
+  if (response.GetRpIdHash() !=
+          fido_parsing_utils::CreateSHA256Hash(request.rp_id) &&
+      (!request.app_id ||
+       response.GetRpIdHash() != request.alternative_application_parameter)) {
     return false;
   }
 
@@ -52,8 +56,7 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
     return false;
   }
 
-  if ((!request.allow_list() || request.allow_list()->empty()) &&
-      !user_entity) {
+  if ((!request.allow_list || request.allow_list->empty()) && !user_entity) {
     return false;
   }
 
@@ -68,7 +71,7 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
   // Thus, returned credential ID need not be in allowed list.
   // TODO(hongjunchoi) : Add link to section of the CTAP spec once it is
   // published.
-  const auto& allow_list = request.allow_list();
+  const auto& allow_list = request.allow_list;
   if (!allow_list || allow_list->empty()) {
     if (authenticator.Options() &&
         !authenticator.Options()->supports_resident_key) {
@@ -109,9 +112,9 @@ bool ResponseValid(const FidoAuthenticator& authenticator,
 void SetCredentialIdForResponseWithEmptyCredential(
     const CtapGetAssertionRequest& request,
     AuthenticatorGetAssertionResponse& response) {
-  if (request.allow_list() && request.allow_list()->size() == 1 &&
+  if (request.allow_list && request.allow_list->size() == 1 &&
       !response.credential()) {
-    response.SetCredential(request.allow_list()->at(0));
+    response.SetCredential(request.allow_list->at(0));
   }
 }
 
@@ -130,8 +133,7 @@ bool CheckUserVerificationCompatible(FidoAuthenticator* authenticator,
 
   const bool pin_support =
       base::FeatureList::IsEnabled(device::kWebAuthPINSupport) && have_observer;
-  return request.user_verification() !=
-             UserVerificationRequirement::kRequired ||
+  return request.user_verification != UserVerificationRequirement::kRequired ||
          opt_options->user_verification_availability ==
              AuthenticatorSupportedOptions::UserVerificationAvailability::
                  kSupportedAndConfigured ||
@@ -151,7 +153,7 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
 
   // TODO(https://crbug.com/874479): |allowed_list| will |has_value| even if the
   // WebAuthn request has `allowCredential` undefined.
-  const auto& allowed_list = request.allow_list();
+  const auto& allowed_list = request.allow_list;
   if (!allowed_list || allowed_list->empty()) {
     return kAllTransports;
   }
@@ -170,7 +172,7 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
 base::flat_set<FidoTransportProtocol> GetTransportsAllowedAndConfiguredByRP(
     const CtapGetAssertionRequest& request) {
   auto transports = GetTransportsAllowedByRP(request);
-  if (!request.cable_extension())
+  if (!request.cable_extension)
     transports.erase(FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
   return transports;
 }
@@ -196,9 +198,9 @@ GetAssertionRequestHandler::GetAssertionRequestHandler(
   if (base::ContainsKey(
           transport_availability_info().available_transports,
           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
-    DCHECK(request_.cable_extension());
+    DCHECK(request_.cable_extension);
     auto discovery =
-        FidoDiscoveryFactory::CreateCable(*request_.cable_extension());
+        FidoDiscoveryFactory::CreateCable(*request_.cable_extension);
     discovery->set_observer(this);
     discoveries().push_back(std::move(discovery));
   }
@@ -269,11 +271,11 @@ void GetAssertionRequestHandler::DispatchRequest(
     if (authenticator->Options()->user_verification_availability ==
             AuthenticatorSupportedOptions::UserVerificationAvailability::
                 kSupportedAndConfigured &&
-        request_.user_verification() !=
+        request_.user_verification !=
             UserVerificationRequirement::kDiscouraged) {
-      request.SetUserVerification(UserVerificationRequirement::kRequired);
+      request.user_verification = UserVerificationRequirement::kRequired;
     } else {
-      request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+      request.user_verification = UserVerificationRequirement::kDiscouraged;
     }
   }
 
@@ -354,8 +356,8 @@ void GetAssertionRequestHandler::HandleResponse(
 
   SetCredentialIdForResponseWithEmptyCredential(request_, *response);
   const size_t num_responses = response->num_credentials().value_or(1);
-  if (num_responses == 0 || (num_responses > 1 && request_.allow_list() &&
-                             !request_.allow_list()->empty())) {
+  if (num_responses == 0 || (num_responses > 1 && request_.allow_list &&
+                             !request_.allow_list->empty())) {
     OnAuthenticatorResponse(authenticator,
                             FidoReturnCode::kAuthenticatorResponseInvalid,
                             base::nullopt);
@@ -546,11 +548,11 @@ void GetAssertionRequestHandler::OnHavePINToken(
   observer()->FinishCollectPIN();
   state_ = State::kWaitingForSecondTouch;
   CtapGetAssertionRequest request(request_);
-  request.SetPinAuth(response->PinAuth(request.client_data_hash()));
-  request.SetPinProtocol(pin::kProtocolVersion);
+  request.pin_auth = response->PinAuth(request.client_data_hash);
+  request.pin_protocol = pin::kProtocolVersion;
   // If doing a PIN operation then we don't ask the authenticator to also do
   // internal UV.
-  request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+  request.user_verification = UserVerificationRequirement::kDiscouraged;
 
   authenticator_->GetAssertion(
       std::move(request),

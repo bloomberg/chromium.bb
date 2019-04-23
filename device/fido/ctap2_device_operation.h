@@ -31,9 +31,9 @@
 namespace device {
 
 // Ctap2DeviceOperation performs a single request--response operation on a CTAP2
-// device. The |Request| class must implement an |EncodeToCBOR| method that
-// returns a pair of |CtapRequestCommand| and an optional CBOR |Value|.
-// The response will be parsed to CBOR and then further parsed into a |Response|
+// device. The |Request| class must implement a static |EncodeToCBOR| method
+// that returns a pair of |CtapRequestCommand| and an optional CBOR |Value|. The
+// response will be parsed to CBOR and then further parsed into a |Response|
 // using a provided callback.
 template <class Request, class Response>
 class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
@@ -76,7 +76,7 @@ class Ctap2DeviceOperation : public DeviceOperation<Request, Response> {
 
   void Start() override {
     std::pair<CtapRequestCommand, base::Optional<cbor::Value>> request(
-        this->request().EncodeAsCBOR());
+        Request::EncodeAsCBOR(this->request()));
     std::vector<uint8_t> request_bytes;
 
     // TODO: it would be nice to see which device each request is going to, but

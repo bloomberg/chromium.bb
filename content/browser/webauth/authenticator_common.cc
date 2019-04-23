@@ -285,44 +285,13 @@ device::CtapMakeCredentialRequest CreateCtapMakeCredentialRequest(
       mojo::ConvertTo<device::PublicKeyCredentialUserEntity>(options->user),
       device::PublicKeyCredentialParams(std::move(credential_params)));
 
-  auto exclude_list =
+  make_credential_param.exclude_list =
       mojo::ConvertTo<std::vector<device::PublicKeyCredentialDescriptor>>(
           options->exclude_credentials);
 
-  make_credential_param.SetExcludeList(std::move(exclude_list));
-  make_credential_param.SetHmacSecret(options->hmac_create_secret);
-  make_credential_param.set_is_incognito_mode(is_incognito);
+  make_credential_param.hmac_secret = options->hmac_create_secret;
+  make_credential_param.is_incognito_mode = is_incognito;
   return make_credential_param;
-}
-
-device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
-    const std::string& client_data_json,
-    const blink::mojom::PublicKeyCredentialRequestOptionsPtr& options,
-    base::Optional<std::string> app_id,
-    bool is_incognito) {
-  device::CtapGetAssertionRequest request_parameter(options->relying_party_id,
-                                                    client_data_json);
-
-  auto allowed_list =
-      mojo::ConvertTo<std::vector<device::PublicKeyCredentialDescriptor>>(
-          options->allow_credentials);
-
-  request_parameter.SetAllowList(std::move(allowed_list));
-  request_parameter.SetUserVerification(
-      mojo::ConvertTo<device::UserVerificationRequirement>(
-          options->user_verification));
-
-  if (app_id) {
-    request_parameter.SetAppId(std::move(*app_id));
-  }
-
-  if (!options->cable_authentication_data.empty()) {
-    request_parameter.SetCableExtension(
-        mojo::ConvertTo<std::vector<device::CableDiscoveryData>>(
-            options->cable_authentication_data));
-  }
-  request_parameter.set_is_incognito_mode(is_incognito);
-  return request_parameter;
 }
 
 // The application parameter is the SHA-256 hash of the UTF-8 encoding of
@@ -334,6 +303,37 @@ std::array<uint8_t, crypto::kSHA256Length> CreateApplicationParameter(
   crypto::SHA256HashString(relying_party_id, application_parameter.data(),
                            application_parameter.size());
   return application_parameter;
+}
+
+device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
+    const std::string& client_data_json,
+    const blink::mojom::PublicKeyCredentialRequestOptionsPtr& options,
+    base::Optional<std::string> app_id,
+    bool is_incognito) {
+  device::CtapGetAssertionRequest request_parameter(options->relying_party_id,
+                                                    client_data_json);
+
+  request_parameter.allow_list =
+      mojo::ConvertTo<std::vector<device::PublicKeyCredentialDescriptor>>(
+          options->allow_credentials);
+
+  request_parameter.user_verification =
+      mojo::ConvertTo<device::UserVerificationRequirement>(
+          options->user_verification);
+
+  if (app_id) {
+    request_parameter.alternative_application_parameter =
+        CreateApplicationParameter(*app_id);
+    request_parameter.app_id = std::move(*app_id);
+  }
+
+  if (!options->cable_authentication_data.empty()) {
+    request_parameter.cable_extension =
+        mojo::ConvertTo<std::vector<device::CableDiscoveryData>>(
+            options->cable_authentication_data);
+  }
+  request_parameter.is_incognito_mode = is_incognito;
+  return request_parameter;
 }
 
 // Parses the FIDO transport types extension from the DER-encoded, X.509
@@ -699,7 +699,7 @@ void AuthenticatorCommon::MakeCredential(
   auto ctap_request = CreateCtapMakeCredentialRequest(
       client_data_json_, options, browser_context()->IsOffTheRecord());
   // On dual protocol CTAP2/U2F devices, force credential creation over U2F.
-  ctap_request.set_is_u2f_only(OriginIsCryptoTokenExtension(caller_origin_));
+  ctap_request.is_u2f_only = OriginIsCryptoTokenExtension(caller_origin_);
 
   // Compute the effective attestation conveyance preference and set
   // |attestation_requested_| for showing the attestation consent prompt later.
@@ -710,7 +710,7 @@ void AuthenticatorCommon::MakeCredential(
           relying_party_id_)) {
     attestation = ::device::AttestationConveyancePreference::DIRECT;
   }
-  ctap_request.set_attestation_preference(attestation);
+  ctap_request.attestation_preference = attestation;
   attestation_requested_ =
       attestation != ::device::AttestationConveyancePreference::NONE;
 

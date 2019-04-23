@@ -22,8 +22,8 @@
 
 namespace device {
 
-class CtapGetAssertionRequest;
-class CtapMakeCredentialRequest;
+struct CtapGetAssertionRequest;
+struct CtapMakeCredentialRequest;
 
 namespace pin {
 struct RetriesResponse;

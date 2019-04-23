@@ -16,16 +16,16 @@
 namespace device {
 
 CtapMakeCredentialRequest::CtapMakeCredentialRequest(
-    std::string client_data_json,
-    PublicKeyCredentialRpEntity rp,
-    PublicKeyCredentialUserEntity user,
-    PublicKeyCredentialParams public_key_credential_params)
-    : client_data_json_(std::move(client_data_json)),
-      client_data_hash_(
-          fido_parsing_utils::CreateSHA256Hash(client_data_json_)),
-      rp_(std::move(rp)),
-      user_(std::move(user)),
-      public_key_credential_params_(std::move(public_key_credential_params)) {}
+    std::string in_client_data_json,
+    PublicKeyCredentialRpEntity in_rp,
+    PublicKeyCredentialUserEntity in_user,
+    PublicKeyCredentialParams in_public_key_credential_params)
+    : client_data_json(std::move(in_client_data_json)),
+      client_data_hash(fido_parsing_utils::CreateSHA256Hash(client_data_json)),
+      rp(std::move(in_rp)),
+      user(std::move(in_user)),
+      public_key_credential_params(std::move(in_public_key_credential_params)) {
+}
 
 CtapMakeCredentialRequest::CtapMakeCredentialRequest(
     const CtapMakeCredentialRequest& that) = default;
@@ -41,46 +41,49 @@ CtapMakeCredentialRequest& CtapMakeCredentialRequest::operator=(
 
 CtapMakeCredentialRequest::~CtapMakeCredentialRequest() = default;
 
+// static
 std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-CtapMakeCredentialRequest::EncodeAsCBOR() const {
+CtapMakeCredentialRequest::EncodeAsCBOR(
+    const CtapMakeCredentialRequest& request) {
   cbor::Value::MapValue cbor_map;
-  cbor_map[cbor::Value(1)] = cbor::Value(client_data_hash_);
-  cbor_map[cbor::Value(2)] = rp_.ConvertToCBOR();
+  cbor_map[cbor::Value(1)] = cbor::Value(request.client_data_hash);
+  cbor_map[cbor::Value(2)] = request.rp.ConvertToCBOR();
   cbor_map[cbor::Value(3)] =
-      PublicKeyCredentialUserEntity::ConvertToCBOR(user_);
-  cbor_map[cbor::Value(4)] = public_key_credential_params_.ConvertToCBOR();
-  if (exclude_list_) {
+      PublicKeyCredentialUserEntity::ConvertToCBOR(request.user);
+  cbor_map[cbor::Value(4)] =
+      request.public_key_credential_params.ConvertToCBOR();
+  if (request.exclude_list) {
     cbor::Value::ArrayValue exclude_list_array;
-    for (const auto& descriptor : *exclude_list_) {
+    for (const auto& descriptor : *request.exclude_list) {
       exclude_list_array.push_back(descriptor.ConvertToCBOR());
     }
     cbor_map[cbor::Value(5)] = cbor::Value(std::move(exclude_list_array));
   }
 
-  if (hmac_secret_) {
+  if (request.hmac_secret) {
     cbor::Value::MapValue extensions;
     extensions[cbor::Value(kExtensionHmacSecret)] = cbor::Value(true);
     cbor_map[cbor::Value(6)] = cbor::Value(std::move(extensions));
   }
 
-  if (pin_auth_) {
-    cbor_map[cbor::Value(8)] = cbor::Value(*pin_auth_);
+  if (request.pin_auth) {
+    cbor_map[cbor::Value(8)] = cbor::Value(*request.pin_auth);
   }
 
-  if (pin_protocol_) {
-    cbor_map[cbor::Value(9)] = cbor::Value(*pin_protocol_);
+  if (request.pin_protocol) {
+    cbor_map[cbor::Value(9)] = cbor::Value(*request.pin_protocol);
   }
 
   cbor::Value::MapValue option_map;
 
   // Resident keys are not required by default.
-  if (resident_key_required_) {
+  if (request.resident_key_required) {
     option_map[cbor::Value(kResidentKeyMapKey)] =
-        cbor::Value(resident_key_required_);
+        cbor::Value(request.resident_key_required);
   }
 
   // User verification is not required by default.
-  if (user_verification_ == UserVerificationRequirement::kRequired) {
+  if (request.user_verification == UserVerificationRequirement::kRequired) {
     option_map[cbor::Value(kUserVerificationMapKey)] = cbor::Value(true);
   }
 
@@ -90,49 +93,6 @@ CtapMakeCredentialRequest::EncodeAsCBOR() const {
 
   return std::make_pair(CtapRequestCommand::kAuthenticatorMakeCredential,
                         cbor::Value(std::move(cbor_map)));
-}
-
-CtapMakeCredentialRequest&
-CtapMakeCredentialRequest::SetAuthenticatorAttachment(
-    AuthenticatorAttachment authenticator_attachment) {
-  authenticator_attachment_ = authenticator_attachment;
-  return *this;
-}
-
-CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetUserVerification(
-    UserVerificationRequirement user_verification) {
-  user_verification_ = user_verification;
-  return *this;
-}
-
-CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetResidentKeyRequired(
-    bool resident_key_required) {
-  resident_key_required_ = resident_key_required;
-  return *this;
-}
-
-CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetExcludeList(
-    std::vector<PublicKeyCredentialDescriptor> exclude_list) {
-  exclude_list_ = std::move(exclude_list);
-  return *this;
-}
-
-CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetPinAuth(
-    std::vector<uint8_t> pin_auth) {
-  pin_auth_ = std::move(pin_auth);
-  return *this;
-}
-
-CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetPinProtocol(
-    uint8_t pin_protocol) {
-  pin_protocol_ = pin_protocol;
-  return *this;
-}
-
-CtapMakeCredentialRequest& CtapMakeCredentialRequest::SetHmacSecret(
-    bool hmac_secret) {
-  hmac_secret_ = hmac_secret;
-  return *this;
 }
 
 }  // namespace device

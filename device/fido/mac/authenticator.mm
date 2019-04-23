@@ -64,8 +64,8 @@ bool TouchIdAuthenticator::HasCredentialForGetAssertionRequest(
     std::set<std::vector<uint8_t>> allow_list_credential_ids;
     // Extract applicable credential IDs from the allowList, if the request has
     // one. If not, any credential matching the RP works.
-    if (request.allow_list()) {
-      for (const auto& credential_descriptor : *request.allow_list()) {
+    if (request.allow_list) {
+      for (const auto& credential_descriptor : *request.allow_list) {
         if (credential_descriptor.credential_type() !=
             CredentialType::kPublicKey)
           continue;
@@ -80,7 +80,7 @@ bool TouchIdAuthenticator::HasCredentialForGetAssertionRequest(
     }
 
     return FindCredentialInKeychain(keychain_access_group_, metadata_secret_,
-                                    request.rp_id(), allow_list_credential_ids,
+                                    request.rp_id, allow_list_credential_ids,
                                     nullptr /* LAContext */) != base::nullopt;
   }
   NOTREACHED();

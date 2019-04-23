@@ -223,7 +223,7 @@ FidoDeviceAuthenticator::WillNeedPINToMakeCredential(
 
   // If a PIN cannot be collected, and UV is required, then this request cannot
   // be met.
-  if (request.user_verification() == UserVerificationRequirement::kRequired &&
+  if (request.user_verification == UserVerificationRequirement::kRequired &&
       (!can_collect_pin ||
        device_support == ClientPinAvailability::kNotSupported)) {
     return MakeCredentialPINDisposition::kUnsatisfiable;
@@ -232,7 +232,7 @@ FidoDeviceAuthenticator::WillNeedPINToMakeCredential(
   // If UV is required and a PIN can be set, set it during the MakeCredential
   // process.
   if (device_support == ClientPinAvailability::kSupportedButPinNotSet &&
-      request.user_verification() == UserVerificationRequirement::kRequired) {
+      request.user_verification == UserVerificationRequirement::kRequired) {
     return MakeCredentialPINDisposition::kSetPIN;
   }
 
@@ -243,8 +243,7 @@ FidoDeviceAuthenticator::WillNeedPINToMakeCredential(
          supports_u2f);
   // TODO(agl): perhaps CTAP2 is indicated when, for example, hmac-secret is
   // requested?
-  if (request.user_verification() ==
-      UserVerificationRequirement::kDiscouraged) {
+  if (request.user_verification == UserVerificationRequirement::kDiscouraged) {
     return MakeCredentialPINDisposition::kNoPIN;
   }
 
@@ -276,7 +275,7 @@ FidoDeviceAuthenticator::WillNeedPINToGetAssertion(
                            // UI support for collecting it.
                            observer && observer->SupportsPIN();
   const bool resident_key_request =
-      !request.allow_list() || request.allow_list()->empty();
+      !request.allow_list || request.allow_list->empty();
 
   if (resident_key_request) {
     if (can_use_pin) {
@@ -287,7 +286,7 @@ FidoDeviceAuthenticator::WillNeedPINToGetAssertion(
 
   // If UV is required then the PIN must be used if set, or else this request
   // cannot be satisfied.
-  if (request.user_verification() == UserVerificationRequirement::kRequired) {
+  if (request.user_verification == UserVerificationRequirement::kRequired) {
     if (can_use_pin) {
       return GetAssertionPINDisposition::kUsePIN;
     }
@@ -295,7 +294,7 @@ FidoDeviceAuthenticator::WillNeedPINToGetAssertion(
   }
 
   // If UV is preferred and a PIN is set, use it.
-  if (request.user_verification() == UserVerificationRequirement::kPreferred &&
+  if (request.user_verification == UserVerificationRequirement::kPreferred &&
       can_use_pin) {
     return GetAssertionPINDisposition::kUsePIN;
   }

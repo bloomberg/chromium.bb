@@ -32,7 +32,7 @@ U2fRegisterOperation::~U2fRegisterOperation() = default;
 void U2fRegisterOperation::Start() {
   DCHECK(IsConvertibleToU2fRegisterCommand(request()));
 
-  const auto& exclude_list = request().exclude_list();
+  const auto& exclude_list = request().exclude_list;
   if (exclude_list && !exclude_list->empty()) {
     // First try signing with the excluded credentials to see whether this
     // device should be excluded.
@@ -97,7 +97,7 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
     case apdu::ApduResponse::Status::SW_WRONG_LENGTH:
       // Continue to iterate through the provided key handles in the exclude
       // list to check for already registered keys.
-      if (++current_key_handle_index_ < request().exclude_list()->size()) {
+      if (++current_key_handle_index_ < request().exclude_list->size()) {
         TrySign();
       } else {
         // Reached the end of exclude list with no duplicate credential.
@@ -141,7 +141,7 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
       auto response =
           AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
               device()->DeviceTransport(),
-              fido_parsing_utils::CreateSHA256Hash(request().rp().rp_id()),
+              fido_parsing_utils::CreateSHA256Hash(request().rp.rp_id()),
               apdu_response->data());
       std::move(callback())
           .Run(CtapDeviceResponseCode::kSuccess, std::move(response));
@@ -166,8 +166,8 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
 }
 
 const std::vector<uint8_t>& U2fRegisterOperation::excluded_key_handle() const {
-  DCHECK_LT(current_key_handle_index_, request().exclude_list()->size());
-  return request().exclude_list().value()[current_key_handle_index_].id();
+  DCHECK_LT(current_key_handle_index_, request().exclude_list->size());
+  return request().exclude_list.value()[current_key_handle_index_].id();
 }
 
 }  // namespace device

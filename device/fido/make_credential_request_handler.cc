@@ -133,15 +133,15 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
   // (in AuthenticatorImpl) and get rid of the separate
   // AuthenticatorSelectionCriteriaParameter.
   if (authenticator_selection_criteria_.require_resident_key()) {
-    request_.SetResidentKeyRequired(true);
-    request_.SetUserVerification(UserVerificationRequirement::kRequired);
+    request_.resident_key_required = true;
+    request_.user_verification = UserVerificationRequirement::kRequired;
   } else {
-    request_.SetResidentKeyRequired(false);
-    request_.SetUserVerification(
-        authenticator_selection_criteria_.user_verification_requirement());
+    request_.resident_key_required = false;
+    request_.user_verification =
+        authenticator_selection_criteria_.user_verification_requirement();
   }
-  request_.SetAuthenticatorAttachment(
-      authenticator_selection_criteria_.authenticator_attachment());
+  request_.authenticator_attachment =
+      authenticator_selection_criteria_.authenticator_attachment();
 
   Start();
 }
@@ -211,10 +211,10 @@ void MakeCredentialRequestHandler::DispatchRequest(
     if (authenticator->Options()->user_verification_availability ==
             AuthenticatorSupportedOptions::UserVerificationAvailability::
                 kSupportedAndConfigured &&
-        !request_.is_u2f_only()) {
-      request.SetUserVerification(UserVerificationRequirement::kRequired);
+        !request_.is_u2f_only) {
+      request.user_verification = UserVerificationRequirement::kRequired;
     } else {
-      request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+      request.user_verification = UserVerificationRequirement::kDiscouraged;
     }
   }
   authenticator->MakeCredential(
@@ -279,7 +279,7 @@ void MakeCredentialRequestHandler::HandleResponse(
   }
 
   const auto rp_id_hash =
-      fido_parsing_utils::CreateSHA256Hash(request_.rp().rp_id());
+      fido_parsing_utils::CreateSHA256Hash(request_.rp.rp_id());
 
   if (!response || response->GetRpIdHash() != rp_id_hash) {
     FIDO_LOG(ERROR) << "Failing assertion request due to bad response from "
@@ -476,11 +476,11 @@ void MakeCredentialRequestHandler::OnHavePINToken(
   observer()->FinishCollectPIN();
   state_ = State::kWaitingForSecondTouch;
   CtapMakeCredentialRequest request(request_);
-  request.SetPinAuth(response->PinAuth(request.client_data_hash()));
-  request.SetPinProtocol(pin::kProtocolVersion);
+  request.pin_auth = response->PinAuth(request.client_data_hash);
+  request.pin_protocol = pin::kProtocolVersion;
   // If doing a PIN operation then we don't ask the authenticator to also do
   // internal UV.
-  request.SetUserVerification(UserVerificationRequirement::kDiscouraged);
+  request.user_verification = UserVerificationRequirement::kDiscouraged;
 
   authenticator_->MakeCredential(
       std::move(request),

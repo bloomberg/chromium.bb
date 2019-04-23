@@ -24,7 +24,7 @@ class OneShotTimer;
 namespace device {
 
 struct PlatformAuthenticatorInfo;
-class CtapGetAssertionRequest;
+struct CtapGetAssertionRequest;
 class FidoRequestHandlerBase;
 
 enum class FidoReturnCode : uint8_t;
