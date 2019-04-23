@@ -2056,6 +2056,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lasilla-ground',
       'leon',
       'littlejoe',
+      'mistral',
       'moblab-generic-vm',
       'monroe',
       'nami',
@@ -2126,9 +2127,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
   # Paladin configs that exist and should stay as experimental until further
   # notice, preferably with a comment indicating why and a bug.
-  _paladin_experimental_boards = _paladin_new_boards | frozenset([
-      'mistral', # contact: roopeshr@
-  ])
+  _paladin_experimental_boards = _paladin_new_boards | frozenset([])
 
   assert not (_paladin_experimental_boards & _paladin_important_boards), (
       'Experimental and important paladin board sets must be disjoint.')

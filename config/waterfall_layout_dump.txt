@@ -487,6 +487,7 @@
     littlejoe-postsubmit
     lulu-postsubmit
     mccloud-postsubmit
+    mistral-postsubmit
     moblab-generic-vm-postsubmit
     monroe-postsubmit
     nami-postsubmit
@@ -2776,6 +2777,7 @@
     littlejoe-postsubmit-tryjob
     lulu-postsubmit-tryjob
     mccloud-postsubmit-tryjob
+    mistral-postsubmit-tryjob
     moblab-generic-vm-postsubmit-tryjob
     monroe-postsubmit-tryjob
     nami-postsubmit-tryjob
