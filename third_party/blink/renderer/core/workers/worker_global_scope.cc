@@ -305,11 +305,7 @@ bool WorkerGlobalScope::FetchClassicImportedScript(
   EnsureFetcher();
   classic_script_loader->LoadSynchronously(*execution_context, Fetcher(),
                                            script_url,
-                                           mojom::RequestContextType::SCRIPT,
-                                           Fetcher()
-                                               ->GetProperties()
-                                               .GetFetchClientSettingsObject()
-                                               .GetAddressSpace());
+                                           mojom::RequestContextType::SCRIPT);
   if (classic_script_loader->Failed())
     return false;
   *out_response_url = classic_script_loader->ResponseURL();

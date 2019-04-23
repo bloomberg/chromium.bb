@@ -181,7 +181,6 @@ void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
       *this, CreateOutsideSettingsFetcher(outside_settings_object), script_url,
       destination, network::mojom::FetchRequestMode::kSameOrigin,
       network::mojom::FetchCredentialsMode::kSameOrigin,
-      outside_settings_object.GetAddressSpace(),
       WTF::Bind(&ServiceWorkerGlobalScope::DidReceiveResponseForClassicScript,
                 WrapWeakPersistent(this),
                 WrapPersistent(classic_script_loader)),

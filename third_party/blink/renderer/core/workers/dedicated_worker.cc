@@ -246,7 +246,6 @@ void DedicatedWorker::Start() {
         script_request_url_, mojom::RequestContextType::WORKER,
         network::mojom::FetchRequestMode::kSameOrigin,
         network::mojom::FetchCredentialsMode::kSameOrigin,
-        GetExecutionContext()->GetSecurityContext().AddressSpace(),
         WTF::Bind(&DedicatedWorker::OnResponse, WrapPersistent(this)),
         WTF::Bind(&DedicatedWorker::OnFinished, WrapPersistent(this)));
     return;

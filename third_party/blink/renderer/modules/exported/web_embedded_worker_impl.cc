@@ -323,8 +323,7 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
       *shadow_page_->GetDocument(), shadow_page_->GetDocument()->Fetcher(),
       worker_start_data_.script_url, mojom::RequestContextType::SERVICE_WORKER,
       network::mojom::FetchRequestMode::kSameOrigin,
-      network::mojom::FetchCredentialsMode::kSameOrigin,
-      worker_start_data_.address_space, base::OnceClosure(),
+      network::mojom::FetchCredentialsMode::kSameOrigin, base::OnceClosure(),
       Bind(&WebEmbeddedWorkerImpl::OnScriptLoaderFinished,
            WTF::Unretained(this)));
   // Do nothing here since OnScriptLoaderFinished() might have been already
