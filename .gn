@@ -77,6 +77,8 @@ check_targets = [
   "//buildtools/*",
   "//cc/*",
 
+  #"//chrome/*",          # Many errors: https://crbug.com/949535
+
   #"//chrome/android/*",  # 13 errors
   "//chrome/app/*",
   "//chrome/app_shim/*",
@@ -243,7 +245,8 @@ check_targets = [
   #"//chrome/renderer/*",  # ~30 errors
   #"//chrome/service/*",  # 2 errors
   #"//chrome/services/*",  # ~30 errors
-  #"//chrome/test/*",  # ~3000 errors
+  #"//chrome/test/*",  # ~1900 errors
+  "//chrome/test/chromedriver",
   "//chrome/third_party/*",
   "//chrome/tools/*",
   "//chrome/utility/*",

@@ -304,6 +304,7 @@ source_set("lib") {
 }
 
 executable("chromedriver") {
+  testonly = true
   sources = [
     "server/chromedriver_server.cc",
   ]
@@ -315,6 +316,8 @@ executable("chromedriver") {
     ":lib",
     "//build/win:default_exe_manifest",
     "//mojo/core/embedder",
+    "//net/server:http_server",
+    "//net/traffic_annotation:test_support",
     "//services/network/public/mojom",
   ]
 }
