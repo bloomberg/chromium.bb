@@ -13,11 +13,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/observer_list_threadsafe.h"
-#include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/lock.h"
+#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
@@ -30,11 +28,13 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/printing/ppd_provider.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/base/device_client.h"
-#include "device/usb/mojo/type_converters.h"
-#include "device/usb/usb_device.h"
-#include "device/usb/usb_service.h"
+#include "content/public/common/service_manager_connection.h"
+#include "device/usb/public/mojom/device_manager_client.mojom.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "services/device/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 namespace {
@@ -55,17 +55,23 @@ std::string GuessEffectiveMakeAndModel(
 // The PrinterDetector that drives the flow for setting up a USB printer to use
 // CUPS backend.
 class UsbPrinterDetectorImpl : public UsbPrinterDetector,
-                               public device::UsbService::Observer {
+                               public device::mojom::UsbDeviceManagerClient {
  public:
-  explicit UsbPrinterDetectorImpl(device::UsbService* usb_service)
-      : usb_observer_(this),
-        weak_ptr_factory_(this) {
-    if (usb_service) {
-      usb_observer_.Add(usb_service);
-      usb_service->GetDevices(base::Bind(&UsbPrinterDetectorImpl::OnGetDevices,
-                                         weak_ptr_factory_.GetWeakPtr()));
-    }
+  explicit UsbPrinterDetectorImpl(
+      device::mojom::UsbDeviceManagerPtrInfo device_manager_info)
+      : device_manager_(std::move(device_manager_info)) {
+    device_manager_.set_connection_error_handler(
+        base::BindOnce(&UsbPrinterDetectorImpl::OnDeviceManagerConnectionError,
+                       weak_factory_.GetWeakPtr()));
+
+    // Listen for added/removed device events.
+    device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
+    client_binding_.Bind(mojo::MakeRequest(&client));
+    device_manager_->EnumerateDevicesAndSetClient(
+        std::move(client), base::BindOnce(&UsbPrinterDetectorImpl::OnGetDevices,
+                                          weak_factory_.GetWeakPtr()));
   }
+
   ~UsbPrinterDetectorImpl() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
   }
@@ -80,13 +86,6 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
   // PrinterDetector override.
   std::vector<DetectedPrinter> GetPrinters() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    base::AutoLock auto_lock(printers_lock_);
-    return GetPrintersLocked();
-  }
-
- private:
-  std::vector<DetectedPrinter> GetPrintersLocked() {
-    printers_lock_.AssertAcquired();
     std::vector<DetectedPrinter> printers_list;
     printers_list.reserve(printers_.size());
     for (const auto& entry : printers_) {
@@ -95,85 +94,99 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
     return printers_list;
   }
 
+ private:
   // Callback for initial enumeration of usb devices.
-  void OnGetDevices(
-      const std::vector<scoped_refptr<device::UsbDevice>>& devices) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  void OnGetDevices(std::vector<device::mojom::UsbDeviceInfoPtr> devices) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     for (const auto& device : devices) {
-      OnDeviceAdded(device);
+      DoAddDevice(*device);
     }
   }
 
-  // UsbService::observer override.
-  void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    auto device_info = device::mojom::UsbDeviceInfo::From(*device);
-    if (!UsbDeviceIsPrinter(*device_info)) {
+  void OnDeviceManagerConnectionError() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
+    device_manager_.reset();
+    client_binding_.Close();
+    printers_.clear();
+  }
+
+  void DoAddDevice(const device::mojom::UsbDeviceInfo& device_info) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
+    if (!UsbDeviceIsPrinter(device_info)) {
       return;
     }
-    std::unique_ptr<Printer> converted = UsbDeviceToPrinter(*device_info);
+
+    std::unique_ptr<Printer> converted = UsbDeviceToPrinter(device_info);
     if (!converted.get()) {
       // An error will already have been logged if we failed to convert.
       return;
     }
     DetectedPrinter entry;
     entry.printer = *converted;
-    entry.ppd_search_data.usb_vendor_id = device_info->vendor_id;
-    entry.ppd_search_data.usb_product_id = device_info->product_id;
+    entry.ppd_search_data.usb_vendor_id = device_info.vendor_id;
+    entry.ppd_search_data.usb_product_id = device_info.product_id;
     entry.ppd_search_data.make_and_model.push_back(
-        GuessEffectiveMakeAndModel(*device_info));
+        GuessEffectiveMakeAndModel(device_info));
     entry.ppd_search_data.discovery_type =
         PrinterSearchData::PrinterDiscoveryType::kUsb;
     // TODO(https://crbug.com/895037): Add in command set from IEEE1284
 
-    base::AutoLock auto_lock(printers_lock_);
-    printers_[device_info->guid] = entry;
+    printers_[device_info.guid] = entry;
     if (on_printers_found_callback_) {
-      on_printers_found_callback_.Run(GetPrintersLocked());
+      on_printers_found_callback_.Run(GetPrinters());
     }
   }
 
-  // UsbService::observer override.
-  void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+  // device::mojom::UsbDeviceManagerClient implementation.
+  void OnDeviceAdded(device::mojom::UsbDeviceInfoPtr device_info) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
+    DCHECK(device_info);
+    DoAddDevice(*device_info);
+  }
+
+  // device::mojom::UsbDeviceManagerClient implementation.
+  void OnDeviceRemoved(device::mojom::UsbDeviceInfoPtr device_info) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
+    DCHECK(device_info);
     if (!UsbDeviceIsPrinter(*device_info)) {
       return;
     }
-    base::AutoLock auto_lock(printers_lock_);
     printers_.erase(device_info->guid);
     if (on_printers_found_callback_) {
-      on_printers_found_callback_.Run(GetPrintersLocked());
+      on_printers_found_callback_.Run(GetPrinters());
     }
   }
 
   SEQUENCE_CHECKER(sequence_);
 
-  // Map from USB GUID to DetectedPrinter for all detected printers, and
-  // associated lock, since we don't require all access to be from the same
-  // sequence.
+  // Map from USB GUID to DetectedPrinter for all detected printers.
   std::map<std::string, DetectedPrinter> printers_;
-  base::Lock printers_lock_;
 
   OnPrintersFoundCallback on_printers_found_callback_;
 
-  ScopedObserver<device::UsbService, device::UsbService::Observer>
-      usb_observer_;
-  base::WeakPtrFactory<UsbPrinterDetectorImpl> weak_ptr_factory_;
+  device::mojom::UsbDeviceManagerPtr device_manager_;
+  mojo::AssociatedBinding<device::mojom::UsbDeviceManagerClient>
+      client_binding_{this};
+  base::WeakPtrFactory<UsbPrinterDetectorImpl> weak_factory_{this};
 };
 
 }  // namespace
 
 // static
 std::unique_ptr<UsbPrinterDetector> UsbPrinterDetector::Create() {
-  device::UsbService* usb_service =
-      device::DeviceClient::Get()->GetUsbService();
-  return std::make_unique<UsbPrinterDetectorImpl>(usb_service);
+  // Bind to the DeviceService for USB device manager.
+  device::mojom::UsbDeviceManagerPtrInfo usb_manager_info;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(device::mojom::kServiceName,
+                      mojo::MakeRequest(&usb_manager_info));
+
+  return std::make_unique<UsbPrinterDetectorImpl>(std::move(usb_manager_info));
 }
 
 std::unique_ptr<UsbPrinterDetector> UsbPrinterDetector::CreateForTesting(
-    device::UsbService* usb_service) {
-  return std::make_unique<UsbPrinterDetectorImpl>(usb_service);
+    device::mojom::UsbDeviceManagerPtrInfo usb_manager_info) {
+  return std::make_unique<UsbPrinterDetectorImpl>(std::move(usb_manager_info));
 }
 
 }  // namespace chromeos
