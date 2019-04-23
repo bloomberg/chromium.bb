@@ -34,15 +34,19 @@ bool IsSendingEnabled() {
 }
 
 bool IsUserSyncTypeActive(Profile* profile) {
-  return SendTabToSelfSyncServiceFactory::GetForProfile(profile)
-      ->GetSendTabToSelfModel()
-      ->IsReady();
+  SendTabToSelfSyncService* service =
+      SendTabToSelfSyncServiceFactory::GetForProfile(profile);
+  // The service will be null if the user is in incognito mode so better to
+  // check for that.
+  return service && service->GetSendTabToSelfModel() &&
+         service->GetSendTabToSelfModel()->IsReady();
 }
 
 bool IsSyncingOnMultipleDevices(Profile* profile) {
   syncer::DeviceInfoSyncService* device_sync_service =
       DeviceInfoSyncServiceFactory::GetForProfile(profile);
-  return device_sync_service &&
+
+  return device_sync_service && device_sync_service->GetDeviceInfoTracker() &&
          device_sync_service->GetDeviceInfoTracker()->CountActiveDevices() > 1;
 }
 
@@ -55,8 +59,9 @@ bool IsContentRequirementsMet(const GURL& url, Profile* profile) {
 }
 
 bool ShouldOfferFeature(content::WebContents* web_contents) {
-  if (!web_contents)
+  if (!web_contents) {
     return false;
+  }
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
