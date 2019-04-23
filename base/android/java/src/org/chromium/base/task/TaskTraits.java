@@ -54,6 +54,11 @@ public class TaskTraits {
     public static final TaskTraits USER_BLOCKING =
             new TaskTraits().taskPriority(TaskPriority.USER_BLOCKING);
 
+    // A bit like requestAnimationFrame, this task will be posted onto the Choreographer
+    // and will be run on the android main thread after the next vsync.
+    public static final TaskTraits CHOREOGRAPHER_FRAME =
+            new TaskTraits().setIsChoreographerFrame(true);
+
     public TaskTraits() {}
 
     private TaskTraits(TaskTraits other) {
@@ -89,6 +94,11 @@ public class TaskTraits {
         return taskTraits;
     }
 
+    private TaskTraits setIsChoreographerFrame(boolean isChoreographerFrame) {
+        mIsChoreographerFrame = isChoreographerFrame;
+        return this;
+    }
+
     // For convenience of the JNI code, we use primitive types only.
     // Note shutdown behavior is not supported on android.
     boolean mPrioritySetExplicitly;
@@ -96,6 +106,7 @@ public class TaskTraits {
     boolean mMayBlock;
     byte mExtensionId = INVALID_EXTENSION_ID;
     byte mExtensionData[];
+    boolean mIsChoreographerFrame;
 
     /**
      * @return true if this task is using some TaskTraits extension.
@@ -152,6 +163,7 @@ public class TaskTraits {
         hash = 37 * hash + (mMayBlock ? 0 : 1);
         hash = 37 * hash + (int) mExtensionId;
         hash = 37 * hash + Arrays.hashCode(mExtensionData);
+        hash = 37 * hash + (mIsChoreographerFrame ? 0 : 1);
         return hash;
     }
 }
