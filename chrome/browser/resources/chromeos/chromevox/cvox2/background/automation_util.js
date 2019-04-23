@@ -358,6 +358,8 @@ AutomationUtil.getEditableRoot = function(node) {
  * nodes when applying the predicate from n to 1, we make the
  * observation that we want the shallowest node that matches the
  * predicate in a successfully matched node's ancestry chain.
+ * Note that container nodes should only be considered if there are no current
+ * matches.
  * @param {!AutomationNode} root Tree to search.
  * @param {AutomationPredicate.Unary} pred A predicate to apply
  * @return {AutomationNode}
@@ -378,7 +380,8 @@ AutomationUtil.findLastNode = function(root, pred) {
       if (walker == root)
         break;
 
-      if (pred(walker) && !AutomationPredicate.shouldIgnoreNode(walker))
+      if (pred(walker) && !AutomationPredicate.shouldIgnoreNode(walker) &&
+          (!shallowest || !AutomationPredicate.container(walker)))
         shallowest = walker;
 
       walker = walker.parent;

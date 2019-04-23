@@ -192,22 +192,25 @@ TEST_F('ChromeVoxAutomationUtilE2ETest', 'FindLastNodeSimple', function() {
 
 TEST_F('ChromeVoxAutomationUtilE2ETest', 'FindLastNodeNonLeaf', function() {
   this.runWithLoadedTree(function() {/*!
-    <div aria-label="x"><div aria-label=" "></div></div>
+    <div role="button" aria-label="outer">
+      <div role="button" aria-label="inner">
+      </div>
+    </div>
   */}, function(r) {
-    assertEquals('x',
+    assertEquals('outer',
         AutomationUtil.findLastNode(r, function(n) {
-          return n.role == RoleType.GENERIC_CONTAINER;
+          return n.role == RoleType.BUTTON;
         }).name);
   });
 });
 
-TEST_F('ChromeVoxAutomationUtilE2ETest', 'FindLastNodeComplex', function() {
+TEST_F('ChromeVoxAutomationUtilE2ETest', 'FindLastNodeLeaf', function() {
   this.runWithLoadedTree(function() {/*!
     <p>start</p>
-    <div aria-label="x"><div aria-label=" "></div></div>
+    <div aria-label="outer"><div aria-label="inner"></div></div>
     <p>end</p>
   */}, function(r) {
-    assertEquals('x',
+    assertEquals('inner',
         AutomationUtil.findLastNode(r, function(n) {
           return n.role == RoleType.GENERIC_CONTAINER;
         }).name);
