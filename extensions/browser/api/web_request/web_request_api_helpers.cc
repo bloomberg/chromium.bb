@@ -56,15 +56,6 @@ namespace {
 
 using ParsedResponseCookies = std::vector<std::unique_ptr<net::ParsedCookie>>;
 
-// Mirrors the histogram enum of the same name. DO NOT REORDER THESE VALUES OR
-// CHANGE THEIR MEANING.
-enum class WebRequestWSRequestHeadersModification {
-  kNone,
-  kSetUserAgentOnly,
-  kRiskyModification,
-  kMaxValue = kRiskyModification,
-};
-
 void ClearCacheOnNavigationOnUI() {
   web_cache::WebCacheManager::GetInstance()->ClearCacheOnNavigation();
 }
