@@ -855,17 +855,7 @@ std::string AXNodeData::ToString() const {
 
   result += StateBitfieldToString(state);
 
-  result += " (" + base::NumberToString(relative_bounds.bounds.x()) + ", " +
-            base::NumberToString(relative_bounds.bounds.y()) + ")-(" +
-            base::NumberToString(relative_bounds.bounds.width()) + ", " +
-            base::NumberToString(relative_bounds.bounds.height()) + ")";
-
-  if (relative_bounds.offset_container_id != -1)
-    result += " offset_container_id=" +
-              base::NumberToString(relative_bounds.offset_container_id);
-
-  if (relative_bounds.transform && !relative_bounds.transform->IsIdentity())
-    result += " transform=" + relative_bounds.transform->ToString();
+  result += " " + relative_bounds.ToString();
 
   for (const std::pair<ax::mojom::IntAttribute, int32_t>& int_attribute :
        int_attributes) {
