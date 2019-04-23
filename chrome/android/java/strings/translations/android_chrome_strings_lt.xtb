@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">Niekada neversti šios svetainės</translation>
 <translation id="1291207594882862231">Išvalykite istoriją, slapukus, svetainės duomenis, talpyklą…</translation>
 <translation id="129553762522093515">Neseniai uždarytas</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> – išsiųsta iš „<ph name="DEVICE_NAME" />“</translation>
 <translation id="1326317727527857210">Prisijunkite prie „Chrome“, kad pasiektumėte skirtukus iš kitų įrenginių.</translation>
 <translation id="1331212799747679585">Nepavyksta atnaujinti „Chrome“. Daugiau parinkčių.</translation>
 <translation id="1332501820983677155">„Google Chrome“ funkcijų spartieji klavišai</translation>
@@ -170,6 +171,7 @@
 <translation id="2154484045852737596">Kortelės informacijos redagavimas</translation>
 <translation id="2154710561487035718">Kopijuoti URL adresą</translation>
 <translation id="2156074688469523661">Likusios svetainės (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">Bendrinimas</translation>
 <translation id="2206488550163399966">„<ph name="APP_NAME" />“, žiniatinklio programa. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Tęsti kaip <ph name="USER_FULL_NAME" /></translation>
 <translation id="2234876718134438132">Sinchron. ir „Google“ paslaugos</translation>
@@ -648,6 +650,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5797070761912323120">„Google“ gali naudoti jūsų istoriją, kad suasmenintų Paiešką, skelbimus ir kitas „Google“ paslaugas</translation>
 <translation id="5804241973901381774">Leidimai</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Prieš 1 valandą}one{Prieš # valandą}few{Prieš # valandas}many{Prieš # valandos}other{Prieš # valandų}}</translation>
+<translation id="5810288467834065221">Autorių teisės „Google LLC.“, <ph name="YEAR" /> m. Visos teisės saugomos.</translation>
 <translation id="5817918615728894473">Susieti</translation>
 <translation id="583281660410589416">Nežinoma</translation>
 <translation id="5833984609253377421">Bendrinti nuorodą</translation>
@@ -900,6 +903,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="756809126120519699">Išvalyti „Chrome“ duomenys</translation>
 <translation id="757524316907819857">Užblokuoti svetaines, kad neleistų apsaugoto turinio</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Atsisiųstas <ph name="FILES_DOWNLOADED_ONE" /> failas}one{Atsisiųstas <ph name="FILES_DOWNLOADED_MANY" /> failas}few{Atsisiųsti <ph name="FILES_DOWNLOADED_MANY" /> failai}many{Atsisiųsta <ph name="FILES_DOWNLOADED_MANY" /> failo}other{Atsisiųsta <ph name="FILES_DOWNLOADED_MANY" /> failų}}</translation>
+<translation id="7588219262685291874">Įjungti tamsiąją temą, kai įjungta įrenginio akumuliatoriaus tausojimo priemonė</translation>
 <translation id="7589445247086920869">Blokuoti dabartiniam paieškos varikliui</translation>
 <translation id="7593557518625677601">Atid. „Android“ nust. ir iš n. įgal. „Android“ sist., kad prad. „Chrome“ sinchr.</translation>
 <translation id="7596558890252710462">Operacinė sistema</translation>
@@ -998,6 +1002,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="8266862848225348053">Atsisiuntimo vieta</translation>
 <translation id="8274165955039650276">Peržiūrėti atsisiuntimus</translation>
 <translation id="8283853025636624853">Sinchronizuojama su <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8300705686683892304">Valdo programa</translation>
 <translation id="8310344678080805313">Įprasti skirtukai</translation>
 <translation id="8313455859591948645">Paleidimo puslapio redagavimas</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ir daugiau svetainių</translation>

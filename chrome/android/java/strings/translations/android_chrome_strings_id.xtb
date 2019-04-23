@@ -903,7 +903,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="756809126120519699">Data Chrome telah dihapus</translation>
 <translation id="757524316907819857">Blokir situs agar tidak memutar konten yang dilindungi</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> file didownload}other{<ph name="FILES_DOWNLOADED_MANY" /> file didownload}}</translation>
-<translation id="7588219262685291874">Aktifkan tema gelap saat Penghemat Daya di perangkat diaktifkan</translation>
+<translation id="7588219262685291874">Aktifkan tema gelap saat mode Penghemat Baterai perangkat aktif</translation>
 <translation id="7589445247086920869">Blokir mesin telusur saat ini</translation>
 <translation id="7593557518625677601">Buka setelan Android dan aktifkan kembali sinkronisasi sistem Android untuk memulai Sinkronisasi Chrome</translation>
 <translation id="7596558890252710462">Sistem operasi</translation>
@@ -1002,7 +1002,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8266862848225348053">Lokasi download</translation>
 <translation id="8274165955039650276">Lihat hasil download</translation>
 <translation id="8283853025636624853">Menyinkronkan dengan <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
-<translation id="8300705686683892304">Managed by app</translation>
+<translation id="8300705686683892304">Dikelola oleh aplikasi</translation>
 <translation id="8310344678080805313">Tab standar</translation>
 <translation id="8313455859591948645">Edit halaman awal</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> dan situs lainnya</translation>

@@ -213,6 +213,7 @@
 <translation id="2626530649491650971">інтерактивний</translation>
 <translation id="2628764385451019380">Немає попереднього комбінованого вікна.</translation>
 <translation id="2637227747952042642">Матем.</translation>
+<translation id="2638785836053527382">Завантаження файлу <ph name="FILE_NAME" /> відновлено</translation>
 <translation id="2639750663247012216">Модифікатор ChromeVox</translation>
 <translation id="2644542693584024604">орфографічна помилка</translation>
 <translation id="2661530546602071611">Примітка</translation>
@@ -252,6 +253,7 @@
 <translation id="287383510823843610">Темно-оранжевий</translation>
 <translation id="2879867157561757640">Проведіть трьома пальцями вниз</translation>
 <translation id="288178314850623291">Щоб переходити до елементів певного типу, використовуйте команди переходу. Наприклад, щоб переходити між заголовками, натискайте Search+H (уперед) або Search+Shift+H (назад).</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{хвилина}one{хвилина}few{хвилини}many{хвилин}other{хвилини}}</translation>
 <translation id="2894654529758326923">Інформація</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{ліва фігурна дужка}one{# ліва фігурна дужка}few{# ліві фігурні дужки}many{# лівих фігурних дужок}other{# left braces}}</translation>
 <translation id="2911433807131383493">Відкрити навчальний посібник ChromeVox</translation>
@@ -286,6 +288,7 @@
 <translation id="3084806535845658316">без озвучення введення тексту</translation>
 <translation id="3086746722712840547">примітка</translation>
 <translation id="308895241372589742">Немає наступного математичного виразу.</translation>
+<translation id="3090227230165225418">Сповіщати про завантаження</translation>
 <translation id="3090532668523289635">група</translation>
 <translation id="3093176084511590672">Наступний орієнтир</translation>
 <translation id="3096671415663099226">комбіноване вікно</translation>
@@ -438,6 +441,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{права фігурна дужка}one{# права фігурна дужка}few{# праві фігурні дужки}many{# правих фігурних дужок}other{# right braces}}</translation>
 <translation id="4158704014418536539">Ураховується регістр.</translation>
 <translation id="4159784952369912983">Пурпуровий</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{секунда}one{секунда}few{секунди}many{секунд}other{секунди}}</translation>
 <translation id="4161663686871496107">Голосові підказки ChromeVox активовано</translation>
 <translation id="4173994908659439270">Немає наступного текстового поля для редагування.</translation>
 <translation id="4176463684765177261">Вимкнено</translation>
@@ -618,6 +622,7 @@
 <translation id="5349770431644471053">Зворотне посилання</translation>
 <translation id="536031132345979795">Перехід назад під час безперервного читання</translation>
 <translation id="5368000168321181111">Звуковий ефект вимкнено</translation>
+<translation id="5368505757342402527">Файл <ph name="FILE_NAME" /> завантажено на <ph name="PROGRESS" />%. Залишилося приблизно <ph name="TIME" /> <ph name="UNITS" />.</translation>
 <translation id="5374320867641260420">Немає наступної кнопки.</translation>
 <translation id="5376407118396657359">Натискайте клавішу пошуку + Ctrl + Alt і клавіші зі стрілками, щоб переходити між клітинками.</translation>
 <translation id="5382299583965267720">Немає наступного заголовка рівня 1.</translation>
@@ -800,6 +805,7 @@
 <translation id="667999046851023355">Документ</translation>
 <translation id="6688209025607531203">Сповіщення в немодальному вікні</translation>
 <translation id="6689672606256159458">Темно-лососевий</translation>
+<translation id="669617842401078250">Завантаження файлу <ph name="FILE_NAME" /> призупинено</translation>
 <translation id="6696967141280706829">Передмова</translation>
 <translation id="6697092096875747123">Попереднє комбіноване вікно</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{знак оклику}one{# знак оклику}few{# знаки оклику}many{# знаків оклику}other{# знаку оклику}}</translation>
@@ -938,6 +944,7 @@
 <translation id="7641134354185483015">Немає попереднього заголовка рівня 3.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, текстове поле</translation>
 <translation id="7663318257180412551">Заголовок 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{година}one{година}few{години}many{годин}other{години}}</translation>
 <translation id="7674576868851035240">Наступне посилання</translation>
 <translation id="7674768236845044097">виділений текст</translation>
 <translation id="7684431668231950609">Редагування введеного тексту, URL-адреси</translation>
@@ -952,6 +959,7 @@
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">список автозавершення</translation>
+<translation id="7763537600611320912">Почато завантаження файлу<ph name="FILE_NAME" /></translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, текстове поле пароля</translation>
 <translation id="7776293189010177726">Відкрити меню ChromeVox</translation>
 <translation id="7800558923657349506">Епілог</translation>
@@ -1076,6 +1084,7 @@
 <translation id="8096975275316362544">М’ятно-кремовий</translation>
 <translation id="8098587210054821856">Грифельний-сірий</translation>
 <translation id="8110647606445335195">Немає орієнтирів ARIA.</translation>
+<translation id="812886159861361726">Завантаження файлу <ph name="FILE_NAME" /> припинено</translation>
 <translation id="8138880386467279117">Торкнутися</translation>
 <translation id="8153880621934657047">Не всередині таблиці.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{підкреслення}one{# підкреслення}few{# підкреслення}many{# підкреслень}other{# underscores}}</translation>
@@ -1145,6 +1154,7 @@
 <translation id="8743786158317878347">відкрити структурований вміст, як-от таблиці</translation>
 <translation id="8747966237988593539">Нумерований список</translation>
 <translation id="8749988712346667988">Срібний</translation>
+<translation id="875769700429317857">Завантаження файлу <ph name="FILE_NAME" /> завершено</translation>
 <translation id="8759334257841767240">Немає наступного посилання.</translation>
 <translation id="8767968232364267681">Наступний заголовок рівня 4</translation>
 <translation id="8770473310765924354">закрити структурований вміст, як-от таблиці</translation>

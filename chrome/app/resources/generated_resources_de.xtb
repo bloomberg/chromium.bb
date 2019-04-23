@@ -2168,6 +2168,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="438503109373656455">Brauner</translation>
 <translation id="4387004326333427325">Remote-Ablehnung des Authentifizierungszertifikats</translation>
 <translation id="4389091756366370506">Nutzer <ph name="VALUE" /></translation>
+<translation id="4390000551125140321">{0,plural, =1{Inkognito}other{# Anzahl offener Inkognitofenster}}</translation>
 <translation id="439266289085815679">Die Bluetooth-Konfiguration wird von <ph name="USER_EMAIL" /> festgelegt.</translation>
 <translation id="4394049700291259645">Deaktivieren</translation>
 <translation id="4400367121200150367">Hier werden Websites angezeigt, für die keine Passwörter gespeichert werden</translation>

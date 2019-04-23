@@ -168,6 +168,7 @@
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Файл <ph name="FILE_NAME" /> може бути небезпечним, тому Chrome заблокував його.</translation>
 <translation id="5686916850681061684">Налаштовуйте й керуйте Google Chrome. Якщо з’явиться сповіщення, натисніть його, щоб дізнатися більше.</translation>
+<translation id="5690427481109656848">Google LLC</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome перезапуститься через 1 секунду}one{Google Chrome перезапуститься через # секунду}few{Google Chrome перезапуститься через # секунди}many{Google Chrome перезапуститься через # секунд}other{Google Chrome перезапуститься через # секунди}}</translation>
 <translation id="573759479754913123">Про ОС Chrome</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
@@ -260,6 +261,7 @@
 <translation id="8286862437124483331">Google Chrome намагається показати паролі. Щоб дозволити, введіть свій пароль Windows.</translation>
 <translation id="8290100596633877290">Відбулося аварійне завершення роботи Google Chrome. Перезапустити зараз?</translation>
 <translation id="8342675569599923794">Цей файл небезпечний, тому Chrome заблокував його.</translation>
+<translation id="8370517070665726704">Авторське право <ph name="YEAR" /> Google LLC. Усі права захищено.</translation>
 <translation id="8380166467911888159">Щоб виправляти орфографічні помилки, Chrome надсилає введений текст у Google</translation>
 <translation id="840084489713044809">Google Chrome хоче експортувати ваші паролі.</translation>
 <translation id="8406086379114794905">Допоможіть покращити Chrome</translation>
