@@ -470,7 +470,7 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
   EXPECT_FALSE(popup_blocker()->ShouldApplyAbusivePopupBlocker());
 }
 
-TEST_F(SafeBrowsingTriggeredPopupBlockerTest, ActivationPosition) {
+TEST_F(SafeBrowsingTriggeredPopupBlockerTest, EnforcementRedirectPosition) {
   // Turn on the feature to perform safebrowsing on redirects.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -481,29 +481,27 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, ActivationPosition) {
   MarkUrlAsAbusiveEnforce(enforce_url);
   MarkUrlAsAbusiveWarning(warn_url);
 
-  using subresource_filter::ActivationPosition;
+  using subresource_filter::RedirectPosition;
   struct {
     std::vector<const char*> urls;
-    base::Optional<ActivationPosition> expected_position;
+    base::Optional<RedirectPosition> last_enforcement_position;
   } kTestCases[] = {
       {{"https://normal.test/"}, base::nullopt},
-      {{"https://enforce.test/"}, ActivationPosition::kOnly},
-      {{"https://warn.test/"}, ActivationPosition::kOnly},
+      {{"https://enforce.test/"}, RedirectPosition::kOnly},
+      {{"https://warn.test/"}, base::nullopt},
 
-      {{"https://normal.test/", "https://warn.test/"},
-       ActivationPosition::kLast},
+      {{"https://normal.test/", "https://warn.test/"}, base::nullopt},
       {{"https://normal.test/", "https://normal.test/",
         "https://enforce.test/"},
-       ActivationPosition::kLast},
+       RedirectPosition::kLast},
 
       {{"https://enforce.test", "https://normal.test/", "https://warn.test/"},
-       ActivationPosition::kFirst},
-      {{"https://warn.test/", "https://normal.test/"},
-       ActivationPosition::kFirst},
+       RedirectPosition::kFirst},
+      {{"https://warn.test/", "https://normal.test/"}, base::nullopt},
 
       {{"https://normal.test/", "https://enforce.test/",
         "https://normal.test/"},
-       base::nullopt},
+       RedirectPosition::kMiddle},
   };
 
   for (const auto& test_case : kTestCases) {
@@ -518,12 +516,12 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest, ActivationPosition) {
     navigation_simulator->Commit();
 
     histograms.ExpectTotalCount(
-        "ContentSettings.Popups.StrongBlockerActivationPosition",
-        test_case.expected_position.has_value() ? 1 : 0);
-    if (test_case.expected_position.has_value()) {
+        "SubresourceFilter.PageLoad.Activation.RedirectPosition2.Enforcement",
+        test_case.last_enforcement_position.has_value() ? 1 : 0);
+    if (test_case.last_enforcement_position.has_value()) {
       histograms.ExpectUniqueSample(
-          "ContentSettings.Popups.StrongBlockerActivationPosition",
-          static_cast<int>(test_case.expected_position.value()), 1);
+          "SubresourceFilter.PageLoad.Activation.RedirectPosition2.Enforcement",
+          static_cast<int>(test_case.last_enforcement_position.value()), 1);
     }
   }
 }

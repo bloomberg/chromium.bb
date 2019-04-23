@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -30,6 +31,34 @@
 #include "url/gurl.h"
 
 namespace subresource_filter {
+
+namespace {
+
+using CheckResults =
+    std::vector<SubresourceFilterSafeBrowsingClient::CheckResult>;
+
+base::Optional<RedirectPosition> GetEnforcementRedirectPosition(
+    const CheckResults& results) {
+  // Safe cast since we have strict limits on HTTP redirects.
+  int num_results = static_cast<int>(results.size());
+  for (int i = num_results - 1; i >= 0; --i) {
+    bool warning = false;
+    ActivationList list = GetListForThreatTypeAndMetadata(
+        results[i].threat_type, results[i].threat_metadata, &warning);
+    if (!warning && list != ActivationList::NONE) {
+      if (num_results == 1)
+        return RedirectPosition::kOnly;
+      if (i == 0)
+        return RedirectPosition::kFirst;
+      if (i == num_results - 1)
+        return RedirectPosition::kLast;
+      return RedirectPosition::kMiddle;
+    }
+  }
+  return base::nullopt;
+}
+
+}  // namespace
 
 SubresourceFilterSafeBrowsingActivationThrottle::
     SubresourceFilterSafeBrowsingActivationThrottle(
@@ -137,9 +166,8 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
                "SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult");
   DCHECK(!check_results_.empty());
 
-  // Determine which results to consider for safebrowsing/abusive.
-  std::vector<SubresourceFilterSafeBrowsingClient::CheckResult>
-      check_results_to_consider = {check_results_.back()};
+  // Determine which results to consider for safebrowsing/abusive enforcement.
+  CheckResults check_results_to_consider = {check_results_.back()};
   if (check_results_.size() >= 2 &&
       base::FeatureList::IsEnabled(
           kSafeBrowsingSubresourceFilterConsiderRedirects)) {
@@ -211,6 +239,15 @@ void SubresourceFilterSafeBrowsingActivationThrottle::
     DCHECK_EQ(ActivationDecision::ACTIVATED, decision);
     builder.SetDryRun(true);
   }
+
+  if (auto optional_position = GetEnforcementRedirectPosition(check_results_)) {
+    RedirectPosition position = *optional_position;
+    UMA_HISTOGRAM_ENUMERATION(
+        "SubresourceFilter.PageLoad.Activation.RedirectPosition2.Enforcement",
+        position);
+    builder.SetEnforcementRedirectPosition(static_cast<int64_t>(position));
+  }
+
   builder.Record(ukm::UkmRecorder::Get());
 
   UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.PageLoad.ActivationDecision",
@@ -297,26 +334,6 @@ SubresourceFilterSafeBrowsingActivationThrottle::GetActivationDecision(
   // Get the activation level for the matching configuration.
   auto activation_level =
       selected_config->config.activation_options.activation_level;
-
-  // If there is an activation triggered by the activation list (not a dry run),
-  // report where in the redirect chain it was triggered.
-  if (selected_config->config.activation_conditions.activation_scope ==
-          ActivationScope::ACTIVATION_LIST &&
-      activation_level == mojom::ActivationLevel::kEnabled) {
-    ActivationPosition position;
-    if (configs.size() == 1) {
-      position = ActivationPosition::kOnly;
-    } else if (selected_index == 0) {
-      position = ActivationPosition::kFirst;
-    } else if (selected_index == configs.size() - 1) {
-      position = ActivationPosition::kLast;
-    } else {
-      position = ActivationPosition::kMiddle;
-    }
-    UMA_HISTOGRAM_ENUMERATION(
-        "SubresourceFilter.PageLoad.Activation.RedirectPosition", position);
-  }
-
   // Compute and return the activation decision.
   return activation_level == mojom::ActivationLevel::kDisabled
              ? ActivationDecision::ACTIVATION_DISABLED

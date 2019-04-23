@@ -6100,6 +6100,13 @@ be describing additional metrics about the same event.
       loaded on the page, but subresource filtering is not actually applied.
     </summary>
   </metric>
+  <metric name="EnforcementRedirectPosition">
+    <summary>
+      An enum denoting where in the redirect chain there was a URL that matched
+      one of the subresource_filter activation lists, and wasn't marked as
+      warning. See subresource_filter::RedirectPosition for values.
+    </summary>
+  </metric>
 </event>
 
 <event name="Tab.RendererOOM">

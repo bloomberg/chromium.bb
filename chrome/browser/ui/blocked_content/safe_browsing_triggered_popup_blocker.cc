@@ -29,19 +29,6 @@ void LogAction(SafeBrowsingTriggeredPopupBlocker::Action action) {
                             SafeBrowsingTriggeredPopupBlocker::Action::kCount);
 }
 
-subresource_filter::ActivationPosition GetActivationPosition(
-    size_t match_index,
-    size_t num_checks) {
-  DCHECK_GT(num_checks, 0u);
-  if (num_checks == 1)
-    return subresource_filter::ActivationPosition::kOnly;
-  if (match_index == 0)
-    return subresource_filter::ActivationPosition::kFirst;
-  if (match_index == num_checks - 1)
-    return subresource_filter::ActivationPosition::kLast;
-  return subresource_filter::ActivationPosition::kMiddle;
-}
-
 }  // namespace
 
 using safe_browsing::SubresourceFilterLevel;
@@ -169,9 +156,6 @@ void SafeBrowsingTriggeredPopupBlocker::OnSafeBrowsingChecksComplete(
 
   if (match_level.has_value()) {
     level_for_next_committed_navigation_ = match_level;
-    UMA_HISTOGRAM_ENUMERATION(
-        "ContentSettings.Popups.StrongBlockerActivationPosition",
-        GetActivationPosition(match_index.value(), results.size()));
   }
 }
 
