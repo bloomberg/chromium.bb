@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
 
@@ -229,16 +230,18 @@ void RejectedPromises::ProcessQueue() {
   if (queue_.IsEmpty())
     return;
 
-  std::map<ExecutionContext*, MessageQueue> queues;
-  for (auto& message : queue_)
-    queues[message->GetContext()].push_back(std::move(message));
+  HeapHashMap<Member<ExecutionContext>, MessageQueue> queues;
+  for (auto& message : queue_) {
+    auto result = queues.insert(message->GetContext(), MessageQueue());
+    result.stored_value->value.push_back(std::move(message));
+  }
   queue_.clear();
 
   for (auto& kv : queues) {
-    kv.first->GetTaskRunner(blink::TaskType::kDOMManipulation)
+    kv.key->GetTaskRunner(blink::TaskType::kDOMManipulation)
         ->PostTask(FROM_HERE, WTF::Bind(&RejectedPromises::ProcessQueueNow,
                                         scoped_refptr<RejectedPromises>(this),
-                                        WTF::Passed(std::move(kv.second))));
+                                        WTF::Passed(std::move(kv.value))));
   }
 }
 
