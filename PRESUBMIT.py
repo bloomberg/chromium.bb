@@ -853,6 +853,33 @@ _KNOWN_ROBOTS = set(
           for s in ('chromium-internal-autoroll',))
 
 
+def _IsCPlusPlusFile(input_api, file_path):
+  """Returns True if this file contains C++-like code (and not Python,
+  Go, Java, MarkDown, ...)"""
+
+  ext = input_api.os_path.splitext(file_path)[1]
+  # This list is compatible with CppChecker.IsCppFile but we should
+  # consider adding ".c" to it. If we do that we can use this function
+  # at more places in the code.
+  return ext in (
+      '.h',
+      '.cc',
+      '.cpp',
+      '.m',
+      '.mm',
+  )
+
+def _IsCPlusPlusHeaderFile(input_api, file_path):
+  return input_api.os_path.splitext(file_path)[1] == ".h"
+
+
+def _IsJavaFile(input_api, file_path):
+  return input_api.os_path.splitext(file_path)[1] == ".java"
+
+
+def _IsProtoFile(input_api, file_path):
+  return input_api.os_path.splitext(file_path)[1] == ".proto"
+
 def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
   """Attempts to prevent use of functions intended only for testing in
   non-testing code. For now this is just a best-effort implementation
@@ -1359,9 +1386,6 @@ def _CheckUnwantedDependencies(input_api, output_api):
     sys.path = sys.path + [input_api.os_path.join(
         input_api.PresubmitLocalPath(), 'buildtools', 'checkdeps')]
     import checkdeps
-    from cpp_checker import CppChecker
-    from java_checker import JavaChecker
-    from proto_checker import ProtoChecker
     from rules import Rule
   finally:
     # Restore sys.path to what it was before.
@@ -1371,13 +1395,13 @@ def _CheckUnwantedDependencies(input_api, output_api):
   added_imports = []
   added_java_imports = []
   for f in input_api.AffectedFiles():
-    if CppChecker.IsCppFile(f.LocalPath()):
+    if _IsCPlusPlusFile(input_api, f.LocalPath()):
       changed_lines = [line for _, line in f.ChangedContents()]
       added_includes.append([f.AbsoluteLocalPath(), changed_lines])
-    elif ProtoChecker.IsProtoFile(f.LocalPath()):
+    elif _IsProtoFile(input_api, f.LocalPath()):
       changed_lines = [line for _, line in f.ChangedContents()]
       added_imports.append([f.AbsoluteLocalPath(), changed_lines])
-    elif JavaChecker.IsJavaFile(f.LocalPath()):
+    elif _IsJavaFile(input_api, f.LocalPath()):
       changed_lines = [line for _, line in f.ChangedContents()]
       added_java_imports.append([f.AbsoluteLocalPath(), changed_lines])
 
@@ -2917,17 +2941,6 @@ def _CheckNoDeprecatedJs(input_api, output_api):
 
 
 def _CheckForRelativeIncludes(input_api, output_api):
-  # Need to set the sys.path so PRESUBMIT_test.py runs properly
-  import sys
-  original_sys_path = sys.path
-  try:
-    sys.path = sys.path + [input_api.os_path.join(
-        input_api.PresubmitLocalPath(), 'buildtools', 'checkdeps')]
-    from cpp_checker import CppChecker
-  finally:
-    # Restore sys.path to what it was before.
-    sys.path = original_sys_path
-
   bad_files = {}
   for f in input_api.AffectedFiles(include_deletes=False):
     if (f.LocalPath().startswith('third_party') and
@@ -2935,7 +2948,7 @@ def _CheckForRelativeIncludes(input_api, output_api):
       not f.LocalPath().startswith('third_party\\blink')):
       continue
 
-    if not CppChecker.IsCppFile(f.LocalPath()):
+    if not _IsCPlusPlusFile(input_api, f.LocalPath()):
       continue
 
     relative_includes = [line for _, line in f.ChangedContents()
@@ -2961,6 +2974,41 @@ def _CheckForRelativeIncludes(input_api, output_api):
         'from code that\'s not correctly specified as a dependency in the\n'
         'relevant BUILD.gn file(s).',
         error_descriptions))
+
+  return results
+
+
+def _CheckForCcIncludes(input_api, output_api):
+  """Check that nobody tries to include a cc file. It's a relatively
+  common error which results in duplicate symbols in object
+  files. This may not always break the build until someone later gets
+  very confusing linking errors."""
+  results = []
+  for f in input_api.AffectedFiles(include_deletes=False):
+    # We let third_party code do whatever it wants
+    if (f.LocalPath().startswith('third_party') and
+      not f.LocalPath().startswith('third_party/blink') and
+      not f.LocalPath().startswith('third_party\\blink')):
+      continue
+
+    if not _IsCPlusPlusFile(input_api, f.LocalPath()):
+      continue
+
+    for _, line in f.ChangedContents():
+      if line.startswith('#include "'):
+        included_file = line.split('"')[1]
+        if _IsCPlusPlusFile(input_api, included_file):
+          # The most common naming for external files with C++ code,
+          # apart from standard headers, is to call them foo.inc, but
+          # Chromium sometimes uses foo-inc.cc so allow that as well.
+          if not included_file.endswith(('.h', '-inc.cc')):
+            results.append(output_api.PresubmitError(
+              'Only header files or .inc files should be included in other\n'
+              'C++ files. Compiling the contents of a cc file more than once\n'
+              'will cause duplicate information in the build which may later\n'
+              'result in strange link_errors.\n' +
+              f.LocalPath() + ':\n    ' +
+              line))
 
   return results
 
@@ -3303,6 +3351,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckIpcOwners(input_api, output_api))
   results.extend(_CheckUselessForwardDeclarations(input_api, output_api))
   results.extend(_CheckForRelativeIncludes(input_api, output_api))
+  results.extend(_CheckForCcIncludes(input_api, output_api))
   results.extend(_CheckWATCHLISTS(input_api, output_api))
   results.extend(input_api.RunTests(
     input_api.canned_checks.CheckVPythonSpec(input_api, output_api)))

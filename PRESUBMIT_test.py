@@ -1507,6 +1507,82 @@ class RelativeIncludesTest(unittest.TestCase):
     self.assertEqual(1, len(errors))
 
 
+class CCIncludeTest(unittest.TestCase):
+  def testThirdPartyNotBlinkIgnored(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('third_party/test.cpp', '#include "file.cc"'),
+    ]
+
+    mock_output_api = MockOutputApi()
+
+    errors = PRESUBMIT._CheckForCcIncludes(
+        mock_input_api, mock_output_api)
+    self.assertEqual(0, len(errors))
+
+  def testPythonFileIgnored(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('test.py', '#include "file.cc"'),
+    ]
+
+    mock_output_api = MockOutputApi()
+
+    errors = PRESUBMIT._CheckForCcIncludes(
+        mock_input_api, mock_output_api)
+    self.assertEqual(0, len(errors))
+
+  def testIncFilesAccepted(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('test.py', '#include "file.inc"'),
+    ]
+
+    mock_output_api = MockOutputApi()
+
+    errors = PRESUBMIT._CheckForCcIncludes(
+        mock_input_api, mock_output_api)
+    self.assertEqual(0, len(errors))
+
+  def testInnocuousChangesAllowed(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('test.cpp', '#include "header.h"'),
+      MockAffectedFile('test2.cpp', 'Something "file.cc"'),
+    ]
+
+    mock_output_api = MockOutputApi()
+
+    errors = PRESUBMIT._CheckForCcIncludes(
+        mock_input_api, mock_output_api)
+    self.assertEqual(0, len(errors))
+
+  def testCcIncludeNonBlinkProducesError(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('test.cpp', ['#include "file.cc"']),
+    ]
+
+    mock_output_api = MockOutputApi()
+
+    errors = PRESUBMIT._CheckForCcIncludes(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(errors))
+
+  def testCppIncludeBlinkProducesError(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('third_party/blink/test.cpp',
+                       ['#include "foo/file.cpp"']),
+    ]
+
+    mock_output_api = MockOutputApi()
+
+    errors = PRESUBMIT._CheckForCcIncludes(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(errors))
+
+
 class NewHeaderWithoutGnChangeTest(unittest.TestCase):
   def testAddHeaderWithoutGn(self):
     mock_input_api = MockInputApi()
