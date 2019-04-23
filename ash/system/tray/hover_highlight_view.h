@@ -9,6 +9,7 @@
 
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/tray_popup_item_style.h"
+#include "base/bind.h"
 #include "base/macros.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/text_constants.h"
@@ -128,8 +129,9 @@ class HoverHighlightView : public ActionableView {
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
-  void OnEnabledChanged() override;
   void OnFocus() override;
+
+  void OnEnabledChanged();
 
   // Determines whether the view is populated or not. If it is, Reset() should
   // be called before re-populating the view.
@@ -144,6 +146,10 @@ class HoverHighlightView : public ActionableView {
   bool expandable_ = false;
   const bool use_unified_theme_;
   AccessibilityState accessibility_state_ = AccessibilityState::DEFAULT;
+  views::PropertyChangedSubscription enabled_changed_subscription_ =
+      AddEnabledChangedCallback(
+          base::BindRepeating(&HoverHighlightView::OnEnabledChanged,
+                              base::Unretained(this)));
 
   DISALLOW_COPY_AND_ASSIGN(HoverHighlightView);
 };

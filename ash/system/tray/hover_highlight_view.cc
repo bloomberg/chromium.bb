@@ -242,6 +242,11 @@ int HoverHighlightView::GetHeightForWidth(int width) const {
   return GetPreferredSize().height();
 }
 
+void HoverHighlightView::OnFocus() {
+  ScrollRectToVisible(gfx::Rect(gfx::Point(), size()));
+  ActionableView::OnFocus();
+}
+
 void HoverHighlightView::OnEnabledChanged() {
   if (left_icon_)
     left_icon_->SetEnabled(enabled());
@@ -249,11 +254,6 @@ void HoverHighlightView::OnEnabledChanged() {
     text_label_->SetEnabled(enabled());
   if (right_view_)
     right_view_->SetEnabled(enabled());
-}
-
-void HoverHighlightView::OnFocus() {
-  ScrollRectToVisible(gfx::Rect(gfx::Point(), size()));
-  ActionableView::OnFocus();
 }
 
 }  // namespace ash

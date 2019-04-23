@@ -4,8 +4,6 @@
 
 #include "ui/views/controls/button/button.h"
 
-#include <utility>
-
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/class_property.h"
@@ -217,20 +215,6 @@ void Button::SetHighlighted(bool bubble_visible) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Button, View overrides:
-
-void Button::OnEnabledChanged() {
-  if (enabled() ? (state_ != STATE_DISABLED) : (state_ == STATE_DISABLED))
-    return;
-
-  if (enabled()) {
-    bool should_enter_hover_state = ShouldEnterHoveredState();
-    SetState(should_enter_hover_state ? STATE_HOVERED : STATE_NORMAL);
-    GetInkDrop()->SetHovered(should_enter_hover_state);
-  } else {
-    SetState(STATE_DISABLED);
-    GetInkDrop()->SetHovered(false);
-  }
-}
 
 const char* Button::GetClassName() const {
   return kViewClassName;
@@ -600,6 +584,20 @@ bool Button::ShouldEnterHoveredState() {
 #endif
 
   return check_mouse_position && IsMouseHovered();
+}
+
+void Button::OnEnabledChanged() {
+  if (GetEnabled() ? (state_ != STATE_DISABLED) : (state_ == STATE_DISABLED))
+    return;
+
+  if (GetEnabled()) {
+    bool should_enter_hover_state = ShouldEnterHoveredState();
+    SetState(should_enter_hover_state ? STATE_HOVERED : STATE_NORMAL);
+    GetInkDrop()->SetHovered(should_enter_hover_state);
+  } else {
+    SetState(STATE_DISABLED);
+    GetInkDrop()->SetHovered(false);
+  }
 }
 
 void Button::WidgetActivationChanged(Widget* widget, bool active) {

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/events/event_constants.h"
@@ -168,7 +169,6 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void SetHighlighted(bool bubble_visible);
 
   // Overridden from View:
-  void OnEnabledChanged() override;
   const char* GetClassName() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -328,6 +328,8 @@ class VIEWS_EXPORT Button : public InkDropHostView,
     DISALLOW_COPY_AND_ASSIGN(WidgetObserverButtonBridge);
   };
 
+  void OnEnabledChanged();
+
   void WidgetActivationChanged(Widget* widget, bool active);
 
   // The text shown in a tooltip.
@@ -382,6 +384,10 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // TODO(cyan): Make sure all state changes are handled within
   // ButtonController.
   std::unique_ptr<ButtonController> button_controller_;
+
+  PropertyChangedSubscription enabled_changed_subscription_{
+      AddEnabledChangedCallback(base::BindRepeating(&Button::OnEnabledChanged,
+                                                    base::Unretained(this)))};
 
   DISALLOW_COPY_AND_ASSIGN(Button);
 };

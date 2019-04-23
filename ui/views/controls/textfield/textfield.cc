@@ -11,7 +11,6 @@
 #include <vector>
 #endif
 
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -1077,13 +1076,6 @@ bool Textfield::GetNeedsNotificationWhenVisibleBoundsChange() const {
 void Textfield::OnVisibleBoundsChanged() {
   if (touch_selection_controller_)
     touch_selection_controller_->SelectionChanged();
-}
-
-void Textfield::OnEnabledChanged() {
-  View::OnEnabledChanged();
-  if (GetInputMethod())
-    GetInputMethod()->OnTextInputTypeChanged(this);
-  SchedulePaint();
 }
 
 void Textfield::OnPaint(gfx::Canvas* canvas) {
@@ -2353,6 +2345,11 @@ void Textfield::OnCursorBlinkTimerFired() {
   DCHECK(ShouldBlinkCursor());
   UpdateCursorViewPosition();
   cursor_view_.SetVisible(!cursor_view_.visible());
+}
+
+void Textfield::OnEnabledChanged() {
+  if (GetInputMethod())
+    GetInputMethod()->OnTextInputTypeChanged(this);
 }
 
 }  // namespace views

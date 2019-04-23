@@ -1383,10 +1383,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // its ancestors. This is used for clipping NativeViewHost.
   virtual void OnVisibleBoundsChanged();
 
-  // Override to be notified when the enabled state of this View has
-  // changed. The default implementation calls SchedulePaint() on this View.
-  virtual void OnEnabledChanged();
-
   bool needs_layout() const { return needs_layout_; }
 
   // Tree operations -----------------------------------------------------------

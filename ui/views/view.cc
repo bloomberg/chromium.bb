@@ -461,18 +461,11 @@ void View::SetEnabled(bool is_enabled) {
   enabled_ = is_enabled;
   AdvanceFocusIfNecessary();
   OnPropertyChanged(&enabled_, kPropertyEffectsPaint);
-
-  // TODO(kylixrd): Remove this once all overridden instances are refactored
-  // to use property change callback.
-  OnEnabledChanged();
 }
 
 PropertyChangedSubscription View::AddEnabledChangedCallback(
     PropertyChangedCallback callback) {
   return AddPropertyChangedCallback(&enabled_, std::move(callback));
-}
-
-void View::OnEnabledChanged() {
 }
 
 View::Views View::GetChildrenInZOrder() {

@@ -25,14 +25,13 @@ void LabelButtonLabel::SetEnabledColor(SkColor color) {
     Label::SetEnabledColor(color);
 }
 
-void LabelButtonLabel::OnEnabledChanged() {
-  SetColorForEnableState();
-  Label::OnEnabledChanged();
-}
-
 void LabelButtonLabel::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   SetColorForEnableState();
   Label::OnNativeThemeChanged(theme);
+}
+
+void LabelButtonLabel::OnEnabledChanged() {
+  SetColorForEnableState();
 }
 
 void LabelButtonLabel::SetColorForEnableState() {

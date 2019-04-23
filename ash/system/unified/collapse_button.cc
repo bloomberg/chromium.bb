@@ -122,14 +122,6 @@ void CollapseButton::SetExpandedAmount(double expanded_amount) {
   SchedulePaint();
 }
 
-void CollapseButton::OnEnabledChanged() {
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(kUnifiedMenuExpandIcon,
-                                 enabled() ? kUnifiedMenuIconColor
-                                           : kUnifiedMenuIconColorDisabled));
-  SchedulePaint();
-}
-
 gfx::Size CollapseButton::CalculatePreferredSize() const {
   return gfx::Size(kTrayItemSize, kTrayItemSize * 3 / 2);
 }
@@ -151,6 +143,13 @@ void CollapseButton::PaintButtonContents(gfx::Canvas* canvas) {
   canvas->sk_canvas()->rotate(expanded_amount_ * 180.);
   gfx::ImageSkia image = GetImageToPaint();
   canvas->DrawImageInt(image, -image.width() / 2, -image.height() / 2);
+}
+
+void CollapseButton::OnEnabledChanged() {
+  SetImage(views::Button::STATE_NORMAL,
+           gfx::CreateVectorIcon(kUnifiedMenuExpandIcon,
+                                 enabled() ? kUnifiedMenuIconColor
+                                           : kUnifiedMenuIconColorDisabled));
 }
 
 }  // namespace ash

@@ -153,17 +153,6 @@ void FeaturePodLabelButton::Layout() {
       arrow_size));
 }
 
-void FeaturePodLabelButton::OnEnabledChanged() {
-  label_->SetEnabledColor(enabled() ? kUnifiedMenuTextColor
-                                    : kUnifiedMenuTextColorDisabled);
-  sub_label_->SetEnabledColor(enabled() ? kUnifiedMenuSecondaryTextColor
-                                        : kUnifiedMenuTextColorDisabled);
-  detailed_view_arrow_->SetImage(gfx::CreateVectorIcon(
-      kUnifiedMenuMoreIcon,
-      enabled() ? kUnifiedMenuIconColor : kUnifiedMenuIconColorDisabled));
-  SchedulePaint();
-}
-
 gfx::Size FeaturePodLabelButton::CalculatePreferredSize() const {
   // Minimum width of the button
   int width = kUnifiedFeaturePodLabelWidth + GetInsets().width();
@@ -224,6 +213,16 @@ void FeaturePodLabelButton::SetSubLabel(const base::string16& sub_label) {
 void FeaturePodLabelButton::ShowDetailedViewArrow() {
   detailed_view_arrow_->SetVisible(true);
   InvalidateLayout();
+}
+
+void FeaturePodLabelButton::OnEnabledChanged() {
+  label_->SetEnabledColor(enabled() ? kUnifiedMenuTextColor
+                                    : kUnifiedMenuTextColorDisabled);
+  sub_label_->SetEnabledColor(enabled() ? kUnifiedMenuSecondaryTextColor
+                                        : kUnifiedMenuTextColorDisabled);
+  detailed_view_arrow_->SetImage(gfx::CreateVectorIcon(
+      kUnifiedMenuMoreIcon,
+      enabled() ? kUnifiedMenuIconColor : kUnifiedMenuIconColorDisabled));
 }
 
 void FeaturePodLabelButton::LayoutInCenter(views::View* child, int y) {
@@ -327,7 +326,6 @@ void FeaturePodButton::RequestFocus() {
 void FeaturePodButton::OnEnabledChanged() {
   icon_button_->SetEnabled(enabled());
   label_button_->SetEnabled(enabled());
-  SchedulePaint();
 }
 
 void FeaturePodButton::ButtonPressed(views::Button* sender,

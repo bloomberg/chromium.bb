@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_UNIFIED_COLLAPSE_BUTTON_H_
 #define ASH_SYSTEM_UNIFIED_COLLAPSE_BUTTON_H_
 
+#include "base/bind.h"
 #include "ui/views/controls/button/image_button.h"
 
 namespace ash {
@@ -47,13 +48,18 @@ class CollapseButton : public CustomShapeButton {
   void SetExpandedAmount(double expanded_amount);
 
   // CustomShapeButton:
-  void OnEnabledChanged() override;
   gfx::Size CalculatePreferredSize() const override;
   SkPath CreateCustomShapePath(const gfx::Rect& bounds) const override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:
+  void OnEnabledChanged();
+
   double expanded_amount_ = 1.0;
+  views::PropertyChangedSubscription enabled_changed_subscription_ =
+      AddEnabledChangedCallback(
+          base::BindRepeating(&CollapseButton::OnEnabledChanged,
+                              base::Unretained(this)));
 
   DISALLOW_COPY_AND_ASSIGN(CollapseButton);
 };
