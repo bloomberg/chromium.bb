@@ -13,6 +13,7 @@
 #include "biod/dbus-constants.h"
 #include "cecservice/dbus-constants.h"
 #include "cros-disks/dbus-constants.h"
+#include "cros_healthd/dbus-constants.h"
 #include "cryptohome/dbus-constants.h"
 #include "debugd/dbus-constants.h"
 #include "diagnosticsd/dbus-constants.h"
