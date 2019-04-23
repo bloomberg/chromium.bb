@@ -587,7 +587,7 @@ class EmbeddedWorkerInstance::StartTask {
     DCHECK(factory_bundle_for_new_scripts || is_installed_);
     if (factory_bundle_for_new_scripts) {
       params->provider_info->script_loader_factory_ptr_info =
-          instance_->MakeScriptLoaderFactoryAssociatedPtrInfo(
+          instance_->MakeScriptLoaderFactoryPtrInfo(
               std::move(factory_bundle_for_new_scripts));
     }
 
@@ -1200,16 +1200,15 @@ void EmbeddedWorkerInstance::NotifyForegroundServiceWorkerRemoved() {
                      false /* added */, process_id()));
 }
 
-network::mojom::URLLoaderFactoryAssociatedPtrInfo
-EmbeddedWorkerInstance::MakeScriptLoaderFactoryAssociatedPtrInfo(
+network::mojom::URLLoaderFactoryPtrInfo
+EmbeddedWorkerInstance::MakeScriptLoaderFactoryPtrInfo(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo> script_bundle) {
-  network::mojom::URLLoaderFactoryAssociatedPtrInfo
-      script_loader_factory_ptr_info;
+  network::mojom::URLLoaderFactoryPtrInfo script_loader_factory_ptr_info;
 
   auto script_bundle_factory =
       base::MakeRefCounted<blink::URLLoaderFactoryBundle>(
           std::move(script_bundle));
-  script_loader_factory_ = mojo::MakeStrongAssociatedBinding(
+  script_loader_factory_ = mojo::MakeStrongBinding(
       std::make_unique<ServiceWorkerScriptLoaderFactory>(
           context_, owner_version_->provider_host()->AsWeakPtr(),
           std::move(script_bundle_factory)),
