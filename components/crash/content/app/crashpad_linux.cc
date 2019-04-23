@@ -34,6 +34,7 @@
 #include "third_party/crashpad/crashpad/client/simulate_crash_linux.h"
 #include "third_party/crashpad/crashpad/snapshot/sanitized/sanitization_information.h"
 #include "third_party/crashpad/crashpad/util/linux/exception_handler_client.h"
+#include "third_party/crashpad/crashpad/util/linux/exception_handler_protocol.h"
 #include "third_party/crashpad/crashpad/util/linux/exception_information.h"
 #include "third_party/crashpad/crashpad/util/linux/scoped_pr_set_dumpable.h"
 #include "third_party/crashpad/crashpad/util/misc/from_pointer_cast.h"
@@ -77,7 +78,7 @@ void SetExceptionInformation(siginfo_t* siginfo,
 
 void SetClientInformation(ExceptionInformation* exception,
                           SanitizationInformation* sanitization,
-                          ClientInformation* info) {
+                          ExceptionHandlerProtocol::ClientInformation* info) {
   info->exception_information_address =
       FromPointerCast<decltype(info->exception_information_address)>(exception);
 
@@ -128,7 +129,7 @@ class SandboxedHandler {
       SetExceptionInformation(siginfo, static_cast<ucontext_t*>(context),
                               &exception_information);
 
-      ClientInformation info;
+      ExceptionHandlerProtocol::ClientInformation info;
       SetClientInformation(&exception_information, &sanitization_, &info);
 
       ScopedPrSetDumpable set_dumpable(/* may_log= */ false);
@@ -664,7 +665,7 @@ bool DumpWithoutCrashingForClient(CrashReporterClient* client) {
   crashpad::ExceptionInformation exception;
   crashpad::SetExceptionInformation(&siginfo, &context, &exception);
 
-  crashpad::ClientInformation info;
+  crashpad::ExceptionHandlerProtocol::ClientInformation info;
   crashpad::SetClientInformation(&exception, &sanitization, &info);
 
   crashpad::ScopedPrSetDumpable set_dumpable(/* may_log= */ false);
