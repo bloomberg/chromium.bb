@@ -957,31 +957,6 @@ void BindIndicatorTranscienceForWin(
 
   const CapturingStateModel active_capture = std::get<1>(value);
   const CapturingStateModel potential_capture = std::get<2>(value);
-  const CapturingStateModel last_active_capture =
-      last_value ? std::get<1>(last_value.value()) : CapturingStateModel();
-  const CapturingStateModel last_potential_capture =
-      last_value ? std::get<2>(last_value.value()) : CapturingStateModel();
-
-  // Update the visibility state of the indicators based on the capturing state
-  // diff. potential_capture represents the permissions granted to the site
-  // before the presentation. active_capture members are set when a relevant
-  // device starts to get used.
-  // When the session starts, indicators display which permissions are granted
-  // upfront (struct potential_capture). Then, when a device gets accessed,
-  // an indicator notifies the user about its usage.
-  // The below logic tries to capture this logic.
-  bool initial_toasts = !active_capture.IsAtleastOnePermissionGrantedOrInUse();
-  if (active_capture != last_active_capture ||
-      potential_capture != last_potential_capture) {
-    auto specs = GetIndicatorSpecs();
-    for (const auto& spec : specs) {
-      bool allowed = potential_capture.*spec.signal;
-      bool triggered =
-          !(last_active_capture.*spec.signal) && (active_capture.*spec.signal);
-      bool show_ui = initial_toasts ? allowed : triggered;
-      SetVisibleInLayout(scene->GetUiElementByName(spec.webvr_name), show_ui);
-    }
-  }
 
   if (!in_web_vr_presentation) {
     e->SetVisibleImmediately(false);
@@ -990,8 +965,15 @@ void BindIndicatorTranscienceForWin(
 
   e->SetVisible(true);
   e->RefreshVisible();
+
   SetVisibleInLayout(scene->GetUiElementByName(kWebVrExclusiveScreenToast),
                      !model->browsing_disabled);
+
+  for (const auto& spec : GetIndicatorSpecs()) {
+    SetVisibleInLayout(
+        scene->GetUiElementByName(spec.webvr_name),
+        active_capture.*spec.signal || potential_capture.*spec.signal);
+  }
 
   e->RemoveKeyframeModels(TRANSFORM);
 
