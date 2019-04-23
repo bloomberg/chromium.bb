@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.touchless;
 
+import android.content.Context;
 import android.support.v4.view.ViewCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,6 +32,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.touchless.R;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
@@ -44,6 +46,8 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 public class TouchlessNewTabPage extends BasicNativePage {
     private static final String TAG = "TouchlessNewTabPage";
 
+    private Context mContext;
+    private ModalDialogManager mModalDialogManager;
     private String mTitle;
     private int mBackgroundColor;
 
@@ -54,7 +58,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
     private TouchlessNewTabPageTopLayout mRecyclerTopmostView;
     private SuggestionsRecyclerView mRecyclerView;
     private Tab mTab;
-    private ContextMenuManager mContextMenuManager;
+    private TouchlessContextMenuManager mContextMenuManager;
     private SiteSuggestionsCoordinator mSiteSuggestionsCoordinator;
 
     public TouchlessNewTabPage(ChromeActivity activity, NativePageHost host) {
@@ -65,6 +69,8 @@ public class TouchlessNewTabPage extends BasicNativePage {
     protected void initialize(ChromeActivity activity, NativePageHost nativePageHost) {
         TraceEvent.begin(TAG);
 
+        mContext = activity;
+        mModalDialogManager = activity.getModalDialogManager();
         mTab = activity.getActivityTab();
         Profile profile = mTab.getProfile();
 
@@ -121,9 +127,9 @@ public class TouchlessNewTabPage extends BasicNativePage {
         // Don't store a direct reference to the activity, because it might change later if the tab
         // is reparented.
         Runnable closeContextMenuCallback = () -> mTab.getActivity().closeContextMenu();
-        mContextMenuManager = new ContextMenuManager(suggestionsUiDelegate.getNavigationDelegate(),
-                mRecyclerView::setTouchEnabled, closeContextMenuCallback,
-                NewTabPage.CONTEXT_MENU_USER_ACTION_PREFIX);
+        mContextMenuManager = new TouchlessContextMenuManager(
+                suggestionsUiDelegate.getNavigationDelegate(), mRecyclerView::setTouchEnabled,
+                closeContextMenuCallback, NewTabPage.CONTEXT_MENU_USER_ACTION_PREFIX);
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         UiConfig uiConfig = new UiConfig(mRecyclerView);
@@ -180,5 +186,14 @@ public class TouchlessNewTabPage extends BasicNativePage {
         mOpenLastTabCoordinator.destroy();
 
         super.destroy();
+    }
+
+    public void showContextMenu() {
+        View focusedView = getView().findFocus();
+        if (focusedView == null) return;
+        ContextMenuManager.Delegate delegate =
+                ContextMenuManager.getDelegateFromFocusedView(focusedView);
+        if (delegate == null) return;
+        mContextMenuManager.showTouchlessContextMenu(mModalDialogManager, mContext, delegate);
     }
 }

@@ -134,4 +134,5 @@
     <item type="id" name="highlight_state" />
     <item type="id" name="item_animator" />
     <item type="id" name="highlight_color" />
+    <item type="id" name="context_menu_delegate" />
 </resources>

@@ -180,6 +180,7 @@ class SiteSuggestionsAdapter extends ForwardingListObservable<PropertyKey>
                                 -> interactionDelegate.openItem(WindowOpenDisposition.CURRENT_TAB));
 
                 tile.setOnCreateContextMenuListener(interactionDelegate);
+                ContextMenuManager.registerViewForTouchlessContextMenu(tile, interactionDelegate);
             }
         }
     }

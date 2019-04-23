@@ -151,6 +151,22 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
     }
 
     /**
+     * Preserves delegate's reference in View's tag so it can later be retrieved from focused view.
+     */
+    public static void registerViewForTouchlessContextMenu(View view, Delegate delegate) {
+        if (FeatureUtilities.isNoTouchModeEnabled()) {
+            view.setTag(R.id.context_menu_delegate, delegate);
+        }
+    }
+
+    /**
+     * Given currently focused view this function retrieves associated Delegate.
+     */
+    public static Delegate getDelegateFromFocusedView(View view) {
+        return (Delegate) view.getTag(R.id.context_menu_delegate);
+    }
+
+    /**
      * notifyContextMenuShown is called right before context menu is shown. It allows delegate to
      * record statistics about user action.
      *
