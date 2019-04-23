@@ -91,16 +91,6 @@ void GpuArcVideoEncodeAccelerator::Initialize(
   std::move(callback).Run(true);
 }
 
-void GpuArcVideoEncodeAccelerator::EncodeDeprecated(
-    mojo::ScopedHandle handle,
-    std::vector<::arc::VideoFramePlane> planes,
-    int64_t timestamp,
-    bool force_keyframe,
-    EncodeCallback callback) {
-  Encode(input_pixel_format_, std::move(handle), planes, timestamp,
-         force_keyframe, std::move(callback));
-}
-
 void GpuArcVideoEncodeAccelerator::Encode(
     media::VideoPixelFormat format,
     mojo::ScopedHandle handle,
