@@ -512,10 +512,11 @@ class DCLayerTree::SwapChainPresenter {
     kMaxValue = kIncompatibleTransform,
   };
 
-  // Upload given YUV buffers to NV12 |staging_texture_|.  Returns true on
-  // success.
-  bool UploadVideoImages(gl::GLImageMemory* y_image_memory,
-                         gl::GLImageMemory* uv_image_memory);
+  // Upload given YUV buffers to an NV12 texture that can be used to create
+  // video processor input view.  Returns nullptr on failure.
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> UploadVideoImages(
+      gl::GLImageMemory* y_image_memory,
+      gl::GLImageMemory* uv_image_memory);
 
   // Releases resources that might hold indirect references to the swap chain.
   void ReleaseSwapChainResources();
@@ -624,8 +625,10 @@ class DCLayerTree::SwapChainPresenter {
   scoped_refptr<gl::GLImage> last_uv_image_;
 
   // NV12 staging texture used for software decoded YUV buffers.  Mapped to CPU
-  // for copying from YUV buffers.
+  // for copying from YUV buffers.  Texture usage is DYNAMIC or STAGING.
   Microsoft::WRL::ComPtr<ID3D11Texture2D> staging_texture_;
+  // Used to copy from staging texture with usage STAGING for workarounds.
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> copy_texture_;
   gfx::Size staging_texture_size_;
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
@@ -700,6 +703,8 @@ bool DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
   if (video_processor_ && SizeContains(video_input_size_, input_size) &&
       SizeContains(video_output_size_, output_size))
     return true;
+  TRACE_EVENT2("gpu", "DCLayerTree::InitializeVideoProcessor", "input_size",
+               input_size.ToString(), "output_size", output_size.ToString());
   video_input_size_ = input_size;
   video_output_size_ = output_size;
 
@@ -793,7 +798,8 @@ bool DCLayerTree::SwapChainPresenter::ShouldUseYUVSwapChain(
   }
 }
 
-bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
+Microsoft::WRL::ComPtr<ID3D11Texture2D>
+DCLayerTree::SwapChainPresenter::UploadVideoImages(
     gl::GLImageMemory* y_image_memory,
     gl::GLImageMemory* uv_image_memory) {
   gfx::Size texture_size = y_image_memory->GetSize();
@@ -803,8 +809,11 @@ bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
       y_image_memory->format() != gfx::BufferFormat::R_8 ||
       uv_image_memory->format() != gfx::BufferFormat::RG_88) {
     DLOG(ERROR) << "Invalid NV12 GLImageMemory properties.";
-    return false;
+    return nullptr;
   }
+
+  TRACE_EVENT1("gpu", "SwapChainPresenter::UploadVideoImages", "size",
+               texture_size.ToString());
 
   static crash_reporter::CrashKeyString<32> texture_size_key(
       "dynamic-texture-size");
@@ -815,30 +824,33 @@ bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
   bool first_use = !staging_texture_ || (staging_texture_size_ != texture_size);
   first_use_key.Set(first_use ? "1" : "0");
 
+  bool use_dynamic_texture =
+      !layer_tree_->workarounds().disable_nv12_dynamic_textures;
+
+  D3D11_TEXTURE2D_DESC desc = {};
+  desc.Width = texture_size.width();
+  desc.Height = texture_size.height();
+  desc.Format = DXGI_FORMAT_NV12;
+  desc.MipLevels = 1;
+  desc.ArraySize = 1;
+  desc.Usage = use_dynamic_texture ? D3D11_USAGE_DYNAMIC : D3D11_USAGE_STAGING;
+  // This isn't actually bound to a decoder, but dynamic textures need
+  // BindFlags to be nonzero and D3D11_BIND_DECODER also works when creating
+  // a VideoProcessorInputView.
+  desc.BindFlags = use_dynamic_texture ? D3D11_BIND_DECODER : 0;
+  desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+  desc.MiscFlags = 0;
+  desc.SampleDesc.Count = 1;
+
   if (!staging_texture_ || (staging_texture_size_ != texture_size)) {
     staging_texture_.Reset();
-    D3D11_TEXTURE2D_DESC desc = {};
-    desc.Width = texture_size.width();
-    desc.Height = texture_size.height();
-    desc.Format = DXGI_FORMAT_NV12;
-    desc.MipLevels = 1;
-    desc.ArraySize = 1;
-    desc.Usage = D3D11_USAGE_DYNAMIC;
-
-    // This isn't actually bound to a decoder, but dynamic textures need
-    // BindFlags to be nonzero and D3D11_BIND_DECODER also works when creating
-    // a VideoProcessorInputView.
-    desc.BindFlags = D3D11_BIND_DECODER;
-    desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    desc.MiscFlags = 0;
-    desc.SampleDesc.Count = 1;
-    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
+    copy_texture_.Reset();
     HRESULT hr =
         d3d11_device_->CreateTexture2D(&desc, nullptr, &staging_texture_);
     if (FAILED(hr)) {
-      DLOG(ERROR) << "Creating D3D11 video upload texture failed: " << std::hex
+      DLOG(ERROR) << "Creating D3D11 video staging texture failed: " << std::hex
                   << hr;
-      return false;
+      return nullptr;
     }
     DCHECK(staging_texture_);
     staging_texture_size_ = texture_size;
@@ -848,13 +860,15 @@ bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
   d3d11_device_->GetImmediateContext(&context);
   DCHECK(context);
 
+  D3D11_MAP map_type =
+      use_dynamic_texture ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE;
   D3D11_MAPPED_SUBRESOURCE mapped_resource;
-  HRESULT hr = context->Map(staging_texture_.Get(), 0, D3D11_MAP_WRITE_DISCARD,
-                            0, &mapped_resource);
+  HRESULT hr =
+      context->Map(staging_texture_.Get(), 0, map_type, 0, &mapped_resource);
   if (FAILED(hr)) {
-    DLOG(ERROR) << "Mapping D3D11 video upload texture failed: " << std::hex
+    DLOG(ERROR) << "Mapping D3D11 video staging texture failed: " << std::hex
                 << hr;
-    return false;
+    return nullptr;
   }
 
   size_t dest_stride = mapped_resource.RowPitch;
@@ -876,7 +890,25 @@ bool DCLayerTree::SwapChainPresenter::UploadVideoImages(
     memcpy(dest, uv_source, texture_size.width());
   }
   context->Unmap(staging_texture_.Get(), 0);
-  return true;
+
+  if (use_dynamic_texture)
+    return staging_texture_;
+
+  if (!copy_texture_) {
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_DECODER;
+    desc.CPUAccessFlags = 0;
+    HRESULT hr = d3d11_device_->CreateTexture2D(&desc, nullptr, &copy_texture_);
+    if (FAILED(hr)) {
+      DLOG(ERROR) << "Creating D3D11 video upload texture failed: " << std::hex
+                  << hr;
+      return nullptr;
+    }
+    DCHECK(copy_texture_);
+  }
+  TRACE_EVENT0("gpu", "SwapChainPresenter::UploadVideoImages::CopyResource");
+  context->CopyResource(copy_texture_.Get(), staging_texture_.Get());
+  return copy_texture_;
 }
 
 gfx::Size DCLayerTree::SwapChainPresenter::CalculateSwapChainSize(
@@ -1101,11 +1133,18 @@ bool DCLayerTree::SwapChainPresenter::PresentToDecodeSwapChain(
     const gfx::Size& swap_chain_size) {
   DCHECK(!swap_chain_size.IsEmpty());
 
+  TRACE_EVENT2("gpu", "SwapChainPresenter::PresentToDecodeSwapChain",
+               "content_rect", content_rect.ToString(), "swap_chain_size",
+               swap_chain_size.ToString());
+
   Microsoft::WRL::ComPtr<IDXGIResource> decode_resource;
   image_dxgi->texture().As(&decode_resource);
   DCHECK(decode_resource);
 
   if (!decode_swap_chain_ || decode_resource_ != decode_resource) {
+    TRACE_EVENT0(
+        "gpu",
+        "SwapChainPresenter::PresentToDecodeSwapChain::CreateDecodeSwapChain");
     ReleaseSwapChainResources();
 
     decode_resource_ = decode_resource;
@@ -1232,6 +1271,11 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   }
 
   gfx::Size swap_chain_size = CalculateSwapChainSize(params);
+
+  TRACE_EVENT2("gpu", "SwapChainPresenter::PresentToSwapChain",
+               "hardware_frame", !!image_dxgi, "swap_chain_size",
+               swap_chain_size.ToString());
+
   // Do not create a swap chain if swap chain size will be empty.
   if (swap_chain_size.IsEmpty()) {
     swap_chain_size_ = swap_chain_size;
@@ -1282,21 +1326,20 @@ bool DCLayerTree::SwapChainPresenter::PresentToSwapChain(
   if (image_dxgi) {
     input_texture = image_dxgi->texture();
     input_level = (UINT)image_dxgi->level();
-    if (!input_texture) {
-      DLOG(ERROR) << "Video image has no texture";
-      return false;
-    }
     // Keyed mutex may not exist.
     keyed_mutex = image_dxgi->keyed_mutex();
     staging_texture_.Reset();
+    copy_texture_.Reset();
   } else {
     DCHECK(y_image_memory);
     DCHECK(uv_image_memory);
-    if (!UploadVideoImages(y_image_memory, uv_image_memory))
-      return false;
-    DCHECK(staging_texture_);
-    input_texture = staging_texture_;
+    input_texture = UploadVideoImages(y_image_memory, uv_image_memory);
     input_level = 0;
+  }
+
+  if (!input_texture) {
+    DLOG(ERROR) << "Video image has no texture";
+    return false;
   }
 
   // TODO(sunnyps): Use correct color space for uploaded video frames.
@@ -1424,6 +1467,9 @@ bool DCLayerTree::SwapChainPresenter::VideoProcessorBlt(
     Microsoft::WRL::ComPtr<IDXGIKeyedMutex> keyed_mutex,
     const gfx::Rect& content_rect,
     const gfx::ColorSpace& src_color_space) {
+  TRACE_EVENT2("gpu", "SwapChainPresenter::VideoProcessorBlt", "content_rect",
+               content_rect.ToString(), "swap_chain_size",
+               swap_chain_size_.ToString());
   if (!layer_tree_->InitializeVideoProcessor(content_rect.size(),
                                              swap_chain_size_)) {
     return false;
@@ -1569,8 +1615,8 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
     bool use_yuv_swap_chain,
     ui::ProtectedVideoType protected_video_type,
     bool z_order) {
-  TRACE_EVENT2("gpu", "DCLayerTree::SwapChainPresenter::ReallocateSwapChain",
-               "size", swap_chain_size.ToString(), "yuv", use_yuv_swap_chain);
+  TRACE_EVENT2("gpu", "SwapChainPresenter::ReallocateSwapChain", "size",
+               swap_chain_size.ToString(), "yuv", use_yuv_swap_chain);
 
   DCHECK(!swap_chain_size.IsEmpty());
   swap_chain_size_ = swap_chain_size;
@@ -1647,6 +1693,8 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
       ProtectedVideoTypeToString(protected_video_type);
 
   if (use_yuv_swap_chain) {
+    TRACE_EVENT1("gpu", "SwapChainPresenter::ReallocateSwapChain::YUV",
+                 "format", OverlayFormatToString(g_overlay_format_used));
     HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
         &swap_chain_);
@@ -1669,6 +1717,7 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
     }
   }
   if (!is_yuv_swapchain_) {
+    TRACE_EVENT0("gpu", "SwapChainPresenter::ReallocateSwapChain::BGRA");
     desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     desc.Flags = 0;
     if (IsProtectedVideo(protected_video_type))
@@ -1699,6 +1748,8 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(
 
 bool DCLayerTree::CommitAndClearPendingOverlays(
     DirectCompositionChildSurfaceWin* root_surface) {
+  TRACE_EVENT1("gpu", "DCLayerTree::CommitAndClearPendingOverlays",
+               "num_pending_overlays", pending_overlays_.size());
   DCHECK(!needs_commit_);
   // Check if root surface visual needs a commit first.
   if (!root_surface_visual_) {
@@ -1757,6 +1808,7 @@ bool DCLayerTree::CommitAndClearPendingOverlays(
 
   // Rebuild visual tree and commit if any visual changed.
   if (needs_commit_) {
+    TRACE_EVENT0("gpu", "DCLayerTree::CommitAndClearPendingOverlays::Commit");
     needs_commit_ = false;
     dcomp_root_visual_->RemoveAllVisuals();
 
@@ -2034,6 +2086,7 @@ bool DirectCompositionSurfaceWin::Resize(const gfx::Size& size,
 
 gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers(
     PresentationCallback callback) {
+  TRACE_EVENT0("gpu", "DirectCompositionSurfaceWin::SwapBuffers");
   gl::GLSurfacePresentationHelper::ScopedSwapBuffers scoped_swap_buffers(
       presentation_helper_.get(), std::move(callback));
 

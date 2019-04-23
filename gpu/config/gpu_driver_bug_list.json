@@ -3294,6 +3294,22 @@
       "features": [
         "disable_copy_tex_image_2d_rgb10_a2_mali"
       ]
+    },
+    {
+      "id": 303,
+      "cr_bugs": [890227],
+      "description": "Dynamic texture map crashes on Intel drivers less than version 24",
+      "os": {
+        "type" : "win"
+      },
+      "vendor_id": "0x8086",
+      "driver_version": {
+        "op": "<",
+        "value": "24"
+      },
+      "features": [
+        "disable_nv12_dynamic_textures"
+      ]
     }
   ]
 }
