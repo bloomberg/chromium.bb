@@ -98,7 +98,6 @@
 #include "gin/converter.h"
 #include "mojo/public/js/grit/mojo_bindings_resources.h"
 #include "services/network/public/mojom/cors.mojom.h"
-#include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_custom_element.h"
@@ -859,30 +858,6 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
   if (activity_logging_enabled_) {
     DOMActivityLogger::AttachToWorld(DOMActivityLogger::kMainWorldId,
                                      extension_id);
-  }
-
-  // TODO(yoichio): This is temporary switch to have chrome internal extensions
-  // use the old web APIs.
-  // After completion of the migration, we should remove this.
-  // See crbug.com/924031 for detail.
-  if (extension_id == extension_misc::kPdfExtensionId) {
-    blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
-    blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
-  }
-  // FilesApp support. crbug.com/924873
-  // For Polymer1, we still need v0 APIs.
-  // Extensions IDs from src/chrome/browser/chromeos/file_manager/app_id.h.
-  if (!base::FeatureList::IsEnabled(features::kWebUIPolymer2) &&
-      (extension_id == "hhaomjibdihmijegdhdafkllkbggdgoj" ||
-       extension_id == "jcgeabjmjgoblfofpppfkcoakmfobdko" ||
-       extension_id == "nlkncpkkdoccmpiclbokaimcnedabhhm" ||
-       extension_id == "cjbfomnbifhcdnihkgipgfcihmgjfhbf" ||
-       extension_id == "mmfbcljfglbokpmkimbfghdkjmjhdgbg" ||
-       extension_id == "pmfjbimdmchhbnneeidfognadeopoehp" ||
-       extension_id == "dmboannefpncccogfdikhmhpmdnddgoe")) {
-    blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
-    blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
-    blink::WebRuntimeFeatures::EnableHTMLImports(true);
   }
 
   InitOriginPermissions(extension);

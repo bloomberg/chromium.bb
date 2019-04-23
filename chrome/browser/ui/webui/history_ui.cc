@@ -33,7 +33,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/content_features.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -175,15 +174,10 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
       std::move(exclude_from_gzip)));
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  const bool use_polymer_2 =
-      base::FeatureList::IsEnabled(features::kWebUIPolymer2);
-  source->AddResourcePath("app.html", use_polymer_2
-                                          ? IDR_HISTORY_APP_VULCANIZED_P2_HTML
-                                          : IDR_HISTORY_APP_VULCANIZED_HTML);
+  source->AddResourcePath("app.html", IDR_HISTORY_APP_VULCANIZED_P2_HTML);
   source->AddResourcePath("app.crisper.js", IDR_HISTORY_APP_CRISPER_JS);
-  source->AddResourcePath(
-      "lazy_load.html", use_polymer_2 ? IDR_HISTORY_LAZY_LOAD_VULCANIZED_P2_HTML
-                                      : IDR_HISTORY_LAZY_LOAD_VULCANIZED_HTML);
+  source->AddResourcePath("lazy_load.html",
+                          IDR_HISTORY_LAZY_LOAD_VULCANIZED_P2_HTML);
   source->AddResourcePath("lazy_load.crisper.js",
                           IDR_HISTORY_LAZY_LOAD_CRISPER_JS);
 #endif

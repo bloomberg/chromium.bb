@@ -39,7 +39,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/content_features.h"
 #include "extensions/common/extension_urls.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -341,10 +340,7 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_EXTENSIONS_CRISPER_JS);
-  source->SetDefaultResource(
-      base::FeatureList::IsEnabled(features::kWebUIPolymer2)
-          ? IDR_EXTENSIONS_VULCANIZED_P2_HTML
-          : IDR_EXTENSIONS_VULCANIZED_HTML);
+  source->SetDefaultResource(IDR_EXTENSIONS_VULCANIZED_P2_HTML);
   source->UseGzip();
 #else
   // Add all MD Extensions resources.

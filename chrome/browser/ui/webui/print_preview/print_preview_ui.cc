@@ -51,7 +51,6 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/content_features.h"
 #include "extensions/common/constants.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
@@ -444,11 +443,7 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
   source->SetJsonPath("strings.js");
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_PRINT_PREVIEW_CRISPER_JS);
-  source->SetDefaultResource(IDR_PRINT_PREVIEW_VULCANIZED_HTML);
-  source->SetDefaultResource(
-      base::FeatureList::IsEnabled(features::kWebUIPolymer2) ?
-          IDR_PRINT_PREVIEW_VULCANIZED_P2_HTML :
-          IDR_PRINT_PREVIEW_VULCANIZED_HTML);
+  source->SetDefaultResource(IDR_PRINT_PREVIEW_VULCANIZED_P2_HTML);
   std::vector<std::string> exclude_from_gzip = SetupPrintPreviewPlugin(source);
   source->UseGzip(base::BindRepeating(
       [](const std::vector<std::string>& excluded_paths,

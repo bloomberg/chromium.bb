@@ -26,7 +26,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/content_features.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -142,10 +141,7 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("images/folder.svg", IDR_BOOKMARKS_IMAGES_FOLDER_SVG);
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_BOOKMARKS_CRISPER_JS);
-  source->SetDefaultResource(
-      base::FeatureList::IsEnabled(features::kWebUIPolymer2)
-          ? IDR_BOOKMARKS_VULCANIZED_P2_HTML
-          : IDR_BOOKMARKS_VULCANIZED_HTML);
+  source->SetDefaultResource(IDR_BOOKMARKS_VULCANIZED_P2_HTML);
   source->UseGzip(base::BindRepeating([](const std::string& path) {
     return path != "images/folder_open.svg" && path != "images/folder.svg";
   }));

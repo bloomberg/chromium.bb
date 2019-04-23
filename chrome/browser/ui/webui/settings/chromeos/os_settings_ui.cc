@@ -50,7 +50,6 @@
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/content_features.h"
 
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
@@ -158,18 +157,12 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   }
 
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  const bool use_polymer_2 =
-      base::FeatureList::IsEnabled(::features::kWebUIPolymer2);
   html_source->AddResourcePath("crisper.js", IDR_OS_SETTINGS_CRISPER_JS);
   html_source->AddResourcePath("lazy_load.crisper.js",
                                IDR_OS_SETTINGS_LAZY_LOAD_CRISPER_JS);
-  html_source->AddResourcePath(
-      "lazy_load.html", use_polymer_2
-                            ? IDR_OS_SETTINGS_LAZY_LOAD_VULCANIZED_P2_HTML
-                            : IDR_OS_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
-  html_source->SetDefaultResource(use_polymer_2
-                                      ? IDR_OS_SETTINGS_VULCANIZED_P2_HTML
-                                      : IDR_OS_SETTINGS_VULCANIZED_HTML);
+  html_source->AddResourcePath("lazy_load.html",
+                               IDR_OS_SETTINGS_LAZY_LOAD_VULCANIZED_P2_HTML);
+  html_source->SetDefaultResource(IDR_OS_SETTINGS_VULCANIZED_P2_HTML);
   html_source->UseGzip(base::BindRepeating(
       [](const std::vector<std::string>& excluded_paths,
          const std::string& path) {

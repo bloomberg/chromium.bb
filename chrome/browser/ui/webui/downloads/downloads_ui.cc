@@ -35,7 +35,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/content_features.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -147,10 +146,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   }));
 
   source->AddResourcePath("crisper.js", IDR_DOWNLOADS_CRISPER_JS);
-  source->SetDefaultResource(
-      base::FeatureList::IsEnabled(features::kWebUIPolymer2)
-          ? IDR_DOWNLOADS_VULCANIZED_P2_HTML
-          : IDR_DOWNLOADS_VULCANIZED_HTML);
+  source->SetDefaultResource(IDR_DOWNLOADS_VULCANIZED_P2_HTML);
 #else
   source->AddResourcePath("browser_proxy.html",
                           IDR_DOWNLOADS_BROWSER_PROXY_HTML);

@@ -714,21 +714,12 @@ const base::Feature kForce60HzRefreshRate{"Force60HzRefreshRate",
 const base::Feature kWebNfc{"WebNFC", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
-#if !defined(OS_ANDROID)
-// Makes all WebUI that uses Polymer use 2.x version.
-// TODO(dpapad): Remove this once Polymer 2 migration is done,
-// https://crbug.com/738611.
-const base::Feature kWebUIPolymer2{"WebUIPolymer2",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // !defined(OS_ANDROID)
-
 #if defined(OS_CHROMEOS)
 // If this flag is enabled, Web UI pages can call DisablePolymer2() on the
-// shared resource during setup in order to use Polymer 1, regardless of the
-// state of the WebUIPolymer2 flag. Note: Currently, this only supports one Web
-// UI page disabling Polymer 2.
-// TODO(dpapad): Remove this once Polymer 2 migration is done,
-// https://crbug.com/738611.
+// shared resource during setup in order to use Polymer 1. Note: Currently, this
+// only supports one Web UI page disabling Polymer 2.
+// TODO(crbug.com/955194): Remove this once chrome://oobe migrates off of
+// Polymer 1.
 const base::Feature kWebUIPolymer2Exceptions{"WebUIPolymer2Exceptions",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)

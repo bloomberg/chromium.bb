@@ -60,8 +60,7 @@ const char kHtmlImportsV0Js[] =
 
 // Utility for determining if both Polymer 1 and Polymer 2 are needed.
 bool UsingMultiplePolymerVersions() {
-  return base::FeatureList::IsEnabled(features::kWebUIPolymer2) &&
-         base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions);
+  return base::FeatureList::IsEnabled(features::kWebUIPolymer2Exceptions);
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -85,14 +84,8 @@ const std::map<std::string, std::string> CreatePathPrefixAliasesMap() {
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kWebUIPolymer2)) {
-    aliases["../../../third_party/polymer/v1_0/components-chromium/polymer2/"] =
-        "polymer/v1_0/polymer/";
-  } else {
-    aliases
-        ["../../../third_party/polymer/v1_0/components-chromium/"
-         "html-imports-v0/"] = "polymer/v1_0/html-imports/";
-  }
+  aliases["../../../third_party/polymer/v1_0/components-chromium/polymer2/"] =
+      "polymer/v1_0/polymer/";
 #endif  // !defined(OS_ANDROID)
   return aliases;
 }
@@ -137,27 +130,14 @@ bool ShouldIgnore(std::string resource) {
     return false;
 #endif  // defined(OS_CHROMEOS)
 
-  if (base::FeatureList::IsEnabled(features::kWebUIPolymer2) &&
-      (base::StartsWith(
-           resource,
-           "../../../third_party/polymer/v1_0/components-chromium/polymer/",
-           base::CompareCase::SENSITIVE) ||
-       base::StartsWith(resource,
-                        "../../../third_party/polymer/v1_0/components-chromium/"
-                        "html-imports-v0/",
-                        base::CompareCase::SENSITIVE))) {
-    return true;
-  }
-
-  if (!base::FeatureList::IsEnabled(features::kWebUIPolymer2) &&
-      (base::StartsWith(
-           resource,
-           "../../../third_party/polymer/v1_0/components-chromium/polymer2/",
-           base::CompareCase::SENSITIVE) ||
-       base::StartsWith(resource,
-                        "../../../third_party/polymer/v1_0/components-chromium/"
-                        "html-imports/",
-                        base::CompareCase::SENSITIVE))) {
+  if (base::StartsWith(
+          resource,
+          "../../../third_party/polymer/v1_0/components-chromium/polymer/",
+          base::CompareCase::SENSITIVE) ||
+      base::StartsWith(resource,
+                       "../../../third_party/polymer/v1_0/components-chromium/"
+                       "html-imports-v0/",
+                       base::CompareCase::SENSITIVE)) {
     return true;
   }
 
