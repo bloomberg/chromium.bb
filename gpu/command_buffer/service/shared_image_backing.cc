@@ -110,6 +110,10 @@ bool SharedImageBacking::HasAnyRefs() const {
   return !refs_.empty();
 }
 
+size_t SharedImageBacking::EstimatedSizeForMemTracking() const {
+  return estimated_size_;
+}
+
 bool SharedImageBacking::have_context() const {
   AssertLockedIfNecessary();
 

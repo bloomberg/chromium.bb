@@ -261,7 +261,7 @@ void SharedImageManager::OnMemoryDump(const Mailbox& mailbox,
   }
 
   auto* backing = found->get();
-  size_t estimated_size = backing->estimated_size();
+  size_t estimated_size = backing->EstimatedSizeForMemTracking();
   if (estimated_size == 0)
     return;
 

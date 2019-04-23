@@ -48,6 +48,7 @@ class MEDIA_GPU_EXPORT SharedImageVideo
   void Update() override;
   bool ProduceLegacyMailbox(gpu::MailboxManager* mailbox_manager) override;
   void Destroy() override;
+  size_t EstimatedSizeForMemTracking() const override;
 
   // SharedContextState::ContextLostObserver implementation.
   void OnContextLost() override;
