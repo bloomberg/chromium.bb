@@ -20,5 +20,6 @@ deps = [
   "//media/base/ipc",
 ]
 
-type_mappings =
-    [ "media.mojom.EncodeStatus=media::JpegEncodeAccelerator::Status" ]
+type_mappings = [
+  "chromeos_camera.mojom.EncodeStatus=media::JpegEncodeAccelerator::Status",
+]

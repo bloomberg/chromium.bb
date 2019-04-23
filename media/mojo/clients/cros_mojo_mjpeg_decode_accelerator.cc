@@ -18,7 +18,7 @@ namespace media {
 
 CrOSMojoMjpegDecodeAccelerator::CrOSMojoMjpegDecodeAccelerator(
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-    mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder)
+    chromeos_camera::mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder)
     : io_task_runner_(std::move(io_task_runner)),
       jpeg_decoder_info_(std::move(jpeg_decoder)) {}
 

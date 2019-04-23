@@ -31,8 +31,8 @@ class WaitableEvent;
 
 namespace media {
 
-using MojoJpegEncodeAcceleratorFactoryCB =
-    base::RepeatingCallback<void(media::mojom::JpegEncodeAcceleratorRequest)>;
+using MojoJpegEncodeAcceleratorFactoryCB = base::RepeatingCallback<void(
+    chromeos_camera::mojom::JpegEncodeAcceleratorRequest)>;
 
 class CAPTURE_EXPORT CameraClientObserver {
  public:
@@ -67,9 +67,9 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   void RegisterServer(cros::mojom::CameraHalServerPtr server) final;
   void RegisterClient(cros::mojom::CameraHalClientPtr client) final;
   void GetJpegDecodeAccelerator(
-      media::mojom::MjpegDecodeAcceleratorRequest jda_request) final;
+      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) final;
   void GetJpegEncodeAccelerator(
-      media::mojom::JpegEncodeAcceleratorRequest jea_request) final;
+      chromeos_camera::mojom::JpegEncodeAcceleratorRequest jea_request) final;
 
   // base::trace_event::TraceLog::EnabledStateObserver implementation.
   void OnTraceLogEnabled() final;

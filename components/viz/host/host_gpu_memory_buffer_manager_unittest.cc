@@ -101,10 +101,12 @@ class TestGpuService : public mojom::GpuService {
       arc::mojom::ProtectedBufferManagerRequest pbm_request) override {}
 
   void CreateJpegDecodeAccelerator(
-      media::mojom::MjpegDecodeAcceleratorRequest jda_request) override {}
+      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request)
+      override {}
 
   void CreateJpegEncodeAccelerator(
-      media::mojom::JpegEncodeAcceleratorRequest jea_request) override {}
+      chromeos_camera::mojom::JpegEncodeAcceleratorRequest jea_request)
+      override {}
 #endif  // defined(OS_CHROMEOS)
 
   void CreateVideoEncodeAcceleratorProvider(

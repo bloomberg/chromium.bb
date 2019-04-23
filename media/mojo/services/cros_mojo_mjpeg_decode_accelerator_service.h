@@ -19,13 +19,14 @@
 
 namespace media {
 
-// Implementation of a mojom::MjpegDecodeAccelerator which runs in the GPU
-// process, and wraps a JpegDecodeAccelerator.
+// Implementation of a chromeos_camera::mojom::MjpegDecodeAccelerator which runs
+// in the GPU process, and wraps a JpegDecodeAccelerator.
 class MEDIA_MOJO_EXPORT CrOSMojoMjpegDecodeAcceleratorService
-    : public mojom::MjpegDecodeAccelerator,
+    : public chromeos_camera::mojom::MjpegDecodeAccelerator,
       public MjpegDecodeAccelerator::Client {
  public:
-  static void Create(mojom::MjpegDecodeAcceleratorRequest request);
+  static void Create(
+      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest request);
 
   ~CrOSMojoMjpegDecodeAcceleratorService() override;
 
@@ -42,7 +43,7 @@ class MEDIA_MOJO_EXPORT CrOSMojoMjpegDecodeAcceleratorService
   // fill |accelerator_factory_functions_|.
   CrOSMojoMjpegDecodeAcceleratorService();
 
-  // mojom::MjpegDecodeAccelerator implementation.
+  // chromeos_camera::mojom::MjpegDecodeAccelerator implementation.
   void Initialize(InitializeCallback callback) override;
   void Decode(const BitstreamBuffer& input_buffer,
               const gfx::Size& coded_size,

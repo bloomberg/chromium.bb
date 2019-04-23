@@ -262,9 +262,9 @@ class VideoCaptureDeviceTest
     if (!CameraHalDispatcherImpl::GetInstance()->IsStarted()) {
       CameraHalDispatcherImpl::GetInstance()->Start(
           base::DoNothing::Repeatedly<
-              media::mojom::MjpegDecodeAcceleratorRequest>(),
+              chromeos_camera::mojom::MjpegDecodeAcceleratorRequest>(),
           base::DoNothing::Repeatedly<
-              media::mojom::JpegEncodeAcceleratorRequest>());
+              chromeos_camera::mojom::JpegEncodeAcceleratorRequest>());
     }
 #endif
     video_capture_device_factory_ =

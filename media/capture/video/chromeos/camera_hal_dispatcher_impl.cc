@@ -197,12 +197,12 @@ void CameraHalDispatcherImpl::RegisterClient(
 }
 
 void CameraHalDispatcherImpl::GetJpegDecodeAccelerator(
-    media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
+    chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) {
   jda_factory_.Run(std::move(jda_request));
 }
 
 void CameraHalDispatcherImpl::GetJpegEncodeAccelerator(
-    media::mojom::JpegEncodeAcceleratorRequest jea_request) {
+    chromeos_camera::mojom::JpegEncodeAcceleratorRequest jea_request) {
   jea_factory_.Run(std::move(jea_request));
 }
 

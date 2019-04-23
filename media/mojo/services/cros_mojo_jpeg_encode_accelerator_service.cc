@@ -33,7 +33,7 @@ namespace media {
 
 // static
 void CrOSMojoJpegEncodeAcceleratorService::Create(
-    mojom::JpegEncodeAcceleratorRequest request) {
+    chromeos_camera::mojom::JpegEncodeAcceleratorRequest request) {
   auto* jpeg_encoder = new CrOSMojoJpegEncodeAcceleratorService();
   mojo::MakeStrongBinding(base::WrapUnique(jpeg_encoder), std::move(request));
 }

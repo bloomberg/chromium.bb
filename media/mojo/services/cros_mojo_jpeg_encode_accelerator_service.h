@@ -19,13 +19,14 @@
 
 namespace media {
 
-// Implementation of a mojom::JpegEncodeAccelerator which runs in the GPU
-// process, and wraps a JpegEncodeAccelerator.
+// Implementation of a chromeos_camera::mojom::JpegEncodeAccelerator which runs
+// in the GPU process, and wraps a JpegEncodeAccelerator.
 class MEDIA_MOJO_EXPORT CrOSMojoJpegEncodeAcceleratorService
-    : public mojom::JpegEncodeAccelerator,
+    : public chromeos_camera::mojom::JpegEncodeAccelerator,
       public JpegEncodeAccelerator::Client {
  public:
-  static void Create(mojom::JpegEncodeAcceleratorRequest request);
+  static void Create(
+      chromeos_camera::mojom::JpegEncodeAcceleratorRequest request);
 
   ~CrOSMojoJpegEncodeAcceleratorService() override;
 
@@ -42,7 +43,7 @@ class MEDIA_MOJO_EXPORT CrOSMojoJpegEncodeAcceleratorService
   // fill |accelerator_factory_functions_|.
   CrOSMojoJpegEncodeAcceleratorService();
 
-  // mojom::JpegEncodeAccelerator implementation.
+  // chromeos_camera::mojom::JpegEncodeAccelerator implementation.
   void Initialize(InitializeCallback callback) override;
   void EncodeWithFD(int32_t buffer_id,
                     mojo::ScopedHandle input_fd,

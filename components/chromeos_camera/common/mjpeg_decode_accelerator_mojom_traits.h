@@ -13,17 +13,17 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<media::mojom::DecodeError,
+struct EnumTraits<chromeos_camera::mojom::DecodeError,
                   media::MjpegDecodeAccelerator::Error> {
-  static media::mojom::DecodeError ToMojom(
+  static chromeos_camera::mojom::DecodeError ToMojom(
       media::MjpegDecodeAccelerator::Error error);
 
-  static bool FromMojom(media::mojom::DecodeError input,
+  static bool FromMojom(chromeos_camera::mojom::DecodeError input,
                         media::MjpegDecodeAccelerator::Error* out);
 };
 
 template <>
-struct StructTraits<media::mojom::BitstreamBufferDataView,
+struct StructTraits<chromeos_camera::mojom::BitstreamBufferDataView,
                     media::BitstreamBuffer> {
   static int32_t id(const media::BitstreamBuffer& input) { return input.id(); }
 
@@ -55,7 +55,7 @@ struct StructTraits<media::mojom::BitstreamBufferDataView,
     return input.subsamples();
   }
 
-  static bool Read(media::mojom::BitstreamBufferDataView input,
+  static bool Read(chromeos_camera::mojom::BitstreamBufferDataView input,
                    media::BitstreamBuffer* output);
 };
 

@@ -49,7 +49,7 @@ class CrOSMojoMjpegDecodeAcceleratorServiceTest : public ::testing::Test {
 };
 
 TEST_F(CrOSMojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
-  mojom::MjpegDecodeAcceleratorPtr jpeg_decoder;
+  chromeos_camera::mojom::MjpegDecodeAcceleratorPtr jpeg_decoder;
   CrOSMojoMjpegDecodeAcceleratorService::Create(
       mojo::MakeRequest(&jpeg_decoder));
 

@@ -24,6 +24,6 @@ deps = [
 ]
 
 type_mappings = [
-  "media.mojom.BitstreamBuffer=media::BitstreamBuffer",
-  "media.mojom.DecodeError=media::MjpegDecodeAccelerator::Error",
+  "chromeos_camera.mojom.BitstreamBuffer=media::BitstreamBuffer",
+  "chromeos_camera.mojom.DecodeError=media::MjpegDecodeAccelerator::Error",
 ]

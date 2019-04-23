@@ -9,7 +9,7 @@
 namespace content {
 
 void DelegateToBrowserGpuServiceAcceleratorFactory::CreateJpegDecodeAccelerator(
-    media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
+    chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) {
   VideoCaptureDependencies::CreateJpegDecodeAccelerator(std::move(jda_request));
 }
 

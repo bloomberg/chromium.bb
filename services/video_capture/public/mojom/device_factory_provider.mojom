@@ -12,7 +12,8 @@ import "services/video_capture/public/mojom/video_source_provider.mojom";
 [EnableIf=is_chromeos]
 interface AcceleratorFactory {
   // Creates a new JpegDecodeAccelerator and binds it to |jda|.
-  CreateJpegDecodeAccelerator(media.mojom.MjpegDecodeAccelerator& jda);
+  CreateJpegDecodeAccelerator(
+      chromeos_camera.mojom.MjpegDecodeAccelerator& jda);
 };
 
 // Entry point to the Video Capture Service API.

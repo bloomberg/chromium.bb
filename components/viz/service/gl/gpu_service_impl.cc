@@ -403,13 +403,13 @@ void GpuServiceImpl::CreateArcProtectedBufferManagerOnMainThread(
 }
 
 void GpuServiceImpl::CreateJpegDecodeAccelerator(
-    media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
+    chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   media::CrOSMojoMjpegDecodeAcceleratorService::Create(std::move(jda_request));
 }
 
 void GpuServiceImpl::CreateJpegEncodeAccelerator(
-    media::mojom::JpegEncodeAcceleratorRequest jea_request) {
+    chromeos_camera::mojom::JpegEncodeAcceleratorRequest jea_request) {
   DCHECK(io_runner_->BelongsToCurrentThread());
   media::CrOSMojoJpegEncodeAcceleratorService::Create(std::move(jea_request));
 }

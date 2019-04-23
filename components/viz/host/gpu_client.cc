@@ -199,7 +199,7 @@ void GpuClient::EstablishGpuChannel(EstablishGpuChannelCallback callback) {
 
 #if defined(OS_CHROMEOS)
 void GpuClient::CreateJpegDecodeAccelerator(
-    media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
+    chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) {
   if (auto* gpu_host = delegate_->EnsureGpuHost()) {
     gpu_host->gpu_service()->CreateJpegDecodeAccelerator(
         std::move(jda_request));

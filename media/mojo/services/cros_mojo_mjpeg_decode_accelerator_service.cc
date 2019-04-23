@@ -60,7 +60,7 @@ namespace media {
 
 // static
 void CrOSMojoMjpegDecodeAcceleratorService::Create(
-    mojom::MjpegDecodeAcceleratorRequest request) {
+    chromeos_camera::mojom::MjpegDecodeAcceleratorRequest request) {
   auto* jpeg_decoder = new CrOSMojoMjpegDecodeAcceleratorService();
   mojo::MakeStrongBinding(base::WrapUnique(jpeg_decoder), std::move(request));
 }

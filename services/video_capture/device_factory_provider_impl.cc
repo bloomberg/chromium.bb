@@ -58,7 +58,7 @@ class DeviceFactoryProviderImpl::GpuDependenciesContext {
   }
 
   void CreateJpegDecodeAccelerator(
-      media::mojom::MjpegDecodeAcceleratorRequest request) {
+      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest request) {
     DCHECK(gpu_io_task_runner_->RunsTasksInCurrentSequence());
     if (!accelerator_factory_)
       return;

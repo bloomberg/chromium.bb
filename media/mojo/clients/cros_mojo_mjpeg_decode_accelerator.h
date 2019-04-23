@@ -20,13 +20,13 @@ class SequencedTaskRunner;
 namespace media {
 
 // A MjpegDecodeAccelerator, for use in the browser process, that proxies to a
-// mojom::MjpegDecodeAccelerator. Created on the owner's thread, otherwise
-// operating and deleted on |io_task_runner|.
+// chromeos_camera::mojom::MjpegDecodeAccelerator. Created on the owner's
+// thread, otherwise operating and deleted on |io_task_runner|.
 class CrOSMojoMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
  public:
   CrOSMojoMjpegDecodeAccelerator(
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-      mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder);
+      chromeos_camera::mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder);
   ~CrOSMojoMjpegDecodeAccelerator() override;
 
   // MjpegDecodeAccelerator implementation.
@@ -50,12 +50,13 @@ class CrOSMojoMjpegDecodeAccelerator : public MjpegDecodeAccelerator {
 
   Client* client_ = nullptr;
 
-  // Used to safely pass the mojom::MjpegDecodeAcceleratorPtr from one thread to
-  // another. It is set in the constructor and consumed in InitializeAsync().
+  // Used to safely pass the chromeos_camera::mojom::MjpegDecodeAcceleratorPtr
+  // from one thread to another. It is set in the constructor and consumed in
+  // InitializeAsync().
   // TODO(mcasas): s/jpeg_decoder_/jda_/ https://crbug.com/699255.
-  mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder_info_;
+  chromeos_camera::mojom::MjpegDecodeAcceleratorPtrInfo jpeg_decoder_info_;
 
-  mojom::MjpegDecodeAcceleratorPtr jpeg_decoder_;
+  chromeos_camera::mojom::MjpegDecodeAcceleratorPtr jpeg_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(CrOSMojoMjpegDecodeAccelerator);
 };

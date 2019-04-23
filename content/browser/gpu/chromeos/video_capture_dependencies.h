@@ -14,9 +14,9 @@ namespace content {
 class CONTENT_EXPORT VideoCaptureDependencies {
  public:
   static void CreateJpegDecodeAccelerator(
-      media::mojom::MjpegDecodeAcceleratorRequest accelerator);
+      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest accelerator);
   static void CreateJpegEncodeAccelerator(
-      media::mojom::JpegEncodeAcceleratorRequest accelerator);
+      chromeos_camera::mojom::JpegEncodeAcceleratorRequest accelerator);
 };
 
 }  // namespace content

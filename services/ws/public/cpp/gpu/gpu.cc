@@ -60,7 +60,7 @@ class Gpu::GpuPtrIO {
 
 #if defined(OS_CHROMEOS)
   void CreateJpegDecodeAccelerator(
-      media::mojom::MjpegDecodeAcceleratorRequest request) {
+      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest request) {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     gpu_ptr_->CreateJpegDecodeAccelerator(std::move(request));
   }
@@ -306,7 +306,7 @@ scoped_refptr<ws::ContextProviderCommandBuffer> Gpu::CreateContextProvider(
 
 #if defined(OS_CHROMEOS)
 void Gpu::CreateJpegDecodeAccelerator(
-    media::mojom::MjpegDecodeAcceleratorRequest jda_request) {
+    chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   io_task_runner_->PostTask(
       FROM_HERE,

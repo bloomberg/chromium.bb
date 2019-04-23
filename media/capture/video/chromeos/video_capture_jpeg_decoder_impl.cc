@@ -195,7 +195,7 @@ void VideoCaptureJpegDecoderImpl::FinishInitialization() {
   TRACE_EVENT0("gpu", "VideoCaptureJpegDecoderImpl::FinishInitialization");
   DCHECK(decoder_task_runner_->RunsTasksInCurrentSequence());
 
-  media::mojom::MjpegDecodeAcceleratorPtr remote_decoder;
+  chromeos_camera::mojom::MjpegDecodeAcceleratorPtr remote_decoder;
   jpeg_decoder_factory_.Run(mojo::MakeRequest(&remote_decoder));
 
   base::AutoLock lock(lock_);

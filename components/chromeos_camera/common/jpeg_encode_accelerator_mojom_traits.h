@@ -11,12 +11,12 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<media::mojom::EncodeStatus,
+struct EnumTraits<chromeos_camera::mojom::EncodeStatus,
                   media::JpegEncodeAccelerator::Status> {
-  static media::mojom::EncodeStatus ToMojom(
+  static chromeos_camera::mojom::EncodeStatus ToMojom(
       media::JpegEncodeAccelerator::Status status);
 
-  static bool FromMojom(media::mojom::EncodeStatus input,
+  static bool FromMojom(chromeos_camera::mojom::EncodeStatus input,
                         media::JpegEncodeAccelerator::Status* out);
 };
 

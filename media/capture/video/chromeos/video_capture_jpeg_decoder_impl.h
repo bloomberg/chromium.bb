@@ -25,7 +25,7 @@
 namespace media {
 
 // Implementation of media::VideoCaptureJpegDecoder that delegates to a
-// media::mojom::MjpegDecodeAccelerator. When a frame is received in
+// chromeos_camera::mojom::MjpegDecodeAccelerator. When a frame is received in
 // DecodeCapturedData(), it is copied to |in_shared_memory| for IPC transport
 // to |decoder_|. When the decoder is finished with the frame, |decode_done_cb_|
 // is invoked. Until |decode_done_cb_| is invoked, subsequent calls to

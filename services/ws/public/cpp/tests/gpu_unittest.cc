@@ -60,7 +60,8 @@ class TestGpuImpl : public mojom::Gpu {
 
 #if defined(OS_CHROMEOS)
   void CreateJpegDecodeAccelerator(
-      media::mojom::MjpegDecodeAcceleratorRequest jda_request) override {}
+      chromeos_camera::mojom::MjpegDecodeAcceleratorRequest jda_request)
+      override {}
 #endif  // defined(OS_CHROMEOS)
 
   void CreateVideoEncodeAcceleratorProvider(
