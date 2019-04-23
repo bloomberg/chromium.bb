@@ -34,6 +34,8 @@ class SiteSuggestionsCoordinator {
                     SUGGESTIONS_KEY = new PropertyModel.ReadableObjectPropertyKey<>();
     static final PropertyModel.WritableIntPropertyKey ITEM_COUNT_KEY =
             new PropertyModel.WritableIntPropertyKey();
+    static final PropertyModel.WritableObjectPropertyKey<String> REMOVAL_KEY =
+            new PropertyModel.WritableObjectPropertyKey<>();
 
     private SiteSuggestionsMediator mMediator;
 
@@ -41,7 +43,8 @@ class SiteSuggestionsCoordinator {
             SuggestionsNavigationDelegate navigationDelegate, ContextMenuManager contextMenuManager,
             ImageFetcher imageFetcher) {
         PropertyModel model =
-                new PropertyModel.Builder(CURRENT_INDEX_KEY, SUGGESTIONS_KEY, ITEM_COUNT_KEY)
+                new PropertyModel
+                        .Builder(CURRENT_INDEX_KEY, SUGGESTIONS_KEY, ITEM_COUNT_KEY, REMOVAL_KEY)
                         .with(SUGGESTIONS_KEY, new PropertyListModel<>())
                         .with(ITEM_COUNT_KEY, 1)
                         .build();
