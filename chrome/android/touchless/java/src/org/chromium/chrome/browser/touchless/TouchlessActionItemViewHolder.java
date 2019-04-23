@@ -38,6 +38,8 @@ class TouchlessActionItemViewHolder extends ActionItem.ViewHolder {
         mTextView.setText(itemView.getResources().getString(R.string.more_articles));
         mImageView.setImageDrawable(
                 ApiCompatibilityUtils.getDrawable(itemView.getResources(), R.drawable.ic_note_add));
+        // Image view defaults to GONE.
+        mImageView.setVisibility(View.VISIBLE);
     }
 
     @Override
