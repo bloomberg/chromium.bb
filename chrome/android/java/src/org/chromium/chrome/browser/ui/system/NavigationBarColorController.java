@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.BuildInfo;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
@@ -85,7 +86,7 @@ class NavigationBarColorController implements VrModeObserver {
 
         // If we're not using a light navigation bar, it will always be black so there's no need
         // to register observers and manipulate coloring.
-        if (!mResources.getBoolean(R.bool.window_light_navigation_bar)) {
+        if (!mResources.getBoolean(R.bool.window_light_navigation_bar) || BuildInfo.isAtLeastQ()) {
             mTabModelSelector = null;
             mTabModelSelectorObserver = null;
             mOverviewModeBehavior = null;
@@ -129,7 +130,7 @@ class NavigationBarColorController implements VrModeObserver {
      */
     public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
         // TODO(https://crbug.com/937946): Adjust after immersive mode manager is hooked up.
-        if (!mResources.getBoolean(R.bool.window_light_navigation_bar)
+        if (!mResources.getBoolean(R.bool.window_light_navigation_bar) || BuildInfo.isAtLeastQ()
                 || (mImmersiveModeManager != null
                         && mImmersiveModeManager.isImmersiveModeSupported())) {
             return;
