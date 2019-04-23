@@ -120,10 +120,12 @@ TEST_F(ViewElementTest, GetAttributes) {
 
 TEST_F(ViewElementTest, GetCustomProperties) {
   auto props = element()->GetCustomProperties();
-  DCHECK_EQ(props.size(), 1U);
+  // There could be a number of properties from metadata.
+  DCHECK_GE(props.size(), 1U);
 
-  EXPECT_EQ(props[0].first, "tooltip");
-  EXPECT_EQ(props[0].second, "This is the tooltip");
+  // The very last property is "tooltip".
+  EXPECT_EQ(props.back().first, "tooltip");
+  EXPECT_EQ(props.back().second, "This is the tooltip");
 }
 
 TEST_F(ViewElementTest, GetNodeWindowAndScreenBounds) {

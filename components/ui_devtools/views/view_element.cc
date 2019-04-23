@@ -59,10 +59,19 @@ void ViewElement::OnViewBoundsChanged(views::View* view) {
 
 std::vector<std::pair<std::string, std::string>>
 ViewElement::GetCustomProperties() const {
+  std::vector<std::pair<std::string, std::string>> ret;
+
+  views::metadata::ClassMetaData* metadata = view_->GetClassMetaData();
+  for (views::metadata::MemberMetaDataBase* member : *metadata) {
+    ret.emplace_back(member->member_name(),
+                     base::UTF16ToUTF8(member->GetValueAsString(view_)));
+  }
+
   base::string16 description = view_->GetTooltipText(gfx::Point());
-  if (description.empty())
-    return {};
-  return {{"tooltip", base::UTF16ToUTF8(description)}};
+  if (!description.empty())
+    ret.emplace_back("tooltip", base::UTF16ToUTF8(description));
+
+  return ret;
 }
 
 void ViewElement::GetBounds(gfx::Rect* bounds) const {
