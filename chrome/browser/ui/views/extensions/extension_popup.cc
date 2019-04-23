@@ -66,9 +66,7 @@ gfx::Size ExtensionPopup::CalculatePreferredSize() const {
 
 void ExtensionPopup::AddedToWidget() {
   BubbleDialogDelegateView::AddedToWidget();
-
-  const int radius =
-      GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius();
+  const int radius = GetBubbleFrameView()->corner_radius();
   const bool contents_has_rounded_corners =
       GetExtensionView()->holder()->SetCornerRadius(radius);
   SetBorder(views::CreateEmptyBorder(

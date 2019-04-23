@@ -169,8 +169,8 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   bool use_theme_background_color() { return use_theme_background_color_; }
 
   // Sets a desired pixel distance between the arrow tip and the outside edge of
-  // the neighboring border image. For example:    |----offset----|
-  // '(' represents shadow around the '{' edge:    ((({           ^   })))
+  // the neighboring border image. For example:        |----offset----|
+  // '(' represents shadow around the '{' edge:        ((({           ^   })))
   // The arrow will still anchor to the same location but the bubble will shift
   // location to place the arrow |offset| pixels from the perpendicular edge.
   void set_arrow_offset(int offset) { arrow_offset_ = offset; }
@@ -199,7 +199,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
                               const gfx::Size& contents_size) const;
 
   // Returns the corner radius of the current image set.
-  int GetBorderCornerRadius() const;
+  int corner_radius() const { return corner_radius_; }
 
   // Overridden from Border:
   void Paint(const View& view, gfx::Canvas* canvas) override;
@@ -247,7 +247,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
   int arrow_offset_;
   // Corner radius for the bubble border. If supplied the border will use
   // material design.
-  base::Optional<int> corner_radius_;
+  int corner_radius_ = 0;
 
   Shadow shadow_;
   // Elevation for the MD shadow.

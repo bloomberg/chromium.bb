@@ -189,11 +189,6 @@ bool MenuScrollViewContainer::HasBubbleBorder() const {
   return arrow_ != BubbleBorder::NONE;
 }
 
-void MenuScrollViewContainer::SetBubbleArrowOffset(int offset) {
-  DCHECK(HasBubbleBorder());
-  bubble_border_->set_arrow_offset(offset);
-}
-
 MenuItemView* MenuScrollViewContainer::GetFootnote() const {
   MenuItemView* footnote = content_view_->GetLastItem();
   if (!footnote || footnote->GetType() != MenuItemView::HIGHLIGHTED)
@@ -346,7 +341,7 @@ void MenuScrollViewContainer::CreateBubbleBorder() {
     scroll_view_->GetContents()->SetBorder(CreateEmptyBorder(insets));
   }
 
-  corner_radius_ = bubble_border_->GetBorderCornerRadius();
+  corner_radius_ = bubble_border_->corner_radius();
 
   SetBorder(std::unique_ptr<Border>(bubble_border_));
   SetBackground(std::make_unique<BubbleBackground>(bubble_border_));

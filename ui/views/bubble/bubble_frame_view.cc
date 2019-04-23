@@ -160,7 +160,7 @@ bool BubbleFrameView::GetClientMask(const gfx::Size& size, SkPath* path) const {
   DCHECK(GetBoundsForClientView().size() == size);
   DCHECK(GetWidget()->client_view()->size() == size);
 
-  const int radius = bubble_border_->GetBorderCornerRadius();
+  const int radius = bubble_border_->corner_radius();
   const gfx::Insets insets =
       GetClientInsetsForFrameWidth(GetContentsBounds().width());
 
@@ -184,7 +184,7 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
   // Convert to RRectF to accurately represent the rounded corners of the
   // dialog and allow events to pass through the shadows.
   gfx::RRectF round_contents_bounds(gfx::RectF(GetContentsBounds()),
-                                    bubble_border_->GetBorderCornerRadius());
+                                    bubble_border_->corner_radius());
   if (bubble_border_->shadow() != BubbleBorder::NO_ASSETS)
     round_contents_bounds.Outset(BubbleBorder::kBorderThicknessDip);
   gfx::RectF rectf_point(point.x(), point.y(), 1, 1);
@@ -218,8 +218,7 @@ void BubbleFrameView::GetWindowMask(const gfx::Size& size,
   // Use a window mask roughly matching the border in the image assets.
   const int kBorderStrokeSize =
       bubble_border_->shadow() == BubbleBorder::NO_ASSETS ? 0 : 1;
-  const SkScalar kCornerRadius =
-      SkIntToScalar(bubble_border_->GetBorderCornerRadius());
+  const SkScalar kCornerRadius = SkIntToScalar(bubble_border_->corner_radius());
   const gfx::Insets border_insets = bubble_border_->GetInsets();
   SkRect rect = {
       SkIntToScalar(border_insets.left() - kBorderStrokeSize),
@@ -440,7 +439,7 @@ void BubbleFrameView::SetBubbleBorder(std::unique_ptr<BubbleBorder> border) {
   bubble_border_ = border.get();
 
   if (footnote_container_)
-    footnote_container_->SetCornerRadius(border->GetBorderCornerRadius());
+    footnote_container_->SetCornerRadius(border->corner_radius());
 
   SetBorder(std::move(border));
 
@@ -453,10 +452,22 @@ void BubbleFrameView::SetFootnoteView(View* view) {
     return;
 
   DCHECK(!footnote_container_);
-  int radius = bubble_border_ ? bubble_border_->GetBorderCornerRadius() : 0;
+  int radius = bubble_border_ ? bubble_border_->corner_radius() : 0;
   footnote_container_ =
       new FootnoteContainerView(footnote_margins_, view, radius);
   AddChildView(footnote_container_);
+}
+
+void BubbleFrameView::SetCornerRadius(int radius) {
+  bubble_border_->SetCornerRadius(radius);
+}
+
+void BubbleFrameView::SetArrow(BubbleBorder::Arrow arrow) {
+  bubble_border_->set_arrow(arrow);
+}
+
+void BubbleFrameView::SetBackgroundColor(SkColor color) {
+  bubble_border_->set_background_color(color);
 }
 
 gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(
@@ -546,7 +557,7 @@ void BubbleFrameView::MirrorArrowIfOutOfBounds(
   // Check if the bounds don't fit in the available bounds.
   gfx::Rect window_bounds(bubble_border_->GetBounds(anchor_rect, client_size));
   if (GetOverflowLength(available_bounds, window_bounds, vertical) > 0) {
-    BubbleBorder::Arrow arrow = bubble_border()->arrow();
+    BubbleBorder::Arrow arrow = bubble_border_->arrow();
     // Mirror the arrow and get the new bounds.
     bubble_border_->set_arrow(
         vertical ? BubbleBorder::vertical_mirror(arrow) :
@@ -570,7 +581,7 @@ void BubbleFrameView::OffsetArrowIfOutOfBounds(
     const gfx::Rect& anchor_rect,
     const gfx::Size& client_size,
     const gfx::Rect& available_bounds) {
-  BubbleBorder::Arrow arrow = bubble_border()->arrow();
+  BubbleBorder::Arrow arrow = bubble_border_->arrow();
   DCHECK(BubbleBorder::is_arrow_at_center(arrow) ||
          preferred_arrow_adjustment_ == PreferredArrowAdjustment::kOffset);
 

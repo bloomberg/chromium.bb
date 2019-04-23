@@ -254,7 +254,7 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
       views::BubbleFrameView::PreferredArrowAdjustment::kOffset);
 
   if (CustomShadowsSupported())
-    GetBubbleFrameView()->bubble_border()->SetCornerRadius(
+    GetBubbleFrameView()->SetCornerRadius(
         ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
             views::EMPHASIS_HIGH));
 }

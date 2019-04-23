@@ -25,6 +25,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -309,12 +310,13 @@ void CandidateWindowView::UpdateCandidates(
         view->SetWidths(max_shortcut_width, max_candidate_width);
     }
 
-    CandidateWindowBorder* border = static_cast<CandidateWindowBorder*>(
-        GetBubbleFrameView()->bubble_border());
+    std::unique_ptr<CandidateWindowBorder> border =
+        std::make_unique<CandidateWindowBorder>();
     if (new_candidate_window.orientation() == ui::CandidateWindow::VERTICAL)
       border->set_offset(max_shortcut_width);
     else
       border->set_offset(0);
+    GetBubbleFrameView()->SetBubbleBorder(std::move(border));
   }
   // Update the current candidate window. We'll use candidate_window_ from here.
   // Note that SelectCandidateAt() uses candidate_window_.

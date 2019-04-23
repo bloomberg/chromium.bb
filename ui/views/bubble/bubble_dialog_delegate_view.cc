@@ -274,7 +274,7 @@ void BubbleDialogDelegateView::SetArrow(BubbleBorder::Arrow arrow) {
   // If SetArrow() is called before CreateWidget(), there's no need to update
   // the BubbleFrameView.
   if (GetBubbleFrameView()) {
-    GetBubbleFrameView()->bubble_border()->set_arrow(arrow);
+    GetBubbleFrameView()->SetArrow(arrow);
     SizeToContents();
   }
 }
@@ -445,7 +445,7 @@ void BubbleDialogDelegateView::UpdateColorsFromTheme(
     color_ = theme->GetSystemColor(ui::NativeTheme::kColorId_BubbleBackground);
   BubbleFrameView* frame_view = GetBubbleFrameView();
   if (frame_view)
-    frame_view->bubble_border()->set_background_color(color());
+    frame_view->SetBackgroundColor(color());
 
   // When there's an opaque layer, the bubble border background won't show
   // through, so explicitly paint a background color.

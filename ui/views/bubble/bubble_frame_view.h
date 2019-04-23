@@ -76,8 +76,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
-  // Use bubble_border() and SetBubbleBorder(), not border() and SetBorder().
-  BubbleBorder* bubble_border() const { return bubble_border_; }
+  // Use SetBubbleBorder() not SetBorder().
   void SetBubbleBorder(std::unique_ptr<BubbleBorder> border);
 
   const View* title() const {
@@ -98,6 +97,18 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   void set_preferred_arrow_adjustment(PreferredArrowAdjustment adjustment) {
     preferred_arrow_adjustment_ = adjustment;
   }
+
+  // Get/set the corner radius of the bubble border.
+  int corner_radius() const {
+    return bubble_border_ ? bubble_border_->corner_radius() : 0;
+  }
+  void SetCornerRadius(int radius);
+
+  // Set the arrow of the bubble border.
+  void SetArrow(BubbleBorder::Arrow arrow);
+
+  // Set the background color of the bubble border.
+  void SetBackgroundColor(SkColor color);
 
   // Given the size of the contents and the rect to point at, returns the bounds
   // of the bubble window. The bubble's arrow location may change if the bubble
@@ -130,13 +141,15 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   bool IsCloseButtonVisible() const;
   gfx::Rect GetCloseButtonMirroredBounds() const;
 
+  BubbleBorder* bubble_border_for_testing() const { return bubble_border_; }
+
  private:
-  FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, GetBoundsForClientView);
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, RemoveFootnoteView);
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, LayoutWithIcon);
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, IgnorePossiblyUnintendedClicks);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CloseReasons);
   FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest, CloseMethods);
+  FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest, CreateDelegate);
 
   // Mirrors the bubble's arrow location on the |vertical| or horizontal axis,
   // if the generated window bounds don't fit in the given available bounds.

@@ -29,9 +29,6 @@ class MenuScrollViewContainer : public View {
   // External function to check if the bubble border is used.
   bool HasBubbleBorder() const;
 
-  // Offsets the Arrow from the default location.
-  void SetBubbleArrowOffset(int offset);
-
   void SetFootnoteView(View* view);
 
   // View overrides.

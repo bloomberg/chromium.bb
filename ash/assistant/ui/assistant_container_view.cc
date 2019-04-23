@@ -25,7 +25,6 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/animation/tween.h"
-#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/view.h"
@@ -236,10 +235,10 @@ AssistantContainerView::AssistantContainerView(AssistantViewDelegate* delegate)
   views::BubbleDialogDelegateView::CreateBubble(this);
 
   // Corner radius can only be set after bubble creation.
-  GetBubbleFrameView()->bubble_border()->SetCornerRadius(
-      delegate_->GetUiModel()->ui_mode() == AssistantUiMode::kMiniUi
-          ? kMiniUiCornerRadiusDip
-          : kCornerRadiusDip);
+  GetBubbleFrameView()->SetCornerRadius(delegate_->GetUiModel()->ui_mode() ==
+                                                AssistantUiMode::kMiniUi
+                                            ? kMiniUiCornerRadiusDip
+                                            : kCornerRadiusDip);
 
   // Initialize non-client view layer.
   GetBubbleFrameView()->SetPaintToLayer();
@@ -439,11 +438,11 @@ SkColor AssistantContainerView::GetBackgroundColor() const {
 }
 
 int AssistantContainerView::GetCornerRadius() const {
-  return GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius();
+  return GetBubbleFrameView()->corner_radius();
 }
 
 void AssistantContainerView::SetCornerRadius(int corner_radius) {
-  GetBubbleFrameView()->bubble_border()->SetCornerRadius(corner_radius);
+  GetBubbleFrameView()->SetCornerRadius(corner_radius);
 }
 
 ui::Layer* AssistantContainerView::GetNonClientViewLayer() {

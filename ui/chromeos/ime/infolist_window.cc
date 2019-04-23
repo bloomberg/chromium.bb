@@ -242,7 +242,6 @@ void InfolistWindow::Relayout(const std::vector<ui::InfolistEntry>& entries) {
   }
 
   Layout();
-  GetBubbleFrameView()->bubble_border()->set_arrow_offset(0);
   SizeToContents();
 }
 

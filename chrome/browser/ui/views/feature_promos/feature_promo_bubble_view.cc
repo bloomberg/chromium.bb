@@ -111,7 +111,7 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
 
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(this);
 
-  GetBubbleFrameView()->bubble_border()->SetCornerRadius(
+  GetBubbleFrameView()->SetCornerRadius(
       ChromeLayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH));
 
   widget->Show();

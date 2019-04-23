@@ -51,8 +51,8 @@ void ShelfBubble::CreateBubble() {
   views::BubbleDialogDelegateView::CreateBubble(this);
 
   // Settings that should only be changed just after bubble creation.
-  GetBubbleFrameView()->bubble_border()->SetCornerRadius(border_radius_);
-  GetBubbleFrameView()->bubble_border()->set_background_color(color());
+  GetBubbleFrameView()->SetCornerRadius(border_radius_);
+  GetBubbleFrameView()->SetBackgroundColor(color());
 }
 
 int ShelfBubble::GetDialogButtons() const {
