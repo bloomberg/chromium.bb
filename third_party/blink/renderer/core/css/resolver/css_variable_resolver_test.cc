@@ -4,7 +4,10 @@
 
 #include "third_party/blink/renderer/core/css/resolver/css_variable_resolver.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
+#include "third_party/blink/renderer/core/css/css_inherited_value.h"
+#include "third_party/blink/renderer/core/css/css_initial_value.h"
 #include "third_party/blink/renderer/core/css/css_syntax_string_parser.h"
+#include "third_party/blink/renderer/core/css/css_unset_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_reference_value.h"
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
@@ -73,6 +76,33 @@ class CSSVariableResolverTest : public PageTestBase {
     const auto tokens = CSSTokenizer(value).TokenizeToEOF();
     return CSSVariableParser::ParseDeclarationValue(
         name, tokens, false, *CSSParserContext::Create(GetDocument()));
+  }
+
+  const CSSVariableReferenceValue* CreateVariableReference(
+      const String& value) {
+    const auto tokens = CSSTokenizer(value).TokenizeToEOF();
+
+    const CSSParserContext* context = CSSParserContext::Create(GetDocument());
+    const bool is_animation_tainted = false;
+    const bool needs_variable_resolution = true;
+
+    return MakeGarbageCollected<CSSVariableReferenceValue>(
+        CSSVariableData::Create(tokens, is_animation_tainted,
+                                needs_variable_resolution, context->BaseURL(),
+                                context->Charset()),
+        *context);
+  }
+
+  const CSSValue* ResolveVar(StyleResolverState& state,
+                             CSSPropertyID property_id,
+                             const String& value) {
+    const CSSVariableReferenceValue* var = CreateVariableReference(value);
+
+    CSSVariableResolver resolver(state);
+    const bool disallow_animation_tainted = false;
+
+    return resolver.ResolveVariableReferences(property_id, *var,
+                                              disallow_animation_tainted);
   }
 
   const CSSValue* CreatePxValue(double px) {
@@ -504,6 +534,52 @@ TEST_F(CSSVariableResolverTest, BillionLaughs) {
   expected_unique_strings += 1;
 
   EXPECT_EQ(expected_unique_strings, impls.size());
+}
+
+TEST_F(CSSVariableResolverTest, CSSWideKeywords) {
+  using CSSUnsetValue = cssvalue::CSSUnsetValue;
+
+  const ComputedStyle* initial = &ComputedStyle::InitialStyle();
+  StyleResolverState state(GetDocument(), nullptr, initial, initial);
+
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  style->InheritFrom(*initial);
+  state.SetStyle(std::move(style));
+
+  const CSSValue* whitespace = CreateCustomProperty("--w", " ");
+  StyleBuilder::ApplyProperty(CSSPropertyName("--w"), state, *whitespace);
+
+  // Test initial/inherit/unset for an inherited property:
+  EXPECT_EQ(CSSInitialValue::Create(),
+            ResolveVar(state, CSSPropertyID::kColor, "var(--w) initial"));
+  EXPECT_EQ(CSSInheritedValue::Create(),
+            ResolveVar(state, CSSPropertyID::kColor, "var(--w) inherit"));
+  EXPECT_EQ(CSSUnsetValue::Create(),
+            ResolveVar(state, CSSPropertyID::kColor, "var(--w) unset"));
+
+  // Test initial/inherit/unset for a non-inherited property:
+  EXPECT_EQ(CSSInitialValue::Create(),
+            ResolveVar(state, CSSPropertyID::kWidth, "var(--w) initial"));
+  EXPECT_EQ(CSSInheritedValue::Create(),
+            ResolveVar(state, CSSPropertyID::kWidth, "var(--w) inherit"));
+  EXPECT_EQ(CSSUnsetValue::Create(),
+            ResolveVar(state, CSSPropertyID::kWidth, "var(--w) unset"));
+
+  // Test initial/inherit/unset in fallbacks:
+
+  EXPECT_EQ(CSSInitialValue::Create(),
+            ResolveVar(state, CSSPropertyID::kColor, "var(--u,initial)"));
+  EXPECT_EQ(CSSInheritedValue::Create(),
+            ResolveVar(state, CSSPropertyID::kColor, "var(--u,inherit)"));
+  EXPECT_EQ(CSSUnsetValue::Create(),
+            ResolveVar(state, CSSPropertyID::kColor, "var(--u,unset)"));
+
+  EXPECT_EQ(CSSInitialValue::Create(),
+            ResolveVar(state, CSSPropertyID::kWidth, "var(--u,initial)"));
+  EXPECT_EQ(CSSInheritedValue::Create(),
+            ResolveVar(state, CSSPropertyID::kWidth, "var(--u,inherit)"));
+  EXPECT_EQ(CSSUnsetValue::Create(),
+            ResolveVar(state, CSSPropertyID::kWidth, "var(--u,unset)"));
 }
 
 }  // namespace blink

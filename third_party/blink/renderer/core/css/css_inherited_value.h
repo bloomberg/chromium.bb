@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class CSSInheritedValue : public CSSValue {
+class CORE_EXPORT CSSInheritedValue : public CSSValue {
  public:
   static CSSInheritedValue* Create();
 

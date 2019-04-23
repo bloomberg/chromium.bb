@@ -15,7 +15,7 @@ class CSSValuePool;
 
 namespace cssvalue {
 
-class CSSUnsetValue : public CSSValue {
+class CORE_EXPORT CSSUnsetValue : public CSSValue {
  public:
   static CSSUnsetValue* Create();
 
