@@ -143,7 +143,7 @@ public class ArticleSnippetsTest {
             mContextMenuManager = new ContextMenuManager(mUiDelegate.getNavigationDelegate(),
                     mRecyclerView::setTouchEnabled, activity::closeContextMenu,
                     NewTabPage.CONTEXT_MENU_USER_ACTION_PREFIX);
-            mRecyclerView.init(mUiConfig, mContextMenuManager);
+            mRecyclerView.init(mUiConfig, activity::closeContextMenu);
 
             mSuggestion = new SnippetArticleViewHolder(mRecyclerView, mContextMenuManager,
                     mUiDelegate, mUiConfig, /* offlinePageBridge = */ null);

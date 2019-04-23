@@ -127,7 +127,7 @@ public class TouchlessNewTabPage extends BasicNativePage {
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         UiConfig uiConfig = new UiConfig(mRecyclerView);
-        mRecyclerView.init(uiConfig, mContextMenuManager);
+        mRecyclerView.init(uiConfig, closeContextMenuCallback);
 
         // Infinite scrolling view for site suggestions.
         mSiteSuggestionsCoordinator = new SiteSuggestionsCoordinator(mRecyclerTopmostView, profile,

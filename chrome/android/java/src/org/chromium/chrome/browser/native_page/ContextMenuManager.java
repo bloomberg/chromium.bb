@@ -53,7 +53,7 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
     private final TouchEnabledDelegate mTouchEnabledDelegate;
     private final Runnable mCloseContextMenuCallback;
     private final String mUserActionPrefix;
-    private boolean mContextMenuOpen;
+    private View mAnchorView;
 
     /** Defines callback to configure the context menu and respond to user interaction. */
     public interface Delegate {
@@ -108,8 +108,7 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
      *            are tapped.
      */
     public void createContextMenu(ContextMenu menu, View associatedView, Delegate delegate) {
-        OnMenuItemClickListener listener =
-                new ItemClickListener(delegate, mNavigationDelegate, mUserActionPrefix);
+        OnMenuItemClickListener listener = new ItemClickListener(delegate);
         boolean hasItems = false;
 
         for (@ContextMenuItemId int itemId = 0; itemId < ContextMenuItemId.NUM_ENTRIES; itemId++) {
@@ -122,42 +121,52 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         // No item added. We won't show the menu, so we can skip the rest.
         if (!hasItems) return;
 
-        delegate.onContextMenuCreated();
-
-        associatedView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
-            @Override
-            public void onViewAttachedToWindow(View view) {}
-
-            @Override
-            public void onViewDetachedFromWindow(View view) {
-                closeContextMenu();
-                view.removeOnAttachStateChangeListener(this);
-            }
-        });
-
         // Touch events must be disabled on the outer view while the context menu is open. This is
         // to prevent the user long pressing to get the context menu then on the same press
         // scrolling or swiping to dismiss an item (eg. https://crbug.com/638854,
         // https://crbug.com/638555, https://crbug.com/636296).
         mTouchEnabledDelegate.setTouchEnabled(false);
-        mContextMenuOpen = true;
+        mAnchorView = associatedView;
+        mAnchorView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View view) {}
 
-        RecordUserAction.record(mUserActionPrefix + ".ContextMenu.Shown");
+            @Override
+            public void onViewDetachedFromWindow(View view) {
+                if (view == mAnchorView) {
+                    mCloseContextMenuCallback.run();
+                    view.removeOnAttachStateChangeListener(this);
+                }
+            }
+        });
+
+        notifyContextMenuShown(delegate);
     }
 
     @Override
     public void onContextMenuClosed() {
-        if (!mContextMenuOpen) return;
+        if (mAnchorView == null) return;
+        mAnchorView = null;
         mTouchEnabledDelegate.setTouchEnabled(true);
-        mContextMenuOpen = false;
     }
 
-    /** Closes the context menu, if open. */
-    public void closeContextMenu() {
-        mCloseContextMenuCallback.run();
+    /**
+     * notifyContextMenuShown is called right before context menu is shown. It allows delegate to
+     * record statistics about user action.
+     *
+     * @param delegate Delegate for which context menu is shown.
+     */
+    protected void notifyContextMenuShown(Delegate delegate) {
+        delegate.onContextMenuCreated();
+        RecordUserAction.record(mUserActionPrefix + ".ContextMenu.Shown");
     }
 
-    private boolean shouldShowItem(@ContextMenuItemId int itemId, Delegate delegate) {
+    /**
+     * Given context menu item id and delegate of an element for which context menu is shown,
+     * decides if the menu item should be displayed. Takes other features' state into consideration
+     * (multiwindow, offline).
+     */
+    protected boolean shouldShowItem(@ContextMenuItemId int itemId, Delegate delegate) {
         if (!delegate.isItemSupported(itemId)) return false;
 
         switch (itemId) {
@@ -181,7 +190,10 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         }
     }
 
-    private @StringRes int getResourceIdForMenuItem(@ContextMenuItemId int id) {
+    /**
+     * Returns resource id of a string that should be displayed for menu item with given item id.
+     */
+    protected @StringRes int getResourceIdForMenuItem(@ContextMenuItemId int id) {
         switch (id) {
             case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
                 return R.string.contextmenu_open_in_other_window;
@@ -205,49 +217,53 @@ public class ContextMenuManager implements OnCloseContextMenuListener {
         return 0;
     }
 
-    private static class ItemClickListener implements OnMenuItemClickListener {
-        private final Delegate mDelegate;
-        private final NativePageNavigationDelegate mNavigationDelegate;
-        private final String mUserActionPrefix;
+    /**
+     * Performs an action corresponding to menu item selected by user.
+     * @param itemId Id of menu item selected by user.
+     * @param delegate Delegate of an element, for which context menu was shown.
+     * @return true if user selection was handled.
+     */
+    protected boolean handleMenuItemClick(@ContextMenuItemId int itemId, Delegate delegate) {
+        switch (itemId) {
+            case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
+                delegate.openItem(WindowOpenDisposition.NEW_WINDOW);
+                RecordUserAction.record(mUserActionPrefix + ".ContextMenu.OpenItemInNewWindow");
+                return true;
+            case ContextMenuItemId.OPEN_IN_NEW_TAB:
+                delegate.openItem(WindowOpenDisposition.NEW_BACKGROUND_TAB);
+                RecordUserAction.record(mUserActionPrefix + ".ContextMenu.OpenItemInNewTab");
+                return true;
+            case ContextMenuItemId.OPEN_IN_INCOGNITO_TAB:
+                delegate.openItem(WindowOpenDisposition.OFF_THE_RECORD);
+                RecordUserAction.record(mUserActionPrefix + ".ContextMenu.OpenItemInIncognitoTab");
+                return true;
+            case ContextMenuItemId.SAVE_FOR_OFFLINE:
+                delegate.openItem(WindowOpenDisposition.SAVE_TO_DISK);
+                RecordUserAction.record(mUserActionPrefix + ".ContextMenu.DownloadItem");
+                return true;
+            case ContextMenuItemId.REMOVE:
+                delegate.removeItem();
+                RecordUserAction.record(mUserActionPrefix + ".ContextMenu.RemoveItem");
+                return true;
+            case ContextMenuItemId.LEARN_MORE:
+                mNavigationDelegate.navigateToHelpPage();
+                RecordUserAction.record(mUserActionPrefix + ".ContextMenu.LearnMore");
+                return true;
+            default:
+                return false;
+        }
+    }
 
-        ItemClickListener(Delegate delegate, NativePageNavigationDelegate navigationDelegate,
-                String userActionPrefix) {
+    private class ItemClickListener implements OnMenuItemClickListener {
+        private final Delegate mDelegate;
+
+        ItemClickListener(Delegate delegate) {
             mDelegate = delegate;
-            mNavigationDelegate = navigationDelegate;
-            mUserActionPrefix = userActionPrefix;
         }
 
         @Override
         public boolean onMenuItemClick(MenuItem item) {
-            switch (item.getItemId()) {
-                case ContextMenuItemId.OPEN_IN_NEW_WINDOW:
-                    mDelegate.openItem(WindowOpenDisposition.NEW_WINDOW);
-                    RecordUserAction.record(mUserActionPrefix + ".ContextMenu.OpenItemInNewWindow");
-                    return true;
-                case ContextMenuItemId.OPEN_IN_NEW_TAB:
-                    mDelegate.openItem(WindowOpenDisposition.NEW_BACKGROUND_TAB);
-                    RecordUserAction.record(mUserActionPrefix + ".ContextMenu.OpenItemInNewTab");
-                    return true;
-                case ContextMenuItemId.OPEN_IN_INCOGNITO_TAB:
-                    mDelegate.openItem(WindowOpenDisposition.OFF_THE_RECORD);
-                    RecordUserAction.record(
-                            mUserActionPrefix + ".ContextMenu.OpenItemInIncognitoTab");
-                    return true;
-                case ContextMenuItemId.SAVE_FOR_OFFLINE:
-                    mDelegate.openItem(WindowOpenDisposition.SAVE_TO_DISK);
-                    RecordUserAction.record(mUserActionPrefix + ".ContextMenu.DownloadItem");
-                    return true;
-                case ContextMenuItemId.REMOVE:
-                    mDelegate.removeItem();
-                    RecordUserAction.record(mUserActionPrefix + ".ContextMenu.RemoveItem");
-                    return true;
-                case ContextMenuItemId.LEARN_MORE:
-                    mNavigationDelegate.navigateToHelpPage();
-                    RecordUserAction.record(mUserActionPrefix + ".ContextMenu.LearnMore");
-                    return true;
-                default:
-                    return false;
-            }
+            return handleMenuItemClick(item.getItemId(), mDelegate);
         }
     }
 }
