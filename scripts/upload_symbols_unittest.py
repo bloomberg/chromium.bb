@@ -41,7 +41,6 @@ while True:
     sys.path.remove(third_party)
   except ValueError:
     break
-sys.path.insert(0, os.path.join(third_party, 'swarming.client'))
 del third_party
 
 from chromite.lib import cros_logging as logging
@@ -51,9 +50,6 @@ from chromite.lib import parallel
 from chromite.lib import remote_access
 from chromite.scripts import cros_generate_breakpad_symbols
 from chromite.scripts import upload_symbols
-
-# And our sys.path muckery confuses pylint.
-import isolate_storage  # pylint: disable=import-error
 
 
 class SymbolsTestBase(cros_test_lib.MockTempDirTestCase):
@@ -71,7 +67,6 @@ STACK CFI 1234
 
   def setUp(self):
     # Make certain we don't use the network.
-    self.isolate_mock = self.PatchObject(isolate_storage, 'get_storage_api')
     self.urlopen_mock = self.PatchObject(urllib2, 'urlopen')
     self.request_mock = self.PatchObject(upload_symbols, 'ExecRequest',
                                          return_value={'uploadUrl':
@@ -179,9 +174,6 @@ PUBLIC 1471 0 main"""
     self.PatchObject(upload_symbols, 'SLEEP_DELAY', 0)
     self.PatchObject(upload_symbols, 'INITIAL_RETRY_DELAY', 0)
     self.PatchObject(upload_symbols, 'MAX_RETRIES', 0)
-
-    # Just to be certain we don't really contact it.
-    self.PatchObject(isolate_storage, 'get_storage_api')
 
   def tearDown(self):
     # Only kill the server if we forked one.
@@ -385,136 +377,6 @@ class AdjustSymbolFileSizeTest(SymbolsTestBase):
     self.assertEqual(self.warn_mock.call_count, 1)
 
 
-class DeduplicateTest(SymbolsTestBase):
-  """Test Isolate server Deduplication."""
-  def setUp(self):
-    self.connection_mock = self.isolate_mock.return_value
-    self.contains_mock = self.connection_mock.contains
-    self.push_mock = self.connection_mock.push
-
-  def testConnection(self):
-    result = upload_symbols.OpenDeduplicateConnection('namespace')
-    self.assertTrue(result is not None)
-    self.assertEqual(
-        self.isolate_mock.mock_calls,
-        [mock.call('https://isolateserver.appspot.com', 'namespace')])
-
-  def testConnectionFail(self):
-    self.isolate_mock.side_effect = Exception
-    result = upload_symbols.OpenDeduplicateConnection('namespace')
-    self.assertEqual(result, None)
-
-  def testFindDuplicates(self):
-    # The first symbol will new new, the second a duplicate.
-    def containsOneNew(items):
-      return {items[0]: 'state'}
-    self.contains_mock.side_effect = containsOneNew
-
-    sym1 = self.createSymbolFile('sym1.sym')
-    sym2 = self.createSymbolFile('sym2.sym')
-
-    result = upload_symbols.FindDuplicates((sym1, sym2), 'namespace')
-    self.assertEqual(list(result), [sym1, sym2])
-
-    self.assertEqual(sym1.status, upload_symbols.SymbolFile.INITIAL)
-    self.assertIsInstance(sym1.dedupe_item, upload_symbols.DedupeItem)
-    self.assertEqual(sym1.dedupe_push_state, 'state')
-
-    self.assertEqual(sym2.status, upload_symbols.SymbolFile.DUPLICATE)
-    self.assertIsNone(sym2.dedupe_item)
-    self.assertIsNone(sym2.dedupe_push_state)
-
-  def testFindDuplicatesConnectFail(self):
-    self.isolate_mock.side_effect = Exception
-
-    sym1 = self.createSymbolFile('sym1.sym')
-    sym2 = self.createSymbolFile('sym2.sym')
-
-    result = upload_symbols.FindDuplicates((sym1, sym2), 'namespace')
-    self.assertEqual(list(result), [sym1, sym2])
-
-    self.assertFalse(self.contains_mock.called)
-
-    self.assertEqual(sym1.status, upload_symbols.SymbolFile.INITIAL)
-    self.assertIsNone(sym1.dedupe_item)
-    self.assertIsNone(sym1.dedupe_push_state)
-
-    self.assertEqual(sym2.status, upload_symbols.SymbolFile.INITIAL)
-    self.assertIsNone(sym2.dedupe_item)
-    self.assertIsNone(sym2.dedupe_push_state)
-
-  def testFindDuplicatesContainsFail(self):
-    self.contains_mock.side_effect = Exception
-
-    sym1 = self.createSymbolFile('sym1.sym')
-    sym2 = self.createSymbolFile('sym2.sym')
-
-    result = upload_symbols.FindDuplicates((sym1, sym2), 'namespace')
-    self.assertEqual(list(result), [sym1, sym2])
-
-    self.assertEqual(sym1.status, upload_symbols.SymbolFile.INITIAL)
-    self.assertIsNone(sym1.dedupe_item)
-    self.assertIsNone(sym1.dedupe_push_state)
-
-    self.assertEqual(sym2.status, upload_symbols.SymbolFile.INITIAL)
-    self.assertIsNone(sym2.dedupe_item)
-    self.assertIsNone(sym2.dedupe_push_state)
-
-  def testPostForDeduplication(self):
-    symInitial = self.createSymbolFile(
-        'initial.sym')
-    symDup = self.createSymbolFile(
-        'dup.sym', status=upload_symbols.SymbolFile.DUPLICATE)
-    symUploaded = self.createSymbolFile(
-        'uploaded.sym', status=upload_symbols.SymbolFile.UPLOADED)
-
-    symInitialItem = self.createSymbolFile(
-        'initialItem.sym', dedupe=True)
-
-    symDupItem = self.createSymbolFile(
-        'dupItem.sym', status=upload_symbols.SymbolFile.DUPLICATE, dedupe=True)
-    # This is the only symbol file which should be pushed to isolate.
-    symUploadedItem = self.createSymbolFile(
-        'upItem.sym', status=upload_symbols.SymbolFile.UPLOADED, dedupe=True)
-
-    symbols = (symInitial, symDup, symUploaded,
-               symInitialItem, symDupItem, symUploadedItem)
-
-    result = upload_symbols.PostForDeduplication(symbols, 'namespace')
-    self.assertEqual(list(result), list(symbols))
-    self.assertEqual(
-        self.push_mock.mock_calls,
-        [
-            mock.call(
-                symUploadedItem.dedupe_item, 'push_state',
-                ["SymbolHeader(cpu='cpu', id='id', name='name', os='os')"])
-        ])
-
-  def testPostForDeduplicationConnectFail(self):
-    self.isolate_mock.side_effect = Exception
-
-    sym1 = self.createSymbolFile(
-        'sym1.sym', status=upload_symbols.SymbolFile.UPLOADED, dedupe=True)
-    sym2 = self.createSymbolFile(
-        'sym2.sym', status=upload_symbols.SymbolFile.UPLOADED, dedupe=True)
-
-    result = upload_symbols.PostForDeduplication((sym1, sym2), 'namespace')
-    self.assertEqual(list(result), [sym1, sym2])
-    self.assertEqual(self.push_mock.call_count, 0)
-
-  def testPostForDeduplicationPushFail(self):
-    self.push_mock.side_effect = Exception
-
-    sym1 = self.createSymbolFile(
-        'sym1.sym', status=upload_symbols.SymbolFile.UPLOADED, dedupe=True)
-    sym2 = self.createSymbolFile(
-        'sym2.sym', status=upload_symbols.SymbolFile.UPLOADED, dedupe=True)
-
-    result = upload_symbols.PostForDeduplication((sym1, sym2), 'namespace')
-    self.assertEqual(list(result), [sym1, sym2])
-    self.assertEqual(self.push_mock.call_count, 1)
-
-
 class PerformSymbolFilesUploadTest(SymbolsTestBase):
   """Test PerformSymbolFile, and it's helper methods."""
   def setUp(self):
@@ -537,11 +399,21 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
     large = self.createSymbolFile('large.sym', size=(300 * 1024 * 1024))
     self.assertEqual(upload_symbols.GetUploadTimeout(large), 771)
 
+  def testUploadExists(self):
+    """Test IsFound helper function."""
+    self.PatchObject(upload_symbols, 'UploadExists',
+                     return_value=True)
+    symbols = [self.sym_initial]
+    result = upload_symbols.PerformSymbolsFileUpload(
+        symbols, 'fake_url', api_key='testkey')
+    self.assertEqual(list(result), symbols)
+    self.assertEqual(self.sym_initial.status,
+                     upload_symbols.SymbolFile.DUPLICATE)
   def testUploadSymbolFile(self):
     upload_symbols.UploadSymbolFile('fake_url', self.sym_initial,
                                     api_key='testkey')
     # TODO: Examine mock in more detail to make sure request is correct.
-    self.assertEqual(self.request_mock.call_count, 3)
+    self.assertEqual(self.request_mock.call_count, 4)
 
   def testPerformSymbolsFileUpload(self):
     """We upload on first try."""
@@ -553,7 +425,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
     self.assertEqual(list(result), symbols)
     self.assertEqual(self.sym_initial.status,
                      upload_symbols.SymbolFile.UPLOADED)
-    self.assertEqual(self.request_mock.call_count, 3)
+    self.assertEqual(self.request_mock.call_count, 4)
 
   def testPerformSymbolsFileUploadFailure(self):
     """All network requests fail."""
@@ -578,7 +450,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
     self.assertEqual(list(result), symbols)
     self.assertEqual(self.sym_initial.status,
                      upload_symbols.SymbolFile.UPLOADED)
-    self.assertEqual(self.request_mock.call_count, 3)
+    self.assertEqual(self.request_mock.call_count, 4)
 
   def testPerformSymbolsFileUploadMixed(self):
     """Upload symbols in mixed starting states.
@@ -602,7 +474,7 @@ class PerformSymbolFilesUploadTest(SymbolsTestBase):
                      upload_symbols.SymbolFile.DUPLICATE)
     self.assertEqual(self.sym_uploaded.status,
                      upload_symbols.SymbolFile.UPLOADED)
-    self.assertEqual(self.request_mock.call_count, 6)
+    self.assertEqual(self.request_mock.call_count, 8)
 
 
   def testPerformSymbolsFileUploadErrorOut(self):
@@ -677,7 +549,7 @@ class UploadSymbolsTest(SymbolsTestBase):
         api_key='testkey')
 
     self.assertEquals(result, 0)
-    self.assertEqual(self.request_mock.call_count, 9)
+    self.assertEqual(self.request_mock.call_count, 12)
     self.assertEquals(osutils.ReadFile(self.failure_file), '')
 
   def testUploadSymbolsLimited(self):
@@ -691,7 +563,7 @@ class UploadSymbolsTest(SymbolsTestBase):
         api_key='testkey')
 
     self.assertEquals(result, 0)
-    self.assertEqual(self.request_mock.call_count, 6)
+    self.assertEqual(self.request_mock.call_count, 8)
     self.assertNotExists(self.failure_file)
 
   def testUploadSymbolsFailures(self):

@@ -12,7 +12,6 @@ for those executables involved).
 
 from __future__ import print_function
 
-import hashlib
 import httplib
 import itertools
 import json
@@ -28,13 +27,6 @@ import urlparse
 
 from chromite.lib import constants
 
-# The isolateserver includes a bunch of third_party python packages that clash
-# with chromite's bundled third_party python packages (like oauth2client).
-# Since upload_symbols is not imported in to other parts of chromite, and there
-# are no deps in third_party we care about, purge the chromite copy.  This way
-# we can use isolateserver for deduping.
-# TODO: If we ever sort out third_party/ handling and make it per-script opt-in,
-# we can purge this logic.
 # pylint: disable=ungrouped-imports
 third_party = os.path.join(constants.CHROMITE_DIR, 'third_party')
 while True:
@@ -42,7 +34,6 @@ while True:
     sys.path.remove(third_party)
   except ValueError:
     break
-sys.path.insert(0, os.path.join(third_party, 'swarming.client'))
 sys.path.insert(0, os.path.join(third_party, 'upload_symbols'))
 del third_party
 
@@ -58,16 +49,12 @@ from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import retry_stats
-from chromite.lib import timeout_util
 from chromite.scripts import cros_generate_breakpad_symbols
 
 # Needs to be after chromite imports.
 # We don't want to import the general keyring module as that will implicitly
 # try to import & connect to a dbus server.  That's a waste of time.
 sys.modules['keyring'] = None
-# And our sys.path muckery confuses pylint.
-import isolate_storage  # pylint: disable=import-error
-import isolateserver  # pylint: disable=import-error
 
 
 # We need this to run once per process. Do it at module import time as that
@@ -102,12 +89,6 @@ DEDUPE_TIMEOUT = DEDUPE_LIMIT
 # How long to wait for the notification to finish (in seconds).
 DEDUPE_NOTIFY_TIMEOUT = 240
 
-# The unique namespace in the dedupe server that only we use.  Helps avoid
-# collisions with all the hashed values and unrelated content.
-OFFICIAL_DEDUPE_NAMESPACE_TMPL = '%s-upload-symbols'
-STAGING_DEDUPE_NAMESPACE_TMPL = '%s-staging' % OFFICIAL_DEDUPE_NAMESPACE_TMPL
-
-
 # The minimum average rate (in bytes per second) that we expect to maintain
 # when uploading symbols.  This has to allow for symbols that are up to
 # CRASH_SERVER_FILE_LIMIT in size.
@@ -138,6 +119,9 @@ MAX_TOTAL_ERRORS_FOR_RETRY = 30
 # Category to use for collection upload retry stats.
 UPLOAD_STATS = 'UPLOAD'
 
+
+class DuplicateFile(Exception):
+  """Thrown when a symbol file already exists on the server."""
 
 def BatchGenerator(iterator, batch_size):
   """Given an iterator, break into lists of size batch_size.
@@ -203,8 +187,6 @@ class SymbolFile(object):
     self.file_name = file_name
     self.header = cros_generate_breakpad_symbols.ReadSymsHeader(file_name)
     self.status = SymbolFile.INITIAL
-    self.dedupe_item = None
-    self.dedupe_push_state = None
 
   @property
   def display_name(self):
@@ -212,16 +194,6 @@ class SymbolFile(object):
 
   def FileSize(self):
     return os.path.getsize(self.file_name)
-
-
-class DedupeItem(isolateserver.BufferItem):
-  """Turn a SymbolFile into an isolateserver.Item"""
-
-  ALGO = hashlib.sha1
-
-  def __init__(self, symbol):
-    isolateserver.BufferItem.__init__(self, str(symbol.header), self.ALGO)
-    self.symbol = symbol
 
 
 def FindSymbolFiles(tempdir, paths):
@@ -337,111 +309,6 @@ def AdjustSymbolFileSize(symbol, tempdir, file_limit):
 
   return symbol
 
-def OpenDeduplicateConnection(dedupe_namespace):
-  """Open a connection to the isolate server for Dedupe use.
-
-  Args:
-    dedupe_namespace: String id for the comparison namespace.
-
-  Returns:
-    Connection proxy, or None on failure.
-  """
-  try:
-    with timeout_util.Timeout(DEDUPE_TIMEOUT):
-      return isolate_storage.get_storage_api(constants.ISOLATESERVER,
-                                             dedupe_namespace)
-  except Exception:
-    logging.warning('initializing isolate server connection failed',
-                    exc_info=True)
-    return None
-
-
-def FindDuplicates(symbols, dedupe_namespace):
-  """Mark symbol files we've already uploaded as duplicates.
-
-  Using the swarming service, ask it to tell us which symbol files we've already
-  uploaded in previous runs and/or by other bots.  If the query fails for any
-  reason, we'll just upload all symbols.  This is fine as the symbol server will
-  do the right thing and this phase is purely an optimization.
-
-  Args:
-    symbols: An iterable of SymbolFiles to be uploaded.
-    dedupe_namespace: String id for the comparison namespace.
-
-  Yields:
-    All SymbolFiles from symbols, but duplicates have status updated to
-    DUPLICATE.
-  """
-  storage_query = OpenDeduplicateConnection(dedupe_namespace)
-
-  # We query isolate in batches, to reduce the number of network queries.
-  for batch in BatchGenerator(symbols, DEDUPE_LIMIT):
-    query_results = None
-
-    if storage_query:
-      # Convert SymbolFiles into DedupeItems.
-      items = [DedupeItem(x) for x in batch]
-
-      # Look for duplicates.
-      try:
-        with timeout_util.Timeout(DEDUPE_TIMEOUT):
-          query_results = storage_query.contains(items)
-      except Exception:
-        logging.warning('talking to dedupe server failed', exc_info=True)
-        storage_query = None
-
-    if query_results is not None:
-      for b in batch:
-        b.status = SymbolFile.DUPLICATE
-
-      # Only the non-duplicates appear in the query_results.
-      for item, push_state in query_results.iteritems():
-        # Remember the dedupe state, so we can mark the symbol as uploaded
-        # later on.
-        item.symbol.status = SymbolFile.INITIAL
-        item.symbol.dedupe_item = item
-        item.symbol.dedupe_push_state = push_state
-
-    # Yield all symbols we haven't shown to be duplicates.
-    for b in batch:
-      if b.status == SymbolFile.DUPLICATE:
-        logging.debug('Found duplicate: %s', b.display_name)
-      yield b
-
-
-def PostForDeduplication(symbols, dedupe_namespace):
-  """Send a symbol file to the swarming service
-
-  Notify the isolate service of a successful upload. If the notification fails
-  for any reason, we ignore it. We don't care as it just means we'll upload it
-  again later on, and the symbol server will handle that graciously.
-
-  Args:
-    symbols: An iterable of SymbolFiles to be uploaded.
-    dedupe_namespace: String id for the comparison namespace.
-
-  Yields:
-    Each symbol from symbols, unmodified.
-  """
-  storage_query = OpenDeduplicateConnection(dedupe_namespace)
-
-  for s in symbols:
-    # If we can talk to isolate, and we uploaded this symbol, and we
-    # queried for it's presence before, upload to isolate now.
-
-    if storage_query and s.status == SymbolFile.UPLOADED and s.dedupe_item:
-      try:
-        with timeout_util.Timeout(DEDUPE_NOTIFY_TIMEOUT):
-          storage_query.push(s.dedupe_item, s.dedupe_push_state,
-                             s.dedupe_item.content())
-          logging.info('sent %s', s.display_name)
-      except Exception:
-        logging.warning('posting %s to dedupe server failed',
-                        os.path.basename(s.display_path), exc_info=True)
-        storage_query = None
-
-    yield s
-
 
 def GetUploadTimeout(symbol):
   """How long to wait for a specific file to upload to the crash server.
@@ -468,10 +335,10 @@ def ExecRequest(operator, url, timeout, api_key, **kwargs):
   subsystem will write your api key to the logs!
 
   Args:
-    operator: HTTP method
-    url: Endpoint URL
-    timeout: HTTP timeout for request
-    api_key: Authentication key
+    operator: HTTP method.
+    url: Endpoint URL.
+    timeout: HTTP timeout for request.
+    api_key: Authentication key.
 
   Returns:
     HTTP response content
@@ -491,6 +358,26 @@ def ExecRequest(operator, url, timeout, api_key, **kwargs):
   return {}
 
 
+def UploadExists(symbol, status_url, timeout, api_key):
+  """Skip a symbol files if we've already uploaded.
+
+  Args:
+    symbol: A SymbolFile instance.
+    status_url: The crash URL to validate the file existence.
+    timeout: HTTP timeout for request.
+    api_key: Authentication key.
+
+  Yields:
+    Boolean, true if it is available on server, false if
+    it is not.
+  """
+  result = ExecRequest('get', '%s/symbols/%s/%s:checkStatus' %
+                       (status_url, symbol.header.name,
+                        symbol.header.id.replace('-', '')),
+                       timeout, api_key)
+  return (result and 'status' in result.keys()
+          and result['status'] == 'FOUND')
+
 def UploadSymbolFile(upload_url, symbol, api_key):
   '''Upload a symbol file to the crash server, returning the status result.
 
@@ -500,29 +387,31 @@ def UploadSymbolFile(upload_url, symbol, api_key):
     api_key: Authentication key
   '''
   timeout = GetUploadTimeout(symbol)
-  upload = ExecRequest('post',
-                       '{}/uploads:create'.format(upload_url), timeout, api_key)
-  print("API Key: ", api_key)
-  print("Upload: ", upload)
-
-  if upload and 'uploadUrl' in upload.keys():
-    symbol_data = {'symbol_id':
-                   {'debug_file': symbol.header.name,
-                    'debug_id': symbol.header.id.replace('-', '')}
-                  }
-    ExecRequest('put',
-                upload['uploadUrl'], timeout,
-                api_key=api_key,
-                data=open(symbol.file_name, 'r'))
-    ExecRequest('post',
-                '%s/uploads/%s:complete' % (
-                    upload_url, upload['uploadKey']),
-                timeout, api_key=api_key,
-                # TODO(mikenichols): Validate product_name once it is added
-                # to the proto; currently unsupported.
-                data=json.dumps(symbol_data))
+  if UploadExists(symbol, upload_url, timeout, api_key):
+    logging.info('%s symbol file already uploaded, skipping', symbol.header.id)
+    raise DuplicateFile
   else:
-    raise requests.exceptions.HTTPError
+    upload = ExecRequest('post',
+                         '%s/uploads:create' % upload_url, timeout, api_key)
+
+    if upload and 'uploadUrl' in upload.keys():
+      symbol_data = {'symbol_id':
+                     {'debug_file': symbol.header.name,
+                      'debug_id': symbol.header.id.replace('-', '')}
+                    }
+      ExecRequest('put',
+                  upload['uploadUrl'], timeout,
+                  api_key=api_key,
+                  data=open(symbol.file_name, 'r'))
+      ExecRequest('post',
+                  '%s/uploads/%s:complete' % (
+                      upload_url, upload['uploadKey']),
+                  timeout, api_key=api_key,
+                  # TODO(mikenichols): Validate product_name once it is added
+                  # to the proto; currently unsupported.
+                  data=json.dumps(symbol_data))
+    else:
+      raise requests.exceptions.HTTPError
 
 
 def PerformSymbolsFileUpload(symbols, upload_url, api_key):
@@ -563,6 +452,8 @@ def PerformSymbolsFileUpload(symbols, upload_url, api_key):
               log_all_retries=True)
         logging.info('upload of %10i bytes took %s', s.FileSize(), timer.delta)
         s.status = SymbolFile.UPLOADED
+      except DuplicateFile:
+        s.status = SymbolFile.DUPLICATE
       except (requests.exceptions.HTTPError,
               requests.exceptions.Timeout,
               requests.exceptions.RequestException) as e:
@@ -631,8 +522,8 @@ def ReportResults(symbols, failed_list):
   return result_counts[SymbolFile.INITIAL] + result_counts[SymbolFile.ERROR]
 
 
-def UploadSymbols(sym_paths, upload_url, dedupe_namespace=None,
-                  failed_list=None, upload_limit=None, strip_cfi=None,
+def UploadSymbols(sym_paths, upload_url, failed_list=None,
+                  upload_limit=None, strip_cfi=None,
                   api_key=None):
   """Upload all the generated symbols for |board| to the crash server
 
@@ -640,7 +531,6 @@ def UploadSymbols(sym_paths, upload_url, dedupe_namespace=None,
     sym_paths: Specific symbol files (or dirs of sym files) to upload,
       otherwise search |breakpad_dir|
     upload_url: URL of crash server to upload too.
-    dedupe_namespace: None for no deduping, or string namespace in isolate.
     failed_list: A filename at which to write out a list of our failed uploads.
     upload_limit: Integer listing how many files to upload. None for no limit.
     strip_cfi: File size at which we strip out CFI data. None for no limit.
@@ -673,16 +563,8 @@ def UploadSymbols(sym_paths, upload_url, dedupe_namespace=None,
     # Strip CFI, if needed.
     symbols = (AdjustSymbolFileSize(s, tempdir, strip_cfi) for s in symbols)
 
-    # Skip duplicates.
-    if dedupe_namespace:
-      symbols = FindDuplicates(symbols, dedupe_namespace)
-
     # Perform uploads
     symbols = PerformSymbolsFileUpload(symbols, upload_url, api_key)
-
-    # Record for future deduping.
-    if dedupe_namespace:
-      symbols = PostForDeduplication(symbols, dedupe_namespace)
 
     # Log the final results, and consume the symbols generator fully.
     failures = ReportResults(symbols, failed_list)
@@ -749,14 +631,6 @@ def main(argv):
     if opts.board is None:
       cros_build_lib.Die('--board is required')
 
-  # Figure out the dedupe namespace.
-  dedupe_namespace = None
-  if opts.dedupe:
-    if opts.official_build:
-      dedupe_namespace = OFFICIAL_DEDUPE_NAMESPACE_TMPL % opts.product_name
-    else:
-      dedupe_namespace = STAGING_DEDUPE_NAMESPACE_TMPL % opts.product_name
-
   # Figure out which crash server to upload too.
   upload_url = opts.server
   if not upload_url:
@@ -800,7 +674,6 @@ def main(argv):
   ret += UploadSymbols(
       sym_paths=sym_paths,
       upload_url=upload_url,
-      dedupe_namespace=dedupe_namespace,
       failed_list=opts.failed_list,
       upload_limit=opts.upload_limit,
       strip_cfi=opts.strip_cfi,
