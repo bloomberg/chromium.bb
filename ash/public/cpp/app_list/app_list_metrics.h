@@ -71,7 +71,8 @@ enum SearchResultType {
 };
 
 ASH_PUBLIC_EXPORT void RecordSearchResultOpenTypeHistogram(
-    SearchResultType type);
+    SearchResultType type,
+    bool is_tablet_mode);
 
 }  // namespace app_list
 
