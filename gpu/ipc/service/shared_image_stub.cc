@@ -314,7 +314,7 @@ ContextResult SharedImageStub::MakeContextCurrentAndCreateFactory() {
       channel_manager->mailbox_manager(),
       channel_manager->shared_image_manager(),
       gmb_factory ? gmb_factory->AsImageFactory() : nullptr, this,
-      features::IsUsingSkiaRenderer());
+      features::IsUsingSkiaRenderer(), /*use_gl=*/true);
   return ContextResult::kSuccess;
 }
 

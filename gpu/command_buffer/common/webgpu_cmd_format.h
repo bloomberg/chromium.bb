@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "gpu/command_buffer/common/common_cmd_format.h"
+#include "gpu/command_buffer/common/gl2_types.h"
 #include "gpu/command_buffer/common/webgpu_cmd_ids.h"
 #include "ui/gfx/buffer_types.h"
 

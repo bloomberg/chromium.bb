@@ -278,5 +278,15 @@ DawnDevice WebGPUImplementation::GetDefaultDevice() {
 #endif
 }
 
+ReservedTexture WebGPUImplementation::ReserveTexture(DawnDevice device) {
+#if BUILDFLAG(USE_DAWN)
+  dawn_wire::ReservedTexture reservation = wire_client_->ReserveTexture(device);
+  return {reservation.texture, reservation.id, reservation.generation};
+#else
+  NOTREACHED();
+  return {};
+#endif
+}
+
 }  // namespace webgpu
 }  // namespace gpu

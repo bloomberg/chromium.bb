@@ -42,8 +42,15 @@ _FUNCTION_INFO = {
       'commands': 'size * sizeof(char)',
     },
   },
+  'AssociateMailbox': {
+    'type': 'PUT',
+    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
+    'trace_level': 1,
+  },
+  'DissociateMailbox': {
+    'trace_level': 1,
+  },
 }
-
 
 def main(argv):
   """This is the main function."""
