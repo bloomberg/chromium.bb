@@ -766,10 +766,6 @@ class SaveCardBubbleViewsFullFormBrowserTestForStatusChip
 // successfully causes the bubble to go away.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ClickingSaveClosesBubble) {
-  // Disable the sign-in promo.
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
@@ -788,12 +784,10 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
       "Autofill.SaveCreditCardPrompt.Local.FirstShow",
       AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
 
-  // No bubble should be showing and no sign-in impression should have been
-  // recorded.
+  // The local save bubble should not be visible, but the card icon should
+  // remain visible for the clickable [Manage cards] option.
   EXPECT_EQ(nullptr, GetSaveCardBubbleViews());
-  EXPECT_FALSE(GetSaveCardIconView()->visible());
-  EXPECT_EQ(0, user_action_tester.GetActionCount(
-                   "Signin_Impression_FromSaveCardBubble"));
+  EXPECT_TRUE(GetSaveCardIconView()->visible());
 }
 
 // Tests the local save bubble. Ensures that clicking the [No thanks] button
@@ -833,10 +827,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ClickingSaveShowsSigninPromo) {
-  // Enable the sign-in promo.
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
@@ -871,13 +861,7 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // bubble is shown.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_NoSigninPromoShowsWhenUserIsSyncing) {
-  // Enable the sign-in promo.
-  scoped_feature_list_.InitWithFeatures(
-      // Enabled
-      {features::kAutofillUpstream,
-       features::kAutofillSaveCardSignInAfterLocalSave},
-      // Disabled
-      {});
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
 
   // Start sync.
   harness_->SetupSync();
@@ -915,10 +899,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_Metrics_SigninImpressionSigninPromo) {
-  // Enable the sign-in promo.
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
@@ -950,10 +930,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_Metrics_AcceptingSigninPromo) {
-  // Enable the sign-in promo.
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
@@ -991,10 +967,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // credit card icon.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ClickingIconShowsManageCards) {
-  // Enable the sign-in promo.
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
@@ -1038,10 +1010,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // button redirects properly.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ManageCardsButtonRedirects) {
-  // Enable the sign-in promo.
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
@@ -1099,10 +1067,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 // button closes the bubble.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_ManageCardsDoneButtonClosesBubble) {
-  // Enable the sign-in promo.
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
@@ -1152,10 +1116,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 #if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_Metrics_SigninImpressionManageCards) {
-  // Enable the sign-in promo.
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});
@@ -1195,10 +1155,6 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Local_Metrics_AcceptingFootnotePromoManageCards) {
-  // Enable the sign-in promo.
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillSaveCardSignInAfterLocalSave);
-
   // Submitting the form without signed in user should show the local save
   // bubble.
   ResetEventWaiterForSequence({DialogEvent::OFFERED_LOCAL_SAVE});

@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/ui/autofill/payments/save_card_ui.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,8 +18,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
-#include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_payments_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -31,11 +28,6 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DialogBrowserTest::SetUpCommandLine(command_line);
-    scoped_feature_list_.InitWithFeatures(
-        // Enabled.
-        {features::kAutofillSaveCardSignInAfterLocalSave},
-        // Disabled.
-        {});
   }
 
   std::unique_ptr<base::DictionaryValue> GetTestLegalMessage() {
@@ -114,7 +106,6 @@ class SaveCardBubbleControllerImplTest : public DialogBrowserTest {
 
  private:
   SaveCardBubbleControllerImpl* controller_ = nullptr;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleControllerImplTest);
 };

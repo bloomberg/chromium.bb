@@ -472,13 +472,6 @@ const char kEnableAutofillSaveCardImprovedUserConsentDescription[] =
     "If enabled, adds a [No thanks] button to credit card save bubbles and "
     "updates their title headers.";
 
-const char kEnableAutofillSaveCardSignInAfterLocalSaveName[] =
-    "Show Sign-In/Sync promo after saving a card locally";
-const char kEnableAutofillSaveCardSignInAfterLocalSaveDescription[] =
-    "If enabled, shows a sign in prompt to the user after the user "
-    "saves a card locally. This also introduces a Manage Cards bubble "
-    "which you can access from the card icon after saving a card.";
-
 const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[] =
     "Enable limit on offering to save the same credit card repeatedly";
 const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[] =

@@ -316,9 +316,6 @@ extern const char kEnableAutofillSaveCardDialogUnlabeledExpirationDateName[];
 extern const char
     kEnableAutofillSaveCardDialogUnlabeledExpirationDateDescription[];
 
-extern const char kEnableAutofillSaveCardSignInAfterLocalSaveName[];
-extern const char kEnableAutofillSaveCardSignInAfterLocalSaveDescription[];
-
 extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsName[];
 extern const char kEnableAutofillSendExperimentIdsInPaymentsRPCsDescription[];
 

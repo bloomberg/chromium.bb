@@ -270,8 +270,7 @@ bool SaveCardBubbleControllerImpl::ShouldRequestExpirationDateFromUser() const {
 }
 
 bool SaveCardBubbleControllerImpl::ShouldShowSignInPromo() const {
-  if (is_upload_save_ || !base::FeatureList::IsEnabled(
-                             features::kAutofillSaveCardSignInAfterLocalSave))
+  if (is_upload_save_)
     return false;
 
   const syncer::SyncService* sync_service =
@@ -328,8 +327,7 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
       DCHECK(!local_save_card_prompt_callback_.is_null());
       // Show an animated card saved confirmation message next time
       // UpdateSaveCardIcon() is called.
-      can_animate_ = base::FeatureList::IsEnabled(
-          features::kAutofillSaveCardSignInAfterLocalSave);
+      can_animate_ = true;
 
       std::move(local_save_card_prompt_callback_).Run(AutofillClient::ACCEPTED);
       break;
@@ -349,11 +347,8 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
   // promo or a manage cards view. If we need to show a sign-in promo, that
   // will be handled by OnAnimationEnded(), otherwise clicking the icon again
   // will show the MANAGE_CARDS bubble, which is set here.
-  if (previous_bubble_type == BubbleType::LOCAL_SAVE &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillSaveCardSignInAfterLocalSave)) {
+  if (previous_bubble_type == BubbleType::LOCAL_SAVE)
     current_bubble_type_ = BubbleType::MANAGE_CARDS;
-  }
 
   if (previous_bubble_type == BubbleType::LOCAL_SAVE ||
       previous_bubble_type == BubbleType::UPLOAD_SAVE) {

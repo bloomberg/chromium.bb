@@ -2367,12 +2367,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillSaveCardImprovedUserConsent)},
-    {"enable-autofill-save-card-sign-in-after-local-save",
-     flag_descriptions::kEnableAutofillSaveCardSignInAfterLocalSaveName,
-     flag_descriptions::kEnableAutofillSaveCardSignInAfterLocalSaveDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillSaveCardSignInAfterLocalSave)},
     {"enable-autofill-save-credit-card-uses-strike-system",
      flag_descriptions::kEnableAutofillSaveCreditCardUsesStrikeSystemName,
      flag_descriptions::

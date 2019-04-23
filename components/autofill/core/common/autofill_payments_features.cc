@@ -90,11 +90,6 @@ const base::Feature kAutofillNoLocalSaveOnUploadSuccess{
 const base::Feature kAutofillSaveCardImprovedUserConsent{
     "AutofillSaveCardImprovedUserConsent", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, a sign in promo will show up right after the user
-// saves a card locally. This also introduces a "Manage Cards" bubble.
-const base::Feature kAutofillSaveCardSignInAfterLocalSave{
-    "AutofillSaveCardSignInAfterLocalSave", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether offering to save cards will consider data from the Autofill
 // strike database.
 const base::Feature kAutofillSaveCreditCardUsesStrikeSystem{

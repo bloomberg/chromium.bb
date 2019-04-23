@@ -33,7 +33,6 @@ extern const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2;
 extern const base::Feature kAutofillNoLocalSaveOnUnmaskSuccess;
 extern const base::Feature kAutofillNoLocalSaveOnUploadSuccess;
 extern const base::Feature kAutofillSaveCardImprovedUserConsent;
-extern const base::Feature kAutofillSaveCardSignInAfterLocalSave;
 extern const base::Feature kAutofillSaveCreditCardUsesStrikeSystem;
 extern const base::Feature kAutofillSaveCreditCardUsesStrikeSystemV2;
 extern const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs;

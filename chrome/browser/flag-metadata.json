@@ -855,11 +855,6 @@
     "expiry_milestone": 73
   },
   {
-    "name": "enable-autofill-save-card-sign-in-after-local-save",
-    "owners": [ "manasverma@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-autofill-save-credit-card-uses-strike-system",
     "owners": [ "annelim@google.com", "jsaul@google.com" ],
     "expiry_milestone": 76
