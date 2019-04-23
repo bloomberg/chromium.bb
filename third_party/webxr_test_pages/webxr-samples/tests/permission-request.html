@@ -203,6 +203,11 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             icon: '../test-media/third-party/screen-share-button.png',
             callback: (success, fail) => {
               navigator.mediaDevices.getDisplayMedia()
+              .then(device => {
+                  // Assign the device to a temp variable to keep it from
+                  // getting garbage collected immediately.
+                  window.getDisplayMediaRetVal = device;
+              })
               .then(success, fail);
             }
           },
