@@ -43,7 +43,7 @@ AccessibilityLabelsBubbleModel::~AccessibilityLabelsBubbleModel() {}
 
 base::string16 AccessibilityLabelsBubbleModel::GetTitle() const {
   return l10n_util::GetStringUTF16(
-      IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_MENU_OPTION);
+      IDS_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_DIALOG_TITLE);
 }
 
 base::string16 AccessibilityLabelsBubbleModel::GetMessageText() const {
