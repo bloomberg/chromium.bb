@@ -673,9 +673,12 @@ void BaseAudioContext::NotifySourceNodeStartedProcessing(AudioNode* node) {
 
 void BaseAudioContext::ReleaseActiveSourceNodes() {
   DCHECK(IsMainThread());
+
+  GraphAutoLocker locker(this);
+
   for (auto source_handler :
        *GetDeferredTaskHandler().GetActiveSourceHandlers()) {
-    source_handler->BreakConnection();
+    source_handler->BreakConnectionWithLock();
   }
 }
 
