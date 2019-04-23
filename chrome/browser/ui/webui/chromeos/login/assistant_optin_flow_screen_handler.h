@@ -101,6 +101,9 @@ class AssistantOptInFlowScreenHandler
   // Send GetSettings request for the opt-in UI.
   void SendGetSettingsRequest();
 
+  // Stops the current speaker ID enrollment flow.
+  void StopSpeakerIdEnrollment();
+
   // Send message and consent data to the page.
   void ReloadContent(const base::Value& dict);
   void AddSettingZippy(const std::string& type, const base::Value& data);

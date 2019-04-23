@@ -13,6 +13,8 @@
 
 namespace chromeos {
 
+class UserContext;
+
 // Mixin browser tests can use for setting up test login manager environment.
 // It sets up command line so test starts on the login screen UI, and
 // initializes user manager with a list of pre-registered users.
@@ -20,6 +22,10 @@ namespace chromeos {
 // suitable for OOBE tests.
 class LoginManagerMixin : public InProcessBrowserTestMixin {
  public:
+  // Convenience method for creating default UserContext for an account ID. The
+  // result can be used with Login* methods below.
+  static UserContext CreateDefaultUserContext(const AccountId& account_id);
+
   LoginManagerMixin(InProcessBrowserTestMixinHost* host,
                     const std::vector<AccountId>& initial_users);
   ~LoginManagerMixin() override;
@@ -29,6 +35,11 @@ class LoginManagerMixin : public InProcessBrowserTestMixin {
   void CreatedBrowserMainParts(
       content::BrowserMainParts* browser_main_parts) override;
   void SetUpOnMainThread() override;
+
+  // Logs in a user and waits for the session to become active.
+  // Currently works for the primary user only.
+  // Returns whether the newly logged in user is active when the method exits.
+  bool LoginAndWaitForSessionStart(const UserContext& user_context);
 
  private:
   const std::vector<AccountId> initial_users_;
