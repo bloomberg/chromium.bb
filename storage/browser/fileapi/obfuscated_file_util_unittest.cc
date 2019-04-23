@@ -208,6 +208,8 @@ class ObfuscatedFileUtilTest : public testing::Test,
     // We need to pass in the context to skip all that.
     file_system_context_ =
         in_memory_test() ? CreateIncognitoFileSystemContextForTesting(
+                               base::ThreadTaskRunnerHandle::Get(),
+                               base::ThreadTaskRunnerHandle::Get(),
                                quota_manager_->proxy(), data_dir_.GetPath())
                          : CreateFileSystemContextForTesting(
                                quota_manager_->proxy(), data_dir_.GetPath());

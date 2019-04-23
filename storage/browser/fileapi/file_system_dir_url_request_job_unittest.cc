@@ -163,8 +163,9 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     handlers.emplace_back(base::BindRepeating(&TestAutoMountForURLRequest));
 
     file_system_context_ = CreateFileSystemContextWithAutoMountersForTesting(
-        nullptr, std::move(additional_providers), handlers,
-        temp_dir_.GetPath());
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(), nullptr,
+        std::move(additional_providers), handlers, temp_dir_.GetPath());
   }
 
   void OnOpenFileSystem(const GURL& root_url,
@@ -378,7 +379,9 @@ TEST_F(FileSystemDirURLRequestJobTest, Incognito) {
   CreateDirectory("foo");
 
   scoped_refptr<FileSystemContext> file_system_context =
-      CreateIncognitoFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
+      CreateIncognitoFileSystemContextForTesting(
+          base::ThreadTaskRunnerHandle::Get(),
+          base::ThreadTaskRunnerHandle::Get(), nullptr, temp_dir_.GetPath());
 
   TestRequestWithContext(CreateFileSystemURL("/"),
                          file_system_context.get());

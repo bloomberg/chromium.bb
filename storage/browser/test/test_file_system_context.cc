@@ -47,14 +47,15 @@ CreateFileSystemContextWithAdditionalProvidersForTesting(
 }
 
 storage::FileSystemContext* CreateFileSystemContextWithAutoMountersForTesting(
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     storage::QuotaManagerProxy* quota_manager_proxy,
     std::vector<std::unique_ptr<storage::FileSystemBackend>>
         additional_providers,
     const std::vector<storage::URLRequestAutoMountHandler>& auto_mounters,
     const base::FilePath& base_path) {
   return new storage::FileSystemContext(
-      base::ThreadTaskRunnerHandle::Get().get(),
-      base::ThreadTaskRunnerHandle::Get().get(),
+      io_task_runner.get(), file_task_runner.get(),
       storage::ExternalMountPoints::CreateRefCounted().get(),
       base::MakeRefCounted<MockSpecialStoragePolicy>().get(),
       quota_manager_proxy, std::move(additional_providers), auto_mounters,
@@ -62,11 +63,12 @@ storage::FileSystemContext* CreateFileSystemContextWithAutoMountersForTesting(
 }
 
 storage::FileSystemContext* CreateIncognitoFileSystemContextForTesting(
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     storage::QuotaManagerProxy* quota_manager_proxy,
     const base::FilePath& base_path) {
   return new storage::FileSystemContext(
-      base::ThreadTaskRunnerHandle::Get().get(),
-      base::ThreadTaskRunnerHandle::Get().get(),
+      io_task_runner.get(), file_task_runner.get(),
       storage::ExternalMountPoints::CreateRefCounted().get(),
       base::MakeRefCounted<MockSpecialStoragePolicy>().get(),
       quota_manager_proxy,

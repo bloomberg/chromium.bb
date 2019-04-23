@@ -169,8 +169,9 @@ class FileSystemURLRequestJobTest : public testing::Test {
     handlers.push_back(base::BindRepeating(&TestAutoMountForURLRequest));
 
     file_system_context_ = CreateFileSystemContextWithAutoMountersForTesting(
-        nullptr, std::move(additional_providers), handlers,
-        temp_dir_.GetPath());
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(), nullptr,
+        std::move(additional_providers), handlers, temp_dir_.GetPath());
 
     ASSERT_EQ(static_cast<int>(sizeof(kTestFileData)) - 1,
               base::WriteFile(mnt_point.AppendASCII("foo"), kTestFileData,
@@ -421,7 +422,9 @@ TEST_F(FileSystemURLRequestJobTest, Incognito) {
 
   // Creates a new filesystem context for incognito mode.
   scoped_refptr<FileSystemContext> file_system_context =
-      CreateIncognitoFileSystemContextForTesting(nullptr, temp_dir_.GetPath());
+      CreateIncognitoFileSystemContextForTesting(
+          base::ThreadTaskRunnerHandle::Get(),
+          base::ThreadTaskRunnerHandle::Get(), nullptr, temp_dir_.GetPath());
 
   // The request should return NOT_FOUND error if it's in incognito mode.
   TestRequestWithContext(CreateFileSystemURL("file"),
