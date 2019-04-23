@@ -9,7 +9,6 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
-#include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_store.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -97,7 +96,6 @@ class LocalSiteCharacteristicsWebContentsObserverTest
     TabLoadTracker::Get()->StartTracking(web_contents());
     observer_ = std::make_unique<LocalSiteCharacteristicsWebContentsObserver>(
         web_contents());
-    observer()->SetPageSignalReceiverForTesting(&receiver_);
   }
 
   void TearDown() override {
@@ -122,16 +120,10 @@ class LocalSiteCharacteristicsWebContentsObserverTest
     return observer_.get();
   }
 
-  PageNavigationIdentity GetNavIdForWebContents() {
-    return {CoordinationUnitID(),
-            receiver_.GetNavigationIDForWebContents(web_contents()), ""};
-  }
-
   base::SimpleTestTickClock& test_clock() { return test_clock_; }
 
  private:
   std::unique_ptr<LocalSiteCharacteristicsWebContentsObserver> observer_;
-  PageSignalReceiver receiver_;
   base::SimpleTestTickClock test_clock_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
 
@@ -207,8 +199,8 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   ::testing::Mock::VerifyAndClear(mock_writer);
   observer()->OnAudioStateChanged(true);
   ::testing::Mock::VerifyAndClear(mock_writer);
-  observer()->OnNonPersistentNotificationCreated(web_contents(),
-                                                 GetNavIdForWebContents());
+
+  observer()->OnNonPersistentNotificationCreated();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer,
@@ -218,8 +210,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
 
   // Notification usage events always get forwarded.
   EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
-  observer()->OnNonPersistentNotificationCreated(web_contents(),
-                                                 GetNavIdForWebContents());
+  observer()->OnNonPersistentNotificationCreated();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   auto params = GetStaticSiteCharacteristicsDatabaseParams();
@@ -299,8 +290,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
-  observer()->OnNonPersistentNotificationCreated(web_contents(),
-                                                 GetNavIdForWebContents());
+  observer()->OnNonPersistentNotificationCreated();
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer, OnDestroy());
@@ -353,73 +343,6 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest, LoadEvent) {
   observer()->OnLoadingStateChange(web_contents(),
                                    TabLoadTracker::LoadingState::LOADING,
                                    TabLoadTracker::LoadingState::UNLOADED);
-
-  EXPECT_CALL(*mock_writer, OnDestroy());
-}
-
-TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
-       LateNotificationUsageSignalIsIgnored) {
-  MockDataWriter* mock_writer = NavigateAndReturnMockWriter(kTestUrl1);
-  EXPECT_CALL(*mock_writer, NotifySiteLoaded());
-  TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
-                                                   LoadingState::LOADED);
-
-  EXPECT_CALL(*mock_writer,
-              NotifySiteVisibilityChanged(TabVisibility::kBackground));
-  web_contents()->WasHidden();
-  ::testing::Mock::VerifyAndClear(mock_writer);
-
-  auto nav_id = GetNavIdForWebContents();
-  EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
-  observer()->OnNonPersistentNotificationCreated(web_contents(), nav_id);
-  ::testing::Mock::VerifyAndClear(mock_writer);
-
-  // Invalidate the navigation ID but keep the same origin, the notification
-  // should get forwarded to the writer.
-  nav_id.navigation_id++;
-  nav_id.url = web_contents()->GetLastCommittedURL().spec();
-  EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
-  observer()->OnNonPersistentNotificationCreated(web_contents(), nav_id);
-  ::testing::Mock::VerifyAndClear(mock_writer);
-
-  // Make the URL of the navigation ID point to a different origin, the writer
-  // shouldn't get notified about this event.
-  nav_id.url = "https://not-the-same-url.com";
-  observer()->OnNonPersistentNotificationCreated(web_contents(), nav_id);
-  ::testing::Mock::VerifyAndClear(mock_writer);
-
-  EXPECT_CALL(*mock_writer, OnDestroy());
-}
-
-TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
-       OnLoadTimePerformanceMeasurement) {
-  MockDataWriter* mock_writer = NavigateAndReturnMockWriter(kTestUrl1);
-  EXPECT_CALL(*mock_writer, NotifySiteLoaded());
-  TabLoadTracker::Get()->TransitionStateForTesting(web_contents(),
-                                                   LoadingState::LOADED);
-
-  constexpr base::TimeDelta kExpectedLoadDuration =
-      base::TimeDelta::FromMicroseconds(501);
-  constexpr base::TimeDelta kExpectedCPUTime =
-      base::TimeDelta::FromMicroseconds(1003);
-  constexpr uint64_t kExpectedMemory = 123u;
-  auto nav_id = GetNavIdForWebContents();
-  EXPECT_CALL(*mock_writer,
-              NotifyLoadTimePerformanceMeasurement(
-                  kExpectedLoadDuration, kExpectedCPUTime, kExpectedMemory));
-  observer()->OnLoadTimePerformanceEstimate(web_contents(), nav_id,
-                                            kExpectedLoadDuration,
-                                            kExpectedCPUTime, kExpectedMemory);
-  ::testing::Mock::VerifyAndClear(mock_writer);
-
-  // Verify that a late notification is not persisted (for now).
-  // TODO(siggi): Fix late notifications such that they persist to another
-  //     writer.
-  nav_id.navigation_id++;
-  observer()->OnLoadTimePerformanceEstimate(web_contents(), nav_id,
-                                            kExpectedLoadDuration,
-                                            kExpectedCPUTime, kExpectedMemory);
-  ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer, OnDestroy());
 }

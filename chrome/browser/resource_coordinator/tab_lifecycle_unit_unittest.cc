@@ -199,7 +199,7 @@ void TabLifecycleUnitTest::TestCannotDiscardBasedOnHeuristicUsage(
   test_clock_.Advance(kBackgroundUrgentProtectionTime);
 
   auto* observer = ResourceCoordinatorTabHelper::FromWebContents(web_contents_)
-                       ->local_site_characteristics_wc_observer_for_testing();
+                       ->local_site_characteristics_wc_observer();
   test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   testing::MarkWebContentsAsLoadedInBackground(web_contents_);
   if (notify_feature_usage_method) {

@@ -47,7 +47,7 @@ class ResourceCoordinatorTabHelper
 
 #if !defined(OS_ANDROID)
   LocalSiteCharacteristicsWebContentsObserver*
-  local_site_characteristics_wc_observer_for_testing() {
+  local_site_characteristics_wc_observer() {
     return local_site_characteristics_wc_observer_.get();
   }
 #endif
