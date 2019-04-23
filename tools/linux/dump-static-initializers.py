@@ -18,7 +18,7 @@ A brief overview of static initialization:
 4) at run time, on startup the binary runs all function pointers.
 
 The functions in (1) all have mangled names of the form
-  _GLOBAL__I_foobar.cc
+  _GLOBAL__I_foobar.cc or __cxx_global_var_initN
 using objdump, we can disassemble those functions and dump all symbols that
 they reference.
 """
@@ -106,14 +106,16 @@ def QualifyFilename(filename, symbol):
 
 # Regex matching nm output for the symbols we're interested in.
 # See test_ParseNmLine for examples.
-nm_re = re.compile(r'(\S+) (\S+) t (?:_ZN12)?_GLOBAL__(?:sub_)?I_(.*)')
+nm_re = re.compile(
+  r'(\S+) (\S+) t ((?:_ZN12)?_GLOBAL__(?:sub_)?I_|__cxx_global_var_init\d*)(.*)'
+)
 def ParseNmLine(line):
   """Given a line of nm output, parse static initializers as a
-  (file, start, size) tuple."""
+  (file, start, size, symbol) tuple."""
   match = nm_re.match(line)
   if match:
-    addr, size, filename = match.groups()
-    return (filename, int(addr, 16), int(size, 16))
+    addr, size, prefix, filename = match.groups()
+    return (filename, int(addr, 16), int(size, 16), prefix+filename)
 
 
 def test_ParseNmLine():
@@ -121,12 +123,22 @@ def test_ParseNmLine():
   parse = ParseNmLine(
     '0000000001919920 0000000000000008 t '
     '_ZN12_GLOBAL__I_safe_browsing_service.cc')
-  assert parse == ('safe_browsing_service.cc', 26319136, 8), parse
+  assert parse == ('safe_browsing_service.cc', 26319136, 8,
+                   '_ZN12_GLOBAL__I_safe_browsing_service.cc'), parse
 
   parse = ParseNmLine(
     '00000000026b9eb0 0000000000000024 t '
     '_GLOBAL__sub_I_extension_specifics.pb.cc')
-  assert parse == ('extension_specifics.pb.cc', 40607408, 36), parse
+  assert parse == ('extension_specifics.pb.cc', 40607408, 36,
+                   '_GLOBAL__sub_I_extension_specifics.pb.cc'), parse
+
+  parse = ParseNmLine(
+    '0000000002e75a60 0000000000000016 t __cxx_global_var_init')
+  assert parse == ('', 48716384, 22, '__cxx_global_var_init'), parse
+
+  parse = ParseNmLine(
+    '0000000002e75a60 0000000000000016 t __cxx_global_var_init89')
+  assert parse == ('', 48716384, 22, '__cxx_global_var_init89'), parse
 
 
 # Just always run the test; it is fast enough.
@@ -134,7 +146,8 @@ test_ParseNmLine()
 
 
 def ParseNm(toolchain, binary):
-  """Given a binary, yield static initializers as (file, start, size) tuples."""
+  """Given a binary, yield static initializers as (file, start, size, symbol)
+  tuples."""
   nm = subprocess.Popen([toolchain + 'nm', '-S', binary],
                         stdout=subprocess.PIPE)
   for line in nm.stdout:
@@ -147,7 +160,7 @@ def ParseNm(toolchain, binary):
 # Example line:
 #     12354ab:  (disassembly, including <FunctionReference>)
 disassembly_re = re.compile(r'^\s+[0-9a-f]+:.*<(\S+)>')
-def ExtractSymbolReferences(toolchain, binary, start, end):
+def ExtractSymbolReferences(toolchain, binary, start, end, symbol):
   """Given a span of addresses, returns symbol references from disassembly."""
   cmd = [toolchain + 'objdump', binary, '--disassemble',
          '--start-address=0x%x' % start, '--stop-address=0x%x' % end]
@@ -165,7 +178,7 @@ def ExtractSymbolReferences(toolchain, binary, start, end):
       if ref.startswith('.LC') or ref.startswith('_DYNAMIC'):
         # Ignore these, they are uninformative.
         continue
-      if re.match('_GLOBAL__(?:sub_)?I_', ref):
+      if re.match(symbol, ref):
         # Probably a relative jump within this function.
         continue
       refs.add(ref)
@@ -196,7 +209,7 @@ def main():
   files = ParseNm(opts.toolchain, binary)
   if opts.diffable:
     files = sorted(files)
-  for filename, addr, size in files:
+  for filename, addr, size, symbol in files:
     file_count += 1
     ref_output = []
 
@@ -209,7 +222,7 @@ def main():
       ref_output.append('[empty ctor, but it still has cost on gcc <4.6]')
     else:
       for ref in ExtractSymbolReferences(opts.toolchain, binary, addr,
-                                         addr+size):
+                                         addr+size, symbol):
         initializer_count += 1
 
         ref = demangler.Demangle(ref)
