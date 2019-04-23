@@ -185,6 +185,17 @@ bool Printer::HasNetworkProtocol() const {
   }
 }
 
+bool Printer::IsUsbProtocol() const {
+  Printer::PrinterProtocol current_protocol = GetProtocol();
+  switch (current_protocol) {
+    case PrinterProtocol::kUsb:
+    case PrinterProtocol::kIppUsb:
+      return true;
+    default:
+      return false;
+  }
+}
+
 base::Optional<UriComponents> Printer::GetUriComponents() const {
   return chromeos::ParseUri(uri_);
 }

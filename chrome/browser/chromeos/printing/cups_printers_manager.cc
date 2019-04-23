@@ -44,11 +44,6 @@ void FilterOutPrinters(std::vector<Printer>* printers,
   printers->resize(new_end - printers->begin());
 }
 
-// Return true if this is a USB printer.
-bool IsUsbPrinter(const Printer& printer) {
-  return printer.GetProtocol() == Printer::kUsb;
-}
-
 class CupsPrintersManagerImpl : public CupsPrintersManager,
                                 public SyncedPrintersManager::Observer {
  public:
@@ -313,11 +308,11 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     // separately from other IPP printers.  Eventually we may want to shift
     // this to be split by autodetected/not autodetected instead of USB/other
     // IPP.
-    if (IsUsbPrinter(printer)) {
+    if (printer.IsUsbProtocol()) {
       // Get the associated detection record if one exists.
       const auto* detected = FindDetectedPrinter(printer.id());
-      // We should have the full DetectedPrinter.  We
-      // can't log the printer if we don't have it.
+      // We should have the full DetectedPrinter.  We can't log the printer if
+      // we don't have it.
       if (!detected) {
         LOG(WARNING) << "Failed to find USB printer " << printer.id()
                      << " for installation event logging";
@@ -425,7 +420,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // abandoned.
   void RecordSetupAbandoned(const Printer& printer) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
-    if (IsUsbPrinter(printer)) {
+    if (printer.IsUsbProtocol()) {
       const auto* detected = FindDetectedPrinter(printer.id());
       if (!detected) {
         LOG(WARNING) << "Failed to find USB printer " << printer.id()
