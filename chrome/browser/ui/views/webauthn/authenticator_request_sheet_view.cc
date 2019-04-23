@@ -159,6 +159,7 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
       views::style::STYLE_PRIMARY);
   title_label->SetMultiLine(true);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_label->SetAllowCharacterBreak(true);
   label_container->AddChildView(title_label.release());
 
   auto description_label = std::make_unique<views::Label>(
@@ -166,6 +167,7 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
       views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
   description_label->SetMultiLine(true);
   description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  description_label->SetAllowCharacterBreak(true);
   label_container->AddChildView(description_label.release());
 
   base::Optional<base::string16> additional_desciption =
@@ -176,6 +178,7 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
         views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
     label->SetMultiLine(true);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    label->SetAllowCharacterBreak(true);
     label_container->AddChildView(label.release());
   }
 
