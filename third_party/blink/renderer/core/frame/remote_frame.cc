@@ -69,9 +69,6 @@ void RemoteFrame::ScheduleNavigation(Document& origin_document,
   FrameLoadRequest frame_request(&origin_document, ResourceRequest(url));
   frame_request.GetResourceRequest().SetHasUserGesture(
       user_gesture_status == UserGestureStatus::kActive);
-  frame_request.SetFrameType(
-      IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
-                    : network::mojom::RequestContextFrameType::kNested);
   frame_request.SetClientRedirectReason(
       ClientNavigationReason::kFrameNavigation);
   Navigate(frame_request, frame_load_type);
@@ -83,6 +80,9 @@ void RemoteFrame::Navigate(const FrameLoadRequest& passed_request,
     return;
 
   FrameLoadRequest frame_request(passed_request);
+  frame_request.SetFrameType(
+      IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
+                    : network::mojom::RequestContextFrameType::kNested);
 
   const KURL& url = frame_request.GetResourceRequest().Url();
   if (frame_request.OriginDocument() &&

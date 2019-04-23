@@ -222,9 +222,13 @@ var domExpectedActivity = [
     'tabs.executeScript',
      // Location access
     'blinkSetAttribute LocalDOMWindow url',
+    'blinkRequestResource Main resource',
     'blinkSetAttribute LocalDOMWindow url',
+    'blinkRequestResource Main resource',
     'blinkSetAttribute LocalDOMWindow url',
+    'blinkRequestResource Main resource',
     'blinkSetAttribute LocalDOMWindow url',
+    'blinkRequestResource Main resource',
     // Dom mutations
     // Navigator access
     'Window.navigator',
