@@ -40,7 +40,8 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
       const base::string16& title_text);
 
   // Creates a close button used in the corner of the dialog.
-  static Button* CreateCloseButton(ButtonListener* listener, bool is_dark_mode);
+  static std::unique_ptr<Button> CreateCloseButton(ButtonListener* listener,
+                                                   bool is_dark_mode);
 
   // NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;

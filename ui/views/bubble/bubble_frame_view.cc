@@ -80,21 +80,21 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
       title_icon_(new views::ImageView()),
       default_title_(CreateDefaultTitleLabel(base::string16()).release()),
       custom_title_(nullptr),
-      close_(nullptr),
       footnote_container_(nullptr) {
   AddChildView(title_icon_);
 
   default_title_->SetVisible(false);
   AddChildView(default_title_);
 
-  close_ = CreateCloseButton(this, GetNativeTheme()->SystemDarkModeEnabled());
-  close_->SetVisible(false);
+  auto close =
+      CreateCloseButton(this, GetNativeTheme()->SystemDarkModeEnabled());
+  close->SetVisible(false);
 #if defined(OS_WIN)
   // Windows will automatically create a tooltip for the close button based on
   // the HTCLOSE result from NonClientHitTest().
-  close_->SetTooltipText(base::string16());
+  close->SetTooltipText(base::string16());
 #endif
-  AddChildView(close_);
+  close_ = AddChildView(std::move(close));
 }
 
 BubbleFrameView::~BubbleFrameView() = default;
@@ -110,8 +110,9 @@ std::unique_ptr<Label> BubbleFrameView::CreateDefaultTitleLabel(
 }
 
 // static
-Button* BubbleFrameView::CreateCloseButton(ButtonListener* listener,
-                                           bool is_dark_mode) {
+std::unique_ptr<Button> BubbleFrameView::CreateCloseButton(
+    ButtonListener* listener,
+    bool is_dark_mode) {
   ImageButton* close_button = nullptr;
   close_button = CreateVectorImageButton(listener);
   SetImageFromVectorIconWithColor(
@@ -130,7 +131,7 @@ Button* BubbleFrameView::CreateCloseButton(ButtonListener* listener,
   // access to the close button when not using a screen reader is done via the
   // ESC key handler in DialogClientView.
   close_button->SetFocusBehavior(View::FocusBehavior::NEVER);
-  return close_button;
+  return base::WrapUnique(close_button);
 }
 
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
