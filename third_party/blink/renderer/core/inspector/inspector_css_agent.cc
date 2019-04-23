@@ -2319,34 +2319,20 @@ void InspectorCSSAgent::GetBackgroundColors(Element* element,
                                             Vector<Color>* colors,
                                             String* computed_font_size,
                                             String* computed_font_weight) {
-  LayoutRect content_bounds;
-  LayoutObject* element_layout = element->GetLayoutObject();
-  if (!element_layout)
+  // TODO: only support the single text child node here.
+  // Follow up with a larger fix post-merge.
+  if (!element->firstChild() || !element->firstChild()->IsTextNode() ||
+      element->firstChild()->nextSibling()) {
     return;
-
-  for (const Node* child = element->firstChild(); child;
-       child = child->nextSibling()) {
-    if (!child->IsTextNode())
-      continue;
-    content_bounds.Unite(LayoutRect(child->BoundingBox()));
-  }
-  if (content_bounds.Size().IsEmpty() && element_layout->IsBox()) {
-    // Return content box instead - may have indirect text children.
-    LayoutBox* layout_box = ToLayoutBox(element_layout);
-    content_bounds = layout_box->PhysicalContentBoxRect();
-    content_bounds = LayoutRect(
-        element_layout->LocalToAbsoluteQuad(FloatRect(content_bounds))
-            .BoundingBox());
   }
 
-  if (content_bounds.Size().IsEmpty())
-    return;
-
-  LocalFrameView* view = element->GetDocument().View();
+  Text* text_node = ToText(element->firstChild());
+  LayoutRect content_bounds(text_node->BoundingBox());
+  LocalFrameView* view = text_node->GetDocument().View();
   if (!view)
     return;
 
-  Document& document = element->GetDocument();
+  Document& document = text_node->GetDocument();
   bool is_main_frame = document.IsInMainFrame();
   bool found_opaque_color = false;
   if (is_main_frame) {
@@ -2356,8 +2342,8 @@ void InspectorCSSAgent::GetBackgroundColors(Element* element,
     found_opaque_color = !base_background_color.HasAlpha();
   }
 
-  found_opaque_color = GetColorsFromRect(content_bounds, element->GetDocument(),
-                                         element, *colors);
+  found_opaque_color = GetColorsFromRect(
+      content_bounds, text_node->GetDocument(), element, *colors);
 
   if (!found_opaque_color && !is_main_frame) {
     for (HTMLFrameOwnerElement* owner_element = document.LocalOwner();
