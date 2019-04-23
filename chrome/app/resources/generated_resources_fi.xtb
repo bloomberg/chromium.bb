@@ -3847,7 +3847,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7088434364990739311">Päivitystarkistuksen käynnistäminen epäonnistui (virhekoodi <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver – Avaa ja pakkaa ZIP-tiedostoja Tiedostot-sovelluksessa.</translation>
 <translation id="7088674813905715446">Järjestelmänvalvoja on asettanut tämän laitteen poistotilaan. Voit asettaa sen käyttöönottotilaan pyytämällä järjestelmänvalvojaa asettamaan laitteen odottavaan tilaan.</translation>
-<translation id="7092474863625458670">Voice Matchin avulla voit käynnistää Assistantin suoraan puhekomennolla.
+<translation id="7092474863625458670">Voice Matchin avulla voit käynnistää Assistantin suoraan äänikomennolla.
     <ph name="BR" />
     <ph name="BEGIN_BOLD" />Muistettavaa:<ph name="END_BOLD" /> Assistantin käyttö voi olla mahdollista myös, jos ääntäsi on nauhoitettu tai jonkun toisen ääni muistuttaa omaasi. Voit poistaa Voice Matchin käyttöoikeuden myöhemmin poistamalla sen käytöstä Assistantin asetuksissa.</translation>
 <translation id="7093434536568905704">GTK+</translation>

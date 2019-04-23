@@ -3423,7 +3423,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="641081527798843608">Coincidència d'assumpte</translation>
 <translation id="6412931879992742813">Finestra d'incògnit nova</translation>
 <translation id="6415900369006735853">Connecta't a Internet a través del telèfon</translation>
-<translation id="6416743254476733475">Concedeix o denega els permisos a l'ordinador.</translation>
+<translation id="6416743254476733475">Permet o bloqueja a l'ordinador.</translation>
 <translation id="6417265370957905582">Assistent de Google</translation>
 <translation id="6418160186546245112">S'està tornant a la versió de <ph name="IDS_SHORT_PRODUCT_NAME" /> instal·lada anteriorment.</translation>
 <translation id="6418481728190846787">Retira l'accés a totes les aplicacions permanentment</translation>
@@ -4823,7 +4823,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8642171459927087831">Testimoni d'accés</translation>
 <translation id="8642947597466641025">Fa el text més gran</translation>
 <translation id="8643418457919840804">Per continuar, tria una opció:</translation>
-<translation id="8644655801811752511">Aquesta clau de seguretat no es pot restablir. Prova de restablir-la immediatament després d'inserir-la.</translation>
+<translation id="8644655801811752511">Aquesta clau de seguretat no es pot restablir. Prova de restablir la clau immediatament després d'inserir-la.</translation>
 <translation id="8645354835496065562">Continua permetent l'accés als sensors</translation>
 <translation id="8647834505253004544">No és una adreça web vàlida</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> o <ph name="RE_SCAN_LINK" /></translation>

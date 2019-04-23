@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
+<translation id="1001338328714563407">તમારા ડિવાઇસ અને એકાઉન્ટના મેનેજર તરીકે, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">હમણાં નહીં</translation>
 <translation id="1010200102790553230">પેજ પછીથી લોડ કરો</translation>
 <translation id="1015730422737071372">અતિરિક્ત વિગતો પ્રદાન કરો</translation>
@@ -308,6 +309,7 @@
 <translation id="2586657967955657006">ક્લિપબોર્ડ</translation>
 <translation id="2587730715158995865"><ph name="ARTICLE_PUBLISHER" /> તરફથી. આ અને અન્ય <ph name="OTHER_ARTICLE_COUNT" /> વાર્તાઓ વાંચો.</translation>
 <translation id="2587841377698384444">ડિરેક્ટરી API ID:</translation>
+<translation id="2595719060046994702">આ ડિવાઇસ એક કંપની અથવા અન્ય સંસ્થા દ્વારા મેનેજ કરવામાં આવે છે.</translation>
 <translation id="2597378329261239068">આ દસ્તાવેજ પાસવર્ડ સુરક્ષિત છે. કૃપા કરીને પાસવર્ડ દાખલ કરો.</translation>
 <translation id="2609632851001447353">વૈવિધ્ય</translation>
 <translation id="2618023639789766142">C10 (એન્વલપ)</translation>
@@ -342,6 +344,7 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">કનેક્શન ફરીથી સેટ થયું.</translation>
 <translation id="2788784517760473862">સ્વીકૃત ક્રેડિટ કાર્ડ</translation>
+<translation id="2792012897584536778">આ ડિવાઇસના વ્યવસ્થાપકોએ સુરક્ષા પ્રમાણપત્રો સેટ અપ કર્યા છે, જેના કારણે તેમને તમે મુલાકાત લો તે વેબસાઇટનું કન્ટેન્ટ જોવાની મંજૂરી મળી શકે છે.</translation>
 <translation id="2794233252405721443">સાઇટ અવરોધિત કરી</translation>
 <translation id="2799020568854403057">સાઇટ આગળ હાનિકારક ઍપ્લિકેશનો ધરાવે છે</translation>
 <translation id="2799223571221894425">ફરીથી લોંચ કરો</translation>
@@ -358,6 +361,7 @@
 <translation id="2903493209154104877">સરનામાંઓ</translation>
 <translation id="290376772003165898">પેજ <ph name="LANGUAGE" />માં નથી?</translation>
 <translation id="2909946352844186028">નેટવર્ક ફેરફાર મળ્યો હતો.</translation>
+<translation id="2910133103376701357">તમારું ડિવાઇસ અને એકાઉન્ટ <ph name="ENROLLMENT_DOMAIN" /> દ્વારા મેનેજ થાય છે.</translation>
 <translation id="2916038427272391327">અન્ય પ્રોગ્રામ બંધ કરો</translation>
 <translation id="2922350208395188000">સર્વરનું પ્રમાણપત્ર તપાસી શકાતું નથી.</translation>
 <translation id="2925673989565098301">વિતરણ પદ્ધતિ</translation>
@@ -368,6 +372,7 @@
 <translation id="2948083400971632585">તમે સેટિંગ પેજમાંથી કનેક્શન માટે ગોઠવવામાં આવેલ કોઈપણ પ્રોક્સીઓ બંધ કરી શકો છો.</translation>
 <translation id="2955913368246107853">શોધ બાર બંધ કરો</translation>
 <translation id="2969319727213777354">એક સુરક્ષિત કનેક્શન સ્થાપિત કરવા માટે, તમારી ઘડિયાળ યોગ્ય રીતે સેટ હોવી જરૂરી છે. આનું કારણ એ કે વેબસાઇટ્સ તેઓને ઓળખવા માટે જે પ્રમાણપત્રોનો ઉપયોગ કરે છે તે ચોક્કસ સમય અવધિ માટે જ માન્ય હોય છે. તમારા ઉપકરણની ઘડિયાળ ખોટી હોવાને લીધે, Google Chrome આ પ્રમાણપત્રોને ચકાસી શકતું નથી.</translation>
+<translation id="2970515157925768593">તમારા ડિવાઇસનું અને એકાઉન્ટનું સેટઅપ રિમોટલી બદલી શકે છે.</translation>
 <translation id="2972581237482394796">&amp;ફરી કરો</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, વર્તમાનમાં પસંદ કરેલ. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">ડેટા સાફ કરો</translation>
@@ -379,6 +384,7 @@
 <translation id="3005723025932146533">સાચવેલી કૉપિ બતાવો</translation>
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> માટે CVC દાખલ કરો. એકવાર તમે ખાતરી કરી લો, તે પછી આ સાઇટ સાથે તમારા કાર્ડની વિગતો શેર કરવામાં આવશે.</translation>
 <translation id="3010559122411665027">"<ph name="ENTRY_INDEX" />" એન્ટ્રીને સૂચિબદ્ધ કરો: <ph name="ERROR" /></translation>
+<translation id="3014389611820813634">આ ડિવાઇસના મેનેજર તરીકે, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">આપમેળે અવરોધિત</translation>
 <translation id="3023071826883856138">You4 (એન્વલપ)</translation>
 <translation id="3024663005179499861">ખોટો નીતિ પ્રકાર</translation>
@@ -424,6 +430,7 @@
 <translation id="3287510313208355388">ઑનલાઇન હોય ત્યારે ડાઉનલોડ કરો</translation>
 <translation id="3293642807462928945"><ph name="POLICY_NAME" /> નીતિ વિશે વધુ જાણો</translation>
 <translation id="3303855915957856445">કોઈ શોધ પરિણામો મળ્યાં નથી</translation>
+<translation id="3311730110465560799">તમારા ડિવાઇસનું સેટઅપ રિમોટલી બદલી શકે છે.</translation>
 <translation id="3320021301628644560">બિલિંગ સરનામું ઉમેરો</translation>
 <translation id="3324983252691184275">કિરમજી</translation>
 <translation id="3338095232262050444">સુરક્ષિત</translation>
@@ -517,6 +524,7 @@
 <translation id="3761718714832595332">સ્ટેટસ છુપાવો</translation>
 <translation id="3765032636089507299">Safe Browsing પેજ રચના હેઠળ છે.</translation>
 <translation id="3778403066972421603">શું તમે આ કાર્ડને તમારા Google એકાઉન્ટ અને આ ડિવાઇસ પર સાચવવા માગો છો?</translation>
+<translation id="3779973883630527594">આ એકાઉન્ટને મેનેજ કરનાર કંપની, શાળા અથવા સંસ્થા:</translation>
 <translation id="3781428340399460090">ચળકતો ગુલાબી</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /> માં સમાપ્ત થાય છે</translation>
@@ -557,6 +565,7 @@
 <translation id="4072486802667267160">તમારા ઑર્ડરની પ્રક્રિયા કરતી વખતે એક ભૂલ આવી હતી. કૃપા કરીને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="4075732493274867456">ક્લાઇન્ટ અને સર્વર સામાન્ય SSL પ્રોટોકોલ વર્ઝન અથવા સાઇફર સ્યૂટની સહાય કરતા નથી.</translation>
 <translation id="4079302484614802869">પ્રૉક્સી ગોઠવણી .pac સ્ક્રિપ્ટ URLનો ઉપયોગ કરવા માટે સેટ છે, ફિક્સ્ડ પ્રૉક્સી સર્વર માટે નહીંં.</translation>
+<translation id="4082393374666368382">સેટિંગ - મેનેજમેન્ટ</translation>
 <translation id="4092411512356034591"><ph name="DOMAIN" /> પર ચાલુ રાખીએ?</translation>
 <translation id="4098354747657067197">આગળ છેતરામણી સાઇટ છે</translation>
 <translation id="4103249731201008433">ઉપકરણ અનુક્ર્માંક નંબર અમાન્ય છે</translation>
@@ -689,6 +698,7 @@
 <translation id="4759118997339041434">ચુકવણી સ્વતઃભરણ અક્ષમ કરેલ છે</translation>
 <translation id="4764776831041365478"><ph name="URL" /> પરનાં વેબપેજ અસ્થાયી ધોરણે બંધ હોઈ શકે છે અથવા તે કાયમ માટે નવા વેબ ઍડ્રેસ પર ખસેડવામાં આવ્યા હોઈ શકે છે.</translation>
 <translation id="4771973620359291008">કોઈ અજ્ઞાત ભૂલ આવી.</translation>
+<translation id="4780900888022378816">તમારું ડિવાઇસ <ph name="ENROLLMENT_DOMAIN" /> દ્વારા મેનેજ કરવામાં આવે છે અને તમારું એકાઉન્ટ <ph name="ACCOUNT_DOMAIN" /> દ્વારા મેનેજ કરવામાં આવે છે.</translation>
 <translation id="4785689107224900852">આ ટૅબ પર સ્વિચ કરો</translation>
 <translation id="4798078619018708837">તમારા કાર્ડની વિગતો અપડેટ કરવા <ph name="CREDIT_CARD" />ની સમાપ્તિ તારીખ અને CVC દાખલ કરો. તમે ખાતરી કરી લો, પછી આ સાઇટ સાથે તમારા Google એકાઉન્ટમાંથી કાર્ડની વિગતો શેર કરવામાં આવશે.</translation>
 <translation id="4800132727771399293">તમારી સમાપ્તિ તારીખ અને CVC તપાસો અને ફરીથી પ્રયાસ કરો</translation>
@@ -713,6 +723,7 @@
 <translation id="4926159001844873046"><ph name="SITE" /> કહે છે કે</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">પરિણામો નથી</translation>
+<translation id="4945672369594656571">તમારા ડિવાઇસના અને એકાઉન્ટના ડેટાના કારભારની રીતનું નિયંત્રણ કરે છે. Google તમારા ડિવાઇસના અને એકાઉન્ટના ડેટાની પ્રક્રિયા એકમાત્ર તમારા ડિવાઇસના અને એકાઉન્ટ મેનેજરના નિર્દેશ અનુસાર અને સંપૂર્ણપણે તમારા ડિવાઇસ અને એકાઉન્ટ મેનેજર દ્વારા ઉલ્લેખિત હેતુઓ માટે કરે છે.</translation>
 <translation id="4950898438188848926">ટૅબ, સ્વિચ બટન, ખુલ્લા ટૅબ, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /> પર સ્વિચ કરવા માટે Enter દબાવો</translation>
 <translation id="495170559598752135">ક્રિયાઓ</translation>
 <translation id="4955242332710481440">A5-અતિરિક્ત</translation>
@@ -726,6 +737,7 @@
 <translation id="5017554619425969104">તમે કૉપિ કરેલી ટેક્સ્ટ</translation>
 <translation id="5018422839182700155">આ પૃષ્ઠ ખોલી શકતાં નથી</translation>
 <translation id="5019198164206649151">બેકઅપ સ્ટોર કરવું ખરાબ સ્થિતિમાં છે</translation>
+<translation id="5020154601324912079">તમારા ડિવાઇસના ડેટાના કારભારની રીતનું નિયંત્રણ કરે છે. Google તમારા ડિવાઇસના ડેટાની પ્રક્રિયા એકમાત્ર તમારા ડિવાઇસ મેનેજરના નિર્દેશ અનુસાર અને સંપૂર્ણપણે તમારા ડિવાઇસ મેનેજર દ્વારા ઉલ્લેખિત હેતુઓ માટે કરે છે.</translation>
 <translation id="5023310440958281426">તમારા વ્યવસ્થાપકની નીતિઓ તપાસો</translation>
 <translation id="5029568752722684782">કૉપિ સાફ કરો</translation>
 <translation id="503069730517007720">"<ph name="SOFTWARE_NAME" />" માટેનું રૂટ પ્રમાણપત્ર આવશ્યક છે પરંતુ તે ઇન્સ્ટૉલ કરેલું નથી. આ સમસ્યાના નિવારણ માટે તમારા IT વ્યવસ્થાપકે "<ph name="SOFTWARE_NAME" />" ની ગોઠવણી માટેની સૂચના જોવી જરૂરી છે. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -883,6 +895,7 @@
 <translation id="5838278095973806738">તમારે આ સાઇટ પર કોઈપણ સંવેદનશીલ માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ્સ અથવા ક્રેડિટ કાર્ડ્સ) દાખલ કરવી જોઈએ નહીં, કારણ કે તે હુમલાખોર દ્વારા ચોરવામાં આવી શકે છે.</translation>
 <translation id="5860033963881614850">બંધ</translation>
 <translation id="5863847714970149516">આગળનું પેજ તમને શુલ્ક લાગુ કરી શકે છે</translation>
+<translation id="5865951947699094510">તમારા એકાઉન્ટનું સેટઅપ રિમોટલી બદલી શકે છે.</translation>
 <translation id="5866257070973731571">ફોન નંબર ઉમેરો</translation>
 <translation id="5869405914158311789">આ સાઇટ પર પહોંચી શકાતું નથી</translation>
 <translation id="5869522115854928033">સાચવેલા પાસવર્ડ્સ</translation>
@@ -903,6 +916,7 @@
 <translation id="5977976211062815271">આ ડિવાઇસ પર</translation>
 <translation id="5980920751713728343">અનુક્રમણિકા-3x5</translation>
 <translation id="598637245381783098">ચુકવણી ઍપ્લિકેશન ખોલી શકાતી નથી</translation>
+<translation id="5988826871883769516">તમારું ઉપકરણ <ph name="ENROLLMENT_DOMAIN" /> દ્વારા મેનેજ થાય છે.</translation>
 <translation id="5989320800837274978">ફિક્સ્ડ પ્રૉક્સી સર્વર કે .pac સ્ક્રિપ્ટ URL, બેમાંથી કોઈનો પણ ઉલ્લેખ કરેલો નથી.</translation>
 <translation id="5990559369517809815">સર્વર પરની વિનંતિઓને એક્સ્ટેંશન દ્વારા અવરોધિત કરવામાં આવી છે.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -920,6 +934,7 @@
 <translation id="6047233362582046994">જો તમે તમારી સુરક્ષાના જોખમોને સમજો છો, તો તમે જોખમકારક ઍપ્લિકેશનો દૂર કરતા પહેલા <ph name="BEGIN_LINK" />આ સાઇટની મુલાકાત<ph name="END_LINK" /> લઈ શકો છો.</translation>
 <translation id="6047927260846328439">આ કન્ટેન્ટ કદાચ સૉફ્ટવેર ઇન્સ્ટૉલ કરવા માટે અથવા વ્યક્તિગત માહિતી કઢાવવા માટે તમારી સાથે કપટ કરવાનો પ્રયાસ કરી શકે છે. <ph name="BEGIN_LINK" />છતાં પણ બતાવો<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">તમે અત્યારે આ <ph name="SITE" />ની મુલાકાત લઈ શકતાં નથી કારણ કે આ વેબસાઇટ પ્રમાણપત્ર પિનિંગનો ઉપયોગ કરે છે. નેટવર્કમાં ભૂલ આવવી અને હુમલા થવા સામાન્ય રીતે અસ્થાયી હોય છે, તેથી આ પેજ સંભવિત રૂપે થોડા સમય પછી કાર્ય કરશે.</translation>
+<translation id="6052284303005792909">•</translation>
 <translation id="6058977677006700226">તમારા બધાં ડિવાઇસ પર તમારાં કાર્ડનો ઉપયોગ કરીએ?</translation>
 <translation id="6059925163896151826">USB ઉપકરણો</translation>
 <translation id="6080696365213338172">તમે વ્યવસ્થાપક-પ્રદત્ત પ્રમાણપત્રનો ઉપયોગ કરીને કન્ટેન્ટ ઍક્સેસ કરી છે. તમે <ph name="DOMAIN" /> ને પ્રદાન કરેલ ડેટા તમારા વ્યવસ્થાપક દ્વારા ઇન્ટરસેપ્ટ થઈ શકે છે.</translation>
@@ -989,6 +1004,7 @@
 <translation id="6508722015517270189">Chrome ને પુનઃપ્રારંભ કરો</translation>
 <translation id="6529602333819889595">&amp;ફરી કરો ડિલીટ કરો</translation>
 <translation id="6534179046333460208">વાસ્તવિક વેબ સૂચનો</translation>
+<translation id="6554795675067793129"><ph name="ENROLLMENT_DOMAIN" /> દ્વારા તમારું એકાઉન્ટ મેનેજ કરવામાં આવે છે.</translation>
 <translation id="6556866813142980365">ફરી કરો</translation>
 <translation id="6563469144985748109">તમારા સંચાલકે હજી સુધી તેને મંજૂર કરેલ નથી</translation>
 <translation id="6569060085658103619">તમે એક્સ્ટેન્શન પૃષ્ઠ જોઈ રહ્યાં છો</translation>
@@ -1073,6 +1089,7 @@
 <translation id="7062635574500127092">મોરપીંછ</translation>
 <translation id="7064851114919012435">સંપર્ક માહિતી</translation>
 <translation id="7079718277001814089">આ સાઇટમાં માલવેર છે</translation>
+<translation id="7081564429925484109">ચેતવણી: આ નીતિને ઉલ્લેખ કર્યા મુજબ PolicyListMultipleSourceMergeList નીતિમાં મર્જ કરવામાં આવી ન હતી, કારણ કે તે સૂચિ નથી.</translation>
 <translation id="7087282848513945231">કાઉન્ટિ</translation>
 <translation id="7090678807593890770"><ph name="LINK" /> માટે Google પર શોધો</translation>
 <translation id="7108338896283013870">છુપાવો</translation>
@@ -1149,6 +1166,7 @@
 <translation id="741007362987735528">પહોળાઈ-ફૉર્મેટ</translation>
 <translation id="7416351320495623771">પાસવર્ડ મેનેજ કરો…</translation>
 <translation id="7419106976560586862">પ્રોફાઇલ પાથ</translation>
+<translation id="7424427397225027541">તમારા એકાઉન્ટના ડેટાના કારભારની રીતનું નિયંત્રણ કરે છે. Google તમારા એકાઉન્ટના ડેટાની પ્રક્રિયા એકમાત્ર તમારા એકાઉન્ટ મેનેજરના નિર્દેશ અનુસાર અને સંપૂર્ણપણે તમારા એકાઉન્ટ મેનેજર દ્વારા ઉલ્લેખિત હેતુઓ માટે કરે છે.</translation>
 <translation id="7437289804838430631">સંપર્ક માહિતી ઉમેરો</translation>
 <translation id="7440140511386898319">ઑફલાઇન હો તે સમયે જાણકારી મેળવો</translation>
 <translation id="7441627299479586546">ખોટો નીતિ વિષય</translation>
@@ -1234,6 +1252,7 @@
 <translation id="780301667611848630">નહીં, આભાર</translation>
 <translation id="7805768142964895445">સ્થિતિ</translation>
 <translation id="7806344367022510803">Chromeમાં સર્ચ એંજિનની સેટિંગ બદલો</translation>
+<translation id="7810209002420871817">તમારા <ph name="ACCOUNT_DOMAIN" /> એકાઉન્ટના મેનેજર તરીકે:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Chrome માંથી ફોર્મ સૂચનો દૂર કરીએ?</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' માટે <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> મળ્યાં</translation>

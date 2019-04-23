@@ -675,7 +675,7 @@
 <translation id="2075959085554270910">Permet d'activer ou de désactiver la fonctionnalité Taper pour cliquer et le déplacement tactile</translation>
 <translation id="2076269580855484719">Masquer ce plug-in</translation>
 <translation id="2076672359661571384">Moyenne (recommandé)</translation>
-<translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
+<translation id="2077129598763517140">Utiliser l'accélération matérielle si disponible</translation>
 <translation id="2078019350989722914">Confirmer avant de quitter (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">Si vous supprimez l'un de vos propres certificats, vous ne pouvez plus l'utiliser pour vous identifier.</translation>
 <translation id="2079545284768500474">Annuler</translation>

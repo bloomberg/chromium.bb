@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa le</translation>
 <translation id="1291207594882862231">Előzmények, cookie-k, webhelyadatok és a gyorsítótár törlése…</translation>
 <translation id="129553762522093515">Mostanában bezárt</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> – A(z) <ph name="DEVICE_NAME" /> eszközről</translation>
 <translation id="1326317727527857210">Ha a többi eszközéről is szeretné elérni a lapjait, jelentkezzen be a Chrome-ba.</translation>
 <translation id="1331212799747679585">A Chrome frissítése nem lehetséges. További lehetőségek</translation>
 <translation id="1332501820983677155">A Google Chrome-funkciók billentyűparancsai</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">Kártya szerkesztése</translation>
 <translation id="2154710561487035718">URL másolása</translation>
 <translation id="2156074688469523661">A többi webhely (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">Megosztás</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, internetes alkalmazás. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Folytatás mint <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Elküld bizonyos rendszer-információkat és oldaltartalmakat a Google-nak</translation>
@@ -650,6 +652,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5797070761912323120">A Google felhasználhatja az Ön előzményeit a Keresés, a hirdetések és más Google-szolgáltatások személyre szabására</translation>
 <translation id="5804241973901381774">Engedélyek</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# órája}other{# órája}}</translation>
+<translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Minden jog fenntartva.</translation>
 <translation id="5817918615728894473">Párosítás</translation>
 <translation id="583281660410589416">Ismeretlen</translation>
 <translation id="5833984609253377421">Link megosztása</translation>
@@ -901,6 +904,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="756809126120519699">Chrome-adatok törölve</translation>
 <translation id="757524316907819857">Védett tartalom lejátszásának letiltása a webhelyeken</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> fájl letöltve}other{<ph name="FILES_DOWNLOADED_MANY" /> fájl letöltve}}</translation>
+<translation id="7588219262685291874">Sötét téma bekapcsolása, amikor az eszköz Akkumulátorkímélő módja be van kapcsolva</translation>
 <translation id="7589445247086920869">Tiltja a jelenlegi keresőmotor számára</translation>
 <translation id="7593557518625677601">Aktiválja újra az Android rendszer szinkronizálását a Chrome-szinkronizáláshoz</translation>
 <translation id="7596558890252710462">Operációs rendszer</translation>
@@ -1000,6 +1004,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8266862848225348053">Letöltés helye</translation>
 <translation id="8274165955039650276">Letöltések megtekintése</translation>
 <translation id="8283853025636624853">Szinkronizálás a következővel: <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8300705686683892304">Alkalmazás által kezelt</translation>
 <translation id="8310344678080805313">Szabványos lapok</translation>
 <translation id="8313455859591948645">Kezdőoldal szerkesztése</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> és további webhelyek</translation>

@@ -214,6 +214,7 @@
 <translation id="2626530649491650971">με δυνατότητα κλικ</translation>
 <translation id="2628764385451019380">Δεν υπάρχει προηγούμενο πλαίσιο συνδυασμού.</translation>
 <translation id="2637227747952042642">Μαθηματικά</translation>
+<translation id="2638785836053527382">Συνεχίζεται η λήψη του αρχείου <ph name="FILE_NAME" />.</translation>
 <translation id="2639750663247012216">Τροποποιητής ChromeVox</translation>
 <translation id="2644542693584024604">ορθογραφικό σφάλμα</translation>
 <translation id="2661530546602071611">Ειδοποίηση</translation>
@@ -253,6 +254,7 @@
 <translation id="287383510823843610">Σκούρο πορτοκαλί</translation>
 <translation id="2879867157561757640">Σύρετε τρία δάκτυλα προς τα κάτω</translation>
 <translation id="288178314850623291">Χρησιμοποιήστε εντολές μετάβασης για μετάβαση σε συγκεκριμένους τύπους στοιχείων. Για μετάβαση προς τα εμπρός μεταξύ των επικεφαλίδων, πατήστε Αναζήτηση + H ή για μετάβαση προς τα πίσω, πατήστε Αναζήτηση + Shift + H.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{λεπτό}other{λεπτά}}</translation>
 <translation id="2894654529758326923">Πληροφορίες</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{αριστερό άγκιστρο}other{# αριστερά άγκιστρα}}</translation>
 <translation id="2911433807131383493">Άνοιγμα εκπαιδευτικού οδηγού ChromeVox</translation>
@@ -287,6 +289,7 @@
 <translation id="3084806535845658316">χωρίς εκφώνηση πληκτρολόγησης</translation>
 <translation id="3086746722712840547">σημείωση</translation>
 <translation id="308895241372589742">Δεν υπάρχει επόμενη μαθηματική έκφραση.</translation>
+<translation id="3090227230165225418">Ανακοίνωση ειδοποιήσεων λήψης</translation>
 <translation id="3090532668523289635">ομάδα</translation>
 <translation id="3093176084511590672">Επόμενο ορόσημο</translation>
 <translation id="3096671415663099226">σύνθετο πλαίσιο</translation>
@@ -439,6 +442,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{δεξιό άγκιστρο}other{# δεξιά άγκιστρα}}</translation>
 <translation id="4158704014418536539">Διάκριση πεζών-κεφαλαίων.</translation>
 <translation id="4159784952369912983">Μοβ</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{δευτερόλεπτο}other{δευτερόλεπτα}}</translation>
 <translation id="4161663686871496107">Τα προφορικά σχόλια ChromeVox είναι έτοιμα</translation>
 <translation id="4173994908659439270">Δεν υπάρχει επόμενο πεδίο με δυνατότητα επεξεργασίας.</translation>
 <translation id="4176463684765177261">Απενεργοποιημένη</translation>
@@ -619,6 +623,7 @@
 <translation id="5349770431644471053">Σύνδεσμος επιστροφής</translation>
 <translation id="536031132345979795">Μετάβαση προς τα πίσω κατά τη συνεχόμενη ανάγνωση</translation>
 <translation id="5368000168321181111">Ηχητικά μηνύματα ανενεργά</translation>
+<translation id="5368505757342402527">Ολοκληρώθηκε το <ph name="PROGRESS" />% της λήψης του αρχείου <ph name="FILE_NAME" />. Απομένουν <ph name="TIME" /> <ph name="UNITS" />.</translation>
 <translation id="5374320867641260420">Δεν υπάρχει επόμενο κουμπί.</translation>
 <translation id="5376407118396657359">Πατήστε τα πλήκτρα Αναζήτηση+Ctrl+Alt σε συνδυασμό με τα βέλη για πλοήγηση ανά κελί.</translation>
 <translation id="5382299583965267720">Δεν υπάρχει επόμενη επικεφαλίδα επιπέδου 1.</translation>
@@ -801,6 +806,7 @@
 <translation id="667999046851023355">Έγγραφο</translation>
 <translation id="6688209025607531203">Μια μη αποκλειστική ειδοποίηση</translation>
 <translation id="6689672606256159458">Σκούρο σομόν</translation>
+<translation id="669617842401078250">Η λήψη του αρχείου <ph name="FILE_NAME" /> διακόπηκε προσωρινά.</translation>
 <translation id="6696967141280706829">Πρόλογος</translation>
 <translation id="6697092096875747123">Προηγούμενο σύνθετο πλαίσιο</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{θαυμαστικό}other{# θαυμαστικά}}</translation>
@@ -940,6 +946,7 @@
 <translation id="7641134354185483015">Δεν υπάρχει προηγούμενη επικεφαλίδα επιπέδου 3.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, πλαίσιο κειμένου</translation>
 <translation id="7663318257180412551">Επικεφαλίδα 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{ώρα}other{ώρες}}</translation>
 <translation id="7674576868851035240">Επόμενος σύνδεσμος</translation>
 <translation id="7674768236845044097">Ετικέτα mark</translation>
 <translation id="7684431668231950609">Επεξεργασία κειμένου, καταχώριση διεύθυνσης URL</translation>
@@ -954,6 +961,7 @@
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">αυτόματη συμπλήρωση λίστας</translation>
+<translation id="7763537600611320912">Ξεκίνησε η λήψη του αρχείου <ph name="FILE_NAME" /></translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, πλαίσιο κειμένου κωδικού πρόσβασης</translation>
 <translation id="7776293189010177726">Άνοιγμα των μενού του ChromeVox</translation>
 <translation id="7800558923657349506">Επίλογος</translation>
@@ -1078,6 +1086,7 @@
 <translation id="8096975275316362544">Κρεμ μέντας</translation>
 <translation id="8098587210054821856">Γκρι του σχιστόλιθου</translation>
 <translation id="8110647606445335195">Δεν υπάρχουν ορόσημα ARIA.</translation>
+<translation id="812886159861361726">Η λήψη του αρχείου <ph name="FILE_NAME" /> σταμάτησε</translation>
 <translation id="8138880386467279117">Άγγιγμα</translation>
 <translation id="8153880621934657047">Όχι μέσα στον πίνακα.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{σύμβολο υπογράμμισης}other{# σύμβολα υπογράμμισης}}</translation>
@@ -1147,6 +1156,7 @@
 <translation id="8743786158317878347">εισαγωγή σε δομημένο περιεχόμενο, όπως πίνακες</translation>
 <translation id="8747966237988593539">Ταξινομημένη λίστα</translation>
 <translation id="8749988712346667988">Ασημί</translation>
+<translation id="875769700429317857">Ολοκληρώθηκε η λήψη του αρχείου <ph name="FILE_NAME" /></translation>
 <translation id="8759334257841767240">Δεν υπάρχει επόμενος σύνδεσμος.</translation>
 <translation id="8767968232364267681">Επικεφαλίδα επόμενου επιπέδου 4</translation>
 <translation id="8770473310765924354">έξοδος από δομημένο περιεχόμενο, όπως πίνακες</translation>

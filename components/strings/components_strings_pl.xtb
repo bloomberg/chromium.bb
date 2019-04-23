@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
+<translation id="1001338328714563407">Zarządzająca Twoim urządzeniem i kontem domena <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Nie teraz</translation>
 <translation id="1010200102790553230">Wczytaj stronę później</translation>
 <translation id="1015730422737071372">Podaj dodatkowe informacje</translation>
@@ -308,6 +309,7 @@
 <translation id="2586657967955657006">Schowek</translation>
 <translation id="2587730715158995865">Wydawca: <ph name="ARTICLE_PUBLISHER" />. Przeczytaj ten artykuł i inne (<ph name="OTHER_ARTICLE_COUNT" />).</translation>
 <translation id="2587841377698384444">Identyfikator interfejsu API katalogu:</translation>
+<translation id="2595719060046994702">To urządzenie i konto nie są zarządzane przez firmę ani inną organizację.</translation>
 <translation id="2597378329261239068">Ten dokument jest chroniony hasłem. Wprowadź hasło.</translation>
 <translation id="2609632851001447353">Odmiany</translation>
 <translation id="2618023639789766142">C10 (koperta)</translation>
@@ -342,6 +344,7 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Połączenie zostało zresetowane.</translation>
 <translation id="2788784517760473862">Akceptowane karty kredytowe</translation>
+<translation id="2792012897584536778">Administratorzy tego urządzenia skonfigurowali certyfikaty zabezpieczeń, dzięki którym mogą zobaczyć zawartość stron internetowych, które odwiedzasz.</translation>
 <translation id="2794233252405721443">Strona zablokowana</translation>
 <translation id="2799020568854403057">Strona, którą chcesz otworzyć, zawiera szkodliwe aplikacje</translation>
 <translation id="2799223571221894425">Uruchom ponownie</translation>
@@ -358,6 +361,7 @@
 <translation id="2903493209154104877">Adresy</translation>
 <translation id="290376772003165898">Język tej strony to nie <ph name="LANGUAGE" />?</translation>
 <translation id="2909946352844186028">Wykryto zmianę sieci.</translation>
+<translation id="2910133103376701357">Twoim urządzeniem i kontem zarządza <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2916038427272391327">Zamknij inne programy</translation>
 <translation id="2922350208395188000">Nie można sprawdzić certyfikatu serwera.</translation>
 <translation id="2925673989565098301">Metoda dostawy</translation>
@@ -368,6 +372,7 @@
 <translation id="2948083400971632585">Możesz wyłączyć dowolne serwery proxy skonfigurowane dla połączenia na stronie ustawień.</translation>
 <translation id="2955913368246107853">Zamknij pasek wyszukiwania</translation>
 <translation id="2969319727213777354">Aby urządzenie nawiązało bezpieczne połączenie, jego zegar musi wskazywać prawidłową godzinę. Jest to wymagane, bo certyfikaty używane do identyfikacji stron internetowych są ważne tylko przez określony czas. Zegar urządzenia jest ustawiony nieprawidłowo, więc Google Chrome nie może zweryfikować tych certyfikatów.</translation>
+<translation id="2970515157925768593">Może zdalnie zmienić konfigurację Twojego urządzenia i konta.</translation>
 <translation id="2972581237482394796">&amp;Ponów</translation>
 <translation id="2977665033722899841">Obecnie wybrany wiersz to <ph name="ROW_NAME" />. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Wyczyść dane</translation>
@@ -379,6 +384,7 @@
 <translation id="3005723025932146533">Pokaż zapisaną kopię</translation>
 <translation id="3008447029300691911">Wpisz kod CVC karty <ph name="CREDIT_CARD" />. Po potwierdzeniu szczegółowe dane karty zostaną udostępnione tej stronie.</translation>
 <translation id="3010559122411665027">Pozycja listy „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
+<translation id="3014389611820813634">Zarządzająca tym urządzeniem domena <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Automatycznie zablokowane</translation>
 <translation id="3023071826883856138">You4 (koperta)</translation>
 <translation id="3024663005179499861">Nieprawidłowy typ zasady</translation>
@@ -424,6 +430,7 @@
 <translation id="3287510313208355388">Pobierz, gdy będę online</translation>
 <translation id="3293642807462928945">Więcej informacji o zasadzie <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Brak wyników wyszukiwania</translation>
+<translation id="3311730110465560799">Może zdalnie zmieniać konfigurację urządzenia.</translation>
 <translation id="3320021301628644560">Dodaj adres rozliczeniowy</translation>
 <translation id="3324983252691184275">Karmazynowy</translation>
 <translation id="3338095232262050444">Bezpieczna</translation>
@@ -518,6 +525,7 @@
 <translation id="3761718714832595332">Ukryj stan</translation>
 <translation id="3765032636089507299">Strona funkcji Bezpieczne przeglądanie jest w budowie.</translation>
 <translation id="3778403066972421603">Czy chcesz zapisać tę kartę na swoim koncie Google i na tym urządzeniu?</translation>
+<translation id="3779973883630527594">Firma, szkoła lub organizacja zarządzająca tym kontem:</translation>
 <translation id="3781428340399460090">Ciepłoróżowy</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Wygasa: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -558,6 +566,7 @@
 <translation id="4072486802667267160">Podczas przetwarzania zamówienia wystąpił błąd. Spróbuj ponownie.</translation>
 <translation id="4075732493274867456">Klient i serwer nie obsługują wspólnej wersji protokołu SSL lub mechanizmu szyfrowania.</translation>
 <translation id="4079302484614802869">Proxy skonfigurowano do używania URL-a skryptu PAC, a nie ustalonych serwerów proxy.</translation>
+<translation id="4082393374666368382">Ustawienia – Zarządzanie</translation>
 <translation id="4092411512356034591">Przejść na stronę <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">Wchodzisz na stronę wprowadzającą w błąd</translation>
 <translation id="4103249731201008433">Numer seryjny urządzenia jest nieprawidłowy</translation>
@@ -690,6 +699,7 @@
 <translation id="4759118997339041434">Autouzupełnianie danych o płatności jest wyłączone</translation>
 <translation id="4764776831041365478">Strona internetowa pod adresem <ph name="URL" /> może być tymczasowo niedostępna lub została na stałe przeniesiona pod nowy adres internetowy.</translation>
 <translation id="4771973620359291008">Wystąpił nieznany błąd.</translation>
+<translation id="4780900888022378816">Twoim urządzeniem zarządza <ph name="ENROLLMENT_DOMAIN" />, a Twoim kontem – <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Przełącz na tę kartę</translation>
 <translation id="4798078619018708837">Wpisz datę ważności i kod CVC karty <ph name="CREDIT_CARD" />, by zaktualizować jej dane. Po potwierdzeniu dane karty z Twojego konta Google zostaną udostępnione tej stronie.</translation>
 <translation id="4800132727771399293">Sprawdź datę ważności i kod CVC, a potem spróbuj ponownie</translation>
@@ -714,6 +724,7 @@
 <translation id="4926159001844873046">Komunikat ze strony <ph name="SITE" /></translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Brak wyników</translation>
+<translation id="4945672369594656571">Kontroluje sposób przetwarzania danych z Twojego urządzenia i konta. Google przetwarza dane z Twojego urządzenia i konta tylko za zgodą menedżera Twojego urządzenia i konta i tylko w celach określonych przez menedżera urządzenia i konta.</translation>
 <translation id="4950898438188848926">Przycisk przełączania kart. Naciśnij Enter, by przełączyć się na otwartą kartę, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Czynności</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -727,6 +738,7 @@
 <translation id="5017554619425969104">Skopiowany tekst</translation>
 <translation id="5018422839182700155">Nie można otworzyć tej strony</translation>
 <translation id="5019198164206649151">Nieprawidłowy stan magazynu wspomagającego</translation>
+<translation id="5020154601324912079">Kontroluje sposób przetwarzania danych z Twojego urządzenia. Google przetwarza dane z Twojego urządzenia tylko za zgodą menedżera urządzenia i tylko w określonych przez niego celach.</translation>
 <translation id="5023310440958281426">Sprawdź zasady administratora</translation>
 <translation id="5029568752722684782">Usuń kopię</translation>
 <translation id="503069730517007720">Certyfikat główny oprogramowania „<ph name="SOFTWARE_NAME" />” jest wymagany, ale nie został zainstalowany. Aby rozwiązać ten problem, administrator powinien przeczytać instrukcje dotyczące konfiguracji oprogramowania „<ph name="SOFTWARE_NAME" />”. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -884,6 +896,7 @@
 <translation id="5838278095973806738">Nie podawaj żadnych informacji poufnych (takich jak hasła czy dane kart kredytowych) w tej witrynie, bo osoby atakujące będą mogły je wykraść.</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
 <translation id="5863847714970149516">Otwierana strona może próbować obciążyć Cię płatnością</translation>
+<translation id="5865951947699094510">Może zdalnie zmienić konfigurację Twojego konta.</translation>
 <translation id="5866257070973731571">Dodaj numer telefonu</translation>
 <translation id="5869405914158311789">Ta witryna jest nieosiągalna</translation>
 <translation id="5869522115854928033">Zapisane hasła</translation>
@@ -904,6 +917,7 @@
 <translation id="5977976211062815271">Na tym urządzeniu</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
 <translation id="598637245381783098">Nie można otworzyć aplikacji do płatności</translation>
+<translation id="5988826871883769516">Twoim urządzeniem zarządza <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">Nie określono ani stałych serwerów proxy, ani adresu URL skryptu PAC.</translation>
 <translation id="5990559369517809815">Żądania do serwera zostały zablokowane przez rozszerzenie.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -921,6 +935,7 @@
 <translation id="6047233362582046994">Jeśli rozumiesz zagrożenie, możesz <ph name="BEGIN_LINK" />wejść na tę stronę<ph name="END_LINK" />, zanim szkodliwe aplikacje zostaną usunięte.</translation>
 <translation id="6047927260846328439">Te treści mogą próbować podstępem nakłonić Cię do zainstalowania oprogramowania lub ujawnienia danych osobowych. <ph name="BEGIN_LINK" />Wyświetl mimo to<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Nie możesz teraz otworzyć strony <ph name="SITE" />, ponieważ stosuje ona przypinanie certyfikatów. Błędy sieciowe i ataki są zazwyczaj tymczasowe, więc prawdopodobnie strona będzie dostępna później.</translation>
+<translation id="6052284303005792909">•</translation>
 <translation id="6058977677006700226">Chcesz używać swoich kart na wszystkich urządzeniach?</translation>
 <translation id="6059925163896151826">Urządzenia USB</translation>
 <translation id="6080696365213338172">Masz dostęp do treści dzięki certyfikatowi dostarczonemu przez administratora. Administrator może odczytać dane, jakie udostępnisz w <ph name="DOMAIN" />.</translation>
@@ -990,6 +1005,7 @@
 <translation id="6508722015517270189">Uruchom ponownie Chrome</translation>
 <translation id="6529602333819889595">&amp;Ponów usunięcie</translation>
 <translation id="6534179046333460208">Sugestie dotyczące internetu rzeczy</translation>
+<translation id="6554795675067793129">To konto jest zarządzane przez: <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Ponów</translation>
 <translation id="6563469144985748109">Twój menedżer jeszcze na to nie zezwolił</translation>
 <translation id="6569060085658103619">Przeglądasz stronę rozszerzenia</translation>
@@ -1074,6 +1090,7 @@
 <translation id="7062635574500127092">Morski</translation>
 <translation id="7064851114919012435">Dane kontaktowe</translation>
 <translation id="7079718277001814089">Ta strona zawiera złośliwe oprogramowanie</translation>
+<translation id="7081564429925484109">Ostrzeżenie: Ta zasada nie została scalona na podstawie zasady PolicyListMultipleSourceMergeList, ponieważ nie jest listą.</translation>
 <translation id="7087282848513945231">Hrabstwo</translation>
 <translation id="7090678807593890770">Wyszukaj w Google: <ph name="LINK" /></translation>
 <translation id="7108338896283013870">Ukryj</translation>
@@ -1150,6 +1167,7 @@ Dodatkowe informacje:
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">Zarządzaj hasłami…</translation>
 <translation id="7419106976560586862">Ścieżka profilu</translation>
+<translation id="7424427397225027541">Kontroluje sposób przetwarzania danych z Twojego konta. Google przetwarza dane z Twojego konta tylko za zgodą menedżera konta i tylko w określonych przez niego celach.</translation>
 <translation id="7437289804838430631">Dodaj dane kontaktowe</translation>
 <translation id="7440140511386898319">Przeglądaj offline</translation>
 <translation id="7441627299479586546">Nieprawidłowy podmiot zasady</translation>
@@ -1235,6 +1253,7 @@ Dodatkowe informacje:
 <translation id="780301667611848630">Nie, dziękuję</translation>
 <translation id="7805768142964895445">Stan</translation>
 <translation id="7806344367022510803">Wyszukiwarkę możesz zmienić w ustawieniach Chrome</translation>
+<translation id="7810209002420871817">Zarządzająca Twoim kontem domena <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Usunąć tę podpowiedź do formularza z Chrome?</translation>
 <translation id="7815407501681723534">Znalezione <ph name="SEARCH_RESULTS" /> dla zapytania „<ph name="SEARCH_STRING" />”: <ph name="NUMBER_OF_RESULTS" /></translation>

@@ -382,12 +382,14 @@
 <translation id="6903907808598579934">เปิดการซิงค์</translation>
 <translation id="6914583639806229067">ค้นหารูปภาพที่คุณคัดลอก</translation>
 <translation id="6914783257214138813">คนที่ดูไฟล์ที่ส่งออกได้จะเห็นรหัสผ่านของคุณ</translation>
+<translation id="692898627499215142">ตั้งค่าการซิงค์เริ่มต้นไม่สำเร็จ เลื่อนเปิดสวิตช์ "ซิงค์" เพื่อเริ่มซิงค์</translation>
 <translation id="6944369514868857500">เลือกบัญชีอื่น</translation>
 <translation id="6945221475159498467">เลือก</translation>
 <translation id="6973630695168034713">โฟลเดอร์</translation>
 <translation id="6979158407327259162">Google ไดรฟ์</translation>
 <translation id="7004499039102548441">แท็บล่าสุด</translation>
 <translation id="7006788746334555276">การตั้งค่าเนื้อหา</translation>
+<translation id="7015203776128479407">ตั้งค่าการซิงค์เริ่มต้นไม่สำเร็จ การซิงค์ปิดอยู่</translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
 <translation id="7031882061095297553">ซิงค์กับ</translation>
 <translation id="7053983685419859001">บล็อก</translation>
@@ -399,6 +401,7 @@
 <translation id="7136892417564438900">กล้องถ่ายรูปไม่พร้อมใช้งาน</translation>
 <translation id="7159472599653637159">ขอเว็บไซต์สำหรับมือถือ</translation>
 <translation id="7167621057293532233">ประเภทข้อมูล</translation>
+<translation id="7173114856073700355">เปิดการตั้งค่า</translation>
 <translation id="7189598951263744875">แชร์...</translation>
 <translation id="7192050974311852563">เริ่มต้นการบันทึก</translation>
 <translation id="7203585745079012652">พูดคำตอบกลับ</translation>
@@ -475,6 +478,7 @@
 <translation id="850600235656508448">เปิดในโหมดไม่ระบุตัวตน</translation>
 <translation id="8517375800490286174">ใบอนุญาตโอเพนซอร์ส</translation>
 <translation id="8524799873541103884">แท็บ <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> ถึง <ph name="LAST_VISIBLE_TAB" /> จาก <ph name="NUMBER_OF_OPEN_TABS" /></translation>
+<translation id="8529767659511976195">ใหม่</translation>
 <translation id="8532105204136943229">ปีที่หมดอายุ</translation>
 <translation id="8534481786647257214">โพสต์ใน Google+ แล้ว</translation>
 <translation id="8548878600947630424">ค้นหาในหน้าเว็บ...</translation>

@@ -172,6 +172,7 @@
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">‏قد يكون ملف <ph name="FILE_NAME" /> ضارًا، لذلك فقد حظره Chrome.</translation>
 <translation id="5686916850681061684">‏تخصيص Google Chrome والتحكم فيه معلومات مهمة - انقر للحصول على التفاصيل.</translation>
+<translation id="5690427481109656848">Google LLC</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{‏ستتم إعادة تشغيل Google Chrome خلال ثانية واحدة}zero{‏ستتم إعادة تشغيل Google Chrome خلال # ثانية}two{‏ستتم إعادة تشغيل Google Chrome خلال ثانيتين (#)}few{‏ستتم إعادة تشغيل Google Chrome خلال # ثوانٍ}many{‏ستتم إعادة تشغيل Google Chrome خلال # ثانيةً}other{‏ستتم إعادة تشغيل Google Chrome خلال # ثانية}}</translation>
 <translation id="573759479754913123">‏حول نظام التشغيل Chrome</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
@@ -264,6 +265,7 @@
 <translation id="8286862437124483331">‏يحاول Google Chrome عرض كلمات المرور. اكتب كلمة مرور Windows للسماح بذلك.</translation>
 <translation id="8290100596633877290">‏للأسف! تعطل Google Chrome. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="8342675569599923794">‏هذا الملف ضار، لذلك فقد حظره Chrome.</translation>
+<translation id="8370517070665726704">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لشركة Google LLC. جميع الحقوق محفوظة.</translation>
 <translation id="8380166467911888159">‏لإصلاح الأخطاء الإملائية، يرسِل Chrome ما تكتبه في حقول النص إلى Google</translation>
 <translation id="840084489713044809">‏يرغب Google Chrome في تصدير كلمات المرور.</translation>
 <translation id="8406086379114794905">‏ساهم في تحسين Chrome</translation>

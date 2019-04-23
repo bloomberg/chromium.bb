@@ -3239,7 +3239,7 @@
 <translation id="6122095009389448667">继续禁止此网站查看剪贴板</translation>
 <translation id="6122875415561139701">禁止在“<ph name="DEVICE_NAME" />”上执行写入操作。</translation>
 <translation id="6124650939968185064">需先安装此扩展程序，下列扩展程序才能正常使用：</translation>
-<translation id="6124698108608891449">此网站需要更多权限。</translation>
+<translation id="6124698108608891449">该网站需要更多权限。</translation>
 <translation id="6125479973208104919">抱歉，您需要再次向此 <ph name="DEVICE_TYPE" /> 添加您的帐号。</translation>
 <translation id="6129691635767514872">系统已从 Chrome 和同步的设备中移除了您所选的数据。不过，您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能还有其他形式的浏览记录（例如，在其他 Google 服务中的搜索记录和活动记录）。</translation>
 <translation id="6129938384427316298">Netscape 证书评论</translation>
@@ -3419,7 +3419,7 @@
 <translation id="641081527798843608">主题匹配</translation>
 <translation id="6412931879992742813">打开新的无痕式窗口</translation>
 <translation id="6415900369006735853">通过手机连接到互联网</translation>
-<translation id="6416743254476733475">允许或禁止在您的计算机上使用 VR 头戴式设备。</translation>
+<translation id="6416743254476733475">请在您的计算机上允许或禁止。</translation>
 <translation id="6417265370957905582">Google 助理</translation>
 <translation id="6418160186546245112">正在还原到之前安装的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 版本</translation>
 <translation id="6418481728190846787">永久删除对所有应用的访问权限</translation>

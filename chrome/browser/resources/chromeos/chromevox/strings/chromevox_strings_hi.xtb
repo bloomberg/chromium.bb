@@ -214,6 +214,7 @@
 <translation id="2626530649491650971">क्‍लिक करने योग्‍य</translation>
 <translation id="2628764385451019380">कोई पिछला कॉम्बो बॉक्स नहीं.</translation>
 <translation id="2637227747952042642">गणित</translation>
+<translation id="2638785836053527382">डाउनलोड फिर से शुरू हो गया <ph name="FILE_NAME" /></translation>
 <translation id="2639750663247012216">ChromeVox संशोधक</translation>
 <translation id="2644542693584024604">गलत वर्तनी</translation>
 <translation id="2661530546602071611">सूचना</translation>
@@ -253,6 +254,7 @@
 <translation id="287383510823843610">गहरा नारंगी रंग</translation>
 <translation id="2879867157561757640">तीन उंगलियों से नीचे स्वाइप करें</translation>
 <translation id="288178314850623291">सीधे किसी खास तरह के आइटम पर पहुंचने के लिए 'जंप कमांड' का इस्तेमाल करें. एक शीर्षक से दूसरे शीर्षक पर सीधे जाने के लिए, Search + H या पिछले शीर्षक पर वापस जाने के लिए Search + Shift + H दबाएं.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{मिनट}one{मिनट}other{मिनट}}</translation>
 <translation id="2894654529758326923">जानकारी</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{बायां कोष्ठक}one{# बाएं कोष्ठक}other{# बाएं कोष्ठक}}</translation>
 <translation id="2911433807131383493">ChromeVox निर्देश खोलें</translation>
@@ -287,6 +289,7 @@
 <translation id="3084806535845658316">कोई टाइपिंग इको नहीं</translation>
 <translation id="3086746722712840547">नोट</translation>
 <translation id="308895241372589742">कोई अगला गणित का व्यंजक नहीं.</translation>
+<translation id="3090227230165225418">डाउनलोड सूचनाओं का एलान करें</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">अगला लैंडमार्क</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -439,6 +442,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{दायां कोष्ठक}one{# दाएं कोष्ठक}other{# दाएं कोष्ठक}}</translation>
 <translation id="4158704014418536539">केस संवेदी</translation>
 <translation id="4159784952369912983">बैंगनी</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{सेकंड}one{सेकंड}other{सेकंड}}</translation>
 <translation id="4161663686871496107">ChromeVox की बोलकर दी जाने वाली सुविधा तैयार है</translation>
 <translation id="4173994908659439270">बदलाव करने लायक कोई अगला टेक्स्ट फ़ील्ड नहीं</translation>
 <translation id="4176463684765177261">अक्षम</translation>
@@ -619,6 +623,7 @@
 <translation id="5349770431644471053">बैक लिंक</translation>
 <translation id="536031132345979795">निरंतर पढ़ने के दौरान पीछे जाएं छोड़ें</translation>
 <translation id="5368000168321181111">ईयरकॉन बंद हैं</translation>
+<translation id="5368505757342402527">डाउनलोड <ph name="PROGRESS" />% पूरा हुआ है <ph name="FILE_NAME" />. करीब <ph name="TIME" /> <ph name="UNITS" /> बाकी हैं.</translation>
 <translation id="5374320867641260420">कोई अगला बटन नहीं.</translation>
 <translation id="5376407118396657359">सेल के मुताबिक नेविगेट करने के लिए तीर के निशान वाले बटन के साथ Search+Ctrl+Alt दबाएं.</translation>
 <translation id="5382299583965267720">कोई अगला लेवल 1 का शीर्षक नहीं.</translation>
@@ -801,6 +806,7 @@
 <translation id="667999046851023355">दस्तावेज़</translation>
 <translation id="6688209025607531203">गैर मॉडल सूचना</translation>
 <translation id="6689672606256159458">सामन जैसा गहरा रंग</translation>
+<translation id="669617842401078250">डाउनलोड रोका गया <ph name="FILE_NAME" /></translation>
 <translation id="6696967141280706829">आमुख</translation>
 <translation id="6697092096875747123">पिछला कॉम्बो बॉक्स</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{विस्मयादिबोधक}one{# विस्मयादिबोधक}other{# विस्मयादिबोधक}}</translation>
@@ -939,6 +945,7 @@
 <translation id="7641134354185483015">कोई पिछला लेवल 3 का शीर्षक नहीं.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, लेख बॉक्‍स</translation>
 <translation id="7663318257180412551">शीर्षक 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{घंटा}one{घंटे}other{घंटे}}</translation>
 <translation id="7674576868851035240">अगला लिंक</translation>
 <translation id="7674768236845044097">चिह्नित करें</translation>
 <translation id="7684431668231950609">लेख, यूआरएल में बदलाव करें</translation>
@@ -953,6 +960,7 @@
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912">डाउनलोड शुरू हो गया <ph name="FILE_NAME" /></translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, पासवर्ड लेख बॉक्‍स</translation>
 <translation id="7776293189010177726">ChromeVox मेनू खोलें</translation>
 <translation id="7800558923657349506">उपसंहार</translation>
@@ -1077,6 +1085,7 @@
 <translation id="8096975275316362544">मिंट क्रीम</translation>
 <translation id="8098587210054821856">स्लेटी रंग</translation>
 <translation id="8110647606445335195">कोई ARIA स्थानचिह्न नहीं.</translation>
+<translation id="812886159861361726">डाउनलोड बंद हो गया <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">स्पर्श करें</translation>
 <translation id="8153880621934657047">टेबल में नहीं है.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{अंडरस्कोर}one{# अंडरस्कोर}other{# अंडरस्कोर}}</translation>
@@ -1146,6 +1155,7 @@
 <translation id="8743786158317878347">संरचित सामग्री, जैसे तालिकाएं डालें</translation>
 <translation id="8747966237988593539">क्रमित सूची</translation>
 <translation id="8749988712346667988">चांदी जैसा रंग</translation>
+<translation id="875769700429317857">डाउनलोड पूरा हुआ <ph name="FILE_NAME" /></translation>
 <translation id="8759334257841767240">कोई अगला लिंक नहीं.</translation>
 <translation id="8767968232364267681">अगले स्‍तर 4 का शीर्षक</translation>
 <translation id="8770473310765924354">संरचित सामग्री, जैसे तालिकाओं से बाहर निकलें</translation>

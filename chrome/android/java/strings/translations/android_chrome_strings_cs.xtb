@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
 <translation id="1291207594882862231">Vymazat historii, soubory cookie, data webů, mezipaměť…</translation>
 <translation id="129553762522093515">Nedávno zavřené</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> – odesláno ze zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="1326317727527857210">Chcete-li získat přístup ke kartám ze svých ostatních zařízení, přihlaste se do Chromu.</translation>
 <translation id="1331212799747679585">Chrome nelze aktualizovat. Další možnosti</translation>
 <translation id="1332501820983677155">Zkratky funkcí prohlížeče Google Chrome</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">Úprava karty</translation>
 <translation id="2154710561487035718">Kopírovat adresu URL</translation>
 <translation id="2156074688469523661">Zbývající weby (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">Sdílení</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webová aplikace <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Pokračovat jako uživatel <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Odesílá část informací o systému a obsahu stránek do Googlu</translation>
@@ -650,6 +652,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5797070761912323120">Google vaši historii může používat k personalizaci Vyhledávání, reklam a dalších služeb Google</translation>
 <translation id="5804241973901381774">Oprávnění</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{před # hodinou}few{před # hodinami}many{před # hodiny}other{před # hodinami}}</translation>
+<translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Všechna práva vyhrazena.</translation>
 <translation id="5817918615728894473">Spárovat</translation>
 <translation id="583281660410589416">Neznámé</translation>
 <translation id="5833984609253377421">Sdílet odkaz</translation>
@@ -901,6 +904,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="756809126120519699">Vymazání údajů Chromu</translation>
 <translation id="757524316907819857">Bránit webům v přehrávání chráněného obsahu</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Byl stažen <ph name="FILES_DOWNLOADED_ONE" /> soubor}few{Byly staženy <ph name="FILES_DOWNLOADED_MANY" /> soubory}many{Bylo staženo <ph name="FILES_DOWNLOADED_MANY" /> souboru}other{Bylo staženo <ph name="FILES_DOWNLOADED_MANY" /> souborů}}</translation>
+<translation id="7588219262685291874">Když je na zařízení zapnutý spořič baterie, zapnout tmavý motiv</translation>
 <translation id="7589445247086920869">Blokovat pro aktuální vyhledávač</translation>
 <translation id="7593557518625677601">Chcete-li spustit synchronizaci Chromu, povolte synchronizaci systému Android.</translation>
 <translation id="7596558890252710462">Operační systém</translation>
@@ -1000,6 +1004,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8266862848225348053">Umístění stažených souborů</translation>
 <translation id="8274165955039650276">Zobrazit stažený obsah</translation>
 <translation id="8283853025636624853">Data se synchronizují do účtu <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8300705686683892304">Spravováno aplikací</translation>
 <translation id="8310344678080805313">Standardní karty</translation>
 <translation id="8313455859591948645">Úprava počáteční stránky</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> a další weby</translation>

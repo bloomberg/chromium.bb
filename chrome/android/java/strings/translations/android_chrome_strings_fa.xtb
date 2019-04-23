@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
 <translation id="1291207594882862231">پاک کردن سابقه، کوکی‌ها، داده‌های سایت، حافظه پنهان…</translation>
 <translation id="129553762522093515">اخیراً بسته‌شده</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> - ارسال‌شده از <ph name="DEVICE_NAME" /></translation>
 <translation id="1326317727527857210">‏برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، به سیستم Chrome وارد شوید.</translation>
 <translation id="1331212799747679585">‏Chrome به‌روزرسانی نشد. گزینه‌های دیگر</translation>
 <translation id="1332501820983677155">‏میان‌برهای ویژه Google Chrome</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">ویرایش کارت</translation>
 <translation id="2154710561487035718">کپی نشانی وب</translation>
 <translation id="2156074688469523661">سایت‌های باقی‌مانده (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">هم‌رسانی</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />، برنامه وب. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">ادامه دادن به‌عنوان <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">‏برخی از اطلاعات سیستم و محتوای صفحه را به Google ارسال می‌کند</translation>
@@ -650,6 +652,7 @@
 <translation id="5797070761912323120">‏Google ممکن است از سابقه مرور شما برای شخصی کردن جستجو، آگهی‌ها و سایر سرویس‌های Google استفاده کند</translation>
 <translation id="5804241973901381774">مجوزها</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{۱ ساعت قبل}one{# ساعت قبل}other{# ساعت قبل}}</translation>
+<translation id="5810288467834065221">‏حق نسخه‌برداری <ph name="YEAR" /> Google LLC.‎ کلیه حقوق محفوظ است.</translation>
 <translation id="5817918615728894473">مرتبط‌سازی</translation>
 <translation id="583281660410589416">ناشناس</translation>
 <translation id="5833984609253377421">اشتراک‌گذاری پیوند</translation>
@@ -901,6 +904,7 @@
 <translation id="756809126120519699">‏داده‌های Chrome پاک شد</translation>
 <translation id="757524316907819857">مسدود کردن سایت‌ها برای پخش محتوای محافظت‌شده</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> فایل بارگیری شد}one{<ph name="FILES_DOWNLOADED_MANY" /> فایل بارگیری شد}other{<ph name="FILES_DOWNLOADED_MANY" /> فایل بارگیری شد}}</translation>
+<translation id="7588219262685291874">روشن شدن طرح زمینه تیره وقتی «بهینه‌سازی باتری» دستگاه روشن است</translation>
 <translation id="7589445247086920869">مسدود کردن موتور جستجوی کنونی</translation>
 <translation id="7593557518625677601">‏برای شروع همگام‌سازی Chrome، تنظیمات Android را باز کنید و همگام‌سازی سیستم Android را دوباره فعال کنید</translation>
 <translation id="7596558890252710462">سیستم عامل</translation>
@@ -1000,6 +1004,7 @@
 <translation id="8266862848225348053">مکان بارگیری</translation>
 <translation id="8274165955039650276">مشاهده بارگیری‌ها</translation>
 <translation id="8283853025636624853">در حال همگام‌سازی در <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8300705686683892304">مدیریت‌شده توسط برنامه</translation>
 <translation id="8310344678080805313">برگه‌های استاندارد</translation>
 <translation id="8313455859591948645">ویرایش صفحه شروع</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> و سایت‌های دیگر</translation>

@@ -86,6 +86,7 @@
 <translation id="225680501294068881">Скенирање уређаја...</translation>
 <translation id="2268130516524549846">Bluetooth је онемогућен</translation>
 <translation id="2268813581635650749">Одјави све</translation>
+<translation id="2277103315734023688">Премотај унапред</translation>
 <translation id="2292698582925480719">Размера приказа</translation>
 <translation id="2302092602801625023">Овим налогом управља Family Link</translation>
 <translation id="2303600792989757991">Укључи/искључи преглед прозора</translation>
@@ -166,6 +167,7 @@
 <translation id="3371140690572404006">Уређај са USB прикључком типа C (десни предњи порт)</translation>
 <translation id="3400357268283240774">Додатна подешавања</translation>
 <translation id="3413817803639110246">Још увек нема шта да се види</translation>
+<translation id="343571671045587506">Измени подсетник</translation>
 <translation id="3445925074670675829">Уређај са USB прикључком типа C</translation>
 <translation id="3454224730401036106">Сада сте повезани на безбеднију мрежу</translation>
 <translation id="3465223694362104965">Још једна тастатура је повезана са овим уређајем откад сте се последњи пут пријавили. Уверите се да је у питању поуздана тастатура пре него што је користите.</translation>
@@ -198,12 +200,14 @@
 <translation id="3900355044994618856">Сесија се завршава за <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Повезивање са мрежом <ph name="NAME" /></translation>
 <translation id="394485226368336402">Подешавања звука</translation>
+<translation id="3962859241508114581">Претходна песма</translation>
 <translation id="397105322502079400">Израчунавање...</translation>
 <translation id="3995138139523574647">Уређај са USB прикључком типа C (десни задњи порт)</translation>
 <translation id="4017989525502048489">Ласерски показивач</translation>
 <translation id="4042660782729322247">Делите екран</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Искључено за апликацију}one{Искључено за # апликацију}few{Искључено за # апликације}other{Искључено за # апликација}}</translation>
 <translation id="4072264167173457037">Сигнал средње јачине</translation>
+<translation id="4112140312785995938">Премотај уназад</translation>
 <translation id="4129129681837227511">Да бисте видели обавештења на закључаном екрану, откључајте га како бисте променили подешавање</translation>
 <translation id="4146833061457621061">Пусти музику</translation>
 <translation id="4181841719683918333">Језици</translation>
@@ -227,6 +231,7 @@
 <translation id="4421231901400348175">Делите контролу над екраном са особом <ph name="HELPER_NAME" /> преко Даљинске помоћи.</translation>
 <translation id="4430019312045809116">Јачина звука</translation>
 <translation id="4450893287417543264">Не приказуј поново</translation>
+<translation id="4477350412780666475">Следећа песма</translation>
 <translation id="4479639480957787382">Етернет</translation>
 <translation id="4481530544597605423">Уређаји чије је упаривање опозвано</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Повезује се...</translation>
@@ -392,6 +397,7 @@
 <translation id="7222902781030499995">Заустави тајмер</translation>
 <translation id="7256634071279256947">Задњи микрофон</translation>
 <translation id="726276584504105859">Превуците овде да бисте користили подељени екран</translation>
+<translation id="7262906531272962081">Направи подсетник</translation>
 <translation id="7303365578352795231">Одговор се даје на другом уређају.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Тастатура на екрану</translation>

@@ -86,6 +86,7 @@
 <translation id="225680501294068881">ডিভাইসগুলির জন্য স্ক্যান করা হচ্ছে...</translation>
 <translation id="2268130516524549846">ব্লুটুথ অক্ষমিত</translation>
 <translation id="2268813581635650749">সবগুলি প্রস্থান করুন</translation>
+<translation id="2277103315734023688">এগিয়ে যান</translation>
 <translation id="2292698582925480719">স্কেল প্রদর্শন করুন</translation>
 <translation id="2302092602801625023">এই অ্যাকাউন্টটি Family Link দ্বারা ম্যানেজ করা</translation>
 <translation id="2303600792989757991">উইন্ডোর ওভারভিউ টগল করুন</translation>
@@ -166,6 +167,7 @@
 <translation id="3371140690572404006">USB-C ডিভাইস (ডান দিকের সামনের পোর্ট)</translation>
 <translation id="3400357268283240774">আরও সেটিংস</translation>
 <translation id="3413817803639110246">এখনও পর্যন্ত কিছু দেখার নেই</translation>
+<translation id="343571671045587506">রিমাইন্ডার এডিট করুন</translation>
 <translation id="3445925074670675829">USB-C ডিভাইস</translation>
 <translation id="3454224730401036106">আপনার নেটওয়ার্ক সংযোগটি আরও সুরক্ষিত নেটওয়ার্কে পরিবর্তিত হয়েছে</translation>
 <translation id="3465223694362104965">আপনি শেষবার সাইন-ইন করার পরে আরেকটি কীবোর্ড এই ডিভাইসে কানেক্ট করা হয়েছে। এটি ব্যবহার করার আগে কীবোর্ডটিকে আপনি নিরাপদ বলে মনে করেন কিনা তা দেখে নিন।</translation>
@@ -198,12 +200,14 @@
 <translation id="3900355044994618856">আপনার সেশনটি <ph name="SESSION_TIME_REMAINING" /> এ শেষ হবে</translation>
 <translation id="3901991538546252627"><ph name="NAME" />-এ সংযোগ করা হচ্ছে</translation>
 <translation id="394485226368336402">অডিও সেটিংস</translation>
+<translation id="3962859241508114581">আগের ট্র্যাক চালান</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
 <translation id="3995138139523574647">USB-C ডিভাইস (ডান দিকের পিছনের পোর্ট)</translation>
 <translation id="4017989525502048489">লেজার পয়েন্টার</translation>
 <translation id="4042660782729322247">আপনার স্ক্রিন শেয়ার করছেন</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{একটি অ্যাপের জন্য বন্ধ আছে}one{#টি অ্যাপের জন্য বন্ধ আছে}other{#টি অ্যাপের জন্য বন্ধ আছে}}</translation>
 <translation id="4072264167173457037">মাঝারি সিগন্যাল</translation>
+<translation id="4112140312785995938">পিছিয়ে যান</translation>
 <translation id="4129129681837227511">আপনার লক স্ক্রিনে বিজ্ঞপ্তি দেখার জন্য সেটিংস পরিবর্তন করতে আনলক করুন</translation>
 <translation id="4146833061457621061">মিউজিক চালান</translation>
 <translation id="4181841719683918333">ভাষাসমূহ</translation>
@@ -227,6 +231,7 @@
 <translation id="4421231901400348175">রিমোট সহায়কের মাধ্যমে <ph name="HELPER_NAME" />-এর সাথে আপনার স্ক্রিন নিয়ন্ত্রন ভাগ করুন৷</translation>
 <translation id="4430019312045809116">ভলিউম</translation>
 <translation id="4450893287417543264">আর দেখতে চাই না</translation>
+<translation id="4477350412780666475">পরের ট্র্যাক চালান</translation>
 <translation id="4479639480957787382">ইথারনেট</translation>
 <translation id="4481530544597605423">বিযুক্ত করা ডিভাইসগুলি</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: সংযুক্ত হচ্ছে...</translation>
@@ -393,6 +398,7 @@
 <translation id="7222902781030499995">টাইমার বন্ধ করুন</translation>
 <translation id="7256634071279256947">পেছনের মাইক্রোফোন</translation>
 <translation id="726276584504105859">বিভক্ত স্ক্রিন ব্যবহার করতে এখানে টেনে আনুন</translation>
+<translation id="7262906531272962081">রিমাইন্ডার তৈরি করুন</translation>
 <translation id="7303365578352795231">অন্য ডিভাইসে উত্তর দেওয়া হচ্ছে।</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">অন-স্ক্রীণ কীবোর্ড</translation>

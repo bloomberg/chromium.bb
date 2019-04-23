@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">આ સાઇટનું ક્યારેય ભાષાંતર કરશો નહીં</translation>
 <translation id="1291207594882862231">ઇતિહાસ, કુકી, સાઇટ ડેટા, કૅશ સાફ કરો…</translation>
 <translation id="129553762522093515">તાજેતરમાં બંધ કરેલા</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> - <ph name="DEVICE_NAME" /> પરથી મોકલેલ</translation>
 <translation id="1326317727527857210">તમારા અન્ય ઉપકરણો પરથી તમારા ટૅબ્સ મેળવવા માટે, Chrome માં સાઇન ઇન કરો.</translation>
 <translation id="1331212799747679585">Chrome અપડેટ કરી શકાતું નથી. વધુ વિકલ્પો</translation>
 <translation id="1332501820983677155">Google Chrome સુવિધાના શૉર્ટકટ્સ</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">કાર્ડમાં ફેરફાર કરો</translation>
 <translation id="2154710561487035718">URL ની કૉપિ કરો</translation>
 <translation id="2156074688469523661">બાકી સાઇટ (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">શેરિંગ</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, વેબ ઍપ. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> તરીકે ચાલુ રાખો</translation>
 <translation id="2232379019872353004">Googleને અમુક સિસ્ટમ માહિતી અને પેજ કન્ટેન્ટ મોકલે છે</translation>
@@ -650,6 +652,7 @@
 <translation id="5797070761912323120">Google, શોધ, જાહેરાતો અને અન્ય Google સેવાઓને વ્યક્તિગત કરવા માટે તમારા ઇતિહાસનો ઉપયોગ કરી શકે છે</translation>
 <translation id="5804241973901381774">પરવાનગીઓ</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# કલાક પહેલાં}one{# કલાક પહેલાં}other{# કલાક પહેલાં}}</translation>
+<translation id="5810288467834065221">કૉપિરાઇટ <ph name="YEAR" /> Google LLC. સર્વાધિકાર સુરક્ષિત.</translation>
 <translation id="5817918615728894473">જોડી કરો</translation>
 <translation id="583281660410589416">અજ્ઞાત</translation>
 <translation id="5833984609253377421">લિંક શેર કરો</translation>
@@ -901,6 +904,7 @@
 <translation id="756809126120519699">Chrome ડેટા સાફ કર્યો</translation>
 <translation id="757524316907819857">સાઇટને સંરક્ષિત કન્ટેન્ટ ચલાવવાથી બ્લૉક કરો</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> ફાઇલ ડાઉનલોડ કરી}one{<ph name="FILES_DOWNLOADED_MANY" /> ફાઇલ ડાઉનલોડ કરી}other{<ph name="FILES_DOWNLOADED_MANY" /> ફાઇલ ડાઉનલોડ કરી}}</translation>
+<translation id="7588219262685291874">જ્યારે તમારા ડિવાઇસનું બૅટરી સેવર ચાલુ હોય ત્યારે ઘેરી થીમ ચાલુ કરો</translation>
 <translation id="7589445247086920869">હાલનું શોધ એંજિન અવરોધિત કરો</translation>
 <translation id="7593557518625677601">Chrome સિંક શરૂ કરવા Android સેટિંગ ખોલો અને Android સિસ્ટમ સિંક ફરી ચાલુ કરો</translation>
 <translation id="7596558890252710462">ઓપરેટિંગ સિસ્ટમ</translation>
@@ -1000,6 +1004,7 @@
 <translation id="8266862848225348053">સ્થાન ડાઉનલોડ કરો</translation>
 <translation id="8274165955039650276">ડાઉનલોડ જુઓ</translation>
 <translation id="8283853025636624853"><ph name="SYNC_ACCOUNT_USER_NAME" /> પર સમન્વયિત કરી રહ્યાં છે</translation>
+<translation id="8300705686683892304">ઍપ દ્વારા મેનેજ થતી</translation>
 <translation id="8310344678080805313">માનક ટેબ્સ</translation>
 <translation id="8313455859591948645">સ્ટાર્ટઅપ પેજમાં ફેરફાર કરો</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> અને વધુ સાઇટ</translation>

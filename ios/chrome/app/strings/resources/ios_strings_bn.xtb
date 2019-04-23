@@ -383,12 +383,14 @@
 <translation id="6903907808598579934">সিঙ্ক চালু করুন</translation>
 <translation id="6914583639806229067">আপনার কপি করা ছবি সার্চ করুন</translation>
 <translation id="6914783257214138813">এক্সপোর্ট করা ফাইল যারা দেখতে পান তারা আপনার পাসওয়ার্ডগুলিও দেখতে পাবেন।</translation>
+<translation id="692898627499215142">সিঙ্কের প্রাথমিক সেট-আপ সম্পূর্ণ হয়নি। সিঙ্ক চালু করতে, সেটি টগল করুন।</translation>
 <translation id="6944369514868857500">অন্য অ্যাকাউন্ট বেছে নিন</translation>
 <translation id="6945221475159498467">নির্বাচন</translation>
 <translation id="6973630695168034713">ফোল্ডারগুলি</translation>
 <translation id="6979158407327259162">Google ড্রাইভ</translation>
 <translation id="7004499039102548441">সাম্প্রতিক ট্যাবগুলি</translation>
 <translation id="7006788746334555276">সামগ্রী সেটিংস</translation>
+<translation id="7015203776128479407">সিঙ্কের প্রাথমিক সেট-আপ সম্পূর্ণ হয়নি। সিঙ্ক বন্ধ আছে।</translation>
 <translation id="7029809446516969842">পাসওয়ার্ড</translation>
 <translation id="7031882061095297553">এতে সিঙ্ক করুন</translation>
 <translation id="7053983685419859001">ব্লক করুন</translation>
@@ -400,6 +402,7 @@
 <translation id="7136892417564438900">ক্যামেরা অনুপলব্ধ</translation>
 <translation id="7159472599653637159">মোবাইল সাইটের জন্য অনুরোধ করুন</translation>
 <translation id="7167621057293532233">ডেটা প্রকার</translation>
+<translation id="7173114856073700355">সেটিংস খুলুন</translation>
 <translation id="7189598951263744875">শেয়ার করুন...</translation>
 <translation id="7192050974311852563">লগ করা শুরু করুন</translation>
 <translation id="7203585745079012652">আবার উত্তরগুলি বলে</translation>
@@ -476,6 +479,7 @@
 <translation id="850600235656508448">ছদ্মবেশী ট্যাবে খুলুন</translation>
 <translation id="8517375800490286174">ওপেন সোর্স লাইসেন্স</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" />টির মধ্যে <ph name="FIRST_VISIBLE_TAB" /> থেকে <ph name="LAST_VISIBLE_TAB" /> পর্যন্ত <ph name="INCOGNITO" /> ট্যাব</translation>
+<translation id="8529767659511976195">নতুন</translation>
 <translation id="8532105204136943229">মেয়াদপূর্তির বছর</translation>
 <translation id="8534481786647257214">Google+ পোষ্ট সম্পূর্ণ হয়েছে৷</translation>
 <translation id="8548878600947630424">পৃষ্ঠাটি খুঁজুন...</translation>

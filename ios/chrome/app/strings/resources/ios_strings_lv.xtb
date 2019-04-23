@@ -382,12 +382,14 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="6903907808598579934">Ieslēgt sinhronizāciju</translation>
 <translation id="6914583639806229067">Meklēt jūsu kopēto attēlu</translation>
 <translation id="6914783257214138813">Jūsu paroles būs redzamas ikvienam, kas var skatīt eksportēto failu.</translation>
+<translation id="692898627499215142">Sākotnējā sinhronizācijas iestatīšana netika pabeigta. Lai sāktu sinhronizāciju, iespējojiet sinhronizācijas slēdzi.</translation>
 <translation id="6944369514868857500">Izvēlēties citu kontu</translation>
 <translation id="6945221475159498467">Atlasīt</translation>
 <translation id="6973630695168034713">Mapes</translation>
 <translation id="6979158407327259162">Google disks</translation>
 <translation id="7004499039102548441">Nesen atvērtas cilnes</translation>
 <translation id="7006788746334555276">Satura iestatījumi</translation>
+<translation id="7015203776128479407">Sākotnējā sinhronizācijas iestatīšana netika pabeigta. Sinhronizācija ir izslēgta.</translation>
 <translation id="7029809446516969842">Paroles</translation>
 <translation id="7031882061095297553">Sinhronizēt ar:</translation>
 <translation id="7053983685419859001">Bloķēt</translation>
@@ -399,6 +401,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="7136892417564438900">Kamera nav pieejama.</translation>
 <translation id="7159472599653637159">Pieprasīt mobilo vietni</translation>
 <translation id="7167621057293532233">Datu tipi</translation>
+<translation id="7173114856073700355">Atvērt iestatījumus</translation>
 <translation id="7189598951263744875">Kopīgot...</translation>
 <translation id="7192050974311852563">Sākt reģistrēšanu</translation>
 <translation id="7203585745079012652">Izrunāt atbildes skaļi</translation>
@@ -475,6 +478,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="850600235656508448">Atvērt inkognito režīmā</translation>
 <translation id="8517375800490286174">Atklātā pirmkoda licences</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" />.–<ph name="LAST_VISIBLE_TAB" />. cilne no <ph name="NUMBER_OF_OPEN_TABS" /></translation>
+<translation id="8529767659511976195">Jaunums</translation>
 <translation id="8532105204136943229">Der. term. gads</translation>
 <translation id="8534481786647257214">Google+ ziņa izveidota.</translation>
 <translation id="8548878600947630424">Atrast lapā...</translation>

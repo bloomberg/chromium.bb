@@ -54,6 +54,13 @@
 <translation id="1049138910114524876">Konfigurerar vilken språkkod som ska gälla för inloggningsskärmen i <ph name="PRODUCT_OS_NAME" />.
 
       När principen har ställts in visas inloggningsskärmen alltid på det språk som har angetts först i principen (definitionen ges i form av en lista så att principen ska vara kompatibel med framtida versioner). Om principen inte har ställts in eller om en tom lista har angetts visas inloggningsskärmen på det språk som användes vid den senaste användarsessionen. Om principen har ställts in på ett ogiltigt värde används reservspråkkoden (för närvarande en-US) för inloggningsskärmen.</translation>
+<translation id="1052499923181221200">Principen har ingen inverkan om inte SamlInSessionPasswordChangeEnabled är inställd på sant.
+      Om den principen är inställd på sant och den här principen är inställd på till exempel 14 innebär det att SAML-användare får en avisering 14 dagar innan deras lösenord upphör att gälla.
+      Då kan de åtgärda saken direkt genom att byta lösenord under sessionen och uppdatera sina lösenord innan de upphör att gälla.
+      Men aviseringarna visas bara om information om utgångsdatum för lösenordet skickas till enheten via identitetsleverantören för SAML under SAML-inloggningsflödet.
+      Om den här pricnipen ställs in på noll innebär det att användarna inte får någon avisering i förväg. I stället får de en avisering när lösenordet redan har upphört att gälla.
+
+      Om den här principen har angetts kan användaren inte ändra eller åsidosätta den.</translation>
 <translation id="1062011392452772310">Aktivera fjärrattestering för enheten</translation>
 <translation id="1062407476771304334">Ersätt</translation>
 <translation id="1079801999187584280">Tillåt inte använding av Utvecklarverktyg</translation>
@@ -214,6 +221,7 @@
       Om principen är aktiverad får Google Assistent läsa skärmkontexten.
       Om principen är inaktiverad får Google Assistent inte läsa skärmkontexten.
       Om principen saknar inställning kan användarna välja om Google Assistent får läsa skärmkontext eller inte</translation>
+<translation id="1376119291123231789">Aktivera det avancerade batteriladdningsläget</translation>
 <translation id="1383493480903114193">Principen tvingar nätverkskod att köras i webbläsarprocessen.
 
       Principen är inaktiverad som standard, och när den är aktiverad utsätts användarna för säkerhetsproblemen när nätverksprocessen körs i en sandlåda.
@@ -314,6 +322,18 @@
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1502843533062797703">Aktivera blockering av kodinjektion från tredjepartsprogram</translation>
 <translation id="1504431521196476721">Fjärrattestering</translation>
+<translation id="1507382822467487898">
+          Konfigurerar vilken MAC-adress (Media Access Control) som ska användas när en docka är ansluten till enheten.
+
+          När en docka är ansluten till vissa enhetsmodeller används enhetens utsedda MAC-adress för dockning för att identifiera enheten på Ethernet som standard. Principen tillåter att administratören ändrar MAC-adressens källa när enheten är dockad.
+
+          Om DeviceDockMacAddress väljs eller om principen saknar inställning används enhetens utsedda MAC-adress för dockning.
+
+          Om DeviceNicMacAddress har valts används enhetens NIC-adress (Network Interface Controller).
+
+          Om DockNicMacAddress har valts används dockans NIC MAC-adress.
+
+          Inställningen kan inte ändras av användaren.</translation>
 <translation id="1507957856411744193">Om den här principen är inställd på sant ansluter <ph name="PRODUCT_NAME" /> till Cast-enheter på alla IP-adresser, inte bara privata RFC1918/RFC4193-adresser.
 
           Om den här principen är inställd på falskt ansluter <ph name="PRODUCT_NAME" /> bara till Cast-enheter på privata RFC1918/RFC4193-adresser.
@@ -752,6 +772,17 @@
 <translation id="2303795211377219696">Aktivera autofyll för kreditkort</translation>
 <translation id="2309390639296060546">Standardinställning för geografisk plats</translation>
 <translation id="2327252517317514801">Ange vilka domäner som ska ha tillgång till G Suite</translation>
+<translation id="2356878440219553005">Anger energisparprincipen för batteriladdningsläge.
+
+          Styr batteriladdningen dynamiskt för att minimera slitage på grund av hög batteribelastning och öka batteriets livslängd.
+
+          Om det anpassade batteriladdningsläget har valts måste DeviceBatteryChargeCustomStartCharging och DeviceBatteryChargeCustomStopCharging anges.
+
+          Om principen är inställd tillämpas batteriladdningsläget om enheten har stöd för det.
+
+          Om principen saknar inställning tillämpas standardläget för batteriladdning och detta kan inte ändras av användaren.
+
+          Obs! <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> åsidosätter principen om den föregående är specificerad.</translation>
 <translation id="237494535617297575">Policyn gör att du kan ange en lista med webbadressmönster som inte får visa meddelanden.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultNotificationsSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
@@ -789,6 +820,7 @@
 
       Om policyn har inställningen falskt kan den automatiska inloggningen utan fördröjning (om en sådan har konfigurerats) inte passeras.</translation>
 <translation id="2454228136871844693">Optimera för stabilitet.</translation>
+<translation id="2463034609187171371">Aktivera DHE-krypteringssviter i TLS</translation>
 <translation id="2463365186486772703">Appens språkversion</translation>
 <translation id="2466131534462628618">Autentisering via infångstportal ignorerar proxy</translation>
 <translation id="2482676533225429905">Native Messaging</translation>
@@ -970,6 +1002,7 @@
 <translation id="2769952903507981510">Konfigurera det obligatoriska domännamnet för fjärråtkomstvärdar</translation>
 <translation id="2787173078141616821">Rapportera information om Android-status</translation>
 <translation id="2799297758492717491">Tillåt att media spelas upp automatiskt på en vitlista över webbadressmallar</translation>
+<translation id="2801155097555584385">Ange anpassad laddningsstart för batteriet i procent</translation>
 <translation id="2801230735743888564">Tillåt användare att spela påskäggsspelet med dinosaurier när enheten är offline.
 
       Om den här principen är inställd på falskt kommer användare inte att kunna spela påskäggsspelet med dinosaurier när enheten är offline. Om principen är inställd på sant kommer användare att kunna spela dinosauriespelet. Om principen inte tillämpas kommer användare inte att kunna spela påskäggsspelet med dinosaurier på Chrome OS med registrering, men kan spela det under andra omständigheter.</translation>
@@ -1043,6 +1076,7 @@
       Om du inaktiverar den här inställningen eller inte anger något värde används den senast använda skrivaren som standardval för Förhandsgranskning.
 
       Om du aktiverar den här inställningen används operativsystemets standardskrivare som standardval för Förhandsgranskning.</translation>
+<translation id="285627849510728211">Ange avancerad dagskonfiguration för batteriladdningsläge</translation>
 <translation id="2856674246949497058">Återställ till målversionen om operativsystemet är nyare än målversionen. Utför powerwash i samband med detta.</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="2873651257716068683">Åsidosätter standardpappersformatet för utskrift. Om pappersformatet inte är tillgängligt ignoreras principen.</translation>
@@ -1177,12 +1211,26 @@
 <translation id="3072045631333522102">Skärmsläckare att använda på inloggningsskärmen i återförsäljarläge</translation>
 <translation id="3072847235228302527">Ange användarvillkor för ett lokalt enhetskonto</translation>
 <translation id="3077183141551274418">Aktiverar eller inaktiverar en livscykel för flikar</translation>
+<translation id="3079417254871857650">Anger vilken åtgärd som ska vidtas när användarens hemkatalog skapades med ecryptfs-kryptering.
+
+      Om principen ställs in på DisallowArc inaktiveras Android-appar för användaren och ingen migrering från ecryptfs-kryptering till ext4-kryptering utförs. Android-appar kan fortfarande köras när hemkatalogen har ext4-kryptering.
+
+      Om Migrate ställs in för principen migreras ecryptfs-krypterade hemkataloger automatiskt till ext4-kryptering vid inloggning utan att användaren tillfrågas.
+
+      Om Wipe ställs in för principen raderas ecryptfs-krypterade hemkataloger vid inloggning och nya ext4-krypterade hemkataloger skapas i stället. Varning! Åtgärden raderar lokal data för användaren.
+
+      Om MinimalMigrate ställs in för principen raderas ecryptfs-krypterade hemkataloger vid inloggning och nya ext4-krypterade hemkataloger skapas i stället. Den försöker dock spara inloggningstoken så att användaren inte behöver logga in på nytt. Varning! Åtgärden raderar lokal data för användaren.
+
+      Om du anger ett alternativ som inte längre stöds (AskUser eller AskForEcryptfsArcUsers) för principen behandlas den som om du hade valt Migrate.
+
+      Principen gäller inte användare av offentliga miljöer. Om principen inte ställs in utför enheten samma åtgärd som om DisallowArc hade valts.</translation>
 <translation id="3086995894968271156">Konfigurera cast-mottagaren i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3088796212846734853">Låter dig ange en lista med webbadressmönster som styr vilka webbplatser som får visa bilder.
 
           Om principen lämnas utan inställning används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från principen DefaultImagesSetting om den har ställts in och från användarens egna inställningar i annat fall.
 
           Observera att den här principen felaktigt var aktiverad för Android tidigare, men funktionen har aldrig stötts fullt ut på Android.</translation>
+<translation id="3091832372132789233">Ladda batteriet för enheter som huvudsakligen är anslutna till en extern strömkälla.</translation>
 <translation id="3096595567015595053">Lista med aktiverade plugin-program</translation>
 <translation id="3101501961102569744">Välj hur inställningar för proxyserver ska anges</translation>
 <translation id="3101709781009526431">Datum och tid</translation>
@@ -1208,6 +1256,7 @@
           Om inställningen är inaktiverad använder <ph name="PRODUCT_NAME" /> bara Native Messaging-värdar som installerats på systemnivå.
 
           Om inställningen inte anges tillåter <ph name="PRODUCT_NAME" /> Native Messaging-värdar på användarnivå.</translation>
+<translation id="3177802893484440532">Kräv OCSP/CRL-onlinekontroller för lokala tillitsankare</translation>
 <translation id="3185009703220253572">sedan version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-appar kan inte ges tillgång till företagsnycklar. Den här principen gäller inte dem.</translation>
 <translation id="3205825995289802549">Maximera det först visade fönstret första gången som webbläsaren körs</translation>
@@ -1221,6 +1270,7 @@
 <translation id="3220624000494482595">Om det är en Android-app som används som kioskapp kommer den inte att kunna påverka versionen av <ph name="PRODUCT_OS_NAME" /> även om den här principen har ställts in på <ph name="TRUE" />.</translation>
 <translation id="3236046242843493070">Webbadressmönster för att tillåta installationer av tillägg, appar och användarskript från</translation>
 <translation id="3240609035816615922">Åtkomstprincip för skrivarkonfiguration</translation>
+<translation id="3240655340884151271">Dockans inbyggda NIC MAC-adress</translation>
 <translation id="3243309373265599239">Anger efter hur lång tid utan åtgärd från användaren som skärmen ska dämpas när enheten är ansluten till elnätet.
 
           Om den här policyn är inställd på ett värde som är större än noll anger den efter hur lång tids inaktivitet som <ph name="PRODUCT_OS_NAME" /> dämpar skärmen.
@@ -1242,6 +1292,12 @@
       Om inställningen är aktiverad eller inte har konfigurerats kan användarna aktivera molnutskriftsproxyn genom autentisering med deras Google-konton.
 
       Om inställningen inte är inaktiverad kan användarna inte aktivera proxyn och datorn tillåts inte att dela skrivare med <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3312206664202507568">Aktiverar en sida på chrome://password-change där SAML-användare kan ändra sina SAML-lösenord under en session, vilket innebär att SAML-lösenordet och enhetens lösenord för låsskärmen hålls synkroniserade.
+
+      Principen aktiverar dessutom aviseringar som varnar SAML-användarna om deras SAML-lösenord snart upphör att gälla, så att de kan åtgärda det direkt genom att byta lösenord under sessionen.
+      Men aviseringarna visas bara om information om utgångsdatum för lösenordet skickas till enheten via identitetsleverantören för SAML under SAML-inloggningsflödet.
+
+      Om den här principen har angetts kan användaren inte ändra eller åsidosätta den.</translation>
 <translation id="3322771899429619102">Policyn gör att du kan ange en lista med webbadressmönster som anger vilka webbplatser som får använda nyckelgenerering. Om ett webbadressmönster har policyn KeygenBlockedForUrls åsidosätts dessa undantag.
 
           Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas antingen från policyn DefaultKeygenSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
@@ -1327,6 +1383,7 @@
 
           Om Falskt har angetts för den här policyn, eller om ingenting har angetts, påbörjas fördröjningar i energisparfunktionen och begränsningar i sessionslängden så fort sessionen har påbörjats.</translation>
 <translation id="3478024346823118645">Ta bort användardata vid utloggning</translation>
+<translation id="3480961938508521469">Ladda batteriet fullt i standardhastighet.</translation>
 <translation id="348495353354674884">Aktivera virtuellt tangentbord</translation>
 <translation id="3487623755010328395">
         Om principen används försöker <ph name="PRODUCT_NAME" /> registrera sig själv och tillämpa tillhörande molnprinciper på alla profiler.
@@ -1373,6 +1430,8 @@
 <translation id="3547954654003013442">Proxyinställningar</translation>
 <translation id="355118380775352753">Webbplatser som ska öppnas i alternativa webbläsare</translation>
 <translation id="3554984410014457319">Tillåt Google-assistenten att lyssna efter röstaktiveringsfrasen</translation>
+<translation id="356579196325389849">Användare kan konfigurera lanseringskanalen för Chrome OS</translation>
+<translation id="3575011234198230041">HTTP-autentisering</translation>
 <translation id="3577251398714997599">Annonsinställningar för webbplatser med påträngande annonser</translation>
 <translation id="357917253161699596">Tillåt användarna att hantera användarcertifikat</translation>
 <translation id="3583230441447348508">Anger en lista med förkonfigurerade filresurser i nätverket.
@@ -1403,6 +1462,7 @@
 
         Principen används på stationära datorer för registrering av datorn för molnhantering och kan ställas in via registret eller gruppolicyobjekt på Windows, plist på Mac och en JSON-principfil på Linux.</translation>
 <translation id="3660562134618097814">Överför SAML-cookies från identitetsleverantörer vid inloggning</translation>
+<translation id="3668151900457104753">Avinstallera svartlistade tillägg</translation>
 <translation id="3701121231485832347">Styr inställningar för <ph name="PRODUCT_OS_NAME" />-enheter som hanteras med <ph name="MS_AD_NAME" />.</translation>
 <translation id="3702647575225525306"><ph name="POLICY_NAME" /> (Enradsfältet har fasats ut och tas snart bort. Börja använda flerradsfältet i stället.)</translation>
 <translation id="3709266154059827597">Konfigurera svartlista för tilläggsinstallation</translation>
@@ -1484,6 +1544,16 @@
           Om du inte ställer in policyn är skärmtangentbordet inaktiverat som standard, men det aktiveras av användaren när som helst.</translation>
 <translation id="382476126209906314">Konfigurera prefixet TalkGadget för fjärråtkomstvärdar</translation>
 <translation id="3824972131618513497">Styr inställningar för strömförsörjning och omstart.</translation>
+<translation id="3826475866868158882">Googles platstjänster har aktiverats</translation>
+<translation id="3831054243924627613">Principen styr den initiala statusen för säkerhetskopiering och återställning av Android.
+
+      När principen inte är konfigurerad eller inställd på <ph name="BR_DISABLED" /> inaktiveras säkerhetskopiering och återställning av Android initialt.
+
+      När principen är inställd på <ph name="BR_ENABLED" /> aktiveras säkerhetskopiering och återställning av Android initialt.
+
+      När principen är inställd på <ph name="BR_UNDER_USER_CONTROL" /> ombeds användaren att välja om säkerhetskopiering och återställning av Android ska användas. Om användaren aktiverar säkerhetskopiering och återställning av Android laddas Androids appdata upp till Androids återställningsservrar och återställs därifrån när en kompatibel app återinstalleras.
+
+      Observera att den här principen endast styr statusen för säkerhetskopiering och återställning av Android under den initiala konfigureringen. Användaren kan öppna Android-inställningarna i efterhand och stänga av eller slå på säkerhetskopiering och återställning av Android.</translation>
 <translation id="3831376478177535007">Om inställningen aktiveras är certifikat från Symantec Corporations äldre PKI-åtgärder tillåtna i <ph name="PRODUCT_NAME" /> så länge det går att validera dem i en obruten kedja till ett identifierat CA-certifikat.
 
       Observera att principen är beroende av att operativsystemet fortfarande känner igen certifikat från Symantecs äldre infrastruktur. Om en uppdatering av operativsystemet leder till en ändring av hur sådana certifikat hanteras har principen inte längre någon funktion. Den här principen är bara en tillfällig lösning så att företag ska få längre tid på sig att överflytta från äldre Symantec-certifikat. Principen tas bort kring den 1 januari 2019.
@@ -1567,6 +1637,15 @@
 
           Om ingen inställning görs eller om Falskt anges kan användaren föra över filer till Google Drive.</translation>
 <translation id="3915395663995367577">Webbadress till en PAC-proxyfil</translation>
+<translation id="3920892052017026701">Ange anpassad laddningsstart för batteriet i procent.
+
+          Batteriet börjar laddas när batteriet tömts till under det anpassade startvärdet för laddning.
+
+          DeviceBatteryChargeCustomStartCharging måste vara mindre än DeviceBatteryChargeCustomStopCharging.
+
+          Principen används bara om inställningen för DeviceBatteryChargeMode är anpassad.
+
+          Om principen inte konfigureras eller saknar inställning tillämpas standardläget för batteriladdning.</translation>
 <translation id="3925377537407648234">Ange skärmupplösning och skalningsfaktor</translation>
 <translation id="3939893074578116847">Skicka nätverkspaket för övervakning av onlinestatusen till hanteringsservern, så att
       den kan identifiera om enheten är offline.
@@ -1697,6 +1776,7 @@
 <translation id="4150201353443180367">Skärm</translation>
 <translation id="4157003184375321727">Rapportera version av operativsystem och fast programvara</translation>
 <translation id="4157594634940419685">Tillåt åtkomst till lokala CUPS-skrivare</translation>
+<translation id="4160962198980004898">Enhetens MAC-adresskälla när den är dockad</translation>
 <translation id="4163705126749612234">Konfigurerar vilket klientdomännamn som fjärråtkomstklienter måste använda och hindrar användare från att ändra det.
 
           Om inställningen är aktiverad kan endast klienter från den angivna domänen ansluta till värden.
@@ -1774,6 +1854,7 @@
       Observera att användaren inte nödvändigtvis kan aktivera en anteckningsapp på låsskärmen även om dess app-id har angetts i principen. I Chrome 61, till exempel, begränsas listan med tillgängliga appar ytterligare av plattformen.
 
       Om principen inte ställs in alls begränsar den inte villka appar som användaren får aktivera på låsskärmen.</translation>
+<translation id="4313767483634435271">Enhetens utsedda MAC-adress för dockning</translation>
 <translation id="4322842393287974810">Tillåt att kioskappen som startas automatiskt utan fördröjning styr <ph name="PRODUCT_OS_NAME" />-versionen</translation>
 <translation id="4325690621216251241">Lägg till en utloggningsknapp i systemfältet</translation>
 <translation id="4332177773549877617">Logga händelser vid installation av Android-appar</translation>
@@ -1805,6 +1886,7 @@
 <translation id="4360826270668210664">Om den här principen är inställd kräver fjärråtkomstvärden autentisering av klienter för att de ska kunna erhålla en autentiseringstoken från webbadressen och kunna ansluta. Måste användas i tillsammans med RemoteAccessHostTokenValidationUrl.
 
           Den här funktionen är för närvarande inaktiverad på serversidan.</translation>
+<translation id="4363057787588706121">Tillåt sammanslagning av listprinciper från olika källor</translation>
 <translation id="436581050240847513">Rapporteringsgränssnitt för nätverk med enheter</translation>
 <translation id="4372704773119750918">Tillåt inte att företagsanvändare ingår i multiprofiler (primärt eller sekundärt)</translation>
 <translation id="4377599627073874279">Tillåt att alla bilder visas på alla webbplatser</translation>
@@ -1978,6 +2060,7 @@
 <translation id="4826326557828204741">Åtgärd som ska vidtas när fördröjning på grund av inaktivitet har uppnåtts vid batteridrift</translation>
 <translation id="4832852360828533362">Användar- och enhetsrapportering</translation>
 <translation id="4834526953114077364">De användare som använts minst nyligen och som inte har loggat in de senaste tre månaderna tas bort tills det finns tillräckligt med ledigt utrymme</translation>
+<translation id="4835622243021053389">Aktivera NTLMv2-autentisering.</translation>
 <translation id="4858735034935305895">Tillåt helskärmsläge</translation>
 <translation id="4861767323695239729">Konfigurera tillåtna inmatningsmetoder i en användarsession</translation>
 <translation id="487460824085252184">Migrera automatiskt utan att fråga efter användarens samtycke.</translation>
@@ -2100,6 +2183,11 @@
 
       Till skillnad från <ph name="URL_LIST_POLICY_NAME" /> gäller reglerna åt båda hållen. Det innebär att när tillägget för Internet Explorer är installerat och aktiverat styr det även huruvida <ph name="IE_PRODUCT_NAME" /> ska öppna dessa webbadresser i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5124368997194894978">Aktivera växelströmsstart</translation>
+<translation id="5131211790949066746">Tillåter sammanslagning av principerna <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> och <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" /> för tilläggsinstallation.
+
+      Om du aktiverar den här inställningen slås värdena från datorns plattformsprinciper, molnprinciper och användarplattformsprinciper samman i en enda lista och används i sin helhet, i stället för att endast värdena från källan med högst prioritet används.
+
+      Om du inaktiverar inställningen eller inte anger något värde används endast listposter från källan med högst prioritet, och andra källor som står i konflikt ignoreras.</translation>
 <translation id="5141670636904227950">Ange standardtypen för skärmförstoraren på inloggningsskärmen</translation>
 <translation id="5142301680741828703">Rendera alltid följande webbadressmönster i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Innebär att du kan ange ytterligare parametrar som används när <ph name="PRODUCT_FRAME_NAME" /> startar <ph name="PRODUCT_NAME" />.
@@ -2223,6 +2311,7 @@
 
       Om principen inte anges eller om den har ställts in på den tomma strängen eller ett ogiltigt portintervall får vilken tillgänglig lokal UDP-port som helst användas för WebRTC.</translation>
 <translation id="5290940294294002042">Ange en lista med plugin-program som användaren kan aktivera och inaktivera</translation>
+<translation id="5306186200045823863">Välj att lita på Symantec Corporations äldre PKI-infrastruktur</translation>
 <translation id="5307432759655324440">Tillgänglighet för inkognitoläge</translation>
 <translation id="5318185076587284965">Aktivera reläserveranvändning via värden för fjärråtkomst</translation>
 <translation id="5323128137188992869">Tillåt att innehåll castas till enheten med <ph name="PRODUCT_NAME" />.
@@ -2324,6 +2413,7 @@
       Om reglerna motsäger varandra använder <ph name="PRODUCT_NAME" /> den mest specifika regeln.</translation>
 <translation id="5475361623548884387">Aktivera utskrift</translation>
 <translation id="547601067149622666">Tillåt inte annonser på webbplatser med påträngande annonser</translation>
+<translation id="5483065054530244863">Tillåt SHA-1-signerade certifikat som utfärdats av lokala tillitsankare</translation>
 <translation id="5483777239978559943">Den här principen är utfasad. Använd <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> för att styra tillgängligheten av pluginprogrammet Flash och <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> för att styra huruvida det integrerade visningsprogrammet för PDF-filer ska användas för att öppna PDF-filer.
 
       Anger en lista över pluginprogram som användaren kan aktivera eller inaktivera i <ph name="PRODUCT_NAME" />.
@@ -2440,6 +2530,17 @@
           Om du aktiverar principen eller om den inte konfigureras kan användarnas lösenord visas i klartext i lösenordshanteraren.</translation>
 <translation id="5620392548325769024">Gör att välkomstsidan visas när webbläsaren startas för första gången efter en uppgradering av operativsystemet</translation>
 <translation id="5630352020869108293">Återställ den senaste sessionen</translation>
+<translation id="5643906875497889108">Styr vilka app- eller tilläggstyper som får installeras och begränsar körningsåtkomsten.
+
+          Inställningen vitlistar de tilläggs- och apptyper som är tillåtna och kan installeras i <ph name="PRODUCT_NAME" /> och de värdar de kan interagera med. Värdet är en lista med strängar som alla ska vara någon av följande: extension, theme, user_script, hosted_app, legacy_packaged_app eller platform_app. Läs mer om dessa typer i tilläggsdokumentationen för <ph name="PRODUCT_NAME" />.
+
+          Observera att principen även påverkar tilläggen och apparna så att dessa tvångsinstalleras via ExtensionInstallForcelist.
+
+          Om inställningen är konfigurerad installeras inte de tillägg/appar som har en typ som inte finns med på listan.
+
+          Om inställningen inte är konfigurerad används inga begränsningar gällande godkända tilläggs- och apptyper.
+
+          I tidigare versioner än version 75 saknas det stöd för att använda flera CSV-id:n, och dessa hoppas därför över. Resten av principen tillämpas fortfarande.</translation>
 <translation id="5645779841392247734">Tillåt cookies på dessa webbplatser</translation>
 <translation id="5689430183304951538">Standardinställning för pappersformat vid utskrift</translation>
 <translation id="5693469654327063861">Tillåt datamigrering</translation>
@@ -2479,6 +2580,7 @@
 <translation id="5765780083710877561">Beskrivning:</translation>
 <translation id="5770738360657678870">Kanal för utvecklare (kan vara instabil)</translation>
 <translation id="5774856474228476867">Sökadress för standardsökleverantör</translation>
+<translation id="5775235485119094648">Ladda batteriet medan det är inom ett visst intervall.</translation>
 <translation id="5776485039795852974">Fråga varje gång en webbplats försöker visa aviseringar på skrivbordet</translation>
 <translation id="5781412041848781654">Anger vilket GSSAPI-bibliotek som ska användas för HTTP-autentisering. Du kan ange bara ett biblioteksnamn eller en fullständig sökväg.
 
@@ -2546,6 +2648,7 @@
 <translation id="5893553533827140852">Om inställningen är aktiverad kommer gnubby-autentiseringsbegäranden att skickas via proxy via en fjärranslutning.
 
           Om inställningen är inaktiverad eller inte konfigurerad kommer gnubby-autentiseringsbegäranden inte att skickas via proxy.</translation>
+<translation id="5897913798715600338">Ladda batteriet med snabbladdningsteknik.</translation>
 <translation id="5898486742390981550">När flera användare är inloggade är det bara den primära användaren som kan använda Android-appar.</translation>
 <translation id="5900196529149231477">
       Den här principen gäller inloggningsskärmen. Se även principen <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> som gäller för användarsessionen. Vi rekommenderar att samma värde anges för båda principerna. Om värdena inte stämmer överens kan det uppstå en fördröjning när en användarsession startas medan användarprincipen tillämpas.
@@ -2554,6 +2657,7 @@
       Om principen inte konfigureras används plattformens standardinställningar för webbplatsisolering på inloggningsskärmen.
       </translation>
 <translation id="5901427587865226597">Endast dubbelsidig utskrift</translation>
+<translation id="5905473632148429217">Aktivera OCSP/CRL-onlinekontroller</translation>
 <translation id="5906199912611534122">Gör det möjligt att aktivera eller inaktivera begränsad överföringshastighet i nätverket.
       Detta gäller alla användare och alla gränssnitt på enheten. När principen
       har ställts in används begränsningen tills den inaktiveras via principen.
@@ -2561,6 +2665,7 @@
 
       Med värdet falskt görs ingen begränsning av överföringshastigheten.
       Med värdet sant begränsas upp- och nedladdningshastigheten till de angivna värdena (i kbit/s).</translation>
+<translation id="591088232153082363">Anpassningsbar batteriladdning baserad på batterianvändningsmönster.</translation>
 <translation id="5921713479449475707">Tillåt nedladdning av automatiska uppdateringar via HTTP</translation>
 <translation id="5921888683953999946">Ange standardläget för hjälpmedelsfunktionen med en stor markör på inloggningsskärmen.
 
@@ -2582,6 +2687,7 @@
 <translation id="5950205771952201658">Eftersom återkallelsekontroller online vid programfel inte ger någon effektiv säkerhetsfördel är de inaktiverade som standard i <ph name="PRODUCT_NAME" /> version 19 och senare. Om du aktiverar den här principen återställs den tidigare inställningen och OCSP/CRL-onlinekontroller utförs.
 
      Om ingen inställning görs för principen eller om den ställs in på falskt görs ingen återkallelsekontroll online i <ph name="PRODUCT_NAME" /> från och med <ph name="PRODUCT_NAME" /> 19.</translation>
+<translation id="5961137303188584693">Enhetens inbyggda NIC MAC-adress</translation>
 <translation id="5966615072639944554">Tilläggen får använda API:et för fjärrattestering</translation>
 <translation id="5983708779415553259">Standardbeteende för webbplatser som inte ingår i ett innehållspaket</translation>
 <translation id="5997543603646547632">Använd 24-timmarsklocka som standard</translation>
@@ -2672,6 +2778,17 @@
 <translation id="6111936128861357925">Tillåt påskäggsspelet med dinosaurier</translation>
 <translation id="6114416803310251055">föråldrad</translation>
 <translation id="6133088669883929098">Tillåt alla webbplatser att använda nyckelgenerering</translation>
+<translation id="6136537398661737682">Den här principen styr den initiala statusen för Googles platstjänster.
+
+      När principen inte konfigureras eller ställs in på <ph name="GLS_DISABLED" /> inaktiveras Googles platstjänster initialt.
+
+      När principen ställs in på <ph name="GLS_ENABLED" /> aktiveras Googles platstjänster initialt.
+
+      När principen ställs in på <ph name="GLS_UNDER_USER_CONTROL" /> ombeds användaren att välja om Googles platstjänster ska användas. Då tillåter du att Android-apparna använder tjänsterna för att fråga om enhetens plats och dessutom att anonym platsdata kan skickas till Google.
+
+      Observera att den här principen endast styr statusen för Googles platstjänster under den initiala konfigureringen. Användaren kan öppna Android-inställningarna i efterhand och stänga av eller slå på Googles platstjänster.
+
+      Observera att principen ignoreras och Googles platstjänster alltid inaktiveras när principen <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> är inställd på <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="6141402445226505817">Använd alltid ungefärlig tidszonsangivelse</translation>
 <translation id="6145799962557135888">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får köra JavaScript.
 
@@ -2747,9 +2864,17 @@
       Om den är inaktiverad importeras inte formuläruppgifterna för Autofyll.
 
       Om policyn inte har angetts kan användaren få välja om importen ska göras eller så utförs importen automatiskt.</translation>
+<translation id="6221175752766085998">Tillåt certifikat som utfärdats av lokala tillitsankare utan tillägget subjectAlternativeName</translation>
 <translation id="6224304369267200483">Webbadresser/domäner tillät direktattestering av säkerhetsnycklar automatiskt</translation>
 <translation id="6233173491898450179">Ange nedladdningskatalog</translation>
 <translation id="6244210204546589761">Webbadresser att öppna vid start</translation>
+<translation id="6255387031094435995">Valda principer med samma omfattning och nivå kan slås samman när de kommer från olika källor.
+
+        Om en princip finns i listan slås värdena samman i en ny principlista om det uppstår en konflikt mellan två källor och dessa har samma omfattning och nivå.
+
+        Om en princip finns i listan och det uppstår en konflikt mellan två källor som har olika omfattning och/eller nivå tillämpas principen med högst prioritet.
+
+        Om en princip inte finns i listan och det uppstår en konflikt mellan källorna, omfattningen och/eller nivån tillämpas principen med högst prioritet.</translation>
 <translation id="6258193603492867656">Policyn anger om Kerberos SPN som har genererats ska innehålla en port som inte är standard.
 
           Om du aktiverar den här inställningen och en port som inte är standard anges (en annan port än 80 eller 443) tas den med när Kerberos SPN genereras.
@@ -2951,6 +3076,7 @@
 <translation id="6757438632136860443">Låter dig ange en lista med webbadressmönster som definierar på vilka webbplatser pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> får köras.
 
           Om den här principen inte anges används det globala standardvärdet för alla webbplatser. Värdet hämtas antingen från principen DefaultPluginsSetting, om den har ställts in, eller från användarens egna inställningar.</translation>
+<translation id="6757613329154374267">Säkerhetskopiering och återställning har aktiverats</translation>
 <translation id="6762235610019366960">Med den här principen kan du styra hur hela flikar med reklam och/eller utbildningsmaterial visas i <ph name="PRODUCT_NAME" />.
 
       Om principen inte har konfigurerats eller om den är aktiverad (inställd på sant) kan produktinformation som tar upp hela fliken visas i <ph name="PRODUCT_NAME" />
@@ -2973,6 +3099,7 @@
       Strängen kan innehålla variablerna ${ASSET_ID}, ${SERIAL_NUM}, ${MAC_ADDR}, ${MACHINE_NAME} som ersätts av värden på enheten innan de används som värdnamn. Detta ersättningsvärde ska vara ett giltigt värdnamn (enligt RFC 1035, avsnitt 3.1).
 
       Om principen inte är inställd eller om värdet efter ersättningen inte är ett giltigt värdnamn så anges inget värdnamn i DHCP-förfrågan. </translation>
+<translation id="6833988859168635883">Startup, startsida och sidan Ny flik</translation>
 <translation id="6835883744948188639">Visa användaren ett återkommande meddelande om att omstart rekommenderas</translation>
 <translation id="6837480141980366278">Avgör om den inbyggda DNS-klienten används i <ph name="PRODUCT_NAME" />.
 
@@ -3086,6 +3213,17 @@
 
       När skärmen ska tonas ned utvärderar den smarta modellen för nedtoning om skärmens nedtoning ska skjutas upp. Om den smarta modellen för nedtoning skjuter upp nedtoningen, utökas tiden tills skärmen tonas ned. Då justeras även fördröjningarna för skärmavstängning, skärmlåsning och viloläge så att tiden från skärmens nedtoning blir samma som ursprungligen ställdes in.
       Om den här principen är inställd på Sant eller inte ställs in aktiveras den smarta modellen för nedtoning och kan utöka tiden tills skärmen tonas ned. Om principen ställs in på Falskt påverkar inte den smarta modellen för nedtoning skärmens ljusstyrka.</translation>
+<translation id="6967394885063085697">Aktivera energisparprincipen för det avancerade batteriladdningsläget.
+
+          Med det avancerade batteriladdningsläget kan användaren hålla batteriet i så bra skick som möjligt. I det avancerade batteriladdningsläget använder systemet standardladdningsalgoritmen och andra tekniker utanför arbetstid för att hålla batteriet i så bra skick som möjligt. Under arbetstid används snabbladdning. Snabbladdningen innebär att batteriet laddas snabbare och därför blir fulladdat på kortare tid. Den tid på dagen då systemet används som mest specificeras av starttid och längd.
+
+          Om principen är inställd på sant och DeviceAdvancedBatteryChargeModeDayConfig är inställd är det avancerade batteriladdningsläget alltid aktiverat, om det finns stöd för det på enheten.
+
+          Om principen är inställd på falskt är det avancerade batteriladdningsläget alltid inaktiverat.
+
+          Om du anger principen kan användarna inte ändra eller åsidosätta den.
+
+          Om principen saknar inställning är det avancerade batteriladdningsläget inaktiverat och kan inte aktiveras av användaren.</translation>
 <translation id="6972540544240464302">Välj schemaläggningskonfiguration</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6994082778848658360">Anger hur den integrerade maskinvaran för säkra element kan användas för tvåfaktorsautentisering om den är kompatibel med den här funktionen. Strömbrytaren på datorn används för att identifiera användarens fysiska närvaro.
@@ -3163,6 +3301,17 @@
       Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta den.
 
       Om du inte anger policyn kan användarna välja om det ska behövas ett lösenord för att låsa upp enheten eller inte.</translation>
+<translation id="7107148737865880402">Ange principen för strömdelning och -hantering via USB.
+
+          Vissa enheter har en särskild USB-port som markerats med en blixt eller en batteriikon som kan användas för att ladda andra enheter, exempelvis mobiler, med systembatteriet. Principen påverkar portens laddningsbeteende medan systemet är i viloläge eller avstängt läge. Principen påverkar inte de andra USB-portarna och deras laddningsbeteende medan systemet är igång.
+
+          När enheten är påslagen går det alltid att få ström via USB-porten.
+
+          Om den här principen är inställd på sant och enheten är i viloläge förses USB-porten med ström när enheten är kopplad till ett vägguttag eller om batterinivån ligger på &gt; 50 %. I annat fall förses det inte med ström.
+
+          Om principen är inställd på sant och enheten är avstängd förses USB-porten med ström när enheten är kopplad till ett vägguttag. I annat fall förses det inte med ström.
+
+          Om den här principen saknar inställning aktiveras principen och användaren kan inte inaktivera den.</translation>
 <translation id="7115494316187648452">Avgör om en process i <ph name="PRODUCT_NAME" /> startas när användaren loggar in i operativsystemet och fortsätter köras när det sista webbläsarfönstret har stängts, så att bakgrundsappar och den aktuella sessionen kan fortsätta vara aktiva (inklusive eventuella sessionscookies). Bakgrundsprocessen visas som en ikon i systemfältet och kan alltid stängas därifrån.
 
       Om policyn är inställd på sant aktiveras bakgrundsläget och det kan inte ändras av användaren i webbläsarinställningarna.
@@ -3213,6 +3362,7 @@
           Om principen är inställd på sant eller har lämnats utan inställning tillåts skärmprocesslås för energibesparing, såvida inte principen AllowWakeLocks är inställd på falskt.
 
           Om principen är inställd på falskt degraderas en begäran om skärmprocesslås till en begäran om systemprocesslås.</translation>
+<translation id="7177857088692019405">Snabb upplåsning</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="718956142899066210">Anslutningstyper som tillåts för uppdateringar</translation>
 <translation id="7194407337890404814">Standardsökleverantörens namn</translation>
@@ -3276,6 +3426,7 @@
 <translation id="7273823081800296768">Om inställningen är aktiverad eller inte konfigurerad kan användare välja att koppla ihop klienter och värdar vid anslutningstillfället så att de slipper ange en pinkod varje gång.
 
           Om inställningen inaktiveras kommer inte funktionen att vara tillgänglig.</translation>
+<translation id="7274077256421167535">Aktivera strömdelning via USB</translation>
 <translation id="7275334191706090484">Hanterade bokmärken</translation>
 <translation id="7291084543582732020">Om du aktiverar den här inställningen ges användare tillstånd att använda Smart Lock om kraven för funktionen är uppfyllda.
 
@@ -3289,6 +3440,7 @@
 
           Den här policyn gäller bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="7302043767260300182">Skärmlåsningstid när enheten är ansluten till elnätet</translation>
+<translation id="7305262223970835999">Aktiverar en sida där SAML-användare kan byta lösenord under sessionen.</translation>
 <translation id="7311458740754205918">Om policyn är inställd på sant eller inte inställd alls kan förslag på innehåll utifrån användarens webbhistorik, intressen eller plats visas på sidan Ny flik.
 
       Om policyn är inställd på falskt visas inte förslag på innehåll som genererats automatiskt på sidan Ny flik.</translation>
@@ -3415,6 +3567,15 @@
       Om principen har värdet 0 används cacheminnets standardstorlek men användaren får inte ändra den.
 
       Om inget värde har angetts används standardstorleken och användaren kan åsidosätta den med flaggan --disk-cache-size.</translation>
+<translation id="759389052790680884">Ange anpassat laddningsstopp för batteriet i procent.
+
+          Batteriet slutar laddas när det når det anpassade laddningsstoppvärdet.
+
+          DeviceBatteryChargeCustomStartCharging måste vara mindre än DeviceBatteryChargeCustomStopCharging.
+
+          Principen används bara om inställningen för DeviceBatteryChargeMode är anpassad.
+
+          Om principen inte konfigureras eller saknar inställning tillämpas standardläget för batteriladdning.</translation>
 <translation id="759957074386651883">Inställningar för Säker webbsökning</translation>
 <translation id="7604169113182304895">Android-appar kan ta hänsyn till den här listan men måste inte göra det. Det går inte att göra inställningen obligatorisk för dem.</translation>
 <translation id="7612157962821894603">Flaggor som gäller hela systemet och som ska tillämpas vid start av <ph name="PRODUCT_NAME" /></translation>
@@ -3493,6 +3654,15 @@
 <translation id="7712109699186360774">Fråga varje gång en webbplats vill komma åt min kamera och/eller mikrofon</translation>
 <translation id="7713608076604149344">Nedladdningsbegränsningar</translation>
 <translation id="7715711044277116530">Procentsats med vilken fördröjningen av skärmdämpningen ska skalanpassas i presentationsläge</translation>
+<translation id="7716781462866245042">Ange avancerad dagskonfiguration för batteriladdningsläge.
+
+          Principen används bara om DeviceAdvancedBatteryChargeModeEnabled är inställd på sant.
+
+          Om principen inte är konfigurerad eller saknar inställning är det avancerade batteriladdningsläget alltid inaktiverat.
+
+          Obs! <ph name="CHARGE_START_TIME_FIELD_NAME" /> måste vara mindre än <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+
+          Obs! Tillåtna värden i fältet <ph name="MINUTE_FIELD_NAME" /> i <ph name="CHARGE_START_TIME_FIELD_NAME" /> och <ph name="CHARGE_END_TIME_FIELD_NAME" /> är 0, 15, 30, 45.</translation>
 <translation id="7717938661004793600">Konfigurera tillgänglighetsfunktioner i <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7724994675283793633">Den här principen aktiverar HTTP/0.9 på andra portar än 80 för HTTP och 443 för HTTPS.
 
@@ -3566,6 +3736,7 @@
       Avgör ID för det tillägg som ska användas som skärmsläckare på inloggningsskärmen. Tillägget måste finnas i det AppPack som är konfigurerat för domänen i policyn DeviceAppPack.</translation>
 <translation id="7882857838942884046">Om du inaktiverar Google Sync kommer säkerhetskopiering och återställning i Android inte att fungera korrekt.</translation>
 <translation id="7882890448959833986">Ignorera varningar för operativsystem som inte stöds</translation>
+<translation id="7895553628261067384">Fjärråtkomst</translation>
 <translation id="7902255855035461275">Mönster i den här listan matchas mot den begärande
       webbadressens säkerhetsursprung. Om det blir en träff får
       adressen åtkomst till videoinspelningsenheter utan meddelande.
@@ -3579,6 +3750,11 @@
 <translation id="7937491150792971922">Sammanställ policyer för tilläggsinstallation från flera källor</translation>
 <translation id="7937766917976512374">Tillåta eller neka videoinspelning</translation>
 <translation id="7941975817681987555">Förutsäg inte nätverksåtgärder för någon nätverksanslutning</translation>
+<translation id="7952007677054834789">Konfigurera sidorna så att de läses in vid start, med standardstartsida och standardsida för Ny flik i <ph name="PRODUCT_NAME" />, och så att användarna inte kan ändra dem.
+
+      Användarnas inställningar för startsidan blir bara helt låsta om du väljer att startsidan ska vara sidan Ny flik eller att den ska vara en webbadress som du anger. Om du inte anger en webbadress för startsidan kan användaren fortfarande ställa in startsidan på sidan Ny flik genom att ange "chrome://newtab".
+
+      Om du inte väljer Öppna följande sidor under Åtgärd vid start ignoreras principen Webbadresser att öppna vid start.</translation>
 <translation id="7952958573604504839">Den här principen har fasats ut till förmån för <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" /> i M48 och tagits bort i M54.
 
       Aktiverar nätverksförutsägelse i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
@@ -3722,6 +3898,7 @@
 <translation id="8176035528522326671">Tillåt en företagsanvändare att vara enbart primär flerprofilsanvändare (standardbeteendet för företagshanterade användare)</translation>
 <translation id="8214600119442850823">Konfigurerar lösenordshanteraren.</translation>
 <translation id="8217516105848565518">Den här principen är utfasad. Använd RemoteAccessHostDomainList i stället.</translation>
+<translation id="8244171102276095471">Aktivera RC4-krypteringssviter i TLS</translation>
 <translation id="8244525275280476362">Längsta fördröjning av hämtning efter en ogiltigförklarad policy</translation>
 <translation id="8256688113167012935">Kontrollerar hur kontonamnet <ph name="PRODUCT_OS_NAME" /> visas på inloggningssidan för motsvarande lokala konto på enheten.
 
@@ -3762,6 +3939,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="8312129124898414409">Gör att du kan ange om webbplatser får använda nyckelgenerering. Du kan antingen tillåta eller blockera användning av nyckelgenerering på alla webbplatser.
 
           Om du inte anger policyn används BlockKeygen och inställningen kan ändras av användaren.</translation>
+<translation id="8320149248919453401">Batteriladdningsläge</translation>
 <translation id="8329984337216493753">Den här policyn är bara aktiv i återförsäljarläge.
 
       När DeviceIdleLogoutTimeout har angetts definierar den här policyn hur länge en varningsruta med nedräkning ska visas för användaren innan utloggningen genomförs.
@@ -3928,6 +4106,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Om principen inte ställs in används som standard tidsperioden 345 600 000 millisekunder (fyra dagar) för <ph name="PRODUCT_OS_NAME" />-enheter och 604 800 000 millisekunder (en vecka) för <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8685024486845674965">Lösenordsskyddets varningar utlöses av att lösenordet återanvänds</translation>
 <translation id="8693243869659262736">Använd en inbyggd DNS-klient</translation>
+<translation id="8698286761337647563">Hur många dagar i förväg ska SAML-användare aviseras när deras lösenord snart upphör att gälla</translation>
 <translation id="8703488928438047864">Rapportera kortstatus</translation>
 <translation id="8703872185032220081">Ange dagskonfiguration för belastningsförskjutning.
 
@@ -3980,6 +4159,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Om inställningen är inaktiverad eller inte anges, skickar tjänsten för lösenordsbyte användarna till https://myaccounts.google.com.
       Den här principen är bara tillgänglig i Windows-instanser som är kopplade till en <ph name="MS_AD_NAME" />-domän, eller i Windows 10 Pro- eller Enterprise-instanser som är registrerade i enhetshantering.</translation>
 <translation id="8798099450830957504">Standard</translation>
+<translation id="8800453707696044281">Ange anpassat laddningsstopp för batteriet i procent</translation>
 <translation id="8801680448782904838">Meddela användaren att webbläsaren eller enheten bör eller måste startas om</translation>
 <translation id="8818173863808665831">Rapportera enhetens geografiska plats.
 
@@ -4107,6 +4287,11 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
       Den här principen påverkar endast användare som verifieras via SAML.
 
       Principens värde ska anges i sekunder.</translation>
+<translation id="9018338365267278833">Den tar bort tillägg som visas i <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> eller tillägg som visas i <ph name="EXTENSION_SETTINGS_POLICY_NAME" /> vars installationsläge är inställt på blockerat och raderar samtidigt lokal användardata permanent.  Läs tilläggets sekretesspolicy eller datalagringspolicy om du vill veta mer om vad som händer med användardata som inte lagras lokalt.
+
+      När principen är aktiverad tas tilläggen i den ovannämnda listan (om de redan har installerats på datorn) bort från datorn helt (inklusive lokal användardata).
+
+      När principen är inaktiverad eller saknar inställning inaktiveras tilläggen i den ovannämnda listan (om de redan har installerats på datorn och finns med i den svarta listan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />) på datorn, men avinstalleras inte.</translation>
 <translation id="9027787254195333560">Med den här principen kan du konfigurera den avatarbild som representerar användaren på inloggningsskärmen. Du kan ställa in principen genom att ange en webbadress från vilken <ph name="PRODUCT_OS_NAME" /> kan ladda ned avatarbilden och en kryptografisk hash som används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och får inte vara större än 512 kB. Det måste gå att komma åt webbadressen utan autentisering.
 
       Avatarbilden laddas ned och cachelagras. Den laddas ned på nytt när webbadressen eller hashen ändras.

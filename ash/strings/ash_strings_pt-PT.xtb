@@ -86,6 +86,7 @@
 <translation id="225680501294068881">A procurar dispositivos...</translation>
 <translation id="2268130516524549846">Bluetooth desativado</translation>
 <translation id="2268813581635650749">Terminar sessão de todos</translation>
+<translation id="2277103315734023688">Procurar para a frente</translation>
 <translation id="2292698582925480719">Escala de apresentação</translation>
 <translation id="2302092602801625023">Esta conta é gerida pelo Family Link</translation>
 <translation id="2303600792989757991">Ativar/desativar vista geral das janelas</translation>
@@ -166,6 +167,7 @@
 <translation id="3371140690572404006">Dispositivo USB-C (porta frontal do lado direito)</translation>
 <translation id="3400357268283240774">Definições adicionais</translation>
 <translation id="3413817803639110246">Ainda não existe nada para ver</translation>
+<translation id="343571671045587506">Editar lembrete</translation>
 <translation id="3445925074670675829">Dispositivo USB-C</translation>
 <translation id="3454224730401036106">A sua ligação mudou para uma rede mais segura.</translation>
 <translation id="3465223694362104965">Foi ligado outro teclado a este dispositivo desde o seu último acesso. Certifique-se de que confia neste teclado antes de o utilizar.</translation>
@@ -198,12 +200,14 @@
 <translation id="3900355044994618856">A sessão termina dentro de <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">A ligar a <ph name="NAME" /></translation>
 <translation id="394485226368336402">Definições de áudio</translation>
+<translation id="3962859241508114581">Faixa anterior</translation>
 <translation id="397105322502079400">A calcular...</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira do lado direito)</translation>
 <translation id="4017989525502048489">Ponteiro de laser</translation>
 <translation id="4042660782729322247">Está a partilhar o seu ecrã</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desativado para uma aplicação}other{Desativado para # aplicações}}</translation>
 <translation id="4072264167173457037">Sinal médio</translation>
+<translation id="4112140312785995938">Procurar para trás</translation>
 <translation id="4129129681837227511">Para ver notificações no ecrã de bloqueio, desbloqueie o mesmo para alterar a definição</translation>
 <translation id="4146833061457621061">Tocar música</translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -227,6 +231,7 @@
 <translation id="4421231901400348175">A partilhar o controlo do seu ecrã com <ph name="HELPER_NAME" /> através da Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Não mostrar de novo</translation>
+<translation id="4477350412780666475">Faixa seguinte</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Dispositivos dessincronizados</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: A ligar...</translation>
@@ -392,6 +397,7 @@
 <translation id="7222902781030499995">Parar temporizador</translation>
 <translation id="7256634071279256947">Microfone posterior</translation>
 <translation id="726276584504105859">Arraste para aqui para utilizar o ecrã dividido</translation>
+<translation id="7262906531272962081">Criar lembrete</translation>
 <translation id="7303365578352795231">A responder noutro dispositivo…</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Teclado no ecrã</translation>

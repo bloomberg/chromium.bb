@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
 <translation id="1291207594882862231">Wyczyść historię, pliki cookie, dane witryn, pamięć podręczną…</translation>
 <translation id="129553762522093515">Ostatnio zamknięte</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> – wysłane z: <ph name="DEVICE_NAME" /></translation>
 <translation id="1326317727527857210">Aby korzystać z kart ze swoich innych urządzeń, zaloguj się w Chrome.</translation>
 <translation id="1331212799747679585">Nie udało się zaktualizować Chrome. Więcej opcji</translation>
 <translation id="1332501820983677155">Skróty do funkcji Google Chrome</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">Edytowanie karty</translation>
 <translation id="2154710561487035718">Kopiuj adres URL</translation>
 <translation id="2156074688469523661">Pozostałe strony (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">Udostępnianie</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> – aplikacja internetowa. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Kontynuuj jako <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Wysyła do Google pewne informacje o systemie i część zawartości stron</translation>
@@ -650,6 +652,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5797070761912323120">Google może korzystać z Twojej historii, by personalizować wyniki wyszukiwania, reklamy i działanie innych usług</translation>
 <translation id="5804241973901381774">Uprawnienia</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# godzinę temu}few{# godziny temu}many{# godzin temu}other{# godziny temu}}</translation>
+<translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Wszelkie prawa zastrzeżone.</translation>
 <translation id="5817918615728894473">Sparuj</translation>
 <translation id="583281660410589416">Nieznany</translation>
 <translation id="5833984609253377421">Udostępnij link</translation>
@@ -901,6 +904,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="756809126120519699">Wyczyszczono dane Chrome</translation>
 <translation id="757524316907819857">Blokuj odtwarzanie treści chronionej na stronach</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Pobrano <ph name="FILES_DOWNLOADED_ONE" /> plik}few{Pobrano <ph name="FILES_DOWNLOADED_MANY" /> pliki}many{Pobrano <ph name="FILES_DOWNLOADED_MANY" /> plików}other{Pobrano <ph name="FILES_DOWNLOADED_MANY" /> pliku}}</translation>
+<translation id="7588219262685291874">Włącz ciemny motyw, gdy na urządzeniu jest aktywne oszczędzanie baterii</translation>
 <translation id="7589445247086920869">Blokuj dostęp obecnej wyszukiwarce</translation>
 <translation id="7593557518625677601">Otwórz ustawienia Androida i ponownie włącz jego synchronizację, by uruchomić Synchronizację Chrome</translation>
 <translation id="7596558890252710462">System operacyjny</translation>
@@ -1000,6 +1004,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8266862848225348053">Miejsce zapisywania pobranych plików</translation>
 <translation id="8274165955039650276">Zobacz pobrane</translation>
 <translation id="8283853025636624853">Synchronizowanie z kontem <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8300705686683892304">Zarządzane przez aplikację</translation>
 <translation id="8310344678080805313">Karty standardowe</translation>
 <translation id="8313455859591948645">Zmiana strony startowej</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> i więcej stron</translation>

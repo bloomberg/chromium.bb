@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1291207594882862231">Limpar histórico, cookies, dados de sites, cache…</translation>
 <translation id="129553762522093515">Fechados recentemente</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> – Enviado de <ph name="DEVICE_NAME" /></translation>
 <translation id="1326317727527857210">Para obter os separadores dos seus outros dispositivos, inicie sessão no Chrome.</translation>
 <translation id="1331212799747679585">Não é possível atualizar o Chrome. Mais opções.</translation>
 <translation id="1332501820983677155">Atalhos das funcionalidades do Google Chrome</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">Editar cartão</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sites restantes (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">Partilha</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicação Web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Enviar algumas informações do sistema e conteúdo da página para a Google</translation>
@@ -650,6 +652,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5797070761912323120">A Google pode utilizar o seu histórico para personalizar a Pesquisa, os anúncios e outros serviços Google.</translation>
 <translation id="5804241973901381774">Permissões</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Há # hora}other{Há # horas}}</translation>
+<translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Todos os direitos reservados.</translation>
 <translation id="5817918615728894473">Sincronizar</translation>
 <translation id="583281660410589416">Desconhecido</translation>
 <translation id="5833984609253377421">Partilhar link</translation>
@@ -901,6 +904,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="756809126120519699">Dados do Chrome limpos</translation>
 <translation id="757524316907819857">Impedir que os sites reproduzam conteúdos protegidos</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> ficheiro transferido}other{<ph name="FILES_DOWNLOADED_MANY" /> ficheiros transferidos}}</translation>
+<translation id="7588219262685291874">Ativar o tema escuro quando a Poupança de bateria do dispositivo estiver ativada.</translation>
 <translation id="7589445247086920869">Bloquear o motor de pesquisa atual</translation>
 <translation id="7593557518625677601">Abrir definiç. Android e reativar sinc. sistema Android p/ iniciar sinc. Chrome</translation>
 <translation id="7596558890252710462">Sistema operativo</translation>
@@ -1000,6 +1004,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8266862848225348053">Localização da transferência</translation>
 <translation id="8274165955039650276">Ver transferências</translation>
 <translation id="8283853025636624853">A sincronizar com <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8300705686683892304">Geridos por aplicação</translation>
 <translation id="8310344678080805313">Separadores padrão</translation>
 <translation id="8313455859591948645">Editar página inicial</translation>
 <translation id="8316092324682955408">De <ph name="DOMAIN_NAME" /> e de mais sites</translation>

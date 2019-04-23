@@ -164,7 +164,7 @@
 
       Si la política no s'estableix o s'estableix en "false", els sistemes de xifratge RC4 de TLS no s'activaran. En cas contrari, es pot establir en "true" per conservar la compatibilitat amb un servidor obsolet. Es tracta d'una mesura temporal i el servidor s'ha de tornar a configurar.</translation>
 <translation id="1297182715641689552">Fes servir un script de servidor intermediari .pac</translation>
-<translation id="1304973015437969093">Identificadors de les extensions i de les aplicacions i URL de les actualitzacions que s'instal·laran en silenci</translation>
+<translation id="1304973015437969093">Identificadors de les extensions i de les aplicacions i URL de les actualitzacions que s'instal·laran silenciosament</translation>
 <translation id="1307454923744766368">Orígens o patrons de nom d'amfitrió en què no s'han d'aplicar les restriccions sobre orígens no segurs</translation>
 <translation id="1312799700549720683">Controla la configuració de la pantalla.</translation>
 <translation id="131353325527891113">Mostra els noms d'usuari a la pantalla d'inici de sessió</translation>
@@ -296,7 +296,7 @@
 <translation id="1599424828227887013">Activa l'aïllament de llocs web per a orígens especificats en dispositius Android</translation>
 <translation id="1608755754295374538">URL als quals els dispositius de captura d'àudio podran accedir sense confirmació.</translation>
 <translation id="1615221548356595305">Permet la fusió de connexions HTTP/2 per a aquests amfitrions fins i tot quan s'utilitzen certificats de client</translation>
-<translation id="1615855314789673708">Proporciona una configuració del comandament de telemetria i diagnòstic (DTC) de Wilco.
+<translation id="1615855314789673708">Proporciona una configuració del DTC de Wilco (comandament de telemetria i diagnòstic).
 
       Aquesta política permet proporcionar una configuració del DTC de Wilco que es podrà aplicar si la política autoritza aquest DTC i si aquest comandament està disponible al dispositiu corresponent. La mida de la configuració no pot ser superior a 1 MB (1.000.000 de bytes) i ha d'estar codificada en format JSON. El DTC de Wilco és responsable de gestionar-la. El resum criptogràfic s'utilitza per verificar la integritat de la baixada.
 
@@ -486,7 +486,7 @@
 <translation id="2006530844219044261">Gestió de l'alimentació</translation>
 <translation id="2014757022750736514">Controla el comportament de la pantalla d'inici de sessió, en què els usuaris inicien la sessió als seus comptes. Les opcions de configuració et permeten controlar qui pot iniciar la sessió, quin tipus de comptes s'admeten i quins mètodes d'autenticació s'han d'utilitzar, així com les opcions d'accessibilitat general, el mètode d'introducció de text i la configuració regional.</translation>
 <translation id="201557587962247231">Freqüència amb què s'envien càrregues per informar sobre l'estat del dispositiu</translation>
-<translation id="2017301949684549118">URL per a aplicacions web que s'instal·laran en segon pla.</translation>
+<translation id="2017301949684549118">URL per a aplicacions web que s'instal·laran silenciosament.</translation>
 <translation id="2018836497795982119">Especifica el període en mil·lisegons per al qual se sol·licita informació sobre polítiques relatives a l'usuari al servei de gestió de dispositius.
 
       Si aquesta política s'estableix, el valor predeterminat de tres hores se substituirà per un dels valors vàlids, que es troben en un interval d'1.800.000 (30 minuts) a 86.400.000 mil·lisegons (un dia). Els valors que no es trobin dins d'aquest interval s'ajustaran al límit corresponent. Si la plataforma admet notificacions sobre polítiques, el retard d'actualització s'establirà en 24 hores, ja que es preveu que aquestes notificacions forcin una actualització automàtica cada vegada que canviï la política.
@@ -1486,7 +1486,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4157594634940419685">Permet l'accés a impressores CUPS natives</translation>
 <translation id="4183229833636799228">Configuració predeterminada del connector <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL per validar el testimoni d'autenticació del client per a l'accés remot</translation>
-<translation id="4197038214024763371">Si aquesta política no s'estableix o si s'activa, l'usuari podrà fer servir el corrector ortogràfic.
+<translation id="4197038214024763371">Si aquesta política no s'estableix o no s'activa, l'usuari podrà fer servir el corrector ortogràfic.
 
       Si aquesta política es desactiva, l'usuari no podrà fer servir el corrector ortogràfic. A més, s'ignoraran les polítiques SpellcheckLanguage i SpellcheckLanguageBlacklist.
       </translation>
@@ -1617,7 +1617,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 <translation id="4483649828988077221">Desactiva l'actualització automàtica</translation>
 <translation id="4485425108474077672">Configura l'URL de la pàgina Pestanya nova</translation>
 <translation id="4492287494009043413">Desactivació de les captures de pantalla</translation>
-<translation id="4494132853995232608">Comandament de telemetria i diagnòstic de Wilco</translation>
+<translation id="4494132853995232608">DTC de Wilco</translation>
 <translation id="449423975179525290">Configura les polítiques relacionades amb <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="450537894712826981">Defineix la mida de memòria cau que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers multimèdia de la memòria cau al disc.
 
@@ -3447,7 +3447,7 @@ La manera recomanada de configurar la política a Windows és amb GPO, tot i que
       Si s'activa o no es defineix aquesta configuració, l'historial de navegació i de baixades es pot suprimir.
 
       Si es desactiva aquesta configuració, l'historial de navegació i de baixades no es pot suprimir.</translation>
-<translation id="8757552286070680084">Configuració del comandament de telemetria i diagnòstic de Wilco</translation>
+<translation id="8757552286070680084">Configuració del DTC de Wilco</translation>
 <translation id="8758831693895931466">Activa la inscripció obligatòria a la gestió al núvol</translation>
 <translation id="8759829385824155666">Tipus d'encriptació Kerberos permesos</translation>
 <translation id="8764119899999036911">Especifica si l'SPN de Kerberos que es genera es basa en el nom del DNS canònic o en el nom original introduït. Si activeu aquest paràmetre, s'ometrà la cerca de CNAME i el nom del servidor s'utilitzarà tal com s'ha introduït. Si desactiveu aquest paràmetre o el deixeu sense definir, el nom canònic del servidor es determinarà a través de la cerca de CNAME.</translation>
@@ -3564,7 +3564,7 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="8976531594979650914">Utilitza la impressora predeterminada del sistema com a predeterminada</translation>
 <translation id="8992176907758534924">No permetis que cap lloc mostri imatges</translation>
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
-<translation id="9038058011835642205">Especifica una llista de llocs web que s'instal·len en segon pla, sense la interacció de l'usuari, i que l'usuari no pot desinstal·lar ni desactivar.
+<translation id="9038058011835642205">Especifica una llista de llocs web que s'instal·len silenciosament, sense la interacció de l'usuari, i que l'usuari no pot desinstal·lar ni desactivar.
 
       Cada element de la llista de la política és un objecte amb un membre obligatori ("url") i dos membres opcionals ("default_launch_container" i "create_desktop_shortcut"). "url" ha de ser l'URL de l'aplicació web que cal instal·lar, "launch_container" ha de ser "window" (finestra) o "tab" (pestanya) per indicar com s'obrirà l'aplicació web un cop instal·lada i "create_desktop_shortcut" ha de ser "true" si cal crear una drecera de l'escriptori a Linux i Windows. Si "default_launch_container" s'omet, l'aplicació s'obrirà en una pestanya de manera predeterminada. Independentment del valor de "default_launch_container", els usuaris poden canviar el contenidor en què s'obrirà l'aplicació. Si "create_desktop_shortcuts" s'omet, no es crearà cap drecera de l'escriptori.</translation>
 <translation id="9038839118379817310">Activa la Wi-Fi</translation>
@@ -3653,7 +3653,7 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="9217154963008402249">Freqüència dels paquets de xarxa de supervisió</translation>
 <translation id="922540222991413931">Configura fonts d'instal·lació d'extensions, d'aplicacions i de scripts d'usuari</translation>
 <translation id="924557436754151212">Importació de les contrasenyes desades des del navegador predeterminat en la primera execució</translation>
-<translation id="926146562923985266">Aquesta política controla l'ordre que cal utilitzar per obrir URL a <ph name="PRODUCT_NAME" /> quan es canvia des d'Internet Explorer.
+<translation id="926146562923985266">Aquesta política controla l'ordre que cal utilitzar per obrir els URL a <ph name="PRODUCT_NAME" /> quan es canvia des d'Internet Explorer.
 
       Si l'extensió Compatibilitat amb navegadors antics d'Internet Explorer no està instal·lada, aquesta política no té cap efecte.
 

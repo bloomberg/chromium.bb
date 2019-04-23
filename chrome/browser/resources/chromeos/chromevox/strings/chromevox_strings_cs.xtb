@@ -213,6 +213,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="2626530649491650971">klikatelné</translation>
 <translation id="2628764385451019380">Žádné předchozí pole se seznamem.</translation>
 <translation id="2637227747952042642">Math</translation>
+<translation id="2638785836053527382">Bylo obnoveno stahování souboru <ph name="FILE_NAME" /></translation>
 <translation id="2639750663247012216">Modifikační klávesa ChromeVox</translation>
 <translation id="2644542693584024604">překlep</translation>
 <translation id="2661530546602071611">Oznámení</translation>
@@ -252,6 +253,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="287383510823843610">Tmavě oranžová</translation>
 <translation id="2879867157561757640">Přejeďte třemi prsty dolů</translation>
 <translation id="288178314850623291">Pomocí příkazů přeskočení přejdete na konkrétní typy prvků. Na další nadpis přejdete stisknutím kláves Hledat + H, zpět přejdete stisknutím kláves Hledat + Shift + H.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{minuta}few{minuty}many{minuty}other{minut}}</translation>
 <translation id="2894654529758326923">Informace</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{levá složená závorka}few{# levé složené závorky}many{# left braces}other{# levých složených závorek}}</translation>
 <translation id="2911433807131383493">Otevřít výukový program funkce ChromeVox</translation>
@@ -286,6 +288,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="3084806535845658316">nevyslovovat psaný text</translation>
 <translation id="3086746722712840547">pozn</translation>
 <translation id="308895241372589742">Žádný další matematický výraz není.</translation>
+<translation id="3090227230165225418">Oznamovat oznámení o stažení</translation>
 <translation id="3090532668523289635">skup</translation>
 <translation id="3093176084511590672">Další orientační bod</translation>
 <translation id="3096671415663099226">pole se sezn</translation>
@@ -438,6 +441,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="4148180433151187540">{COUNT,plural, =1{pravá složená závorka}few{# pravé složené závorky}many{# right braces}other{# pravých složených závorek}}</translation>
 <translation id="4158704014418536539">Rozlišují se velká a malá písmena.</translation>
 <translation id="4159784952369912983">Nachová</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{sekunda}few{sekundy}many{sekundy}other{sekund}}</translation>
 <translation id="4161663686871496107">Hlasová odezva ChromeVox je připravena</translation>
 <translation id="4173994908659439270">Žádné další upravitelné textové pole.</translation>
 <translation id="4176463684765177261">Deaktivováno</translation>
@@ -618,6 +622,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="5349770431644471053">Zpětný odkaz</translation>
 <translation id="536031132345979795">Přejít zpět při nepřetržitém čtení</translation>
 <translation id="5368000168321181111">Zvukové signály vypnuty</translation>
+<translation id="5368505757342402527">Ze souboru <ph name="FILE_NAME" /> je staženo <ph name="PROGRESS" /> %. Přibližná zbývající doba: <ph name="TIME" /> <ph name="UNITS" />.</translation>
 <translation id="5374320867641260420">Žádné další tlačítko.</translation>
 <translation id="5376407118396657359">Tabulku můžete procházet po buňkách stisknutím kláves Hledat + Ctrl + Alt a šipek.</translation>
 <translation id="5382299583965267720">Žádný další nadpis 1. úrovně.</translation>
@@ -800,6 +805,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6688209025607531203">Nemodální upozornění</translation>
 <translation id="6689672606256159458">Tmavě lososová</translation>
+<translation id="669617842401078250">Bylo pozastaveno stahování souboru <ph name="FILE_NAME" /></translation>
 <translation id="6696967141280706829">Předmluva</translation>
 <translation id="6697092096875747123">Předchozí rozbalovací seznam</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{vykřičník}few{# vykřičníky}many{# vykřičníku}other{# vykřičníků}}</translation>
@@ -938,6 +944,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="7641134354185483015">Žádný předchozí nadpis 3. úrovně.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, textové pole</translation>
 <translation id="7663318257180412551">Nadpis 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{hodina}few{hodiny}many{hodiny}other{hodin}}</translation>
 <translation id="7674576868851035240">Další odkaz</translation>
 <translation id="7674768236845044097">zvýraz</translation>
 <translation id="7684431668231950609">Úprava textu, webová adresa</translation>
@@ -952,6 +959,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">auto sezn</translation>
+<translation id="7763537600611320912">Bylo zahájeno stahování souboru <ph name="FILE_NAME" /></translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, textové pole pro heslo</translation>
 <translation id="7776293189010177726">Otevřít nabídky ChromeVox</translation>
 <translation id="7800558923657349506">Epilog</translation>
@@ -1076,6 +1084,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8096975275316362544">Mentolová</translation>
 <translation id="8098587210054821856">Břidlicová šedá</translation>
 <translation id="8110647606445335195">Žádné orientační body ARIA.</translation>
+<translation id="812886159861361726">Bylo zastaveno stahování souboru <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Dotykové</translation>
 <translation id="8153880621934657047">Mimo tabulku.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podtržítko}few{# podtržítka}many{# underscores}other{# podtržítek}}</translation>
@@ -1145,6 +1154,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8743786158317878347">vstoupit do strukturovaného obsahu, například tabulky</translation>
 <translation id="8747966237988593539">Seřazený seznam</translation>
 <translation id="8749988712346667988">Stříbrná</translation>
+<translation id="875769700429317857">Bylo dokončeno stažení souboru <ph name="FILE_NAME" /></translation>
 <translation id="8759334257841767240">Žádný další odkaz.</translation>
 <translation id="8767968232364267681">Další nadpis 4. úrovně</translation>
 <translation id="8770473310765924354">opustit strukturovaný obsah, například tabulky</translation>
