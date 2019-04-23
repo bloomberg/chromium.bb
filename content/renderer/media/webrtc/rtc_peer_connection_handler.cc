@@ -1505,6 +1505,11 @@ void RTCPeerConnectionHandler::OnaddICECandidateResult(
   return webkit_request.RequestSucceeded();
 }
 
+void RTCPeerConnectionHandler::GetStandardStatsForTracker(
+    scoped_refptr<webrtc::RTCStatsCollectorCallback> observer) {
+  native_peer_connection_->GetStats(observer.get());
+}
+
 void RTCPeerConnectionHandler::GetStats(
     const blink::WebRTCStatsRequest& request) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());

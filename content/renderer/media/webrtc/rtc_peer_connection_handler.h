@@ -31,6 +31,7 @@
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/platform/web_rtc_stats_response.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
+#include "third_party/webrtc/api/stats/rtc_stats_collector_callback.h"
 
 namespace blink {
 class WebLocalFrame;
@@ -185,6 +186,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   // Asynchronously calls native_peer_connection_->getStats on the signaling
   // thread.
+  void GetStandardStatsForTracker(
+      scoped_refptr<webrtc::RTCStatsCollectorCallback> observer);
   void GetStats(webrtc::StatsObserver* observer,
                 webrtc::PeerConnectionInterface::StatsOutputLevel level,
                 rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> selector);
