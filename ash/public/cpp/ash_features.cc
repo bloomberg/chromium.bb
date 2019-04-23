@@ -30,10 +30,10 @@ const base::Feature kLockScreenHideSensitiveNotificationsSupport{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kHideArcMediaNotifications{
-    "HideArcMediaNotifications", base::FEATURE_DISABLED_BY_DEFAULT};
+    "HideArcMediaNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kMediaSessionNotification{
-    "MediaSessionNotification", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMediaSessionNotification{"MediaSessionNotification",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
 
