@@ -6,15 +6,16 @@
 
 #include "base/bind.h"
 #include "base/files/file.h"
-#include "base/hash/md5.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/test/video_decode_accelerator_unittest_helpers.h"
 #include "media/gpu/video_frame_mapper.h"
 #include "media/gpu/video_frame_mapper_factory.h"
+#include "third_party/boringssl/src/include/openssl/md5.h"
 
 namespace media {
 namespace test {
@@ -154,12 +155,12 @@ void VideoFrameValidator::ProcessVideoFrameTask(
 std::string VideoFrameValidator::ComputeMD5FromVideoFrame(
     const VideoFrame* video_frame) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(validator_thread_sequence_checker_);
-  base::MD5Context context;
-  base::MD5Init(&context);
+  MD5_CTX context;
+  MD5_Init(&context);
   VideoFrame::HashFrameForTesting(&context, *video_frame);
-  base::MD5Digest digest;
-  base::MD5Final(&digest, &context);
-  return MD5DigestToBase16(digest);
+  uint8_t digest[MD5_DIGEST_LENGTH];
+  MD5_Final(digest, &context);
+  return base::ToLowerASCII(base::HexEncode(digest, MD5_DIGEST_LENGTH));
 }
 
 }  // namespace test

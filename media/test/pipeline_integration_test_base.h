@@ -7,9 +7,11 @@
 
 #include <stdint.h>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/callback_forward.h"
-#include "base/hash/md5.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
@@ -26,6 +28,7 @@
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/video_renderer_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/boringssl/src/include/openssl/md5.h"
 
 using ::testing::NiceMock;
 
@@ -153,7 +156,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
  protected:
   NiceMock<MockMediaLog> media_log_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::MD5Context md5_context_;
+  MD5_CTX md5_context_;
   bool hashing_enabled_;
   bool clockless_playback_;
   bool webaudio_attached_;

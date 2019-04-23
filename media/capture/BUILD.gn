@@ -363,6 +363,7 @@ test("capture_unittests") {
     "//mojo/core/embedder",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/boringssl",
     "//ui/gfx:test_support",
   ]
 
