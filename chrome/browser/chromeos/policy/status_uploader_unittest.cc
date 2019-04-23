@@ -50,6 +50,8 @@ constexpr base::TimeDelta kDefaultStatusUploadDelay =
 constexpr base::TimeDelta kMinImmediateUploadInterval =
     base::TimeDelta::FromSeconds(10);
 
+// Using a DeviceStatusCollector to have a concrete StatusCollector, but the
+// exact type doesn't really matter, as it is being mocked.
 class MockDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
   explicit MockDeviceStatusCollector(PrefService* local_state)

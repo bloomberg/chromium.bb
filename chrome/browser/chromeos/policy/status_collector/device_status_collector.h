@@ -63,8 +63,9 @@ class Profile;
 
 namespace policy {
 
+class ActivityStorage;
 struct DeviceLocalAccount;
-class GetStatusState;
+class DeviceStatusCollectorState;
 
 // Holds TPM status info.  Cf. TpmStatusInfo in device_management_backend.proto.
 struct TpmStatusInfo {
@@ -256,8 +257,6 @@ class DeviceStatusCollector : public StatusCollector,
   void UpdateChildUsageTime();
 
  private:
-  class ActivityStorage;
-
   // Callbacks used during sampling data collection, that allows to pass
   // additional data using partial function application.
   using SamplingProbeResultCallback =
@@ -273,16 +272,16 @@ class DeviceStatusCollector : public StatusCollector,
   void OnTpmVersion(
       const chromeos::CryptohomeClient::TpmVersionInfo& tpm_version_info);
 
-  void GetDeviceStatus(scoped_refptr<GetStatusState> state);
-  void GetSessionStatus(scoped_refptr<GetStatusState> state);
+  void GetDeviceStatus(scoped_refptr<DeviceStatusCollectorState> state);
+  void GetSessionStatus(scoped_refptr<DeviceStatusCollectorState> state);
 
   bool GetSessionStatusForUser(
-      scoped_refptr<GetStatusState> state,
+      scoped_refptr<DeviceStatusCollectorState> state,
       enterprise_management::SessionStatusReportRequest* status,
       const user_manager::User* user);
   // Helpers for the various portions of DEVICE STATUS. Return true if they
   // actually report any status. Functions that queue async queries take
-  // a |GetStatusState| instance.
+  // a |DeviceStatusCollectorState| instance.
   bool GetActivityTimes(
       enterprise_management::DeviceStatusReportRequest* status);
   bool GetVersionInfo(enterprise_management::DeviceStatusReportRequest* status);
@@ -292,9 +291,8 @@ class DeviceStatusCollector : public StatusCollector,
   bool GetNetworkInterfaces(
       enterprise_management::DeviceStatusReportRequest* status);
   bool GetUsers(enterprise_management::DeviceStatusReportRequest* status);
-  bool GetHardwareStatus(
-      enterprise_management::DeviceStatusReportRequest* status,
-      scoped_refptr<GetStatusState> state);  // Queues async queries!
+  bool GetHardwareStatus(scoped_refptr<DeviceStatusCollectorState>
+                             state);  // Queues async queries!
   bool GetOsUpdateStatus(
       enterprise_management::DeviceStatusReportRequest* status);
   bool GetRunningKioskApp(
@@ -302,12 +300,13 @@ class DeviceStatusCollector : public StatusCollector,
 
   // Helpers for the various portions of SESSION STATUS. Return true if they
   // actually report any status. Functions that queue async queries take
-  // a |GetStatusState| instance.
+  // a |DeviceStatusCollectorState| instance.
   bool GetKioskSessionStatus(
       enterprise_management::SessionStatusReportRequest* status);
   bool GetAndroidStatus(
       enterprise_management::SessionStatusReportRequest* status,
-      const scoped_refptr<GetStatusState>& state);  // Queues async queries!
+      const scoped_refptr<DeviceStatusCollectorState>&
+          state);  // Queues async queries!
   bool GetCrostiniUsage(
       enterprise_management::SessionStatusReportRequest* status,
       Profile* profile);
@@ -319,8 +318,8 @@ class DeviceStatusCollector : public StatusCollector,
   void ReceiveCPUStatistics(const base::Time& timestamp,
                             const std::string& statistics);
 
-  // Callback for RuntimeProbe that samples probe live data. |callback| will be
-  // called once all sampling is finished.
+  // Callback for RuntimeProbe that samples probe live data. |callback| will
+  // be called once all sampling is finished.
   void SampleProbeData(std::unique_ptr<SampledData> sample,
                        SamplingProbeResultCallback callback,
                        base::Optional<runtime_probe::ProbeResult> result);
@@ -342,14 +341,12 @@ class DeviceStatusCollector : public StatusCollector,
 
   // ProbeDataReceiver interface implementation, fetches data from
   // RuntimeProbe passes it to |callback| via OnProbeDataFetched().
-  void FetchProbeData(
-      policy::DeviceStatusCollector::ProbeDataReceiver callback);
+  void FetchProbeData(ProbeDataReceiver callback);
 
   // Callback for RuntimeProbe that performs final sampling and
   // actually invokes |callback|.
-  void OnProbeDataFetched(
-      policy::DeviceStatusCollector::ProbeDataReceiver callback,
-      base::Optional<runtime_probe::ProbeResult> reply);
+  void OnProbeDataFetched(ProbeDataReceiver callback,
+                          base::Optional<runtime_probe::ProbeResult> reply);
 
   // Callback invoked when reporting users pref is changed.
   void ReportingUsersChanged();
