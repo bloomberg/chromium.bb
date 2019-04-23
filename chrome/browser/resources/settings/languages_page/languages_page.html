@@ -139,6 +139,14 @@
             var(--cr-section-indent-width) - var(--cr-radio-button-size));
       }
 
+      .spell-check-radio-button.enhanced {
+        align-items: start;
+        --cr-radio-button-disc: {
+          /* Align with just the first line of text */
+          margin-top: calc((1.5em - var(--cr-radio-button-size)) / 2);
+        }
+      }
+
       .enhanced-spellcheck-description {
         padding-inline-end: 150px;
       }
@@ -302,7 +310,7 @@
                   pref="[[prefs.spellcheck.use_spelling_service]]">
               </controlled-radio-button>
               <controlled-radio-button
-                  class="spell-check-radio-button"
+                  class="spell-check-radio-button enhanced"
                   id="spellingServiceEnable"
                   label="$i18n{spellCheckEnhancedLabel}"
                   name="true"
