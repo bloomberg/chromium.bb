@@ -39,7 +39,7 @@
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
-#include "ash/system/unified/user_chooser_view.h"
+#include "ash/system/unified/user_chooser_detailed_view_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -235,7 +235,7 @@ void UnifiedSystemTrayController::ShowUserChooserView() {
     return;
   animation_->Reset(1.0);
   UpdateExpandedAmount();
-  unified_view_->SetDetailedView(new UserChooserView(this));
+  ShowDetailedView(std::make_unique<UserChooserDetailedViewController>(this));
 }
 
 void UnifiedSystemTrayController::ShowNetworkDetailedView(bool force) {
@@ -399,7 +399,9 @@ void UnifiedSystemTrayController::ShowDetailedView(
   unified_view_->SetDetailedView(controller->CreateView());
   detailed_view_controller_ = std::move(controller);
 
-  bubble_->UpdateBubble();
+  // |bubble_| may be null in tests.
+  if (bubble_)
+    bubble_->UpdateBubble();
 }
 
 void UnifiedSystemTrayController::UpdateExpandedAmount() {

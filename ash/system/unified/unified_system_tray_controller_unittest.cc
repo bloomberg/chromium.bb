@@ -127,6 +127,20 @@ TEST_F(UnifiedSystemTrayControllerTest, ToggleExpanded) {
   EXPECT_FALSE(model()->IsExpandedOnOpen());
 }
 
+TEST_F(UnifiedSystemTrayControllerTest, EnsureExpanded_UserChooserShown) {
+  InitializeView();
+  EXPECT_FALSE(view()->detailed_view_for_testing()->visible());
+
+  // Show the user chooser view.
+  controller()->ShowUserChooserView();
+  EXPECT_TRUE(view()->detailed_view_for_testing()->visible());
+
+  // Calling EnsureExpanded() should hide the detailed view (e.g. this can
+  // happen when changing the brightness or volume).
+  controller()->EnsureExpanded();
+  EXPECT_FALSE(view()->detailed_view_for_testing()->visible());
+}
+
 TEST_F(UnifiedSystemTrayControllerTest, PreferredSizeChanged) {
   InitializeView();
 

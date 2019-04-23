@@ -130,6 +130,8 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
     return notification_hidden_view_;
   }
 
+  View* detailed_view_for_testing() { return detailed_view_container_; }
+
  private:
   class FocusSearch;
 
