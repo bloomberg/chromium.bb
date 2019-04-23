@@ -270,13 +270,6 @@ class CreditCardSaveManager {
   // Logs the reason why expiration date was explicitly requested.
   void LogSaveCardRequestExpirationDateReasonMetric();
 
-  // Checks if credit card matches one of the ranges in
-  // |supported_card_bin_ranges|, inclusive of the start and end boundaries.
-  // For example, if the range consists of std::pair<34, 36>, then all cards
-  // with first two digits of 34, 35 and 36 are supported.
-  bool IsCreditCardSupported(
-      std::vector<std::pair<int, int>> supported_card_bin_ranges);
-
   // For testing.
   void SetEventObserverForTesting(ObserverForTest* observer) {
     observer_for_testing_ = observer;
