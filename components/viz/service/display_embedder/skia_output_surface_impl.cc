@@ -404,6 +404,7 @@ void SkiaOutputSurfaceImpl::ReleaseCachedResources(
     const std::vector<ResourceId>& ids) {
   if (ids.empty())
     return;
+
   std::vector<std::unique_ptr<ImageContext>> image_contexts;
   for (auto id : ids) {
     auto it = promise_image_cache_.find(id);
@@ -414,6 +415,9 @@ void SkiaOutputSurfaceImpl::ReleaseCachedResources(
     image_contexts.push_back(std::move(image_context));
     promise_image_cache_.erase(it);
   }
+
+  if (image_contexts.empty())
+    return;
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
