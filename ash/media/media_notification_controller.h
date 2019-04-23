@@ -22,6 +22,10 @@ class Connector;
 
 namespace ash {
 
+namespace {
+class MediaNotificationBlocker;
+}  // namespace
+
 class MediaNotificationItem;
 class MediaNotificationView;
 
@@ -66,6 +70,8 @@ class ASH_EXPORT MediaNotificationController
   // Stores a |MediaNotificationItem| for each media session keyed by its
   // |request_id| in string format.
   std::map<const std::string, MediaNotificationItem> notifications_;
+
+  std::unique_ptr<MediaNotificationBlocker> blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationController);
 };

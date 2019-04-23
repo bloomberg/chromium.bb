@@ -9,6 +9,8 @@
 #include "ash/media/media_notification_constants.h"
 #include "ash/media/media_notification_item.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/notification_utils.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
@@ -82,6 +84,13 @@ class MediaNotificationControllerTest : public AshTestBase {
     histogram_tester_.ExpectUniqueSample(
         MediaNotificationItem::kSourceHistogramName,
         static_cast<base::HistogramBase::Sample>(source), 1);
+  }
+
+  void SimulateSessionLock(bool locked) {
+    mojom::SessionInfoPtr info_ptr = mojom::SessionInfo::New();
+    info_ptr->state = locked ? session_manager::SessionState::LOCKED
+                             : session_manager::SessionState::ACTIVE;
+    Shell::Get()->session_controller()->SetSessionInfo(std::move(info_ptr));
   }
 
  private:
@@ -417,6 +426,47 @@ TEST_F(MediaNotificationControllerTest, RecordHistogramSource_Arc) {
 
   ExpectNotificationCount(1);
   ExpectHistogramSourceRecorded(MediaNotificationItem::Source::kArc);
+}
+
+// Test that locking the screen will hide the media notifications. Unlocking the
+// screen should re-show the notifications.
+TEST_F(MediaNotificationControllerTest, HideWhenScreenLocked) {
+  message_center::MessageCenter* message_center =
+      message_center::MessageCenter::Get();
+
+  base::UnguessableToken id = base::UnguessableToken::Create();
+
+  ExpectNotificationCount(0);
+
+  Shell::Get()->media_notification_controller()->OnFocusGained(
+      GetRequestStateWithId(id));
+
+  Shell::Get()
+      ->media_notification_controller()
+      ->GetItem(id.ToString())
+      ->MediaSessionMetadataChanged(BuildMediaMetadata());
+
+  ExpectNotificationCount(1);
+
+  // Show a non-media notification that should still be displayed.
+  message_center->AddNotification(
+      ash::CreateSystemNotification("test", base::string16(), base::string16(),
+                                    "test", base::BindRepeating([]() {})));
+
+  EXPECT_EQ(2u, message_center->GetVisibleNotifications().size());
+
+  // Lock the screen and only the non-media notification should be visible.
+  SimulateSessionLock(true);
+
+  {
+    auto notifications = message_center->GetVisibleNotifications();
+    EXPECT_EQ(1u, notifications.size());
+    EXPECT_EQ("test", (*notifications.begin())->id());
+  }
+
+  // Unlock the screen and both notifications should be visible again.
+  SimulateSessionLock(false);
+  EXPECT_EQ(2u, message_center->GetVisibleNotifications().size());
 }
 
 }  // namespace ash

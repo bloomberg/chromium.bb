@@ -6,12 +6,16 @@
 
 #include "ash/media/media_notification_constants.h"
 #include "ash/media/media_notification_view.h"
+#include "ash/session/session_controller.h"
+#include "ash/session/session_observer.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/views/message_view_factory.h"
 
 namespace ash {
@@ -30,6 +34,64 @@ std::unique_ptr<message_center::MessageView> CreateCustomMediaNotificationView(
 // unlikely to see a user with 20+ things playing at once.
 const int kMediaNotificationCountHistogramMax = 20;
 
+// MediaNotificationBlocker will block media notifications if the screen is
+// locked.
+class MediaNotificationBlocker : public message_center::NotificationBlocker,
+                                 public SessionObserver {
+ public:
+  MediaNotificationBlocker(message_center::MessageCenter* message_center,
+                           SessionController* session_controller)
+      : message_center::NotificationBlocker(message_center),
+        locked_(session_controller->IsScreenLocked()),
+        session_controller_(session_controller) {
+    message_center->AddNotificationBlocker(this);
+    session_controller->AddObserver(this);
+
+    NotifyBlockingStateChanged();
+  }
+
+  ~MediaNotificationBlocker() override {
+    message_center()->RemoveNotificationBlocker(this);
+    session_controller_->RemoveObserver(this);
+  }
+
+  void CheckState() override {
+    OnLockStateChanged(session_controller_->IsScreenLocked());
+  }
+
+  bool ShouldShowNotification(
+      const message_center::Notification& notification) const override {
+    if (notification.notifier_id() ==
+        message_center::NotifierId(
+            message_center::NotifierType::SYSTEM_COMPONENT,
+            kMediaSessionNotifierId)) {
+      return !locked_;
+    }
+
+    return true;
+  }
+
+  bool ShouldShowNotificationAsPopup(
+      const message_center::Notification& notification) const override {
+    return ShouldShowNotification(notification);
+  }
+
+  void OnLockStateChanged(bool locked) override {
+    if (locked == locked_)
+      return;
+
+    locked_ = locked;
+    NotifyBlockingStateChanged();
+  }
+
+ private:
+  bool locked_;
+
+  SessionController* const session_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaNotificationBlocker);
+};
+
 }  // namespace
 
 // static
@@ -37,7 +99,10 @@ const char MediaNotificationController::kCountHistogramName[] =
     "Media.Notification.Count";
 
 MediaNotificationController::MediaNotificationController(
-    service_manager::Connector* connector) {
+    service_manager::Connector* connector)
+    : blocker_(std::make_unique<MediaNotificationBlocker>(
+          message_center::MessageCenter::Get(),
+          Shell::Get()->session_controller())) {
   if (!message_center::MessageViewFactory::HasCustomNotificationViewFactory(
           kMediaSessionNotificationCustomViewType)) {
     message_center::MessageViewFactory::SetCustomNotificationViewFactory(
