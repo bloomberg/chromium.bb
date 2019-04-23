@@ -555,9 +555,10 @@ void BackgroundFetchDelegateImpl::OnDownloadUpdated(
   }
   UpdateOfflineItemAndUpdateObservers(&job_details);
 
-  if (job_details.client)
+  if (job_details.client) {
     job_details.client->OnDownloadUpdated(job_unique_id, download_guid,
                                           bytes_uploaded, bytes_downloaded);
+  }
 }
 
 void BackgroundFetchDelegateImpl::OnDownloadFailed(
