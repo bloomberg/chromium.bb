@@ -39,8 +39,8 @@ InspectorHighlightContrastInfo FetchContrast(Node* node) {
   Vector<Color> bgcolors;
   String font_size;
   String font_weight;
-  // TODO(crbug.com/951817): make InspectorCSSAgent::GetBackgroundColors work
-  // fast enough for large tables (and other heavy pages) and call it here.
+  InspectorCSSAgent::GetBackgroundColors(ToElement(node), &bgcolors, &font_size,
+                                         &font_weight);
   if (bgcolors.size() == 1) {
     result.font_size = font_size;
     result.font_weight = font_weight;
