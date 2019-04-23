@@ -6,10 +6,37 @@
 
 #include "base/optional.h"
 #include "base/task/thread_pool/task_tracker.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/win/scoped_com_initializer.h"
 
 namespace base {
 namespace internal {
+
+class PlatformNativeWorkerPoolWin::ScopedCallbackMayRunLongObserver
+    : public BlockingObserver {
+ public:
+  ScopedCallbackMayRunLongObserver(PTP_CALLBACK_INSTANCE callback)
+      : callback_(callback) {
+    SetBlockingObserverForCurrentThread(this);
+  }
+
+  ~ScopedCallbackMayRunLongObserver() override {
+    ClearBlockingObserverForCurrentThread();
+  }
+
+  // BlockingObserver:
+  void BlockingStarted(BlockingType blocking_type) override {
+    ::CallbackMayRunLong(callback_);
+  }
+
+  void BlockingTypeUpgraded() override {}
+  void BlockingEnded() override {}
+
+ private:
+  PTP_CALLBACK_INSTANCE callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedCallbackMayRunLongObserver);
+};
 
 PlatformNativeWorkerPoolWin::PlatformNativeWorkerPoolWin(
     TrackedRef<TaskTracker> task_tracker,
@@ -44,13 +71,13 @@ void PlatformNativeWorkerPoolWin::JoinImpl() {
 
 void PlatformNativeWorkerPoolWin::SubmitWork() {
   // TODO(fdoray): Handle priorities by having different work objects and using
-  // SetThreadpoolCallbackPriority() and SetThreadpoolCallbackRunsLong().
+  // SetThreadpoolCallbackPriority().
   ::SubmitThreadpoolWork(work_);
 }
 
 // static
 void CALLBACK PlatformNativeWorkerPoolWin::RunNextSequence(
-    PTP_CALLBACK_INSTANCE,
+    PTP_CALLBACK_INSTANCE callback_instance,
     void* scheduler_worker_pool_windows_impl,
     PTP_WORK) {
   auto* worker_pool = static_cast<PlatformNativeWorkerPoolWin*>(
@@ -62,6 +89,9 @@ void CALLBACK PlatformNativeWorkerPoolWin::RunNextSequence(
   Optional<win::ScopedCOMInitializer> com_initializer;
   if (worker_pool->worker_environment_ == WorkerEnvironment::COM_MTA)
     com_initializer.emplace(win::ScopedCOMInitializer::kMTA);
+
+  ScopedCallbackMayRunLongObserver callback_may_run_long_observer(
+      callback_instance);
 
   worker_pool->RunNextSequenceImpl();
 }

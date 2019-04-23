@@ -160,7 +160,7 @@ class BASE_EXPORT BlockingObserver {
 BASE_EXPORT void SetBlockingObserverForCurrentThread(
     BlockingObserver* blocking_observer);
 
-BASE_EXPORT void ClearBlockingObserverForTesting();
+BASE_EXPORT void ClearBlockingObserverForCurrentThread();
 
 // Unregisters the |blocking_observer| on the current thread within its scope.
 // Used in ThreadPool tests to prevent calls to //base sync primitives from
