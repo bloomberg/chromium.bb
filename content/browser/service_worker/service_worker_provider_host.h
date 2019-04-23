@@ -180,13 +180,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   blink::mojom::ControllerServiceWorkerMode GetControllerMode() const;
 
   // For service worker clients. Returns this client's controller.
-  ServiceWorkerVersion* controller() const {
-#if DCHECK_IS_ON()
-    CheckControllerConsistency();
-#endif  // DCHECK_IS_ON()
-
-    return controller_.get();
-  }
+  ServiceWorkerVersion* controller() const;
 
   ServiceWorkerRegistration* controller_registration() const {
 #if DCHECK_IS_ON()
@@ -514,9 +508,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // controller has not yet been decided.
   bool IsControllerDecided() const;
 
-#if DCHECK_IS_ON()
+  // TODO(crbug.com/951571): Put this check function behind DCHECK_IS_ON() once
+  // we figured out the cause of invalid controller status.
   void CheckControllerConsistency() const;
-#endif  // DCHECK_IS_ON()
 
   // Implements blink::mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
