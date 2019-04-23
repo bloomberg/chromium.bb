@@ -38,6 +38,7 @@ class MODULES_EXPORT PaintWorkletProxyClient
 
   PaintWorkletProxyClient(
       int worklet_id,
+      PaintWorklet*,
       scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee);
   ~PaintWorkletProxyClient() override = default;
 
@@ -52,9 +53,27 @@ class MODULES_EXPORT PaintWorkletProxyClient
   GetGlobalScopesForTesting() const {
     return global_scopes_;
   }
+
+  void RegisterCSSPaintDefinition(const String& name,
+                                  CSSPaintDefinition*,
+                                  ExceptionState&);
+
   void Dispose();
 
   static PaintWorkletProxyClient* From(WorkerClients*);
+
+  const HeapHashMap<String, Member<DocumentPaintDefinition>>&
+  DocumentDefinitionMapForTesting() const {
+    return document_definition_map_;
+  }
+  scoped_refptr<base::SingleThreadTaskRunner> MainThreadTaskRunnerForTesting()
+      const {
+    return main_thread_runner_;
+  }
+  void SetMainThreadTaskRunnerForTesting(
+      scoped_refptr<base::SingleThreadTaskRunner> runner) {
+    main_thread_runner_ = runner;
+  }
 
  private:
   friend class PaintWorkletGlobalScopeTest;
@@ -66,6 +85,14 @@ class MODULES_EXPORT PaintWorkletProxyClient
   const int worklet_id_;
   Vector<CrossThreadPersistent<PaintWorkletGlobalScope>> global_scopes_;
   enum RunState { kUninitialized, kWorking, kDisposed } state_;
+
+  // Stores the definitions for each paint that is registered.
+  HeapHashMap<String, Member<DocumentPaintDefinition>> document_definition_map_;
+
+  // Used for OffMainThreadPaintWorklet; we post to the main-thread PaintWorklet
+  // instance to store the definitions for each paint that is registered.
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
+  CrossThreadWeakPersistent<PaintWorklet> paint_worklet_;
 };
 
 void MODULES_EXPORT ProvidePaintWorkletProxyClientTo(WorkerClients*,

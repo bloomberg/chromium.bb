@@ -42,14 +42,16 @@ class PLATFORM_EXPORT PaintWorkletPaintDispatcher
 
   sk_sp<cc::PaintRecord> Paint(cc::PaintWorkletInput*);
 
- private:
-  friend class PaintWorkletProxyClientTest;
-  // We can have more than one task-runner because using a worklet inside a
-  // frame with a different origin causes a new global scope => new thread.
   using PaintWorkletPainterToTaskRunnerMap =
       HashMap<CrossThreadPersistent<PaintWorkletPainter>,
               scoped_refptr<base::SingleThreadTaskRunner>>;
+  const PaintWorkletPainterToTaskRunnerMap& PainterMapForTesting() const {
+    return painter_map_;
+  }
 
+ private:
+  // We can have more than one task-runner because using a worklet inside a
+  // frame with a different origin causes a new global scope => new thread.
   PaintWorkletPainterToTaskRunnerMap painter_map_;
 
   // The (Un)registerPaintWorkletPainter comes from the worklet thread, and the

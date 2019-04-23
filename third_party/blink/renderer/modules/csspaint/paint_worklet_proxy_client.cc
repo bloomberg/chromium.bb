@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/csspaint/css_paint_definition.h"
+#include "third_party/blink/renderer/modules/csspaint/main_thread_document_paint_definition.h"
 #include "third_party/blink/renderer/modules/csspaint/paint_worklet.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
@@ -26,23 +27,27 @@ PaintWorkletProxyClient* PaintWorkletProxyClient::Create(Document* document,
                                                          int worklet_id) {
   WebLocalFrameImpl* local_frame =
       WebLocalFrameImpl::FromFrame(document->GetFrame());
-
+  PaintWorklet* paint_worklet = PaintWorklet::From(*document->domWindow());
   scoped_refptr<PaintWorkletPaintDispatcher> compositor_painter_dispatcher =
       local_frame->LocalRootFrameWidget()->EnsureCompositorPaintDispatcher();
   return MakeGarbageCollected<PaintWorkletProxyClient>(
-      worklet_id, std::move(compositor_painter_dispatcher));
+      worklet_id, paint_worklet, std::move(compositor_painter_dispatcher));
 }
 
 PaintWorkletProxyClient::PaintWorkletProxyClient(
     int worklet_id,
+    PaintWorklet* paint_worklet,
     scoped_refptr<PaintWorkletPaintDispatcher> compositor_paintee)
     : compositor_paintee_(std::move(compositor_paintee)),
       worklet_id_(worklet_id),
-      state_(RunState::kUninitialized) {
+      state_(RunState::kUninitialized),
+      main_thread_runner_(Thread::MainThread()->GetTaskRunner()),
+      paint_worklet_(paint_worklet) {
   DCHECK(IsMainThread());
 }
 
 void PaintWorkletProxyClient::Trace(blink::Visitor* visitor) {
+  visitor->Trace(document_definition_map_);
   Supplement<WorkerClients>::Trace(visitor);
   PaintWorkletPainter::Trace(visitor);
 }
@@ -69,6 +74,44 @@ void PaintWorkletProxyClient::AddGlobalScope(WorkletGlobalScope* global_scope) {
   state_ = RunState::kWorking;
 
   compositor_paintee_->RegisterPaintWorkletPainter(this, global_scope_runner);
+}
+
+void PaintWorkletProxyClient::RegisterCSSPaintDefinition(
+    const String& name,
+    CSSPaintDefinition* definition,
+    ExceptionState& exception_state) {
+  DocumentPaintDefinition* document_definition;
+  if (document_definition_map_.Contains(name)) {
+    document_definition = document_definition_map_.at(name);
+    if (document_definition == kInvalidDocumentPaintDefinition)
+      return;
+    if (!document_definition->RegisterAdditionalPaintDefinition(*definition)) {
+      document_definition_map_.Set(name, kInvalidDocumentPaintDefinition);
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotSupportedError,
+          "A class with name:'" + name +
+              "' was registered with a different definition.");
+      return;
+    }
+  } else {
+    document_definition =
+        MakeGarbageCollected<DocumentPaintDefinition>(definition);
+    document_definition_map_.Set(name, document_definition);
+  }
+
+  // Notify the main thread only once all global scopes have registered the same
+  // named paint definition (with the same definition as well).
+  if (document_definition->GetRegisteredDefinitionCount() ==
+      PaintWorklet::kNumGlobalScopes) {
+    auto main_thread_definition =
+        std::make_unique<MainThreadDocumentPaintDefinition>(definition);
+    PostCrossThreadTask(
+        *main_thread_runner_, FROM_HERE,
+        CrossThreadBind(
+            &PaintWorklet::RegisterMainThreadDocumentPaintDefinition,
+            paint_worklet_, name,
+            WTF::Passed(std::move(main_thread_definition))));
+  }
 }
 
 void PaintWorkletProxyClient::Dispose() {

@@ -36,7 +36,7 @@ class PaintWorkletGlobalScopeTest : public PageTestBase {
 
     dispatcher_ = base::MakeRefCounted<PaintWorkletPaintDispatcher>();
     proxy_client_ =
-        MakeGarbageCollected<PaintWorkletProxyClient>(1, dispatcher_);
+        MakeGarbageCollected<PaintWorkletProxyClient>(1, nullptr, dispatcher_);
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
   }
 

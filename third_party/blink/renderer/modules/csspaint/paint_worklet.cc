@@ -101,8 +101,7 @@ scoped_refptr<Image> PaintWorklet::Paint(const String& name,
                                          const ImageResourceObserver& observer,
                                          const FloatSize& container_size,
                                          const CSSStyleValueVector* data) {
-  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled())
-    return nullptr;
+  DCHECK(!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
 
   if (!document_definition_map_.Contains(name))
     return nullptr;
@@ -144,6 +143,14 @@ void PaintWorklet::Trace(blink::Visitor* visitor) {
   visitor->Trace(proxy_client_);
   Worklet::Trace(visitor);
   Supplement<LocalDOMWindow>::Trace(visitor);
+}
+
+void PaintWorklet::RegisterMainThreadDocumentPaintDefinition(
+    const String& name,
+    std::unique_ptr<MainThreadDocumentPaintDefinition> definition) {
+  DCHECK(!main_thread_document_definition_map_.Contains(name));
+  main_thread_document_definition_map_.insert(name, std::move(definition));
+  pending_generator_registry_->NotifyGeneratorReady(name);
 }
 
 bool PaintWorklet::NeedsToCreateGlobalScope() {
