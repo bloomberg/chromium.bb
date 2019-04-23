@@ -184,6 +184,7 @@ const int kCellHighlightColorRgb = 0x4285F4;
                               scrollPosition:UITableViewScrollPositionNone];
       }
     }
+    [self updateToolbarButtons];
 
     // Showing toolbar here because parent class hides toolbar in
     // viewWillDisappear:.
@@ -287,6 +288,7 @@ const int kCellHighlightColorRgb = 0x4285F4;
       default:
         break;
     }
+    [self updateToolbarButtons];
   }
 }
 
@@ -333,6 +335,7 @@ const int kCellHighlightColorRgb = 0x4285F4;
     default:
       break;
   }
+  [self updateToolbarButtons];
 }
 
 - (CGFloat)tableView:(UITableView*)tableView
@@ -511,6 +514,13 @@ const int kCellHighlightColorRgb = 0x4285F4;
   self.browserState->GetPrefs()->SetBoolean(clearBrowsingDataItem.prefName,
                                             clearBrowsingDataItem.checked);
   [self reconfigureCellsForItems:@[ clearBrowsingDataItem ]];
+}
+
+- (void)updateToolbarButtons {
+  // Enabling the Clear Browsing Data button only when at least 1 cells are
+  // selected.
+  self.clearBrowsingDataBarButton.enabled =
+      ([[self.tableView indexPathsForSelectedRows] count] > 0);
 }
 
 @end
