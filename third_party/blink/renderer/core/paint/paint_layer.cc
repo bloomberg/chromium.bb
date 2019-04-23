@@ -610,29 +610,6 @@ void PaintLayer::MapPointInPaintInvalidationContainerToBacking(
   point.MoveBy(-squashing_layer->GetOffsetFromTransformNode());
 }
 
-void PaintLayer::MapRectInPaintInvalidationContainerToBacking(
-    const LayoutBoxModelObject& paint_invalidation_container,
-    LayoutRect& rect) {
-  PaintLayer* paint_invalidation_layer = paint_invalidation_container.Layer();
-  if (!paint_invalidation_layer->GroupedMapping())
-    return;
-
-  GraphicsLayer* squashing_layer =
-      paint_invalidation_layer->GroupedMapping()->SquashingLayer();
-
-  PropertyTreeState source_state =
-      paint_invalidation_container.FirstFragment().LocalBorderBoxProperties();
-  PropertyTreeState dest_state = squashing_layer->GetPropertyTreeState();
-
-  // Move the point into the source_state transform space, map to dest_state
-  // transform space, then move into squashing layer state.
-  rect.MoveBy(paint_invalidation_container.FirstFragment().PaintOffset());
-  GeometryMapper::SourceToDestinationProjection(source_state.Transform(),
-                                                dest_state.Transform())
-      .MapRect(rect);
-  rect.MoveBy(-squashing_layer->GetOffsetFromTransformNode());
-}
-
 void PaintLayer::DirtyVisibleContentStatus() {
   MarkAncestorChainForFlagsUpdate();
   // Non-self-painting layers paint into their ancestor layer, and count as part

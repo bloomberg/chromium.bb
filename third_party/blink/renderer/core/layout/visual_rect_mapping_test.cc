@@ -63,17 +63,6 @@ class VisualRectMappingTest : public PaintTestConfigurations,
       return;
     }
 
-    // The following condition can be false if paintInvalidationContainer is
-    // a LayoutView and compositing is not enabled.
-    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-        ancestor.IsPaintInvalidationContainer()) {
-      PaintLayer::MapRectInPaintInvalidationContainerToBacking(ancestor,
-                                                               slow_map_rect);
-      LayoutRect temp(geometry_mapper_rect.Rect());
-      PaintLayer::MapRectInPaintInvalidationContainerToBacking(ancestor, temp);
-      geometry_mapper_rect = FloatClipRect(FloatRect(temp));
-    }
-
     if (flags & kContainsEnclosingIntRect) {
       EXPECT_TRUE(
           EnclosingIntRect(slow_map_rect)

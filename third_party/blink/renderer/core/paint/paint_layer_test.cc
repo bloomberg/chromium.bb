@@ -1552,14 +1552,9 @@ TEST_P(PaintLayerTest, SquashingOffsets) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
   EXPECT_EQ(kPaintsIntoGroupedBacking, squashed->GetCompositingState());
   FloatPoint point;
-  LayoutRect rect(0, 0, 200, 200);
   PaintLayer::MapPointInPaintInvalidationContainerToBacking(
       squashed->GetLayoutObject(), point);
   EXPECT_EQ(FloatPoint(), point);
-
-  PaintLayer::MapRectInPaintInvalidationContainerToBacking(
-      squashed->GetLayoutObject(), rect);
-  EXPECT_EQ(LayoutRect(0, 0, 200, 200), rect);
 
   EXPECT_EQ(LayoutPoint(0, 0), squashed->ComputeOffsetFromAncestor(
                                    squashed->TransformAncestorOrRoot()));
@@ -1571,10 +1566,6 @@ TEST_P(PaintLayerTest, SquashingOffsets) {
   PaintLayer::MapPointInPaintInvalidationContainerToBacking(
       squashed->GetLayoutObject(), point);
   EXPECT_EQ(FloatPoint(), point);
-
-  PaintLayer::MapRectInPaintInvalidationContainerToBacking(
-      squashed->GetLayoutObject(), rect);
-  EXPECT_EQ(LayoutRect(0, 0, 200, 200), rect);
 
   EXPECT_EQ(LayoutPoint(0, 0), squashed->ComputeOffsetFromAncestor(
                                    squashed->TransformAncestorOrRoot()));
