@@ -149,6 +149,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   void set_page_state(const PageState& page_state) { page_state_ = page_state; }
 
+  void set_origin(const url::Origin& origin) { origin_ = origin; }
+
  private:
   NavigationSimulatorImpl(const GURL& original_url,
                           bool browser_initiated,
@@ -274,6 +276,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
       net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN;
   base::Optional<net::SSLInfo> ssl_info_;
   base::Optional<PageState> page_state_;
+  base::Optional<url::Origin> origin_;
 
   bool auto_advance_ = true;
   bool drop_swap_out_ack_ = false;

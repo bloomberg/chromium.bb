@@ -1248,7 +1248,7 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
     // Note: Error pages must commit in a unique origin. So it is left unset.
     params->url_is_unreachable = true;
   } else {
-    params->origin = url::Origin::Create(navigation_url_);
+    params->origin = origin_.value_or(url::Origin::Create(navigation_url_));
     params->redirects.push_back(navigation_url_);
     params->method = request_ ? request_->common_params().method : "GET";
     params->http_status_code = 200;

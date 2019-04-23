@@ -2799,19 +2799,6 @@ TEST_F(RenderFrameHostManagerTest, CanCommitOrigin) {
 
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kUrl);
 
-  controller().LoadURL(
-      kUrlBar, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  main_test_rfh()->PrepareForCommit();
-
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = 0;
-  params.did_create_new_entry = false;
-  params.transition = ui::PAGE_TRANSITION_LINK;
-  params.should_update_history = false;
-  params.gesture = NavigationGestureAuto;
-  params.method = "GET";
-  params.page_state = PageState::CreateFromURL(kUrlBar);
-
   struct TestCase {
     const char* const url;
     const char* const origin;
@@ -2836,15 +2823,20 @@ TEST_F(RenderFrameHostManagerTest, CanCommitOrigin) {
   };
 
   for (const auto& test_case : cases) {
-    params.url = GURL(test_case.url);
-    params.origin = url::Origin::Create(GURL(test_case.origin));
+    auto navigation = NavigationSimulatorImpl::CreateBrowserInitiated(
+        GURL(test_case.url), contents());
+    navigation->set_origin(url::Origin::Create(GURL(test_case.origin)));
+    navigation->ReadyToCommit();
 
-    int expected_bad_msg_count = process()->bad_msg_count();
+    int expected_bad_msg_count =
+        static_cast<MockRenderProcessHost*>(navigation->GetNavigationHandle()
+                                                ->GetRenderFrameHost()
+                                                ->GetProcess())
+            ->bad_msg_count();
     if (test_case.mismatch)
       expected_bad_msg_count++;
 
-    main_test_rfh()->SendNavigateWithParams(
-        &params, false /* was_within_same_document */);
+    navigation->Commit();
 
     EXPECT_EQ(expected_bad_msg_count, process()->bad_msg_count())
       << " url:" << test_case.url
