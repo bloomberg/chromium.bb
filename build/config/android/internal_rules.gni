@@ -313,18 +313,21 @@ template("write_build_config") {
         rebase_path(invoker.r_text, root_build_dir),
       ]
     }
-
+    if (defined(invoker.res_size_info_path)) {
+      args += [
+        "--res-size-info",
+        rebase_path(invoker.res_size_info_path, root_build_dir),
+      ]
+    }
     if (defined(invoker.resource_dirs)) {
       resource_dirs = rebase_path(invoker.resource_dirs, root_build_dir)
       args += [ "--resource-dirs=$resource_dirs" ]
     }
-
     if (defined(invoker.proto_resources_path)) {
       _rebased_proto_resources =
           rebase_path(invoker.proto_resources_path, root_build_dir)
       args += [ "--apk-proto-resources=$_rebased_proto_resources" ]
     }
-
     if (defined(invoker.module_rtxt_path)) {
       _rebased_rtxt_path = rebase_path(invoker.module_rtxt_path, root_build_dir)
       args += [ "--module-rtxt-path=$_rebased_rtxt_path" ]
@@ -2076,9 +2079,6 @@ if (enable_java_templates) {
   #
   #   post_process_script: (optional)
   #
-  #   proto_format: (optional). If true, compiles resources into protocol
-  #     buffer format.
-  #
   #   package_name: (optional)
   #     Name of the package for the purpose of assigning package ID.
   #
@@ -2097,7 +2097,13 @@ if (enable_java_templates) {
   #     used in AndroidManifest.xml.
   #
   # Output variables:
-  #   output:  Path to a zip file containing the compiled resources.
+  #   arsc_output: Path to output .ap_ file (optional).
+  #
+  #   proto_output: Path to output .proto.ap_ file (optional).
+  #
+  #   optimized_arsc_output: Path to optimized .ap_ file (optional).
+  #
+  #   optimized_proto_output: Path to optimized .proto.ap_ file (optional).
   #
   #   r_text_out_path: (optional):
   #       Path for the corresponding generated R.txt file.
@@ -2111,23 +2117,29 @@ if (enable_java_templates) {
   #
   #   proguard_file_main_dex: (optional)
   #
-  #
   template("compile_resources") {
     _compile_resources_target_name = target_name
-    _compiled_resources_path = invoker.output
-
+    if (defined(invoker.arsc_output)) {
+      _arsc_output = invoker.arsc_output
+    }
+    if (defined(invoker.optimized_arsc_output)) {
+      _optimized_arsc_output = invoker.optimized_arsc_output
+    }
     if (defined(invoker.srcjar_path)) {
       _srcjar_path = invoker.srcjar_path
     }
     if (defined(invoker.post_process_script)) {
       _compile_resources_target_name = "${target_name}__intermediate"
-      _compiled_resources_path =
-          get_path_info(_compiled_resources_path, "dir") + "/" +
-          get_path_info(_compiled_resources_path, "name") + ".intermediate.ap_"
       _srcjar_path = "${_srcjar_path}.intermediate.srcjar"
+      _intermediate_path =
+          get_path_info(_arsc_output, "dir") + "/" +
+          get_path_info(_arsc_output, "name") + ".intermediate.ap_"
+      if (defined(_optimized_arsc_output)) {
+        _optimized_arsc_output = _intermediate_path
+      } else {
+        _arsc_output = _intermediate_path
+      }
     }
-
-    _proto_format = defined(invoker.proto_format) && invoker.proto_format
 
     # NOTE: Regarding the names of the depfiles used by this template:
     #       They all have the same prefix, related to invoker.target_name,
@@ -2138,7 +2150,6 @@ if (enable_java_templates) {
     #
     #       _1.d for the unprocessed compiled resources.
     #       _2.d for the optional processed compiled resources.
-    #       _3.d for the proto-compiled resources.
 
     action_with_pydeps(_compile_resources_target_name) {
       set_sources_assignment_filter([])
@@ -2153,16 +2164,9 @@ if (enable_java_templates) {
       depfile = "$target_gen_dir/${invoker.target_name}_1.d"
       outputs = []
 
-      _android_aapt_path = android_default_aapt_path
-      _android_aapt2_path = android_sdk_tools_bundle_aapt2
-      if (_proto_format) {
-        depfile = "$target_gen_dir/${invoker.target_name}_3.d"
-      }
-
       inputs = [
         invoker.build_config,
-        _android_aapt_path,
-        _android_aapt2_path,
+        android_sdk_tools_bundle_aapt2,
       ]
 
       _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
@@ -2172,7 +2176,7 @@ if (enable_java_templates) {
         rebase_path(depfile, root_build_dir),
         "--include-resources=@FileArg($_rebased_build_config:android:sdk_jars)",
         "--aapt2-path",
-        rebase_path(_android_aapt2_path, root_build_dir),
+        rebase_path(android_sdk_tools_bundle_aapt2, root_build_dir),
         "--dependencies-res-zips=@FileArg($_rebased_build_config:resources:dependency_zips)",
         "--extra-res-packages=@FileArg($_rebased_build_config:resources:extra_package_names)",
         "--extra-r-text-files=@FileArg($_rebased_build_config:resources:extra_r_text_files)",
@@ -2183,11 +2187,9 @@ if (enable_java_templates) {
         "--android-manifest",
         rebase_path(invoker.android_manifest, root_build_dir),
       ]
-
       if (defined(invoker.no_xml_namespaces) && invoker.no_xml_namespaces) {
         args += [ "--no-xml-namespaces" ]
       }
-
       if (defined(invoker.version_code)) {
         args += [
           "--version-code",
@@ -2200,34 +2202,47 @@ if (enable_java_templates) {
           invoker.version_name,
         ]
       }
-      if (defined(_compiled_resources_path)) {
-        _info_path = invoker.output + ".info"
-        outputs += [
-          _compiled_resources_path,
-          _info_path,
-        ]
+      if (defined(_arsc_output)) {
+        outputs += [ _arsc_output ]
         args += [
-          "--apk-path",
-          rebase_path(_compiled_resources_path, root_build_dir),
-          "--apk-info-path",
-          rebase_path(_info_path, root_build_dir),
+          "--arsc-path",
+          rebase_path(_arsc_output, root_build_dir),
         ]
       }
-
-      if (defined(invoker.optimized_resources_path)) {
+      if (defined(invoker.proto_output)) {
+        outputs += [ invoker.proto_output ]
         args += [
-          "--optimized-resources-path",
-          rebase_path(invoker.optimized_resources_path, root_build_dir),
+          "--proto-path",
+          rebase_path(invoker.proto_output, root_build_dir),
         ]
-        outputs += [ invoker.optimized_resources_path ]
-
-        if (defined(invoker.resources_config_path)) {
-          inputs += [ invoker.resources_config_path ]
-          args += [
-            "--resources-config-path",
-            rebase_path(invoker.resources_config_path, root_build_dir),
-          ]
-        }
+      }
+      if (defined(invoker.size_info_path)) {
+        outputs += [ invoker.size_info_path ]
+        args += [
+          "--info-path",
+          rebase_path(invoker.size_info_path, root_build_dir),
+        ]
+      }
+      if (defined(_optimized_arsc_output)) {
+        outputs += [ _optimized_arsc_output ]
+        args += [
+          "--optimized-arsc-path",
+          rebase_path(_optimized_arsc_output, root_build_dir),
+        ]
+      }
+      if (defined(invoker.optimized_proto_output)) {
+        outputs += [ invoker.optimized_proto_output ]
+        args += [
+          "--optimized-proto-path",
+          rebase_path(invoker.optimized_proto_output, root_build_dir),
+        ]
+      }
+      if (defined(invoker.resources_config_path)) {
+        inputs += [ invoker.resources_config_path ]
+        args += [
+          "--resources-config-path",
+          rebase_path(invoker.resources_config_path, root_build_dir),
+        ]
       }
 
       # Useful to have android:debuggable in the manifest even for Release
@@ -2257,10 +2272,6 @@ if (enable_java_templates) {
           "--custom-package",
           invoker.custom_package,
         ]
-      }
-
-      if (_proto_format) {
-        args += [ "--proto-format" ]
       }
 
       # Define the flags related to shared resources.
@@ -2382,14 +2393,23 @@ if (enable_java_templates) {
         args = [
           "--depfile",
           rebase_path(depfile, root_build_dir),
-          "--apk-path",
-          rebase_path(_compiled_resources_path, root_build_dir),
-          "--output",
-          rebase_path(invoker.output, root_build_dir),
           "--srcjar-in",
           rebase_path(_srcjar_path, root_build_dir),
           "--srcjar-out",
           rebase_path(invoker.srcjar_path, root_build_dir),
+        ]
+        if (defined(_optimized_arsc_output)) {
+          _input_apk = _optimized_arsc_output
+          _output_apk = invoker.optimized_arsc_output
+        } else {
+          _input_apk = _arsc_output
+          _output_apk = invoker.arsc_output
+        }
+        args += [
+          "--apk-path",
+          rebase_path(_input_apk, root_build_dir),
+          "--output",
+          rebase_path(_output_apk, root_build_dir),
         ]
         if (defined(invoker.shared_resources_whitelist)) {
           args += [
@@ -2400,14 +2420,14 @@ if (enable_java_templates) {
           ]
         }
         inputs = [
+          _input_apk,
           _srcjar_path,
-          _compiled_resources_path,
         ]
         if (defined(invoker.post_process_script_inputs)) {
           inputs += invoker.post_process_script_inputs
         }
         outputs = [
-          invoker.output,
+          _output_apk,
           invoker.srcjar_path,
         ]
         public_deps = [
@@ -2423,7 +2443,7 @@ if (enable_java_templates) {
   #   build_config: Path to APK's build config file. Used to extract the
   #       list of input .jar files from its dependencies.
   #   name: Name of the apk or app bundle (e.g. "Foo.apk").
-  #   packaged_resources_path: Path to .ap_ file.
+  #   res_size_info_path: Path to input .ap_.info file (for apks).
   #
   template("create_size_info_files") {
     action_with_pydeps(target_name) {
@@ -2460,7 +2480,7 @@ if (enable_java_templates) {
           args += [
             "--jar-files=@FileArg($_rebased_build_config:deps_info:unprocessed_jar_path)",
             "--jar-files=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
-            "--resource-apk=@FileArg($_rebased_build_config:deps_info:proto_resources_path)",
+            "--in-res-info-path=@FileArg($_rebased_build_config:resources:size_info)",
             "--assets=@FileArg($_rebased_build_config:assets)",
             "--uncompressed-assets=@FileArg($_rebased_build_config:uncompressed_assets)",
           ]
@@ -2468,15 +2488,15 @@ if (enable_java_templates) {
       } else {
         inputs = [
           invoker.build_config,
-          invoker.packaged_resources_path,
+          invoker.res_size_info_path,
         ]
         _rebased_build_config =
             rebase_path(invoker.build_config, root_build_dir)
         args += [
           "--jar-files=@FileArg($_rebased_build_config:deps_info:jar_path)",
           "--jar-files=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
-          "--resource-apk",
-          rebase_path(invoker.packaged_resources_path, root_build_dir),
+          "--in-res-info-path",
+          rebase_path(invoker.res_size_info_path, root_build_dir),
           "--assets=@FileArg($_rebased_build_config:assets)",
           "--uncompressed-assets=@FileArg($_rebased_build_config:uncompressed_assets)",
         ]
@@ -3341,6 +3361,7 @@ if (enable_java_templates) {
               "extra_shared_libraries",
               "final_dex_path",
               "native_lib_placeholders",
+              "res_size_info_path",
               "secondary_abi_shared_libraries_runtime_deps_file",
               "secondary_native_lib_placeholders",
               "shared_libraries_runtime_deps_file",

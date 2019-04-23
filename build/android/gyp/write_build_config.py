@@ -924,6 +924,7 @@ def main(argv):
   parser.add_option('--final-dex-path',
                     help='Path to final input classes.dex (or classes.zip) to '
                     'use in final apk.')
+  parser.add_option('--res-size-info', help='Path to .ap_.info')
   parser.add_option('--apk-proto-resources',
                     help='Path to resources compiled in protocol buffer format '
                          ' for this apk.')
@@ -962,7 +963,7 @@ def main(argv):
       'android_apk': ['build_config', 'dex_path', 'final_dex_path'] + \
           jar_path_options,
       'android_app_bundle_module': ['build_config', 'dex_path',
-          'final_dex_path'] + jar_path_options,
+          'final_dex_path', 'res_size_info'] + jar_path_options,
       'android_assets': ['build_config'],
       'android_resources': ['build_config', 'resources_zip'],
       'dist_aar': ['build_config'],
@@ -1277,6 +1278,8 @@ def main(argv):
     if options.type == 'android_apk' and options.tested_apk_config:
       config['resources']['arsc_package_name'] = (
           tested_apk_config['package_name'])
+    if options.res_size_info:
+      config['resources']['size_info'] = options.res_size_info
 
   if is_apk_or_module_target:
     deps_dex_files = [c['dex_path'] for c in all_library_deps]

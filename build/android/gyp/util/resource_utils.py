@@ -599,11 +599,21 @@ class _ResourceBuildContext(object):
     # A location to place aapt-generated files.
     self.gen_dir = os.path.join(self.temp_dir, 'gen')
     os.mkdir(self.gen_dir)
-    # Location of the generated R.txt file.
-    self.r_txt_path = os.path.join(self.gen_dir, 'R.txt')
     # A location to place generated R.java files.
     self.srcjar_dir = os.path.join(self.temp_dir, 'java')
     os.mkdir(self.srcjar_dir)
+    # Temporary file locacations.
+    self.r_txt_path = os.path.join(self.gen_dir, 'R.txt')
+    self.srcjar_path = os.path.join(self.temp_dir, 'R.srcjar')
+    self.info_path = os.path.join(self.temp_dir, 'size.info')
+    self.stable_ids_path = os.path.join(self.temp_dir, 'in_ids.txt')
+    self.emit_ids_path = os.path.join(self.temp_dir, 'out_ids.txt')
+    self.proguard_path = os.path.join(self.temp_dir, 'keeps.flags')
+    self.proguard_main_dex_path = os.path.join(self.temp_dir, 'maindex.flags')
+    self.arsc_path = os.path.join(self.temp_dir, 'out.ap_')
+    self.proto_path = os.path.join(self.temp_dir, 'out.proto.ap_')
+    self.optimized_arsc_path = os.path.join(self.temp_dir, 'out.opt.ap_')
+    self.optimized_proto_path = os.path.join(self.temp_dir, 'out.opt.proto.ap_')
 
   def Close(self):
     """Close the context and destroy all temporary files."""
