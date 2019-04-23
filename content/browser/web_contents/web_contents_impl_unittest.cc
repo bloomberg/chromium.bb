@@ -531,7 +531,6 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   auto new_site_navigation =
       NavigationSimulator::CreateBrowserInitiated(url2, contents());
   new_site_navigation->ReadyToCommit();
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
   EXPECT_EQ(url2, contents()->GetVisibleURL());
@@ -542,9 +541,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
       &pending_rvh_delete_count);
 
   // DidNavigate from the pending page.
-  contents()->TestDidNavigateWithSequenceNumber(
-      pending_rfh, entry_id, true, url2, Referrer(), ui::PAGE_TRANSITION_TYPED,
-      false, 1, 1);
+  new_site_navigation->Commit();
   SiteInstance* instance2 = contents()->GetSiteInstance();
 
   // Keep the number of active frames in pending_rfh's SiteInstance
@@ -560,7 +557,7 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   EXPECT_EQ(nullptr, contents()->GetPendingMainFrame());
   // We keep a proxy for the original RFH's SiteInstance.
   EXPECT_TRUE(contents()->GetRenderManagerForTesting()->GetRenderFrameProxyHost(
-      orig_rfh->GetSiteInstance()));
+      instance1));
   EXPECT_EQ(orig_rvh_delete_count, 0);
 
   // Going back should switch SiteInstances again.  The first SiteInstance is
@@ -569,24 +566,20 @@ TEST_F(WebContentsImplTest, CrossSiteBoundaries) {
   auto back_navigation =
       NavigationSimulator::CreateHistoryNavigation(-1, contents());
   back_navigation->ReadyToCommit();
-  entry_id = controller().GetPendingEntry()->GetUniqueID();
   TestRenderFrameHost* goback_rfh = contents()->GetPendingMainFrame();
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
   // DidNavigate from the back action.
-  contents()->TestDidNavigateWithSequenceNumber(
-      goback_rfh, entry_id, false, url, Referrer(), ui::PAGE_TRANSITION_TYPED,
-      false, 2, 0);
+  back_navigation->Commit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(goback_rfh, main_test_rfh());
   EXPECT_EQ(url, contents()->GetLastCommittedURL());
   EXPECT_EQ(url, contents()->GetVisibleURL());
   EXPECT_EQ(instance1, contents()->GetSiteInstance());
   // There should be a proxy for the pending RFH SiteInstance.
-  EXPECT_TRUE(contents()->GetRenderManagerForTesting()->
-      GetRenderFrameProxyHost(pending_rfh->GetSiteInstance()));
+  EXPECT_TRUE(contents()->GetRenderManagerForTesting()->GetRenderFrameProxyHost(
+      instance2));
   EXPECT_EQ(pending_rvh_delete_count, 0);
-  pending_rfh->OnSwappedOut();
 
   // Close contents and ensure RVHs are deleted.
   DeleteContents();
@@ -657,35 +650,27 @@ TEST_F(WebContentsImplTest, NavigateTwoTabsCrossSite) {
 
   // Navigate first contents to a new site.
   const GURL url2a("http://www.yahoo.com");
-  controller().LoadURL(url2a, Referrer(), ui::PAGE_TRANSITION_LINK,
-                       std::string());
-  int entry_id = controller().GetPendingEntry()->GetUniqueID();
-  contents()->GetMainFrame()->PrepareForCommit();
-  TestRenderFrameHost* pending_rfh_a = contents()->GetPendingMainFrame();
-  if (AreAllSitesIsolatedForTesting())
-    EXPECT_TRUE(contents()->CrossProcessNavigationPending());
-  contents()->TestDidNavigate(pending_rfh_a, entry_id, true, url2a,
-                              ui::PAGE_TRANSITION_LINK);
+  auto navigation1 =
+      NavigationSimulator::CreateBrowserInitiated(url2a, contents());
+  navigation1->SetTransition(ui::PAGE_TRANSITION_LINK);
+  navigation1->ReadyToCommit();
+  EXPECT_TRUE(contents()->CrossProcessNavigationPending());
+  navigation1->Commit();
   SiteInstance* instance2a = contents()->GetSiteInstance();
   EXPECT_NE(instance1, instance2a);
 
   // Navigate second contents to the same site as the first tab.
-  const GURL url2b("http://mail.yahoo.com");
-  contents2->GetController().LoadURL(url2b, Referrer(),
-                                     ui::PAGE_TRANSITION_LINK, std::string());
-  entry_id = contents2->GetController().GetPendingEntry()->GetUniqueID();
-  TestRenderFrameHost* rfh2 = contents2->GetMainFrame();
-  rfh2->PrepareForCommit();
-  TestRenderFrameHost* pending_rfh_b = contents2->GetPendingMainFrame();
-  EXPECT_NE(nullptr, pending_rfh_b);
-  if (AreAllSitesIsolatedForTesting())
-    EXPECT_TRUE(contents2->CrossProcessNavigationPending());
+  const GURL url2b("http://www.yahoo.com/foo");
+  auto navigation2 =
+      NavigationSimulator::CreateBrowserInitiated(url2b, contents2.get());
+  navigation2->SetTransition(ui::PAGE_TRANSITION_LINK);
+  navigation2->ReadyToCommit();
+  EXPECT_TRUE(contents2->CrossProcessNavigationPending());
 
   // NOTE(creis): We used to be in danger of showing a crash page here if the
   // second contents hadn't navigated somewhere first (bug 1145430).  That case
   // is now covered by the CrossSiteBoundariesAfterCrash test.
-  contents2->TestDidNavigate(pending_rfh_b, entry_id, true, url2b,
-                             ui::PAGE_TRANSITION_LINK);
+  navigation2->Commit();
   SiteInstance* instance2b = contents2->GetSiteInstance();
   EXPECT_NE(instance1, instance2b);
 

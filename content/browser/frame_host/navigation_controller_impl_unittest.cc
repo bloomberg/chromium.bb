@@ -2674,7 +2674,6 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
 
   // Before navigating to the restored entry, it should have a restore_type
   // and no SiteInstance.
-  NavigationEntry* entry = our_controller.GetEntryAtIndex(0);
   EXPECT_EQ(RestoreType::LAST_SESSION_EXITED_CLEANLY,
             our_controller.GetEntryAtIndex(0)->restore_type());
   EXPECT_FALSE(our_controller.GetEntryAtIndex(0)->site_instance());
@@ -2682,36 +2681,20 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   // After navigating, we should have one entry, and it should be "pending".
   EXPECT_TRUE(our_controller.NeedsReload());
   our_controller.LoadIfNecessary();
+  auto restore_navigation =
+      NavigationSimulator::CreateFromPending(raw_our_contents);
+  restore_navigation->ReadyToCommit();
   EXPECT_EQ(1, our_controller.GetEntryCount());
   EXPECT_EQ(our_controller.GetEntryAtIndex(0),
             our_controller.GetPendingEntry());
 
   // This pending navigation may have caused a different navigation to fail,
   // which causes the pending entry to be cleared.
-  FrameHostMsg_DidFailProvisionalLoadWithError_Params fail_load_params;
-  fail_load_params.error_code = net::ERR_ABORTED;
-  fail_load_params.error_description = base::string16();
-  fail_load_params.url = url;
-  fail_load_params.showing_repost_interstitial = false;
-  main_test_rfh()->InitializeRenderFrameIfNeeded();
-  main_test_rfh()->OnMessageReceived(
-      FrameHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
-                                                  fail_load_params));
+  NavigationSimulator::NavigateAndFailFromDocument(url, net::ERR_ABORTED,
+                                                   main_test_rfh());
 
   // Now the pending restored entry commits.
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = entry->GetUniqueID();
-  params.did_create_new_entry = false;
-  params.url = url;
-  params.transition = ui::PAGE_TRANSITION_LINK;
-  params.should_update_history = false;
-  params.gesture = NavigationGestureUser;
-  params.method = "GET";
-  params.page_state = PageState::CreateFromURL(url);
-  TestRenderFrameHost* main_rfh =
-      static_cast<TestRenderFrameHost*>(raw_our_contents->GetMainFrame());
-  main_rfh->PrepareForCommit();
-  main_rfh->SendNavigateWithParams(&params, false);
+  restore_navigation->Commit();
 
   // There should be no pending entry and one committed one.
   EXPECT_EQ(1, our_controller.GetEntryCount());
