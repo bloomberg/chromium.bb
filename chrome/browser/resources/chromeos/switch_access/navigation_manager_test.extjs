@@ -59,7 +59,9 @@ TEST_F('SwitchAccessNavigationManagerTest', 'SelectButton', function() {
   });
 });
 
-TEST_F('SwitchAccessNavigationManagerTest', 'MoveForward', function() {
+// The back button is inconsistently loaded before this test runs.
+// TODO(anastasi): Fix flakiness and re-enable the tests.
+TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveForward', function() {
   const website = `data:text/html;charset=utf-8,
                   <button>button1</button>
                   <button>button2</button>
@@ -98,7 +100,9 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveForward', function() {
   });
 });
 
-TEST_F('SwitchAccessNavigationManagerTest', 'MoveBackward', function() {
+// The back button is inconsistently loaded before this test runs.
+// TODO(anastasi): Fix flakiness and re-enable the tests.
+TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveBackward', function() {
   const website = `data:text/html;charset=utf-8,
                   <button>button1</button>
                   <button>button2</button>
@@ -138,7 +142,9 @@ TEST_F('SwitchAccessNavigationManagerTest', 'MoveBackward', function() {
   });
 });
 
-TEST_F('SwitchAccessNavigationManagerTest', 'MoveBackAndForth', function() {
+// The back button is inconsistently loaded before this test runs.
+// TODO(anastasi): Fix flakiness and re-enable the tests.
+TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveBackAndForth', function() {
   const website = `data:text/html;charset=utf-8,
                   <button>button1</button>
                   <button>button2</button>
