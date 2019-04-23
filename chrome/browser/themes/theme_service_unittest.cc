@@ -43,15 +43,13 @@ namespace theme_service_internal {
 
 class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
  public:
-  ThemeServiceTest() : is_supervised_(false),
-                       registry_(NULL) {}
+  ThemeServiceTest() : registry_(NULL) {}
   ~ThemeServiceTest() override {}
 
   void SetUp() override {
     extensions::ExtensionServiceTestBase::SetUp();
     extensions::ExtensionServiceTestBase::ExtensionServiceInitParams params =
         CreateDefaultInitParams();
-    params.profile_is_supervised = is_supervised_;
     InitializeExtensionService(params);
     service_->Init();
     registry_ = ExtensionRegistry::Get(profile_.get());
@@ -131,7 +129,6 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
   }
 
  protected:
-  bool is_supervised_;
   ExtensionRegistry* registry_;
 };
 
@@ -452,66 +449,5 @@ TEST_F(ThemeServiceTest, BuildFromColorTest) {
   path = profile_->GetPrefs()->GetFilePath(prefs::kCurrentThemePackFilename);
   EXPECT_TRUE(path.empty());
 }
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-class ThemeServiceSupervisedUserTest : public ThemeServiceTest {
- public:
-  ThemeServiceSupervisedUserTest() {}
-  ~ThemeServiceSupervisedUserTest() override {}
-
-  void SetUp() override {
-    is_supervised_ = true;
-    ThemeServiceTest::SetUp();
-  }
-};
-
-// Checks that supervised users have their own default theme.
-TEST_F(ThemeServiceSupervisedUserTest,
-       SupervisedUserThemeReplacesDefaultTheme) {
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-  theme_service->UseDefaultTheme();
-  EXPECT_TRUE(theme_service->UsingDefaultTheme());
-  EXPECT_TRUE(get_theme_supplier(theme_service));
-  EXPECT_EQ(get_theme_supplier(theme_service)->get_theme_type(),
-            CustomThemeSupplier::SUPERVISED_USER_THEME);
-}
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// Checks that supervised users don't use the system theme even if it is the
-// default. The system theme is only available on Linux.
-TEST_F(ThemeServiceSupervisedUserTest, SupervisedUserThemeReplacesNativeTheme) {
-  profile_->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, true);
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-  theme_service->UseDefaultTheme();
-  EXPECT_TRUE(theme_service->UsingDefaultTheme());
-  EXPECT_TRUE(get_theme_supplier(theme_service));
-  EXPECT_EQ(get_theme_supplier(theme_service)->get_theme_type(),
-            CustomThemeSupplier::SUPERVISED_USER_THEME);
-}
-
-TEST_F(ThemeServiceTest, UserThemeTakesPrecedenceOverSystemTheme) {
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(profile_.get());
-
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const std::string& extension_id =
-      LoadUnpackedMinimalThemeAt(temp_dir.GetPath());
-  ASSERT_EQ(extension_id, theme_service->GetThemeID());
-
-  // Set preference |prefs::kUsesSystemTheme| to true which conflicts with
-  // having a user theme selected.
-  profile_->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, true);
-  EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme));
-
-  // Initialization should fix the preference inconsistency.
-  theme_service->Init(profile_.get());
-  ASSERT_EQ(extension_id, theme_service->GetThemeID());
-  EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(prefs::kUsesSystemTheme));
-}
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 }  // namespace theme_service_internal
