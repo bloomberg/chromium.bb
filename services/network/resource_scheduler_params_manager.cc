@@ -63,12 +63,11 @@ GetParamsForNetworkQualityContainer() {
       ResourceSchedulerParamsManager::ParamsForNetworkQuality(
           8, 3.0, true /* delay_requests_on_multiplexed_connections */,
           base::nullopt)));
-  result.emplace(
-      std::make_pair(net::EFFECTIVE_CONNECTION_TYPE_3G,
-                     ResourceSchedulerParamsManager::ParamsForNetworkQuality(
-                         kDefaultMaxNumDelayableRequestsPerClient, 0.0,
-                         true /* delay_requests_on_multiplexed_connections */,
-                         base::nullopt)));
+  result.emplace(std::make_pair(
+      net::EFFECTIVE_CONNECTION_TYPE_3G,
+      ResourceSchedulerParamsManager::ParamsForNetworkQuality(
+          8, 3.0, true /* delay_requests_on_multiplexed_connections */,
+          base::nullopt)));
 
   for (int config_param_index = 1; config_param_index <= 20;
        ++config_param_index) {
