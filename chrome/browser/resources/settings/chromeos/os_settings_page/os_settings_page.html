@@ -6,7 +6,6 @@
 <link rel="import" href="../../appearance_page/appearance_page.html">
 <link rel="import" href="../../change_password_page/change_password_page.html">
 <link rel="import" href="../../controls/settings_idle_load.html">
-<link rel="import" href="../../on_startup_page/on_startup_page.html">
 <link rel="import" href="../../people_page/people_page.html">
 <link rel="import" href="../../reset_page/reset_profile_banner.html">
 <link rel="import" href="../../search_page/search_page.html">
@@ -188,13 +187,6 @@
               section="pluginVm">
             <settings-plugin-vm-page prefs="{{prefs}}">
             </settings-plugin-vm-page>
-          </settings-section>
-        </template>
-        <template is="dom-if" if="[[showPage_(pageVisibility.onStartup)]]"
-            restamp>
-          <settings-section page-title="$i18n{onStartup}" section="onStartup">
-            <settings-on-startup-page prefs="{{prefs}}">
-            </settings-on-startup-page>
           </settings-section>
         </template>
       </div>
