@@ -121,7 +121,8 @@ void DefaultDecoderFactory::CreateVideoDecoders(
 #endif
 
 #if BUILDFLAG(ENABLE_DAV1D_DECODER)
-  video_decoders->push_back(std::make_unique<Dav1dVideoDecoder>(media_log));
+  video_decoders->push_back(
+      std::make_unique<OffloadingDav1dVideoDecoder>(media_log));
 #elif BUILDFLAG(ENABLE_LIBAOM_DECODER)
   video_decoders->push_back(std::make_unique<AomVideoDecoder>(media_log));
 #endif
