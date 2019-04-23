@@ -246,7 +246,7 @@ TextBreakIterator* WordBreakIteratorForMinOffsetBoundary(
                                                    text_box->Len());
   len += text_box->Len();
 
-  return WordBreakIterator(string.data(), len);
+  return WordBreakIterator(base::make_span(string).first(len));
 }
 
 TextBreakIterator* WordBreakIteratorForMaxOffsetBoundary(
@@ -273,7 +273,7 @@ TextBreakIterator* WordBreakIteratorForMaxOffsetBoundary(
     len += next_box->Len();
   }
 
-  return WordBreakIterator(string.data(), len);
+  return WordBreakIterator(base::make_span(string).first(len));
 }
 
 bool IsLogicalStartOfWord(TextBreakIterator* iter,

@@ -712,16 +712,14 @@ float ShapeResult::ForEachGlyph(float initial_advance,
   return total_advance;
 }
 
-unsigned ShapeResult::CountGraphemesInCluster(const UChar* str,
-                                              unsigned str_length,
+unsigned ShapeResult::CountGraphemesInCluster(base::span<const UChar> str,
                                               uint16_t start_index,
                                               uint16_t end_index) {
   if (start_index > end_index)
     std::swap(start_index, end_index);
   uint16_t length = end_index - start_index;
-  DCHECK_LE(static_cast<unsigned>(start_index + length), str_length);
   TextBreakIterator* cursor_pos_iterator =
-      CursorMovementIterator(&str[start_index], length);
+      CursorMovementIterator(str.subspan(start_index, length));
 
   int cursor_pos = cursor_pos_iterator->current();
   int num_graphemes = -1;
@@ -790,8 +788,8 @@ float ShapeResult::ForEachGraphemeClusters(const StringView& text,
               is_run_end ? run->start_index_ + run->num_characters_ + run_offset
                          : run->GlyphToCharacterIndex(i + 1) + run_offset);
         }
-        graphemes_in_cluster = CountGraphemesInCluster(
-            text.Characters16(), text.length(), cluster_start, cluster_end);
+        graphemes_in_cluster =
+            CountGraphemesInCluster(text.Span16(), cluster_start, cluster_end);
         if (!graphemes_in_cluster || !cluster_advance)
           continue;
 

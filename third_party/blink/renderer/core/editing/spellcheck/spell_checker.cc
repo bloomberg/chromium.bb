@@ -606,9 +606,8 @@ void SpellChecker::Trace(Visitor* visitor) {
 Vector<TextCheckingResult> SpellChecker::FindMisspellings(const String& text) {
   Vector<UChar> characters;
   text.AppendTo(characters);
-  unsigned length = text.length();
 
-  TextBreakIterator* iterator = WordBreakIterator(characters.data(), length);
+  TextBreakIterator* iterator = WordBreakIterator(characters);
   if (!iterator)
     return Vector<TextCheckingResult>();
 

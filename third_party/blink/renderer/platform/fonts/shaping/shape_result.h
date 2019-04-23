@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_SHAPING_SHAPE_RESULT_H_
 
 #include <memory>
+#include "base/containers/span.h"
 #include "third_party/blink/renderer/platform/fonts/canvas_rotation_in_vertical.h"
 #include "third_party/blink/renderer/platform/fonts/glyph.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
@@ -349,8 +350,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // |grapheme_| is computed.
   void EnsureGraphemes(const StringView& text) const;
 
-  static unsigned CountGraphemesInCluster(const UChar*,
-                                          unsigned str_length,
+  static unsigned CountGraphemesInCluster(base::span<const UChar>,
                                           uint16_t start_index,
                                           uint16_t end_index);
 

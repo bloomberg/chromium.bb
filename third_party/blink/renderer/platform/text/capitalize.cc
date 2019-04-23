@@ -33,7 +33,7 @@ String Capitalize(const String& string, UChar previous_character) {
   }
 
   TextBreakIterator* boundary =
-      WordBreakIterator(string_with_previous.Characters(), length + 1);
+      WordBreakIterator({string_with_previous.Characters(), length + 1});
   if (!boundary)
     return string;
 

@@ -488,7 +488,7 @@ float ShapeResultView::ForEachGraphemeClusters(const StringView& text,
                                character_index_offset_for_glyph_data);
         }
         graphemes_in_cluster = ShapeResult::CountGraphemesInCluster(
-            text.Characters16(), text.length(), cluster_start, cluster_end);
+            text.Span16(), cluster_start, cluster_end);
         if (!graphemes_in_cluster || !cluster_advance)
           continue;
 
