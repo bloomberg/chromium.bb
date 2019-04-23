@@ -38,7 +38,7 @@ def _MergeAPIArgumentParser(*args, **kwargs):
       '--additional-merge-script', help='additional merge script to run')
   parser.add_argument(
       '--additional-merge-script-args',
-      help='args for the additional merge script', action='append')
+      help='JSON serialized string of args for the additional merge script')
   parser.add_argument(
       '--profdata-dir', required=True, help='where to store the merged data')
   parser.add_argument(
@@ -63,16 +63,17 @@ def main():
         '--output-json', params.output_json,
     ]
     if params.additional_merge_script_args:
-      new_args += params.additional_merge_script_args
+      new_args += json.loads(params.additional_merge_script_args)
 
     new_args += params.jsons_to_merge
 
-    rc = subprocess.call([
-        sys.executable, params.additional_merge_script] + new_args)
+    args = [
+        sys.executable, params.additional_merge_script] + new_args
+    rc = subprocess.call(args)
     if rc != 0:
       failed = True
       logging.warning('Additional merge script %s exited with %s' % (
-          params.additional_merge_script, p.returncode
+          params.additional_merge_script, rc
       ))
 
   invalid_profiles = coverage_merger.merge_profiles(
