@@ -32,6 +32,7 @@
 #include "chromeos/printing/ppd_provider.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/base/device_client.h"
+#include "device/usb/mojo/type_converters.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_service.h"
 
@@ -45,9 +46,10 @@ namespace {
 // what we want.  Strings currently come from udev.
 // TODO(https://crbug.com/895037): When above is added, parse out document
 // formats and add to DetectedPrinter
-std::string GuessEffectiveMakeAndModel(const device::UsbDevice& device) {
-  return base::UTF16ToUTF8(device.manufacturer_string()) + " " +
-         base::UTF16ToUTF8(device.product_string());
+std::string GuessEffectiveMakeAndModel(
+    const device::mojom::UsbDeviceInfo& device) {
+  return base::UTF16ToUTF8(GetManufacturerName(device)) + " " +
+         base::UTF16ToUTF8(GetProductName(device));
 }
 
 // The PrinterDetector that drives the flow for setting up a USB printer to use
@@ -105,26 +107,27 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
   // UsbService::observer override.
   void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (!UsbDeviceIsPrinter(*device)) {
+    auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+    if (!UsbDeviceIsPrinter(*device_info)) {
       return;
     }
-    std::unique_ptr<Printer> converted = UsbDeviceToPrinter(*device);
+    std::unique_ptr<Printer> converted = UsbDeviceToPrinter(*device_info);
     if (!converted.get()) {
       // An error will already have been logged if we failed to convert.
       return;
     }
     DetectedPrinter entry;
     entry.printer = *converted;
-    entry.ppd_search_data.usb_vendor_id = device->vendor_id();
-    entry.ppd_search_data.usb_product_id = device->product_id();
+    entry.ppd_search_data.usb_vendor_id = device_info->vendor_id;
+    entry.ppd_search_data.usb_product_id = device_info->product_id;
     entry.ppd_search_data.make_and_model.push_back(
-        GuessEffectiveMakeAndModel(*device));
+        GuessEffectiveMakeAndModel(*device_info));
     entry.ppd_search_data.discovery_type =
         PrinterSearchData::PrinterDiscoveryType::kUsb;
     // TODO(https://crbug.com/895037): Add in command set from IEEE1284
 
     base::AutoLock auto_lock(printers_lock_);
-    printers_[device->guid()] = entry;
+    printers_[device_info->guid] = entry;
     if (on_printers_found_callback_) {
       on_printers_found_callback_.Run(GetPrintersLocked());
     }
@@ -133,11 +136,12 @@ class UsbPrinterDetectorImpl : public UsbPrinterDetector,
   // UsbService::observer override.
   void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    if (!UsbDeviceIsPrinter(*device)) {
+    auto device_info = device::mojom::UsbDeviceInfo::From(*device);
+    if (!UsbDeviceIsPrinter(*device_info)) {
       return;
     }
     base::AutoLock auto_lock(printers_lock_);
-    printers_.erase(device->guid());
+    printers_.erase(device_info->guid);
     if (on_printers_found_callback_) {
       on_printers_found_callback_.Run(GetPrintersLocked());
     }

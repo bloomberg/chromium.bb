@@ -209,6 +209,7 @@ source_set("chromeos") {
     "//dbus",
     "//device/base",
     "//device/bluetooth",
+    "//device/usb/mojo",
     "//device/usb/public/cpp",
     "//device/usb/public/mojom",
     "//extensions/browser",
