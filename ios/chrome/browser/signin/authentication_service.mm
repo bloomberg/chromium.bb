@@ -118,7 +118,7 @@ void AuthenticationService::Initialize(
     // Sign out the user if sync was not configured after signing
     // in (see PM comments in http://crbug.com/339831 ).
     SignOut(signin_metrics::ABORT_SIGNIN, nil);
-    SetPromptForSignIn(true);
+    SetPromptForSignIn();
     is_signed_in = false;
   }
   breakpad_helper::SetCurrentlySignedIn(is_signed_in);
@@ -200,11 +200,12 @@ void AuthenticationService::OnApplicationEnterBackground() {
   is_in_foreground_ = false;
 }
 
-void AuthenticationService::SetPromptForSignIn(bool should_prompt) {
-  if (ShouldPromptForSignIn() != should_prompt) {
-    pref_service_->SetBoolean(prefs::kSigninShouldPromptForSigninAgain,
-                              should_prompt);
-  }
+void AuthenticationService::SetPromptForSignIn() {
+  pref_service_->SetBoolean(prefs::kSigninShouldPromptForSigninAgain, true);
+}
+
+void AuthenticationService::ResetPromptForSignIn() {
+  pref_service_->SetBoolean(prefs::kSigninShouldPromptForSigninAgain, false);
 }
 
 bool AuthenticationService::ShouldPromptForSignIn() {
@@ -313,7 +314,7 @@ void AuthenticationService::SignIn(ChromeIdentity* identity,
              ->GetChromeIdentityService()
              ->IsValidIdentity(identity));
 
-  SetPromptForSignIn(false);
+  ResetPromptForSignIn();
   sync_setup_service_->PrepareForFirstSyncSetup();
 
   // The account info needs to be seeded for the primary account id before
@@ -541,7 +542,8 @@ void AuthenticationService::HandleForgottenIdentity(
 
   // Sign the user out.
   SignOut(signin_metrics::ABORT_SIGNIN, nil);
-  SetPromptForSignIn(should_prompt);
+  if (should_prompt)
+    SetPromptForSignIn();
 }
 
 void AuthenticationService::ReloadCredentialsFromIdentities(

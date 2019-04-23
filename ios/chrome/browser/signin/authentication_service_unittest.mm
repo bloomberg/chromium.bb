@@ -277,9 +277,9 @@ TEST_F(AuthenticationServiceTest, TestSetPromptForSignIn) {
   // Verify that the default value of this flag is off.
   EXPECT_FALSE(authentication_service_->ShouldPromptForSignIn());
   // Verify that prompt-flag setter and getter functions are working correctly.
-  authentication_service_->SetPromptForSignIn(true);
+  authentication_service_->SetPromptForSignIn();
   EXPECT_TRUE(authentication_service_->ShouldPromptForSignIn());
-  authentication_service_->SetPromptForSignIn(false);
+  authentication_service_->ResetPromptForSignIn();
   EXPECT_FALSE(authentication_service_->ShouldPromptForSignIn());
 }
 

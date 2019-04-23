@@ -53,9 +53,11 @@ class AuthenticationService : public KeyedService,
   // KeyedService
   void Shutdown() override;
 
-  // Reminds user to Sign in to Chrome when a new tab is opened if
-  // |should_prompt| is true, otherwise stop prompting.
-  void SetPromptForSignIn(bool should_prompt);
+  // Reminds user to Sign in to Chrome when a new tab is opened.
+  void SetPromptForSignIn();
+
+  // Clears the reminder to Sign in to Chrome when a new tab is opened.
+  void ResetPromptForSignIn();
 
   // Returns whether user should be prompted to Sign in to Chrome.
   bool ShouldPromptForSignIn();

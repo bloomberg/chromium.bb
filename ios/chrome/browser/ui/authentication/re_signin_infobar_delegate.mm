@@ -74,7 +74,7 @@ ReSignInInfoBarDelegate::CreateInfoBarDelegate(
     return nullptr;
   // Returns null if user has already signed in via some other path.
   if ([authService->GetAuthenticatedUserEmail() length]) {
-    authService->SetPromptForSignIn(false);
+    authService->ResetPromptForSignIn();
     return nullptr;
   }
   signin_metrics::RecordSigninImpressionUserActionForAccessPoint(
@@ -132,12 +132,12 @@ bool ReSignInInfoBarDelegate::Accept() {
 
   // Stop displaying the infobar once user interacted with it.
   AuthenticationServiceFactory::GetForBrowserState(browser_state_)
-      ->SetPromptForSignIn(false);
+      ->ResetPromptForSignIn();
   return true;
 }
 
 void ReSignInInfoBarDelegate::InfoBarDismissed() {
   // Stop displaying the infobar once user interacted with it.
   AuthenticationServiceFactory::GetForBrowserState(browser_state_)
-      ->SetPromptForSignIn(false);
+      ->ResetPromptForSignIn();
 }
