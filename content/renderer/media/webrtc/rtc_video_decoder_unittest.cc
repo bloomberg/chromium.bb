@@ -360,13 +360,13 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForNotifyError) {
   Initialize();
 
   webrtc::EncodedImage input_image;
-  uint8_t buffer[kMinResolutionWidth * kMaxResolutionHeight];
+  const size_t buffer_size = kMinResolutionWidth * kMaxResolutionHeight;
   input_image._completeFrame = true;
   input_image._encodedWidth = 0;
   input_image._encodedHeight = 0;
   input_image._frameType = webrtc::VideoFrameType::kVideoFrameDelta;
-  input_image.set_buffer(buffer, sizeof(buffer));
-  input_image.set_size(sizeof(buffer));
+  input_image.Allocate(buffer_size);
+  input_image.set_size(buffer_size);
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
             rtc_decoder_->Decode(input_image, false, 0));
   RunUntilIdle();
@@ -397,13 +397,13 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForRunningOutOfPendingBuffers) {
   Initialize();
 
   webrtc::EncodedImage input_image;
-  uint8_t buffer[1];
+  const size_t buffer_size = 1;
   input_image._completeFrame = true;
   input_image._encodedWidth = 640;
   input_image._encodedHeight = 480;
   input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
-  input_image.set_buffer(buffer, sizeof(buffer));
-  input_image.set_size(sizeof(buffer));
+  input_image.Allocate(buffer_size);
+  input_image.set_size(buffer_size);
 
   EXPECT_CALL(*mock_vda_, Decode(_)).Times(AtLeast(1));
 
@@ -435,13 +435,13 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForSendingFramesWithoutSize) {
   Initialize();
 
   webrtc::EncodedImage input_image;
-  uint8_t buffer[1];
+  const size_t buffer_size = 1;
   input_image._completeFrame = true;
   input_image._encodedWidth = 0;
   input_image._encodedHeight = 0;
   input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
-  input_image.set_buffer(buffer, sizeof(buffer));
-  input_image.set_size(sizeof(buffer));
+  input_image.Allocate(buffer_size);
+  input_image.set_size(buffer_size);
   const int kNumDecodeRequests = 3;
   for (int i = 0; i < kNumDecodeRequests; i++) {
     const int32_t result = rtc_decoder_->Decode(input_image, false, 0);
@@ -457,13 +457,13 @@ TEST_P(RTCVideoDecoderTest, Reinitialize) {
   Initialize();
 
   webrtc::EncodedImage input_image;
-  uint8_t buffer[1];
+  const size_t buffer_size = 1;
   input_image._completeFrame = true;
   input_image._encodedWidth = 640;
   input_image._encodedHeight = 480;
   input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
-  input_image.set_buffer(buffer, sizeof(buffer));
-  input_image.set_size(sizeof(buffer));
+  input_image.Allocate(buffer_size);
+  input_image.set_size(buffer_size);
   EXPECT_CALL(*mock_vda_, Decode(_)).Times(1);
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_decoder_->Decode(input_image, false, 0));
   RunUntilIdle();

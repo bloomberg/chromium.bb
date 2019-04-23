@@ -168,8 +168,10 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
   }
 
   int32_t Decode(uint32_t timestamp) {
-    uint8_t buf[] = {0};
-    webrtc::EncodedImage input_image(&buf[0], 1, 1);
+    webrtc::EncodedImage input_image;
+    input_image.Allocate(1);
+    input_image.set_size(1);
+    input_image.data()[0] = 0;
     input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
     input_image._completeFrame = true;
     input_image.SetTimestamp(timestamp);
@@ -198,9 +200,11 @@ class RTCVideoDecoderAdapterTest : public ::testing::Test {
 
   int32_t Release() { return rtc_video_decoder_adapter_->Release(); }
 
-  webrtc::EncodedImage GetEncodedImageWithColorSpace(uint8_t* buf,
-                                                     uint32_t timestamp) {
-    webrtc::EncodedImage input_image(buf, 1, 1);
+  webrtc::EncodedImage GetEncodedImageWithColorSpace(uint32_t timestamp) {
+    webrtc::EncodedImage input_image;
+    input_image.Allocate(1);
+    input_image.set_size(1);
+    input_image.data()[0] = 0;
     input_image._completeFrame = true;
     input_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
     input_image.SetTimestamp(timestamp);
@@ -333,7 +337,6 @@ TEST_F(RTCVideoDecoderAdapterTest, ReinitializesForHDRColorSpaceInitially) {
   ASSERT_TRUE(BasicSetup());
   EXPECT_EQ(media::VP9PROFILE_PROFILE2, vda_config_.profile());
   EXPECT_FALSE(vda_config_.color_space_info().IsSpecified());
-  uint8_t buf[] = {0};
 
   // Decode() is expected to be called for EOS flush as well.
   EXPECT_CALL(*video_decoder_, Decode(_, _))
@@ -344,8 +347,7 @@ TEST_F(RTCVideoDecoderAdapterTest, ReinitializesForHDRColorSpaceInitially) {
   // First Decode() should cause a reinitialize as new color space is given.
   EXPECT_CALL(*video_decoder_, Initialize(_, _, _, _, _, _))
       .WillOnce(DoAll(SaveArg<0>(&vda_config_), media::RunCallback<3>(true)));
-  webrtc::EncodedImage first_input_image =
-      GetEncodedImageWithColorSpace(&buf[0], 0);
+  webrtc::EncodedImage first_input_image = GetEncodedImageWithColorSpace(0);
   ASSERT_EQ(rtc_video_decoder_adapter_->Decode(first_input_image, false, 0),
             WEBRTC_VIDEO_CODEC_OK);
   media_thread_.FlushForTesting();
@@ -354,8 +356,7 @@ TEST_F(RTCVideoDecoderAdapterTest, ReinitializesForHDRColorSpaceInitially) {
   media_thread_.FlushForTesting();
 
   // Second Decode() with same params should happen normally.
-  webrtc::EncodedImage second_input_image =
-      GetEncodedImageWithColorSpace(&buf[0], 1);
+  webrtc::EncodedImage second_input_image = GetEncodedImageWithColorSpace(1);
   ASSERT_EQ(rtc_video_decoder_adapter_->Decode(second_input_image, false, 0),
             WEBRTC_VIDEO_CODEC_OK);
   FinishDecode(1);
@@ -369,8 +370,7 @@ TEST_F(RTCVideoDecoderAdapterTest, HandlesReinitializeFailure) {
   ASSERT_TRUE(BasicSetup());
   EXPECT_EQ(media::VP9PROFILE_PROFILE2, vda_config_.profile());
   EXPECT_FALSE(vda_config_.color_space_info().IsSpecified());
-  uint8_t buf[] = {0};
-  webrtc::EncodedImage input_image = GetEncodedImageWithColorSpace(&buf[0], 0);
+  webrtc::EncodedImage input_image = GetEncodedImageWithColorSpace(0);
 
   // Decode() is expected to be called for EOS flush as well.
   EXPECT_CALL(*video_decoder_, Decode(_, _))
@@ -390,8 +390,7 @@ TEST_F(RTCVideoDecoderAdapterTest, HandlesFlushFailure) {
   ASSERT_TRUE(BasicSetup());
   EXPECT_EQ(media::VP9PROFILE_PROFILE2, vda_config_.profile());
   EXPECT_FALSE(vda_config_.color_space_info().IsSpecified());
-  uint8_t buf[] = {0};
-  webrtc::EncodedImage input_image = GetEncodedImageWithColorSpace(&buf[0], 0);
+  webrtc::EncodedImage input_image = GetEncodedImageWithColorSpace(0);
 
   // Decode() is expected to be called for EOS flush, set to fail.
   EXPECT_CALL(*video_decoder_, Decode(_, _))

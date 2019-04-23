@@ -131,8 +131,8 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
     base::TimeTicks encode_started_time,
     base::TimeTicks encode_finished_time) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  uint8_t* buffer = const_cast<uint8_t*>(
-      reinterpret_cast<const uint8_t*>(base::data(frame.data)));
+  const uint8_t* buffer =
+      reinterpret_cast<const uint8_t*>(base::data(frame.data));
   size_t buffer_size = frame.data.size();
   base::AutoLock lock(lock_);
   if (state_ == kUninitialized) {
@@ -141,7 +141,10 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
         webrtc::EncodedImageCallback::Result::ERROR_SEND_FAILED);
   }
 
-  webrtc::EncodedImage encoded_image(buffer, buffer_size, buffer_size);
+  webrtc::EncodedImage encoded_image;
+  encoded_image.Allocate(buffer_size);
+  encoded_image.set_size(buffer_size);
+  memcpy(encoded_image.data(), buffer, buffer_size);
   encoded_image._encodedWidth = frame.size.width();
   encoded_image._encodedHeight = frame.size.height();
   encoded_image._completeFrame = true;

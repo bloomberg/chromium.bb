@@ -650,13 +650,15 @@ bool RTCVideoDecoder::SaveToPendingBuffers_Locked(
   }
 
   // Clone the input image and save it to the queue.
-  uint8_t* buffer = new uint8_t[input_image.size()];
+  webrtc::EncodedImage encoded_image;
+  encoded_image.Allocate(input_image.size());
+  encoded_image.set_size(input_image.size());
   // TODO(wuchengli): avoid memcpy. Extend webrtc::VideoDecoder::Decode()
   // interface to take a non-const ptr to the frame and add a method to the
   // frame that will swap buffers with another.
-  memcpy(buffer, input_image.data(), input_image.size());
-  webrtc::EncodedImage encoded_image(buffer, input_image.size(),
-                                     input_image.size());
+  // TODO(nisse): When unowned-buffer in EncodedImage are removed, in favor of
+  // webrtc CopyOnWriteBuffer, we should no longer need to copy the data here.
+  memcpy(encoded_image.data(), input_image.data(), input_image.size());
   std::pair<webrtc::EncodedImage, BufferData> buffer_pair =
       std::make_pair(encoded_image, buffer_data);
 
@@ -674,7 +676,6 @@ void RTCVideoDecoder::MovePendingBuffersToDecodeBuffers() {
     // Drop the frame if it comes before Release.
     if (!IsBufferAfterReset(buffer_data.bitstream_buffer_id,
                             reset_bitstream_buffer_id_)) {
-      delete[] input_image.data();
       pending_buffers_.pop_front();
       continue;
     }
@@ -684,7 +685,6 @@ void RTCVideoDecoder::MovePendingBuffersToDecodeBuffers() {
     if (!shm_buffer)
       return;
     SaveToDecodeBuffers_Locked(input_image, std::move(shm_buffer), buffer_data);
-    delete[] input_image.data();
     pending_buffers_.pop_front();
   }
 }
@@ -923,8 +923,6 @@ void RTCVideoDecoder::DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent()
 
 void RTCVideoDecoder::ClearPendingBuffers() {
   // Delete WebRTC input buffers.
-  for (const auto& pending_buffer : pending_buffers_)
-    delete[] pending_buffer.first.data();
   pending_buffers_.clear();
 }
 
