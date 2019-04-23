@@ -3351,10 +3351,6 @@ const FeatureEntry kFeatureEntries[] = {
          features::kProactiveTabFreezeAndDiscard,
          kProactiveTabFreezeAndDiscardVariations,
          resource_coordinator::kProactiveTabFreezeAndDiscardFeatureName)},
-    {"site-characteristics-database",
-     flag_descriptions::kSiteCharacteristicsDatabaseName,
-     flag_descriptions::kSiteCharacteristicsDatabaseDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kSiteCharacteristicsDatabase)},
 #endif
 
 #if defined(OS_CHROMEOS)

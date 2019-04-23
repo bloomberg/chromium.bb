@@ -1647,9 +1647,6 @@ extern const char kProactiveTabFreezeAndDiscardDescription[];
 extern const char kShowManagedUiName[];
 extern const char kShowManagedUiDescription[];
 
-extern const char kSiteCharacteristicsDatabaseName[];
-extern const char kSiteCharacteristicsDatabaseDescription[];
-
 extern const char kUseGoogleLocalNtpName[];
 extern const char kUseGoogleLocalNtpDescription[];
 

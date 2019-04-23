@@ -2768,12 +2768,6 @@ const char kShowManagedUiDescription[] =
     "Enabled/disable showing enterprise users a 'Managed by your organization' "
     "message in the app menu and on some chrome:// pages.";
 
-const char kSiteCharacteristicsDatabaseName[] = "Site Characteristics database";
-const char kSiteCharacteristicsDatabaseDescription[] =
-    "Records usage of some features in a database while a tab is in background "
-    "(title/favicon update, audio playback or usage of non-persistent "
-    "notifications).";
-
 const char kUseGoogleLocalNtpName[] = "Enable using the Google local NTP";
 const char kUseGoogleLocalNtpDescription[] =
     "Use the local New Tab page if Google is the default search engine.";
