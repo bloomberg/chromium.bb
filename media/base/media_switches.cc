@@ -326,6 +326,13 @@ const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
 const base::Feature kExternalClearKeyForTesting{
     "ExternalClearKeyForTesting", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Prevents UrlProvisionFetcher from making a provisioning request. If
+// specified, any provisioning request made will not be sent to the provisioning
+// server, and the response will indicate a failure to communicate with the
+// provisioning server.
+const base::Feature kFailUrlProvisionFetcherForTesting{
+    "FailUrlProvisionFetcherForTesting", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables hardware secure decryption if supported by hardware and CDM.
 // TODO(xhwang): Currently this is only used for development of new features.
 // Apply this to Android and ChromeOS as well where hardware secure decryption

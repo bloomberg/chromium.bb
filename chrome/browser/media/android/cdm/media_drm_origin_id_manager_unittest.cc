@@ -151,6 +151,8 @@ TEST_F(MediaDrmOriginIdManagerTest, DisablePreProvisioningAtStartup) {
 
   EXPECT_FALSE(
       base::FeatureList::IsEnabled(media::kMediaDrmPreprovisioningAtStartup));
+  EXPECT_FALSE(
+      base::FeatureList::IsEnabled(media::kFailUrlProvisionFetcherForTesting));
 
   test_browser_thread_bundle_.RunUntilIdle();
 

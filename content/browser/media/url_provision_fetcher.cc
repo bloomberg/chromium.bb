@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "content/public/browser/provision_fetcher_factory.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/media_switches.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -29,6 +30,13 @@ void URLProvisionFetcher::Retrieve(
     const std::string& default_url,
     const std::string& request_data,
     const media::ProvisionFetcher::ResponseCB& response_cb) {
+  // For testing, don't actually do provisioning if the feature is enabled,
+  // just indicate that the request failed.
+  if (base::FeatureList::IsEnabled(media::kFailUrlProvisionFetcherForTesting)) {
+    response_cb.Run(false, std::string());
+    return;
+  }
+
   response_cb_ = response_cb;
 
   const std::string request_string =
