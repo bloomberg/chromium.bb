@@ -2645,7 +2645,9 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipIsNotDrawable) {
   // One content layer, no clip mask (because layer doesn't draw content).
   ASSERT_EQ(1u, RootLayer()->children().size());
   ASSERT_EQ(1u, ContentLayerCount());
-  ASSERT_EQ(0u, SynthesizedClipLayerCount());
+  ASSERT_EQ(1u, SynthesizedClipLayerCount());
+  // There is a synthesized clip", but it has no layer backing.
+  ASSERT_EQ(nullptr, SynthesizedClipLayerAt(0));
 
   const cc::Layer* content0 = RootLayer()->children()[0].get();
 
@@ -2662,6 +2664,52 @@ TEST_P(PaintArtifactCompositorTest, SynthesizedClipIsNotDrawable) {
       *GetPropertyTrees().effect_tree.Node(mask_isolation_0_id);
   ASSERT_EQ(e0_id, mask_isolation_0.parent_id);
   EXPECT_EQ(SkBlendMode::kSrcOver, mask_isolation_0.blend_mode);
+}
+
+TEST_P(PaintArtifactCompositorTest, ReuseSyntheticClip) {
+  // This tests the simplist case that a single layer needs to be clipped
+  // by a single composited rounded clip.
+  FloatSize corner(5, 5);
+  FloatRoundedRect rrect(FloatRect(50, 50, 300, 200), corner, corner, corner,
+                         corner);
+  auto c1 = CreateClip(c0(), t0(), rrect);
+  auto c2 = CreateClip(c0(), t0(), rrect);
+
+  TestPaintArtifact artifact;
+  artifact.Chunk(t0(), *c1, e0())
+      .RectDrawing(FloatRect(0, 0, 0, 0), Color::kBlack);
+  Update(artifact.Build());
+
+  const cc::Layer* content0 = RootLayer()->children()[0].get();
+
+  uint64_t old_stable_id = GetPropertyTrees()
+                               .effect_tree.Node(content0->effect_tree_index())
+                               ->stable_id;
+
+  TestPaintArtifact repeated_artifact;
+  repeated_artifact.Chunk(t0(), *c1, e0())
+      .RectDrawing(FloatRect(0, 0, 0, 0), Color::kBlack);
+  Update(repeated_artifact.Build());
+  const cc::Layer* content1 = RootLayer()->children()[0].get();
+
+  // Check that stable ids are reused across updates.
+  EXPECT_EQ(GetPropertyTrees()
+                .effect_tree.Node(content1->effect_tree_index())
+                ->stable_id,
+            old_stable_id);
+
+  TestPaintArtifact changed_artifact;
+  changed_artifact.Chunk(t0(), *c2, e0())
+      .RectDrawing(FloatRect(0, 0, 0, 0), Color::kBlack);
+  Update(changed_artifact.Build());
+  const cc::Layer* content2 = RootLayer()->children()[0].get();
+
+  // The new artifact changed the clip node to c2, so the synthetic clip should
+  // not be reused.
+  EXPECT_NE(GetPropertyTrees()
+                .effect_tree.Node(content2->effect_tree_index())
+                ->stable_id,
+            old_stable_id);
 }
 
 TEST_P(PaintArtifactCompositorTest,

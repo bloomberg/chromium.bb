@@ -11,7 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_collections.h"
+#include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/property_tree_manager.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -46,6 +48,57 @@ class LayerListBuilder {
   // The list becomes invalid once |Finalize| is called.
   bool list_valid_ = true;
   cc::LayerList list_;
+};
+
+// This class maintains unique stable cc effect IDs (and optionally a persistent
+// mask layer) for reuse across compositing cycles. The mask layer paints a
+// rounded rect, which is an updatable parameter of the class. The caller is
+// responsible for inserting the mask layer into layer list and associating with
+// property nodes. The mask layer may be omitted if the caller determines it is
+// not necessary (e.g. because there is no content to mask).
+//
+// The typical application of the mask layer is to create an isolating effect
+// node to paint the clipped contents, and at the end draw the mask layer with
+// a kDstIn blend effect. This is why two stable cc effect IDs are provided.
+// Even if the mask layer is not present, it's important for the isolation
+// effect node to be stable, to minimize render surface damage.
+class SynthesizedClip : private cc::ContentLayerClient {
+ public:
+  SynthesizedClip() : layer_(nullptr) {
+    mask_isolation_id_ =
+        CompositorElementIdFromUniqueObjectId(NewUniqueObjectId());
+    mask_effect_id_ =
+        CompositorElementIdFromUniqueObjectId(NewUniqueObjectId());
+  }
+  ~SynthesizedClip() override {
+    if (layer_)
+      layer_->ClearClient();
+  }
+
+  void UpdateLayer(bool needs_layer,
+                   const FloatRoundedRect& rrect,
+                   scoped_refptr<const RefCountedPath> path);
+
+  cc::Layer* Layer() { return layer_.get(); }
+  CompositorElementId GetMaskIsolationId() const { return mask_isolation_id_; }
+  CompositorElementId GetMaskEffectId() const { return mask_effect_id_; }
+
+ private:
+  // ContentLayerClient implementation.
+  gfx::Rect PaintableRegion() final { return gfx::Rect(layer_->bounds()); }
+  bool FillsBoundsCompletely() const final { return false; }
+  size_t GetApproximateUnsharedMemoryUsage() const final { return 0; }
+
+  scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
+      PaintingControlSetting) final;
+
+ private:
+  scoped_refptr<cc::PictureLayer> layer_;
+  gfx::Vector2dF layer_origin_;
+  SkRRect local_rrect_ = SkRRect::MakeEmpty();
+  scoped_refptr<const RefCountedPath> path_;
+  CompositorElementId mask_isolation_id_;
+  CompositorElementId mask_effect_id_;
 };
 
 // Responsible for managing compositing in terms of a PaintArtifact.
@@ -233,8 +286,13 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   std::unique_ptr<ContentLayerClientImpl> ClientForPaintChunk(
       const PaintChunk&);
 
-  cc::Layer* CreateOrReuseSynthesizedClipLayer(
+  // if |needs_layer| is false, no cc::Layer is created, |mask_effect_id| is
+  // not set, and the Layer() method on the returned SynthesizedClip returns
+  // nullptr.
+  // However, |mask_isolation_id| is always set.
+  SynthesizedClip& CreateOrReuseSynthesizedClipLayer(
       const ClipPaintPropertyNode&,
+      bool needs_layer,
       CompositorElementId& mask_isolation_id,
       CompositorElementId& mask_effect_id) final;
 
