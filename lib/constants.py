@@ -517,8 +517,9 @@ TARGET_OS_FACTORY_PKG = 'virtual/target-os-factory'
 CHROMEOS_BASE = 'chromeos-base'
 
 # Portage category and package name for Chrome.
+CHROME_CN = CHROMEOS_BASE
 CHROME_PN = 'chromeos-chrome'
-CHROME_CP = 'chromeos-base/%s' % CHROME_PN
+CHROME_CP = '%s/%s' % (CHROME_CN, CHROME_PN)
 
 # Other packages to uprev while uprevving Chrome.
 OTHER_CHROME_PACKAGES = ['chromeos-base/chromium-source']

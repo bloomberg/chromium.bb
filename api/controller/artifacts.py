@@ -11,10 +11,14 @@ import os
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import vm_test_stages
+from chromite.lib import build_target_util
+from chromite.lib import chroot_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+from chromite.lib import sysroot_lib
+from chromite.service import artifacts
 
 
 def _GetImageDir(build_root, target):
@@ -209,6 +213,48 @@ def BundleEbuildLogs(input_proto, output_proto):
         'Could not create ebuild logs archive. No logs found for %s.', target)
 
   output_proto.artifacts.add().path = os.path.join(output_dir, archive)
+
+
+def BundleSimpleChromeArtifacts(input_proto, output_proto):
+  """Create the simple chrome artifacts."""
+  # Required args.
+  sysroot_path = input_proto.sysroot.path
+  build_target_name = input_proto.sysroot.build_target.name
+  output_dir = input_proto.output_dir
+
+  if not build_target_name:
+    cros_build_lib.Die('build_target.name is required')
+  if not output_dir:
+    cros_build_lib.Die('output_dir is required.')
+  if not os.path.exists(output_dir):
+    cros_build_lib.Die('output_dir (%s) does not exist.', output_dir)
+  if not sysroot_path:
+    cros_build_lib.Die('sysroot.path is required.')
+
+  # Optional args.
+  chroot_path = input_proto.chroot.path or constants.DEFAULT_CHROOT_PATH
+  cache_dir = input_proto.chroot.cache_dir
+
+  # Build out the argument instances.
+  build_target = build_target_util.BuildTarget(build_target_name)
+  chroot = chroot_lib.Chroot(path=chroot_path, cache_dir=cache_dir)
+  # Sysroot.path needs to be the fully qualified path, including the chroot.
+  full_sysroot_path = os.path.join(chroot.path, sysroot_path.lstrip(os.sep))
+  sysroot = sysroot_lib.Sysroot(full_sysroot_path)
+
+  # Quick sanity check that the sysroot exists before we go on.
+  if not sysroot.Exists():
+    cros_build_lib.Die('The sysroot does not exist.')
+
+  try:
+    results = artifacts.BundleSimpleChromeArtifacts(chroot, sysroot,
+                                                    build_target, output_dir)
+  except artifacts.Error as e:
+    cros_build_lib.Die('Error %s raised in BundleSimpleChromeArtifacts: %s',
+                       type(e), e)
+
+  for file_name in results:
+    output_proto.artifacts.add().path = file_name
 
 
 def BundleVmFiles(input_proto, output_proto):

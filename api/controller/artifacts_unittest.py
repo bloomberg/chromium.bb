@@ -18,6 +18,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.service import artifacts as artifacts_svc
 
 
 class BundleTestCase(cros_test_lib.MockTestCase):
@@ -244,6 +245,96 @@ class BundleTestUpdatePayloadsTest(cros_test_lib.MockTempDirTestCase):
     osutils.SafeMakedirs(self.image_root)
     with self.assertRaises(cros_build_lib.DieSystemExit):
       artifacts.BundleTestUpdatePayloads(self.input_proto, self.output_proto)
+
+
+class BundleSimpleChromeArtifactsTest(cros_test_lib.MockTempDirTestCase):
+  """BundleSimpleChromeArtifacts tests."""
+
+  def setUp(self):
+    self.chroot_dir = os.path.join(self.tempdir, 'chroot_dir')
+    self.sysroot_path = '/sysroot'
+    self.sysroot_dir = os.path.join(self.chroot_dir, 'sysroot')
+    osutils.SafeMakedirs(self.sysroot_dir)
+    self.output_dir = os.path.join(self.tempdir, 'output_dir')
+    osutils.SafeMakedirs(self.output_dir)
+
+    self.does_not_exist = os.path.join(self.tempdir, 'does_not_exist')
+
+  def _GetRequest(self, chroot=None, sysroot=None, build_target=None,
+                  output_dir=None):
+    """Helper to create a request message instance.
+
+    Args:
+      chroot (str): The chroot path.
+      sysroot (str): The sysroot path.
+      build_target (str): The build target name.
+      output_dir (str): The output directory.
+    """
+    return artifacts_pb2.BundleRequest(
+        sysroot={'path': sysroot, 'build_target': {'name': build_target}},
+        chroot={'path': chroot}, output_dir=output_dir)
+
+  def _GetResponse(self):
+    return artifacts_pb2.BundleResponse()
+
+  def testNoBuildTarget(self):
+    """Test no build target fails."""
+    request = self._GetRequest(chroot=self.chroot_dir,
+                               sysroot=self.sysroot_path,
+                               output_dir=self.output_dir)
+    response = self._GetResponse()
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleSimpleChromeArtifacts(request, response)
+
+  def testNoSysroot(self):
+    """Test no sysroot fails."""
+    request = self._GetRequest(build_target='board', output_dir=self.output_dir)
+    response = self._GetResponse()
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleSimpleChromeArtifacts(request, response)
+
+  def testSysrootDoesNotExist(self):
+    """Test no sysroot fails."""
+    request = self._GetRequest(build_target='board', output_dir=self.output_dir,
+                               sysroot=self.does_not_exist)
+    response = self._GetResponse()
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleSimpleChromeArtifacts(request, response)
+
+  def testNoOutputDir(self):
+    """Test no output dir fails."""
+    request = self._GetRequest(chroot=self.chroot_dir,
+                               sysroot=self.sysroot_path,
+                               build_target='board')
+    response = self._GetResponse()
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleSimpleChromeArtifacts(request, response)
+
+  def testOutputDirDoesNotExist(self):
+    """Test no output dir fails."""
+    request = self._GetRequest(chroot=self.chroot_dir,
+                               sysroot=self.sysroot_path,
+                               build_target='board',
+                               output_dir=self.does_not_exist)
+    response = self._GetResponse()
+    with self.assertRaises(cros_build_lib.DieSystemExit):
+      artifacts.BundleSimpleChromeArtifacts(request, response)
+
+  def testOutputHandling(self):
+    """Test response output."""
+    files = ['file1', 'file2', 'file3']
+    expected_files = [os.path.join(self.output_dir, f) for f in files]
+    self.PatchObject(artifacts_svc, 'BundleSimpleChromeArtifacts',
+                     return_value=expected_files)
+    request = self._GetRequest(chroot=self.chroot_dir,
+                               sysroot=self.sysroot_path,
+                               build_target='board', output_dir=self.output_dir)
+    response = self._GetResponse()
+
+    artifacts.BundleSimpleChromeArtifacts(request, response)
+
+    self.assertTrue(response.artifacts)
+    self.assertItemsEqual(expected_files, [a.path for a in response.artifacts])
 
 
 class BundleVmFilesTest(cros_test_lib.MockTestCase):
