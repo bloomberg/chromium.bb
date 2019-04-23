@@ -861,6 +861,9 @@ extern const char kOmniboxUIBlueTitlesOnPageSuggestionsDescription[];
 extern const char kOmniboxUIBoldUserTextOnSearchSuggestionsName[];
 extern const char kOmniboxUIBoldUserTextOnSearchSuggestionsDescription[];
 
+extern const char kOmniboxUICuesForSearchHistoryMatchesName[];
+extern const char kOmniboxUICuesForSearchHistoryMatchesDescription[];
+
 extern const char kOmniboxUIHideSteadyStateUrlSchemeName[];
 extern const char kOmniboxUIHideSteadyStateUrlSchemeDescription[];
 

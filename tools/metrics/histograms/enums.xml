@@ -33665,6 +33665,7 @@ from previous Chrome versions.
   <int value="92327255" label="DisplayMoveWindowAccels:disabled"/>
   <int value="93832899" label="NtpCustomizationMenuV2:enabled"/>
   <int value="98134240" label="material-design-ink-drop-animation-speed"/>
+  <int value="99177659" label="OmniboxUICuesForSearchHistoryMatches:disabled"/>
   <int value="103932290" label="show-autofill-type-predictions"/>
   <int value="105046382" label="ParallelDownloading:disabled"/>
   <int value="106840653" label="mus"/>
@@ -34809,6 +34810,7 @@ from previous Chrome versions.
   <int value="1931309368" label="fill-on-account-select:disabled"/>
   <int value="1932204471" label="SyncPseudoUSSThemes:disabled"/>
   <int value="1932732886" label="OpenVR:enabled"/>
+  <int value="1933282728" label="OmniboxUICuesForSearchHistoryMatches:enabled"/>
   <int value="1936810062" label="WebVrVsyncAlign:enabled"/>
   <int value="1938279796" label="PromosOnLocalNtp:disabled"/>
   <int value="1939413645" label="enable-invalid-cert-collection"/>

@@ -1409,6 +1409,13 @@ const char kOmniboxUIBoldUserTextOnSearchSuggestionsName[] =
 const char kOmniboxUIBoldUserTextOnSearchSuggestionsDescription[] =
     "Bolds the user text instead of autocomplete text for search suggestions.";
 
+const char kOmniboxUICuesForSearchHistoryMatchesName[] =
+    "Omnibox UI Cues to Differentiate Search History Matches";
+const char kOmniboxUICuesForSearchHistoryMatchesDescription[] =
+    "Shows UI cues in the omnibox to differentiate Search History matches from "
+    "other search suggestions provided by the default search provider. This "
+    "feature is a narrow subset of Omnibox Suggestion Transparency Options.";
+
 const char kOmniboxUIHideSteadyStateUrlSchemeName[] =
     "Omnibox UI Hide Steady-State URL Scheme";
 const char kOmniboxUIHideSteadyStateUrlSchemeDescription[] =
