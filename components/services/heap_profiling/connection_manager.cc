@@ -292,9 +292,7 @@ void ConnectionManager::DoDumpOneProcessForTracing(
   if (it != tracking->vm_regions.end())
     params.maps = std::move(it->second);
 
-  std::ostringstream oss;
-  ExportMemoryMapsAndV2StackTraceToJSON(&params, oss);
-  std::string reply = oss.str();
+  std::string reply = ExportMemoryMapsAndV2StackTraceToJSON(&params);
   size_t reply_size = reply.size();
   next_id_ = params.next_id;
 

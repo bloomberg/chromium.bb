@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_SERVICES_HEAP_PROFILING_JSON_EXPORTER_H_
 #define COMPONENTS_SERVICES_HEAP_PROFILING_JSON_EXPORTER_H_
 
-#include <iosfwd>
+#include <map>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "components/services/heap_profiling/allocation.h"
@@ -54,8 +56,7 @@ struct ExportParams {
 
 // Creates a JSON string representing a JSON dictionary that contains memory
 // maps and v2 format stack traces.
-void ExportMemoryMapsAndV2StackTraceToJSON(ExportParams* params,
-                                           std::ostream& out);
+std::string ExportMemoryMapsAndV2StackTraceToJSON(ExportParams* params);
 
 }  // namespace heap_profiling
 

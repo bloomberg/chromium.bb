@@ -149,17 +149,13 @@ TEST(ProfilingJsonExporterTest, Simple) {
   InsertAllocation(&allocs, AllocatorType::kPartitionAlloc, 20, stack1, 0);
   InsertAllocation(&allocs, AllocatorType::kMalloc, 12, stack2, 0);
 
-  std::ostringstream stream;
-
   ExportParams params;
   params.allocs = std::move(allocs);
-  ExportMemoryMapsAndV2StackTraceToJSON(&params, stream);
-  std::string json = stream.str();
+  std::string json = ExportMemoryMapsAndV2StackTraceToJSON(&params);
 
   // JSON should parse.
   base::JSONReader reader(base::JSON_PARSE_RFC);
-  std::unique_ptr<base::Value> root =
-      reader.ReadToValueDeprecated(stream.str());
+  std::unique_ptr<base::Value> root = reader.ReadToValueDeprecated(json);
   ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
       << reader.GetErrorMessage();
   ASSERT_TRUE(root);
@@ -295,14 +291,11 @@ TEST(ProfilingJsonExporterTest, MemoryMaps) {
       base::Process::Current().Pid());
   ASSERT_GT(params.maps.size(), 2u);
 
-  std::ostringstream stream;
-  ExportMemoryMapsAndV2StackTraceToJSON(&params, stream);
-  std::string json = stream.str();
+  std::string json = ExportMemoryMapsAndV2StackTraceToJSON(&params);
 
   // JSON should parse.
   base::JSONReader reader(base::JSON_PARSE_RFC);
-  std::unique_ptr<base::Value> root =
-      reader.ReadToValueDeprecated(stream.str());
+  std::unique_ptr<base::Value> root = reader.ReadToValueDeprecated(json);
   ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
       << reader.GetErrorMessage();
   ASSERT_TRUE(root);
@@ -349,14 +342,11 @@ TEST(ProfilingJsonExporterTest, Context) {
                    context_id1);
   params.allocs = std::move(allocs);
 
-  std::ostringstream stream;
-  ExportMemoryMapsAndV2StackTraceToJSON(&params, stream);
-  std::string json = stream.str();
+  std::string json = ExportMemoryMapsAndV2StackTraceToJSON(&params);
 
   // JSON should parse.
   base::JSONReader reader(base::JSON_PARSE_RFC);
-  std::unique_ptr<base::Value> root =
-      reader.ReadToValueDeprecated(stream.str());
+  std::unique_ptr<base::Value> root = reader.ReadToValueDeprecated(json);
   ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
       << reader.GetErrorMessage();
   ASSERT_TRUE(root);
