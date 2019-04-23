@@ -16,6 +16,7 @@
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_util.h"
@@ -76,7 +77,7 @@ gfx::Rect GetCenteredBounds(const gfx::Rect& bounds_in_parent,
 }
 
 // Returns the maximized/full screen and/or centered bounds of a window.
-gfx::Rect GetBoundsInMaximizedMode(wm::WindowState* state_object) {
+gfx::Rect GetBoundsInTabletMode(wm::WindowState* state_object) {
   if (state_object->IsFullscreen() || state_object->IsPinned()) {
     return screen_util::GetFullscreenWindowBoundsInParent(
         state_object->window());
@@ -158,7 +159,7 @@ bool IsTabDraggingSourceWindow(aura::Window* window) {
 // static
 void TabletModeWindowState::UpdateWindowPosition(wm::WindowState* window_state,
                                                  bool animate) {
-  gfx::Rect bounds_in_parent = GetBoundsInMaximizedMode(window_state);
+  gfx::Rect bounds_in_parent = GetBoundsInTabletMode(window_state);
   if (bounds_in_parent == window_state->window()->GetTargetBounds())
     return;
 
@@ -451,7 +452,7 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
   if (current_state_type_ == mojom::WindowStateType::MINIMIZED)
     return;
 
-  gfx::Rect bounds_in_parent = GetBoundsInMaximizedMode(window_state);
+  gfx::Rect bounds_in_parent = GetBoundsInTabletMode(window_state);
   // If we have a target bounds rectangle, we center it and set it
   // accordingly.
   if (!bounds_in_parent.IsEmpty() &&
@@ -465,6 +466,8 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
         // Reset the |enter_animation_type_| to DEFAULT it if is STEP_END, which
         // is set for non-top windows when entering tablet mode.
         set_enter_animation_type(DEFAULT);
+        Shell::Get()->tablet_mode_controller()->MaybeObserveBoundsAnimation(
+            window_state->window());
         return;
       }
       // If we animate (to) tablet mode, we want to use the cross fade to
@@ -475,6 +478,9 @@ void TabletModeWindowState::UpdateBounds(wm::WindowState* window_state,
         window_state->SetBoundsDirect(bounds_in_parent);
       else
         window_state->SetBoundsDirectAnimated(bounds_in_parent);
+
+      Shell::Get()->tablet_mode_controller()->MaybeObserveBoundsAnimation(
+          window_state->window());
     }
   }
 }

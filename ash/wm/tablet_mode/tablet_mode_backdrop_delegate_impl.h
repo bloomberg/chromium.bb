@@ -12,7 +12,7 @@
 
 namespace ash {
 
-// A backdrop delegate for MaximizedMode, which always creates a backdrop.
+// A backdrop delegate for tablet mode, which always creates a backdrop.
 // This is also used in the WorkspaceLayoutManagerBackdropTest, hence
 // is public.
 class ASH_EXPORT TabletModeBackdropDelegateImpl : public BackdropDelegate {

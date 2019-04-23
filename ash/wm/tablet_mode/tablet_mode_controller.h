@@ -26,7 +26,9 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "ui/aura/window_observer.h"
 #include "ui/aura/window_occlusion_tracker.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
@@ -40,6 +42,10 @@ class TickClock;
 
 namespace gfx {
 class Vector3dF;
+}
+
+namespace ui {
+class LayerAnimationSequence;
 }
 
 namespace views {
@@ -64,7 +70,9 @@ class ASH_EXPORT TabletModeController
       public WindowTreeHostManager::Observer,
       public SessionObserver,
       public ui::InputDeviceEventObserver,
-      public KioskNextShellObserver {
+      public KioskNextShellObserver,
+      public ui::LayerAnimationObserver,
+      public aura::WindowObserver {
  public:
   // Used for keeping track if the user wants the machine to behave as a
   // clamshell/tablet regardless of hardware orientation.
@@ -118,6 +126,9 @@ class ASH_EXPORT TabletModeController
   // Otherwise, returns false.
   bool TriggerRecordLidAngleTimerForTesting() WARN_UNUSED_RESULT;
 
+  // Called from a WindowState object when the bounds of |window| changes.
+  void MaybeObserveBoundsAnimation(aura::Window* window);
+
   // ShellObserver:
   void OnShellInitialized() override;
 
@@ -146,6 +157,15 @@ class ASH_EXPORT TabletModeController
   // KioskNextShellObserver:
   void OnKioskNextEnabled() override;
 
+  // ui::LayerAnimationObserver:
+  void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationAborted(ui::LayerAnimationSequence* sequence) override;
+  void OnLayerAnimationScheduled(ui::LayerAnimationSequence* sequence) override;
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
+
   void increment_app_window_drag_count() { ++app_window_drag_count_; }
   void increment_app_window_drag_in_splitview_count() {
     ++app_window_drag_in_splitview_count_;
@@ -156,6 +176,7 @@ class ASH_EXPORT TabletModeController
   }
 
  private:
+  class TabletModeTransitionFpsCounter;
   friend class TabletModeControllerTestApi;
 
   // Used for recording metrics for intervals of time spent in
@@ -163,6 +184,15 @@ class ASH_EXPORT TabletModeController
   enum TabletModeIntervalType {
     TABLET_MODE_INTERVAL_INACTIVE,
     TABLET_MODE_INTERVAL_ACTIVE
+  };
+
+  // Tracks whether we are in the process of entering or exiting tablet mode.
+  // Used for logging histogram metrics.
+  enum class State {
+    kInClamshellMode,
+    kEnteringTabletMode,
+    kInTabletMode,
+    kExitingTabletMode,
   };
 
   // If EC cannot handle lid angle calc, browser detects hinge rotation from
@@ -246,6 +276,10 @@ class ASH_EXPORT TabletModeController
   // Resets |occlusion_tracker_pauser_|.
   void ResetPauser();
 
+  // Called by LayerAnimationObserver overrides. Stops observing the window
+  // which is being animated from tablet <-> clamshell.
+  void StopObservingAnimation(bool record_stats);
+
   // The maximized window manager (if enabled).
   std::unique_ptr<TabletModeWindowManager> tablet_mode_window_manager_;
 
@@ -326,6 +360,8 @@ class ASH_EXPORT TabletModeController
   // Tracks whether a flag is used to force ui mode.
   UiMode force_ui_mode_ = UiMode::kNone;
 
+  State state_ = State::kInClamshellMode;
+
   // Calls RecordLidAngle() periodically.
   base::RepeatingTimer record_lid_angle_timer_;
 
@@ -340,6 +376,12 @@ class ASH_EXPORT TabletModeController
 
   // Observer to observe the bluetooth devices.
   std::unique_ptr<BluetoothDevicesObserver> bluetooth_devices_observer_;
+
+  // The window we are observing when animating from clamshell to tablet mode or
+  // vice versa.
+  aura::Window* observed_window_ = nullptr;
+
+  std::unique_ptr<TabletModeTransitionFpsCounter> fps_counter_;
 
   base::ObserverList<TabletModeObserver>::Unchecked tablet_mode_observers_;
 

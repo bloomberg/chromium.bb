@@ -75,7 +75,26 @@ void DoSplitView(
 
 }  // namespace
 
-TabletModeWindowManager::~TabletModeWindowManager() {
+TabletModeWindowManager::~TabletModeWindowManager() = default;
+
+void TabletModeWindowManager::Init() {
+  // The overview mode needs to be ended before the tablet mode is started. To
+  // guarantee the proper order, it will be turned off from here.
+  CancelOverview();
+
+  ArrangeWindowsForTabletMode();
+  AddWindowCreationObservers();
+  EnableBackdropBehindTopWindowOnEachDisplay(true);
+  display::Screen::GetScreen()->AddObserver(this);
+  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->session_controller()->AddObserver(this);
+  Shell::Get()->overview_controller()->AddObserver(this);
+  accounts_since_entering_tablet_.insert(
+      Shell::Get()->session_controller()->GetActiveAccountId());
+  event_handler_ = std::make_unique<wm::TabletModeEventHandler>();
+}
+
+void TabletModeWindowManager::Shutdown() {
   // Overview mode needs to be ended before exiting tablet mode to prevent
   // transforming windows which are currently in
   // overview: http://crbug.com/366605
@@ -96,11 +115,14 @@ int TabletModeWindowManager::GetNumberOfManagedWindows() {
   return window_state_map_.size();
 }
 
+bool TabletModeWindowManager::IsTrackingWindow(aura::Window* window) {
+  return base::ContainsKey(window_state_map_, window);
+}
+
 void TabletModeWindowManager::AddWindow(aura::Window* window) {
   // Only add the window if it is a direct dependent of a container window
   // and not yet tracked.
-  if (base::ContainsKey(window_state_map_, window) ||
-      !IsContainerWindow(window->parent())) {
+  if (IsTrackingWindow(window) || !IsContainerWindow(window->parent())) {
     return;
   }
 
@@ -242,7 +264,7 @@ void TabletModeWindowManager::OnWindowBoundsChanged(
 void TabletModeWindowManager::OnWindowVisibilityChanged(aura::Window* window,
                                                         bool visible) {
   // Skip if it's already managed.
-  if (base::ContainsKey(window_state_map_, window))
+  if (IsTrackingWindow(window))
     return;
 
   if (IsContainerWindow(window->parent()) &&
@@ -252,7 +274,7 @@ void TabletModeWindowManager::OnWindowVisibilityChanged(aura::Window* window,
     TrackWindow(window);
     // When the state got added, the "WM_EVENT_ADDED_TO_WORKSPACE" event got
     // already sent and we have to notify our state again.
-    if (base::ContainsKey(window_state_map_, window)) {
+    if (IsTrackingWindow(window)) {
       wm::WMEvent event(wm::WM_EVENT_ADDED_TO_WORKSPACE);
       wm::GetWindowState(window)->OnWMEvent(&event);
     }
@@ -340,27 +362,19 @@ void TabletModeWindowManager::OnActiveUserSessionChanged(
   }
 }
 
+void TabletModeWindowManager::OnPostWindowStateTypeChange(
+    wm::WindowState* window_state,
+    mojom::WindowStateType old_type) {
+  Shell::Get()->tablet_mode_controller()->MaybeObserveBoundsAnimation(
+      window_state->window());
+}
+
 void TabletModeWindowManager::SetIgnoreWmEventsForExit() {
   for (auto& pair : window_state_map_)
     pair.second->set_ignore_wm_events(true);
 }
 
-TabletModeWindowManager::TabletModeWindowManager() {
-  // The overview mode needs to be ended before the tablet mode is started. To
-  // guarantee the proper order, it will be turned off from here.
-  CancelOverview();
-
-  ArrangeWindowsForTabletMode();
-  AddWindowCreationObservers();
-  EnableBackdropBehindTopWindowOnEachDisplay(true);
-  display::Screen::GetScreen()->AddObserver(this);
-  Shell::Get()->AddShellObserver(this);
-  Shell::Get()->session_controller()->AddObserver(this);
-  Shell::Get()->overview_controller()->AddObserver(this);
-  accounts_since_entering_tablet_.insert(
-      Shell::Get()->session_controller()->GetActiveAccountId());
-  event_handler_ = std::make_unique<wm::TabletModeEventHandler>();
-}
+TabletModeWindowManager::TabletModeWindowManager() = default;
 
 mojom::WindowStateType TabletModeWindowManager::GetDesktopWindowStateType(
     aura::Window* window) const {
@@ -445,9 +459,15 @@ void TabletModeWindowManager::ArrangeWindowsForTabletMode() {
 
 void TabletModeWindowManager::ArrangeWindowsForDesktopMode(
     bool was_in_overview) {
-  while (window_state_map_.size())
-    ForgetWindow(window_state_map_.begin()->first, false /* destroyed */,
-                 was_in_overview);
+  while (window_state_map_.size()) {
+    // Observe the window state so that when TabletModeWindowState gets detached
+    // and default state gets attached, we can see the change without adding a
+    // dependency in DefaultState.
+    aura::Window* window = window_state_map_.begin()->first;
+    wm::GetWindowState(window)->AddObserver(this);
+    ForgetWindow(window, /*destroyed=*/false, was_in_overview);
+    wm::GetWindowState(window)->RemoveObserver(this);
+  }
 }
 
 void TabletModeWindowManager::TrackWindow(aura::Window* window,
@@ -457,11 +477,14 @@ void TabletModeWindowManager::TrackWindow(aura::Window* window,
   if (!ShouldHandleWindow(window))
     return;
 
-  DCHECK(!base::ContainsKey(window_state_map_, window));
+  DCHECK(!IsTrackingWindow(window));
   window->AddObserver(this);
 
   // We create and remember a tablet mode state which will attach itself to
-  // the provided state object.
+  // the provided state object. First set the map to point to a null object
+  // because on creating a TabletModeWindowState will check to see if |window|
+  // is being tracked by |this|, and we want that to return true.
+  window_state_map_.emplace(window, nullptr);
   window_state_map_[window] = new TabletModeWindowState(
       window, this, snap, animate_bounds_on_attach, entering_tablet_mode);
 }
@@ -490,7 +513,7 @@ void TabletModeWindowManager::ForgetWindow(aura::Window* window,
     // By telling the state object to revert, it will switch back the old
     // State object and destroy itself, calling WindowStateDestroyed().
     it->second->LeaveTabletMode(wm::GetWindowState(it->first), was_in_overview);
-    DCHECK(!base::ContainsKey(window_state_map_, window));
+    DCHECK(!IsTrackingWindow(window));
   }
 }
 

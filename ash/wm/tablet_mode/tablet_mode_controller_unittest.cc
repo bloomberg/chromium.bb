@@ -17,6 +17,7 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
@@ -37,6 +38,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -57,6 +59,9 @@ constexpr float kMeanGravity = TabletModeControllerTestApi::kMeanGravity;
 constexpr char kTabletModeInitiallyDisabled[] = "Touchview_Initially_Disabled";
 constexpr char kTabletModeEnabled[] = "Touchview_Enabled";
 constexpr char kTabletModeDisabled[] = "Touchview_Disabled";
+
+constexpr char kEnterHistogram[] = "Ash.TabletMode.AnimationSmoothness.Enter";
+constexpr char kExitHistogram[] = "Ash.TabletMode.AnimationSmoothness.Exit";
 
 }  // namespace
 
@@ -94,6 +99,7 @@ class TabletModeControllerTest : public AshTestBase {
     AshTestBase::SetUp();
     AccelerometerReader::GetInstance()->RemoveObserver(
         tablet_mode_controller());
+    FpsCounter::SetForceReportZeroAnimationForTest(true);
 
     // Set the first display to be the internal display for the accelerometer
     // screen rotation tests.
@@ -104,6 +110,7 @@ class TabletModeControllerTest : public AshTestBase {
   }
 
   void TearDown() override {
+    FpsCounter::SetForceReportZeroAnimationForTest(false);
     AccelerometerReader::GetInstance()->AddObserver(tablet_mode_controller());
     AshTestBase::TearDown();
   }
@@ -1526,6 +1533,71 @@ TEST_F(TabletModeControllerTest, DoNotObserverInputDeviceChangeDuringSuspend) {
   ws::InputDeviceClientTestApi().SetMouseDevices(
       {ui::InputDevice(3, ui::InputDeviceType::INPUT_DEVICE_USB, "mouse")});
   EXPECT_FALSE(IsTabletModeStarted());
+}
+
+TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsNotLogged) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  base::HistogramTester histogram_tester;
+
+  // Tests that we get no animation smoothness histograms when entering or
+  // exiting tablet mode with no windows.
+  {
+    SCOPED_TRACE("No window");
+    histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
+    histogram_tester.ExpectTotalCount(kExitHistogram, 0);
+    tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    tablet_mode_controller()->EnableTabletModeWindowManager(false);
+    histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
+    histogram_tester.ExpectTotalCount(kExitHistogram, 0);
+  }
+
+  // Test that we get no animation smoothness histograms when entering or
+  // exiting tablet mode with a maximized window as no animation will take
+  // place.
+  auto window = CreateTestWindow(gfx::Rect(200, 200));
+  {
+    SCOPED_TRACE("Window is maximized");
+    wm::GetWindowState(window.get())->Maximize();
+    tablet_mode_controller()->EnableTabletModeWindowManager(true);
+    window->layer()->GetAnimator()->StopAnimating();
+    histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
+    histogram_tester.ExpectTotalCount(kExitHistogram, 0);
+    tablet_mode_controller()->EnableTabletModeWindowManager(false);
+    window->layer()->GetAnimator()->StopAnimating();
+    histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
+    histogram_tester.ExpectTotalCount(kExitHistogram, 0);
+  }
+}
+
+TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsLogged) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  base::HistogramTester histogram_tester;
+
+  // We have two windows, which both animated into tablet mode, but we only
+  // observe and record smoothness for one.
+  auto window = CreateTestWindow(gfx::Rect(200, 200));
+  auto window2 = CreateTestWindow(gfx::Rect(300, 200));
+
+  // Tests that we get one enter and one exit animation smoothess histogram when
+  // entering and exiting tablet mode with a normal window.
+  tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_TRUE(window->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
+  window->layer()->GetAnimator()->StopAnimating();
+  window2->layer()->GetAnimator()->StopAnimating();
+  histogram_tester.ExpectTotalCount(kEnterHistogram, 1);
+  histogram_tester.ExpectTotalCount(kExitHistogram, 0);
+
+  // Only |window2| animates on exit because on animation start |window| is
+  // fully covered by |window2|.
+  tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
+  EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
+  window2->layer()->GetAnimator()->StopAnimating();
+  histogram_tester.ExpectTotalCount(kEnterHistogram, 1);
+  histogram_tester.ExpectTotalCount(kExitHistogram, 1);
 }
 
 }  // namespace ash

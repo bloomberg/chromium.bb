@@ -17,9 +17,11 @@
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/window_state_observer.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/display_observer.h"
 
 namespace aura {
@@ -44,10 +46,21 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
                                            public display::DisplayObserver,
                                            public OverviewObserver,
                                            public ShellObserver,
-                                           public SessionObserver {
+                                           public SessionObserver,
+                                           public wm::WindowStateObserver {
  public:
-  // This should only be deleted by the creator (ash::Shell).
+  // This should only be deleted by the creator (TabletModeController).
   ~TabletModeWindowManager() override;
+
+  void Init();
+
+  // Stops tracking windows and returns them to their clamshell mode state. Work
+  // is done here instead of the destructor because TabletModeController may
+  // still need this object alive during shutdown.
+  void Shutdown();
+
+  // True if |window| is in |window_state_map_|.
+  bool IsTrackingWindow(aura::Window* window);
 
   // Returns the number of maximized & tracked windows by this manager.
   int GetNumberOfManagedWindows();
@@ -86,13 +99,17 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
 
+  // wm::WindowStateObserver:
+  void OnPostWindowStateTypeChange(wm::WindowState* window_state,
+                                   mojom::WindowStateType old_type) override;
+
   // Tell all managing windows not to handle WM events.
   void SetIgnoreWmEventsForExit();
 
  protected:
   friend class TabletModeController;
 
-  // The object should only be created by the ash::Shell.
+  // The object should only be created by TabletModeController.
   TabletModeWindowManager();
 
  private:

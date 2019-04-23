@@ -431,7 +431,7 @@ TEST_F(TabletModeWindowManagerTest, CreateWindows) {
 // Test that a window which got created while the tablet mode window manager
 // is active gets restored to a usable (non tiny) size upon switching back.
 TEST_F(TabletModeWindowManagerTest,
-       CreateWindowInMaximizedModeRestoresToUsefulSize) {
+       CreateWindowInTabletModeRestoresToUsefulSize) {
   TabletModeWindowManager* manager = CreateTabletModeWindowManager();
   ASSERT_TRUE(manager);
   EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
@@ -1191,7 +1191,7 @@ TEST_F(TabletModeWindowManagerTest, AllowFullScreenMode) {
 // Check that the full screen mode will stay active when the tablet mode is
 // ended.
 TEST_F(TabletModeWindowManagerTest,
-       FullScreenModeRemainsWhenCreatedInMaximizedMode) {
+       FullScreenModeRemainsWhenCreatedInTabletMode) {
   CreateTabletModeWindowManager();
 
   gfx::Rect rect(20, 140, 100, 100);
