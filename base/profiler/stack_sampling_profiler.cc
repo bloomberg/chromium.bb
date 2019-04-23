@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/profiler/stack_sampler.h"
+#include "base/profiler/unwinder.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread.h"
@@ -127,7 +128,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
 
   // Adds an auxiliary unwinder to be used for the collection, to handle
   // additional, non-native-code unwind scenarios.
-  void AddAuxUnwinder(int collection_id, Unwinder* unwinder);
+  void AddAuxUnwinder(int collection_id, std::unique_ptr<Unwinder> unwinder);
 
   // Removes an active collection based on its collection id, forcing it to run
   // its callback if any data has been collected. This can be called externally
@@ -178,7 +179,8 @@ class StackSamplingProfiler::SamplingThread : public Thread {
 
   // These methods are tasks that get posted to the internal message queue.
   void AddCollectionTask(std::unique_ptr<CollectionContext> collection);
-  void AddAuxUnwinderTask(int collection_id, Unwinder* unwinder);
+  void AddAuxUnwinderTask(int collection_id,
+                          std::unique_ptr<Unwinder> unwinder);
   void RemoveCollectionTask(int collection_id);
   void RecordSampleTask(int collection_id);
   void ShutdownTask(int add_events);
@@ -329,8 +331,9 @@ int StackSamplingProfiler::SamplingThread::Add(
   return collection_id;
 }
 
-void StackSamplingProfiler::SamplingThread::AddAuxUnwinder(int collection_id,
-                                                           Unwinder* unwinder) {
+void StackSamplingProfiler::SamplingThread::AddAuxUnwinder(
+    int collection_id,
+    std::unique_ptr<Unwinder> unwinder) {
   ThreadExecutionState state;
   scoped_refptr<SingleThreadTaskRunner> task_runner = GetTaskRunner(&state);
   if (state != RUNNING)
@@ -338,7 +341,7 @@ void StackSamplingProfiler::SamplingThread::AddAuxUnwinder(int collection_id,
   DCHECK(task_runner);
   task_runner->PostTask(
       FROM_HERE, BindOnce(&SamplingThread::AddAuxUnwinderTask, Unretained(this),
-                          collection_id, unwinder));
+                          collection_id, std::move(unwinder)));
 }
 
 void StackSamplingProfiler::SamplingThread::Remove(int collection_id) {
@@ -477,14 +480,14 @@ void StackSamplingProfiler::SamplingThread::ScheduleShutdownIfIdle() {
 
 void StackSamplingProfiler::SamplingThread::AddAuxUnwinderTask(
     int collection_id,
-    Unwinder* unwinder) {
+    std::unique_ptr<Unwinder> unwinder) {
   DCHECK_EQ(GetThreadId(), PlatformThread::CurrentId());
 
   auto loc = active_collections_.find(collection_id);
   if (loc == active_collections_.end())
     return;
 
-  loc->second->native_sampler->AddAuxUnwinder(unwinder);
+  loc->second->native_sampler->AddAuxUnwinder(std::move(unwinder));
 }
 
 void StackSamplingProfiler::SamplingThread::AddCollectionTask(
@@ -744,7 +747,7 @@ void StackSamplingProfiler::Stop() {
   profiler_id_ = kNullProfilerId;
 }
 
-void StackSamplingProfiler::AddAuxUnwinder(Unwinder* unwinder) {
+void StackSamplingProfiler::AddAuxUnwinder(std::unique_ptr<Unwinder> unwinder) {
   SamplingThread::GetInstance()->AddAuxUnwinder(profiler_id_,
                                                 std::move(unwinder));
 }

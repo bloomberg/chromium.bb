@@ -85,8 +85,8 @@ StackSamplerImpl::StackSamplerImpl(
 
 StackSamplerImpl::~StackSamplerImpl() = default;
 
-void StackSamplerImpl::AddAuxUnwinder(Unwinder* unwinder) {
-  aux_unwinder_ = unwinder;
+void StackSamplerImpl::AddAuxUnwinder(std::unique_ptr<Unwinder> unwinder) {
+  aux_unwinder_ = std::move(unwinder);
   aux_unwinder_->AddNonNativeModules(module_cache_);
 }
 
@@ -106,7 +106,7 @@ void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
 
   profile_builder->OnSampleCompleted(
       WalkStack(module_cache_, &thread_context, stack_top,
-                native_unwinder_.get(), aux_unwinder_));
+                native_unwinder_.get(), aux_unwinder_.get()));
 }
 // static
 

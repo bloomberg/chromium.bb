@@ -67,10 +67,12 @@ class ThreadProfiler {
   void SetMainThreadTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  // Adds an auxiliary unwinder to supply to the StackSamplingProfiler to handle
-  // additional, non-native-code unwind scenarios. Currently used to support
+  // Sets a callback to create auxiliary unwinders, for handling additional,
+  // non-native-code unwind scenarios. Currently used to support
   // unwinding V8 JavaScript frames.
-  void AddAuxUnwinder(std::unique_ptr<base::Unwinder> unwinder);
+  void SetAuxUnwinderFactory(
+      const base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>&
+          factory);
 
   // Creates a profiler for a child thread and immediately starts it. This
   // should be called from a task posted on the child thread immediately after
@@ -124,7 +126,8 @@ class ThreadProfiler {
 
   std::unique_ptr<WorkIdRecorder> work_id_recorder_;
 
-  std::unique_ptr<base::Unwinder> aux_unwinder_;
+  base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>
+      aux_unwinder_factory_;
 
   std::unique_ptr<base::StackSamplingProfiler> startup_profiler_;
 

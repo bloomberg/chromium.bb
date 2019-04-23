@@ -158,14 +158,15 @@ void ThreadProfiler::SetMainThreadTaskRunner(
   ScheduleNextPeriodicCollection();
 }
 
-void ThreadProfiler::AddAuxUnwinder(std::unique_ptr<base::Unwinder> unwinder) {
+void ThreadProfiler::SetAuxUnwinderFactory(
+    const base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>& factory) {
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
-  aux_unwinder_ = std::move(unwinder);
-  startup_profiler_->AddAuxUnwinder(aux_unwinder_.get());
+  aux_unwinder_factory_ = factory;
+  startup_profiler_->AddAuxUnwinder(aux_unwinder_factory_.Run());
   if (periodic_profiler_)
-    periodic_profiler_->AddAuxUnwinder(aux_unwinder_.get());
+    periodic_profiler_->AddAuxUnwinder(aux_unwinder_factory_.Run());
 }
 
 // static
@@ -288,8 +289,8 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
           base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
                          owning_thread_task_runner_,
                          weak_factory_.GetWeakPtr())));
-  if (aux_unwinder_)
-    periodic_profiler_->AddAuxUnwinder(aux_unwinder_.get());
+  if (aux_unwinder_factory_)
+    periodic_profiler_->AddAuxUnwinder(aux_unwinder_factory_.Run());
 
   periodic_profiler_->Start();
 }

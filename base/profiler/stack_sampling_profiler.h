@@ -113,7 +113,7 @@ class BASE_EXPORT StackSamplingProfiler {
 
   // Adds an auxiliary unwinder to handle additional, non-native-code unwind
   // scenarios.
-  void AddAuxUnwinder(Unwinder* unwinder);
+  void AddAuxUnwinder(std::unique_ptr<Unwinder> unwinder);
 
   // Test peer class. These functions are purely for internal testing of
   // StackSamplingProfiler; DO NOT USE within tests outside of this directory.

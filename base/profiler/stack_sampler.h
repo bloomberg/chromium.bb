@@ -64,7 +64,7 @@ class BASE_EXPORT StackSampler {
 
   // Adds an auxiliary unwinder to handle additional, non-native-code unwind
   // scenarios.
-  virtual void AddAuxUnwinder(Unwinder* unwinder) = 0;
+  virtual void AddAuxUnwinder(std::unique_ptr<Unwinder> unwinder) = 0;
 
   // Records a set of frames and returns them.
   virtual void RecordStackFrames(StackBuffer* stackbuffer,
