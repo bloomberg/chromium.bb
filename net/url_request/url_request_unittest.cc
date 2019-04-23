@@ -3153,6 +3153,8 @@ TEST_F(URLRequestTest, SameSiteCookies) {
                            "/set-cookie?StrictSameSiteCookie=1;SameSite=Strict&"
                            "LaxSameSiteCookie=1;SameSite=Lax"),
         DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(test_server.GetURL(kHost, "/"));
+    req->set_initiator(url::Origin::Create(test_server.GetURL(kHost, "/")));
     req->Start();
     d.RunUntilComplete();
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
@@ -3273,6 +3275,121 @@ TEST_F(URLRequestTest, SameSiteCookies) {
     EXPECT_EQ(std::string::npos, d.data_received().find("LaxSameSiteCookie=1"));
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+}
+
+TEST_F(URLRequestTest, SettingSameSiteCookies) {
+  HttpTestServer test_server;
+  ASSERT_TRUE(test_server.Start());
+
+  TestNetworkDelegate network_delegate;
+  default_context().set_network_delegate(&network_delegate);
+
+  const std::string kHost = "example.test";
+  const std::string kSubHost = "subdomain.example.test";
+  const std::string kCrossHost = "cross-origin.test";
+
+  int expected_cookies = 0;
+
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+        test_server.GetURL(kHost,
+                           "/set-cookie?StrictSameSiteCookie=1;SameSite=Strict&"
+                           "LaxSameSiteCookie=1;SameSite=Lax"),
+        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(test_server.GetURL(kHost, "/"));
+    req->set_initiator(url::Origin::Create(test_server.GetURL(kHost, "/")));
+
+    // 'SameSite' cookies are settable from strict same-site contexts
+    // (same-origin site_for_cookies, same-origin initiator), so this request
+    // should result in two cookies being created.
+    expected_cookies += 2;
+
+    req->Start();
+    d.RunUntilComplete();
+    EXPECT_EQ(expected_cookies, network_delegate.set_cookie_count());
+  }
+
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+        test_server.GetURL(kHost,
+                           "/set-cookie?StrictSameSiteCookie=1;SameSite=Strict&"
+                           "LaxSameSiteCookie=1;SameSite=Lax"),
+        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(test_server.GetURL(kHost, "/"));
+    req->set_initiator(
+        url::Origin::Create(test_server.GetURL(kCrossHost, "/")));
+
+    // 'SameSite' cookies are settable from lax same-site contexts (same-origin
+    // site_for_cookies, cross-site initiator), so this request should result in
+    // two cookies being created.
+    expected_cookies += 2;
+
+    req->Start();
+    d.RunUntilComplete();
+    EXPECT_EQ(expected_cookies, network_delegate.set_cookie_count());
+  }
+
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+        test_server.GetURL(kHost,
+                           "/set-cookie?StrictSameSiteCookie=1;SameSite=Strict&"
+                           "LaxSameSiteCookie=1;SameSite=Lax"),
+        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(test_server.GetURL(kSubHost, "/"));
+    req->set_initiator(
+        url::Origin::Create(test_server.GetURL(kCrossHost, "/")));
+
+    // 'SameSite' cookies are settable from lax same-site contexts (same-site
+    // site_for_cookies, cross-site initiator), so this request should result in
+    // two cookies being created.
+    expected_cookies += 2;
+
+    req->Start();
+    d.RunUntilComplete();
+    EXPECT_EQ(expected_cookies, network_delegate.set_cookie_count());
+  }
+
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+        test_server.GetURL(kHost,
+                           "/set-cookie?StrictSameSiteCookie=1;SameSite=Strict&"
+                           "LaxSameSiteCookie=1;SameSite=Lax"),
+        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(test_server.GetURL(kSubHost, "/"));
+
+    // 'SameSite' cookies are settable from strict same-site contexts (same-site
+    // site_for_cookies, no initiator), so this request should result in two
+    // cookies being created.
+    expected_cookies += 2;
+
+    req->Start();
+    d.RunUntilComplete();
+    EXPECT_EQ(expected_cookies, network_delegate.set_cookie_count());
+  }
+
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(default_context().CreateRequest(
+        test_server.GetURL(kHost,
+                           "/set-cookie?StrictSameSiteCookie=1;SameSite=Strict&"
+                           "LaxSameSiteCookie=1;SameSite=Lax"),
+        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(test_server.GetURL(kCrossHost, "/"));
+    req->set_initiator(
+        url::Origin::Create(test_server.GetURL(kCrossHost, "/")));
+
+    // 'SameSite' cookies are not settable from cross-site contexts, so this
+    // should not result in any new cookies being created.
+    expected_cookies += 0;
+
+    req->Start();
+    d.RunUntilComplete();
+    EXPECT_EQ(expected_cookies, network_delegate.set_cookie_count());
   }
 }
 

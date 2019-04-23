@@ -211,13 +211,6 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
     return nullptr;
   }
 
-  if (options.exclude_httponly() && parsed_cookie.IsHttpOnly()) {
-    DVLOG(net::cookie_util::kVlogSetCookies)
-        << "Create() is not creating a httponly cookie";
-    *status = CookieInclusionStatus::EXCLUDE_HTTP_ONLY;
-    return nullptr;
-  }
-
   std::string cookie_domain;
   if (!GetCookieDomain(url, parsed_cookie, &cookie_domain)) {
     DVLOG(net::cookie_util::kVlogSetCookies)
@@ -264,8 +257,12 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
       creation_time, cookie_expires, creation_time, parsed_cookie.IsSecure(),
       parsed_cookie.IsHttpOnly(), parsed_cookie.SameSite(),
       parsed_cookie.Priority()));
+
+  *status = cc->IsSetPermittedInContext(options);
+  if (*status != CookieInclusionStatus::INCLUDE)
+    return nullptr;
+
   DCHECK(cc->IsCanonical());
-  *status = CookieInclusionStatus::INCLUDE;
   return cc;
 }
 
@@ -425,6 +422,50 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
   }
 
   return CanonicalCookie::CookieInclusionStatus::INCLUDE;
+}
+
+CanonicalCookie::CookieInclusionStatus CanonicalCookie::IsSetPermittedInContext(
+    const CookieOptions& options) const {
+  if (options.exclude_httponly() && IsHttpOnly()) {
+    DVLOG(net::cookie_util::kVlogSetCookies)
+        << "HttpOnly cookie not permitted in script context.";
+    return CookieInclusionStatus::EXCLUDE_HTTP_ONLY;
+  }
+
+  switch (GetEffectiveSameSite()) {
+    case CookieSameSite::STRICT_MODE:
+      // This intentionally checks for `< SAME_SITE_LAX`, as we allow
+      // `SameSite=Strict` cookies to be set for top-level navigations that
+      // qualify for receipt of `SameSite=Lax` cookies.
+      if (options.same_site_cookie_context() <
+          CookieOptions::SameSiteCookieContext::SAME_SITE_LAX) {
+        DVLOG(net::cookie_util::kVlogSetCookies)
+            << "Trying to set a `SameSite=Strict` cookie from a "
+               "cross-site URL.";
+        return CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT;
+      }
+      break;
+    case CookieSameSite::LAX_MODE:
+      if (options.same_site_cookie_context() <
+          CookieOptions::SameSiteCookieContext::SAME_SITE_LAX) {
+        if (SameSite() == CookieSameSite::UNSPECIFIED) {
+          DVLOG(net::cookie_util::kVlogSetCookies)
+              << "Cookies with no known SameSite attribute being treated as "
+                 "lax; attempt to set from a cross-site URL denied.";
+          return CanonicalCookie::CookieInclusionStatus::
+              EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX;
+        } else {
+          DVLOG(net::cookie_util::kVlogSetCookies)
+              << "Trying to set a `SameSite=Lax` cookie from a cross-site URL.";
+          return CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX;
+        }
+      }
+      break;
+    default:
+      break;
+  }
+
+  return CookieInclusionStatus::INCLUDE;
 }
 
 std::string CanonicalCookie::DebugString() const {

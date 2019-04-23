@@ -3224,6 +3224,34 @@ TEST_F(CookieMonsterTest, DeleteCookieWithInheritedTimestamps) {
   EXPECT_EQ(1U, delete_callback.result());
 }
 
+TEST_F(CookieMonsterTest, NoSmuggling) {
+  GURL url("http://www.example.com");
+  std::string cookie_line = "foo=bar; SameSite=Lax";
+
+  CookieMonster cm(nullptr, nullptr);
+  CookieOptions env_same_site;
+  env_same_site.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
+
+  CookieOptions env_cross_site;
+  env_cross_site.set_same_site_cookie_context(
+      CookieOptions::SameSiteCookieContext::CROSS_SITE);
+
+  // Cookie can be created successfully, since environment permits it.
+  auto cookie = CanonicalCookie::Create(url, cookie_line, base::Time::Now(),
+                                        env_same_site);
+  ASSERT_TRUE(cookie != nullptr);
+
+  // ... but the environment is re-checked on set, so if it's different, this
+  // may be rejected then.
+  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
+  cm.SetCanonicalCookieAsync(std::move(cookie), "http", env_cross_site,
+                             callback.MakeCallback());
+  callback.WaitUntilDone();
+  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX,
+            callback.result());
+}
+
 class CookieMonsterNotificationTest : public CookieMonsterTest {
  public:
   CookieMonsterNotificationTest()

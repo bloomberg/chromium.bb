@@ -122,6 +122,8 @@ class SynchronousCookieManager {
     net::CanonicalCookie::CookieInclusionStatus result_out =
         net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR;
     net::CookieOptions options;
+    options.set_same_site_cookie_context(
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
     if (modify_http_only)
       options.set_include_httponly();
     cookie_service_->SetCanonicalCookie(
@@ -143,6 +145,8 @@ class SynchronousCookieManager {
       bool modify_http_only) {
     base::RunLoop run_loop;
     net::CookieOptions options;
+    options.set_same_site_cookie_context(
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
     if (modify_http_only)
       options.set_include_httponly();
     net::CanonicalCookie::CookieInclusionStatus result_out =
@@ -228,8 +232,11 @@ class CookieManagerTest : public testing::Test {
     net::ResultSavingCookieCallback<net::CanonicalCookie::CookieInclusionStatus>
         callback;
     net::CookieOptions options;
+    options.set_same_site_cookie_context(
+        net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
     if (can_modify_httponly)
       options.set_include_httponly();
+
     cookie_monster_->SetCanonicalCookieAsync(
         std::make_unique<net::CanonicalCookie>(cookie),
         std::move(source_scheme), options,

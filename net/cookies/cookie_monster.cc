@@ -1194,10 +1194,12 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
     return;
   }
 
-  if (cc->IsHttpOnly() && options.exclude_httponly()) {
-    MaybeRunCookieCallback(
-        std::move(callback),
-        CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY);
+  CanonicalCookie::CookieInclusionStatus status =
+      cc->IsSetPermittedInContext(options);
+  if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+    // IsSetPermittedInContext already logs if it rejects a cookie, so
+    // CookieMonster doesn't need to.
+    MaybeRunCookieCallback(std::move(callback), status);
     return;
   }
 
@@ -1219,7 +1221,7 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
 
   base::Time creation_date_to_inherit;
 
-  CanonicalCookie::CookieInclusionStatus status = DeleteAnyEquivalentCookie(
+  status = DeleteAnyEquivalentCookie(
       key, *cc, secure_source, options.exclude_httponly(), already_expired,
       &creation_date_to_inherit);
 

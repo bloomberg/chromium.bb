@@ -197,6 +197,14 @@ class NET_EXPORT CanonicalCookie {
       const GURL& url,
       const CookieOptions& options) const;
 
+  // Returns if the cookie with given attributes can be set in context described
+  // by |options|, and if no, describes why.
+  // WARNING: this does not cover checking whether secure cookies are set in
+  // a secure schema, since whether the schema is secure isn't part of
+  // |options|.
+  CookieInclusionStatus IsSetPermittedInContext(
+      const CookieOptions& options) const;
+
   std::string DebugString() const;
 
   static std::string CanonPathWithString(const GURL& url,
