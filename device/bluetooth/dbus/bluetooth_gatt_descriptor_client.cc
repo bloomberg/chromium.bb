@@ -89,11 +89,11 @@ class BluetoothGattDescriptorClientImpl
   // BluetoothGattDescriptorClientImpl override.
   void ReadValue(const dbus::ObjectPath& object_path,
                  const ValueCallback& callback,
-                 const ErrorCallback& error_callback) override {
+                 ErrorCallback error_callback) override {
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
     if (!object_proxy) {
-      error_callback.Run(kUnknownDescriptorError, "");
+      std::move(error_callback).Run(kUnknownDescriptorError, "");
       return;
     }
 
@@ -111,18 +111,19 @@ class BluetoothGattDescriptorClientImpl
         base::BindOnce(&BluetoothGattDescriptorClientImpl::OnValueSuccess,
                        weak_ptr_factory_.GetWeakPtr(), callback),
         base::BindOnce(&BluetoothGattDescriptorClientImpl::OnError,
-                       weak_ptr_factory_.GetWeakPtr(), error_callback));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(error_callback)));
   }
 
   // BluetoothGattDescriptorClientImpl override.
   void WriteValue(const dbus::ObjectPath& object_path,
                   const std::vector<uint8_t>& value,
                   const base::Closure& callback,
-                  const ErrorCallback& error_callback) override {
+                  ErrorCallback error_callback) override {
     dbus::ObjectProxy* object_proxy =
         object_manager_->GetObjectProxy(object_path);
     if (!object_proxy) {
-      error_callback.Run(kUnknownDescriptorError, "");
+      std::move(error_callback).Run(kUnknownDescriptorError, "");
       return;
     }
 
@@ -141,7 +142,8 @@ class BluetoothGattDescriptorClientImpl
         base::BindOnce(&BluetoothGattDescriptorClientImpl::OnSuccess,
                        weak_ptr_factory_.GetWeakPtr(), callback),
         base::BindOnce(&BluetoothGattDescriptorClientImpl::OnError,
-                       weak_ptr_factory_.GetWeakPtr(), error_callback));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(error_callback)));
   }
 
   // dbus::ObjectManager::Interface override.
@@ -223,8 +225,7 @@ class BluetoothGattDescriptorClientImpl
   }
 
   // Called when a response for a failed method call is received.
-  void OnError(const ErrorCallback& error_callback,
-               dbus::ErrorResponse* response) {
+  void OnError(ErrorCallback error_callback, dbus::ErrorResponse* response) {
     // Error response has optional error message argument.
     std::string error_name;
     std::string error_message;
@@ -236,7 +237,7 @@ class BluetoothGattDescriptorClientImpl
       error_name = kNoResponseError;
       error_message = "";
     }
-    error_callback.Run(error_name, error_message);
+    std::move(error_callback).Run(error_name, error_message);
   }
 
   dbus::ObjectManager* object_manager_;

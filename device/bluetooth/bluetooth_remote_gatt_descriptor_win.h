@@ -39,10 +39,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorWin
   BluetoothRemoteGattCharacteristic::Permissions GetPermissions()
       const override;
   void ReadRemoteDescriptor(const ValueCallback& callback,
-                            const ErrorCallback& error_callback) override;
+                            ErrorCallback error_callback) override;
   void WriteRemoteDescriptor(const std::vector<uint8_t>& new_value,
                              const base::Closure& callback,
-                             const ErrorCallback& error_callback) override;
+                             ErrorCallback error_callback) override;
 
   uint16_t GetAttributeHandle() const;
   PBTH_LE_GATT_DESCRIPTOR GetWinDescriptorInfo() const {

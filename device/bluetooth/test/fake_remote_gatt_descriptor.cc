@@ -65,27 +65,27 @@ FakeRemoteGattDescriptor::GetCharacteristic() const {
 
 void FakeRemoteGattDescriptor::ReadRemoteDescriptor(
     const ValueCallback& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&FakeRemoteGattDescriptor::DispatchReadResponse,
-                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+      FROM_HERE, base::BindOnce(&FakeRemoteGattDescriptor::DispatchReadResponse,
+                                weak_ptr_factory_.GetWeakPtr(), callback,
+                                std::move(error_callback)));
 }
 
 void FakeRemoteGattDescriptor::WriteRemoteDescriptor(
     const std::vector<uint8_t>& value,
     const base::RepeatingClosure& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindRepeating(&FakeRemoteGattDescriptor::DispatchWriteResponse,
-                          weak_ptr_factory_.GetWeakPtr(), callback,
-                          error_callback, value));
+      base::BindOnce(&FakeRemoteGattDescriptor::DispatchWriteResponse,
+                     weak_ptr_factory_.GetWeakPtr(), callback,
+                     std::move(error_callback), value));
 }
 
 void FakeRemoteGattDescriptor::DispatchReadResponse(
     const ValueCallback& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   DCHECK(next_read_response_);
   uint16_t gatt_code = next_read_response_->gatt_code();
   base::Optional<std::vector<uint8_t>> value = next_read_response_->value();
@@ -98,14 +98,15 @@ void FakeRemoteGattDescriptor::DispatchReadResponse(
     return;
   } else if (gatt_code == mojom::kGATTInvalidHandle) {
     DCHECK(!value);
-    error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(error_callback)
+        .Run(device::BluetoothGattService::GATT_ERROR_FAILED);
     return;
   }
 }
 
 void FakeRemoteGattDescriptor::DispatchWriteResponse(
     const base::RepeatingClosure& callback,
-    const ErrorCallback& error_callback,
+    ErrorCallback error_callback,
     const std::vector<uint8_t>& value) {
   DCHECK(next_write_response_);
   uint16_t gatt_code = next_write_response_.value();
@@ -117,7 +118,8 @@ void FakeRemoteGattDescriptor::DispatchWriteResponse(
       callback.Run();
       break;
     case mojom::kGATTInvalidHandle:
-      error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
+      std::move(error_callback)
+          .Run(device::BluetoothGattService::GATT_ERROR_FAILED);
       break;
     default:
       NOTREACHED();

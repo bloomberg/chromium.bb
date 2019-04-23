@@ -38,10 +38,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorMac
   const std::vector<uint8_t>& GetValue() const override;
   BluetoothRemoteGattCharacteristic* GetCharacteristic() const override;
   void ReadRemoteDescriptor(const ValueCallback& callback,
-                            const ErrorCallback& error_callback) override;
+                            ErrorCallback error_callback) override;
   void WriteRemoteDescriptor(const std::vector<uint8_t>& new_value,
                              const base::Closure& callback,
-                             const ErrorCallback& error_callback) override;
+                             ErrorCallback error_callback) override;
 
  private:
   friend class BluetoothLowEnergyDeviceMac;

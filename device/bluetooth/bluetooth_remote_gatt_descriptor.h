@@ -49,7 +49,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptor
   // value. |callback| is called to return the read value on success and
   // |error_callback| is called for failures.
   virtual void ReadRemoteDescriptor(const ValueCallback& callback,
-                                    const ErrorCallback& error_callback) = 0;
+                                    ErrorCallback error_callback) = 0;
 
   // Sends a write request to a remote characteristic descriptor, to modify the
   // value of the descriptor with the new value |new_value|. |callback| is
@@ -58,7 +58,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptor
   // hosted.
   virtual void WriteRemoteDescriptor(const std::vector<uint8_t>& new_value,
                                      const base::Closure& callback,
-                                     const ErrorCallback& error_callback) = 0;
+                                     ErrorCallback error_callback) = 0;
 
  protected:
   BluetoothRemoteGattDescriptor();

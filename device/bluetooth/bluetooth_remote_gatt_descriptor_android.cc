@@ -81,11 +81,11 @@ BluetoothRemoteGattDescriptorAndroid::GetPermissions() const {
 
 void BluetoothRemoteGattDescriptorAndroid::ReadRemoteDescriptor(
     const ValueCallback& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   if (read_pending_ || write_pending_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
@@ -94,24 +94,24 @@ void BluetoothRemoteGattDescriptorAndroid::ReadRemoteDescriptor(
           AttachCurrentThread(), j_descriptor_)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattServiceAndroid::GATT_ERROR_FAILED));
     return;
   }
 
   read_pending_ = true;
   read_callback_ = callback;
-  read_error_callback_ = error_callback;
+  read_error_callback_ = std::move(error_callback);
 }
 
 void BluetoothRemoteGattDescriptorAndroid::WriteRemoteDescriptor(
     const std::vector<uint8_t>& new_value,
     const base::Closure& callback,
-    const ErrorCallback& error_callback) {
+    ErrorCallback error_callback) {
   if (read_pending_ || write_pending_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
@@ -121,14 +121,14 @@ void BluetoothRemoteGattDescriptorAndroid::WriteRemoteDescriptor(
           env, j_descriptor_, base::android::ToJavaByteArray(env, new_value))) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(error_callback,
+        base::BindOnce(std::move(error_callback),
                        BluetoothRemoteGattServiceAndroid::GATT_ERROR_FAILED));
     return;
   }
 
   write_pending_ = true;
   write_callback_ = callback;
-  write_error_callback_ = error_callback;
+  write_error_callback_ = std::move(error_callback);
 }
 
 void BluetoothRemoteGattDescriptorAndroid::OnRead(
@@ -140,9 +140,8 @@ void BluetoothRemoteGattDescriptorAndroid::OnRead(
 
   // Clear callbacks before calling to avoid reentrancy issues.
   ValueCallback read_callback = read_callback_;
-  ErrorCallback read_error_callback = read_error_callback_;
+  ErrorCallback read_error_callback = std::move(read_error_callback_);
   read_callback_.Reset();
-  read_error_callback_.Reset();
 
   if (status == 0  // android.bluetooth.BluetoothGatt.GATT_SUCCESS
       && !read_callback.is_null()) {
@@ -150,8 +149,8 @@ void BluetoothRemoteGattDescriptorAndroid::OnRead(
     read_callback.Run(value_);
     // TODO(https://crbug.com/584369): Call GattDescriptorValueChanged.
   } else if (!read_error_callback.is_null()) {
-    read_error_callback.Run(
-        BluetoothRemoteGattServiceAndroid::GetGattErrorCode(status));
+    std::move(read_error_callback)
+        .Run(BluetoothRemoteGattServiceAndroid::GetGattErrorCode(status));
   }
 }
 
@@ -163,17 +162,16 @@ void BluetoothRemoteGattDescriptorAndroid::OnWrite(
 
   // Clear callbacks before calling to avoid reentrancy issues.
   base::Closure write_callback = write_callback_;
-  ErrorCallback write_error_callback = write_error_callback_;
+  ErrorCallback write_error_callback = std::move(write_error_callback_);
   write_callback_.Reset();
-  write_error_callback_.Reset();
 
   if (status == 0  // android.bluetooth.BluetoothGatt.GATT_SUCCESS
       && !write_callback.is_null()) {
     write_callback.Run();
     // TODO(https://crbug.com/584369): Call GattDescriptorValueChanged.
   } else if (!write_error_callback.is_null()) {
-    write_error_callback.Run(
-        BluetoothRemoteGattServiceAndroid::GetGattErrorCode(status));
+    std::move(write_error_callback)
+        .Run(BluetoothRemoteGattServiceAndroid::GetGattErrorCode(status));
   }
 }
 

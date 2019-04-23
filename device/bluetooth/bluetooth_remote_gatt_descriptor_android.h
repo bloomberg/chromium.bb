@@ -48,10 +48,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorAndroid
   BluetoothRemoteGattCharacteristic::Permissions GetPermissions()
       const override;
   void ReadRemoteDescriptor(const ValueCallback& callback,
-                            const ErrorCallback& error_callback) override;
+                            ErrorCallback error_callback) override;
   void WriteRemoteDescriptor(const std::vector<uint8_t>& value,
                              const base::Closure& callback,
-                             const ErrorCallback& error_callback) override;
+                             ErrorCallback error_callback) override;
 
   // Called when Read operation completes.
   void OnRead(JNIEnv* env,
