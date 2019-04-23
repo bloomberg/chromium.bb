@@ -16,8 +16,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
-#include "services/video_capture/public/mojom/device.mojom.h"
-#include "services/video_capture/public/mojom/device_factory.mojom.h"
 #include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 #include "services/video_capture/public/mojom/video_source.mojom.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
@@ -33,26 +31,6 @@ namespace content {
 
 namespace {
 
-enum class ServiceApi { kSingleClient, kMultiClient };
-
-struct TestParams {
-  ServiceApi api_to_use;
-  media::VideoCaptureBufferType buffer_type_to_request;
-
-  media::mojom::VideoBufferHandle::Tag GetExpectedBufferHandleTag() const {
-    switch (buffer_type_to_request) {
-      case media::VideoCaptureBufferType::kSharedMemory:
-        return media::mojom::VideoBufferHandle::Tag::SHARED_BUFFER_HANDLE;
-      case media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor:
-        return media::mojom::VideoBufferHandle::Tag::
-            SHARED_MEMORY_VIA_RAW_FILE_DESCRIPTOR;
-      case media::VideoCaptureBufferType::kMailboxHolder:
-        NOTREACHED();
-        return media::mojom::VideoBufferHandle::Tag::SHARED_BUFFER_HANDLE;
-    }
-  }
-};
-
 static const char kVideoCaptureHtmlFile[] = "/media/video_capture_test.html";
 static const char kStartVideoCaptureAndVerify[] =
     "startVideoCaptureAndVerifySize(%d, %d)";
@@ -65,9 +43,7 @@ static const gfx::Size kVideoSize(320, 200);
 // opens the device from clients. One client is the test calling into the
 // video capture service directly. The second client is the Browser, which the
 // test exercises through JavaScript.
-class WebRtcVideoCaptureSharedDeviceBrowserTest
-    : public ContentBrowserTest,
-      public testing::WithParamInterface<TestParams> {
+class WebRtcVideoCaptureSharedDeviceBrowserTest : public ContentBrowserTest {
  public:
   WebRtcVideoCaptureSharedDeviceBrowserTest() : weak_factory_(this) {
     scoped_feature_list_.InitAndEnableFeature(features::kMojoVideoCapture);
@@ -75,27 +51,18 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
 
   ~WebRtcVideoCaptureSharedDeviceBrowserTest() override {}
 
-  void OpenDeviceViaService(base::OnceClosure done_cb) {
+  void OpenDeviceViaService(
+      media::VideoCaptureBufferType buffer_type_to_request,
+      base::OnceClosure done_cb) {
     connector_->BindInterface(video_capture::mojom::kServiceName,
                               &device_factory_provider_);
-    switch (GetParam().api_to_use) {
-      case ServiceApi::kSingleClient:
-        device_factory_provider_->ConnectToDeviceFactory(
-            mojo::MakeRequest(&device_factory_));
-        device_factory_->GetDeviceInfos(base::BindOnce(
-            &WebRtcVideoCaptureSharedDeviceBrowserTest::OnDeviceInfosReceived,
-            weak_factory_.GetWeakPtr(), GetParam().buffer_type_to_request,
-            std::move(done_cb)));
-        break;
-      case ServiceApi::kMultiClient:
-        device_factory_provider_->ConnectToVideoSourceProvider(
-            mojo::MakeRequest(&video_source_provider_));
-        video_source_provider_->GetSourceInfos(base::BindOnce(
-            &WebRtcVideoCaptureSharedDeviceBrowserTest::OnSourceInfosReceived,
-            weak_factory_.GetWeakPtr(), GetParam().buffer_type_to_request,
-            std::move(done_cb)));
-        break;
-    }
+    device_factory_provider_->ConnectToVideoSourceProvider(
+        mojo::MakeRequest(&video_source_provider_));
+
+    video_source_provider_->GetSourceInfos(base::BindOnce(
+        &WebRtcVideoCaptureSharedDeviceBrowserTest::OnSourceInfosReceived,
+        weak_factory_.GetWeakPtr(), buffer_type_to_request,
+        std::move(done_cb)));
   }
 
   void OpenDeviceInRendererAndWaitForPlaying() {
@@ -145,38 +112,6 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   std::unique_ptr<video_capture::MockReceiver> mock_receiver_;
 
  private:
-  void OnDeviceInfosReceived(
-      media::VideoCaptureBufferType buffer_type_to_request,
-      base::OnceClosure done_cb,
-      const std::vector<media::VideoCaptureDeviceInfo>& infos) {
-    ASSERT_FALSE(infos.empty());
-    device_factory_->CreateDevice(
-        infos[0].descriptor.device_id, mojo::MakeRequest(&device_),
-        base::BindOnce(
-            &WebRtcVideoCaptureSharedDeviceBrowserTest::OnCreateDeviceCallback,
-            weak_factory_.GetWeakPtr(), infos, buffer_type_to_request,
-            std::move(done_cb)));
-  }
-
-  void OnCreateDeviceCallback(
-      const std::vector<media::VideoCaptureDeviceInfo>& infos,
-      media::VideoCaptureBufferType buffer_type_to_request,
-      base::OnceClosure done_cb,
-      video_capture::mojom::DeviceAccessResultCode result_code) {
-    ASSERT_EQ(video_capture::mojom::DeviceAccessResultCode::SUCCESS,
-              result_code);
-
-    media::VideoCaptureParams requestable_settings;
-    ASSERT_FALSE(infos[0].supported_formats.empty());
-    requestable_settings.requested_format = infos[0].supported_formats[0];
-    requestable_settings.requested_format.frame_size = kVideoSize;
-    requestable_settings.buffer_type = buffer_type_to_request;
-
-    device_->Start(requestable_settings, std::move(receiver_proxy_));
-
-    std::move(done_cb).Run();
-  }
-
   void OnSourceInfosReceived(
       media::VideoCaptureBufferType buffer_type_to_request,
       base::OnceClosure done_cb,
@@ -213,16 +148,9 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
 
   base::test::ScopedFeatureList scoped_feature_list_;
   video_capture::mojom::DeviceFactoryProviderPtr device_factory_provider_;
-
-  // For single-client API case only
-  video_capture::mojom::DeviceFactoryPtr device_factory_;
-  video_capture::mojom::DevicePtr device_;
-
-  // For multi-client API case only
   video_capture::mojom::VideoSourceProviderPtr video_source_provider_;
   video_capture::mojom::VideoSourcePtr video_source_;
   video_capture::mojom::PushVideoStreamSubscriptionPtr subscription_;
-
   video_capture::mojom::ReceiverPtr receiver_proxy_;
   base::WeakPtrFactory<WebRtcVideoCaptureSharedDeviceBrowserTest> weak_factory_;
 
@@ -232,18 +160,18 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
 // Tests that a single fake video capture device can be opened via JavaScript
 // by the Renderer while it is already in use by a direct client of the
 // video capture service.
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     WebRtcVideoCaptureSharedDeviceBrowserTest,
     ReceiveFrameInRendererWhileDeviceAlreadyInUseViaDirectServiceClient) {
   Initialize();
 
   base::RunLoop receive_frame_from_service_wait_loop;
-  auto expected_buffer_handle_tag = GetParam().GetExpectedBufferHandleTag();
   ON_CALL(*mock_receiver_, DoOnNewBuffer(_, _))
       .WillByDefault(Invoke(
-          [expected_buffer_handle_tag](
-              int32_t, media::mojom::VideoBufferHandlePtr* buffer_handle) {
-            ASSERT_EQ(expected_buffer_handle_tag, (*buffer_handle)->which());
+          [](int32_t, media::mojom::VideoBufferHandlePtr* buffer_handle) {
+            ASSERT_EQ(
+                media::mojom::VideoBufferHandle::Tag::SHARED_BUFFER_HANDLE,
+                (*buffer_handle)->which());
           }));
   EXPECT_CALL(*mock_receiver_, DoOnFrameReadyInBuffer(_, _, _, _))
       .WillOnce(InvokeWithoutArgs([&receive_frame_from_service_wait_loop]() {
@@ -252,7 +180,43 @@ IN_PROC_BROWSER_TEST_P(
       .WillRepeatedly(Return());
 
   base::RunLoop open_device_via_service_run_loop;
-  OpenDeviceViaService(open_device_via_service_run_loop.QuitClosure());
+  OpenDeviceViaService(media::VideoCaptureBufferType::kSharedMemory,
+                       open_device_via_service_run_loop.QuitClosure());
+  open_device_via_service_run_loop.Run();
+
+  OpenDeviceInRendererAndWaitForPlaying();
+
+  receive_frame_from_service_wait_loop.Run();
+}
+
+#if defined(OS_LINUX)
+
+// Tests that a single fake video capture device can be opened via JavaScript
+// by the Renderer while it is already in use by a direct client of the
+// video capture service that requested to get buffers as raw file handles.
+IN_PROC_BROWSER_TEST_F(
+    WebRtcVideoCaptureSharedDeviceBrowserTest,
+    ReceiveFrameInRendererWhileDeviceAlreadyInUseUsingRawFileHandleBuffers) {
+  Initialize();
+
+  base::RunLoop receive_frame_from_service_wait_loop;
+  ON_CALL(*mock_receiver_, DoOnNewBuffer(_, _))
+      .WillByDefault(Invoke(
+          [](int32_t, media::mojom::VideoBufferHandlePtr* buffer_handle) {
+            ASSERT_EQ(media::mojom::VideoBufferHandle::Tag::
+                          SHARED_MEMORY_VIA_RAW_FILE_DESCRIPTOR,
+                      (*buffer_handle)->which());
+          }));
+  EXPECT_CALL(*mock_receiver_, DoOnFrameReadyInBuffer(_, _, _, _))
+      .WillOnce(InvokeWithoutArgs([&receive_frame_from_service_wait_loop]() {
+        receive_frame_from_service_wait_loop.Quit();
+      }))
+      .WillRepeatedly(Return());
+
+  base::RunLoop open_device_via_service_run_loop;
+  OpenDeviceViaService(
+      media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor,
+      open_device_via_service_run_loop.QuitClosure());
   open_device_via_service_run_loop.Run();
 
   OpenDeviceInRendererAndWaitForPlaying();
@@ -261,20 +225,22 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 // Tests that a single fake video capture device can be opened by a direct
-// client of the video capture service while it is already in use via JavaScript
-// by the Renderer.
-IN_PROC_BROWSER_TEST_P(
+// client of the video capture service that requests to get buffers as raw
+// file handles while it is already in use via JavaScript by the Renderer.
+IN_PROC_BROWSER_TEST_F(
     WebRtcVideoCaptureSharedDeviceBrowserTest,
-    ReceiveFrameViaDirectServiceClientWhileDeviceAlreadyInUseViaRenderer) {
+    ReceiveFrameFromServiceViaRawFileHandlesWhileDeviceAlreadyInUseByRenderer) {
   Initialize();
 
+  OpenDeviceInRendererAndWaitForPlaying();
+
   base::RunLoop receive_frame_from_service_wait_loop;
-  auto expected_buffer_handle_tag = GetParam().GetExpectedBufferHandleTag();
   ON_CALL(*mock_receiver_, DoOnNewBuffer(_, _))
       .WillByDefault(Invoke(
-          [expected_buffer_handle_tag](
-              int32_t, media::mojom::VideoBufferHandlePtr* buffer_handle) {
-            ASSERT_EQ(expected_buffer_handle_tag, (*buffer_handle)->which());
+          [](int32_t, media::mojom::VideoBufferHandlePtr* buffer_handle) {
+            ASSERT_EQ(media::mojom::VideoBufferHandle::Tag::
+                          SHARED_MEMORY_VIA_RAW_FILE_DESCRIPTOR,
+                      (*buffer_handle)->which());
           }));
   EXPECT_CALL(*mock_receiver_, DoOnFrameReadyInBuffer(_, _, _, _))
       .WillOnce(InvokeWithoutArgs([&receive_frame_from_service_wait_loop]() {
@@ -282,34 +248,15 @@ IN_PROC_BROWSER_TEST_P(
       }))
       .WillRepeatedly(Return());
 
-  OpenDeviceInRendererAndWaitForPlaying();
-
   base::RunLoop open_device_via_service_run_loop;
-  OpenDeviceViaService(open_device_via_service_run_loop.QuitClosure());
+  OpenDeviceViaService(
+      media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor,
+      open_device_via_service_run_loop.QuitClosure());
   open_device_via_service_run_loop.Run();
 
   receive_frame_from_service_wait_loop.Run();
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    WebRtcVideoCaptureSharedDeviceBrowserTest,
-    ::testing::Values(
-        TestParams{ServiceApi::kSingleClient,
-                   media::VideoCaptureBufferType::kSharedMemory},
-        TestParams {
-          ServiceApi::kMultiClient, media::VideoCaptureBufferType::kSharedMemory
-        }
-#if defined(OS_LINUX)
-        ,
-        TestParams{
-            ServiceApi::kSingleClient,
-            media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor},
-        TestParams {
-          ServiceApi::kMultiClient,
-              media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor
-        }
 #endif  // defined(OS_LINUX)
-        ));
 
 }  // namespace content
