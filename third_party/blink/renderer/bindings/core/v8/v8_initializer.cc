@@ -608,7 +608,6 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
 
   ThreadState::MainThreadState()->RegisterTraceDOMWrappers(
       isolate, V8GCController::TraceDOMWrappers);
-
   InitializeV8Common(isolate);
 
   isolate->SetOOMErrorHandler(ReportOOMErrorInMainThread);
@@ -654,6 +653,8 @@ static void ReportFatalErrorInWorker(const char* location,
 static const int kWorkerMaxStackSize = 500 * 1024;
 
 void V8Initializer::InitializeWorker(v8::Isolate* isolate) {
+  ThreadState::Current()->RegisterTraceDOMWrappers(
+      isolate, V8GCController::TraceDOMWrappers);
   InitializeV8Common(isolate);
 
   isolate->AddMessageListenerWithErrorLevel(
