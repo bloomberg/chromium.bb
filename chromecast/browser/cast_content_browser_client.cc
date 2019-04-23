@@ -265,6 +265,8 @@ media::VideoModeSwitcher* CastContentBrowserClient::GetVideoModeSwitcher() {
   return nullptr;
 }
 
+void CastContentBrowserClient::InitializeURLLoaderThrottleDelegate() {}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 CastContentBrowserClient::GetMediaTaskRunner() {
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)

@@ -588,9 +588,11 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 #endif
 
   // Initializing metrics service and network delegates must happen after cast
-  // service is intialized because CastMetricsServiceClient and
-  // CastNetworkDelegate may use components initialized by cast service.
+  // service is initialized because CastMetricsServiceClient,
+  // CastURLLoaderThrottle and CastNetworkDelegate may use components
+  // initialized by cast service.
   cast_browser_process_->metrics_service_client()->Initialize();
+  cast_content_browser_client_->InitializeURLLoaderThrottleDelegate();
   url_request_context_factory_->InitializeNetworkDelegates();
 
   cast_content_browser_client_->CreateGeneralAudienceBrowsingService();

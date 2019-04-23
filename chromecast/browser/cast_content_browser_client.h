@@ -92,6 +92,8 @@ class CastContentBrowserClient
 
   virtual media::VideoModeSwitcher* GetVideoModeSwitcher();
 
+  virtual void InitializeURLLoaderThrottleDelegate();
+
   // Returns the task runner that must be used for media IO.
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
 
