@@ -6,8 +6,6 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.support.v7.widget.RecyclerView;
 
-import com.google.android.libraries.feed.host.logging.SpinnerType;
-
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -173,7 +171,7 @@ public abstract class SuggestionsMetrics {
      */
     public static class SpinnerDurationTracker {
         private long mTrackingStartTimeMs;
-        private @SpinnerType int mSpinnerType;
+        private @State int mSpinnerType;
 
         private SpinnerDurationTracker() {
             mTrackingStartTimeMs = 0;
@@ -188,16 +186,11 @@ public abstract class SuggestionsMetrics {
 
             if (isTracking()) return;
 
-            if (state == State.INITIAL_LOADING) {
-                mSpinnerType = SpinnerType.INITIAL_LOAD;
-            } else if (state == State.MORE_BUTTON_LOADING) {
-                mSpinnerType = SpinnerType.MORE_BUTTON;
+            if (state == State.INITIAL_LOADING || state == State.MORE_BUTTON_LOADING) {
+                mSpinnerType = state;
             }
             mTrackingStartTimeMs = System.currentTimeMillis();
-
-            RecordHistogram.recordEnumeratedHistogram(
-                    "ContentSuggestions.Feed.FetchPendingSpinner.Shown", mSpinnerType,
-                    SpinnerType.NEXT_VALUE);
+            recordSpinnerShowUMA(state);
         }
 
         /**
@@ -225,12 +218,36 @@ public abstract class SuggestionsMetrics {
             long duration = System.currentTimeMillis() - mTrackingStartTimeMs;
             RecordHistogram.recordTimesHistogram(baseName, duration);
 
-            if (mSpinnerType == SpinnerType.INITIAL_LOAD) {
+            if (mSpinnerType == State.INITIAL_LOADING) {
                 RecordHistogram.recordTimesHistogram(baseName + ".InitialLoad", duration);
-            } else if (mSpinnerType == SpinnerType.MORE_BUTTON) {
+            } else if (mSpinnerType == State.MORE_BUTTON_LOADING) {
                 RecordHistogram.recordTimesHistogram(baseName + ".MoreButton", duration);
             }
             mTrackingStartTimeMs = 0;
+        }
+
+        private void recordSpinnerShowUMA(@State int state) {
+            int feedSpinnerType;
+
+            // Here is convert the to {@link SpinnerType} in /third_party/feed/src/main/java/com/
+            // google/android/libraries/feed/host/logging/SpinnerType.java.
+            // {@link SpinnerType} cannot be directly used here since feed libraries are not always
+            // compiled.
+            switch (state) {
+                case State.INITIAL_LOADING:
+                    feedSpinnerType = /*SpinnerType.INITIAL_LOAD=*/1;
+                    break;
+                case State.MORE_BUTTON_LOADING:
+                    feedSpinnerType = /*SpinnerType.MORE_BUTTON=*/3;
+                    break;
+                default:
+                    // This is not a spinner type, so do not record it.
+                    return;
+            }
+
+            RecordHistogram.recordEnumeratedHistogram(
+                    "ContentSuggestions.Feed.FetchPendingSpinner.Shown", feedSpinnerType,
+                    /*SpinnerType.NEXT_VALUE=*/6);
         }
     }
 }
