@@ -58,7 +58,9 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
   DrawingRecorder recorder(context, layout_html_canvas_, paint_info.phase);
   ScopedInterpolationQuality interpolation_quality_scope(
       context, InterpolationQualityForCanvas(layout_html_canvas_.StyleRef()));
-  canvas->Paint(context, paint_rect);
+  canvas->Paint(
+      context, paint_rect,
+      paint_info.GetGlobalPaintFlags() == kGlobalPaintFlattenCompositingLayers);
 }
 
 }  // namespace blink
