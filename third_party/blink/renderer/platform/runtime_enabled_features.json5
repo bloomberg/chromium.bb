@@ -52,7 +52,7 @@
     // It is NOT supported. As a workaround, you can either specify the same
     // |origin_trial_feature_name| for the feature or add the OT feature to
     // the |implied_by| list.
-    // TODO(yashard): Add support for origin trial features in 'depends_on' list
+    // TODO(https://crbug.com/954679): Add support for origin trial features in 'depends_on' list
     depends_on: {
       default: [],
       valid_type: "list",
@@ -1594,7 +1594,12 @@
     },
     {
       name: "WebXRHitTest",
+      // depends_on: ["WebXR"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
       status: "experimental"
+    },
+    {
+      name: "WebXRPlaneDetection",
+      // depends_on: ["WebXR"],  // TODO(https://crbug.com/954679): uncomment once bug is fixed
     },
     {
       name: "WorkerNosniffBlock",

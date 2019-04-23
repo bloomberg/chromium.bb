@@ -28,6 +28,10 @@ blink_modules_sources("xr") {
     "xr_input_source_event.h",
     "xr_layer.cc",
     "xr_layer.h",
+    "xr_plane.cc",
+    "xr_plane.h",
+    "xr_plane_detection_state.cc",
+    "xr_plane_detection_state.h",
     "xr_pose.cc",
     "xr_pose.h",
     "xr_presentation_context.cc",
@@ -65,6 +69,10 @@ blink_modules_sources("xr") {
     "xr_viewport.h",
     "xr_webgl_layer.cc",
     "xr_webgl_layer.h",
+    "xr_world_information.cc",
+    "xr_world_information.h",
+    "xr_world_tracking_state.cc",
+    "xr_world_tracking_state.h",
   ]
 
   deps = [

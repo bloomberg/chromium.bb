@@ -22,6 +22,7 @@ class XRReferenceSpace;
 class XRSession;
 class XRSpace;
 class XRViewerPose;
+class XRWorldInformation;
 
 class XRFrame final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -33,6 +34,7 @@ class XRFrame final : public ScriptWrappable {
 
   XRViewerPose* getViewerPose(XRReferenceSpace*, ExceptionState&) const;
   XRPose* getPose(XRSpace*, XRSpace*, ExceptionState&);
+  XRWorldInformation* worldInformation() const { return nullptr; }
 
   void SetBasePoseMatrix(const TransformationMatrix&);
   std::unique_ptr<TransformationMatrix> CloneBasePoseMatrix() const;

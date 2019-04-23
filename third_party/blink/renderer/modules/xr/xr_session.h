@@ -38,6 +38,8 @@ class XRRenderState;
 class XRRenderStateInit;
 class XRView;
 class XRViewerSpace;
+class XRWorldTrackingState;
+class XRWorldTrackingStateInit;
 
 class XRSession final : public EventTargetWithInlineData,
                         public device::mojom::blink::XRSessionClient,
@@ -74,6 +76,7 @@ class XRSession final : public EventTargetWithInlineData,
   bool environmentIntegration() const { return environment_integration_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
   XRRenderState* renderState() const { return render_state_; }
+  XRWorldTrackingState* worldTrackingState() { return nullptr; }
   XRSpace* viewerSpace() const;
 
   bool immersive() const;
@@ -88,6 +91,7 @@ class XRSession final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(select, kSelect)
 
   void updateRenderState(XRRenderStateInit*, ExceptionState&);
+  void updateWorldTrackingState(XRWorldTrackingStateInit*) {}
   ScriptPromise requestReferenceSpace(ScriptState*,
                                       const XRReferenceSpaceOptions*);
 
