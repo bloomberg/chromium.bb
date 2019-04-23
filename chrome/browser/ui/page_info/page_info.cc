@@ -897,11 +897,6 @@ void PageInfo::PresentSitePermissions() {
     ChooserContextBase* context = ui_info.get_context(profile_);
     const GURL origin = site_url_.GetOrigin();
 
-    // Hide individual object permissions because when the chooser is blocked
-    // previously granted device permissions are also ignored.
-    if (!context->CanRequestObjectPermission(origin, origin))
-      continue;
-
     auto chosen_objects = context->GetGrantedObjects(origin, origin);
     for (std::unique_ptr<ChooserContextBase::Object>& object : chosen_objects) {
       chosen_object_info_list.push_back(

@@ -73,14 +73,15 @@ std::string SerialChooserContext::GetObjectName(const base::Value& object) {
 }
 
 std::vector<std::unique_ptr<ChooserContextBase::Object>>
-SerialChooserContext::GetGrantedObjects(const GURL& requesting_origin,
-                                        const GURL& embedding_origin) {
+SerialChooserContext::GetGrantedObjects(const GURL& requesting_origin_url,
+                                        const GURL& embedding_origin_url) {
+  auto requesting_origin = url::Origin::Create(requesting_origin_url);
+  auto embedding_origin = url::Origin::Create(embedding_origin_url);
   if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
     return {};
 
   auto origin_it = ephemeral_ports_.find(
-      std::make_pair(url::Origin::Create(requesting_origin),
-                     url::Origin::Create(embedding_origin)));
+      std::make_pair(requesting_origin, embedding_origin));
   if (origin_it == ephemeral_ports_.end())
     return {};
   const std::set<base::UnguessableToken> ports = origin_it->second;
@@ -92,7 +93,7 @@ SerialChooserContext::GetGrantedObjects(const GURL& requesting_origin,
       continue;
 
     objects.push_back(std::make_unique<Object>(
-        requesting_origin, embedding_origin, it->second.Clone(),
+        requesting_origin_url, embedding_origin_url, it->second.Clone(),
         content_settings::SettingSource::SETTING_SOURCE_USER, is_incognito_));
   }
 
@@ -103,8 +104,8 @@ std::vector<std::unique_ptr<ChooserContextBase::Object>>
 SerialChooserContext::GetAllGrantedObjects() {
   std::vector<std::unique_ptr<Object>> objects;
   for (const auto& map_entry : ephemeral_ports_) {
-    GURL requesting_origin = map_entry.first.first.GetURL();
-    GURL embedding_origin = map_entry.first.second.GetURL();
+    const url::Origin& requesting_origin = map_entry.first.first;
+    const url::Origin& embedding_origin = map_entry.first.second;
 
     if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
       continue;
@@ -115,7 +116,8 @@ SerialChooserContext::GetAllGrantedObjects() {
         continue;
 
       objects.push_back(std::make_unique<Object>(
-          requesting_origin, embedding_origin, it->second.Clone(),
+          requesting_origin.GetURL(), embedding_origin.GetURL(),
+          it->second.Clone(),
           content_settings::SettingSource::SETTING_SOURCE_USER, is_incognito_));
     }
   }
@@ -154,8 +156,7 @@ bool SerialChooserContext::HasPortPermission(
     const url::Origin& requesting_origin,
     const url::Origin& embedding_origin,
     const device::mojom::SerialPortInfo& port) {
-  if (!CanRequestObjectPermission(requesting_origin.GetURL(),
-                                  embedding_origin.GetURL())) {
+  if (!CanRequestObjectPermission(requesting_origin, embedding_origin)) {
     return false;
   }
 

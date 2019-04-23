@@ -8,6 +8,7 @@
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "url/origin.h"
 
 const char kObjectListKey[] = "chosen-objects";
 
@@ -54,40 +55,42 @@ void ChooserContextBase::RemoveObserver(PermissionObserver* observer) {
 }
 
 bool ChooserContextBase::CanRequestObjectPermission(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin) {
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin) {
   ContentSetting content_setting =
       host_content_settings_map_->GetContentSetting(
-          requesting_origin, embedding_origin, guard_content_settings_type_,
-          std::string());
+          requesting_origin.GetURL(), embedding_origin.GetURL(),
+          guard_content_settings_type_, std::string());
   DCHECK(content_setting == CONTENT_SETTING_ASK ||
          content_setting == CONTENT_SETTING_BLOCK);
   return content_setting == CONTENT_SETTING_ASK;
 }
 
 std::vector<std::unique_ptr<ChooserContextBase::Object>>
-ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin,
-                                      const GURL& embedding_origin) {
-  DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
-  DCHECK_EQ(embedding_origin, embedding_origin.GetOrigin());
-  std::vector<std::unique_ptr<Object>> results;
+ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin_url,
+                                      const GURL& embedding_origin_url) {
+  const auto requesting_origin = url::Origin::Create(requesting_origin_url);
+  DCHECK_EQ(requesting_origin_url, requesting_origin.GetURL());
+  const auto embedding_origin = url::Origin::Create(embedding_origin_url);
+  DCHECK_EQ(embedding_origin_url, embedding_origin.GetURL());
 
   if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
-    return results;
+    return {};
 
   content_settings::SettingInfo info;
   base::Value setting =
-      GetWebsiteSetting(requesting_origin, embedding_origin, &info);
+      GetWebsiteSetting(requesting_origin_url, embedding_origin_url, &info);
 
   base::Value* objects = setting.FindListKey(kObjectListKey);
   if (!objects)
-    return results;
+    return {};
 
+  std::vector<std::unique_ptr<Object>> results;
   for (auto& object : objects->GetList()) {
     if (IsValidObject(object)) {
       results.push_back(std::make_unique<Object>(
-          requesting_origin, embedding_origin, std::move(object), info.source,
-          host_content_settings_map_->is_incognito()));
+          requesting_origin_url, embedding_origin_url, std::move(object),
+          info.source, host_content_settings_map_->is_incognito()));
     }
   }
   return results;
@@ -101,17 +104,19 @@ ChooserContextBase::GetAllGrantedObjects() {
 
   std::vector<std::unique_ptr<Object>> results;
   for (const ContentSettingPatternSource& content_setting : content_settings) {
-    GURL requesting_origin(content_setting.primary_pattern.ToString());
-    GURL embedding_origin(content_setting.secondary_pattern.ToString());
-    if (!requesting_origin.is_valid() || !embedding_origin.is_valid())
+    GURL requesting_origin_url(content_setting.primary_pattern.ToString());
+    GURL embedding_origin_url(content_setting.secondary_pattern.ToString());
+    if (!requesting_origin_url.is_valid() || !embedding_origin_url.is_valid())
       continue;
 
+    const auto requesting_origin = url::Origin::Create(requesting_origin_url);
+    const auto embedding_origin = url::Origin::Create(embedding_origin_url);
     if (!CanRequestObjectPermission(requesting_origin, embedding_origin))
       continue;
 
     content_settings::SettingInfo info;
     base::Value setting =
-        GetWebsiteSetting(requesting_origin, embedding_origin, &info);
+        GetWebsiteSetting(requesting_origin_url, embedding_origin_url, &info);
     base::Value* objects = setting.FindListKey(kObjectListKey);
     if (!objects)
       continue;
@@ -122,8 +127,8 @@ ChooserContextBase::GetAllGrantedObjects() {
       }
 
       results.push_back(std::make_unique<Object>(
-          requesting_origin, embedding_origin, std::move(object), info.source,
-          content_setting.incognito));
+          requesting_origin_url, embedding_origin_url, std::move(object),
+          info.source, content_setting.incognito));
     }
   }
 

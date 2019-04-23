@@ -6388,24 +6388,24 @@ IN_PROC_BROWSER_TEST_F(AutoplayPolicyTest, AutoplayAllowedGlobalAndURL) {
 #endif  // !defined(OS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbDefault) {
-  const GURL kTestUrl("https://foo.com:443");
+  const auto kTestOrigin = url::Origin::Create(GURL("https://foo.com:443"));
 
   // Expect the default permission value to be 'ask'.
   auto* context = UsbChooserContextFactory::GetForProfile(browser()->profile());
-  EXPECT_TRUE(context->CanRequestObjectPermission(kTestUrl, kTestUrl));
+  EXPECT_TRUE(context->CanRequestObjectPermission(kTestOrigin, kTestOrigin));
 
   // Update policy to change the default permission value to 'block'.
   PolicyMap policies;
   SetPolicy(&policies, key::kDefaultWebUsbGuardSetting,
             std::make_unique<base::Value>(2));
   UpdateProviderPolicy(policies);
-  EXPECT_FALSE(context->CanRequestObjectPermission(kTestUrl, kTestUrl));
+  EXPECT_FALSE(context->CanRequestObjectPermission(kTestOrigin, kTestOrigin));
 
   // Update policy to change the default permission value to 'ask'.
   SetPolicy(&policies, key::kDefaultWebUsbGuardSetting,
             std::make_unique<base::Value>(3));
   UpdateProviderPolicy(policies);
-  EXPECT_TRUE(context->CanRequestObjectPermission(kTestUrl, kTestUrl));
+  EXPECT_TRUE(context->CanRequestObjectPermission(kTestOrigin, kTestOrigin));
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {

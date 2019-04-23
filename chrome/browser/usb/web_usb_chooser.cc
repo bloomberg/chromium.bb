@@ -28,10 +28,9 @@ void WebUsbChooser::GetPermission(
     blink::mojom::WebUsbService::GetPermissionCallback callback) {
   auto* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host_);
-  GURL requesting_origin =
-      render_frame_host_->GetLastCommittedURL().GetOrigin();
-  GURL embedding_origin =
-      web_contents->GetMainFrame()->GetLastCommittedURL().GetOrigin();
+  url::Origin requesting_origin = render_frame_host_->GetLastCommittedOrigin();
+  url::Origin embedding_origin =
+      web_contents->GetMainFrame()->GetLastCommittedOrigin();
   auto* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   auto* context = UsbChooserContextFactory::GetForProfile(profile);

@@ -47,8 +47,8 @@ bool ChromeSerialDelegate::CanRequestPortPermission(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   auto* chooser_context = SerialChooserContextFactory::GetForProfile(profile);
   return chooser_context->CanRequestObjectPermission(
-      frame->GetLastCommittedURL().GetOrigin(),
-      web_contents->GetMainFrame()->GetLastCommittedURL().GetOrigin());
+      frame->GetLastCommittedOrigin(),
+      web_contents->GetMainFrame()->GetLastCommittedOrigin());
 }
 
 bool ChromeSerialDelegate::HasPortPermission(
