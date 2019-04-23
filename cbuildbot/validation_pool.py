@@ -397,6 +397,11 @@ class ValidationPool(object):
       logging.info('Queried changes: %s', cros_patch.GetChangesAsString(
           changes))
 
+      # Start by filtering to only CrOS changes, so that we don't try to update
+      # Chromium browser CLs.
+      changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
+          changes, git.ManifestCheckout.Cached(self.build_root))
+
       # Tell users to publish drafts/privates before marking them commit ready.
       # Do this before we filter out via the ready function below.
       for change in changes:
@@ -416,8 +421,6 @@ class ValidationPool(object):
         logging.info('Ready changes: %s', cros_patch.GetChangesAsString(
             changes))
 
-      changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
-          changes, git.ManifestCheckout.Cached(self.build_root))
       self.candidates.extend(changes)
       self.non_manifest_changes.extend(non_manifest_changes)
 
