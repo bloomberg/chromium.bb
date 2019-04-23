@@ -629,6 +629,8 @@ void AssistantManagerServiceImpl::OnShowNotification(
 void AssistantManagerServiceImpl::OnOpenAndroidApp(
     const action::AndroidAppInfo& app_info,
     const action::InteractionInfo& interaction) {
+  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnOpenAndroidApp, app_info,
+                     interaction);
   mojom::AndroidAppInfoPtr app_info_ptr = mojom::AndroidAppInfo::New();
   app_info_ptr->package_name = app_info.package_name;
   service_->device_actions()->OpenAndroidApp(
@@ -640,6 +642,8 @@ void AssistantManagerServiceImpl::OnOpenAndroidApp(
 void AssistantManagerServiceImpl::OnVerifyAndroidApp(
     const std::vector<action::AndroidAppInfo>& apps_info,
     const action::InteractionInfo& interaction) {
+  ENSURE_MAIN_THREAD(&AssistantManagerServiceImpl::OnVerifyAndroidApp,
+                     apps_info, interaction);
   std::vector<mojom::AndroidAppInfoPtr> apps_info_list;
   for (auto& app_info : apps_info) {
     mojom::AndroidAppInfoPtr app_info_ptr = mojom::AndroidAppInfo::New();
