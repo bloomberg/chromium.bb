@@ -216,26 +216,10 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   builder.Set("textColorRgba",
               internal::RGBAColorToArray(isolate, theme_info.text_color));
 
-  // Theme color for links as an array with the RGBA components in order.
-  // Value is always valid.
-  builder.Set("linkColorRgba",
-              internal::RGBAColorToArray(isolate, theme_info.link_color));
-
   // Theme color for light text as an array with the RGBA components in order.
   // Value is always valid.
   builder.Set("textColorLightRgba",
               internal::RGBAColorToArray(isolate, theme_info.text_color_light));
-
-  // Theme color for header as an array with the RGBA components in order.
-  // Value is always valid.
-  builder.Set("headerColorRgba",
-              internal::RGBAColorToArray(isolate, theme_info.header_color));
-
-  // Theme color for section border as an array with the RGBA components in
-  // order. Value is always valid.
-  builder.Set(
-      "sectionBorderColorRgba",
-      internal::RGBAColorToArray(isolate, theme_info.section_border_color));
 
   // The theme alternate logo value indicates a white logo when TRUE and a
   // colorful one when FALSE.

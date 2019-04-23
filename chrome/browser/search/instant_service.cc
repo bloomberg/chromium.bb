@@ -532,8 +532,6 @@ bool InstantService::IsCustomLinksEnabled() {
 
 namespace {
 
-const int kSectionBorderAlphaTransparency = 80;
-
 // Converts SkColor to RGBAColor
 RGBAColor SkColorToRGBAColor(const SkColor& sKColor) {
   RGBAColor color;
@@ -563,25 +561,13 @@ void InstantService::BuildThemeInfo() {
   SkColor background_color =
       theme_provider.GetColor(ThemeProperties::COLOR_NTP_BACKGROUND);
   SkColor text_color = theme_provider.GetColor(ThemeProperties::COLOR_NTP_TEXT);
-  SkColor link_color = theme_provider.GetColor(ThemeProperties::COLOR_NTP_LINK);
   SkColor text_color_light =
       theme_provider.GetColor(ThemeProperties::COLOR_NTP_TEXT_LIGHT);
-  SkColor header_color =
-      theme_provider.GetColor(ThemeProperties::COLOR_NTP_HEADER);
-  // Generate section border color from the header color.
-  SkColor section_border_color =
-      SkColorSetARGB(kSectionBorderAlphaTransparency,
-                     SkColorGetR(header_color),
-                     SkColorGetG(header_color),
-                     SkColorGetB(header_color));
 
   // Set colors.
   theme_info_->background_color = SkColorToRGBAColor(background_color);
   theme_info_->text_color = SkColorToRGBAColor(text_color);
-  theme_info_->link_color = SkColorToRGBAColor(link_color);
   theme_info_->text_color_light = SkColorToRGBAColor(text_color_light);
-  theme_info_->header_color = SkColorToRGBAColor(header_color);
-  theme_info_->section_border_color = SkColorToRGBAColor(section_border_color);
 
   int logo_alternate =
       theme_provider.GetDisplayProperty(ThemeProperties::NTP_LOGO_ALTERNATE);
