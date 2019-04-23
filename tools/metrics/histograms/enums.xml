@@ -40068,6 +40068,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="Unknown"/>
 </enum>
 
+<enum name="NetworkCellularUsage">
+  <int value="0" label="ConnectAndOnlyNetwork"/>
+  <int value="1" label="ConnectWithOtherNetwork"/>
+  <int value="2" label="NotConnected"/>
+</enum>
+
 <enum name="NetworkCellularUsageRequestStatus">
   <summary>
     Status code that we received in response to a cellular usage API request.
