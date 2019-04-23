@@ -4,4 +4,3 @@ robliao@chromium.org
 
 # TEAM: scheduler-dev@chromium.org
 # COMPONENT: Internals>ThreadPool
-# TODO(gab): Rename component to ThreadPool
