@@ -512,18 +512,6 @@ void PersonalDataManager::SyncStarted(syncer::ModelType model_type) {
 }
 
 void PersonalDataManager::OnStateChanged(syncer::SyncService* sync_service) {
-  // TODO(mastiz,jkrcal): Once AUTOFILL_WALLET is migrated to USS, it shouldn't
-  // be necessary anymore to implement SyncServiceObserver; instead the
-  // notification should flow through the payments sync bridge.
-  DCHECK_EQ(sync_service_, sync_service);
-  syncer::UploadState upload_state = syncer::GetUploadToGoogleState(
-      sync_service_, syncer::ModelType::AUTOFILL_WALLET_DATA);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Autofill.ResetFullServerCards.SyncServiceStatusOnStateChanged",
-      upload_state);
-  if (upload_state == syncer::UploadState::NOT_ACTIVE) {
-    ResetFullServerCards();
-  }
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableAccountWalletStorage)) {
     // Use the ephemeral account storage when the user didn't enable the sync
@@ -1324,11 +1312,7 @@ bool PersonalDataManager::ShouldSuggestServerCards() const {
   }
 
   // Server cards should be suggested if the sync service is active.
-  // We check for persistent auth errors, because we don't want to offer server
-  // cards when the user is in the "sync paused" state.
-  return sync_service_->GetActiveDataTypes().Has(
-             syncer::AUTOFILL_WALLET_DATA) &&
-         !sync_service_->GetAuthError().IsPersistentError();
+  return sync_service_->GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA);
 }
 
 std::string PersonalDataManager::CountryCodeForCurrentTimezone() const {
