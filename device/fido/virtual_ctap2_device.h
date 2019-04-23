@@ -56,6 +56,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // with an error if an allowList or an excludeList contains more than one
     // credential ID.
     bool reject_large_allow_and_exclude_lists = false;
+    // reject_silent_authenticator_requests causes the authenticator to return
+    // an error if a up=false assertion request is received.
+    bool reject_silent_authentication_requests = false;
   };
 
   VirtualCtap2Device();

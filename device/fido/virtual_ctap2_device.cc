@@ -707,6 +707,11 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetAssertion(
   std::vector<std::pair<base::span<const uint8_t>, RegistrationData*>>
       found_registrations;
 
+  if (!request.user_presence_required() &&
+      config_.reject_silent_authentication_requests) {
+    return CtapDeviceResponseCode::kCtap2ErrUnsupportedOption;
+  }
+
   if (request.allow_list()) {
     if (config_.reject_large_allow_and_exclude_lists &&
         request.allow_list()->size() > 1) {

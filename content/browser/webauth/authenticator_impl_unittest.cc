@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/compiler_specific.h"
 #include "base/json/json_parser.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
@@ -72,6 +73,8 @@ using blink::mojom::AuthenticatorSelectionCriteria;
 using blink::mojom::AuthenticatorSelectionCriteriaPtr;
 using blink::mojom::AuthenticatorStatus;
 using blink::mojom::AuthenticatorTransport;
+using blink::mojom::CableAuthentication;
+using blink::mojom::CableAuthenticationPtr;
 using blink::mojom::GetAssertionAuthenticatorResponsePtr;
 using blink::mojom::MakeCredentialAuthenticatorResponsePtr;
 using blink::mojom::PublicKeyCredentialCreationOptions;
@@ -323,6 +326,18 @@ GetTestPublicKeyCredentialRequestOptions() {
   return options;
 }
 
+std::vector<CableAuthenticationPtr> GetTestCableExtension() {
+  auto cable = CableAuthentication::New();
+  cable->version = 1;
+  cable->client_eid.assign(16, 0x01);
+  cable->authenticator_eid.assign(16, 0x02);
+  cable->session_pre_key.assign(32, 0x03);
+
+  std::vector<CableAuthenticationPtr> ret;
+  ret.emplace_back(std::move(cable));
+  return ret;
+}
+
 }  // namespace
 
 class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
@@ -436,10 +451,17 @@ class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
     scoped_feature_list_->InitAndDisableFeature(feature);
   }
 
-  void SetUpMockBluetooth() {
+  // SetUpMockBluetooth returns a |unique_ptr| that must be held by the caller
+  // as the testing overrides disappear when it's destroyed.
+  std::unique_ptr<device::BluetoothAdapterFactory::GlobalValuesForTesting>
+  SetUpMockBluetooth() WARN_UNUSED_RESULT {
     mock_adapter_ = base::MakeRefCounted<
         ::testing::NiceMock<device::MockBluetoothAdapter>>();
     device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
+    auto bluetooth_adapter_factory_overrides =
+        device::BluetoothAdapterFactory::Get().InitGlobalValuesForTesting();
+    bluetooth_adapter_factory_overrides->SetLESupported(true);
+    return bluetooth_adapter_factory_overrides;
   }
 
  protected:
@@ -827,7 +849,7 @@ TEST_F(AuthenticatorImplTest, CryptotokenUsbOnly) {
   url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
   auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
   SetTransports(device::GetAllTransportProtocols());
-  SetUpMockBluetooth();
+  auto bluetooth_values = SetUpMockBluetooth();
 
   for (const bool is_cryptotoken_request : {false, true}) {
     // caBLE and platform discoveries cannot be instantiated through
@@ -1070,6 +1092,56 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabled) {
           device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
 }
 #endif
+
+TEST_F(AuthenticatorImplTest, NoSilentAuthenticationForCable) {
+  // https://crbug.com/954355
+  auto bluetooth_values = SetUpMockBluetooth();
+  EnableFeature(features::kWebAuthCable);
+
+  TestServiceManagerContext service_manager_context;
+  SimulateNavigation(GURL(kTestOrigin1));
+
+  for (bool is_cable_device : {false, true}) {
+    device::test::ScopedVirtualFidoDevice scoped_virtual_device;
+    device::VirtualCtap2Device::Config config;
+    config.reject_silent_authentication_requests = true;
+    scoped_virtual_device.SetCtap2Config(config);
+
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->allow_credentials = GetTestCredentials(/*num_credentials=*/2);
+    options->cable_authentication_data = GetTestCableExtension();
+
+    if (is_cable_device) {
+      scoped_virtual_device.SetTransport(
+          device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
+      for (auto& cred : options->allow_credentials) {
+        cred->transports.clear();
+        cred->transports.push_back(AuthenticatorTransport::CABLE);
+      }
+    }
+
+    ASSERT_TRUE(scoped_virtual_device.mutable_state()->InjectRegistration(
+        options->allow_credentials[0]->id, kTestRelyingPartyId));
+
+    TestGetAssertionCallback callback_receiver;
+    AuthenticatorPtr authenticator = ConnectToAuthenticator();
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+
+    if (is_cable_device) {
+      EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+    } else {
+      // If a caBLE device is not simulated then silent requests should be used.
+      // The virtual device will return an error because
+      // |reject_silent_authentication_requests| is true and then it'll
+      // immediately resolve the touch request.
+      EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+                callback_receiver.status());
+    }
+  }
+}
 
 TEST_F(AuthenticatorImplTest, TestGetAssertionU2fDeviceBackwardsCompatibility) {
   SimulateNavigation(GURL(kTestOrigin1));
@@ -2269,13 +2341,10 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
 TEST_F(AuthenticatorImplRequestDelegateTest,
        TestRequestDelegateObservesFidoRequestHandler) {
   EnableFeature(features::kWebAuthBle);
-  SetUpMockBluetooth();
+  auto bluetooth_values = SetUpMockBluetooth();
 
   EXPECT_CALL(*mock_adapter_, IsPresent())
       .WillRepeatedly(::testing::Return(true));
-  auto bluetooth_adapter_factory_overrides =
-      device::BluetoothAdapterFactory::Get().InitGlobalValuesForTesting();
-  bluetooth_adapter_factory_overrides->SetLESupported(true);
 
   device::test::ScopedFakeFidoDiscoveryFactory discovery_factory;
   auto* fake_ble_discovery = discovery_factory.ForgeNextBleDiscovery();
