@@ -1,0 +1,116 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/buildflag_header.gni")
+import("//build/config/features.gni")
+import("//build/config/jumbo.gni")
+
+jumbo_static_library("base") {
+  sources = [
+    "bind_to_task_runner.h",
+    "cancelation_observer.cc",
+    "cancelation_observer.h",
+    "cancelation_signal.cc",
+    "cancelation_signal.h",
+    "cryptographer.cc",
+    "cryptographer.h",
+    "data_type_histogram.cc",
+    "data_type_histogram.h",
+    "encryptor.h",
+    "enum_set.h",
+    "extensions_activity.cc",
+    "extensions_activity.h",
+    "get_session_name.cc",
+    "get_session_name.h",
+    "get_session_name_ios.h",
+    "get_session_name_ios.mm",
+    "get_session_name_linux.cc",
+    "get_session_name_linux.h",
+    "get_session_name_mac.h",
+    "get_session_name_mac.mm",
+    "get_session_name_win.cc",
+    "get_session_name_win.h",
+    "hash_util.cc",
+    "hash_util.h",
+    "immutable.h",
+    "invalidation_adapter.cc",
+    "invalidation_adapter.h",
+    "invalidation_helper.cc",
+    "invalidation_helper.h",
+    "invalidation_interface.cc",
+    "invalidation_interface.h",
+    "logging.cc",
+    "logging.h",
+    "model_type.cc",
+    "model_type.h",
+    "nigori.cc",
+    "nigori.h",
+    "node_ordinal.cc",
+    "node_ordinal.h",
+    "ordinal.h",
+    "passphrase_enums.cc",
+    "passphrase_enums.h",
+    "pref_names.cc",
+    "pref_names.h",
+    "progress_marker_map.cc",
+    "progress_marker_map.h",
+    "proto_value_ptr.h",
+    "report_unrecoverable_error.cc",
+    "report_unrecoverable_error.h",
+    "stop_source.h",
+    "storage_option.h",
+    "sync_base_switches.cc",
+    "sync_base_switches.h",
+    "sync_prefs.cc",
+    "sync_prefs.h",
+    "sync_stop_metadata_fate.cc",
+    "sync_stop_metadata_fate.h",
+    "syncer_error.cc",
+    "syncer_error.h",
+    "system_encryptor.cc",
+    "system_encryptor.h",
+    "time.cc",
+    "time.h",
+    "unique_position.cc",
+    "unique_position.h",
+    "unrecoverable_error_handler.h",
+    "unrecoverable_error_info.cc",
+    "unrecoverable_error_info.h",
+    "user_selectable_type.cc",
+    "user_selectable_type.h",
+    "weak_handle.cc",
+    "weak_handle.h",
+  ]
+
+  configs += [ "//build/config:precompiled_headers" ]
+
+  public_deps = [
+    "//base",
+    "//components/invalidation/public",
+    "//components/sync/protocol",
+  ]
+  deps = [
+    "//base:i18n",
+    "//components/os_crypt",
+    "//components/pref_registry",
+    "//components/prefs",
+    "//components/reading_list/features:reading_list_buildflags",
+    "//components/version_info",
+    "//crypto",
+    "//net",
+    "//third_party/zlib",
+  ]
+
+  if (is_mac) {
+    libs = [
+      "CoreFoundation.framework",
+      "SystemConfiguration.framework",  # Required by get_session_name_mac.mm.
+    ]
+  }
+
+  if (is_chromeos) {
+    # Required by get_session_name.cc on Chrome OS.
+    deps += [ "//chromeos/constants" ]
+  }
+}
