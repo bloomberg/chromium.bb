@@ -87,6 +87,17 @@ An OverlayRequest for the alert can be created using:
     OverlayRequest::CreateWithConfig<AlertConfig>(
         "alert title", "message text");
 
+A callback can be added to the request to use the response info:
+
+    OverlayCallback callback =
+        base::BindOnce(base::RetainBlock(^(OverlayResponse* response) {
+      if (!response)
+        return;
+      AlertInfo* info = response->GetInfo<AlertInfo>();
+      /* Handle button tap at info->tapped\_button\_index() */
+    }));
+    request->set_callback(std::move(callback));
+
 Manager clients can then supply this request to the OverlayManager for
 scheduling over the web content area:
 

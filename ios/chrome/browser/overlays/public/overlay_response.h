@@ -13,7 +13,6 @@
 // UI.
 class OverlayResponse {
  public:
-  OverlayResponse() = default;
   virtual ~OverlayResponse() = default;
 
   // Creates an OverlayResponse with an OverlayUserData of type InfoType.
@@ -39,7 +38,9 @@ class OverlayResponse {
     return InfoType::FromUserData(data());
   }
 
- private:
+ protected:
+  OverlayResponse() = default;
+
   // Creates an OverlayResponse with no info attached to it.
   static std::unique_ptr<OverlayResponse> Create();
 

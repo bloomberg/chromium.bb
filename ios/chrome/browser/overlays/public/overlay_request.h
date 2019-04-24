@@ -7,14 +7,20 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/supports_user_data.h"
 
 class OverlayResponse;
 
+// Callback for OverlayRequests.  If an overlay requires a completion block to
+// be executed after its UI is dismissed, OverlayManager clients can provide a
+// callback that uses the OverlayResponse provided to the request.  |response|
+// may be null if no response has been provided.
+typedef base::OnceCallback<void(OverlayResponse* response)> OverlayCallback;
+
 // Model object used to track overlays requested for OverlayManager.
 class OverlayRequest {
  public:
-  OverlayRequest() = default;
   virtual ~OverlayRequest() = default;
 
   // Creates an OverlayRequest configured with an OverlayUserData of type
@@ -48,7 +54,14 @@ class OverlayRequest {
   // UI resulting from this request.
   virtual OverlayResponse* response() const = 0;
 
- private:
+  // Setter for the callback.  Provided callbacks are guaranteed to be executed,
+  // either upon dismissal of the request's corresponding overlay UI or upon
+  // cancellation of the request.
+  virtual void set_callback(OverlayCallback callback) = 0;
+
+ protected:
+  OverlayRequest() = default;
+
   // Creates an unconfigured OverlayRequest.
   static std::unique_ptr<OverlayRequest> Create();
 

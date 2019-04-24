@@ -16,15 +16,18 @@ class OverlayRequestImpl : public OverlayRequest,
   OverlayRequestImpl();
   ~OverlayRequestImpl() override;
 
- private:
   // OverlayRequest:
   void set_response(std::unique_ptr<OverlayResponse> response) override;
   OverlayResponse* response() const override;
+  void set_callback(OverlayCallback callback) override;
   base::SupportsUserData* data() override;
 
+ private:
   // The response containing the user interaction information for the overlay
   // resulting from this response.
   std::unique_ptr<OverlayResponse> response_;
+  // The callback to be executed upon dismissal of the overlay.
+  OverlayCallback callback_;
 };
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_OVERLAY_REQUEST_IMPL_H_
