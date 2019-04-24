@@ -130,6 +130,13 @@ void WorkerOrWorkletScriptController::DisposeContextIfNeeded() {
                                      script_state_->GetContext());
   }
 
+  {
+    ScriptState::Scope scope(script_state_);
+    // This detaches v8::MicrotaskQueue pointer from v8::Context, so that we can
+    // destroy EventLoop safely.
+    script_state_->GetContext()->DetachGlobal();
+  }
+
   script_state_->DisposePerContextData();
   script_state_->DissociateContext();
 }
