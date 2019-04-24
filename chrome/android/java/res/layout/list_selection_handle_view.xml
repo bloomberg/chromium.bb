@@ -26,7 +26,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="center"
         android:background="@null"
-        android:src="@drawable/download_circular_selector_transparent"
+        android:src="@drawable/circle_white"
         android:visibility="gone"
         app:tint="@null"
         tools:ignore="ContentDescription"/>
