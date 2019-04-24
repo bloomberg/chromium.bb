@@ -1749,12 +1749,16 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
                 &params->content_device_transform);
 
   // saveLayer automatically respects the clip when it is restored, and
-  // automatically reads beyond the clip for its backdrop filtered content.
+  // automatically reads beyond the clip for any pixel-moving filtered content.
   // However, since Chromium does not want image-filtered content (ex. blurs) to
   // be clipped to the visible_rect of the RPDQ, configure the clip to be the
   // expanded bounds that encloses the entire filtered content.
-  SkRect bounds = gfx::RectToSkRect(rpdq_params.filter_bounds);
-  current_canvas_->clipRect(bounds, paint.isAntiAlias());
+  //
+  // We could have instead passed the unadjusted visible_rect as the bounds
+  // pointer to the SaveLayerRec below, but that would not properly account for
+  // the backdrop_filter_bounds that needs to also be filtered.
+  current_canvas_->clipRect(gfx::RectToSkRect(rpdq_params.filter_bounds),
+                            paint.isAntiAlias());
 
   // Add the image filter to the restoration paint.
   if (rpdq_params.image_filter) {
@@ -1768,7 +1772,7 @@ void SkiaRenderer::DrawRenderPassQuadInternal(const RenderPassDrawQuad* quad,
     layer_flags |= SkCanvas::kInitWithPrevious_SaveLayerFlag;
   }
   current_canvas_->saveLayer(
-      SkCanvas::SaveLayerRec(&bounds, &paint, rpdq_params.backdrop_filter.get(),
+      SkCanvas::SaveLayerRec(nullptr, &paint, rpdq_params.backdrop_filter.get(),
                              rpdq_params.mask_image.get(),
                              &rpdq_params.mask_to_quad_matrix, layer_flags));
 
