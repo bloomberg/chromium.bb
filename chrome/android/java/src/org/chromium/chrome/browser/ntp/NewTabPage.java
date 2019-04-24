@@ -622,7 +622,10 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         if (tab.getWebContents() == null) return defaultValue;
 
         String stringValue = getStringFromNavigationEntry(tab, key);
-
+        if (stringValue == null || stringValue.isEmpty()) {
+            return RecyclerView.NO_POSITION;
+        }
+        
         try {
             return Integer.parseInt(stringValue);
         } catch (NumberFormatException e) {
