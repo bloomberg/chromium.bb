@@ -119,8 +119,6 @@ class CompositorView : public content::CompositorClient,
   int content_height_;
   bool overlay_video_mode_;
 
-  scoped_refptr<content::GpuFeatureChecker> surface_control_feature_checker_;
-
   base::WeakPtrFactory<CompositorView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorView);
