@@ -75,9 +75,9 @@ enum class ClearBrowsingDataListType {
                 TimeRangeSelectorTableViewControllerDelegate>
 
 // The manager's consumer.
-@property(nonatomic, assign) id<ClearBrowsingDataConsumer> consumer;
+@property(nonatomic, weak) id<ClearBrowsingDataConsumer> consumer;
 // Reference to the LinkDelegate for CollectionViewFooterItem.
-@property(nonatomic, strong) id<CollectionViewFooterLinkDelegate> linkDelegate;
+@property(nonatomic, weak) id<CollectionViewFooterLinkDelegate> linkDelegate;
 
 // Default init method. |browserState| can't be nil and
 // |listType| determines what kind of items to populate model with.
