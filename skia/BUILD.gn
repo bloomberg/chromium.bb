@@ -56,7 +56,7 @@ config("skia_config") {
   defines = [
     "SK_HAS_PNG_LIBRARY",
     "SK_HAS_WEBP_LIBRARY",
-    "SK_USER_CONFIG_HEADER=\"" + rebase_path("config/SkUserConfig.h") + "\"",
+    "SK_USER_CONFIG_HEADER=\"../../skia/config/SkUserConfig.h\"",
   ]
 
   if (!is_ios) {
