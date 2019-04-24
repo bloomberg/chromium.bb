@@ -188,6 +188,7 @@ public class DownloadProgressInfoBar extends InfoBar {
      */
     public void closeInfoBar() {
         mClient.onInfoBarClosed(false);
+        if (mAnimatedDrawable != null) mAnimatedDrawable.clearAnimationCallbacks();
         super.onCloseButtonClicked();
     }
 
