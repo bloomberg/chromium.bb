@@ -34,6 +34,8 @@ class COMPONENT_EXPORT(CHROMEOS_POWER_MOJO_CONTROLLER)
   // PowerManagerClient::Observer:
   void ScreenBrightnessChanged(
       const power_manager::BacklightBrightnessChange& change) override;
+  void KeyboardBrightnessChanged(
+      const power_manager::BacklightBrightnessChange& change) override;
 
  private:
   mojo::BindingSet<power::mojom::PowerManagerController> binding_set_;

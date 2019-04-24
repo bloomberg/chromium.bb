@@ -73,7 +73,10 @@ class COMPONENT_EXPORT(CHROMEOS_POWER_MOJO_CLIENT) PowerManagerMojoClient
   void DeferScreenDim() override;
 
   // power::mojom::PowerManagerObserver:
-  void ScreenBrightnessChanged(double percent) override;
+  void ScreenBrightnessChanged(
+      const power_manager::BacklightBrightnessChange& change) override;
+  void KeyboardBrightnessChanged(
+      const power_manager::BacklightBrightnessChange& change) override;
 
   power::mojom::PowerManagerControllerPtr* interface_ptr() {
     return &controller_;

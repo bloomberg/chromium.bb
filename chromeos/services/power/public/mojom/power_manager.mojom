@@ -7,7 +7,30 @@ module chromeos.power.mojom;
 // TODO(https://crbug.com/657632): This struct wrapper exists to allow the value
 // to be null.
 struct Brightness {
+  // Brightness percent, in the range [0.0, 100.0].
   double value;
+};
+
+// Correlates to power_manager::BacklightBrightnessChange_Cause
+enum BacklightBrightnessChangeCause {
+  kUserRequest,
+  kUserActivity,
+  kUserInactivity,
+  kAmbientLightChanged,
+  kExternalPowerConnected,
+  kExternalPowerDisconnected,
+  kForcedOff,
+  kNoLongerForcedOff,
+  kOther,
+  kModel,
+  kWakeNotification,
+};
+
+// Correlates to power_manager::BacklightBrightnessChange
+struct BacklightBrightnessChange {
+  // The brightness percent is in the range [0.0, 100.0].
+  double percent;
+  BacklightBrightnessChangeCause cause;
 };
 
 // The interface for handling out-of-process calls that query or adjust power
@@ -25,6 +48,8 @@ interface PowerManagerController {
 // An interface for observing changes to power state. The changes are dispatched
 // over mojo from PowerManagerController.
 interface PowerManagerObserver {
-  // TODO(estade): the parameter should be a BacklightBrightnessChange.
-  ScreenBrightnessChanged(double percent);
+  // All following methods and their semantics are copied from the
+  // PowerManagerClient::Observer interface. Refer to that for documentation.
+  ScreenBrightnessChanged(BacklightBrightnessChange change);
+  KeyboardBrightnessChanged(BacklightBrightnessChange change);
 };

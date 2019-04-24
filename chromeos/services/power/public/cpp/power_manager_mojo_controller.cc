@@ -45,8 +45,12 @@ void PowerManagerMojoController::GetScreenBrightnessPercent(
 
 void PowerManagerMojoController::ScreenBrightnessChanged(
     const power_manager::BacklightBrightnessChange& change) {
-  // TODO(estade): serialize and pass all of |change|.
-  client_->ScreenBrightnessChanged(change.percent());
+  client_->ScreenBrightnessChanged(change);
+}
+
+void PowerManagerMojoController::KeyboardBrightnessChanged(
+    const power_manager::BacklightBrightnessChange& change) {
+  client_->KeyboardBrightnessChanged(change);
 }
 
 }  // namespace chromeos

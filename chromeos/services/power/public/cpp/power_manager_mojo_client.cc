@@ -133,11 +133,16 @@ void PowerManagerMojoClient::DeleteArcTimers(const std::string& tag,
 
 void PowerManagerMojoClient::DeferScreenDim() {}
 
-void PowerManagerMojoClient::ScreenBrightnessChanged(double percent) {
-  power_manager::BacklightBrightnessChange change;
-  change.set_percent(percent);
+void PowerManagerMojoClient::ScreenBrightnessChanged(
+    const power_manager::BacklightBrightnessChange& change) {
   for (auto& observer : observers_)
     observer.ScreenBrightnessChanged(change);
+}
+
+void PowerManagerMojoClient::KeyboardBrightnessChanged(
+    const power_manager::BacklightBrightnessChange& change) {
+  for (auto& observer : observers_)
+    observer.KeyboardBrightnessChanged(change);
 }
 
 void PowerManagerMojoClient::InitAfterInterfaceBound() {
