@@ -65,6 +65,10 @@ public class NativePageFactory {
         }
 
         protected NativePage buildExploreSitesPage(ChromeActivity activity, Tab tab) {
+            if (FeatureUtilities.isNoTouchModeEnabled()) {
+                return TouchlessDelegate.createTouchlessExploreSitesPage(
+                        activity, new TabShim(tab));
+            }
             return new ExploreSitesPage(activity, new TabShim(tab));
         }
 
@@ -118,7 +122,7 @@ public class NativePageFactory {
             return NativePageType.HISTORY;
         } else if (UrlConstants.RECENT_TABS_HOST.equals(host) && !isIncognito) {
             return NativePageType.RECENT_TABS;
-        } else if (UrlConstants.EXPLORE_HOST.equals(host)) {
+        } else if (ExploreSitesPage.isExploreSitesHost(host)) {
             return NativePageType.EXPLORE;
         } else {
             return NativePageType.NONE;
