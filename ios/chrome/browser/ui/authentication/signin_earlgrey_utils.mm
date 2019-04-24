@@ -11,8 +11,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
+#import "ios/testing/nserror_util.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -41,7 +41,7 @@
 
 + (NSError*)checkSignedInWithIdentity:(ChromeIdentity*)identity {
   if (identity == nil) {
-    return chrome_test_util::NSErrorWithLocalizedDescription(
+    return testing::NSErrorWithLocalizedDescription(
         @"Need to give an identity");
   }
 
@@ -62,7 +62,7 @@
                       @"Unexpected Gaia ID of the signed in user [expected = "
                       @"\"%@\", actual = \"%s\"]",
                       identity.gaiaID, info.gaia.c_str()];
-    return chrome_test_util::NSErrorWithLocalizedDescription(errorStr);
+    return testing::NSErrorWithLocalizedDescription(errorStr);
   }
 
   return nil;
@@ -79,7 +79,7 @@
 
   if (IdentityManagerFactory::GetForBrowserState(browser_state)
           ->HasPrimaryAccount()) {
-    return chrome_test_util::NSErrorWithLocalizedDescription(
+    return testing::NSErrorWithLocalizedDescription(
         @"Unexpected signed in user");
   }
 

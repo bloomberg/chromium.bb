@@ -21,8 +21,8 @@
 #include "ios/chrome/browser/payments/ios_payment_request_cache_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
+#import "ios/testing/nserror_util.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 
@@ -93,8 +93,7 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
                    [self personalDataManager] -> GetProfiles().size();
       });
   if (!isProfileAdded) {
-    return chrome_test_util::NSErrorWithLocalizedDescription(
-        @"Failed to add profile.");
+    return testing::NSErrorWithLocalizedDescription(@"Failed to add profile.");
   }
   return nil;
 }
@@ -109,7 +108,7 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
                    [self personalDataManager] -> GetCreditCards().size();
       });
   if (!isCreditCardAdded) {
-    return chrome_test_util::NSErrorWithLocalizedDescription(
+    return testing::NSErrorWithLocalizedDescription(
         @"Failed to add credit card.");
   }
   return nil;

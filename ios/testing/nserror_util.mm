@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
+#import "ios/testing/nserror_util.h"
 
 #import <Foundation/Foundation.h>
 
@@ -10,7 +10,7 @@
 #error "This file requires ARC support."
 #endif
 
-namespace chrome_test_util {
+namespace testing {
 
 NSError* NSErrorWithLocalizedDescription(NSString* error_description) {
   NSDictionary* userInfo = @{
@@ -22,4 +22,4 @@ NSError* NSErrorWithLocalizedDescription(NSString* error_description) {
                                 userInfo:userInfo];
 }
 
-}  // namespace chrome_test_util
+}  // namespace testing

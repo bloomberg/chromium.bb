@@ -231,7 +231,6 @@ source_set("test_support") {
     "chrome_earl_grey_ui.h",
     "chrome_earl_grey_ui.mm",
     "chrome_error_util.h",
-    "chrome_error_util.mm",
     "chrome_matchers.h",
     "chrome_matchers.mm",
     "chrome_matchers_app_interface.h",
@@ -282,6 +281,7 @@ source_set("test_support") {
 
   public_deps = [
     "//build/config/ios:xctest",
+    "//ios/testing:nserror_support",
     "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/third_party/gtx:gtx+link",
     "//ios/web/public/test",
@@ -317,8 +317,6 @@ source_set("eg_app_support+eg2") {
   sources = [
     "chrome_actions_app_interface.h",
     "chrome_actions_app_interface.mm",
-    "chrome_error_util.h",
-    "chrome_error_util.mm",
     "chrome_matchers_app_interface.h",
     "chrome_matchers_app_interface.mm",
   ]
@@ -345,6 +343,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/test/app:test_support",
+    "//ios/testing:nserror_support",
     "//ios/testing/earl_grey:eg_app_support+eg2",
     "//ios/testing/earl_grey:eg_app_support+eg2",
     "//ios/third_party/earl_grey2:app_framework+link",
@@ -368,7 +367,6 @@ source_set("eg_test_support+eg2") {
     "chrome_actions.mm",
     "chrome_actions_app_interface.h",
     "chrome_error_util.h",
-    "chrome_error_util.mm",
     "chrome_matchers.h",
     "chrome_matchers.mm",
     "chrome_matchers_app_interface.h",

@@ -19,8 +19,8 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
+#import "ios/testing/nserror_util.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -219,7 +219,7 @@ id<GREYAction> ScrollDown() {
 
   if (!base::test::ios::WaitUntilConditionOrTimeout(
           kWaitForToolbarAnimationTimeout, condition)) {
-    return chrome_test_util::NSErrorWithLocalizedDescription(errorMessage);
+    return testing::NSErrorWithLocalizedDescription(errorMessage);
   }
 
   return nil;

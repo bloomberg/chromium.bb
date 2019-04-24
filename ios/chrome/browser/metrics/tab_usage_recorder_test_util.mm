@@ -21,8 +21,8 @@
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
-#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
+#import "ios/testing/nserror_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -73,7 +73,7 @@ NSError* OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
   bool success = base::test::ios::WaitUntilConditionOrTimeout(
       kWaitElementTimeout, condition);
   if (!success) {
-    return chrome_test_util::NSErrorWithLocalizedDescription(
+    return testing::NSErrorWithLocalizedDescription(
         @"Waiting switch to incognito mode.");
   }
 
@@ -83,13 +83,13 @@ NSError* OpenNewIncognitoTabUsingUIAndEvictMainTabs() {
 
 NSError* SwitchToNormalMode() {
   if (!chrome_test_util::IsIncognitoMode()) {
-    return chrome_test_util::NSErrorWithLocalizedDescription(
+    return testing::NSErrorWithLocalizedDescription(
         @"Switching to normal mode is only allowed from Incognito.");
   }
 
   // Enter the tab grid to switch modes.
   if (!ShowTabSwitcher()) {
-    return chrome_test_util::NSErrorWithLocalizedDescription(
+    return testing::NSErrorWithLocalizedDescription(
         @"Tab switcher could not be tapped.");
   }
 
@@ -113,7 +113,7 @@ NSError* SwitchToNormalMode() {
 
   if (!base::test::ios::WaitUntilConditionOrTimeout(kWaitElementTimeout,
                                                     condition)) {
-    return chrome_test_util::NSErrorWithLocalizedDescription(
+    return testing::NSErrorWithLocalizedDescription(
         @"Waiting switch to normal mode.");
   }
 
