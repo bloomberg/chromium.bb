@@ -206,12 +206,18 @@ void AXEventGenerator::OnStringAttributeChanged(AXTree* tree,
       AddEvent(node, Event::LANGUAGE_CHANGED);
       break;
     case ax::mojom::StringAttribute::kLiveStatus:
+      AddEvent(node, Event::LIVE_STATUS_CHANGED);
+
+      // Fire a LIVE_REGION_CREATED if the previous value was off, and the new
+      // value is not-off.
       // TODO(accessibility): tree in the midst of updates. Disallow access to
       // |node|.
-      if (node->data().GetStringAttribute(
-              ax::mojom::StringAttribute::kLiveStatus) != "off" &&
-          node->data().role != ax::mojom::Role::kAlert)
-        AddEvent(node, Event::LIVE_REGION_CREATED);
+      if (node->data().role != ax::mojom::Role::kAlert) {
+        bool old_state = !old_value.empty() && old_value != "off";
+        bool new_state = !new_value.empty() && new_value != "off";
+        if (!old_state && new_state)
+          AddEvent(node, Event::LIVE_REGION_CREATED);
+      }
       break;
     case ax::mojom::StringAttribute::kName:
       // If the name of the root node changes, we expect OnTreeDataChanged to

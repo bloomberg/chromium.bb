@@ -242,7 +242,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       FireUiaPropertyChangedEvent(UIA_CulturePropertyId, node);
       break;
     case ui::AXEventGenerator::Event::LIVE_REGION_CREATED:
-      FireUiaPropertyChangedEvent(UIA_LiveSettingPropertyId, node);
+      FireUiaAccessibilityEvent(UIA_LiveRegionChangedEventId, node);
       break;
     case ui::AXEventGenerator::Event::LIVE_REGION_CHANGED:
       // This event is redundant with the IA2_EVENT_TEXT_INSERTED events;
@@ -257,6 +257,10 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       // Firefox live region events differently (utilizes MSAA's
       // EVENT_OBJECT_SHOW).
       FireWinAccessibilityEvent(EVENT_OBJECT_LIVEREGIONCHANGED, node);
+      FireUiaAccessibilityEvent(UIA_LiveRegionChangedEventId, node);
+      break;
+    case ui::AXEventGenerator::Event::LIVE_STATUS_CHANGED:
+      FireUiaPropertyChangedEvent(UIA_LiveSettingPropertyId, node);
       break;
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
       FireWinAccessibilityEvent(IA2_EVENT_DOCUMENT_LOAD_COMPLETE, node);

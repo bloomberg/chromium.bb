@@ -74,6 +74,11 @@ class DumpAccessibilityEventsTest : public DumpAccessibilityTestBase {
     property_filters->push_back(
         PropertyFilter(base::ASCIIToUTF16("AutomationFocusChanged*document*"),
                        PropertyFilter::DENY));
+    // Implementing IRawElementProviderAdviseEvents causes Win7 to fire
+    // spurious focus events (regardless of what the implementation does).
+    property_filters->push_back(PropertyFilter(
+        base::ASCIIToUTF16("AutomationFocusChanged on role=region"),
+        PropertyFilter::DENY));
   }
 
   std::vector<std::string> Dump(std::vector<std::string>& run_until) override;

@@ -1017,6 +1017,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Returns the start/end offsets of the active composition
   gfx::Range GetActiveCompositionOffsets() const;
 
+  // Helper to recursively find live-regions and fire a change event on them
+  void FireLiveRegionChangeRecursive();
+
  protected:
   // This is hard-coded; all products based on the Chromium engine will have the
   // same framework name, so that assistive technology can detect any

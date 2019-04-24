@@ -98,6 +98,9 @@ std::string DumpEvents(AXEventGenerator* generator) {
       case AXEventGenerator::Event::LIVE_REGION_NODE_CHANGED:
         event_name = "LIVE_REGION_NODE_CHANGED";
         break;
+      case AXEventGenerator::Event::LIVE_STATUS_CHANGED:
+        event_name = "LIVE_STATUS_CHANGED";
+        break;
       case AXEventGenerator::Event::LOAD_COMPLETE:
         event_name = "LOAD_COMPLETE";
         break;
@@ -448,7 +451,22 @@ TEST(AXEventGeneratorTest, AddLiveRegionAttribute) {
   update.nodes[0].AddStringAttribute(ax::mojom::StringAttribute::kLiveStatus,
                                      "polite");
   ASSERT_TRUE(tree.Unserialize(update));
-  EXPECT_EQ("LIVE_REGION_CREATED on 1", DumpEvents(&event_generator));
+  EXPECT_EQ(
+      "LIVE_REGION_CREATED on 1, "
+      "LIVE_STATUS_CHANGED on 1",
+      DumpEvents(&event_generator));
+
+  event_generator.ClearEvents();
+  update.nodes[0].AddStringAttribute(ax::mojom::StringAttribute::kLiveStatus,
+                                     "assertive");
+  ASSERT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ("LIVE_STATUS_CHANGED on 1", DumpEvents(&event_generator));
+
+  event_generator.ClearEvents();
+  update.nodes[0].AddStringAttribute(ax::mojom::StringAttribute::kLiveStatus,
+                                     "off");
+  ASSERT_TRUE(tree.Unserialize(update));
+  EXPECT_EQ("LIVE_STATUS_CHANGED on 1", DumpEvents(&event_generator));
 }
 
 TEST(AXEventGeneratorTest, CheckedStateChanged) {

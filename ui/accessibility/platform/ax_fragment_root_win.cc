@@ -13,10 +13,12 @@
 namespace ui {
 
 class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
-                                      public IRawElementProviderFragmentRoot {
+                                      public IRawElementProviderFragmentRoot,
+                                      public IRawElementProviderAdviseEvents {
  public:
   BEGIN_COM_MAP(AXFragmentRootPlatformNodeWin)
   COM_INTERFACE_ENTRY(IRawElementProviderFragmentRoot)
+  COM_INTERFACE_ENTRY(IRawElementProviderAdviseEvents)
   COM_INTERFACE_ENTRY_CHAIN(AXPlatformNodeWin)
   END_COM_MAP()
 
@@ -112,6 +114,43 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
 
     return S_OK;
   }
+
+  //
+  // IRawElementProviderAdviseEvents methods.
+  //
+  STDMETHODIMP AdviseEventAdded(EVENTID event_id,
+                                SAFEARRAY* property_ids) override {
+    if (event_id == UIA_LiveRegionChangedEventId) {
+      live_region_change_listeners_++;
+
+      if (live_region_change_listeners_ == 1) {
+        // Fire a LiveRegionChangedEvent for each live-region to tell the
+        // newly-attached assistive technology about the regions.
+        //
+        // Ideally we'd be able to direct these events to only the
+        // newly-attached AT, but we don't have that capability, so we only
+        // fire events when the *first* AT attaches. (A common scenario will
+        // be an attached screen-reader, then a software-keyboard attaches to
+        // handle an input field; we don't want the screen-reader to announce
+        // that every live-region has changed.) There isn't a perfect solution,
+        // but this heuristic seems to work well in practice.
+        FireLiveRegionChangeRecursive();
+      }
+    }
+    return S_OK;
+  }
+
+  STDMETHODIMP AdviseEventRemoved(EVENTID event_id,
+                                  SAFEARRAY* property_ids) override {
+    if (event_id == UIA_LiveRegionChangedEventId) {
+      DCHECK(live_region_change_listeners_ > 0);
+      live_region_change_listeners_--;
+    }
+    return S_OK;
+  }
+
+ private:
+  int32_t live_region_change_listeners_ = 0;
 };
 
 class AXFragmentRootMapWin {

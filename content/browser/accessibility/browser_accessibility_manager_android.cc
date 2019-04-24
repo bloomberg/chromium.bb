@@ -220,6 +220,7 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::LAYOUT_INVALIDATED:
     case ui::AXEventGenerator::Event::LIVE_REGION_CHANGED:
     case ui::AXEventGenerator::Event::LIVE_REGION_CREATED:
+    case ui::AXEventGenerator::Event::LIVE_STATUS_CHANGED:
     case ui::AXEventGenerator::Event::LOAD_START:
     case ui::AXEventGenerator::Event::MENU_ITEM_SELECTED:
     case ui::AXEventGenerator::Event::MULTISELECTABLE_STATE_CHANGED:

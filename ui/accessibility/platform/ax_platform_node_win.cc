@@ -6503,6 +6503,8 @@ base::Optional<EVENTID> AXPlatformNodeWin::UIAEvent(ax::mojom::Event event) {
     case ax::mojom::Event::kFocus:
     case ax::mojom::Event::kFocusContext:
       return UIA_AutomationFocusChangedEventId;
+    case ax::mojom::Event::kLiveRegionChanged:
+      return UIA_LiveRegionChangedEventId;
     case ax::mojom::Event::kSelection:
       return UIA_SelectionItem_ElementSelectedEventId;
     case ax::mojom::Event::kSelectionAdd:
@@ -6929,6 +6931,27 @@ AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
       break;
   }
   return nullptr;
+}
+
+void AXPlatformNodeWin::FireLiveRegionChangeRecursive() {
+  const auto live_status_attr = ax::mojom::StringAttribute::kLiveStatus;
+  if (HasStringAttribute(live_status_attr) &&
+      GetStringAttribute(live_status_attr) != "off") {
+    DCHECK(GetDelegate()->IsWebContent());
+    ::UiaRaiseAutomationEvent(this, UIA_LiveRegionChangedEventId);
+    return;
+  }
+
+  for (int index = 0; index < GetChildCount(); ++index) {
+    auto* child = static_cast<AXPlatformNodeWin*>(
+        FromNativeViewAccessible(ChildAtIndex(index)));
+
+    // We assume that only web-content will have live regions; also because
+    // this will be called on each fragment-root, there is no need to walk
+    // through non-content nodes.
+    if (child->GetDelegate()->IsWebContent())
+      child->FireLiveRegionChangeRecursive();
+  }
 }
 
 }  // namespace ui
