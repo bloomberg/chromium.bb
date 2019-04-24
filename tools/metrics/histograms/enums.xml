@@ -44150,6 +44150,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Server failed"/>
   <int value="4" label="Cleanup failed"/>
   <int value="5" label="Decryption failed"/>
+  <int value="6" label="Add failed"/>
+  <int value="7" label="Update failed"/>
+  <int value="8" label="Metadata persistence failed"/>
 </enum>
 
 <enum name="PaymentRequestAbortReason">
