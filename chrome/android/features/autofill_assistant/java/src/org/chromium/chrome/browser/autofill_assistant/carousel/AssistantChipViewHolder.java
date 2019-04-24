@@ -28,8 +28,8 @@ class AssistantChipViewHolder extends ViewHolder {
         ButtonView view = null;
         switch (viewType % AssistantChip.Type.NUM_ENTRIES) {
             case AssistantChip.Type.CHIP_ASSISTIVE:
-                view = new ButtonView(
-                        parent.getContext(), org.chromium.chrome.R.style.AssistiveChip);
+                view = (ButtonView) layoutInflater.inflate(
+                        R.layout.autofill_assistant_button_assistive, /* root= */ null);
                 break;
             case AssistantChip.Type.BUTTON_FILLED_BLUE:
                 view = (ButtonView) layoutInflater.inflate(
