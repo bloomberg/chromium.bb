@@ -69,6 +69,22 @@ void CloseAssistantUi(AssistantExitPoint exit_point) {
     Shell::Get()->assistant_controller()->ui_controller()->CloseUi(exit_point);
 }
 
+app_list::TabletModeAnimationTransition CalculateAnimationTransitionForMetrics(
+    HomeScreenDelegate::AnimationTrigger trigger,
+    bool launcher_should_show) {
+  switch (trigger) {
+    case HomeScreenDelegate::AnimationTrigger::kHideForWindow:
+      return app_list::TabletModeAnimationTransition::
+          kHideHomeLauncherForWindow;
+    case HomeScreenDelegate::AnimationTrigger::kLauncherButton:
+      return app_list::TabletModeAnimationTransition::kAppListButtonShow;
+    case HomeScreenDelegate::AnimationTrigger::kDragRelease:
+      return launcher_should_show
+                 ? app_list::TabletModeAnimationTransition::kDragReleaseShow
+                 : app_list::TabletModeAnimationTransition::kDragReleaseHide;
+  }
+}
+
 }  // namespace
 
 AppListControllerImpl::AppListControllerImpl()
@@ -1286,6 +1302,13 @@ void AppListControllerImpl::Shutdown() {
   shell->tablet_mode_controller()->RemoveObserver(this);
   shell->session_controller()->RemoveObserver(this);
   model_->RemoveObserver(this);
+}
+
+void AppListControllerImpl::NotifyHomeLauncherAnimationTransition(
+    AnimationTrigger trigger,
+    bool launcher_will_show) {
+  presenter_.GetView()->OnTabletModeAnimationTransitionNotified(
+      CalculateAnimationTransitionForMetrics(trigger, launcher_will_show));
 }
 
 }  // namespace ash

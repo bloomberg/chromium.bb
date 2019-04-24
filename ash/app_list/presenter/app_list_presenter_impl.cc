@@ -241,7 +241,14 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
   // We want to animate the expand arrow, suggestion chips and apps grid in
   // app_list_main_view, and the search box.
   ui::Layer* layer = view_->GetWidget()->GetNativeWindow()->layer();
-  layer->GetAnimator()->StopAnimating();
+
+  if (layer->GetAnimator()->is_animating()) {
+    layer->GetAnimator()->StopAnimating();
+
+    // Reset the animation metrics reporter when the animation is interrupted.
+    view_->ResetTransitionMetricsReporter();
+  }
+
   std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
   if (!callback.is_null()) {
     settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
@@ -249,6 +256,15 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
     callback.Run(settings.get());
   }
   layer->SetOpacity(opacity);
+
+  // Only record animation metrics for transformation animation. Because the
+  // animation triggered by setting opacity should have the same metrics values
+  // with the transformation animation.
+  if (settings.get()) {
+    settings->SetAnimationMetricsReporter(
+        view_->GetStateTransitionMetricsReporter());
+  }
+
   layer->SetTransform(translation);
 
   // Update child views' y positions to target state to avoid stale positions.

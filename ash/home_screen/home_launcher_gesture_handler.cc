@@ -10,7 +10,6 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
 #include "ash/home_screen/home_screen_controller.h"
-#include "ash/home_screen/home_screen_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
@@ -359,7 +358,7 @@ bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
       // triggered by opening |active_window_| with modal dialog in
       // OnPressEvent(). In that case, just leave the |active_window_| in show
       // state and stop tracking.
-      AnimateToFinalState();
+      AnimateToFinalState(AnimationTrigger::kDragRelease);
       RemoveObserversAndStopTracking();
       return true;
     }
@@ -367,7 +366,7 @@ bool HomeLauncherGestureHandler::OnReleaseEvent(const gfx::Point& location) {
   }
 
   last_event_location_ = base::make_optional(location);
-  AnimateToFinalState();
+  AnimateToFinalState(AnimationTrigger::kDragRelease);
   return true;
 }
 
@@ -379,7 +378,7 @@ void HomeLauncherGestureHandler::Cancel() {
   DCHECK(home_screen_delegate);
   home_screen_delegate->OnHomeLauncherDragEnd();
 
-  AnimateToFinalState();
+  AnimateToFinalState(AnimationTrigger::kDragRelease);
   return;
 }
 
@@ -398,7 +397,7 @@ bool HomeLauncherGestureHandler::ShowHomeLauncher(
   mode_ = Mode::kSlideUpToShow;
 
   UpdateWindows(0.0, /*animate=*/false);
-  AnimateToFinalState();
+  AnimateToFinalState(AnimationTrigger::kLauncherButton);
   return true;
 }
 
@@ -418,7 +417,7 @@ bool HomeLauncherGestureHandler::HideHomeLauncherForWindow(
   mode_ = Mode::kSlideDownToHide;
 
   UpdateWindows(1.0, /*animate=*/false);
-  AnimateToFinalState();
+  AnimateToFinalState(AnimationTrigger::kHideForWindow);
   return true;
 }
 
@@ -572,8 +571,10 @@ void HomeLauncherGestureHandler::OnImplicitAnimationsCompleted() {
   RemoveObserversAndStopTracking();
 }
 
-void HomeLauncherGestureHandler::AnimateToFinalState() {
+void HomeLauncherGestureHandler::AnimateToFinalState(AnimationTrigger trigger) {
   const bool is_final_state_show = IsFinalStateShow();
+  GetHomeScreenDelegate()->NotifyHomeLauncherAnimationTransition(
+      trigger, is_final_state_show);
   UpdateWindows(is_final_state_show ? 1.0 : 0.0, /*animate=*/true);
 
   if (!is_final_state_show && mode_ == Mode::kSlideDownToHide) {

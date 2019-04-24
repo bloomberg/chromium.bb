@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/home_screen/home_screen_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
@@ -97,6 +98,8 @@ class ASH_EXPORT HomeLauncherGestureHandler
   FRIEND_TEST_ALL_PREFIXES(HomeLauncherModeGestureHandlerTest,
                            AnimatingToEndResetsState);
 
+  using AnimationTrigger = HomeScreenDelegate::AnimationTrigger;
+
   // Stores the initial and target opacities and transforms of window.
   struct WindowValues {
     float initial_opacity;
@@ -105,8 +108,9 @@ class ASH_EXPORT HomeLauncherGestureHandler
     gfx::Transform target_transform;
   };
 
-  // Animates the items based on IsFinalStateShow().
-  void AnimateToFinalState();
+  // Animates the items based on IsFinalStateShow(). |trigger| is what triggered
+  // the animation.
+  void AnimateToFinalState(AnimationTrigger trigger);
 
   // Updates |settings| based on what we want for this class.
   void UpdateSettings(ui::ScopedLayerAnimationSettings* settings);

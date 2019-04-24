@@ -265,6 +265,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void OnHomeLauncherDragInProgress();
   void OnHomeLauncherDragEnd();
 
+  // Resets the animation metrics reporter for state transition.
+  void ResetTransitionMetricsReporter();
+
   // WindowObserver overrides:
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowBoundsChanged(aura::Window* window,
@@ -274,6 +277,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Called when state transition animation is completed.
   void OnStateTransitionAnimationCompleted();
+
+  void OnTabletModeAnimationTransitionNotified(
+      TabletModeAnimationTransition animation_transition);
 
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;

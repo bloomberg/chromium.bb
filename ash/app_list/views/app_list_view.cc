@@ -190,6 +190,9 @@ class AppListEventTargeter : public aura::WindowTargeter {
 
 }  // namespace
 
+////////////////////////////////////////////////////////////////////////////////
+// AppListView::StateAnimationMetricsReporter
+
 class AppListView::StateAnimationMetricsReporter
     : public ui::AnimationMetricsReporter {
  public:
@@ -201,7 +204,8 @@ class AppListView::StateAnimationMetricsReporter
     target_state_ = target_state;
   }
 
-  void Start() {
+  void Start(bool is_in_tablet_mode) {
+    is_in_tablet_mode_ = is_in_tablet_mode;
 #if defined(DCHECK)
     DCHECK(!started_);
     started_ = ui::ScopedAnimationDurationScaleMode::duration_scale_mode() !=
@@ -209,54 +213,113 @@ class AppListView::StateAnimationMetricsReporter
 #endif
   }
 
-  void Report(int value) override {
-    UMA_HISTOGRAM_PERCENTAGE("Apps.StateTransition.AnimationSmoothness", value);
-    switch (*target_state_) {
-      case ash::mojom::AppListViewState::kClosed:
-        UMA_HISTOGRAM_PERCENTAGE(
-            "Apps.StateTransition.AnimationSmoothness.Close.ClamshellMode",
-            value);
-        break;
-      case ash::mojom::AppListViewState::kPeeking:
-        UMA_HISTOGRAM_PERCENTAGE(
-            "Apps.StateTransition.AnimationSmoothness.Peeking.ClamshellMode",
-            value);
-        break;
-      case ash::mojom::AppListViewState::kHalf:
-        UMA_HISTOGRAM_PERCENTAGE(
-            "Apps.StateTransition.AnimationSmoothness.Half.ClamshellMode",
-            value);
-        break;
-      case ash::mojom::AppListViewState::kFullscreenAllApps:
-        UMA_HISTOGRAM_PERCENTAGE(
-            "Apps.StateTransition.AnimationSmoothness.FullscreenAllApps."
-            "ClamshellMode",
-            value);
-        break;
-      case ash::mojom::AppListViewState::kFullscreenSearch:
-        UMA_HISTOGRAM_PERCENTAGE(
-            "Apps.StateTransition.AnimationSmoothness.FullscreenSearch."
-            "ClamshellMode",
-            value);
-        break;
-    }
-    target_state_.reset();
-    view_->OnStateTransitionAnimationCompleted();
-#if defined(DCHECK)
-    started_ = false;
-#endif
+  void Reset();
+
+  void SetTabletModeAnimationTransition(
+      TabletModeAnimationTransition transition) {
+    tablet_transition_ = transition;
   }
 
+  // ui::AnimationMetricsReporter:
+  void Report(int value) override;
+
  private:
+  void RecordMetricsInTablet(int value);
+  void RecordMetricsInClamshell(int value);
+
 #if defined(DCHECK)
   bool started_ = false;
 #endif
   base::Optional<ash::mojom::AppListViewState> target_state_;
+  base::Optional<TabletModeAnimationTransition> tablet_transition_;
+  bool is_in_tablet_mode_ = false;
   AppListView* view_;
 
   DISALLOW_COPY_AND_ASSIGN(StateAnimationMetricsReporter);
 };
 
+void AppListView::StateAnimationMetricsReporter::Reset() {
+#if defined(DCHECK)
+  started_ = false;
+#endif
+  tablet_transition_.reset();
+  target_state_.reset();
+}
+
+void AppListView::StateAnimationMetricsReporter::Report(int value) {
+  UMA_HISTOGRAM_PERCENTAGE("Apps.StateTransition.AnimationSmoothness", value);
+  if (is_in_tablet_mode_)
+    RecordMetricsInTablet(value);
+  else
+    RecordMetricsInClamshell(value);
+  view_->OnStateTransitionAnimationCompleted();
+  Reset();
+}
+
+void AppListView::StateAnimationMetricsReporter::RecordMetricsInTablet(
+    int value) {
+  DCHECK(tablet_transition_.has_value());
+  switch (*tablet_transition_) {
+    case TabletModeAnimationTransition::kDragReleaseShow:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.HomeLauncherTransition.AnimationSmoothness.DragReleaseShow",
+          value);
+      break;
+    case TabletModeAnimationTransition::kDragReleaseHide:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.HomeLauncherTransition.AnimationSmoothness."
+          "DragReleaseHide",
+          value);
+      break;
+    case TabletModeAnimationTransition::kAppListButtonShow:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.HomeLauncherTransition.AnimationSmoothness."
+          "PressAppListButtonShow",
+          value);
+      break;
+    case TabletModeAnimationTransition::kHideHomeLauncherForWindow:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.HomeLauncherTransition.AnimationSmoothness."
+          "HideLauncherForWindow",
+          value);
+      break;
+  }
+}
+
+void AppListView::StateAnimationMetricsReporter::RecordMetricsInClamshell(
+    int value) {
+  DCHECK(target_state_.has_value());
+  switch (*target_state_) {
+    case ash::mojom::AppListViewState::kClosed:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.StateTransition.AnimationSmoothness.Close.ClamshellMode",
+          value);
+      break;
+    case ash::mojom::AppListViewState::kPeeking:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.StateTransition.AnimationSmoothness.Peeking.ClamshellMode",
+          value);
+      break;
+    case ash::mojom::AppListViewState::kHalf:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.StateTransition.AnimationSmoothness.Half.ClamshellMode", value);
+      break;
+    case ash::mojom::AppListViewState::kFullscreenAllApps:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.StateTransition.AnimationSmoothness.FullscreenAllApps."
+          "ClamshellMode",
+          value);
+      break;
+    case ash::mojom::AppListViewState::kFullscreenSearch:
+      UMA_HISTOGRAM_PERCENTAGE(
+          "Apps.StateTransition.AnimationSmoothness.FullscreenSearch."
+          "ClamshellMode",
+          value);
+      break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // An animation observer to hide the view at the end of the animation.
 class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
  public:
@@ -1652,7 +1715,7 @@ ash::mojom::AppListViewState AppListView::CalculateStateAfterShelfDrag(
 }
 
 ui::AnimationMetricsReporter* AppListView::GetStateTransitionMetricsReporter() {
-  state_animation_metrics_reporter_->Start();
+  state_animation_metrics_reporter_->Start(is_tablet_mode_);
   return state_animation_metrics_reporter_.get();
 }
 
@@ -1670,6 +1733,10 @@ void AppListView::OnHomeLauncherDragInProgress() {
 
 void AppListView::OnHomeLauncherDragEnd() {
   presentation_time_recorder_.reset();
+}
+
+void AppListView::ResetTransitionMetricsReporter() {
+  state_animation_metrics_reporter_->Reset();
 }
 
 void AppListView::OnWindowDestroying(aura::Window* window) {
@@ -1930,6 +1997,12 @@ void AppListView::UpdateAppListBackgroundYPosition() {
 
 void AppListView::OnStateTransitionAnimationCompleted() {
   delegate_->OnStateTransitionAnimationCompleted(app_list_state_);
+}
+
+void AppListView::OnTabletModeAnimationTransitionNotified(
+    TabletModeAnimationTransition animation_transition) {
+  state_animation_metrics_reporter_->SetTabletModeAnimationTransition(
+      animation_transition);
 }
 
 }  // namespace app_list

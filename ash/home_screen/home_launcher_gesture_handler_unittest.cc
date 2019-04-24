@@ -36,6 +36,9 @@ class HomeLauncherGestureHandlerTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
+    // Wait for TabletModeController::Ctor to finish.
+    base::RunLoop().RunUntilIdle();
+
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   }
 
