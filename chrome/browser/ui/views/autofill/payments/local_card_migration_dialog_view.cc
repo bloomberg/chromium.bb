@@ -76,8 +76,14 @@ std::unique_ptr<views::Label> CreateTitle(
   auto title = std::make_unique<views::Label>(
       l10n_util::GetPluralStringFUTF16(message_id, card_list_size));
   constexpr int kMigrationDialogTitleFontSize = 8;
+#if defined(GOOGLE_CHROME_BUILD)
+  constexpr int kMigrationDialogTitleMarginTop = 0;
+#else
+  constexpr int kMigrationDialogTitleMarginTop = 12;
+#endif
   title->SetBorder(views::CreateEmptyBorder(
-      /*top=*/0, /*left=*/kMigrationDialogInsets.left(), /*bottom=*/0,
+      /*top=*/kMigrationDialogTitleMarginTop,
+      /*left=*/kMigrationDialogInsets.left(), /*bottom=*/0,
       /*right=*/kMigrationDialogInsets.right()));
   title->SetFontList(gfx::FontList().Derive(kMigrationDialogTitleFontSize,
                                             gfx::Font::NORMAL,
@@ -473,11 +479,12 @@ void LocalCardMigrationDialogView::ConstructView() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(),
       kMigrationDialogMainContainerChildSpacing));
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
+#if defined(GOOGLE_CHROME_BUILD)
   auto* image = new views::ImageView();
   constexpr int kImageBorderBottom = 8;
   image->SetBorder(views::CreateEmptyBorder(0, 0, kImageBorderBottom, 0));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image->SetImage(
       rb.GetImageSkiaNamed(GetNativeTheme()->SystemDarkModeEnabled()
                                ? IDR_AUTOFILL_MIGRATION_DIALOG_HEADER_DARK
@@ -485,6 +492,7 @@ void LocalCardMigrationDialogView::ConstructView() {
   image->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_GOOGLE_PAY_LOGO_ACCESSIBLE_NAME));
   AddChildView(image);
+#endif  // GOOGLE_CHROME_BUILD
 
   LocalCardMigrationDialogState view_state = controller_->GetViewState();
   AddChildView(CreateTitle(view_state, this, controller_->GetCardList().size())

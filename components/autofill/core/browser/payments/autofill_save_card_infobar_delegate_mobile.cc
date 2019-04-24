@@ -92,7 +92,11 @@ bool AutofillSaveCardInfoBarDelegateMobile::LegalMessagesParsedSuccessfully() {
 }
 
 bool AutofillSaveCardInfoBarDelegateMobile::IsGooglePayBrandingEnabled() const {
+#if defined(GOOGLE_CHROME_BUILD)
   return upload_;
+#else
+  return false;
+#endif
 }
 
 base::string16 AutofillSaveCardInfoBarDelegateMobile::GetDescriptionText()
