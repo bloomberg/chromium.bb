@@ -855,6 +855,76 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
                                scenario.GetOuterFunctionAddressRange()});
 }
 
+// Checks that a stack that runs through another library produces a stack with
+// the expected functions.
+// macOS ASAN is not yet supported - crbug.com/718628.
+#if !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
+#define MAYBE_OtherLibrary OtherLibrary
+#else
+#define MAYBE_OtherLibrary DISABLED_OtherLibrary
+#endif
+PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
+  SamplingParams params;
+  params.sampling_interval = TimeDelta::FromMilliseconds(0);
+  params.samples_per_profile = 1;
+
+  Profile profile;
+
+  ScopedNativeLibrary other_library(LoadOtherLibrary());
+  UnwindScenario scenario(
+      BindRepeating(&CallThroughOtherLibrary, Unretained(other_library.get())));
+
+  WithTargetThread(&scenario, [&, this](PlatformThreadId target_thread_id) {
+    WaitableEvent sampling_thread_completed(
+        WaitableEvent::ResetPolicy::MANUAL,
+        WaitableEvent::InitialState::NOT_SIGNALED);
+    StackSamplingProfiler profiler(
+        target_thread_id, params,
+        std::make_unique<TestProfileBuilder>(
+            module_cache(),
+            BindLambdaForTesting(
+                [&profile, &sampling_thread_completed](Profile result_profile) {
+                  profile = std::move(result_profile);
+                  sampling_thread_completed.Signal();
+                })));
+    profiler.Start();
+    sampling_thread_completed.Wait();
+  });
+
+  // Look up the frames.
+  ASSERT_EQ(1u, profile.frame_sets.size());
+  const Frames& frames = profile.frame_sets[0];
+
+  // The stack should contain a full unwind.
+  ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange(),
+                               scenario.GetSetupFunctionAddressRange(),
+                               scenario.GetOuterFunctionAddressRange()});
+}
+
+// Checks that a stack that runs through a library that is unloading produces a
+// stack, and doesn't crash.
+// Unloading is synchronous on the Mac, so this test is inapplicable.
+#if !defined(OS_MACOSX)
+#define MAYBE_UnloadingLibrary UnloadingLibrary
+#else
+#define MAYBE_UnloadingLibrary DISABLED_UnloadingLibrary
+#endif
+PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_UnloadingLibrary) {
+  TestLibraryUnload(false, module_cache());
+}
+
+// Checks that a stack that runs through a library that has been unloaded
+// produces a stack, and doesn't crash.
+// macOS ASAN is not yet supported - crbug.com/718628.
+#if !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
+#define MAYBE_UnloadedLibrary UnloadedLibrary
+#else
+#define MAYBE_UnloadedLibrary DISABLED_UnloadedLibrary
+#endif
+PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_UnloadedLibrary) {
+  TestLibraryUnload(true, module_cache());
+}
+
 // Checks that a profiler can stop/destruct without ever having started.
 PROFILER_TEST_F(StackSamplingProfilerTest, StopWithoutStarting) {
   WithTargetThread([this](PlatformThreadId target_thread_id) {
@@ -1307,76 +1377,6 @@ PROFILER_TEST_F(StackSamplingProfilerTest, ConcurrentProfiling_Mixed) {
     for (auto& i : profiler_infos)
       i.reset();
   });
-}
-
-// Checks that a stack that runs through another library produces a stack with
-// the expected functions.
-// macOS ASAN is not yet supported - crbug.com/718628.
-#if !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
-#define MAYBE_OtherLibrary OtherLibrary
-#else
-#define MAYBE_OtherLibrary DISABLED_OtherLibrary
-#endif
-PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
-  SamplingParams params;
-  params.sampling_interval = TimeDelta::FromMilliseconds(0);
-  params.samples_per_profile = 1;
-
-  Profile profile;
-
-  ScopedNativeLibrary other_library(LoadOtherLibrary());
-  UnwindScenario scenario(
-      BindRepeating(&CallThroughOtherLibrary, Unretained(other_library.get())));
-
-  WithTargetThread(&scenario, [&, this](PlatformThreadId target_thread_id) {
-    WaitableEvent sampling_thread_completed(
-        WaitableEvent::ResetPolicy::MANUAL,
-        WaitableEvent::InitialState::NOT_SIGNALED);
-    StackSamplingProfiler profiler(
-        target_thread_id, params,
-        std::make_unique<TestProfileBuilder>(
-            module_cache(),
-            BindLambdaForTesting(
-                [&profile, &sampling_thread_completed](Profile result_profile) {
-                  profile = std::move(result_profile);
-                  sampling_thread_completed.Signal();
-                })));
-    profiler.Start();
-    sampling_thread_completed.Wait();
-  });
-
-  // Look up the frames.
-  ASSERT_EQ(1u, profile.frame_sets.size());
-  const Frames& frames = profile.frame_sets[0];
-
-  // The stack should contain a full unwind.
-  ExpectStackContains(frames, {scenario.GetWaitForSampleAddressRange(),
-                               scenario.GetSetupFunctionAddressRange(),
-                               scenario.GetOuterFunctionAddressRange()});
-}
-
-// Checks that a stack that runs through a library that is unloading produces a
-// stack, and doesn't crash.
-// Unloading is synchronous on the Mac, so this test is inapplicable.
-#if !defined(OS_MACOSX)
-#define MAYBE_UnloadingLibrary UnloadingLibrary
-#else
-#define MAYBE_UnloadingLibrary DISABLED_UnloadingLibrary
-#endif
-PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_UnloadingLibrary) {
-  TestLibraryUnload(false, module_cache());
-}
-
-// Checks that a stack that runs through a library that has been unloaded
-// produces a stack, and doesn't crash.
-// macOS ASAN is not yet supported - crbug.com/718628.
-#if !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
-#define MAYBE_UnloadedLibrary UnloadedLibrary
-#else
-#define MAYBE_UnloadedLibrary DISABLED_UnloadedLibrary
-#endif
-PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_UnloadedLibrary) {
-  TestLibraryUnload(true, module_cache());
 }
 
 // Checks that different threads can be sampled in parallel.
