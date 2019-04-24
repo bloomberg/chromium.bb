@@ -294,10 +294,12 @@ void BluetoothGattCharacteristicServiceProviderImpl::ReadValue(
   DCHECK(delegate_);
   delegate_->GetValue(
       device_path,
-      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnReadValue,
-                 weak_ptr_factory_.GetWeakPtr(), method_call, response_sender),
-      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnFailure,
-                 weak_ptr_factory_.GetWeakPtr(), method_call, response_sender));
+      base::BindOnce(
+          &BluetoothGattCharacteristicServiceProviderImpl::OnReadValue,
+          weak_ptr_factory_.GetWeakPtr(), method_call, response_sender),
+      base::BindOnce(&BluetoothGattCharacteristicServiceProviderImpl::OnFailure,
+                     weak_ptr_factory_.GetWeakPtr(), method_call,
+                     response_sender));
 }
 
 void BluetoothGattCharacteristicServiceProviderImpl::WriteValue(
@@ -337,10 +339,12 @@ void BluetoothGattCharacteristicServiceProviderImpl::WriteValue(
   DCHECK(delegate_);
   delegate_->SetValue(
       device_path, value,
-      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnWriteValue,
-                 weak_ptr_factory_.GetWeakPtr(), method_call, response_sender),
-      base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnFailure,
-                 weak_ptr_factory_.GetWeakPtr(), method_call, response_sender));
+      base::BindOnce(
+          &BluetoothGattCharacteristicServiceProviderImpl::OnWriteValue,
+          weak_ptr_factory_.GetWeakPtr(), method_call, response_sender),
+      base::BindOnce(&BluetoothGattCharacteristicServiceProviderImpl::OnFailure,
+                     weak_ptr_factory_.GetWeakPtr(), method_call,
+                     response_sender));
 }
 
 void BluetoothGattCharacteristicServiceProviderImpl::PrepareWriteValue(
