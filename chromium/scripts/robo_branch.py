@@ -193,3 +193,18 @@ def IsCommitOnThisBranch(robo_configuration, commit_title):
   titles = check_output(["git", "log", "--format=%s",
           "origin/master..%s" % robo_configuration.branch_name()])
   return commit_title in titles
+
+def IsPatchesFileDone(robo_configuration):
+  """Return False if and only if the patches file isn't checked in."""
+  if IsCommitOnThisBranch(
+                          robo_configuration,
+                          robo_configuration.patches_commit_title()):
+    log("Skipping patches file since already committed")
+    return True
+  return False
+
+def UpdatePatchesFileUnconditionally(robo_configuration):
+  """Update the patches file."""
+  WritePatchesReadme(robo_configuration)
+  AddAndCommit(robo_configuration,
+               robo_configuration.patches_commit_title())
