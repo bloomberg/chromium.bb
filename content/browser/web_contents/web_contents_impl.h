@@ -66,6 +66,8 @@
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/native_theme/dark_mode_observer.h"
+#include "ui/native_theme/native_theme.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/nfc_host.h"
@@ -1464,6 +1466,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // |current_fullscreen_frame_| and notify observers whenever it changes.
   void FullscreenFrameSetUpdated();
 
+  // Called by DarkModeObserver when the dark mode state changes; triggers a
+  // preference update.
+  void OnDarkModeChanged(bool dark_mode);
+
   // Data for core operation ---------------------------------------------------
 
   // Delegate for notifying our owner about stuff. Not owned by us.
@@ -1853,6 +1859,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // If non-null then this WebContents is embedded in a portal and its outer
   // WebContents can be found by using GetOuterWebContents().
   Portal* portal_ = nullptr;
+
+  // Observe dark mode native theme changes to notify the renderer about
+  // preferred color scheme changes.
+  ui::DarkModeObserver dark_mode_observer_{
+      ui::NativeTheme::GetInstanceForWeb(),
+      base::BindRepeating(&WebContentsImpl::OnDarkModeChanged,
+                          base::Unretained(this))};
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
   base::WeakPtrFactory<WebContentsImpl> weak_factory_;

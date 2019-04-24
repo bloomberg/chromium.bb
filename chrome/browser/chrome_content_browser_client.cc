@@ -3361,6 +3361,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
     }
   }
 
+  auto* native_theme = ui::NativeTheme::GetInstanceForWeb();
 #if !defined(OS_ANDROID)
   if (IsAutoplayAllowedByPolicy(contents, prefs)) {
     // If autoplay is allowed by policy then force the no user gesture required
@@ -3378,14 +3379,16 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
             ? content::AutoplayPolicy::kDocumentUserActivationRequired
             : content::AutoplayPolicy::kNoUserGestureRequired;
   }
+  web_prefs->preferred_color_scheme = native_theme->SystemDarkModeEnabled()
+                                          ? blink::PreferredColorScheme::kDark
+                                          : blink::PreferredColorScheme::kLight;
 #endif  // !defined(OS_ANDROID)
 
   web_prefs->translate_service_available = TranslateService::IsAvailable(prefs);
 
   // Apply native CaptionStyle parameters.
   // TODO(ellyjones): Support more native caption styling.
-  ui::CaptionStyle style =
-      ui::NativeTheme::GetInstanceForWeb()->GetSystemCaptionStyle();
+  ui::CaptionStyle style = native_theme->GetSystemCaptionStyle();
   web_prefs->text_track_background_color = style.background_color;
   web_prefs->text_track_text_color = style.text_color;
   web_prefs->text_track_text_size = style.text_size;

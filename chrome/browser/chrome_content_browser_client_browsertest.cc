@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -592,5 +593,36 @@ IN_PROC_BROWSER_TEST_F(OpenWindowFromNTPBrowserTest,
   EXPECT_FALSE(instant_service->IsInstantProcess(
       opened_tab->GetMainFrame()->GetProcess()->GetID()));
 }
+
+class PrefersColorSchemeTest : public testing::WithParamInterface<bool>,
+                               public InProcessBrowserTest {
+ protected:
+  PrefersColorSchemeTest() = default;
+  const char* ExpectedColorScheme() const {
+    return ui::NativeTheme::GetInstanceForNativeUi()->SystemDarkModeEnabled()
+               ? "dark"
+               : "light";
+  }
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII("enable-blink-features",
+                                    "MediaQueryPrefersColorScheme");
+    if (GetParam())
+      command_line->AppendSwitch("force-dark-mode");
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(PrefersColorSchemeTest, PrefersColorScheme) {
+  ui_test_utils::NavigateToURL(
+      browser(),
+      ui_test_utils::GetTestUrl(
+          base::FilePath(base::FilePath::kCurrentDirectory),
+          base::FilePath(FILE_PATH_LITERAL("prefers-color-scheme.html"))));
+  base::string16 tab_title;
+  ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(), &tab_title));
+  EXPECT_EQ(base::ASCIIToUTF16(ExpectedColorScheme()), tab_title);
+}
+
+INSTANTIATE_TEST_SUITE_P(All, PrefersColorSchemeTest, testing::Bool());
 
 }  // namespace content

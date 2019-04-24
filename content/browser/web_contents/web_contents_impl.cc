@@ -612,6 +612,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 
   registry_.AddInterface(base::BindRepeating(
       &WebContentsImpl::OnColorChooserFactoryRequest, base::Unretained(this)));
+
+  dark_mode_observer_.Start();
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -7034,6 +7036,10 @@ void WebContentsImpl::MediaMutedStatusChanged(const MediaPlayerId& id,
 
 void WebContentsImpl::SetVisibilityForChildViews(bool visible) {
   GetMainFrame()->SetVisibilityForChildViews(visible);
+}
+
+void WebContentsImpl::OnDarkModeChanged(bool dark_mode) {
+  NotifyPreferencesChanged();
 }
 
 }  // namespace content
