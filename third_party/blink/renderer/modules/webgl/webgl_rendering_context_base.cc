@@ -1226,6 +1226,11 @@ void WebGLRenderingContextBase::InitializeNewContext() {
   for (int i = 0; i < kWebGLExtensionNameCount; ++i)
     extension_enabled_[i] = false;
 
+  // This limits the count of threads if the extension is yet to be requested.
+  if (String(ContextGL()->GetString(GL_EXTENSIONS))
+          .Contains("GL_KHR_parallel_shader_compile")) {
+    ContextGL()->MaxShaderCompilerThreadsKHR(2);
+  }
   is_web_gl2_formats_types_added_ = false;
   is_web_gl2_tex_image_source_formats_types_added_ = false;
   is_web_gl2_internal_formats_copy_tex_image_added_ = false;
