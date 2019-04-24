@@ -10,6 +10,14 @@
 
 class GrContext;
 
+#if __OBJC__
+@protocol MTLDevice;
+using MTLDevicePtr = id<MTLDevice>;
+#else
+class MTLDeviceProtocol;
+using MTLDevicePtr = MTLDeviceProtocol*;
+#endif
+
 namespace viz {
 
 // The MetalContextProvider provides a Metal-backed GrContext.
@@ -21,7 +29,7 @@ class VIZ_METAL_CONTEXT_PROVIDER_EXPORT MetalContextProvider {
   virtual ~MetalContextProvider() {}
 
   virtual GrContext* GetGrContext() = 0;
-  virtual void* GetMTLDevice() = 0;
+  virtual MTLDevicePtr GetMTLDevice() = 0;
 };
 
 }  // namespace viz

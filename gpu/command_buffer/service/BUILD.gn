@@ -355,6 +355,7 @@ target(link_target_type, "gles2_sources") {
     libs = [
       "Cocoa.framework",
       "IOSurface.framework",
+      "Metal.framework",
       "OpenGL.framework",
     ]
   }

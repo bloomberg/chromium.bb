@@ -72,7 +72,8 @@ SharedImageFactory::SharedImageFactory(
     : mailbox_manager_(mailbox_manager),
       shared_image_manager_(shared_image_manager),
       memory_tracker_(std::make_unique<MemoryTypeTracker>(memory_tracker)),
-      using_vulkan_(context_state && context_state->GrContextIsVulkan()) {
+      using_vulkan_(context_state && context_state->GrContextIsVulkan()),
+      using_metal_(context_state && context_state->GrContextIsMetal()) {
   if (use_gl) {
     gl_backing_factory_ = std::make_unique<SharedImageBackingFactoryGLTexture>(
         gpu_preferences, workarounds, gpu_feature_info, image_factory);
@@ -278,8 +279,9 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
   bool gl_usage = usage & SHARED_IMAGE_USAGE_GLES2;
   bool share_between_threads = IsSharedBetweenThreads(usage);
   bool share_between_gl_vulkan = gl_usage && vulkan_usage;
-  bool using_interop_factory =
-      share_between_threads || share_between_gl_vulkan || using_dawn;
+  bool using_interop_factory = share_between_threads ||
+                               share_between_gl_vulkan || using_dawn ||
+                               using_metal_;
   // wrapped_sk_image_factory_ is only used for OOPR and supports
   // a limited number of flags (e.g. no SHARED_IMAGE_USAGE_SCANOUT).
   constexpr auto kWrappedSkImageUsage = SHARED_IMAGE_USAGE_RASTER |

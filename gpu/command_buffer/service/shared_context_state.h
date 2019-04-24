@@ -88,6 +88,9 @@ class GPU_GLES2_EXPORT SharedContextState
   viz::VulkanContextProvider* vk_context_provider() {
     return vk_context_provider_;
   }
+  viz::MetalContextProvider* metal_context_provider() {
+    return metal_context_provider_;
+  }
   gl::ProgressReporter* progress_reporter() const { return progress_reporter_; }
   GrContext* gr_context() { return gr_context_; }
   gles2::FeatureInfo* feature_info() { return feature_info_.get(); }

@@ -29,12 +29,14 @@ struct API_AVAILABLE(macos(10.11)) MetalContextProviderImpl
   }
   ~MetalContextProviderImpl() override {}
   GrContext* GetGrContext() override { return gr_context_.get(); }
-  void* GetMTLDevice() override { return device_.get(); }
+  MTLDevicePtr GetMTLDevice() override { return device_.get(); }
 
  private:
   base::scoped_nsprotocol<id<MTLDevice>> device_;
   base::scoped_nsprotocol<id<MTLCommandQueue>> command_queue_;
   sk_sp<GrContext> gr_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(MetalContextProviderImpl);
 };
 
 }  // namespace
@@ -56,6 +58,7 @@ std::unique_ptr<MetalContextProvider> MetalContextProvider::Create() {
       device_to_use.reset(MTLCreateSystemDefaultDevice());
     if (device_to_use)
       return std::make_unique<MetalContextProviderImpl>(device_to_use);
+    DLOG(ERROR) << "Failed to create MTLDevice.";
   }
   // If no device was found, or if the macOS version is too old for Metal,
   // return no context provider.

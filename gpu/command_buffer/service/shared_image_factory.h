@@ -104,6 +104,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   SharedImageManager* shared_image_manager_;
   std::unique_ptr<MemoryTypeTracker> memory_tracker_;
   const bool using_vulkan_;
+  const bool using_metal_;
 
   // The set of SharedImages which have been created (and are being kept alive)
   // by this factory.

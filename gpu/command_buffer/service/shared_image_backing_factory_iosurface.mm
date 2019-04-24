@@ -5,8 +5,10 @@
 #include "gpu/command_buffer/service/shared_image_backing_factory_iosurface.h"
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "components/viz/common/gpu/metal_context_provider.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -20,6 +22,8 @@
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_io_surface.h"
+
+#import <Metal/Metal.h>
 
 // Usage of BUILDFLAG(USE_DAWN) needs to be after the include for
 // ui/gl/buildflags.h
@@ -100,6 +104,57 @@ base::Optional<DawnTextureFormat> GetDawnFormat(viz::ResourceFormat format) {
   }
 }
 
+base::scoped_nsprotocol<id<MTLTexture>> API_AVAILABLE(macos(10.11))
+    CreateMetalTexture(id<MTLDevice> mtl_device,
+                       IOSurfaceRef io_surface,
+                       const gfx::Size& size,
+                       viz::ResourceFormat format) {
+  base::scoped_nsprotocol<id<MTLTexture>> mtl_texture;
+  MTLPixelFormat mtl_pixel_format;
+  switch (format) {
+    case viz::RED_8:
+    case viz::ALPHA_8:
+    case viz::LUMINANCE_8:
+      mtl_pixel_format = MTLPixelFormatR8Unorm;
+      break;
+    case viz::RG_88:
+      mtl_pixel_format = MTLPixelFormatRG8Unorm;
+      break;
+    case viz::RGBA_8888:
+      mtl_pixel_format = MTLPixelFormatRGBA8Unorm;
+      break;
+    case viz::BGRA_8888:
+      mtl_pixel_format = MTLPixelFormatBGRA8Unorm;
+      break;
+    default:
+      // TODO(https://crbug.com/952063): Add support for all formats supported
+      // by GLImageIOSurface.
+      DLOG(ERROR) << "Resource format not yet supported in Metal.";
+      return mtl_texture;
+  }
+  base::scoped_nsobject<MTLTextureDescriptor> mtl_tex_desc(
+      [MTLTextureDescriptor new]);
+  [mtl_tex_desc setTextureType:MTLTextureType2D];
+  [mtl_tex_desc
+      setUsage:MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget];
+  [mtl_tex_desc setPixelFormat:mtl_pixel_format];
+  [mtl_tex_desc setWidth:size.width()];
+  [mtl_tex_desc setHeight:size.height()];
+  [mtl_tex_desc setDepth:1];
+  [mtl_tex_desc setMipmapLevelCount:1];
+  [mtl_tex_desc setArrayLength:1];
+  [mtl_tex_desc setSampleCount:1];
+  // TODO(https://crbug.com/952063): For zero-copy resources that are populated
+  // on the CPU (e.g, video frames), it may be that MTLStorageModeManaged will
+  // be more appropriate.
+  [mtl_tex_desc setStorageMode:MTLStorageModePrivate];
+  mtl_texture.reset([mtl_device newTextureWithDescriptor:mtl_tex_desc
+                                               iosurface:io_surface
+                                                   plane:0]);
+  DCHECK(mtl_texture);
+  return mtl_texture;
+}
+
 }  // anonymous namespace
 
 // Representation of a SharedImageBackingIOSurface as a GL Texture.
@@ -141,17 +196,17 @@ class SharedImageRepresentationSkiaIOSurface
       scoped_refptr<SharedContextState> context_state,
       sk_sp<SkPromiseImageTexture> promise_texture,
       MemoryTypeTracker* tracker,
-      gles2::Texture* texture)
+      gles2::Texture* gles2_texture)
       : SharedImageRepresentationSkia(manager, backing, tracker),
         context_state_(std::move(context_state)),
         promise_texture_(std::move(promise_texture)),
-        texture_(texture) {
-    DCHECK(texture_);
+        gles2_texture_(gles2_texture) {
     DCHECK(promise_texture_);
   }
 
   ~SharedImageRepresentationSkiaIOSurface() override {
-    texture_->RemoveLightweightRef(has_context());
+    if (gles2_texture_)
+      gles2_texture_->RemoveLightweightRef(has_context());
   }
 
   sk_sp<SkSurface> BeginWriteAccess(
@@ -169,9 +224,11 @@ class SharedImageRepresentationSkiaIOSurface
   }
 
   void EndWriteAccess(sk_sp<SkSurface> surface) override {
-    FlushIOSurfaceGLOperations();
+    if (context_state_->GrContextIsGL())
+      FlushIOSurfaceGLOperations();
 
-    if (texture_->IsLevelCleared(texture_->target(), 0)) {
+    if (gles2_texture_ &&
+        gles2_texture_->IsLevelCleared(gles2_texture_->target(), 0)) {
       backing()->SetCleared();
     }
   }
@@ -182,12 +239,15 @@ class SharedImageRepresentationSkiaIOSurface
     return promise_texture_;
   }
 
-  void EndReadAccess() override { FlushIOSurfaceGLOperations(); }
+  void EndReadAccess() override {
+    if (context_state_->GrContextIsGL())
+      FlushIOSurfaceGLOperations();
+  }
 
  private:
   scoped_refptr<SharedContextState> context_state_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
-  gles2::Texture* texture_;
+  gles2::Texture* const gles2_texture_;
 };
 
 // Representation of a SharedImageBackingIOSurface as a Dawn Texture.
@@ -362,20 +422,39 @@ class SharedImageBackingIOSurface : public SharedImageBacking {
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override {
-    gles2::Texture* texture = GenGLTexture();
-    if (!texture) {
-      return nullptr;
+    gles2::Texture* gles2_texture = nullptr;
+    GrBackendTexture gr_backend_texture;
+    if (context_state->GrContextIsGL()) {
+      gles2_texture = GenGLTexture();
+      if (!gles2_texture)
+        return nullptr;
+      GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
+                          gles2_texture->target(), size(),
+                          gles2_texture->service_id(), format(),
+                          &gr_backend_texture);
     }
-
-    GrBackendTexture backend_texture;
-    GetGrBackendTexture(gl::GLContext::GetCurrent()->GetVersionInfo(),
-                        texture->target(), size(), texture->service_id(),
-                        format(), &backend_texture);
+    if (context_state->GrContextIsMetal()) {
+      if (@available(macOS 10.11, *)) {
+        id<MTLDevice> mtl_device =
+            context_state->metal_context_provider()->GetMTLDevice();
+        base::scoped_nsprotocol<id<MTLTexture>> mtl_texture =
+            CreateMetalTexture(mtl_device, io_surface_, size(), format());
+        DCHECK(mtl_texture);
+        // GrBackendTexture will take ownership of the MTLTexture passed in the
+        // GrMtlTextureInfo argument, so pass in a retained pointer.
+        GrMtlTextureInfo info;
+        info.fTexture = [mtl_texture retain];
+        gr_backend_texture = GrBackendTexture(size().width(), size().height(),
+                                              GrMipMapped::kNo, info);
+      } else {
+        return nullptr;
+      }
+    }
     sk_sp<SkPromiseImageTexture> promise_texture =
-        SkPromiseImageTexture::Make(backend_texture);
+        SkPromiseImageTexture::Make(gr_backend_texture);
     return std::make_unique<SharedImageRepresentationSkiaIOSurface>(
         manager, this, std::move(context_state), promise_texture, tracker,
-        texture);
+        gles2_texture);
   }
 
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
