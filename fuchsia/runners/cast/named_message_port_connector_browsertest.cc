@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
       frame_.get());
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       &controller, fuchsia::web::LoadUrlParams(), test_url.spec()));
-  navigation_listener_.RunUntilNavigationEquals(test_url, {});
+  navigation_listener_.RunUntilUrlEquals(test_url);
 
   receive_port_run_loop.Run();
 

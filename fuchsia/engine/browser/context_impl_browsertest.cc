@@ -94,7 +94,7 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, VerifyPersistentCookieStore) {
 
   cr_fuchsia::LoadUrlAndExpectResponse(
       &navigation_controller, fuchsia::web::LoadUrlParams(), cookie_url.spec());
-  navigation_listener_.RunUntilNavigationEquals(cookie_url, {});
+  navigation_listener_.RunUntilUrlEquals(cookie_url);
 
   auto cookies = GetCookies();
   bool found = false;
@@ -147,7 +147,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoContextImplTest, NavigateFrame) {
 
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       &controller, fuchsia::web::LoadUrlParams(), url::kAboutBlankURL));
-  navigation_listener_.RunUntilNavigationEquals(GURL(url::kAboutBlankURL), {});
+  navigation_listener_.RunUntilUrlEquals(GURL(url::kAboutBlankURL));
 
   frame.Unbind();
 }
@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoContextImplTest, VerifyInMemoryCookieStore) {
 
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       &controller, fuchsia::web::LoadUrlParams(), cookie_url.spec()));
-  navigation_listener_.RunUntilNavigationEquals(cookie_url, {});
+  navigation_listener_.RunUntilUrlEquals(cookie_url);
 
   auto cookies = GetCookies();
   bool found = false;

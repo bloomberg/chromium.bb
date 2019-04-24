@@ -59,7 +59,7 @@ class QueryableDataBindingsTest : public cr_fuchsia::WebEngineBrowserTest {
           ASSERT_TRUE(result.is_response());
         });
 
-    navigation_listener_.RunUntilNavigationEquals(test_url_, unique_title);
+    navigation_listener_.RunUntilUrlAndTitleEquals(test_url_, unique_title);
   }
 
   // Communicates with the page to read an entry from its QueryableData store.
@@ -148,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, VariousTypes) {
   frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
-  navigation_listener_.RunUntilNavigationEquals(test_url_, {});
+  navigation_listener_.RunUntilUrlEquals(test_url_);
 
   EXPECT_EQ(CallQueryPlatformValue("string"), "\"foo\"");
   EXPECT_EQ(CallQueryPlatformValue("number"), "123");
@@ -167,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, NoValues) {
   frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
-  navigation_listener_.RunUntilNavigationEquals(test_url_, {});
+  navigation_listener_.RunUntilUrlEquals(test_url_);
 
   EXPECT_EQ(CallQueryPlatformValue("string"), "null");
 }
@@ -187,7 +187,7 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, AtPageRuntime) {
   frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
-  navigation_listener_.RunUntilNavigationEquals(test_url_, {});
+  navigation_listener_.RunUntilUrlEquals(test_url_);
 
   SynchronizeWithPage();
 
@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(QueryableDataBindingsTest, AtPageLoad) {
   frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::INFO);
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       &controller, fuchsia::web::LoadUrlParams(), test_url_.spec()));
-  navigation_listener_.RunUntilNavigationEquals(test_url_, {});
+  navigation_listener_.RunUntilUrlEquals(test_url_);
 
   SynchronizeWithPage();
 

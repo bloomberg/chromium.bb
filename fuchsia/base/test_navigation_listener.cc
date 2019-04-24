@@ -36,15 +36,12 @@ TestNavigationListener::TestNavigationListener() {
 
 TestNavigationListener::~TestNavigationListener() = default;
 
-void TestNavigationListener::RunUntilNavigationEquals(
-    const GURL& expected_url,
-    const base::Optional<std::string>& expected_title) {
-  DCHECK(expected_url.is_valid());
+void TestNavigationListener::RunUntilNavigationStateMatches(
+    const fuchsia::web::NavigationState& expected_state) {
   DCHECK(before_ack_);
 
-  // Spin the runloop until the expected condition is met.
-  while (expected_url != current_url_ ||
-         (expected_title && *expected_title != current_title_)) {
+  // Spin the runloop until the expected conditions are met.
+  while (!AllFieldsMatch(expected_state)) {
     base::RunLoop run_loop;
     base::AutoReset<BeforeAckCallback> callback_setter(
         &before_ack_,
@@ -54,6 +51,21 @@ void TestNavigationListener::RunUntilNavigationEquals(
   }
 }
 
+void TestNavigationListener::RunUntilUrlEquals(const GURL& expected_url) {
+  fuchsia::web::NavigationState state;
+  state.set_url(expected_url.spec());
+  RunUntilNavigationStateMatches(state);
+}
+
+void TestNavigationListener::RunUntilUrlAndTitleEquals(
+    const GURL& expected_url,
+    const std::string& expected_title) {
+  fuchsia::web::NavigationState state;
+  state.set_url(expected_url.spec());
+  state.set_title(expected_title);
+  RunUntilNavigationStateMatches(state);
+}
+
 void TestNavigationListener::OnNavigationStateChanged(
     fuchsia::web::NavigationState change,
     OnNavigationStateChangedCallback callback) {
@@ -61,9 +73,13 @@ void TestNavigationListener::OnNavigationStateChanged(
 
   // Update our local cache of the Frame's current state.
   if (change.has_url())
-    current_url_ = GURL(change.url());
+    current_state_.set_url(change.url());
   if (change.has_title())
-    current_title_ = change.title();
+    current_state_.set_title(change.title());
+  if (change.has_can_go_forward())
+    current_state_.set_can_go_forward(change.can_go_forward());
+  if (change.has_can_go_back())
+    current_state_.set_can_go_back(change.can_go_back());
 
   // Signal readiness for the next navigation event.
   before_ack_.Run(change, std::move(callback));
@@ -72,6 +88,37 @@ void TestNavigationListener::OnNavigationStateChanged(
 void TestNavigationListener::SetBeforeAckHook(BeforeAckCallback send_ack_cb) {
   DCHECK(send_ack_cb);
   before_ack_ = send_ack_cb;
+}
+
+bool TestNavigationListener::AllFieldsMatch(
+    const fuchsia::web::NavigationState& expected) {
+  bool all_equal = true;
+
+  if (expected.has_url()) {
+    if (!current_state_.has_url() || expected.url() != current_state_.url()) {
+      all_equal = false;
+    }
+  }
+  if (expected.has_title()) {
+    if (!current_state_.has_title() ||
+        expected.title() != current_state_.title()) {
+      all_equal = false;
+    }
+  }
+  if (expected.has_can_go_forward()) {
+    if (!current_state_.has_can_go_forward() ||
+        expected.can_go_forward() != current_state_.can_go_forward()) {
+      all_equal = false;
+    }
+  }
+  if (expected.has_can_go_back()) {
+    if (!current_state_.has_can_go_back() ||
+        expected.can_go_back() != current_state_.can_go_back()) {
+      all_equal = false;
+    }
+  }
+
+  return all_equal;
 }
 
 }  // namespace cr_fuchsia
