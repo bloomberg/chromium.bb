@@ -532,7 +532,7 @@ body:not(.w-letterbox).preview-vertical-dock #camera {
   position: relative;
 }
 
-body:.w-letterbox.w-letterbox-l #preview-wrapper {
+body.w-letterbox.w-letterbox-l #preview-wrapper {
   left: 72px;
 }
 
@@ -540,12 +540,12 @@ body:not(.w-letterbox).preview-vertical-dock #preview-wrapper {
   bottom: calc((var(--bottom-line) + (var(--big-icon) / 2)) + 12px);
 }
 
-body:not(.mode-switching).square-mode #preview-wrapper {
+body.square-preview #preview-wrapper {
   height: 0; /* Calculate at runtime. */
   width: 0; /* Calculate at runtime. */
 }
 
-body:not(.mode-switching).square-mode #preview-video {
+body.square-preview #preview-video {
   left: 0; /* Calculate at runtime. */
   position: absolute;
   top: 0; /* Calculate at runtime. */

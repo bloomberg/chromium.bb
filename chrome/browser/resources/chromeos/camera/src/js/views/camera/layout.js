@@ -29,16 +29,16 @@ cca.views.camera.Layout = function() {
    * @type {CSSStyleDeclaration}
    * @private
    */
-  this.squareViewport_ = cca.views.camera.Layout.cssStyle_(
-      'body:not(.mode-switching).square-mode #preview-wrapper');
+  this.squareViewport_ =
+      cca.views.camera.Layout.cssStyle_('body.square-preview #preview-wrapper');
 
   /**
    * CSS style of the video in square mode.
    * @type {CSSStyleDeclaration}
    * @private
    */
-  this.squareVideo_ = cca.views.camera.Layout.cssStyle_(
-      'body:not(.mode-switching).square-mode #preview-video');
+  this.squareVideo_ =
+      cca.views.camera.Layout.cssStyle_('body.square-preview #preview-video');
 
   // End of properties, seal the object.
   Object.seal(this);
@@ -76,13 +76,17 @@ cca.views.camera.Layout.prototype.updatePreviewSize_ = function(fullWindow) {
   // as they are not updated immediately.
   var video = document.querySelector('#preview-video');
   if (video.videoHeight) {
-    var f = fullWindow ? Math.min : Math.max;
-    var scale = f(window.innerHeight / video.videoHeight,
-        window.innerWidth / video.videoWidth);
+    var scale = cca.state.get('square-mode') ?
+        Math.min(window.innerHeight, window.innerWidth) /
+            Math.min(video.videoHeight, video.videoWidth) :
+        Math.min(
+            window.innerHeight / video.videoHeight,
+            window.innerWidth / video.videoWidth);
     video.width = scale * video.videoWidth;
     video.height = scale * video.videoHeight;
   }
   var [viewportW, viewportH] = [video.width, video.height];
+  cca.state.set('square-preview', cca.state.get('square-mode'));
   if (cca.state.get('square-mode')) {
     viewportW = viewportH = Math.min(video.width, video.height);
     this.squareVideo_.setProperty('left', `${(viewportW - video.width) / 2}px`);
