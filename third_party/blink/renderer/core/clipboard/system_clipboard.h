@@ -36,7 +36,6 @@ class CORE_EXPORT SystemClipboard {
   Vector<String> ReadAvailableTypes();
 
   String ReadPlainText();
-  String ReadPlainText(mojom::ClipboardBuffer buffer);
   void WritePlainText(const String&, SmartReplaceOption = kCannotSmartReplace);
 
   // If no data is read, an empty string will be returned and all out parameters
@@ -53,7 +52,7 @@ class CORE_EXPORT SystemClipboard {
 
   String ReadRTF();
 
-  SkBitmap ReadImage(mojom::ClipboardBuffer);
+  SkBitmap ReadImage();
 
   // Write the image and its associated tag (bookmark/HTML types).
   void WriteImageWithTag(Image*, const KURL&, const String& title);

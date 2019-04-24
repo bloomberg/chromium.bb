@@ -199,8 +199,7 @@ void ClipboardPromise::HandleReadTextWithPermission(PermissionStatus status) {
     return;
   }
 
-  String text = SystemClipboard::GetInstance().ReadPlainText(
-      mojom::ClipboardBuffer::kStandard);
+  String text = SystemClipboard::GetInstance().ReadPlainText();
   script_promise_resolver_->Resolve(text);
 }
 

@@ -23,8 +23,7 @@ class ClipboardImageReader final : public ClipboardReader {
   ~ClipboardImageReader() override = default;
 
   Blob* ReadFromSystem() override {
-    SkBitmap bitmap = SystemClipboard::GetInstance().ReadImage(
-        mojom::ClipboardBuffer::kStandard);
+    SkBitmap bitmap = SystemClipboard::GetInstance().ReadImage();
 
     // Encode bitmap to Vector<uint8_t> on the main thread.
     SkPixmap pixmap;
@@ -46,8 +45,7 @@ class ClipboardTextReader final : public ClipboardReader {
   ~ClipboardTextReader() override = default;
 
   Blob* ReadFromSystem() override {
-    String plain_text = SystemClipboard::GetInstance().ReadPlainText(
-        mojom::ClipboardBuffer::kStandard);
+    String plain_text = SystemClipboard::GetInstance().ReadPlainText();
 
     // Encode WTF String to UTF-8, the standard text format for blobs.
     CString utf_text = plain_text.Utf8();

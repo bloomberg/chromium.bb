@@ -135,8 +135,7 @@ File* DataObjectItem::GetAsFile() const {
 
   DCHECK_EQ(source_, kClipboardSource);
   if (GetType() == kMimeTypeImagePng) {
-    SkBitmap image = SystemClipboard::GetInstance().ReadImage(
-        mojom::ClipboardBuffer::kStandard);
+    SkBitmap image = SystemClipboard::GetInstance().ReadImage();
     std::vector<unsigned char> png_data;
     if (gfx::PNGCodec::FastEncodeBGRASkBitmap(image, false, &png_data)) {
       auto data = std::make_unique<BlobData>();
