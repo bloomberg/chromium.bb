@@ -28,7 +28,10 @@ ExternalVkImageSkiaRepresentation::~ExternalVkImageSkiaRepresentation() {
 
 sk_sp<SkSurface> ExternalVkImageSkiaRepresentation::BeginWriteAccess(
     int final_msaa_count,
-    const SkSurfaceProps& surface_props) {
+    const SkSurfaceProps& surface_props,
+    std::vector<GrBackendSemaphore>* begin_semaphores,
+    std::vector<GrBackendSemaphore>* end_semaphores) {
+  // TODO(penghuang): provide begin and end semaphores.
   DCHECK_EQ(access_mode_, kNone) << "Previous access hasn't ended yet";
   DCHECK(!surface_);
 
