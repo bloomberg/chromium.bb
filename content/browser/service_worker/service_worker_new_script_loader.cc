@@ -478,7 +478,7 @@ void ServiceWorkerNewScriptLoader::OnComplete(
 
 // End of URLLoaderClient ------------------------------------------------------
 
-void ServiceWorkerNewScriptLoader::WillWriteInfo(
+int ServiceWorkerNewScriptLoader::WillWriteInfo(
     scoped_refptr<HttpResponseInfoIOBuffer> response_info) {
   DCHECK_EQ(type_, Type::kResume);
   DCHECK(response_info);
@@ -492,6 +492,22 @@ void ServiceWorkerNewScriptLoader::WillWriteInfo(
   ServiceWorkerUtils::SendHttpResponseInfoToClient(
       info, original_options_, request_start_, base::TimeTicks::Now(),
       response_info->response_data_size, client_.get());
+
+  mojo::ScopedDataPipeConsumerHandle client_consumer;
+  if (mojo::CreateDataPipe(nullptr, &client_producer_, &client_consumer) !=
+      MOJO_RESULT_OK) {
+    // Reports error to cache writer and finally the loader would process this
+    // failure in OnCacheWriterResumed()
+    return net::ERR_INSUFFICIENT_RESOURCES;
+  }
+
+  // Pass the consumer handle to the client.
+  client_->OnStartLoadingResponseBody(std::move(client_consumer));
+  client_producer_watcher_.Watch(
+      client_producer_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+      base::BindRepeating(&ServiceWorkerNewScriptLoader::OnClientWritable,
+                          weak_factory_.GetWeakPtr()));
+  return net::OK;
 }
 
 void ServiceWorkerNewScriptLoader::OnClientWritable(MojoResult) {
@@ -539,28 +555,12 @@ int ServiceWorkerNewScriptLoader::WillWriteData(
     base::OnceCallback<void(net::Error)> callback) {
   DCHECK_EQ(type_, Type::kResume);
   DCHECK(!write_observer_complete_callback_);
+  DCHECK(client_producer_);
+
   data_to_send_ = std::move(data);
   data_length_ = length;
   bytes_sent_to_client_ = 0;
   write_observer_complete_callback_ = std::move(callback);
-
-  // Send a data pipe to the client if it's the first call of WillWriteData().
-  if (!client_producer_) {
-    mojo::ScopedDataPipeConsumerHandle client_consumer;
-    if (mojo::CreateDataPipe(nullptr, &client_producer_, &client_consumer) !=
-        MOJO_RESULT_OK) {
-      // Report error to cache writer and finally the loader would process this
-      // failure in OnCacheWriterResumed().
-      return net::ERR_INSUFFICIENT_RESOURCES;
-    }
-
-    // Pass the consumer handle for responding with the response to the client.
-    client_->OnStartLoadingResponseBody(std::move(client_consumer));
-    client_producer_watcher_.Watch(
-        client_producer_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-        base::BindRepeating(&ServiceWorkerNewScriptLoader::OnClientWritable,
-                            weak_factory_.GetWeakPtr()));
-  }
   client_producer_watcher_.ArmOrNotify();
   return net::ERR_IO_PENDING;
 }

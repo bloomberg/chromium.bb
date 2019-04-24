@@ -157,7 +157,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
 
   // Implements ServiceWorkerCacheWriter::WriteObserver.
   // These two methods are only used for resume loaders.
-  void WillWriteInfo(
+  int WillWriteInfo(
       scoped_refptr<HttpResponseInfoIOBuffer> response_info) override;
   int WillWriteData(scoped_refptr<net::IOBuffer> data,
                     int length,

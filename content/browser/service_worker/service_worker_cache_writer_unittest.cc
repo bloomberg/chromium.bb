@@ -30,9 +30,10 @@ class MockServiceWorkerCacheWriterObserver
   MockServiceWorkerCacheWriterObserver() : data_length_(0), result_(net::OK) {}
   ~MockServiceWorkerCacheWriterObserver() {}
 
-  void WillWriteInfo(
+  int WillWriteInfo(
       scoped_refptr<HttpResponseInfoIOBuffer> response_info) override {
     response_info_ = std::move(response_info);
+    return net::OK;
   }
 
   int WillWriteData(scoped_refptr<net::IOBuffer> data,
