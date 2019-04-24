@@ -72,8 +72,9 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
   //       ServiceWorkerInstalledScriptLoader.
   //    2) If compared script info exists and specifies that the script is
   //       installed in an old service worker but content has changed, then
-  //       resume the paused state in the compared script info to load the
-  //       script.
+  //       ServiceWorkerNewScriptLoader::CreateForResume() is called to create
+  //       a ServiceWorkerNewScriptLoader to resume the paused state in the
+  //       compared script info.
   //    3) For other cases or if ServiceWorkerImportedScriptsUpdateCheck is not
   //       enabled, serve from network with installing the script
   //       (use ServiceWorkerNewScriptLoader::CreateForNetworkOnly() to
@@ -126,11 +127,11 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
           return;
         case ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent:
           // Case D.2:
-          // TODO(https://crbug.com/648295): Currently, this case is treated
-          // the same as case D.3. In future, the paused state in compared
-          // script info should be resumed instead of a fresh download.
-          NOTIMPLEMENTED();
-          break;
+          mojo::MakeStrongBinding(
+              ServiceWorkerNewScriptLoader::CreateForResume(
+                  options, resource_request, std::move(client), version),
+              std::move(request));
+          return;
         case ServiceWorkerSingleScriptUpdateChecker::Result::kNotCompared:
           // This is invalid, as scripts in compared script info must have been
           // compared.
