@@ -4,6 +4,8 @@
 
 #include "base/test/scoped_task_environment.h"
 
+#include <memory>
+
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -317,12 +319,13 @@ class ScopedTaskEnvironment::TestTaskTracker
 
 ScopedTaskEnvironment::ScopedTaskEnvironment(
     MainThreadType main_thread_type,
-    ExecutionMode execution_control_mode,
+    ThreadPoolExecutionMode thread_pool_execution_mode,
     NowSource now_source,
+    ThreadingMode threading_mode,
     bool subclass_creates_default_taskrunner,
     trait_helpers::NotATraitTag)
     : main_thread_type_(main_thread_type),
-      execution_control_mode_(execution_control_mode),
+      thread_pool_execution_mode_(thread_pool_execution_mode),
       subclass_creates_default_taskrunner_(subclass_creates_default_taskrunner),
       sequence_manager_(
           CreateSequenceManagerForMainThreadType(main_thread_type)),
@@ -333,7 +336,6 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
       mock_clock_(mock_time_domain_ ? std::make_unique<TickClockBasedClock>(
                                           mock_time_domain_.get())
                                     : nullptr),
-      task_tracker_(new TestTaskTracker()),
       scoped_lazy_task_runner_list_for_testing_(
           std::make_unique<internal::ScopedLazyTaskRunnerListForTesting>()),
       // TODO(https://crbug.com/918724): Enable Run() timeouts even for
@@ -368,6 +370,16 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
     CompleteInitialization();
   }
 
+  if (threading_mode != ThreadingMode::MAIN_THREAD_ONLY)
+    InitializeThreadPool();
+
+  if (thread_pool_execution_mode_ == ThreadPoolExecutionMode::QUEUED &&
+      task_tracker_) {
+    CHECK(task_tracker_->DisallowRunTasks());
+  }
+}
+
+void ScopedTaskEnvironment::InitializeThreadPool() {
   // Instantiate a ThreadPool with 4 workers per pool. Having multiple
   // threads prevents deadlocks should some blocking APIs not use
   // ScopedBlockingCall. It also allows enough concurrency to allow TSAN to spot
@@ -376,8 +388,10 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
   const TimeDelta kSuggestedReclaimTime = TimeDelta::Max();
   const SchedulerWorkerPoolParams worker_pool_params(kMaxThreads,
                                                      kSuggestedReclaimTime);
+  auto task_tracker = std::make_unique<TestTaskTracker>();
+  task_tracker_ = task_tracker.get();
   ThreadPool::SetInstance(std::make_unique<internal::ThreadPoolImpl>(
-      "ScopedTaskEnvironment", WrapUnique(task_tracker_)));
+      "ScopedTaskEnvironment", std::move(task_tracker)));
   thread_pool_ = ThreadPool::GetInstance();
   ThreadPool::GetInstance()->Start({
     worker_pool_params, worker_pool_params
@@ -397,9 +411,6 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
         ThreadPool::InitParams::SharedWorkerPoolEnvironment::COM_MTA
 #endif
   });
-
-  if (execution_control_mode_ == ExecutionMode::QUEUED)
-    CHECK(task_tracker_->DisallowRunTasks());
 }
 
 void ScopedTaskEnvironment::CompleteInitialization() {
@@ -418,7 +429,14 @@ ScopedTaskEnvironment::~ScopedTaskEnvironment() {
   // If we've been moved then bail out.
   if (!owns_instance_)
     return;
+  DestroyThreadPool();
+  task_queue_ = nullptr;
+  NotifyDestructionObserversAndReleaseSequenceManager();
+}
 
+void ScopedTaskEnvironment::DestroyThreadPool() {
+  if (!thread_pool_)
+    return;
   // Ideally this would RunLoop().RunUntilIdle() here to catch any errors or
   // infinite post loop in the remaining work but this isn't possible right now
   // because base::~MessageLoop() didn't use to do this and adding it here would
@@ -435,8 +453,6 @@ ScopedTaskEnvironment::~ScopedTaskEnvironment() {
   // on their main thread.
   ScopedAllowBaseSyncPrimitivesForTesting allow_waits_to_destroy_task_tracker;
   ThreadPool::SetInstance(nullptr);
-  task_queue_ = nullptr;
-  NotifyDestructionObserversAndReleaseSequenceManager();
 }
 
 sequence_manager::TimeDomain* ScopedTaskEnvironment::GetTimeDomain() const {
@@ -568,8 +584,9 @@ void ScopedTaskEnvironment::RunUntilIdle() {
   }
 
   // The above loop always ends with running tasks being disallowed. Re-enable
-  // parallel execution before returning unless in ExecutionMode::QUEUED.
-  if (execution_control_mode_ != ExecutionMode::QUEUED)
+  // parallel execution before returning unless in
+  // ThreadPoolExecutionMode::QUEUED.
+  if (thread_pool_execution_mode_ != ThreadPoolExecutionMode::QUEUED)
     task_tracker_->AllowRunTasks();
 
   if (mock_time_domain_)

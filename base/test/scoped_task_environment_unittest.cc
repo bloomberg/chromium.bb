@@ -15,6 +15,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/time_domain.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_timeouts.h"
@@ -33,6 +34,7 @@
 
 #if defined(OS_POSIX)
 #include <unistd.h>
+
 #include "base/files/file_descriptor_watcher_posix.h"
 #endif  // defined(OS_POSIX)
 
@@ -40,6 +42,8 @@ namespace base {
 namespace test {
 
 namespace {
+
+using ::testing::IsNull;
 
 class ScopedTaskEnvironmentForTest : public ScopedTaskEnvironment {
  public:
@@ -67,10 +71,10 @@ void VerifyRunUntilIdleDidNotReturnAndSetFlag(
 
 void RunUntilIdleTest(
     ScopedTaskEnvironment::MainThreadType main_thread_type,
-    ScopedTaskEnvironment::ExecutionMode execution_control_mode) {
+    ScopedTaskEnvironment::ThreadPoolExecutionMode thread_pool_execution_mode) {
   AtomicFlag run_until_idle_returned;
   ScopedTaskEnvironment scoped_task_environment(main_thread_type,
-                                                execution_control_mode);
+                                                thread_pool_execution_mode);
 
   AtomicFlag first_main_thread_task_ran;
   ThreadTaskRunnerHandle::Get()->PostTask(
@@ -105,18 +109,20 @@ void RunUntilIdleTest(
 }  // namespace
 
 TEST_P(ScopedTaskEnvironmentTest, QueuedRunUntilIdle) {
-  RunUntilIdleTest(GetParam(), ScopedTaskEnvironment::ExecutionMode::QUEUED);
+  RunUntilIdleTest(GetParam(),
+                   ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED);
 }
 
 TEST_P(ScopedTaskEnvironmentTest, AsyncRunUntilIdle) {
-  RunUntilIdleTest(GetParam(), ScopedTaskEnvironment::ExecutionMode::ASYNC);
+  RunUntilIdleTest(GetParam(),
+                   ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC);
 }
 
-// Verify that tasks posted to an ExecutionMode::QUEUED ScopedTaskEnvironment do
-// not run outside of RunUntilIdle().
+// Verify that tasks posted to an ThreadPoolExecutionMode::QUEUED
+// ScopedTaskEnvironment do not run outside of RunUntilIdle().
 TEST_P(ScopedTaskEnvironmentTest, QueuedTasksDoNotRunOutsideOfRunUntilIdle) {
   ScopedTaskEnvironment scoped_task_environment(
-      GetParam(), ScopedTaskEnvironment::ExecutionMode::QUEUED);
+      GetParam(), ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED);
 
   AtomicFlag run_until_idle_called;
   PostTask(FROM_HERE, BindOnce(
@@ -139,11 +145,11 @@ TEST_P(ScopedTaskEnvironmentTest, QueuedTasksDoNotRunOutsideOfRunUntilIdle) {
   scoped_task_environment.RunUntilIdle();
 }
 
-// Verify that a task posted to an ExecutionMode::ASYNC ScopedTaskEnvironment
-// can run without a call to RunUntilIdle().
+// Verify that a task posted to an ThreadPoolExecutionMode::ASYNC
+// ScopedTaskEnvironment can run without a call to RunUntilIdle().
 TEST_P(ScopedTaskEnvironmentTest, AsyncTasksRunAsTheyArePosted) {
   ScopedTaskEnvironment scoped_task_environment(
-      GetParam(), ScopedTaskEnvironment::ExecutionMode::ASYNC);
+      GetParam(), ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC);
 
   WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
                          WaitableEvent::InitialState::NOT_SIGNALED);
@@ -153,13 +159,13 @@ TEST_P(ScopedTaskEnvironmentTest, AsyncTasksRunAsTheyArePosted) {
   task_ran.Wait();
 }
 
-// Verify that a task posted to an ExecutionMode::ASYNC ScopedTaskEnvironment
-// after a call to RunUntilIdle() can run without another call to
-// RunUntilIdle().
+// Verify that a task posted to an ThreadPoolExecutionMode::ASYNC
+// ScopedTaskEnvironment after a call to RunUntilIdle() can run without another
+// call to RunUntilIdle().
 TEST_P(ScopedTaskEnvironmentTest,
        AsyncTasksRunAsTheyArePostedAfterRunUntilIdle) {
   ScopedTaskEnvironment scoped_task_environment(
-      GetParam(), ScopedTaskEnvironment::ExecutionMode::ASYNC);
+      GetParam(), ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC);
 
   scoped_task_environment.RunUntilIdle();
 
@@ -175,7 +181,7 @@ TEST_P(ScopedTaskEnvironmentTest, DelayedTasks) {
   // Use a QUEUED execution-mode environment, so that no tasks are actually
   // executed until RunUntilIdle()/FastForwardBy() are invoked.
   ScopedTaskEnvironment scoped_task_environment(
-      GetParam(), ScopedTaskEnvironment::ExecutionMode::QUEUED);
+      GetParam(), ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED);
 
   subtle::Atomic32 counter = 0;
 
@@ -265,18 +271,24 @@ TEST_P(ScopedTaskEnvironmentTest, DelayedTasks) {
 // Regression test for https://crbug.com/824770.
 TEST_P(ScopedTaskEnvironmentTest, SupportsSequenceLocalStorageOnMainThread) {
   ScopedTaskEnvironment scoped_task_environment(
-      GetParam(), ScopedTaskEnvironment::ExecutionMode::ASYNC);
+      GetParam(), ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC);
 
   SequenceLocalStorageSlot<int> sls_slot;
   sls_slot.Set(5);
   EXPECT_EQ(5, sls_slot.Get());
 }
 
+TEST_P(ScopedTaskEnvironmentTest, SingleThreadShouldNotInitializeThreadPool) {
+  ScopedTaskEnvironmentForTest scoped_task_environment(
+      ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY);
+  EXPECT_THAT(ThreadPool::GetInstance(), IsNull());
+}
+
 #if defined(OS_POSIX)
 TEST_F(ScopedTaskEnvironmentTest, SupportsFileDescriptorWatcherOnIOMainThread) {
   ScopedTaskEnvironment scoped_task_environment(
       ScopedTaskEnvironment::MainThreadType::IO,
-      ScopedTaskEnvironment::ExecutionMode::ASYNC);
+      ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC);
 
   int pipe_fds_[2];
   ASSERT_EQ(0, pipe(pipe_fds_));
@@ -300,7 +312,7 @@ TEST_F(ScopedTaskEnvironmentTest, FastForwardAdvanceTickClock) {
   // executed until RunUntilIdle()/FastForwardBy() are invoked.
   ScopedTaskEnvironment scoped_task_environment(
       ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
-      ScopedTaskEnvironment::ExecutionMode::QUEUED);
+      ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED);
 
   constexpr base::TimeDelta kShortTaskDelay = TimeDelta::FromDays(1);
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::DoNothing(),
@@ -565,7 +577,7 @@ class ScopedTaskEnvironmentMockedTime
 
 TEST_P(ScopedTaskEnvironmentMockedTime, Basic) {
   ScopedTaskEnvironment scoped_task_environment(
-      GetParam(), ScopedTaskEnvironment::ExecutionMode::QUEUED);
+      GetParam(), ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED);
 
   int counter = 0;
 
@@ -618,7 +630,7 @@ TEST_P(ScopedTaskEnvironmentMockedTime, Basic) {
 
 TEST_P(ScopedTaskEnvironmentMockedTime, RunLoopDriveable) {
   ScopedTaskEnvironment scoped_task_environment(
-      GetParam(), ScopedTaskEnvironment::ExecutionMode::QUEUED);
+      GetParam(), ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED);
 
   int counter = 0;
   ThreadTaskRunnerHandle::Get()->PostTask(
@@ -720,7 +732,7 @@ TEST_P(ScopedTaskEnvironmentMockedTime, RunLoopDriveable) {
 
 TEST_P(ScopedTaskEnvironmentMockedTime, CancelPendingTask) {
   ScopedTaskEnvironment scoped_task_environment(
-      GetParam(), ScopedTaskEnvironment::ExecutionMode::QUEUED);
+      GetParam(), ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED);
 
   CancelableOnceClosure task1(BindOnce([]() {}));
   ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, task1.callback(),
@@ -769,7 +781,7 @@ TEST_P(ScopedTaskEnvironmentMockedTime, CancelPendingImmediateTask) {
 
 TEST_P(ScopedTaskEnvironmentMockedTime, NoFastForwardToCancelledTask) {
   ScopedTaskEnvironment scoped_task_environment(
-      GetParam(), ScopedTaskEnvironment::ExecutionMode::QUEUED);
+      GetParam(), ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED);
 
   TimeTicks start_time = scoped_task_environment.NowTicks();
   CancelableClosure task(BindRepeating([]() {}));
