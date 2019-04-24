@@ -163,6 +163,7 @@ js_type_check("closure_compile") {
     ":commands",
     ":key_event_handler",
     ":menu_manager",
+    ":menu_panel",
     ":menu_panel_interface",
     ":navigation_manager",
     ":options",
@@ -234,6 +235,12 @@ js_library("key_event_handler") {
 js_library("menu_manager") {
   deps = [
     ":menu_panel_interface",
+    ":switch_access_interface",
+  ]
+}
+
+js_library("menu_panel") {
+  deps = [
     ":switch_access_interface",
   ]
 }

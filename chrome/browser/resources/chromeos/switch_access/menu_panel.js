@@ -41,7 +41,7 @@ class Panel {
 
   /**
    * Adds an event listener to the given button to send a message when clicked.
-   * @param {!HTMLElement} button
+   * @param {!Element} button
    * @private
    */
   setupButton_(button) {
@@ -81,7 +81,7 @@ class Panel {
    * |id|.
    * @param {string} id
    * @param {string} className
-   * @param {bool} shouldAdd
+   * @param {boolean} shouldAdd
    */
   updateClass_(id, className, shouldAdd) {
     const htmlNode = document.getElementById(id);
