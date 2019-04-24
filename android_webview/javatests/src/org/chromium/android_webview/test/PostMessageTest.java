@@ -22,7 +22,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content_public.browser.MessagePort;
@@ -549,45 +548,6 @@ public class PostMessageTest {
                 }
             }
         }
-    }
-
-    // Verify that messages from JS can be waited on a UI thread.
-    // TODO(sgurun) this test turned out to be flaky. When it fails, it always fails in IPC.
-    // When a postmessage is received, an IPC message is sent from browser to renderer
-    // to convert the postmessage from WebSerializedScriptValue to a string. The IPC is sent
-    // and seems to be received by IPC in renderer, but then nothing else seems to happen.
-    // The issue seems like blocking the UI thread causes a racing SYNC ipc from renderer
-    // to browser to block waiting for UI thread, and this would in turn block renderer
-    // doing the conversion.
-    @Test
-    @DisabledTest
-    @Feature({"AndroidWebView", "Android-PostMessage"})
-    public void testReceiveMessageInBackgroundThread() throws Throwable {
-        loadPage(TEST_PAGE);
-        final ChannelContainer channelContainer = new ChannelContainer();
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-            MessagePort[] channel = mAwContents.createMessageChannel();
-            // verify communication from JS to Java.
-            channelContainer.set(channel);
-            channel[0].setMessageCallback(
-                    (message, sentPorts) -> channelContainer.setMessage(message), null);
-            mAwContents.postMessageToFrame(
-                    null, WEBVIEW_MESSAGE, mWebServer.getBaseUrl(), new MessagePort[] {channel[1]});
-        });
-        mMessageObject.waitForMessage();
-        Assert.assertEquals(WEBVIEW_MESSAGE, mMessageObject.getData());
-        Assert.assertEquals(SOURCE_ORIGIN, mMessageObject.getOrigin());
-        // verify that one message port is received at the js side
-        Assert.assertEquals(1, mMessageObject.getPorts().length);
-        // wait until we receive a message from JS
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
-            try {
-                channelContainer.waitForMessage();
-            } catch (InterruptedException e) {
-                // ignore.
-            }
-        });
-        Assert.assertEquals(JS_MESSAGE, channelContainer.getMessage());
     }
 
     private static final String ECHO_PAGE =
