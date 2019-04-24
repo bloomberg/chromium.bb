@@ -160,12 +160,15 @@ class FocusActivationStore {
     if (active_ && focused_ != active_)
       tracker_.Add(active_);
 
-    // Deactivate the window to close menu / bubble windows.
-    if (clear_focus)
-      activation_client_->DeactivateWindow(active_);
+    // Deactivate the window to close menu / bubble windows. Deactivating by
+    // setting active window to nullptr to avoid side effects of activating an
+    // arbitrary window, such as covering |active_| before Restore().
+    if (clear_focus && active_)
+      activation_client_->ActivateWindow(nullptr);
 
     // Release capture if any.
     capture_client_->SetCapture(nullptr);
+
     // Clear the focused window if any. This is necessary because a
     // window may be deleted when losing focus (fullscreen flash for
     // example).  If the focused window is still alive after move, it'll
