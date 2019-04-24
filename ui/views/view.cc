@@ -440,7 +440,7 @@ void View::SetVisible(bool visible) {
     UpdateLayerVisibility();
 
     // Notify all other subscriptions of the change.
-    OnPropertyChanged(&visible_, kPropertyEffectsLayout);
+    OnPropertyChanged(&visible_, kPropertyEffectsPaint);
   }
 }
 
