@@ -285,9 +285,9 @@ public class ChromePreferenceManager {
      * Keys for deferred recording of the outcomes of showing the clear data dialog after
      * Trusted Web Activity client apps are uninstalled or have their data cleared.
      */
-    public static final String TWA_DIALOG_NUMBER_OF_DIMSISSALS_ON_UNINSTALL =
+    public static final String TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_UNINSTALL =
             "twa_dialog_number_of_dismissals_on_uninstall";
-    public static final String TWA_DIALOG_NUMBER_OF_DIMSISSALS_ON_CLEAR_DATA =
+    public static final String TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA =
             "twa_dialog_number_of_dismissals_on_clear_data";
 
     /** Key for deferred recording of WebAPK uninstalls. */
