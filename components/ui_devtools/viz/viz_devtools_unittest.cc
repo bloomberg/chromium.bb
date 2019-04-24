@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/containers/flat_map.h"
+#include "base/strings/stringprintf.h"
+#include "base/unguessable_token.h"
 #include "components/ui_devtools/css_agent.h"
 #include "components/ui_devtools/ui_devtools_unittest_utils.h"
 #include "components/ui_devtools/ui_element.h"
