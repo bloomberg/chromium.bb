@@ -6166,3 +6166,6 @@ crbug.com/954994 [ Mac ]  virtual/exotic-color-space/images/jpeg-yuv-image-decod
 crbug.com/954994 [ Mac ]  virtual/gpu-rasterization/images/jpeg-yuv-image-decoding.html [ Pass Failure ]
 crbug.com/954319 [ Linux ] http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-in-multiple-workers.js [ Pass Timeout ]
 crbug.com/954998 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]
+
+# Sheriff 2019-04-24
+crbug.com/955883 [ Win7 ] virtual/outofblink-cors/http/tests/fetch/serviceworker-proxied/thorough/auth-other-https.html [ Pass Timeout ]
