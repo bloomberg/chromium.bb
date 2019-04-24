@@ -703,6 +703,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'tex-3d-r11f_g11f_b10f-rgb-unsigned_int_10f_11f_11f_rev.html',
         ['mac', ('nvidia', 0xfe9)], bug=934556)
 
+    self.Flaky('conformance2/rendering/framebuffer-unsupported.html',
+        ['mac', ('nvidia', 0xfe9)], bug=952282)
+
     # When these fail on this configuration, they fail multiple times in a row.
     self.Fail('deqp/functional/gles3/shaderoperator/*',
         ['mac', 'nvidia'], bug=756537)
