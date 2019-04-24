@@ -943,14 +943,14 @@ bool ScriptLoader::IsScriptForEventSupported() const {
   for_attribute = for_attribute.StripWhiteSpace();
   // <spec step="14.4">If for is not an ASCII case-insensitive match for the
   // string "window", then return. The script is not executed.</spec>
-  if (!DeprecatedEqualIgnoringCase(for_attribute, "window"))
+  if (!EqualIgnoringASCIICase(for_attribute, "window"))
     return false;
   event_attribute = event_attribute.StripWhiteSpace();
   // <spec step="14.5">If event is not an ASCII case-insensitive match for
   // either the string "onload" or the string "onload()", then return. The
   // script is not executed.</spec>
-  return DeprecatedEqualIgnoringCase(event_attribute, "onload") ||
-         DeprecatedEqualIgnoringCase(event_attribute, "onload()");
+  return EqualIgnoringASCIICase(event_attribute, "onload") ||
+         EqualIgnoringASCIICase(event_attribute, "onload()");
 }
 
 PendingScript*
