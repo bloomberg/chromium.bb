@@ -33,9 +33,10 @@ public class ContextualSearchFieldTrial {
     private static Integer[] sSettings = new Integer[ContextualSearchSetting.NUM_ENTRIES];
 
     // TODO(donnd): remove all supporting code once short-lived data collection is done.
-    @IntDef({ContextualSearchSwitch.IS_SEARCH_TERM_RESOLUTION_DISABLED,
+    @IntDef({ContextualSearchSwitch.IS_TRANSLATION_DISABLED,
+            ContextualSearchSwitch.IS_ONLINE_DETECTION_DISABLED,
+            ContextualSearchSwitch.IS_SEARCH_TERM_RESOLUTION_DISABLED,
             ContextualSearchSwitch.IS_MANDATORY_PROMO_ENABLED,
-            ContextualSearchSwitch.IS_TRANSLATION_DISABLED,
             ContextualSearchSwitch.IS_ENGLISH_TARGET_TRANSLATION_ENABLED,
             ContextualSearchSwitch.IS_BAR_OVERLAP_COLLECTION_ENABLED,
             ContextualSearchSwitch.IS_BAR_OVERLAP_SUPPRESSION_ENABLED,
@@ -46,14 +47,13 @@ public class ContextualSearchFieldTrial {
             ContextualSearchSwitch.IS_ENGAGEMENT_SUPPRESSION_ENABLED,
             ContextualSearchSwitch.IS_SHORT_TEXT_RUN_SUPPRESSION_ENABLED,
             ContextualSearchSwitch.IS_SMALL_TEXT_SUPPRESSION_ENABLED,
-            ContextualSearchSwitch.IS_ONLINE_DETECTION_DISABLED,
             ContextualSearchSwitch.IS_AMP_AS_SEPARATE_TAB_DISABLED,
-            ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION_ENABLED,
-            ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_SECOND_TAP_ML_OVERRIDE_ENABLED,
-            ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE_ENABLED,
             ContextualSearchSwitch.IS_SEND_HOME_COUNTRY_DISABLED,
             ContextualSearchSwitch.IS_PAGE_CONTENT_NOTIFICATION_DISABLED,
-            ContextualSearchSwitch.IS_UKM_RANKER_LOGGING_DISABLED})
+            ContextualSearchSwitch.IS_UKM_RANKER_LOGGING_DISABLED,
+            ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION_ENABLED,
+            ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_SECOND_TAP_ML_OVERRIDE_ENABLED,
+            ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE_ENABLED})
     @Retention(RetentionPolicy.SOURCE)
     /**
      * Boolean Switch values that are backed by either a Feature or a Variations parameter.
@@ -61,69 +61,71 @@ public class ContextualSearchFieldTrial {
      * have gaps.
      */
     @interface ContextualSearchSwitch {
-        int IS_SEARCH_TERM_RESOLUTION_DISABLED = 0;
-        int IS_MANDATORY_PROMO_ENABLED = 1;
         /**
          * Whether all translate code is disabled (master switch, needed to disable all translate
          * code for Contextual Search in case of an emergency).
          */
-        int IS_TRANSLATION_DISABLED = 2;
-        /**
-         * Whether English-target translation should be enabled (default is disabled for 'en').
-         * Enables usage of English as the target language even when it's the primary UI language.
-         */
-        int IS_ENGLISH_TARGET_TRANSLATION_ENABLED = 3;
-        /** Whether collecting data on Bar overlap is enabled. */
-        int IS_BAR_OVERLAP_COLLECTION_ENABLED = 4;
-        /**
-         * Whether triggering is suppressed by a selection nearly overlapping the normal
-         * Bar peeking location.
-         */
-        int IS_BAR_OVERLAP_SUPPRESSION_ENABLED = 5;
-        /** Whether triggering is suppressed by a tap that's near the edge of a word. */
-        int IS_WORD_EDGE_SUPPRESSION_ENABLED = 6;
-        /** Whether triggering is suppressed by a tap that's in a short word. */
-        int IS_SHORT_WORD_SUPPRESSION_ENABLED = 7;
-        /** Whether triggering is suppressed by a tap that's not in a long word. */
-        int IS_NOT_LONG_WORD_SUPPRESSION_ENABLED = 8;
-        /** Whether triggering is suppressed for a tap that's not on an entity. */
-        int IS_NOT_AN_ENTITY_SUPPRESSION_ENABLED = 9;
-        /** Whether triggering is suppressed due to lack of engagement with the feature. */
-        int IS_ENGAGEMENT_SUPPRESSION_ENABLED = 10;
-        /** Whether triggering is suppressed for a tap that has a short element run-length. */
-        int IS_SHORT_TEXT_RUN_SUPPRESSION_ENABLED = 11;
-        /** Whether triggering is suppressed for a tap on small-looking text. */
-        int IS_SMALL_TEXT_SUPPRESSION_ENABLED = 12;
+        int IS_TRANSLATION_DISABLED = 0;
         /**
          * Whether detection of device-online should be disabled (default false).
          * (safety switch for disabling online-detection also used to disable detection when
          * running tests).
          */
         // TODO(donnd): Convert to test-only after launch and we have confidence it's robust.
-        int IS_ONLINE_DETECTION_DISABLED = 13;
+        int IS_ONLINE_DETECTION_DISABLED = 1;
+
+        int IS_SEARCH_TERM_RESOLUTION_DISABLED = 2;
+        int IS_MANDATORY_PROMO_ENABLED = 3;
+
+        /**
+         * Whether English-target translation should be enabled (default is disabled for 'en').
+         * Enables usage of English as the target language even when it's the primary UI language.
+         */
+        int IS_ENGLISH_TARGET_TRANSLATION_ENABLED = 4;
+        /** Whether collecting data on Bar overlap is enabled. */
+        int IS_BAR_OVERLAP_COLLECTION_ENABLED = 5;
+        /**
+         * Whether triggering is suppressed by a selection nearly overlapping the normal
+         * Bar peeking location.
+         */
+        int IS_BAR_OVERLAP_SUPPRESSION_ENABLED = 6;
+        /** Whether triggering is suppressed by a tap that's near the edge of a word. */
+        int IS_WORD_EDGE_SUPPRESSION_ENABLED = 7;
+        /** Whether triggering is suppressed by a tap that's in a short word. */
+        int IS_SHORT_WORD_SUPPRESSION_ENABLED = 8;
+        /** Whether triggering is suppressed by a tap that's not in a long word. */
+        int IS_NOT_LONG_WORD_SUPPRESSION_ENABLED = 9;
+        /** Whether triggering is suppressed for a tap that's not on an entity. */
+        int IS_NOT_AN_ENTITY_SUPPRESSION_ENABLED = 10;
+        /** Whether triggering is suppressed due to lack of engagement with the feature. */
+        int IS_ENGAGEMENT_SUPPRESSION_ENABLED = 11;
+        /** Whether triggering is suppressed for a tap that has a short element run-length. */
+        int IS_SHORT_TEXT_RUN_SUPPRESSION_ENABLED = 12;
+        /** Whether triggering is suppressed for a tap on small-looking text. */
+        int IS_SMALL_TEXT_SUPPRESSION_ENABLED = 13;
         /**
          * Whether to disable auto-promotion of clicks in the AMP carousel into a
          * separate Tab.
          */
         int IS_AMP_AS_SEPARATE_TAB_DISABLED = 14;
-        /** Whether or not ML-based Tap suppression is enabled. */
-        int IS_CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION_ENABLED = 15;
-        /** Whether or not to override an ML-based Tap suppression on a second tap. */
-        int IS_CONTEXTUAL_SEARCH_SECOND_TAP_ML_OVERRIDE_ENABLED = 16;
-        /**
-         * Whether or not to override tap-disable for users that have never opened the
-         * panel.
-         */
-        int IS_CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE_ENABLED = 17;
         /** Whether sending the "home country" to Google is disabled. */
-        int IS_SEND_HOME_COUNTRY_DISABLED = 18;
+        int IS_SEND_HOME_COUNTRY_DISABLED = 15;
         /**
          * Whether sending the page content notifications to observers (e.g. icing for
          * conversational search) is disabled.
          */
-        int IS_PAGE_CONTENT_NOTIFICATION_DISABLED = 19;
+        int IS_PAGE_CONTENT_NOTIFICATION_DISABLED = 16;
         /** Whether logging for Machine Learning is disabled. */
-        int IS_UKM_RANKER_LOGGING_DISABLED = 20;
+        int IS_UKM_RANKER_LOGGING_DISABLED = 17;
+        /** Whether or not ML-based Tap suppression is enabled. */
+        int IS_CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION_ENABLED = 18;
+        /** Whether or not to override an ML-based Tap suppression on a second tap. */
+        int IS_CONTEXTUAL_SEARCH_SECOND_TAP_ML_OVERRIDE_ENABLED = 19;
+        /**
+         * Whether or not to override tap-disable for users that have never opened the
+         * panel.
+         */
+        int IS_CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE_ENABLED = 20;
 
         int NUM_ENTRIES = 21;
     }
@@ -135,9 +137,10 @@ public class ContextualSearchFieldTrial {
 
     // Indexed by ContextualSearchSwitch
     private static final String[] ContextualSearchSwitchNames = {
+            TRANSLATION_DISABLED, // IS_TRANSLATION_DISABLED
+            ONLINE_DETECTION_DISABLED, // IS_ONLINE_DETECTION_DISABLED
             "disable_search_term_resolution", // DISABLE_SEARCH_TERM_RESOLUTION
             "mandatory_promo_enabled", // IS_MANDATORY_PROMO_ENABLED
-            TRANSLATION_DISABLED, // IS_TRANSLATION_DISABLED
             "enable_english_target_translation", // IS_ENGLISH_TARGET_TRANSLATION_ENABLED
             "enable_bar_overlap_collection", // IS_BAR_OVERLAP_COLLECTION_ENABLED
             "enable_bar_overlap_suppression", // IS_BAR_OVERLAP_SUPPRESSION_ENABLED
@@ -148,14 +151,13 @@ public class ContextualSearchFieldTrial {
             "enable_engagement_suppression", // IS_ENGAGEMENT_SUPPRESSION_ENABLED
             "enable_short_text_run_suppression", // IS_SHORT_TEXT_RUN_SUPPRESSION_ENABLED
             "enable_small_text_suppression", // IS_SMALL_TEXT_SUPPRESSION_ENABLED
-            ONLINE_DETECTION_DISABLED, // IS_ONLINE_DETECTION_DISABLED
             "disable_amp_as_separate_tab", // IS_AMP_AS_SEPARATE_TAB_DISABLED
-            "", // empty (switch related to Chrome Feature CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION)
-            "", // empty (switch related to Chrome Feature CONTEXTUAL_SEARCH_SECOND_TAP)
-            "", // empty (switch related to Chrome Feature CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE)
             "disable_send_home_country", //  IS_SEND_HOME_COUNTRY_DISABLED
             "disable_page_content_notification", // IS_PAGE_CONTENT_NOTIFICATION_DISABLED
-            "disable_ukm_ranker_logging" // IS_UKM_RANKER_LOGGING_DISABLED
+            "disable_ukm_ranker_logging", // IS_UKM_RANKER_LOGGING_DISABLED
+            ChromeFeatureList.CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION, // (related to Chrome Feature)
+            ChromeFeatureList.CONTEXTUAL_SEARCH_SECOND_TAP, // (related to Chrome Feature)
+            ChromeFeatureList.CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE // (related to Chrome Feature)
     };
 
     @IntDef({ContextualSearchSetting.MANDATORY_PROMO_LIMIT,
@@ -230,21 +232,17 @@ public class ContextualSearchFieldTrial {
 
     static boolean getSwitch(@ContextualSearchSwitch int value) {
         if (sSwitches[value] == null) {
-            String feature = null;
-            if (value == ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION_ENABLED) {
-                feature = ChromeFeatureList.CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION;
-            } else if (value
-                    == ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_SECOND_TAP_ML_OVERRIDE_ENABLED) {
-                feature = ChromeFeatureList.CONTEXTUAL_SEARCH_SECOND_TAP;
-            } else if (value
-                    == ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE_ENABLED) {
-                feature = ChromeFeatureList.CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE;
-            } else {
-                assert !TextUtils.isEmpty(ContextualSearchSwitchNames[value]);
+            switch (value) {
+                case ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_ML_TAP_SUPPRESSION_ENABLED:
+                case ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_SECOND_TAP_ML_OVERRIDE_ENABLED:
+                case ContextualSearchSwitch.IS_CONTEXTUAL_SEARCH_TAP_DISABLE_OVERRIDE_ENABLED:
+                    sSwitches[value] =
+                            ChromeFeatureList.isEnabled(ContextualSearchSwitchNames[value]);
+                    break;
+                default:
+                    assert !TextUtils.isEmpty(ContextualSearchSwitchNames[value]);
+                    sSwitches[value] = getBooleanParam(ContextualSearchSwitchNames[value]);
             }
-            sSwitches[value] = feature != null
-                    ? ChromeFeatureList.isEnabled(feature)
-                    : getBooleanParam(ContextualSearchSwitchNames[value]);
         }
         return sSwitches[value].booleanValue();
     }
