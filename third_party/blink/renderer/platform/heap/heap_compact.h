@@ -52,10 +52,6 @@ class PLATFORM_EXPORT HeapCompact final {
   explicit HeapCompact(ThreadHeap*);
   ~HeapCompact();
 
-  // Remove slot from traced_slots_ when a registered slot is destructed by
-  // mutator
-  void RemoveSlot(MovableReference* slot);
-
   // Determine if a GC for the given type and reason should also perform
   // additional heap compaction.
   //
@@ -143,13 +139,7 @@ class PLATFORM_EXPORT HeapCompact final {
  private:
   class MovableObjectFixups;
 
-  // Sample the amount of fragmentation and heap memory currently residing
-  // on the freelists of the arenas we're able to compact. The computed
-  // numbers will be subsequently used to determine if a heap compaction
-  // is on order (shouldCompact().)
-  void UpdateHeapResidency();
-
-  // Parameters controlling when compaction should be done:
+  static bool force_compaction_gc_;
 
   // Number of GCs that must have passed since last compaction GC.
   static const int kGCCountSinceLastCompactionThreshold = 10;
@@ -158,32 +148,35 @@ class PLATFORM_EXPORT HeapCompact final {
   // should be considered.
   static const size_t kFreeListSizeThreshold = 512 * 1024;
 
-  ThreadHeap* const heap_;
+  // Sample the amount of fragmentation and heap memory currently residing
+  // on the freelists of the arenas we're able to compact. The computed
+  // numbers will be subsequently used to determine if a heap compaction
+  // is on order (shouldCompact().)
+  void UpdateHeapResidency();
 
   MovableObjectFixups& Fixups();
 
+  ThreadHeap* const heap_;
   std::unique_ptr<MovableObjectFixups> fixups_;
-
-  // Set to |true| when a compacting sweep will go ahead.
-  bool do_compact_;
-  size_t gc_count_since_last_compaction_;
-
-  // Last reported freelist size, across all compactable arenas.
-  size_t free_list_size_;
-
-  // If compacting, i'th heap arena will be compacted
-  // if corresponding bit is set. Indexes are in
-  // the range of BlinkGC::ArenaIndices.
-  unsigned compactable_arenas_;
 
   // The set is to remember slots that traced during
   // marking phases. The mapping between the slots and the backing stores are
   // created at the atomic pause phase.
   HashSet<MovableReference*> traced_slots_;
 
-  size_t last_fixup_count_for_testing_;
+  // Set to |true| when a compacting sweep will go ahead.
+  bool do_compact_ = false;
+  size_t gc_count_since_last_compaction_ = 0;
 
-  static bool force_compaction_gc_;
+  // Last reported freelist size, across all compactable arenas.
+  size_t free_list_size_ = 0;
+
+  size_t last_fixup_count_for_testing_ = 0;
+
+  // If compacting, i'th heap arena will be compacted
+  // if corresponding bit is set. Indexes are in
+  // the range of BlinkGC::ArenaIndices.
+  unsigned compactable_arenas_ = 0u;
 };
 
 }  // namespace blink

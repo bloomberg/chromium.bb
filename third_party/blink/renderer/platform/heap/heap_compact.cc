@@ -124,12 +124,6 @@ class HeapCompact::MovableObjectFixups final {
         slot, std::pair<void*, MovingObjectCallback>(callback_data, callback));
   }
 
-  void RemoveFixupCallback(MovableReference* slot) {
-    auto it = fixup_callbacks_.find(slot);
-    if (it != fixup_callbacks_.end())
-      fixup_callbacks_.erase(it);
-  }
-
   void RelocateInteriorFixups(Address from, Address to, size_t size) {
     SparseHeapBitmap* range = interiors_->HasRange(from, size);
     if (LIKELY(!range))
@@ -271,7 +265,7 @@ class HeapCompact::MovableObjectFixups final {
  private:
   void VerifyUpdatedSlot(MovableReference* slot);
 
-  ThreadHeap* heap_;
+  ThreadHeap* const heap_;
 
   // Tracking movable and updatable references. For now, we keep a
   // map which for each movable object, recording the slot that
@@ -321,13 +315,7 @@ void HeapCompact::MovableObjectFixups::VerifyUpdatedSlot(
 #endif  // DCHECK_IS_ON()
 }
 
-HeapCompact::HeapCompact(ThreadHeap* heap)
-    : heap_(heap),
-      do_compact_(false),
-      gc_count_since_last_compaction_(0),
-      free_list_size_(0),
-      compactable_arenas_(0u),
-      last_fixup_count_for_testing_(0) {
+HeapCompact::HeapCompact(ThreadHeap* heap) : heap_(heap) {
   // The heap compaction implementation assumes the contiguous range,
   //
   //   [Vector1ArenaIndex, HashTableArenaIndex]
@@ -418,13 +406,6 @@ void HeapCompact::Initialize(ThreadState* state) {
   fixups_.reset();
   gc_count_since_last_compaction_ = 0;
   force_compaction_gc_ = false;
-}
-
-void HeapCompact::RemoveSlot(MovableReference* slot) {
-  auto it = traced_slots_.find(slot);
-  if (it != traced_slots_.end())
-    traced_slots_.erase(it);
-  Fixups().RemoveFixupCallback(slot);
 }
 
 void HeapCompact::RegisterMovingObjectReference(MovableReference* slot) {
