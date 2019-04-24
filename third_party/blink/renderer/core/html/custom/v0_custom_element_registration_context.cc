@@ -80,7 +80,7 @@ Element* V0CustomElementRegistrationContext::CreateCustomTagElement(
   if (html_names::xhtmlNamespaceURI == tag_name.NamespaceURI()) {
     element = MakeGarbageCollected<HTMLElement>(tag_name, document);
   } else if (svg_names::kNamespaceURI == tag_name.NamespaceURI()) {
-    element = SVGUnknownElement::Create(tag_name, document);
+    element = MakeGarbageCollected<SVGUnknownElement>(tag_name, document);
   } else {
     // XML elements are not custom elements, so return early.
     return Element::Create(tag_name, &document);

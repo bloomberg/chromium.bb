@@ -235,14 +235,16 @@ template <typename Property, typename TearOffType>
 class SVGAnimatedProperty<Property, TearOffType, void>
     : public SVGAnimatedPropertyCommon<Property> {
  public:
-  static SVGAnimatedProperty<Property>* Create(
-      SVGElement* context_element,
-      const QualifiedName& attribute_name,
-      Property* initial_value,
-      CSSPropertyID css_property_id = CSSPropertyID::kInvalid) {
-    return new SVGAnimatedProperty<Property>(context_element, attribute_name,
-                                             initial_value, css_property_id);
-  }
+  SVGAnimatedProperty(SVGElement* context_element,
+                      const QualifiedName& attribute_name,
+                      Property* initial_value,
+                      CSSPropertyID css_property_id = CSSPropertyID::kInvalid,
+                      unsigned initial_value_bits = 0)
+      : SVGAnimatedPropertyCommon<Property>(context_element,
+                                            attribute_name,
+                                            initial_value,
+                                            css_property_id,
+                                            initial_value_bits) {}
 
   void SetAnimatedValue(SVGPropertyBase* value) override {
     SVGAnimatedPropertyCommon<Property>::SetAnimatedValue(value);
@@ -280,18 +282,6 @@ class SVGAnimatedProperty<Property, TearOffType, void>
     SVGAnimatedPropertyCommon<Property>::Trace(visitor);
   }
 
- protected:
-  SVGAnimatedProperty(SVGElement* context_element,
-                      const QualifiedName& attribute_name,
-                      Property* initial_value,
-                      CSSPropertyID css_property_id = CSSPropertyID::kInvalid,
-                      unsigned initial_value_bits = 0)
-      : SVGAnimatedPropertyCommon<Property>(context_element,
-                                            attribute_name,
-                                            initial_value,
-                                            css_property_id,
-                                            initial_value_bits) {}
-
  private:
   void UpdateAnimValTearOffIfNeeded() {
     if (anim_val_tear_off_)
@@ -314,16 +304,6 @@ template <typename Property>
 class SVGAnimatedProperty<Property, void, void>
     : public SVGAnimatedPropertyCommon<Property> {
  public:
-  static SVGAnimatedProperty<Property>* Create(
-      SVGElement* context_element,
-      const QualifiedName& attribute_name,
-      Property* initial_value,
-      CSSPropertyID css_property_id = CSSPropertyID::kInvalid) {
-    return new SVGAnimatedProperty<Property>(context_element, attribute_name,
-                                             initial_value, css_property_id);
-  }
-
- protected:
   SVGAnimatedProperty(SVGElement* context_element,
                       const QualifiedName& attribute_name,
                       Property* initial_value,
