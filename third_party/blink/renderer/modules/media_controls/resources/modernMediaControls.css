@@ -835,7 +835,7 @@ video::-internal-media-controls-overflow-menu-list {
   background: #FFFFFF;
   box-shadow: 0 1px 9px 0 rgba(0,0,0,0.40);
   border-radius: 2px;
-  transition: transform .4s ease-out, opacity .3s linear;
+  transition: transform .3s ease-out, opacity .2s linear;
   transform-origin: bottom right;
 }
 
@@ -933,42 +933,42 @@ video::-webkit-media-controls div[pseudo="-internal-media-controls-overflow-menu
 
 audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i],
 video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i] {
-  transition: transform .3s, opacity .5s;
+  transition: transform .2s, opacity .4s;
 }
 
 audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-0,
 video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-0 {
-  transition: opacity .5s .2s ease-in;
+  transition: opacity .4s .1s ease-in;
 }
 
 audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-1,
 video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-1 {
-  transition-delay: .25s;
+  transition-delay: .15s;
 }
 
 audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-2,
 video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-2 {
-  transition-delay: .3s;
+  transition-delay: .2s;
 }
 
 audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-3,
 video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-3 {
-  transition-delay: .35s;
+  transition-delay: .25s;
 }
 
 audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-4,
 video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-4 {
-  transition-delay: .4s;
+  transition-delay: .3s;
 }
 
 audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-5,
 video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-5 {
-  transition-delay: .45s
+  transition-delay: .35s
 }
 
 audio::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-6,
 video::-webkit-media-controls label[pseudo="-internal-media-controls-overflow-menu-list-item" i].animated-6 {
-  transition-delay: .5s
+  transition-delay: .4s
 }
 
 audio::-internal-media-controls-text-track-list-header:focus,
