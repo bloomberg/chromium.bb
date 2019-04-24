@@ -76,6 +76,11 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
+    public RenderFrameHost getFocusedFrame() {
+        return null;
+    }
+
+    @Override
     public String getTitle() {
         return null;
     }
