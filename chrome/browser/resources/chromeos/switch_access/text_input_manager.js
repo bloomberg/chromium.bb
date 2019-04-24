@@ -17,11 +17,11 @@ class TextInputManager {
 
     /** @private {!chrome.accessibilityPrivate.FocusRingInfo} */
     this.textInputFocusRing_ = {
-      id: SAConstants.TEXT_FOCUS_ID,
+      id: SAConstants.Focus.TEXT_ID,
       rects: [],
       type: chrome.accessibilityPrivate.FocusType.DASHED,
-      color: SAConstants.PRIMARY_FOCUS_COLOR,
-      secondaryColor: SAConstants.SECONDARY_FOCUS_COLOR
+      color: SAConstants.Focus.PRIMARY_COLOR,
+      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
     };
   }
 

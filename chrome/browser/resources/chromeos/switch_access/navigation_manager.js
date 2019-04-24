@@ -70,22 +70,22 @@ class NavigationManager {
      * @private {chrome.accessibilityPrivate.FocusRingInfo}
      */
     this.primaryFocusRing_ = {
-      id: SAConstants.PRIMARY_FOCUS_ID,
+      id: SAConstants.Focus.PRIMARY_ID,
       rects: [],
       type: chrome.accessibilityPrivate.FocusType.SOLID,
-      color: SAConstants.PRIMARY_FOCUS_COLOR,
-      secondaryColor: SAConstants.SECONDARY_FOCUS_COLOR
+      color: SAConstants.Focus.PRIMARY_COLOR,
+      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
     };
 
     /**
      * @private {chrome.accessibilityPrivate.FocusRingInfo}
      */
     this.scopeFocusRing_ = {
-      id: SAConstants.SCOPE_FOCUS_ID,
+      id: SAConstants.Focus.SCOPE_ID,
       rects: [],
       type: chrome.accessibilityPrivate.FocusType.DASHED,
-      color: SAConstants.PRIMARY_FOCUS_COLOR,
-      secondaryColor: SAConstants.SECONDARY_FOCUS_COLOR
+      color: SAConstants.Focus.PRIMARY_COLOR,
+      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
     };
 
     this.init_();

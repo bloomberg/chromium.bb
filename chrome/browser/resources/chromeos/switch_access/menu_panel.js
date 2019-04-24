@@ -60,7 +60,7 @@ class Panel {
    * @param {boolean} enable
    */
   setFocusRing(id, enable) {
-    this.updateClass_(id, SAConstants.FOCUS_CLASS, enable);
+    this.updateClass_(id, SAConstants.Focus.CLASS, enable);
     return;
   }
 
