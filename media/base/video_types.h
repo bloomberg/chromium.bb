@@ -18,6 +18,9 @@ namespace media {
 // http://www.fourcc.org/rgb.php and http://www.fourcc.org/yuv.php
 // Logged to UMA, so never reuse values. Leave gaps if necessary.
 // Ordered as planar, semi-planar, YUV-packed, and RGB formats.
+// When a VideoFrame is backed by native textures, VideoPixelFormat describes
+// how those textures should be sampled and combined to produce the final
+// pixels.
 enum VideoPixelFormat {
   PIXEL_FORMAT_UNKNOWN = 0,  // Unknown or unspecified format value.
   PIXEL_FORMAT_I420 =
@@ -38,10 +41,12 @@ enum VideoPixelFormat {
       8,  // 16bpp interleaved 2x1 U, 1x1 Y, 2x1 V, 1x1 Y samples.
   PIXEL_FORMAT_YUY2 =
       9,  // 16bpp interleaved 1x1 Y, 2x1 U, 1x1 Y, 2x1 V samples.
-  PIXEL_FORMAT_ARGB = 10,   // 32bpp ARGB, 1 plane.
-  PIXEL_FORMAT_XRGB = 11,   // 24bpp XRGB, 1 plane.
-  PIXEL_FORMAT_RGB24 = 12,  // 24bpp BGR, 1 plane.
-  PIXEL_FORMAT_RGB32 = 13,  // 32bpp BGRA, 1 plane.
+  PIXEL_FORMAT_ARGB = 10,   // 32bpp BGRA (byte-order), 1 plane.
+  PIXEL_FORMAT_XRGB = 11,   // 24bpp BGRX (byte-order), 1 plane.
+  PIXEL_FORMAT_RGB24 = 12,  // 24bpp BGR (byte-order), 1 plane.
+  // TODO(crbug.com/953128): Deprecate PIXEL_FORMAT_RGB32 in favor of
+  // PIXEL_FORMAT_ARGB.
+  PIXEL_FORMAT_RGB32 = 13,  // 32bpp BGRA (byte-order), 1 plane.
   PIXEL_FORMAT_MJPEG = 14,  // MJPEG compressed.
   // MediaTek proprietary format. MT21 is similar to NV21 except the memory
   // layout and pixel layout (swizzles). 12bpp with Y plane followed by a 2x2
@@ -69,8 +74,8 @@ enum VideoPixelFormat {
   /* PIXEL_FORMAT_Y8 = 25, Deprecated */
   PIXEL_FORMAT_Y16 = 26,  // single 16bpp plane.
 
-  PIXEL_FORMAT_ABGR = 27,  // 32bpp RGBA, 1 plane.
-  PIXEL_FORMAT_XBGR = 28,  // 24bpp RGB, 1 plane.
+  PIXEL_FORMAT_ABGR = 27,  // 32bpp RGBA (byte-order), 1 plane.
+  PIXEL_FORMAT_XBGR = 28,  // 24bpp RGBX (byte-order), 1 plane.
 
   PIXEL_FORMAT_P016LE = 29,  // 24bpp NV12, 16 bits per channel
 
