@@ -424,12 +424,7 @@ void View::SetVisible(bool visible) {
       layout_manager->ViewVisibilitySet(parent_, this, visible);
   }
 
-  if (visible != visible_) {
-    // If the View is currently visible, schedule paint to refresh parent.
-    // TODO(beng): not sure we should be doing this if we have a layer.
-    if (visible_)
-      SchedulePaint();
-
+  if (visible_ != visible) {
     visible_ = visible;
     AdvanceFocusIfNecessary();
 
@@ -444,21 +439,25 @@ void View::SetVisible(bool visible) {
     PropagateVisibilityNotifications(this, visible_);
     UpdateLayerVisibility();
 
-    // If we are newly visible, schedule paint.
-    if (visible_)
-      SchedulePaint();
+    // Notify all other subscriptions of the change.
+    OnPropertyChanged(&visible_, kPropertyEffectsLayout);
   }
+}
+
+PropertyChangedSubscription View::AddVisibleChangedCallback(
+    PropertyChangedCallback callback) {
+  return AddPropertyChangedCallback(&visible_, std::move(callback));
 }
 
 bool View::IsDrawn() const {
   return visible_ && parent_ ? parent_->IsDrawn() : false;
 }
 
-void View::SetEnabled(bool is_enabled) {
-  if (enabled_ == is_enabled)
+void View::SetEnabled(bool enabled) {
+  if (enabled_ == enabled)
     return;
 
-  enabled_ = is_enabled;
+  enabled_ = enabled;
   AdvanceFocusIfNecessary();
   OnPropertyChanged(&enabled_, kPropertyEffectsPaint);
 }
@@ -968,7 +967,7 @@ View* View::GetTooltipHandlerForPoint(const gfx::Point& point) {
   View::Views children = GetChildrenInZOrder();
   DCHECK_EQ(children_.size(), children.size());
   for (auto* child : base::Reversed(children)) {
-    if (!child->visible())
+    if (!child->GetVisible())
       continue;
 
     gfx::Point point_in_child_coords(point);
@@ -1610,7 +1609,7 @@ void View::MoveLayerToParent(ui::Layer* parent_layer,
 void View::UpdateLayerVisibility() {
   bool visible = visible_;
   for (const View* v = parent_; visible && v && !v->layer(); v = v->parent_)
-    visible = v->visible();
+    visible = v->GetVisible();
 
   UpdateChildLayerVisibility(visible);
 }
@@ -2066,7 +2065,7 @@ void View::AddChildViewAtImpl(View* view, int index) {
   if (widget) {
     RegisterChildrenForVisibleBoundsNotification(view);
 
-    if (view->visible())
+    if (view->GetVisible())
       view->SchedulePaint();
   }
 
@@ -2102,7 +2101,7 @@ void View::DoRemoveChildView(View* view,
   bool is_removed_from_widget = false;
   if (widget) {
     UnregisterChildrenForVisibleBoundsNotification(view);
-    if (view->visible())
+    if (view->GetVisible())
       view->SchedulePaint();
 
     is_removed_from_widget = !new_parent || new_parent->GetWidget() != widget;
@@ -2707,6 +2706,7 @@ bool View::DoDrag(const ui::LocatedEvent& event,
 // declaration for View.
 BEGIN_METADATA(View)
 ADD_PROPERTY_METADATA(View, bool, Enabled)
+ADD_PROPERTY_METADATA(View, bool, Visible)
 END_METADATA()
 
 }  // namespace views

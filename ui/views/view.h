@@ -550,12 +550,23 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // GetPreferredSize().height().
   virtual int GetHeightForWidth(int w) const;
 
+  // The |Visible| property. See comment above for instructions on declaring and
+  // implementing a property.
+  //
   // Sets whether this view is visible. Painting is scheduled as needed. Also,
   // clears focus if the focused view or one of its ancestors is set to be
   // hidden.
   virtual void SetVisible(bool visible);
+  // Return whether a view is visible.
+  bool GetVisible() const { return visible_; }
 
-  // Return whether a view is visible
+  // Adds a callback subscription associated with the above Visible property.
+  // The callback will be invoked whenever the Visible property changes.
+  PropertyChangedSubscription AddVisibleChangedCallback(
+      PropertyChangedCallback callback) WARN_UNUSED_RESULT;
+
+  // NOTE: Deprecated. Please use GetVisible() which is the getter for the
+  // |Visible| property.
   bool visible() const { return visible_; }
 
   // Returns true if this view is drawn on screen.
@@ -567,7 +578,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Set whether this view is enabled. A disabled view does not receive keyboard
   // or mouse inputs. If |enabled| differs from the current value, SchedulePaint
   // is invoked. Also, clears focus if the focused view is disabled.
-  void SetEnabled(bool is_enabled);
+  void SetEnabled(bool enabled);
   // Returns whether the view is enabled.
   bool GetEnabled() const { return enabled_; }
 

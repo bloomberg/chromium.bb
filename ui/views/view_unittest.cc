@@ -5010,6 +5010,17 @@ TEST_F(ViewTest, TestEnabledChangedCallback) {
   EXPECT_FALSE(test_view.GetEnabled());
 }
 
+TEST_F(ViewTest, TestVisibleChangedCallback) {
+  View test_view;
+  bool visibility_changed = false;
+  auto subscription = test_view.AddVisibleChangedCallback(base::BindRepeating(
+      [](bool* visibility_changed) { *visibility_changed = true; },
+      &visibility_changed));
+  test_view.SetVisible(false);
+  EXPECT_TRUE(visibility_changed);
+  EXPECT_FALSE(test_view.GetVisible());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Observer tests.
 ////////////////////////////////////////////////////////////////////////////////
