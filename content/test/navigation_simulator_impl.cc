@@ -349,6 +349,11 @@ NavigationSimulatorImpl::NavigationSimulatorImpl(
 
 NavigationSimulatorImpl::~NavigationSimulatorImpl() {}
 
+void NavigationSimulatorImpl::SetIsPostWithId(int64_t post_id) {
+  post_id_ = post_id;
+  SetMethod("POST");
+}
+
 void NavigationSimulatorImpl::InitializeFromStartedRequest(
     NavigationRequest* request) {
   CHECK(request);
@@ -907,8 +912,13 @@ void NavigationSimulatorImpl::BrowserInitiatedStartAndWaitBeforeUnload() {
       web_contents_->GetController().LoadURLWithParams(*load_url_params_);
       load_url_params_ = nullptr;
     } else {
-      web_contents_->GetController().LoadURL(navigation_url_, referrer_,
-                                             transition_, std::string());
+      NavigationController::LoadURLParams load_url_params(navigation_url_);
+      load_url_params.referrer = referrer_;
+      load_url_params.transition_type = transition_;
+      if (initial_method_ == "POST")
+        load_url_params.load_type = NavigationController::LOAD_TYPE_HTTP_POST;
+
+      web_contents_->GetController().LoadURLWithParams(load_url_params);
     }
   }
 
@@ -1240,6 +1250,7 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
   params->navigation_token = request_
                                  ? request_->commit_params().navigation_token
                                  : base::UnguessableToken::Create();
+  params->post_id = post_id_;
 
   if (intended_as_new_entry_.has_value())
     params->intended_as_new_entry = intended_as_new_entry_.value();

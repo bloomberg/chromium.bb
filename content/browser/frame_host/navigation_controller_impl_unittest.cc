@@ -785,19 +785,10 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage_DifferentMethod) {
 
   const GURL url1("http://foo1");
 
-  controller.LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = controller.GetPendingEntry()->GetUniqueID();
-  params.did_create_new_entry = true;
-  params.url = url1;
-  params.transition = ui::PAGE_TRANSITION_TYPED;
-  params.method = "POST";
-  params.post_id = 123;
-  params.page_state =
-      PageState::CreateForTesting(url1, false, nullptr, nullptr);
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigateWithParams(&params, false);
+  auto navigation1 =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url1, contents());
+  navigation1->SetIsPostWithId(123);
+  navigation1->Commit();
 
   // The post data should be visible.
   NavigationEntry* entry = controller.GetVisibleEntry();
@@ -805,19 +796,17 @@ TEST_F(NavigationControllerTest, LoadURL_SamePage_DifferentMethod) {
   EXPECT_TRUE(entry->GetHasPostData());
   EXPECT_EQ(entry->GetPostID(), 123);
 
-  controller.LoadURL(
-      url1, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->SendNavigateWithTransition(
-      controller.GetPendingEntry()->GetUniqueID(),
-      false, url1, ui::PAGE_TRANSITION_TYPED);
+  auto navigation2 =
+      NavigationSimulatorImpl::CreateBrowserInitiated(url1, contents());
+  navigation2->set_did_create_new_entry(false);
+  navigation2->Commit();
 
   // We should not have produced a new session history entry.
   ASSERT_EQ(controller.GetVisibleEntry(), entry);
 
   // The post data should have been cleared due to the GET.
   EXPECT_FALSE(entry->GetHasPostData());
-  EXPECT_EQ(entry->GetPostID(), 0);
+  EXPECT_EQ(entry->GetPostID(), -1);
 }
 
 // Tests loading a URL but discarding it before the load commits.
@@ -1468,6 +1457,7 @@ TEST_F(NavigationControllerTest, ResetEntryValuesAfterCommit) {
 
   // Fake a commit response.
   navigation->set_should_replace_current_entry(true);
+  navigation->Commit();
 
   // Certain values that are only used for pending entries get reset after
   // commit.

@@ -151,6 +151,8 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   void set_origin(const url::Origin& origin) { origin_ = origin; }
 
+  void SetIsPostWithId(int64_t post_id);
+
  private:
   NavigationSimulatorImpl(const GURL& original_url,
                           bool browser_initiated,
@@ -277,6 +279,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   base::Optional<net::SSLInfo> ssl_info_;
   base::Optional<PageState> page_state_;
   base::Optional<url::Origin> origin_;
+  int64_t post_id_ = -1;
 
   bool auto_advance_ = true;
   bool drop_swap_out_ack_ = false;
