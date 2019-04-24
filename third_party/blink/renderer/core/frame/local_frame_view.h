@@ -68,8 +68,6 @@ class FloatSize;
 class FragmentAnchor;
 class Frame;
 class FrameViewAutoSizeInfo;
-class IntersectionObserver;
-class IntersectionObserverEntry;
 class JSONObject;
 class JankTracker;
 class KURL;
@@ -220,6 +218,8 @@ class CORE_EXPORT LocalFrameView final
   // Get the InstersectionObservation::ComputeFlags for target elements in this
   // view.
   unsigned GetIntersectionObservationFlags(unsigned parent_flags) const;
+
+  void ForceUpdateViewportIntersections();
 
   void SetPaintArtifactCompositorNeedsUpdate() const;
 
@@ -475,7 +475,13 @@ class CORE_EXPORT LocalFrameView final
   // coordinate space.
   ChromeClient* GetChromeClient() const;
 
+  // This is called when the intersection between the FrameView with its
+  // embedding view changes.
+  void UpdateVisibility(bool is_visible);
+
   // Functions for child manipulation and inspection.
+  // The visibility flags are set for iframes based on style properties of the
+  // HTMLFrameOwnerElement in the embedding document.
   bool IsSelfVisible() const {
     return self_visible_;
   }  // Whether or not we have been explicitly marked as visible or not.
@@ -786,8 +792,6 @@ class CORE_EXPORT LocalFrameView final
   void PrePaint();
   void PaintTree();
   void UpdateStyleAndLayoutIfNeededRecursive();
-  void OnViewportIntersectionChanged(
-      const HeapVector<Member<IntersectionObserverEntry>>& entries);
 
   void PushPaintArtifactToCompositor(
       CompositorElementIdSet& composited_element_ids);
@@ -862,8 +866,6 @@ class CORE_EXPORT LocalFrameView final
 
   void LayoutFromRootObject(LayoutObject& root);
 
-  void UpdateVisibility(bool is_visible);
-
   LayoutSize size_;
 
   typedef HashSet<scoped_refptr<LayoutEmbeddedObject>> EmbeddedObjectSet;
@@ -875,8 +877,6 @@ class CORE_EXPORT LocalFrameView final
   bool is_attached_;
   bool self_visible_;
   bool parent_visible_;
-  blink::mojom::FrameVisibility visibility_ =
-      blink::mojom::FrameVisibility::kRenderedInViewport;
 
   WebDisplayMode display_mode_;
 
@@ -976,8 +976,6 @@ class CORE_EXPORT LocalFrameView final
   bool needs_forced_compositing_update_;
 
   bool needs_focus_on_fragment_;
-
-  Member<IntersectionObserver> visibility_observer_;
 
   IntRect remote_viewport_intersection_;
 

@@ -81,9 +81,7 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observation.h"
-#include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
-#include "third_party/blink/renderer/core/intersection_observer/intersection_observer_init.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/jank_tracker.h"
@@ -317,7 +315,6 @@ void LocalFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(plugins_);
   visitor->Trace(scrollbars_);
   visitor->Trace(viewport_scrollable_area_);
-  visitor->Trace(visibility_observer_);
   visitor->Trace(anchoring_adjustment_queue_);
   visitor->Trace(print_context_);
   visitor->Trace(paint_timing_detector_);
@@ -376,31 +373,15 @@ void LocalFrameView::ForAllNonThrottledLocalFrameViews(
   }
 }
 
-void LocalFrameView::OnViewportIntersectionChanged(
-    const HeapVector<Member<IntersectionObserverEntry>>& entries) {
-  bool is_visible = entries.back()->intersectionRatio() > 0;
-  UpdateVisibility(is_visible);
-  UpdateRenderThrottlingStatus(!is_visible, subtree_throttled_);
-}
-
 void LocalFrameView::SetupRenderThrottling() {
-  if (visibility_observer_)
-    return;
-
   // We observe the frame owner element instead of the document element, because
   // if the document has no content we can falsely think the frame is invisible.
   // Note that this means we cannot throttle top-level frames or (currently)
   // frames whose owner element is remote.
-  Element* target_element = GetFrame().DeprecatedLocalOwner();
+  HTMLFrameOwnerElement* target_element = GetFrame().DeprecatedLocalOwner();
   if (!target_element)
     return;
-
-  visibility_observer_ = IntersectionObserver::Create(
-      {}, {IntersectionObserver::kMinimumThreshold},
-      &target_element->GetDocument(),
-      WTF::BindRepeating(&LocalFrameView::OnViewportIntersectionChanged,
-                         WrapWeakPersistent(this)));
-  visibility_observer_->observe(target_element);
+  target_element->StartVisibilityObserver();
 }
 
 void LocalFrameView::Dispose() {
@@ -1077,6 +1058,18 @@ void LocalFrameView::RunIntersectionObserverSteps() {
   DCHECK(was_dirty || !NeedsLayout());
 #endif
   DeliverSynchronousIntersectionObservations();
+}
+
+void LocalFrameView::ForceUpdateViewportIntersections() {
+  // IntersectionObserver targets in this frame (and its frame tree) need to
+  // update; but we can't wait for a lifecycle update to run them, because a
+  // hidden frame won't run lifecycle updates. Force layout and run them now.
+  DocumentLifecycle::DisallowThrottlingScope disallow_throttling(Lifecycle());
+  UpdateLifecycleToCompositingCleanPlusScrolling();
+  UpdateViewportIntersectionsForSubtree(
+      IntersectionObservation::kImplicitRootObserversNeedUpdate |
+      IntersectionObservation::kIgnoreDelay);
+  frame_->Owner()->SetNeedsOcclusionTracking(false);
 }
 
 LayoutSVGRoot* LocalFrameView::EmbeddedReplacedContent() const {
@@ -4110,6 +4103,11 @@ unsigned LocalFrameView::GetIntersectionObservationFlags(
   flags |= (parent_flags &
             IntersectionObservation::kImplicitRootObserversNeedUpdate);
 
+  // The kIgnoreDelay parameter is used to force computation in an OOPIF which
+  // is hidden in the parent document, thus not running lifecycle updates. It
+  // applies to the entire frame tree.
+  flags |= (parent_flags & IntersectionObservation::kIgnoreDelay);
+
   return flags;
 }
 
@@ -4397,20 +4395,7 @@ void LocalFrameView::UnregisterFromLifecycleNotifications(
 }
 
 void LocalFrameView::UpdateVisibility(bool is_visible) {
-  blink::mojom::FrameVisibility visibility;
-  if (!is_attached_) {
-    visibility = blink::mojom::FrameVisibility::kNotRendered;
-  } else if (!is_visible) {
-    visibility = blink::mojom::FrameVisibility::kRenderedOutOfViewport;
-  } else {
-    visibility = blink::mojom::FrameVisibility::kRenderedInViewport;
-  }
-  if (visibility_ == visibility)
-    return;
-  visibility_ = visibility;
-  if (auto* client = GetFrame().Client()) {
-    client->VisibilityChanged(visibility);
-  }
+  UpdateRenderThrottlingStatus(!is_visible, subtree_throttled_);
 }
 
 #if DCHECK_IS_ON()

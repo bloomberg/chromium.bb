@@ -34,6 +34,10 @@ class IntersectionObservation final
     // If this bit is set, and observer_->RootIsImplicit() is true, then
     // Compute() should update the observation.
     kImplicitRootObserversNeedUpdate = 1 << 2,
+    // If this bit is set, then the observer.delay parameter is ignored; i.e.,
+    // the computation will run even if the previous run happened within the
+    // delay parameter.
+    kIgnoreDelay = 1 << 3,
   };
 
   IntersectionObservation(IntersectionObserver&, Element&);
