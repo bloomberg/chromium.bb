@@ -66,6 +66,10 @@
  */
 #define SK_PDF_USE_SFNTLY
 
+// Chromium does not use these fonts.  This define causes type1 fonts to be
+// converted to type3 when producing PDFs, and reduces build size.
+#define SK_PDF_DO_NOT_SUPPORT_TYPE_1_FONTS
+
 // ===== Begin Chrome-specific definitions =====
 
 #ifdef SK_DEBUG
