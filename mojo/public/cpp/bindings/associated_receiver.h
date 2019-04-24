@@ -93,6 +93,13 @@ class AssociatedReceiver {
     binding_.set_connection_error_handler(std::move(handler));
   }
 
+  // Like above but when invoked |handler| will receive additional metadata
+  // about why the remote endpoint was closed, if provided.
+  void set_disconnect_with_reason_handler(
+      ConnectionErrorWithReasonCallback handler) {
+    binding_.set_connection_error_with_reason_handler(std::move(handler));
+  }
+
   // Resets this AssociatedReceiver to an unbound state. An unbound
   // AssociatedReceiver will NEVER schedule method calls or disconnection
   // notifications, and any pending tasks which were scheduled prior to

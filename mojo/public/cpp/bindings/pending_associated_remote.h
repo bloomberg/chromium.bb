@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
@@ -27,6 +28,12 @@ class PendingAssociatedRemote {
   PendingAssociatedRemote(ScopedInterfaceEndpointHandle handle,
                           uint32_t version)
       : handle_(std::move(handle)), version_(version) {}
+
+  // Temporary helper for transitioning away from old types. Intentionally an
+  // implicit constructor.
+  PendingAssociatedRemote(AssociatedInterfacePtrInfo<Interface>&& ptr_info)
+      : PendingAssociatedRemote(ptr_info.PassHandle(), ptr_info.version()) {}
+
   ~PendingAssociatedRemote() = default;
 
   PendingAssociatedRemote& operator=(PendingAssociatedRemote&& other) {
@@ -37,6 +44,12 @@ class PendingAssociatedRemote {
 
   bool is_valid() const { return handle_.is_valid(); }
   explicit operator bool() const { return is_valid(); }
+
+  // Temporary helper for transitioning away from old bindings types. This is
+  // intentionally an implicit conversion.
+  operator AssociatedInterfacePtrInfo<Interface>() {
+    return AssociatedInterfacePtrInfo<Interface>(PassHandle(), version());
+  }
 
   ScopedInterfaceEndpointHandle PassHandle() { return std::move(handle_); }
   const ScopedInterfaceEndpointHandle& handle() const { return handle_; }

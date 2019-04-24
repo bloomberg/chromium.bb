@@ -68,6 +68,12 @@ class PendingRemote {
   bool is_valid() const { return pipe_.is_valid(); }
   explicit operator bool() const { return is_valid(); }
 
+  // Temporary helper for transitioning away from old bindings types. This is
+  // intentionally an implicit conversion.
+  operator InterfacePtrInfo<Interface>() {
+    return InterfacePtrInfo<Interface>(PassPipe(), version());
+  }
+
   // Resets this PendingRemote to an invalid state. If it was entangled with a
   // Receiver or PendingReceiver, that object remains in a valid state and will
   // eventually detect that its remote caller is gone.

@@ -177,6 +177,7 @@ component("bindings") {
     "receiver_set.h",
     "remote.h",
     "sequence_local_sync_event_watcher.h",
+    "shared_remote.h",
     "strong_associated_binding.h",
     "strong_binding.h",
     "strong_binding_set.h",
@@ -185,7 +186,6 @@ component("bindings") {
     "sync_handle_registry.h",
     "sync_handle_watcher.h",
     "thread_safe_interface_ptr.h",
-    "thread_safe_remote.h",
     "unique_ptr_impl_ref_traits.h",
   ]
 

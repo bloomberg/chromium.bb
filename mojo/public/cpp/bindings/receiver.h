@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
+#include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/binding_state.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -90,6 +91,15 @@ class Receiver {
   // Receiver's bound SequencedTaskRunner.
   void set_disconnect_handler(base::OnceClosure handler) {
     internal_state_.set_connection_error_handler(std::move(handler));
+  }
+
+  // Like above but if this callback is set instead of the above, it can receive
+  // additional details about why the remote endpoint was closed, if provided.
+  void set_disconnect_with_reason_handler(
+      ConnectionErrorWithReasonCallback error_handler) {
+    DCHECK(is_bound());
+    internal_state_.set_connection_error_with_reason_handler(
+        std::move(error_handler));
   }
 
   // Resets this Receiver to an unbound state. An unbound Receiver will NEVER

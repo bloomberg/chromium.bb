@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_REMOTE_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_REMOTE_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_SHARED_REMOTE_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_SHARED_REMOTE_H_
 
 #include <memory>
 
@@ -24,48 +24,39 @@
 #include "mojo/public/cpp/bindings/sync_event_watcher.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 
-// ThreadSafeRemote wraps a non-thread-safe Remote and proxies messages to it.
-// Async calls are posted to the sequence that the Remote is bound to, and the
-// responses are posted back to the calling sequence. Sync calls are dispatched
-// directly if the call is made on the sequence that the wrapped Remote is bound
-// to, or posted otherwise. It's important to be aware that sync calls block
-// both the calling sequence and the Remote sequence. That means that you cannot
-// make sync calls through a ThreadSafeRemote if the underlying Remote is bound
-// to a sequence that cannot block, like the IPC thread.
-
 namespace mojo {
 
 template <typename RemoteType>
-class ThreadSafeRemoteBase
-    : public base::RefCountedThreadSafe<ThreadSafeRemoteBase<RemoteType>> {
+class SharedRemoteBase
+    : public base::RefCountedThreadSafe<SharedRemoteBase<RemoteType>> {
  public:
   using InterfaceType = typename RemoteType::InterfaceType;
   using PendingType = typename RemoteType::PendingType;
 
-  explicit ThreadSafeRemoteBase(
+  explicit SharedRemoteBase(
       std::unique_ptr<ThreadSafeForwarder<InterfaceType>> forwarder)
       : forwarder_(std::move(forwarder)) {}
 
-  // Creates a ThreadSafeRemoteBase wrapping an underlying non-thread-safe
+  // Creates a SharedRemoteBase wrapping an underlying non-thread-safe
   // RemoteType which is bound to the calling sequence. All messages sent
   // via this thread-safe proxy will internally be sent by first posting to this
   // (the calling) sequence's TaskRunner.
-  static scoped_refptr<ThreadSafeRemoteBase> Create(RemoteType remote) {
+  static scoped_refptr<SharedRemoteBase> Create(RemoteType remote) {
     scoped_refptr<RemoteWrapper> wrapper = new RemoteWrapper(std::move(remote));
-    return new ThreadSafeRemoteBase(wrapper->CreateForwarder());
+    return new SharedRemoteBase(wrapper->CreateForwarder());
   }
 
-  // Creates a ThreadSafeRemoteBase which binds the underlying
+  // Creates a SharedRemoteBase which binds the underlying
   // non-thread-safe InterfacePtrType on the specified TaskRunner. All messages
   // sent via this thread-safe proxy will internally be sent by first posting to
   // that TaskRunner.
-  static scoped_refptr<ThreadSafeRemoteBase> Create(
+  static scoped_refptr<SharedRemoteBase> Create(
       PendingType pending_remote,
       scoped_refptr<base::SequencedTaskRunner> bind_task_runner) {
     scoped_refptr<RemoteWrapper> wrapper =
         new RemoteWrapper(std::move(bind_task_runner));
     wrapper->BindOnTaskRunner(std::move(pending_remote));
-    return new ThreadSafeRemoteBase(wrapper->CreateForwarder());
+    return new SharedRemoteBase(wrapper->CreateForwarder());
   }
 
   InterfaceType* get() { return &forwarder_->proxy(); }
@@ -73,7 +64,7 @@ class ThreadSafeRemoteBase
   InterfaceType& operator*() { return *get(); }
 
  private:
-  friend class base::RefCountedThreadSafe<ThreadSafeRemoteBase<RemoteType>>;
+  friend class base::RefCountedThreadSafe<SharedRemoteBase<RemoteType>>;
 
   struct RemoteWrapperDeleter;
 
@@ -157,24 +148,37 @@ class ThreadSafeRemoteBase
     }
   };
 
-  ~ThreadSafeRemoteBase() {}
+  ~SharedRemoteBase() {}
 
   const std::unique_ptr<ThreadSafeForwarder<InterfaceType>> forwarder_;
 
-  DISALLOW_COPY_AND_ASSIGN(ThreadSafeRemoteBase);
+  DISALLOW_COPY_AND_ASSIGN(SharedRemoteBase);
 };
 
+// SharedRemote wraps a non-thread-safe Remote and proxies messages to it.
+// Unlike normal Remote objects, SharedRemote is copyable and usable from any
+// thread, but has some additional overhead and latency in message transmission
+// as a trade-off.
+//
+// Async calls are posted to the sequence that the underlying Remote is bound
+// to, and responses are posted back to the calling sequence. Sync calls are
+// dispatched directly if the call is made on the sequence that the wrapped
+// Remote is bound to, or posted otherwise. It's important to be aware that
+// sync calls block both the calling sequence and the bound Remote's sequence.
+// That means that you cannot make sync calls through a SharedRemote if the
+// underlying Remote is bound to a sequence that cannot block, like the IPC
+// thread.
 template <typename Interface>
-class ThreadSafeRemote {
+class SharedRemote {
  public:
-  ThreadSafeRemote() = default;
-  ThreadSafeRemote(PendingRemote<Interface> pending_remote)
-      : ThreadSafeRemote(std::move(pending_remote),
-                         base::SequencedTaskRunnerHandle::Get()) {}
-  ThreadSafeRemote(PendingRemote<Interface> pending_remote,
-                   scoped_refptr<base::SequencedTaskRunner> bind_task_runner)
+  SharedRemote() = default;
+  explicit SharedRemote(PendingRemote<Interface> pending_remote)
+      : SharedRemote(std::move(pending_remote),
+                     base::SequencedTaskRunnerHandle::Get()) {}
+  SharedRemote(PendingRemote<Interface> pending_remote,
+               scoped_refptr<base::SequencedTaskRunner> bind_task_runner)
       : remote_(pending_remote.is_valid()
-                    ? ThreadSafeRemoteBase<Remote<Interface>>::Create(
+                    ? SharedRemoteBase<Remote<Interface>>::Create(
                           std::move(pending_remote),
                           std::move(bind_task_runner))
                     : nullptr) {}
@@ -187,9 +191,9 @@ class ThreadSafeRemote {
   Interface& operator*() const { return *get(); }
 
  private:
-  scoped_refptr<ThreadSafeRemoteBase<Remote<Interface>>> remote_;
+  scoped_refptr<SharedRemoteBase<Remote<Interface>>> remote_;
 };
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_REMOTE_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_SHARED_REMOTE_H_
