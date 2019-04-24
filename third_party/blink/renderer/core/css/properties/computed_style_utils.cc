@@ -1896,11 +1896,11 @@ CSSValueList* ComputedStyleUtils::ValueForBorderRadiusShorthand(
 CSSValue* ComputedStyleUtils::StrokeDashArrayToCSSValueList(
     const SVGDashArray& dashes,
     const ComputedStyle& style) {
-  if (dashes.IsEmpty())
+  if (dashes.data.IsEmpty())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
 
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  for (const Length& dash_length : dashes.GetVector()) {
+  for (const Length& dash_length : dashes.data) {
     list->Append(*ZoomAdjustedPixelValueForLength(dash_length, style));
   }
 

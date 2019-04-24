@@ -1336,10 +1336,11 @@ scoped_refptr<SVGDashArray> StyleBuilderConverter::ConvertStrokeDasharray(
   if (!dashes)
     return SVGComputedStyle::InitialStrokeDashArray();
 
-  scoped_refptr<SVGDashArray> array = SVGDashArray::Create();
+  scoped_refptr<SVGDashArray> array = new SVGDashArray();
+
   wtf_size_t length = dashes->length();
   for (wtf_size_t i = 0; i < length; ++i) {
-    array->push_back(
+    array->data.push_back(
         ConvertLength(state, To<CSSPrimitiveValue>(dashes->Item(i))));
   }
 

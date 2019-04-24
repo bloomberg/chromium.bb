@@ -211,7 +211,7 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   }
 
   void SetStrokeDashArray(scoped_refptr<SVGDashArray> dash_array) {
-    if (*stroke->dash_array != *dash_array)
+    if (stroke->dash_array->data != dash_array->data)
       stroke.Access()->dash_array = std::move(dash_array);
   }
 

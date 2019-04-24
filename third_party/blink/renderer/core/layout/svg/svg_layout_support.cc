@@ -463,7 +463,7 @@ DashArray SVGLayoutSupport::ResolveSVGDashArray(
     const ComputedStyle& style,
     const SVGLengthContext& length_context) {
   DashArray dash_array;
-  for (const Length& dash_length : svg_dash_array.GetVector())
+  for (const Length& dash_length : svg_dash_array.data)
     dash_array.push_back(length_context.ValueForLength(dash_length, style));
   return dash_array;
 }

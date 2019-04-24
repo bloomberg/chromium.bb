@@ -11,12 +11,12 @@
 namespace blink {
 
 // Ensures RefPtr values are compared by their values, not by pointers.
-#define TEST_STYLE_REFPTR_VALUE_NO_DIFF(type, fieldName)               \
+#define TEST_STYLE_REFCOUNTED_VALUE_NO_DIFF(type, fieldName)           \
   {                                                                    \
     scoped_refptr<SVGComputedStyle> svg1 = SVGComputedStyle::Create(); \
     scoped_refptr<SVGComputedStyle> svg2 = SVGComputedStyle::Create(); \
-    scoped_refptr<type> value1 = type::Create();                       \
-    scoped_refptr<type> value2 = value1->Copy();                       \
+    scoped_refptr<type> value1 = new type();                           \
+    scoped_refptr<type> value2 = new type(value1->data);               \
     svg1->Set##fieldName(value1);                                      \
     svg2->Set##fieldName(value2);                                      \
     EXPECT_FALSE(svg1->Diff(*svg2).HasDifference());                   \
@@ -39,7 +39,7 @@ TEST(SVGComputedStyleTest, StrokeStyleShouldCompareValue) {
   TEST_STYLE_VALUE_NO_DIFF(float, StrokeMiterLimit);
   TEST_STYLE_VALUE_NO_DIFF(UnzoomedLength, StrokeWidth);
   TEST_STYLE_VALUE_NO_DIFF(Length, StrokeDashOffset);
-  TEST_STYLE_REFPTR_VALUE_NO_DIFF(SVGDashArray, StrokeDashArray);
+  TEST_STYLE_REFCOUNTED_VALUE_NO_DIFF(SVGDashArray, StrokeDashArray);
 
   TEST_STYLE_VALUE_NO_DIFF(SVGPaint, StrokePaint);
   {

@@ -82,7 +82,7 @@ void LayoutSVGShape::CreatePath() {
 }
 
 float LayoutSVGShape::DashScaleFactor() const {
-  if (!StyleRef().SvgStyle().StrokeDashArray()->size())
+  if (StyleRef().SvgStyle().StrokeDashArray()->data.IsEmpty())
     return 1;
   return ToSVGGeometryElement(*GetElement()).PathLengthScaleFactor();
 }
