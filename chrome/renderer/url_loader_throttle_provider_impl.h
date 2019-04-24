@@ -47,6 +47,11 @@ class URLLoaderThrottleProviderImpl
   // general use.
   URLLoaderThrottleProviderImpl(const URLLoaderThrottleProviderImpl& other);
 
+  // Reports whether the provider type is frame or not. When this is true, the
+  // member functions are called on the main thread. Otherwise, they are called
+  // on worker threads.
+  bool IsTypeFrame() const;
+
   content::URLLoaderThrottleProviderType type_;
   ChromeContentRendererClient* const chrome_content_renderer_client_;
 
