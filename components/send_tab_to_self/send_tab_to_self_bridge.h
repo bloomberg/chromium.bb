@@ -131,6 +131,7 @@ class SendTabToSelfBridge : public syncer::ModelTypeSyncBridge,
   // |history_service_| isn't owned.
   history::HistoryService* const history_service_;
 
+  // The name of this local device.
   std::string local_device_name_;
 
   // In charge of actually persisting changes to disk, or loading previous data.

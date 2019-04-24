@@ -393,13 +393,29 @@ SendTabToSelfBridge::DestroyAndStealStoreForTest(
 
 void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryAdded(
     const std::vector<const SendTabToSelfEntry*>& new_entries) {
+  std::vector<const SendTabToSelfEntry*> new_local_entries;
+
+  if (base::FeatureList::IsEnabled(kSendTabToSelfBroadcast)) {
+    new_local_entries = new_entries;
+  } else {
+    // Only pass along entries that are targeted at this device.
+    DCHECK(!change_processor()->TrackedCacheGuid().empty());
+    for (const SendTabToSelfEntry* entry : new_entries) {
+      if (entry->GetTargetDeviceSyncCacheGuid() ==
+          change_processor()->TrackedCacheGuid()) {
+        new_local_entries.push_back(entry);
+      }
+    }
+  }
+
   for (SendTabToSelfModelObserver& observer : observers_) {
-    observer.EntriesAddedRemotely(new_entries);
+    observer.EntriesAddedRemotely(new_local_entries);
   }
 }
 
 void SendTabToSelfBridge::NotifyRemoteSendTabToSelfEntryDeleted(
     const std::vector<std::string>& guids) {
+  // TODO(crbug.com/956216): Only send the entries that targeted this device.
   for (SendTabToSelfModelObserver& observer : observers_) {
     observer.EntriesRemovedRemotely(guids);
   }

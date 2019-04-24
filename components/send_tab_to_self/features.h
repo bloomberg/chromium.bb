@@ -15,6 +15,10 @@ namespace send_tab_to_self {
 // datatype is also enabled.
 extern const base::Feature kSendTabToSelfShowSendingUI;
 
+// If this feature is enabled, the tabs will be broadcasted instead of
+// targeted to a specific device. This only affects the receiving side.
+extern const base::Feature kSendTabToSelfBroadcast;
+
 // Returns whether the receiving components of the feature is enabled on this
 // device. This is different from IsReceivingEnabled in SendTabToSelfUtil
 // because it doesn't rely on the SendTabToSelfSyncService to be actively up and

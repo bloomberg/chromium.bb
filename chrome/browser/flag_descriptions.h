@@ -1022,6 +1022,9 @@ extern const char kSaveasMenuLabelExperimentDescription[];
 extern const char kScrollableTabStripName[];
 extern const char kScrollableTabStripDescription[];
 
+extern const char kSendTabToSelfBroadcastName[];
+extern const char kSendTabToSelfBroadcastDescription[];
+
 extern const char kSendTabToSelfName[];
 extern const char kSendTabToSelfDescription[];
 
