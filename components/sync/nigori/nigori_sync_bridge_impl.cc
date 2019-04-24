@@ -149,41 +149,43 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::MergeSyncData(
                       "Received empty EntityData during initial "
                       "sync of Nigori.");
   }
-  return ApplySyncChanges(*data);
+  return ApplySyncChanges(data);
 }
 
 base::Optional<ModelError> NigoriSyncBridgeImpl::ApplySyncChanges(
-    const EntityData& data) {
+    const base::Optional<EntityData>& data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(data.specifics.has_nigori());
-  const sync_pb::NigoriSpecifics& nigori = data.specifics.nigori();
+  if (data) {
+    DCHECK(data->specifics.has_nigori());
+    const sync_pb::NigoriSpecifics& nigori = data->specifics.nigori();
 
-  // TODO(crbug.com/922900): support other passphrase types.
-  if (ProtoPassphraseTypeToEnum(nigori.passphrase_type()) !=
-      PassphraseType::KEYSTORE_PASSPHRASE) {
-    NOTIMPLEMENTED();
-    return ModelError(FROM_HERE, "Only keystore Nigori node is supported.");
-  }
+    // TODO(crbug.com/922900): support other passphrase types.
+    if (ProtoPassphraseTypeToEnum(nigori.passphrase_type()) !=
+        PassphraseType::KEYSTORE_PASSPHRASE) {
+      NOTIMPLEMENTED();
+      return ModelError(FROM_HERE, "Only keystore Nigori node is supported.");
+    }
 
-  DCHECK(!keystore_keys_.empty());
-  // TODO(crbug.com/922900): verify that we don't need to check that
-  // nigori.encryption_keybag() and nigori.keystore_decryptor_token() are not
-  // empty.
-  sync_pb::EncryptedData keybag = nigori.encryption_keybag();
-  if (cryptographer_.CanDecrypt(keybag)) {
-    cryptographer_.InstallKeys(keybag);
-  } else {
-    cryptographer_.SetPendingKeys(keybag);
-    base::Optional<std::string> serialized_keystore_decryptor =
-        DecryptKeystoreDecryptor(keystore_keys_,
-                                 nigori.keystore_decryptor_token(),
-                                 cryptographer_.encryptor());
-    if (!serialized_keystore_decryptor ||
-        !cryptographer_.ImportNigoriKey(*serialized_keystore_decryptor) ||
-        !cryptographer_.is_ready()) {
-      return ModelError(FROM_HERE,
-                        "Failed to decrypt pending keys using the keystore "
-                        "decryptor token.");
+    DCHECK(!keystore_keys_.empty());
+    // TODO(crbug.com/922900): verify that we don't need to check that
+    // nigori.encryption_keybag() and nigori.keystore_decryptor_token() are not
+    // empty.
+    sync_pb::EncryptedData keybag = nigori.encryption_keybag();
+    if (cryptographer_.CanDecrypt(keybag)) {
+      cryptographer_.InstallKeys(keybag);
+    } else {
+      cryptographer_.SetPendingKeys(keybag);
+      base::Optional<std::string> serialized_keystore_decryptor =
+          DecryptKeystoreDecryptor(keystore_keys_,
+                                   nigori.keystore_decryptor_token(),
+                                   cryptographer_.encryptor());
+      if (!serialized_keystore_decryptor ||
+          !cryptographer_.ImportNigoriKey(*serialized_keystore_decryptor) ||
+          !cryptographer_.is_ready()) {
+        return ModelError(FROM_HERE,
+                          "Failed to decrypt pending keys using the keystore "
+                          "decryptor token.");
+      }
     }
   }
   // TODO(crbug.com/922900): implement updates of other data fields (e.g.

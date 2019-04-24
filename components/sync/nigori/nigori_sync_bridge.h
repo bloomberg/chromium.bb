@@ -31,7 +31,7 @@ class NigoriSyncBridge {
 
   // Apply changes from the sync server locally.
   virtual base::Optional<ModelError> ApplySyncChanges(
-      const EntityData& data) = 0;
+      const base::Optional<EntityData>& data) = 0;
 
   // Retrieve Nigori sync data.
   virtual std::unique_ptr<EntityData> GetData() = 0;

@@ -96,7 +96,71 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
     const sync_pb::ModelTypeState& type_state,
     UpdateResponseDataList updates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  DCHECK(model_ready_to_sync_);
+  // If there is a model error, it must have been reported already but hasn't
+  // reached the sync engine yet. In this case return directly to avoid
+  // interactions with the bridge.
+  if (model_error_) {
+    return;
+  }
+
+  base::Optional<ModelError> error;
+
+  bool is_initial_sync = !model_type_state_.initial_sync_done();
+  model_type_state_ = type_state;
+
+  if (is_initial_sync) {
+    DCHECK(!entity_);
+    if (updates.empty()) {
+      error = bridge_->MergeSyncData(base::nullopt);
+    } else {
+      DCHECK(!updates[0]->entity->is_deleted());
+      entity_ = ProcessorEntity::CreateNew(
+          kNigoriStorageKey, kNigoriClientTagHash, updates[0]->entity->id,
+          updates[0]->entity->creation_time);
+      entity_->RecordAcceptedUpdate(*updates[0]);
+      error = bridge_->MergeSyncData(std::move(*updates[0]->entity));
+    }
+    if (error) {
+      // TODO(mamir): ReportError(*error);
+      NOTIMPLEMENTED();
+    }
+    return;
+  }
+
+  if (updates.empty()) {
+    bridge_->ApplySyncChanges(/*data=*/base::nullopt);
+    return;
+  }
+
+  DCHECK(entity_);
+  // We assume the bridge will issue errors in case of deletions. Therefore, we
+  // are adding the following DCHECK to simplify the code.
+  DCHECK(!updates[0]->entity->is_deleted());
+
+  if (entity_->UpdateIsReflection(updates[0]->response_version)) {
+    // Seen this update before; just ignore it.
+    bridge_->ApplySyncChanges(/*data=*/base::nullopt);
+    return;
+  }
+
+  if (entity_->IsUnsynced()) {
+    // TODO(mamir): conflict resolution
+    NOTIMPLEMENTED();
+  } else if (!entity_->MatchesData(*updates[0]->entity)) {
+    // Inform the bridge of the new or updated data.
+    entity_->RecordAcceptedUpdate(*updates[0]);
+    error = bridge_->ApplySyncChanges(std::move(*updates[0]->entity));
+  }
+
+  if (error) {
+    // TODO(mamir): ReportError(*error);
+    NOTIMPLEMENTED();
+    return;
+  }
+
+  // There may be new reasons to commit by the time this function is done.
+  NudgeForCommitIfNeeded();
 }
 
 void NigoriModelTypeProcessor::OnSyncStarting(

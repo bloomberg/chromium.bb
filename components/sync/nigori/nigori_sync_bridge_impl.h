@@ -56,7 +56,8 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // NigoriSyncBridge implementation.
   base::Optional<ModelError> MergeSyncData(
       const base::Optional<EntityData>& data) override;
-  base::Optional<ModelError> ApplySyncChanges(const EntityData& data) override;
+  base::Optional<ModelError> ApplySyncChanges(
+      const base::Optional<EntityData>& data) override;
   std::unique_ptr<EntityData> GetData() override;
   ConflictResolution ResolveConflict(const EntityData& local_data,
                                      const EntityData& remote_data) override;
