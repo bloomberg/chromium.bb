@@ -21,18 +21,13 @@
 
 namespace performance_manager {
 
-class SystemNodeImpl;
-
 template <class NodeClass>
 class TestNodeWrapper {
  public:
+  struct Factory;
+
   template <typename... Args>
-  static TestNodeWrapper<NodeClass> Create(Graph* graph, Args&&... args) {
-    std::unique_ptr<NodeClass> node =
-        std::make_unique<NodeClass>(graph, std::forward<Args>(args)...);
-    graph->AddNewNode(node.get());
-    return TestNodeWrapper<NodeClass>(std::move(node));
-  }
+  static TestNodeWrapper<NodeClass> Create(Graph* graph, Args&&... args);
 
   TestNodeWrapper() {}
 
@@ -62,6 +57,43 @@ class TestNodeWrapper {
  private:
   std::unique_ptr<NodeClass> impl_;
 };
+
+template <class NodeClass>
+struct TestNodeWrapper<NodeClass>::Factory {
+  template <typename... Args>
+  static std::unique_ptr<NodeClass> Create(Graph* graph, Args&&... args) {
+    return std::make_unique<NodeClass>(graph, std::forward<Args>(args)...);
+  }
+};
+
+// A specialized factory function for frame nodes that helps fill out some
+// common values.
+template <>
+struct TestNodeWrapper<FrameNodeImpl>::Factory {
+  static std::unique_ptr<FrameNodeImpl> Create(
+      Graph* graph,
+      ProcessNodeImpl* process_node,
+      PageNodeImpl* page_node,
+      FrameNodeImpl* parent_frame_node = nullptr,
+      int frame_tree_node_id = 0,
+      const base::UnguessableToken& token = base::UnguessableToken::Create()) {
+    return std::make_unique<FrameNodeImpl>(graph, process_node, page_node,
+                                           parent_frame_node,
+                                           frame_tree_node_id, token);
+  }
+};
+
+// static
+template <typename NodeClass>
+template <typename... Args>
+TestNodeWrapper<NodeClass> TestNodeWrapper<NodeClass>::Create(Graph* graph,
+                                                              Args&&... args) {
+  // Dispatch to a helper so that we can use partial specialization.
+  std::unique_ptr<NodeClass> node =
+      Factory::Create(graph, std::forward<Args>(args)...);
+  graph->AddNewNode(node.get());
+  return TestNodeWrapper<NodeClass>(std::move(node));
+}
 
 // This specialization is necessary because the graph has ownership of the
 // system node as it's a singleton. For the other node types the test wrapper

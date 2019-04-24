@@ -34,9 +34,7 @@ MockSinglePageInSingleProcessGraph::MockSinglePageInSingleProcessGraph(
       page(TestNodeWrapper<PageNodeImpl>::Create(graph, nullptr)),
       frame(TestNodeWrapper<FrameNodeImpl>::Create(graph,
                                                    process.get(),
-                                                   page.get(),
-                                                   nullptr,
-                                                   0)) {
+                                                   page.get())) {
   frame->SetAllInterventionPoliciesForTesting(
       resource_coordinator::mojom::InterventionPolicy::kDefault);
   process->SetProcessWithPid(1, base::Process::Current(), base::Time::Now());

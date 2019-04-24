@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "url/gurl.h"
@@ -57,7 +58,8 @@ class FrameNodeImpl
                 ProcessNodeImpl* process_node,
                 PageNodeImpl* page_node,
                 FrameNodeImpl* parent_frame_node,
-                int frame_tree_node_id);
+                int frame_tree_node_id,
+                const base::UnguessableToken& dev_tools_token);
   ~FrameNodeImpl() override;
 
   // FrameNode implementation.
@@ -76,6 +78,7 @@ class FrameNodeImpl
   PageNodeImpl* page_node() const;
   ProcessNodeImpl* process_node() const;
   int frame_tree_node_id() const;
+  const base::UnguessableToken& dev_tools_token() const;
 
   // Getters for non-const properties. These are not thread safe.
   const base::flat_set<FrameNodeImpl*>& child_frame_nodes() const;
@@ -122,6 +125,11 @@ class FrameNodeImpl
   // Can be used to tie together "sibling" frames, where a navigation is ongoing
   // in a new frame that will soon replace the existing one.
   const int frame_tree_node_id_;
+  // A unique identifier shared with all representations of this node across
+  // content and blink. The token is only defined by the browser process and
+  // is never sent back from the renderer in control calls. It should never be
+  // used to look up the FrameTreeNode instance.
+  const base::UnguessableToken dev_tools_token_;
 
   base::flat_set<FrameNodeImpl*> child_frame_nodes_;
   ObservedProperty::NotifiesOnlyOnChanges<

@@ -119,6 +119,7 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
   std::unique_ptr<FrameNodeImpl> frame = performance_manager_->CreateFrameNode(
       process_node, page_node_.get(), parent_frame_node,
       render_frame_host->GetFrameTreeNodeId(),
+      render_frame_host->GetDevToolsFrameToken(),
       base::BindOnce(
           [](const GURL& url, bool is_current, FrameNodeImpl* frame_node) {
             frame_node->set_url(url);

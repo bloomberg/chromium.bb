@@ -115,8 +115,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstNonPersistentNotificationCreatedUMA) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   auto page_node = CreateNode<PageNodeImpl>(nullptr);
-  auto frame_node = CreateNode<FrameNodeImpl>(process_node.get(),
-                                              page_node.get(), nullptr, 0);
+  auto frame_node =
+      CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
 
   page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
                                             kDummyID, kDummyUrl);
@@ -152,8 +152,8 @@ TEST_F(
     FromBackgroundedToFirstNonPersistentNotificationCreatedUMA5MinutesTimeout) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   auto page_node = CreateNode<PageNodeImpl>(nullptr);
-  auto frame_node = CreateNode<FrameNodeImpl>(process_node.get(),
-                                              page_node.get(), nullptr, 0);
+  auto frame_node =
+      CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
 
   page_node->OnMainFrameNavigationCommitted(PerformanceManagerClock::NowTicks(),
                                             kDummyID, kDummyUrl);
@@ -223,8 +223,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
 TEST_F(MAYBE_MetricsCollectorTest, ResponsivenessMetric) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   auto page_node = CreateNode<PageNodeImpl>(nullptr);
-  auto frame_node = CreateNode<FrameNodeImpl>(process_node.get(),
-                                              page_node.get(), nullptr, 0);
+  auto frame_node =
+      CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
 
   ukm::TestUkmRecorder ukm_recorder;
   graph()->set_ukm_recorder(&ukm_recorder);

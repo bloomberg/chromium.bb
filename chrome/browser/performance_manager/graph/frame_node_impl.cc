@@ -15,12 +15,14 @@ FrameNodeImpl::FrameNodeImpl(Graph* graph,
                              ProcessNodeImpl* process_node,
                              PageNodeImpl* page_node,
                              FrameNodeImpl* parent_frame_node,
-                             int frame_tree_node_id)
+                             int frame_tree_node_id,
+                             const base::UnguessableToken& dev_tools_token)
     : CoordinationUnitInterface(graph),
       parent_frame_node_(parent_frame_node),
       page_node_(page_node),
       process_node_(process_node),
-      frame_tree_node_id_(frame_tree_node_id) {
+      frame_tree_node_id_(frame_tree_node_id),
+      dev_tools_token_(dev_tools_token) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(process_node);
   DCHECK(page_node);
@@ -96,6 +98,10 @@ ProcessNodeImpl* FrameNodeImpl::process_node() const {
 
 int FrameNodeImpl::frame_tree_node_id() const {
   return frame_tree_node_id_;
+}
+
+const base::UnguessableToken& FrameNodeImpl::dev_tools_token() const {
+  return dev_tools_token_;
 }
 
 const base::flat_set<FrameNodeImpl*>& FrameNodeImpl::child_frame_nodes() const {

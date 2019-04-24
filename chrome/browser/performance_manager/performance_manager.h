@@ -72,12 +72,14 @@ class PerformanceManager {
       ProcessNodeImpl* process_node,
       PageNodeImpl* page_node,
       FrameNodeImpl* parent_frame_node,
-      int frame_tree_node_id);
+      int frame_tree_node_id,
+      const base::UnguessableToken& dev_tools_token);
   std::unique_ptr<FrameNodeImpl> CreateFrameNode(
       ProcessNodeImpl* process_node,
       PageNodeImpl* page_node,
       FrameNodeImpl* parent_frame_node,
       int frame_tree_node_id,
+      const base::UnguessableToken& dev_tools_token,
       FrameNodeCreationCallback creation_callback);
   std::unique_ptr<PageNodeImpl> CreatePageNode(
       const base::WeakPtr<WebContentsProxy>& contents_proxy);
