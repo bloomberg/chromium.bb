@@ -3380,7 +3380,8 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
             frame_token_));
   }
 
-  void DidNotSwap(DidNotSwapReason reason) override {
+  cc::SwapPromise::DidNotSwapAction DidNotSwap(
+      DidNotSwapReason reason) override {
     blink::WebWidgetClient::SwapResult result;
     switch (reason) {
       case cc::SwapPromise::DidNotSwapReason::SWAP_FAILS:
@@ -3401,6 +3402,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback_), result, base::TimeTicks::Now()));
+    return DidNotSwapAction::BREAK_PROMISE;
   }
 
   int64_t TraceId() const override { return 0; }

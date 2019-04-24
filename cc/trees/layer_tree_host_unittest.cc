@@ -5661,20 +5661,22 @@ class TestSwapPromise : public SwapPromise {
     base::AutoLock lock(result_->lock);
     EXPECT_FALSE(result_->did_activate_called);
     EXPECT_FALSE(result_->did_swap_called);
-    EXPECT_FALSE(result_->did_not_swap_called);
+    EXPECT_TRUE(!result_->did_not_swap_called ||
+                action_ == SwapPromise::DidNotSwapAction::KEEP_ACTIVE);
     result_->did_activate_called = true;
   }
 
   void WillSwap(viz::CompositorFrameMetadata* metadata) override {
     base::AutoLock lock(result_->lock);
     EXPECT_FALSE(result_->did_swap_called);
-    EXPECT_FALSE(result_->did_not_swap_called);
+    EXPECT_TRUE(!result_->did_not_swap_called ||
+                action_ == SwapPromise::DidNotSwapAction::KEEP_ACTIVE);
     result_->did_swap_called = true;
   }
 
   void DidSwap() override {}
 
-  void DidNotSwap(DidNotSwapReason reason) override {
+  DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
     base::AutoLock lock(result_->lock);
     EXPECT_FALSE(result_->did_swap_called);
     EXPECT_FALSE(result_->did_not_swap_called);
@@ -5682,13 +5684,17 @@ class TestSwapPromise : public SwapPromise {
                  reason != DidNotSwapReason::SWAP_FAILS);
     result_->did_not_swap_called = true;
     result_->reason = reason;
+    return action_;
   }
+
+  void set_action(DidNotSwapAction action) { action_ = action; }
 
   int64_t TraceId() const override { return 0; }
 
  private:
   // Not owned.
   TestSwapPromiseResult* result_;
+  DidNotSwapAction action_ = DidNotSwapAction::BREAK_PROMISE;
 };
 
 class PinnedLayerTreeSwapPromise : public LayerTreeHostTest {
@@ -6041,7 +6047,7 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestKeepSwapPromiseMFBA);
 
-class LayerTreeHostTestBreakSwapPromiseForVisibility
+class LayerTreeHostTestDeferSwapPromiseForVisibility
     : public LayerTreeHostTest {
  protected:
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -6050,6 +6056,7 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
     layer_tree_host()->SetVisible(false);
     auto swap_promise =
         std::make_unique<TestSwapPromise>(&swap_promise_result_);
+    swap_promise->set_action(SwapPromise::DidNotSwapAction::KEEP_ACTIVE);
     layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
         std::move(swap_promise));
   }
@@ -6060,7 +6067,7 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
       sent_queue_request_ = true;
       MainThreadTaskRunner()->PostTask(
           FROM_HERE,
-          base::BindOnce(&LayerTreeHostTestBreakSwapPromiseForVisibility::
+          base::BindOnce(&LayerTreeHostTestDeferSwapPromiseForVisibility::
                              SetVisibleFalseAndQueueSwapPromise,
                          base::Unretained(this)));
     }
@@ -6068,25 +6075,42 @@ class LayerTreeHostTestBreakSwapPromiseForVisibility
 
   void BeginMainFrameAbortedOnThread(LayerTreeHostImpl* host_impl,
                                      CommitEarlyOutReason reason) override {
-    EndTest();
+    MainThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&LayerTreeHostTestDeferSwapPromiseForVisibility::
+                           CheckSwapPromiseNotCalled,
+                       base::Unretained(this)));
   }
 
-  void AfterTest() override {
+  void CheckSwapPromiseNotCalled() {
     {
       base::AutoLock lock(swap_promise_result_.lock);
       EXPECT_FALSE(swap_promise_result_.did_activate_called);
       EXPECT_FALSE(swap_promise_result_.did_swap_called);
       EXPECT_TRUE(swap_promise_result_.did_not_swap_called);
       EXPECT_EQ(SwapPromise::COMMIT_FAILS, swap_promise_result_.reason);
+      EXPECT_FALSE(swap_promise_result_.dtor_called);
+    }
+    layer_tree_host()->SetVisible(true);
+  }
+
+  void DidCommitAndDrawFrame() override {
+    {
+      base::AutoLock lock(swap_promise_result_.lock);
+      EXPECT_TRUE(swap_promise_result_.did_activate_called);
+      EXPECT_TRUE(swap_promise_result_.did_swap_called);
       EXPECT_TRUE(swap_promise_result_.dtor_called);
     }
+    EndTest();
   }
+
+  void AfterTest() override {}
 
   TestSwapPromiseResult swap_promise_result_;
   bool sent_queue_request_ = false;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromiseForVisibility);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeferSwapPromiseForVisibility);
 
 class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
