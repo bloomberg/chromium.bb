@@ -21,6 +21,7 @@
 #include "base/task/task_features.h"
 #include "base/task/thread_pool/scheduler_parallel_task_runner.h"
 #include "base/task/thread_pool/scheduler_sequenced_task_runner.h"
+#include "base/task/thread_pool/scheduler_worker_pool_impl.h"
 #include "base/task/thread_pool/scheduler_worker_pool_params.h"
 #include "base/task/thread_pool/sequence.h"
 #include "base/task/thread_pool/sequence_sort_key.h"
@@ -28,6 +29,14 @@
 #include "base/task/thread_pool/task.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+
+#if defined(OS_WIN)
+#include "base/task/thread_pool/platform_native_worker_pool_win.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "base/task/thread_pool/platform_native_worker_pool_mac.h"
+#endif
 
 namespace base {
 namespace internal {
@@ -68,7 +77,7 @@ ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label,
       tracked_ref_factory_(this) {
   DCHECK(!histogram_label.empty());
 
-  foreground_pool_.emplace(
+  foreground_pool_ = std::make_unique<SchedulerWorkerPoolImpl>(
       JoinString(
           {histogram_label, kForegroundPoolEnvironmentParams.name_suffix}, "."),
       kForegroundPoolEnvironmentParams.name_suffix,
@@ -76,7 +85,7 @@ ThreadPoolImpl::ThreadPoolImpl(StringPiece histogram_label,
       task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef());
 
   if (CanUseBackgroundPriorityForSchedulerWorker()) {
-    background_pool_.emplace(
+    background_pool_ = std::make_unique<SchedulerWorkerPoolImpl>(
         JoinString(
             {histogram_label, kBackgroundPoolEnvironmentParams.name_suffix},
             "."),
@@ -94,9 +103,6 @@ ThreadPoolImpl::~ThreadPoolImpl() {
   // Reset worker pools to release held TrackedRefs, which block teardown.
   foreground_pool_.reset();
   background_pool_.reset();
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  native_foreground_pool_.reset();
-#endif
 }
 
 void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
@@ -113,11 +119,11 @@ void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   if (FeatureList::IsEnabled(kUseNativeThreadPool)) {
-    native_foreground_pool_.emplace(task_tracker_->GetTrackedRef(),
-                                    tracked_ref_factory_.GetTrackedRef(),
-                                    &foreground_pool_.value());
-    foreground_pool_->InvalidateAndHandoffAllSequencesToOtherPool(
-        &native_foreground_pool_.value());
+    std::unique_ptr<SchedulerWorkerPool> pool = std::move(foreground_pool_);
+    foreground_pool_ = std::make_unique<PlatformNativeWorkerPoolImpl>(
+        task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef(),
+        pool.get());
+    pool->InvalidateAndHandoffAllSequencesToOtherPool(foreground_pool_.get());
   }
 #endif
 
@@ -158,8 +164,9 @@ void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  if (native_foreground_pool_) {
-    native_foreground_pool_->Start(worker_environment);
+  if (FeatureList::IsEnabled(kUseNativeThreadPool)) {
+    static_cast<PlatformNativeWorkerPool*>(foreground_pool_.get())
+        ->Start(worker_environment);
   } else
 #endif
   {
@@ -172,13 +179,14 @@ void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
     const int max_best_effort_tasks_in_foreground_pool = std::max(
         1, std::min(init_params.background_worker_pool_params.max_tasks(),
                     init_params.foreground_worker_pool_params.max_tasks() / 2));
-    foreground_pool_->Start(init_params.foreground_worker_pool_params,
-                            max_best_effort_tasks_in_foreground_pool,
-                            service_thread_task_runner,
-                            scheduler_worker_observer, worker_environment);
+    static_cast<SchedulerWorkerPoolImpl*>(foreground_pool_.get())
+        ->Start(init_params.foreground_worker_pool_params,
+                max_best_effort_tasks_in_foreground_pool,
+                service_thread_task_runner, scheduler_worker_observer,
+                worker_environment);
   }
 
-  if (background_pool_.has_value()) {
+  if (background_pool_) {
     background_pool_->Start(
         init_params.background_worker_pool_params,
         init_params.background_worker_pool_params.max_tasks(),
@@ -281,8 +289,8 @@ void ThreadPoolImpl::JoinForTesting() {
   // https://crbug.com/771701.
   service_thread_->Stop();
   single_thread_task_runner_manager_.JoinForTesting();
-  GetForegroundWorkerPool()->JoinForTesting();
-  if (background_pool_.has_value())
+  foreground_pool_->JoinForTesting();
+  if (background_pool_)
     background_pool_->JoinForTesting();
 #if DCHECK_IS_ON()
   join_for_testing_returned_.Set();
@@ -381,25 +389,11 @@ const SchedulerWorkerPool* ThreadPoolImpl::GetWorkerPoolForTraits(
 
 SchedulerWorkerPool* ThreadPoolImpl::GetWorkerPoolForTraits(
     const TaskTraits& traits) {
-  if (traits.priority() == TaskPriority::BEST_EFFORT &&
-      background_pool_.has_value()) {
-    return &background_pool_.value();
+  if (traits.priority() == TaskPriority::BEST_EFFORT && background_pool_) {
+    return background_pool_.get();
   }
 
-  return GetForegroundWorkerPool();
-}
-
-const SchedulerWorkerPool* ThreadPoolImpl::GetForegroundWorkerPool() const {
-  return const_cast<ThreadPoolImpl*>(this)->GetForegroundWorkerPool();
-}
-
-SchedulerWorkerPool* ThreadPoolImpl::GetForegroundWorkerPool() {
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  if (native_foreground_pool_) {
-    return &native_foreground_pool_.value();
-  }
-#endif
-  return &foreground_pool_.value();
+  return foreground_pool_.get();
 }
 
 void ThreadPoolImpl::UpdateCanRunPolicy() {
@@ -410,7 +404,7 @@ void ThreadPoolImpl::UpdateCanRunPolicy() {
                                        : CanRunPolicy::kForegroundOnly)
                : CanRunPolicy::kNone;
   task_tracker_->SetCanRunPolicy(can_run_policy);
-  GetForegroundWorkerPool()->DidUpdateCanRunPolicy();
+  foreground_pool_->DidUpdateCanRunPolicy();
   if (background_pool_)
     background_pool_->DidUpdateCanRunPolicy();
   single_thread_task_runner_manager_.DidUpdateCanRunPolicy();
@@ -424,8 +418,8 @@ TaskTraits ThreadPoolImpl::SetUserBlockingPriorityIfNeeded(
 }
 
 void ThreadPoolImpl::ReportHeartbeatMetrics() const {
-  GetForegroundWorkerPool()->ReportHeartbeatMetrics();
-  if (background_pool_.has_value())
+  foreground_pool_->ReportHeartbeatMetrics();
+  if (background_pool_)
     background_pool_->ReportHeartbeatMetrics();
 }
 

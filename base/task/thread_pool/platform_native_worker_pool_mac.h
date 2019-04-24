@@ -47,6 +47,8 @@ class BASE_EXPORT PlatformNativeWorkerPoolMac
   DISALLOW_COPY_AND_ASSIGN(PlatformNativeWorkerPoolMac);
 };
 
+using PlatformNativeWorkerPoolImpl = PlatformNativeWorkerPoolMac;
+
 }  // namespace internal
 }  // namespace base
 

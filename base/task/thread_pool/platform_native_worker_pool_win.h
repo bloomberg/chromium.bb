@@ -59,6 +59,8 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin
   DISALLOW_COPY_AND_ASSIGN(PlatformNativeWorkerPoolWin);
 };
 
+using PlatformNativeWorkerPoolImpl = PlatformNativeWorkerPoolWin;
+
 }  // namespace internal
 }  // namespace base
 

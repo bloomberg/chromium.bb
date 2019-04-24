@@ -23,6 +23,7 @@
 #include "base/task/thread_pool/environment_config.h"
 #include "base/task/thread_pool/scheduler_single_thread_task_runner_manager.h"
 #include "base/task/thread_pool/scheduler_task_runner_delegate.h"
+#include "base/task/thread_pool/scheduler_worker_pool.h"
 #include "base/task/thread_pool/scheduler_worker_pool_impl.h"
 #include "base/task/thread_pool/task_tracker.h"
 #include "base/task/thread_pool/thread_pool.h"
@@ -34,12 +35,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/task/thread_pool/platform_native_worker_pool_win.h"
 #include "base/win/com_init_check_hook.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "base/task/thread_pool/platform_native_worker_pool_mac.h"
 #endif
 
 namespace base {
@@ -114,10 +110,6 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
 
   void ReportHeartbeatMetrics() const;
 
-  // Returns the thread pool responsible for foreground execution.
-  const SchedulerWorkerPool* GetForegroundWorkerPool() const;
-  SchedulerWorkerPool* GetForegroundWorkerPool();
-
   const SchedulerWorkerPool* GetWorkerPoolForTraits(
       const TaskTraits& traits) const;
 
@@ -145,8 +137,8 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
   // TODO(fdoray): Remove after experiment. https://crbug.com/757022
   AtomicFlag all_tasks_user_blocking_;
 
-  Optional<SchedulerWorkerPoolImpl> foreground_pool_;
-  Optional<SchedulerWorkerPoolImpl> background_pool_;
+  std::unique_ptr<SchedulerWorkerPool> foreground_pool_;
+  std::unique_ptr<SchedulerWorkerPoolImpl> background_pool_;
 
   // Whether this TaskScheduler was started. Access controlled by
   // |sequence_checker_|.
@@ -156,12 +148,6 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
   // allowed. Access controlled by |sequence_checker_|.
   bool can_run_ = true;
   bool can_run_best_effort_;
-
-#if defined(OS_WIN)
-  Optional<PlatformNativeWorkerPoolWin> native_foreground_pool_;
-#elif defined(OS_MACOSX)
-  Optional<PlatformNativeWorkerPoolMac> native_foreground_pool_;
-#endif
 
 #if DCHECK_IS_ON()
   // Set once JoinForTesting() has returned.
