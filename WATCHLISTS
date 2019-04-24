@@ -629,12 +629,18 @@
                   '|/cachestorage/',
     },
     'cast': {
-      'filepath': 'media/cast/'\
-                  '|chrome/browser/extensions/api/cast_streaming/'\
-                  '|chrome/browser/media/cast'\
-                  '|chrome/renderer/media/cast'\
-                  '|chrome/test/data/extensions/api_test/cast_'\
-                  '|content/public/renderer/media_stream_'\
+      'filepath': 'media/cast/' \
+                  '|chrome/browser/extensions/api/cast_streaming/' \
+                  '|chrome/browser/media/cast/' \
+                  '|chrome/browser/media/router/providers/cast/' \
+                  '|chrome/browser/resources/cast/' \
+                  '|chrome/browser/ui/webui/cast/' \
+                  '|chrome/common/media_router/providers/cast/' \
+                  '|chrome/renderer/media/cast/' \
+                  '|chrome/test/data/extensions/api_test/cast/' \
+                  '|chrome/test/data/extensions/api_test/cast_streaming/' \
+                  '|components/mirroring/' \
+                  '|content/public/renderer/media_stream_' \
                   '|content/renderer/media/(media_stream|(.+audio_source))',
     },
     'cast_certificate': {
@@ -871,11 +877,6 @@
     },
     'devtools': {
       'filepath': 'devtools',
-    },
-    'dial': {
-      'filepath': 'chrome/(browser|common)/extensions/api/dial' \
-                  '|chrome/browser/media/router/discovery/dial/' \
-                  '|chrome/test/data/extensions/api_test/dial/'
     },
     'disk_cache': {
       'filepath': 'net/disk_cache/|http_cache',
@@ -1160,8 +1161,8 @@
                   '|media/remoting/',
     },
     'media_router': {
-      'filepath': 'chrome/android/(java|junit)/src/org/chromium/chrome/browser/media/router/' \
-                  '|chrome/android/features/media_router/' \
+      'filepath': 'chrome/android/features/media_router/' \
+                  '|chrome/app/media_router_strings.grdp' \
                   '|chrome/browser/media/router/' \
                   '|chrome/browser/resources/media_router/' \
                   '|chrome/browser/ui/media_router/' \
@@ -1445,10 +1446,11 @@
       'filepath': 'prerender'
     },
     'presentation': {
-      'filepath': 'content/(browser|common|renderer)/presentation/' \
-                  '|third_party/blink/public/platform/modules/presentation/' \
-                  '|third_party/blink/web_tests/presentation/' \
-                  '|third_party/blink/renderer/modules/presentation/'
+      'filepath': 'content/browser/presentation/' \
+                  '|content/public/browser/presentation_' \
+                  '|third_party/blink/public/mojom/presentation/' \
+                  '|third_party/blink/renderer/modules/presentation/' \
+                  '|third_party/blink/web_tests/(virtual/)?presentation/'
     },
     'print_preview': {
       'filepath': 'chrome/browser/resources/print_preview/' \
@@ -1461,6 +1463,18 @@
       'filepath': 'components/reading_list|'\
                   'ios/chrome/browser/reading_list|'\
                   'ios/chrome/browser/ui/reading_list',
+    },
+    'remoteplayback': {
+      'filepath': 'chrome/android/features/media_router/java/src/org/chromium/chrome/browser/media/router/FlingingController' \
+                  '|chrome/android/java/src/org/chromium/chrome/browser/media/remote/' \
+                  '|chrome/browser/media/android/remote/' \
+                  '|media/blink/remote_playback' \
+                  '|media/renderers/remote_playback' \
+                  '|third_party/blink/public/platform/modules/remoteplayback/' \
+                  '|third_party/blink/renderer/core/html/media/remote_playback' \
+                  '|third_party/blink/renderer/modules/remoteplayback/' \
+                  '|third_party/blink/web_tests/media/remoteplayback/' \
+                  '|third_party/blink/web_tests/virtual/new-remote-playback-pipeline/'
     },
     'remoting': {
       'filepath': '^remoting/' \
@@ -2124,17 +2138,14 @@
                       'msramek+watch@chromium.org'],
     'bubble': ['hcarmona+bubble@chromium.org'],
     'cache_storage': ['nhiroki@chromium.org'],
-    'cast': ['aburago+watch@chromium.org',
-             'imcheng+watch@chromium.org',
-             'isheriff+watch@chromium.org',
-             'jasonroberts+watch@google.com',
+    'cast': ['jasonroberts+watch@google.com',
              'miu+watch@chromium.org',
+             'mfoltz+watch@chromium.org',
              'pthatcher+watch@chromium.org'],
     'cast_certificate': ['dougsteed+watch@chromium.org',
                          'mfoltz+watch@chromium.org',
                          'ryanchung+watch@chromium.org'],
-    'cast_channel': ['imcheng+watch@chromium.org',
-                     'mfoltz+watch@chromium.org',
+    'cast_channel': ['mfoltz+watch@chromium.org',
                      'ryanchung+watch@chromium.org'],
     'cc': ['cc-bugs@chromium.org'],
     'cc-animation': ['yigu@chromium.org',
@@ -2244,8 +2255,6 @@
                        'odejesush+watch@chromium.org'],
     'devtools': ['devtools-reviews@chromium.org',
                  'pfeldman@chromium.org'],
-    'dial': ['mfoltz+watch@chromium.org',
-             'zhaobin+watch@chromium.org'],
     'disk_cache': ['gavinp+disk@chromium.org'],
     'download': ['dtrainor+watch@chromium.org'],
     'downloads_ui': ['dbeam+watch-downloads-ui@chromium.org',
@@ -2360,13 +2369,11 @@
                    'xhwang+watch@chromium.org'],
     'media_recorder': ['emircan+watch+mediarecorder@chromium.org',
                        'mcasas+mediarecorder@chromium.org'],
-    'media_remoting': ['aburago+watch@chromium.org',
-                       'erickung+watch@chromium.org',
+    'media_remoting': ['erickung+watch@chromium.org',
                        'mfoltz+watch@chromium.org',
                        'miu+watch@chromium.org',
                        'pthatcher+watch@chromium.org'],
-    'media_router': ['imcheng+watch@chromium.org',
-                     'mfoltz+watch@chromium.org',
+    'media_router': ['mfoltz+watch@chromium.org',
                      'pthatcher+watch@chromium.org',
                      'takumif+watch@chromium.org'],
     'media_win': ['media-win-reviews@chromium.org'],
@@ -2465,6 +2472,7 @@
     'print_preview': ['rbpotter@chromium.org'],
     'push_messaging': ['peter@chromium.org'],
     'reading_list': ['stkhapugin@chromium.org'],
+    'remoteplayback': ['mfoltz+watch@chromium.org'],
     'remoting': ['chromoting-reviews@chromium.org'],
     'rlz_id': ['gab+watch@chromium.org',
                'robertshield+watch@chromium.org'],
@@ -2534,6 +2542,7 @@
                'tzik@chromium.org'],
     'tab_alert_indicators': ['miu+watch@chromium.org'],
     'tab_capture': ['miu+watch@chromium.org',
+                    'mfoltz+watch@chromium.org',
                     'pthatcher+watch@chromium.org'],
     'tab_contents': ['ajwong+watch@chromium.org',
                      'avi@chromium.org',
