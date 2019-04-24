@@ -84,4 +84,16 @@ TEST_F(FrameNodeImplTest, RemoveChildFrame) {
   EXPECT_TRUE(!parent_frame_node->parent_frame_node());
 }
 
+TEST_F(FrameNodeImplTest, IsAdFrame) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto page = CreateNode<PageNodeImpl>(nullptr);
+  auto frame_node =
+      CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 0);
+  EXPECT_FALSE(frame_node->is_ad_frame());
+  frame_node->SetIsAdFrame();
+  EXPECT_TRUE(frame_node->is_ad_frame());
+  frame_node->SetIsAdFrame();
+  EXPECT_TRUE(frame_node->is_ad_frame());
+}
+
 }  // namespace performance_manager

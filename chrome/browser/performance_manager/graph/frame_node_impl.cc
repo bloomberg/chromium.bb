@@ -72,6 +72,10 @@ void FrameNodeImpl::SetInterventionPolicy(
                                                policy);
 }
 
+void FrameNodeImpl::SetIsAdFrame() {
+  is_ad_frame_ = true;
+}
+
 void FrameNodeImpl::OnNonPersistentNotificationCreated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers())
@@ -123,6 +127,10 @@ bool FrameNodeImpl::is_current() const {
 bool FrameNodeImpl::network_almost_idle() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return network_almost_idle_.value();
+}
+
+bool FrameNodeImpl::is_ad_frame() const {
+  return is_ad_frame_;
 }
 
 void FrameNodeImpl::set_url(const GURL& url) {

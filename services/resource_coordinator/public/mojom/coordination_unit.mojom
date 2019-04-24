@@ -60,6 +60,7 @@ interface FrameCoordinationUnit {
   SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload);
   SetInterventionPolicy(PolicyControlledIntervention intervention,
                         InterventionPolicy policy);
+  SetIsAdFrame();
 
   // Event signals.
   OnNonPersistentNotificationCreated();

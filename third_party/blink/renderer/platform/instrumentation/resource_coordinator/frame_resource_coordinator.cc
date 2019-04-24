@@ -56,6 +56,10 @@ void FrameResourceCoordinator::SetInterventionPolicy(
   service_->SetInterventionPolicy(intervention, policy);
 }
 
+void FrameResourceCoordinator::SetIsAdFrame() {
+  service_->SetIsAdFrame();
+}
+
 void FrameResourceCoordinator::OnNonPersistentNotificationCreated() {
   service_->OnNonPersistentNotificationCreated();
 }

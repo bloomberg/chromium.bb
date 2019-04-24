@@ -68,6 +68,7 @@ class FrameNodeImpl
   void SetInterventionPolicy(
       resource_coordinator::mojom::PolicyControlledIntervention intervention,
       resource_coordinator::mojom::InterventionPolicy policy) override;
+  void SetIsAdFrame() override;
   void OnNonPersistentNotificationCreated() override;
 
   // Getters for const properties. These can be called from any thread.
@@ -83,6 +84,7 @@ class FrameNodeImpl
   const GURL& url() const;
   bool is_current() const;
   bool network_almost_idle() const;
+  bool is_ad_frame() const;
 
   // Setters are not thread safe.
   void set_url(const GURL& url);
@@ -129,6 +131,8 @@ class FrameNodeImpl
 
   bool has_nonempty_beforeunload_ = false;
   GURL url_;
+  // This is a one way switch. Once marked an ad-frame, always an ad-frame.
+  bool is_ad_frame_ = false;
 
   ObservedProperty::NotifiesOnlyOnChanges<bool,
                                           &GraphObserver::OnIsCurrentChanged>

@@ -1441,6 +1441,9 @@ void LocalFrame::SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) {
     return;
   if (ad_frame_type_ != blink::mojom::AdFrameType::kNonAd)
     return;
+  auto* frame_resource_coordinator = GetFrameResourceCoordinator();
+  if (frame_resource_coordinator)
+    frame_resource_coordinator->SetIsAdFrame();
   ad_frame_type_ = ad_frame_type;
   UpdateAdHighlight();
   frame_scheduler_->SetIsAdFrame();

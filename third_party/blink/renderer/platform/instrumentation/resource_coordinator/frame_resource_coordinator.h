@@ -33,6 +33,8 @@ class PLATFORM_EXPORT FrameResourceCoordinator final {
   void SetInterventionPolicy(
       resource_coordinator::mojom::PolicyControlledIntervention intervention,
       resource_coordinator::mojom::InterventionPolicy policy);
+  // A one way switch that marks a frame as being an adframe.
+  void SetIsAdFrame();
   void OnNonPersistentNotificationCreated();
 
  private:
