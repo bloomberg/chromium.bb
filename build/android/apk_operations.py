@@ -1152,7 +1152,7 @@ class _PackageInfoCommand(_Command):
     print 'versionCode: %s' % self.apk_helper.GetVersionCode()
     print 'versionName: "%s"' % self.apk_helper.GetVersionName()
     print 'minSdkVersion: %s' % self.apk_helper.GetMinSdkVersion()
-    print 'targetSdkVersion: "%s"' % self.apk_helper.GetTargetSdkVersion()
+    print 'targetSdkVersion: %s' % self.apk_helper.GetTargetSdkVersion()
     print 'Supported ABIs: %r' % self.apk_helper.GetAbis()
 
 
