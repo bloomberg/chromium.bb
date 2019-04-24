@@ -11,11 +11,10 @@ namespace unified_consent {
 // base::Feature definition.
 const base::Feature kUnifiedConsent {
   "UnifiedConsent",
-#if defined(OS_LINUX) || defined(OS_WIN) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
+#if defined(OS_CHROMEOS) || defined(OS_IOS) || defined(OS_ANDROID)
       base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
 
