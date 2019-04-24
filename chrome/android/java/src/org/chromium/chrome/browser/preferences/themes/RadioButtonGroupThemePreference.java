@@ -9,6 +9,7 @@ import android.preference.Preference;
 import android.util.AttributeSet;
 import android.view.View;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.themes.ThemePreferences.ThemeSetting;
 import org.chromium.chrome.browser.widget.RadioButtonWithDescription;
@@ -68,5 +69,15 @@ public class RadioButtonGroupThemePreference
             }
         }
         callChangeListener(mSetting);
+    }
+
+    @VisibleForTesting
+    public int getSetting() {
+        return mSetting;
+    }
+
+    @VisibleForTesting
+    ArrayList getButtonsForTesting() {
+        return mButtons;
     }
 }
