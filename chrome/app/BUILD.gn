@@ -467,6 +467,7 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//chromeos/services/media_perception/public/mojom",
       "//chromeos/services/multidevice_setup/public/cpp:manifest",
       "//chromeos/services/multidevice_setup/public/mojom",
+      "//chromeos/services/network_config/public/mojom",
       "//media/capture/video/chromeos/mojo:cros_camera",
       "//ui/accessibility/mojom",
     ]
@@ -627,6 +628,7 @@ source_set("chrome_packaged_service_manifests") {
       "//chrome/services/cups_proxy/public/cpp:manifest",
       "//chromeos/services/cellular_setup/public/cpp:manifest",
       "//chromeos/services/ime/public/cpp:manifest",
+      "//chromeos/services/network_config/public/cpp:manifest",
       "//chromeos/services/secure_channel/public/cpp:manifest",
       "//services/ws/public/mojom/input_devices",
       "//ui/accessibility:ax_host_manifest",

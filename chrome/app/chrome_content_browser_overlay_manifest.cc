@@ -59,6 +59,7 @@
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "chromeos/services/multidevice_setup/public/cpp/manifest.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "media/capture/video/chromeos/mojo/cros_image_capture.mojom.h"
 #include "services/ws/common/switches.h"
 #include "services/ws/public/mojom/constants.mojom.h"
@@ -190,6 +191,9 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             .RequireCapability("xr_device_service", "xr_device_provider")
             .RequireCapability("xr_device_service", "xr_device_test_hook")
 #if defined(OS_CHROMEOS)
+            .RequireCapability(
+                chromeos::network_config::mojom::kServiceName,
+                chromeos::network_config::mojom::kNetworkConfigCapability)
             .RequireCapability(shortcut_viewer::mojom::kServiceName,
                                shortcut_viewer::mojom::kToggleUiCapability)
             // This is required for remoting, which runs in the browser and

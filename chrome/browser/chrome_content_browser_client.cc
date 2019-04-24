@@ -413,6 +413,8 @@
 #include "chromeos/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "chromeos/services/cellular_setup/public/mojom/constants.mojom.h"
 #include "chromeos/services/ime/public/mojom/constants.mojom.h"
+#include "chromeos/services/network_config/network_config_service.h"
+#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/secure_channel_service.h"
 #include "components/user_manager/user_manager.h"
@@ -4042,6 +4044,12 @@ void ChromeContentBrowserClient::HandleServiceRequest(
   if (service_name == chromeos::printing::mojom::kCupsProxyServiceName) {
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<chromeos::printing::CupsProxyService>(
+            std::move(request)));
+  }
+
+  if (service_name == chromeos::network_config::mojom::kServiceName) {
+    service_manager::Service::RunAsyncUntilTermination(
+        std::make_unique<chromeos::network_config::NetworkConfigService>(
             std::move(request)));
   }
 

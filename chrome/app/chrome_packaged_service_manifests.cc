@@ -30,6 +30,7 @@
 #include "chrome/services/cups_proxy/public/cpp/manifest.h"
 #include "chromeos/services/cellular_setup/public/cpp/manifest.h"
 #include "chromeos/services/ime/public/cpp/manifest.h"
+#include "chromeos/services/network_config/public/cpp/manifest.h"
 #include "chromeos/services/secure_channel/public/cpp/manifest.h"
 #include "services/ws/public/mojom/input_devices/input_device_controller.mojom.h"
 #include "ui/accessibility/ax_host_manifest.h"  // nogncheck
@@ -174,6 +175,7 @@ GetChromePackagedServiceManifests() {
       chromeos::cellular_setup::GetManifest(),
       chromeos::printing::GetCupsProxyManifest(),
       chromeos::ime::GetManifest(),
+      chromeos::network_config::GetManifest(),
       chromeos::secure_channel::GetManifest(),
       ui::GetAXHostManifest(),
 #endif
