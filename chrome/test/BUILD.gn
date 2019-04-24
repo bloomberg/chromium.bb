@@ -3641,6 +3641,11 @@ test("unit_tests") {
       "../common/media_router/providers/cast/cast_media_source_unittest.cc",
       "../renderer/media/chrome_webrtc_log_message_delegate_unittest.cc",
     ]
+
+    if (!is_nacl) {
+      sources += [ "../browser/media/router/providers/openscreen/network_service_quic_packet_writer_unittest.cc" ]
+    }
+
     deps += [
       "//components/bubble:test_support",
       "//services/network:test_support",

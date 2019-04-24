@@ -16,6 +16,9 @@ static_library("router") {
     "//content/public/common",
     "//crypto",
     "//net",
+    "//net/traffic_annotation",
+    "//services/network:network_service",
+    "//services/network/public/mojom",
     "//third_party/icu",
     "//url",
   ]
@@ -131,6 +134,18 @@ static_library("router") {
       "providers/wired_display/wired_display_presentation_receiver_factory.cc",
       "providers/wired_display/wired_display_presentation_receiver_factory.h",
     ]
+
+    # Exclude the packet writer in NaCl, since there is no packet support
+    # in that build configuration. Once NaCl goes away, this check should be
+    # removed.
+    if (!is_nacl) {
+      sources += [
+        "providers/openscreen/network_service_async_packet_sender.cc",
+        "providers/openscreen/network_service_async_packet_sender.h",
+        "providers/openscreen/network_service_quic_packet_writer.cc",
+        "providers/openscreen/network_service_quic_packet_writer.h",
+      ]
+    }
   }
 }
 
