@@ -4,8 +4,10 @@
 
 #include "components/sync/nigori/nigori_model_type_processor.h"
 
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
+#include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model_impl/processor_entity.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
 
@@ -19,7 +21,8 @@ const char kNigoriClientTagHash[] = "NigoriClientTagHash";
 
 }  // namespace
 
-NigoriModelTypeProcessor::NigoriModelTypeProcessor() : bridge_(nullptr) {}
+NigoriModelTypeProcessor::NigoriModelTypeProcessor()
+    : bridge_(nullptr), weak_ptr_factory_for_worker_(this) {}
 
 NigoriModelTypeProcessor::~NigoriModelTypeProcessor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -39,12 +42,11 @@ void NigoriModelTypeProcessor::DisconnectSync() {
   DCHECK(IsConnected());
 
   DVLOG(1) << "Disconnecting sync for Encryption Keys";
-  // TODO(mamir): weak_ptr_factory_for_worker_.InvalidateWeakPtrs();
+  weak_ptr_factory_for_worker_.InvalidateWeakPtrs();
   worker_.reset();
   if (entity_) {
     entity_->ClearTransientSyncState();
   }
-  NOTIMPLEMENTED();
 }
 
 void NigoriModelTypeProcessor::GetLocalChanges(
@@ -101,7 +103,16 @@ void NigoriModelTypeProcessor::OnSyncStarting(
     const DataTypeActivationRequest& request,
     StartCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  DVLOG(1) << "Sync is starting for Encryption Keys";
+  DCHECK(request.error_handler) << "Encryption Keys";
+  DCHECK(callback) << "Encryption Keys";
+  DCHECK(!start_callback_) << "Encryption Keys";
+  DCHECK(!IsConnected()) << "Encryption Keys";
+
+  start_callback_ = std::move(callback);
+  activation_request_ = request;
+
+  ConnectIfReady();
 }
 
 void NigoriModelTypeProcessor::OnSyncStopping(
@@ -154,8 +165,7 @@ void NigoriModelTypeProcessor::ModelReadyToSync(
     model_type_state_.mutable_progress_marker()->set_data_type_id(
         sync_pb::EntitySpecifics::kNigoriFieldNumber);
   }
-  // TODO(mamir): ConnectIfReady();
-  NOTIMPLEMENTED();
+  ConnectIfReady();
 }
 
 void NigoriModelTypeProcessor::Put(std::unique_ptr<EntityData> entity_data) {
@@ -194,6 +204,10 @@ NigoriMetadataBatch NigoriModelTypeProcessor::GetMetadata() {
   return nigori_metadata_batch;
 }
 
+bool NigoriModelTypeProcessor::IsConnectedForTest() const {
+  return IsConnected();
+}
+
 bool NigoriModelTypeProcessor::IsTrackingMetadata() {
   return model_type_state_.initial_sync_done();
 }
@@ -201,6 +215,40 @@ bool NigoriModelTypeProcessor::IsTrackingMetadata() {
 bool NigoriModelTypeProcessor::IsConnected() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return worker_ != nullptr;
+}
+
+void NigoriModelTypeProcessor::ConnectIfReady() {
+  if (!start_callback_) {
+    return;
+  }
+  if (!model_ready_to_sync_) {
+    return;
+  }
+  if (model_error_) {
+    activation_request_.error_handler.Run(model_error_.value());
+    start_callback_.Reset();
+    return;
+  }
+  DCHECK(model_ready_to_sync_);
+
+  if (!model_type_state_.has_cache_guid()) {
+    model_type_state_.set_cache_guid(activation_request_.cache_guid);
+  } else if (model_type_state_.cache_guid() != activation_request_.cache_guid) {
+    // TODO(mamir): implement error handling in case of cache GUID mismatch.
+    NOTIMPLEMENTED();
+  }
+
+  // Cache GUID verification earlier above guarantees the user is the same.
+  model_type_state_.set_authenticated_account_id(
+      activation_request_.authenticated_account_id);
+
+  auto activation_response = std::make_unique<DataTypeActivationResponse>();
+  activation_response->model_type_state = model_type_state_;
+  activation_response->type_processor =
+      std::make_unique<ModelTypeProcessorProxy>(
+          weak_ptr_factory_for_worker_.GetWeakPtr(),
+          base::SequencedTaskRunnerHandle::Get());
+  std::move(start_callback_).Run(std::move(activation_response));
 }
 
 void NigoriModelTypeProcessor::NudgeForCommitIfNeeded() const {
