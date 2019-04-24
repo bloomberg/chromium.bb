@@ -11860,6 +11860,7 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Texture is not a decoder resource"/>
   <int value="4" label="Texture is a shared resource"/>
   <int value="5" label="Transform is incompatible with overlays"/>
+  <int value="6" label="Texture array has one element"/>
 </enum>
 
 <enum name="DefaultBrowserAsyncAttemptResult">
