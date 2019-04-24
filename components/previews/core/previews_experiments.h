@@ -195,6 +195,10 @@ int ResourceLoadingHintsPreviewsInflationPercent();
 // bytes to for inflating the original_bytes count.
 int ResourceLoadingHintsPreviewsInflationBytes();
 
+// The maximum number of pref entries that should be kept by
+// PreviewsOfflineHelper.
+size_t OfflinePreviewsHelperMaxPrefSize();
+
 }  // namespace params
 
 }  // namespace previews

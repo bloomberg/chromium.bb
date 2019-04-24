@@ -52,8 +52,8 @@ base::Optional<base::Time> TimeFromDictionaryValue(std::string value) {
 // Cleans up the given dictionary by removing all stale (expiry has passed)
 // entries.
 void RemoveStaleEntries(base::DictionaryValue* dict) {
-  // TODO(crbug.com/914577): Cap the size of the pref by deleting the oldest one
-  // above a certain size.
+  base::Time earliest_expiry = base::Time::Max();
+  std::string earliest_key;
   std::vector<std::string> keys_to_delete;
   for (const auto& iter : dict->DictItems()) {
     // Check for a corrupted value and throw it out if so.
@@ -73,12 +73,23 @@ void RemoveStaleEntries(base::DictionaryValue* dict) {
         time.value() + previews::params::OfflinePreviewFreshnessDuration();
     bool is_expired = expiry <= base::Time::Now();
 
-    if (is_expired)
+    if (is_expired) {
       keys_to_delete.push_back(iter.first);
+      continue;
+    }
+
+    if (expiry < earliest_expiry)
+      earliest_key = iter.first;
   }
 
   for (const std::string& key : keys_to_delete)
     dict->RemoveKey(key);
+
+  // RemoveStaleEntries is called for every new added page, so it's fine to just
+  // remove one at a time to keep the pref size below a threshold.
+  if (dict->DictSize() > previews::params::OfflinePreviewsHelperMaxPrefSize()) {
+    dict->RemoveKey(earliest_key);
+  }
 }
 
 }  // namespace

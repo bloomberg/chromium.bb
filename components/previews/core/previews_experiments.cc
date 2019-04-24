@@ -387,6 +387,12 @@ int ResourceLoadingHintsPreviewsInflationBytes() {
       features::kResourceLoadingHints, kResourceLoadingHintsInflationBytes, 0);
 }
 
+size_t OfflinePreviewsHelperMaxPrefSize() {
+  return GetFieldTrialParamByFeatureAsInt(
+      features::kOfflinePreviewsFalsePositivePrevention, "max_pref_entries",
+      100);
+}
+
 }  // namespace params
 
 std::string GetStringNameForType(PreviewsType type) {

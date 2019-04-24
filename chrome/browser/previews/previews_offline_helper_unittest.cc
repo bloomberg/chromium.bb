@@ -216,3 +216,27 @@ TEST_F(PreviewsOfflineHelperTest, TestAddRemovePages) {
     }
   }
 }
+
+TEST_F(PreviewsOfflineHelperTest, TestMaxPrefSize) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      previews::features::kOfflinePreviewsFalsePositivePrevention,
+      {{"max_pref_entries", "1"}});
+
+  PreviewsOfflineHelper* helper = NewHelper();
+
+  base::Time first = base::Time::Now();
+  base::Time second = first + base::TimeDelta::FromMinutes(1);
+
+  helper->OfflinePageAdded(
+      nullptr, MakeAddedPageItem("http://test.first.com", "", first));
+  EXPECT_TRUE(
+      helper->ShouldAttemptOfflinePreview(GURL("http://test.first.com")));
+
+  helper->OfflinePageAdded(
+      nullptr, MakeAddedPageItem("http://test.second.com", "", second));
+  EXPECT_FALSE(
+      helper->ShouldAttemptOfflinePreview(GURL("http://test.first.com")));
+  EXPECT_TRUE(
+      helper->ShouldAttemptOfflinePreview(GURL("http://test.second.com")));
+}
