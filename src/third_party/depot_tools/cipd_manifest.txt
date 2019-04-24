@@ -1,0 +1,37 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# Pin resolved versions in the repo, to reduce trust in the CIPD backend.
+#
+# To regenerate them (after modifying this file):
+#   cipd ensure-file-resolve -ensure-file cipd_manifest.txt
+$ResolvedVersions cipd_manifest.versions
+
+# Fully supported plaforms.
+$VerifiedPlatform linux-amd64 mac-amd64 windows-amd64 windows-386
+
+# Platform with best-effort support: we have some binaries cross-compiled for
+# them, but we do not test they work. They also may not have all necessary
+# vpython packages.
+$VerifiedPlatform linux-386 linux-ppc64 linux-ppc64le linux-s390x
+$VerifiedPlatform linux-arm64 linux-armv6l
+$VerifiedPlatform linux-mips64 linux-mips64le linux-mipsle
+
+# vpython.
+infra/tools/luci/vpython/${platform} git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
+
+# LUCI editor
+infra/tools/luci/led/${platform} git_revision:cc015d8903532826f4430b87501a3c542ef468ce
+
+# LUCI config generator
+infra/tools/luci/lucicfg/${platform} git_revision:0c9b05014ea6f8c8a8f800177714d13d3ba232a4
+
+# Mac toolchain installer
+infra/tools/mac_toolchain/${os=mac}-${arch} git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
+
+# LUCI rpc command line tool
+infra/tools/prpc/${platform} git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
+
+# LUCI authentication command line tool
+infra/tools/luci-auth/${platform} git_revision:edd5644be66d37cdf82978efb0e5d6504d0d552f
