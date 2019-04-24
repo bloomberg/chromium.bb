@@ -93,8 +93,8 @@ class ChooserContextBase : public KeyedService {
 
   // Grants |requesting_origin| access to |object| when embedded within
   // |embedding_origin| by writing it into |host_content_settings_map_|.
-  void GrantObjectPermission(const GURL& requesting_origin,
-                             const GURL& embedding_origin,
+  void GrantObjectPermission(const url::Origin& requesting_origin,
+                             const url::Origin& embedding_origin,
                              base::Value object);
 
   // Revokes |requesting_origin|'s permission to access |object| when embedded
@@ -121,11 +121,11 @@ class ChooserContextBase : public KeyedService {
   base::ObserverList<PermissionObserver> permission_observer_list_;
 
  private:
-  base::Value GetWebsiteSetting(const GURL& requesting_origin,
-                                const GURL& embedding_origin,
+  base::Value GetWebsiteSetting(const url::Origin& requesting_origin,
+                                const url::Origin& embedding_origin,
                                 content_settings::SettingInfo* info);
-  void SetWebsiteSetting(const GURL& requesting_origin,
-                         const GURL& embedding_origin,
+  void SetWebsiteSetting(const url::Origin& requesting_origin,
+                         const url::Origin& embedding_origin,
                          base::Value value);
 
   HostContentSettingsMap* const host_content_settings_map_;

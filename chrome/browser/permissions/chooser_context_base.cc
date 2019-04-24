@@ -79,7 +79,7 @@ ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin_url,
 
   content_settings::SettingInfo info;
   base::Value setting =
-      GetWebsiteSetting(requesting_origin_url, embedding_origin_url, &info);
+      GetWebsiteSetting(requesting_origin, embedding_origin, &info);
 
   base::Value* objects = setting.FindListKey(kObjectListKey);
   if (!objects)
@@ -116,7 +116,7 @@ ChooserContextBase::GetAllGrantedObjects() {
 
     content_settings::SettingInfo info;
     base::Value setting =
-        GetWebsiteSetting(requesting_origin_url, embedding_origin_url, &info);
+        GetWebsiteSetting(requesting_origin, embedding_origin, &info);
     base::Value* objects = setting.FindListKey(kObjectListKey);
     if (!objects)
       continue;
@@ -135,11 +135,10 @@ ChooserContextBase::GetAllGrantedObjects() {
   return results;
 }
 
-void ChooserContextBase::GrantObjectPermission(const GURL& requesting_origin,
-                                               const GURL& embedding_origin,
-                                               base::Value object) {
-  DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
-  DCHECK_EQ(embedding_origin, embedding_origin.GetOrigin());
+void ChooserContextBase::GrantObjectPermission(
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin,
+    base::Value object) {
   DCHECK(IsValidObject(object));
 
   base::Value setting =
@@ -158,11 +157,14 @@ void ChooserContextBase::GrantObjectPermission(const GURL& requesting_origin,
   NotifyPermissionChanged();
 }
 
-void ChooserContextBase::RevokeObjectPermission(const GURL& requesting_origin,
-                                                const GURL& embedding_origin,
-                                                const base::Value& object) {
-  DCHECK_EQ(requesting_origin, requesting_origin.GetOrigin());
-  DCHECK_EQ(embedding_origin, embedding_origin.GetOrigin());
+void ChooserContextBase::RevokeObjectPermission(
+    const GURL& requesting_origin_url,
+    const GURL& embedding_origin_url,
+    const base::Value& object) {
+  const auto requesting_origin = url::Origin::Create(requesting_origin_url);
+  DCHECK_EQ(requesting_origin_url, requesting_origin.GetURL());
+  const auto embedding_origin = url::Origin::Create(embedding_origin_url);
+  DCHECK_EQ(embedding_origin_url, embedding_origin.GetURL());
   DCHECK(IsValidObject(object));
 
   base::Value setting =
@@ -177,7 +179,7 @@ void ChooserContextBase::RevokeObjectPermission(const GURL& requesting_origin,
     objects->GetList().erase(it);
 
   SetWebsiteSetting(requesting_origin, embedding_origin, std::move(setting));
-  NotifyPermissionRevoked(requesting_origin, embedding_origin);
+  NotifyPermissionRevoked(requesting_origin_url, embedding_origin_url);
 }
 
 void ChooserContextBase::NotifyPermissionChanged() {
@@ -197,22 +199,23 @@ void ChooserContextBase::NotifyPermissionRevoked(const GURL& requesting_origin,
 }
 
 base::Value ChooserContextBase::GetWebsiteSetting(
-    const GURL& requesting_origin,
-    const GURL& embedding_origin,
+    const url::Origin& requesting_origin,
+    const url::Origin& embedding_origin,
     content_settings::SettingInfo* info) {
   std::unique_ptr<base::Value> value =
       host_content_settings_map_->GetWebsiteSetting(
-          requesting_origin, embedding_origin, data_content_settings_type_,
-          std::string(), info);
+          requesting_origin.GetURL(), embedding_origin.GetURL(),
+          data_content_settings_type_, std::string(), info);
   if (value)
     return base::Value::FromUniquePtrValue(std::move(value));
   return base::Value(base::Value::Type::DICTIONARY);
 }
 
-void ChooserContextBase::SetWebsiteSetting(const GURL& requesting_origin,
-                                           const GURL& embedding_origin,
+void ChooserContextBase::SetWebsiteSetting(const url::Origin& requesting_origin,
+                                           const url::Origin& embedding_origin,
                                            base::Value value) {
   host_content_settings_map_->SetWebsiteSettingDefaultScope(
-      requesting_origin, embedding_origin, data_content_settings_type_,
-      std::string(), base::Value::ToUniquePtrValue(std::move(value)));
+      requesting_origin.GetURL(), embedding_origin.GetURL(),
+      data_content_settings_type_, std::string(),
+      base::Value::ToUniquePtrValue(std::move(value)));
 }

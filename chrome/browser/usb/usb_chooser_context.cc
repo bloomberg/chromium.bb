@@ -395,7 +395,7 @@ void UsbChooserContext::GrantDevicePermission(
     const url::Origin& embedding_origin,
     const device::mojom::UsbDeviceInfo& device_info) {
   if (CanStorePersistentEntry(device_info)) {
-    GrantObjectPermission(requesting_origin.GetURL(), embedding_origin.GetURL(),
+    GrantObjectPermission(requesting_origin, embedding_origin,
                           DeviceInfoToValue(device_info));
   } else {
     ephemeral_devices_[std::make_pair(requesting_origin, embedding_origin)]
