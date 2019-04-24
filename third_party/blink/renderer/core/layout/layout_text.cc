@@ -200,9 +200,7 @@ void LayoutText::StyleDidChange(StyleDifference diff,
   if (!old_style && text_autosizer)
     text_autosizer->Record(this);
 
-  // |NeedsFullLayout| includes changes in fonts, which require reshape.
-  // TODO(kojii): Not all |NeedsFullLayout| properties require re-shape.
-  if (diff.NeedsFullLayout()) {
+  if (diff.NeedsReshape()) {
     valid_ng_items_ = false;
     SetNeedsCollectInlines();
   }

@@ -531,6 +531,22 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
   if (svg_style_.Get() != other.svg_style_.Get())
     diff = svg_style_->Diff(*other.svg_style_);
 
+  if ((!diff.NeedsReshape() || !diff.NeedsFullLayout() ||
+       !diff.NeedsFullPaintInvalidation()) &&
+      DiffNeedsReshapeAndFullLayoutAndPaintInvalidation(*this, other)) {
+    diff.SetNeedsReshape();
+    diff.SetNeedsFullLayout();
+    diff.SetNeedsPaintInvalidationObject();
+  }
+
+  if ((!diff.NeedsCollectInlines() || !diff.NeedsFullLayout() ||
+       !diff.NeedsFullPaintInvalidation()) &&
+      DiffNeedsCollectInlinesAndFullLayoutAndPaintInvalidation(*this, other)) {
+    diff.SetNeedsCollectInlines();
+    diff.SetNeedsFullLayout();
+    diff.SetNeedsPaintInvalidationObject();
+  }
+
   if ((!diff.NeedsFullLayout() || !diff.NeedsFullPaintInvalidation()) &&
       DiffNeedsFullLayoutAndPaintInvalidation(other)) {
     diff.SetNeedsFullLayout();

@@ -36,6 +36,8 @@ class StyleDifference {
   StyleDifference()
       : paint_invalidation_type_(kNoPaintInvalidation),
         layout_type_(kNoLayout),
+        needs_collect_inlines_(false),
+        needs_reshape_(false),
         recompute_overflow_(false),
         visual_rect_update_(false),
         property_specific_differences_(0),
@@ -43,9 +45,10 @@ class StyleDifference {
         compositing_reasons_changed_(false) {}
 
   bool HasDifference() const {
-    return paint_invalidation_type_ || layout_type_ ||
-           property_specific_differences_ || recompute_overflow_ ||
-           visual_rect_update_ || scroll_anchor_disabling_property_changed_ ||
+    return paint_invalidation_type_ || layout_type_ || needs_collect_inlines_ ||
+           needs_reshape_ || property_specific_differences_ ||
+           recompute_overflow_ || visual_rect_update_ ||
+           scroll_anchor_disabling_property_changed_ ||
            compositing_reasons_changed_;
   }
 
@@ -90,6 +93,12 @@ class StyleDifference {
 
   bool NeedsFullLayout() const { return layout_type_ == kFullLayout; }
   void SetNeedsFullLayout() { layout_type_ = kFullLayout; }
+
+  bool NeedsCollectInlines() const { return needs_collect_inlines_; }
+  void SetNeedsCollectInlines() { needs_collect_inlines_ = true; }
+
+  bool NeedsReshape() const { return needs_reshape_; }
+  void SetNeedsReshape() { needs_reshape_ = true; }
 
   bool NeedsRecomputeOverflow() const { return recompute_overflow_; }
   void SetNeedsRecomputeOverflow() { recompute_overflow_ = true; }
@@ -187,6 +196,8 @@ class StyleDifference {
 
   enum LayoutType { kNoLayout = 0, kPositionedMovement, kFullLayout };
   unsigned layout_type_ : 2;
+  unsigned needs_collect_inlines_ : 1;
+  unsigned needs_reshape_ : 1;
   unsigned recompute_overflow_ : 1;
   unsigned visual_rect_update_ : 1;
   unsigned property_specific_differences_ : kPropertyDifferenceCount;

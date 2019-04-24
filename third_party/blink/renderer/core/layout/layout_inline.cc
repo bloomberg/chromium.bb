@@ -330,8 +330,7 @@ void LayoutInline::StyleDidChange(StyleDifference diff,
     if (!ShouldCreateBoxFragment()) {
       UpdateShouldCreateBoxFragment();
     }
-    if (old_style &&
-        new_style.GetUnicodeBidi() != old_style->GetUnicodeBidi()) {
+    if (diff.NeedsCollectInlines()) {
       SetNeedsCollectInlines();
     }
   }

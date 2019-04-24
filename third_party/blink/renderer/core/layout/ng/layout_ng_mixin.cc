@@ -46,9 +46,7 @@ void LayoutNGMixin<Base>::StyleDidChange(StyleDifference diff,
                                          const ComputedStyle* old_style) {
   Base::StyleDidChange(diff, old_style);
 
-  const ComputedStyle& new_style = Base::StyleRef();
-  if (old_style && Base::ChildrenInline() &&
-      new_style.GetUnicodeBidi() != old_style->GetUnicodeBidi()) {
+  if (diff.NeedsCollectInlines()) {
     Base::SetNeedsCollectInlines();
   }
 }

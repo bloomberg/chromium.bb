@@ -591,10 +591,10 @@ struct StyleChangeData {
     {"#parent.after { display: list-item; }", StyleChangeData::kContainer},
     {"#parent { display: list-item; list-style-type: none; }"
      "#parent.after { list-style-type: disc; }",
-     StyleChangeData::kTextAndParent},
+     StyleChangeData::kParent},
     {"#parent { display: list-item; }"
      "#container.after { list-style-type: none; }",
-     StyleChangeData::kTextAndParent},
+     StyleChangeData::kParent},
     // Changing properties related with bidi resolution should re-run
     // |CollectInlines()|.
     {"#parent.after { unicode-bidi: bidi-override; }",
