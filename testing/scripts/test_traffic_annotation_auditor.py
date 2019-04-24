@@ -55,6 +55,7 @@ def main_run(args):
     config_file.close()
 
     command_line = [
+      sys.executable,
       os.path.join(common.SRC_DIR, 'tools', 'traffic_annotation', 'scripts',
                    'update_annotations_sheet.py'),
       '--force',
