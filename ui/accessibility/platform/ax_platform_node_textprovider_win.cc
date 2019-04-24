@@ -177,7 +177,11 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::get_DocumentRange(
 
   AXNodePosition::AXPositionInstance end;
   if (owner()->GetChildCount() == 0) {
-    end = start->CreatePositionAtEndOfAnchor()->AsLeafTextPosition();
+    end = owner()
+              ->GetDelegate()
+              ->CreateTextPositionAt(0)
+              ->CreatePositionAtEndOfAnchor()
+              ->AsLeafTextPosition();
   } else {
     AXPlatformNode* deepest_last_child =
         AXPlatformNode::FromNativeViewAccessible(

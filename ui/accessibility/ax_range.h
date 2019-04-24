@@ -196,6 +196,7 @@ class AXRange {
       if (current_line_start->GetAnchor()->data().role ==
           ax::mojom::Role::kInlineTextBox) {
         current_line_start = current_line_start->CreateParentPosition();
+        current_line_end = current_line_end->CreateParentPosition();
       }
 
       AXTreeID current_tree_id = current_line_start->tree_id();
