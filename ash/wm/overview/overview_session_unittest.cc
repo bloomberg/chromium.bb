@@ -4531,4 +4531,28 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
 }
 
+// Test that when laptop splitview mode is active, moving the snapped window
+// will end splitview and overview at the same time.
+TEST_F(SplitViewOverviewSessionInClamshellTest, MoveWindowTest) {
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> window1(
+      CreateWindowWithHitTestComponent(HTCAPTION, bounds));
+  std::unique_ptr<aura::Window> window2(
+      CreateWindowWithHitTestComponent(HTCAPTION, bounds));
+
+  ToggleOverview();
+  const int grid_index = 0;
+  OverviewItem* overview_item1 =
+      GetWindowItemForWindow(grid_index, window1.get());
+  DragWindowTo(overview_item1, gfx::PointF(0, 0));
+  EXPECT_TRUE(overview_controller()->IsSelecting());
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+
+  ui::test::EventGenerator generator1(Shell::GetPrimaryRootWindow(),
+                                      window1.get());
+  generator1.DragMouseBy(50, 50);
+  EXPECT_FALSE(overview_controller()->IsSelecting());
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+}
+
 }  // namespace ash

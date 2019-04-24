@@ -26,6 +26,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
+#include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
@@ -765,29 +766,39 @@ void SplitViewController::OnWindowBoundsChanged(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
     ui::PropertyChangeReason reason) {
-  if (!IsSplitViewModeActive())
+  if (split_view_type_ != SplitViewType::kClamshellType ||
+      reason == ui::PropertyChangeReason::FROM_ANIMATION) {
     return;
-
-  if (split_view_type_ == SplitViewType::kClamshellType &&
-      reason == ui::PropertyChangeReason::NOT_FROM_ANIMATION) {
-    const gfx::Rect work_area =
-        screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-            window);
-    const bool is_left_or_top_window =
-        IsCurrentScreenOrientationPrimary()
-            ? (window == left_window_ ? true : false)
-            : (window == left_window_ ? false : true);
-    if (IsCurrentScreenOrientationLandscape()) {
-      divider_position_ = is_left_or_top_window
-                              ? new_bounds.width()
-                              : work_area.width() - new_bounds.width();
-    } else {
-      divider_position_ = is_left_or_top_window
-                              ? new_bounds.height()
-                              : work_area.height() - new_bounds.height();
-    }
-    NotifyDividerPositionChanged();
   }
+  DCHECK(IsSplitViewModeActive());
+
+  wm::WindowState* window_state = wm::GetWindowState(window);
+  const bool is_window_moved = window_state->is_dragged() &&
+                               window_state->drag_details()->bounds_change ==
+                                   WindowResizer::kBoundsChange_Repositions;
+  if (is_window_moved) {
+    EndSplitView();
+    EndOverview();
+    return;
+  }
+
+  const gfx::Rect work_area =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          window);
+  const bool is_left_or_top_window =
+      IsCurrentScreenOrientationPrimary()
+          ? (window == left_window_ ? true : false)
+          : (window == left_window_ ? false : true);
+  if (IsCurrentScreenOrientationLandscape()) {
+    divider_position_ = is_left_or_top_window
+                            ? new_bounds.width()
+                            : work_area.width() - new_bounds.width();
+  } else {
+    divider_position_ = is_left_or_top_window
+                            ? new_bounds.height()
+                            : work_area.height() - new_bounds.height();
+  }
+  NotifyDividerPositionChanged();
 }
 
 void SplitViewController::OnResizeLoopStarted(aura::Window* window) {
