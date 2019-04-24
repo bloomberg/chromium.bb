@@ -385,10 +385,18 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
     bool has_ssl_info = ssl_socket_->GetSSLInfo(&ssl_info);
     DCHECK(has_ssl_info);
 
-    UMA_HISTOGRAM_ENUMERATION(
-        "Net.SSLVersion",
-        SSLConnectionStatusToVersion(ssl_info.connection_status),
-        SSL_CONNECTION_VERSION_MAX);
+    SSLVersion version =
+        SSLConnectionStatusToVersion(ssl_info.connection_status);
+    UMA_HISTOGRAM_ENUMERATION("Net.SSLVersion", version,
+                              SSL_CONNECTION_VERSION_MAX);
+    if (IsGoogleHost(host)) {
+      // Google hosts all support TLS 1.2, so any occurrences of TLS 1.0 or TLS
+      // 1.1 will be from an outdated insecure TLS MITM proxy, such as some
+      // antivirus configurations. TLS 1.0 and 1.1 are deprecated, so record
+      // these to see how prevalent they are. See https://crbug.com/896013.
+      UMA_HISTOGRAM_ENUMERATION("Net.SSLVersionGoogle", version,
+                                SSL_CONNECTION_VERSION_MAX);
+    }
 
     uint16_t cipher_suite =
         SSLConnectionStatusToCipherSuite(ssl_info.connection_status);

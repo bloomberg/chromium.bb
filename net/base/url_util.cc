@@ -392,6 +392,10 @@ void GetIdentityFromURL(const GURL& url,
 }
 
 bool HasGoogleHost(const GURL& url) {
+  return IsGoogleHost(url.host_piece());
+}
+
+bool IsGoogleHost(base::StringPiece host) {
   static const char* kGoogleHostSuffixes[] = {
       ".google.com",
       ".youtube.com",
@@ -406,7 +410,6 @@ bool HasGoogleHost(const GURL& url) {
       ".googleapis.com",
       ".ytimg.com",
   };
-  base::StringPiece host = url.host_piece();
   for (const char* suffix : kGoogleHostSuffixes) {
     // Here it's possible to get away with faster case-sensitive comparisons
     // because the list above is all lowercase, and a GURL's host name will
