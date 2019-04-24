@@ -12,10 +12,12 @@
 #include "build/build_config.h"
 #include "jni/CrashReportMimeWriter_jni.h"
 #include "third_party/crashpad/crashpad/handler/minidump_to_upload_parameters.h"
+#include "third_party/crashpad/crashpad/snapshot/exception_snapshot.h"
 #include "third_party/crashpad/crashpad/snapshot/minidump/process_snapshot_minidump.h"
 #include "third_party/crashpad/crashpad/util/file/file_writer.h"
 #include "third_party/crashpad/crashpad/util/net/http_body.h"
 #include "third_party/crashpad/crashpad/util/net/http_multipart_builder.h"
+#include "third_party/crashpad/crashpad/util/posix/signals.h"
 
 namespace minidump_uploader {
 
@@ -29,7 +31,8 @@ enum class ProcessedMinidumpCounts {
   kBrowser = 1,
   kRenderer = 2,
   kGpu = 3,
-  kMaxValue = kGpu
+  kUtility = 4,
+  kMaxValue = kUtility
 };
 #endif  // OS_ANDROID
 
@@ -90,18 +93,32 @@ bool MimeifyReport(const crashpad::CrashReportDatabase::UploadReport& report,
       http_multipart_builder->SetFormData(kv.first, kv.second);
 #if defined(OS_ANDROID)
       if (kv.first == kPtypeKey) {
-        ProcessedMinidumpCounts count_type;
-        if (kv.second == "browser") {
-          count_type = ProcessedMinidumpCounts::kBrowser;
-        } else if (kv.second == "renderer") {
-          count_type = ProcessedMinidumpCounts::kRenderer;
-        } else if (kv.second == "gpu-process") {
-          count_type = ProcessedMinidumpCounts::kGpu;
-        } else {
-          count_type = ProcessedMinidumpCounts::kOther;
+        const crashpad::ExceptionSnapshot* exception =
+            minidump_process_snapshot.Exception();
+        if (exception != nullptr) {
+          const uint32_t signo = exception->Exception();
+          ProcessedMinidumpCounts count_type;
+          if (kv.second == "browser") {
+            count_type = ProcessedMinidumpCounts::kBrowser;
+          } else if (kv.second == "renderer") {
+            count_type = ProcessedMinidumpCounts::kRenderer;
+          } else if (kv.second == "gpu-process") {
+            count_type = ProcessedMinidumpCounts::kGpu;
+          } else if (kv.second == "utility") {
+            count_type = ProcessedMinidumpCounts::kUtility;
+          } else {
+            count_type = ProcessedMinidumpCounts::kOther;
+          }
+          if (signo !=
+              static_cast<uint32_t>(crashpad::Signals::kSimulatedSigno)) {
+            UMA_HISTOGRAM_ENUMERATION(
+                "Stability.Android.ProcessedRealMinidumps", count_type);
+          } else {
+            UMA_HISTOGRAM_ENUMERATION(
+                "Stability.Android.ProcessedSimulatedMinidumps", count_type);
+          }
         }
-        UMA_HISTOGRAM_ENUMERATION("Stability.Android.ProcessedMinidumps",
-                                  count_type);
+        // TODO(wnwen): Add histogram for number of null exceptions.
       }
 #endif  // OS_ANDROID
     }
