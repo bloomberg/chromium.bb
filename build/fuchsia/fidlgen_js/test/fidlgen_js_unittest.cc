@@ -544,7 +544,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessage) {
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
   ASSERT_EQ(
-      helper.server().rea2(0, data, handles, base::size(data),
+      helper.server().read(0, data, handles, base::size(data),
                            base::size(handles), &actual_bytes, &actual_handles),
       ZX_OK);
   EXPECT_EQ(actual_bytes, 16u);
@@ -577,7 +577,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithSimpleArg) {
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
   ASSERT_EQ(
-      helper.server().rea2(0, data, handles, base::size(data),
+      helper.server().read(0, data, handles, base::size(data),
                            base::size(handles), &actual_bytes, &actual_handles),
       ZX_OK);
   // 24 rather than 20 because everything's 8 aligned.
@@ -611,7 +611,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithStringArg) {
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
   ASSERT_EQ(
-      helper.server().rea2(0, data, handles, base::size(data),
+      helper.server().read(0, data, handles, base::size(data),
                            base::size(handles), &actual_bytes, &actual_handles),
       ZX_OK);
   EXPECT_EQ(actual_handles, 0u);
@@ -643,7 +643,7 @@ TEST_F(FidlGenJsTest, RawReceiveFidlMessageWithMultipleArgs) {
   zx_handle_t handles[1];
   uint32_t actual_bytes, actual_handles;
   ASSERT_EQ(
-      helper.server().rea2(0, data, handles, base::size(data),
+      helper.server().read(0, data, handles, base::size(data),
                            base::size(handles), &actual_bytes, &actual_handles),
       ZX_OK);
   EXPECT_EQ(actual_handles, 0u);
