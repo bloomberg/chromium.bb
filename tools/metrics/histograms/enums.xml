@@ -32968,6 +32968,8 @@ from previous Chrome versions.
   <int value="-1069453905" label="CCTModuleUseIntentExtras:disabled"/>
   <int value="-1067635248" label="SpeculativeResourcePrefetching:disabled"/>
   <int value="-1064733740" label="ui-show-composited-layer-borders"/>
+  <int value="-1064302126"
+      label="OmniboxAlternateMatchDescriptionSeparator:enabled"/>
   <int value="-1062119671" label="enable-password-force-saving"/>
   <int value="-1060395248" label="PasswordSearchMobile:enabled"/>
   <int value="-1056310158" label="disable-memory-pressure-chromeos"/>
@@ -33947,6 +33949,8 @@ from previous Chrome versions.
   <int value="546043947" label="ImplicitRootScroller:enabled"/>
   <int value="546520086" label="enable-data-reduction-proxy-savings-promo"/>
   <int value="546710806" label="disable-easy-signin"/>
+  <int value="547170394"
+      label="OmniboxAlternateMatchDescriptionSeparator:disabled"/>
   <int value="549483647" label="EnableUnifiedMultiDeviceSettings:disabled"/>
   <int value="550378029" label="reset-app-list-install-state"/>
   <int value="550387510" label="NTPAssetDownloadSuggestions:disabled"/>

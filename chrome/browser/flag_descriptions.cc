@@ -1353,6 +1353,12 @@ const char kOfflineAutoReloadVisibleOnlyDescription[] =
     "Pages that fail to load while the browser is offline will only be "
     "auto-reloaded if their tab is visible.";
 
+const char kOmniboxAlternateMatchDescriptionSeparatorName[] =
+    "Omnibox Alternate Match Description Separator";
+const char kOmniboxAlternateMatchDescriptionSeparatorDescription[] =
+    "Shows an alternate separator before the description of omnibox matches. "
+    "In English, this changes the separator from '-' to '|'.";
+
 const char kOmniboxDisplayTitleForCurrentUrlName[] =
     "Include title for the current URL in the omnibox";
 const char kOmniboxDisplayTitleForCurrentUrlDescription[] =

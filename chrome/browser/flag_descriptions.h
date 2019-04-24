@@ -831,6 +831,9 @@ extern const char kOfflineAutoReloadDescription[];
 extern const char kOfflineAutoReloadVisibleOnlyName[];
 extern const char kOfflineAutoReloadVisibleOnlyDescription[];
 
+extern const char kOmniboxAlternateMatchDescriptionSeparatorName[];
+extern const char kOmniboxAlternateMatchDescriptionSeparatorDescription[];
+
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
