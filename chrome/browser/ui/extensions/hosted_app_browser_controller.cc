@@ -29,6 +29,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
@@ -332,11 +333,12 @@ bool HostedAppBrowserController::CanUninstall() const {
       ->UserMayModifySettings(GetExtension(), nullptr);
 }
 
-void HostedAppBrowserController::Uninstall(UninstallReason reason,
-                                           UninstallSource source) {
+void HostedAppBrowserController::Uninstall() {
   uninstall_dialog_ = ExtensionUninstallDialog::Create(
       browser()->profile(), browser()->window()->GetNativeWindow(), this);
-  uninstall_dialog_->ConfirmUninstall(GetExtension(), reason, source);
+  uninstall_dialog_->ConfirmUninstall(
+      GetExtension(), extensions::UNINSTALL_REASON_USER_INITIATED,
+      extensions::UNINSTALL_SOURCE_HOSTED_APP_MENU);
 }
 
 bool HostedAppBrowserController::IsInstalled() const {

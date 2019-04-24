@@ -89,7 +89,7 @@ class HostedAppBrowserController : public TabStripModelObserver,
 
   bool CanUninstall() const override;
 
-  void Uninstall(UninstallReason reason, UninstallSource source) override;
+  void Uninstall() override;
 
   // Returns whether the app is installed (uninstallation may complete within
   // the lifetime of HostedAppBrowserController).

@@ -76,9 +76,7 @@ bool HostedAppMenuModel::IsCommandIdEnabled(int command_id) const {
 
 void HostedAppMenuModel::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == kUninstallAppCommandId) {
-    browser()->web_app_controller()->Uninstall(
-        extensions::UNINSTALL_REASON_USER_INITIATED,
-        extensions::UNINSTALL_SOURCE_HOSTED_APP_MENU);
+    browser()->web_app_controller()->Uninstall();
   } else {
     AppMenuModel::ExecuteCommand(command_id, event_flags);
   }

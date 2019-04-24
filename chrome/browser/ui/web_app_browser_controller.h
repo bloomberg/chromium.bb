@@ -10,9 +10,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
-#include "chrome/browser/ui/web_app_browser_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -78,8 +76,7 @@ class WebAppBrowserController : public content::WebContentsObserver {
 
   virtual bool CanUninstall() const;
 
-  virtual void Uninstall(extensions::UninstallReason reason,
-                         extensions::UninstallSource source);
+  virtual void Uninstall();
 
   // Returns whether the app is installed (uninstallation may complete within
   // the lifetime of HostedAppBrowserController).

@@ -81,8 +81,7 @@ bool WebAppBrowserController::CanUninstall() const {
   return false;
 }
 
-void WebAppBrowserController::Uninstall(extensions::UninstallReason reason,
-                                        extensions::UninstallSource source) {
+void WebAppBrowserController::Uninstall() {
   NOTREACHED();
   return;
 }
