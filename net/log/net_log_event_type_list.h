@@ -2911,7 +2911,6 @@ EVENT_TYPE(WPAD_DHCP_WIN_ON_WAIT_TIMER)
 // Event emitted on store creation/deletion
 //  {
 //    "persistent_store": <Whether there is an attached persistent store>,
-//    "channel_id_services": <Whether there is an attached channel id service>,
 //  }
 EVENT_TYPE(COOKIE_STORE_ALIVE)
 

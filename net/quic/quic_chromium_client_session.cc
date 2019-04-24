@@ -39,7 +39,6 @@
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_log_util.h"
 #include "net/spdy/spdy_session.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_client_promised_info.h"

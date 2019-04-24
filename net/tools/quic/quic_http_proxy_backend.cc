@@ -22,7 +22,6 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
-#include "net/ssl/channel_id_service.h"
 #include "net/tools/quic/quic_http_proxy_backend.h"
 #include "net/tools/quic/quic_http_proxy_backend_stream.h"
 #include "net/url_request/url_request_context.h"
