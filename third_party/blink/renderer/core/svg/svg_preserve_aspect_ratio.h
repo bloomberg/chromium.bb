@@ -55,10 +55,6 @@ class SVGPreserveAspectRatio final
 
   typedef SVGPreserveAspectRatioTearOff TearOffType;
 
-  static SVGPreserveAspectRatio* Create() {
-    return MakeGarbageCollected<SVGPreserveAspectRatio>();
-  }
-
   SVGPreserveAspectRatio();
 
   virtual SVGPreserveAspectRatio* Clone() const;

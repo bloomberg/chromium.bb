@@ -42,8 +42,6 @@ void SVGPathElement::Trace(blink::Visitor* visitor) {
   SVGGeometryElement::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGPathElement)
-
 Path SVGPathElement::AttributePath() const {
   return path_->CurrentValue()->GetStylePath()->GetPath();
 }

@@ -100,8 +100,6 @@ SVGSVGElement::SVGSVGElement(Document& doc)
   UseCounter::Count(doc, WebFeature::kSVGSVGElement);
 }
 
-DEFINE_NODE_FACTORY(SVGSVGElement)
-
 SVGSVGElement::~SVGSVGElement() = default;
 
 float SVGSVGElement::currentScale() const {
@@ -122,10 +120,6 @@ void SVGSVGElement::setCurrentScale(float scale) {
 
 class SVGCurrentTranslateTearOff : public SVGPointTearOff {
  public:
-  static SVGCurrentTranslateTearOff* Create(SVGSVGElement* context_element) {
-    return MakeGarbageCollected<SVGCurrentTranslateTearOff>(context_element);
-  }
-
   SVGCurrentTranslateTearOff(SVGSVGElement* context_element)
       : SVGPointTearOff(context_element->translation_, context_element) {}
 

@@ -33,8 +33,6 @@ class SVGPathElement final : public SVGGeometryElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGPathElement);
-
   explicit SVGPathElement(Document&);
 
   Path AsPath() const override;

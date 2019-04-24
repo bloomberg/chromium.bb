@@ -97,8 +97,6 @@ void SVGPatternElement::Trace(blink::Visitor* visitor) {
   SVGFitToViewBox::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGPatternElement)
-
 void SVGPatternElement::BuildPendingResource() {
   ClearResourceReferences();
   if (!isConnected())

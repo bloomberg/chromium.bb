@@ -44,12 +44,6 @@ class SVGPoint final : public SVGPropertyHelper<SVGPoint> {
  public:
   typedef SVGPointTearOff TearOffType;
 
-  static SVGPoint* Create() { return MakeGarbageCollected<SVGPoint>(); }
-
-  static SVGPoint* Create(const FloatPoint& point) {
-    return MakeGarbageCollected<SVGPoint>(point);
-  }
-
   SVGPoint();
   explicit SVGPoint(const FloatPoint&);
 

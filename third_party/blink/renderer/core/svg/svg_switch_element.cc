@@ -31,8 +31,6 @@ SVGSwitchElement::SVGSwitchElement(Document& document)
   UseCounter::Count(document, WebFeature::kSVGSwitchElement);
 }
 
-DEFINE_NODE_FACTORY(SVGSwitchElement)
-
 LayoutObject* SVGSwitchElement::CreateLayoutObject(const ComputedStyle&,
                                                    LegacyLayout) {
   return new LayoutSVGTransformableContainer(this);

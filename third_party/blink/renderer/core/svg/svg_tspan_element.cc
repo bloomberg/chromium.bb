@@ -28,8 +28,6 @@ namespace blink {
 SVGTSpanElement::SVGTSpanElement(Document& document)
     : SVGTextPositioningElement(svg_names::kTSpanTag, document) {}
 
-DEFINE_NODE_FACTORY(SVGTSpanElement)
-
 LayoutObject* SVGTSpanElement::CreateLayoutObject(const ComputedStyle&,
                                                   LegacyLayout) {
   return new LayoutSVGTSpan(this);

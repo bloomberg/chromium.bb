@@ -45,7 +45,6 @@ namespace blink {
 // layout such elements.
 class SVGUnknownElement final : public SVGElement {
  public:
-  DECLARE_ELEMENT_FACTORY_WITH_TAGNAME(SVGUnknownElement);
 
   SVGUnknownElement(const QualifiedName&, Document&);
 

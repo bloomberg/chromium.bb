@@ -27,8 +27,6 @@ namespace blink {
 SVGPolygonElement::SVGPolygonElement(Document& document)
     : SVGPolyElement(svg_names::kPolygonTag, document) {}
 
-DEFINE_NODE_FACTORY(SVGPolygonElement)
-
 Path SVGPolygonElement::AsPath() const {
   Path path = AsPathFromPoints();
   path.CloseSubpath();

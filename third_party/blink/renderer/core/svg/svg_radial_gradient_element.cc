@@ -83,8 +83,6 @@ void SVGRadialGradientElement::Trace(blink::Visitor* visitor) {
   SVGGradientElement::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGRadialGradientElement)
-
 void SVGRadialGradientElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {
   if (attr_name == svg_names::kCxAttr || attr_name == svg_names::kCyAttr ||

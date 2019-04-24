@@ -33,16 +33,10 @@ class SVGRect final : public SVGPropertyHelper<SVGRect> {
  public:
   typedef SVGRectTearOff TearOffType;
 
-  static SVGRect* Create() { return MakeGarbageCollected<SVGRect>(); }
-
   static SVGRect* CreateInvalid() {
     SVGRect* rect = MakeGarbageCollected<SVGRect>();
     rect->SetInvalid();
     return rect;
-  }
-
-  static SVGRect* Create(const FloatRect& rect) {
-    return MakeGarbageCollected<SVGRect>(rect);
   }
 
   SVGRect();

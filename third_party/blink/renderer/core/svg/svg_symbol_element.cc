@@ -33,8 +33,6 @@ void SVGSymbolElement::Trace(blink::Visitor* visitor) {
   SVGFitToViewBox::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGSymbolElement)
-
 void SVGSymbolElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (SVGFitToViewBox::IsKnownAttribute(attr_name))
     InvalidateInstances();

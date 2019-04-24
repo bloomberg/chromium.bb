@@ -40,11 +40,6 @@ SVGScriptElement::SVGScriptElement(Document& document,
       loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
                                      flags.WasAlreadyStarted())) {}
 
-SVGScriptElement* SVGScriptElement::Create(Document& document,
-                                           const CreateElementFlags flags) {
-  return MakeGarbageCollected<SVGScriptElement>(document, flags);
-}
-
 void SVGScriptElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == html_names::kOnerrorAttr) {

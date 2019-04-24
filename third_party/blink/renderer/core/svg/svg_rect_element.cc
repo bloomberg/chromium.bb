@@ -82,8 +82,6 @@ void SVGRectElement::Trace(blink::Visitor* visitor) {
   SVGGeometryElement::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGRectElement)
-
 Path SVGRectElement::AsPath() const {
   Path path;
 

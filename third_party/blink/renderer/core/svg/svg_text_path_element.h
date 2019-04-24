@@ -56,8 +56,6 @@ class SVGTextPathElement final : public SVGTextContentElement,
     kTextpathSpacingtypeExact = kSVGTextPathSpacingExact
   };
 
-  DECLARE_NODE_FACTORY(SVGTextPathElement);
-
   explicit SVGTextPathElement(Document&);
 
   SVGAnimatedLength* startOffset() const { return start_offset_.Get(); }

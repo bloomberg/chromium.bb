@@ -45,8 +45,6 @@ void SVGStopElement::Trace(blink::Visitor* visitor) {
   SVGElement::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGStopElement)
-
 namespace {
 
 void InvalidateInstancesAndAncestorResources(SVGStopElement* stop_element) {

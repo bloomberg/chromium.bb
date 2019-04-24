@@ -38,11 +38,6 @@ SVGStyleElement::SVGStyleElement(Document& document,
 
 SVGStyleElement::~SVGStyleElement() = default;
 
-SVGStyleElement* SVGStyleElement::Create(Document& document,
-                                         const CreateElementFlags flags) {
-  return MakeGarbageCollected<SVGStyleElement>(document, flags);
-}
-
 bool SVGStyleElement::disabled() const {
   if (!sheet_)
     return false;

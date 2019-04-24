@@ -44,10 +44,6 @@ class SVGNumber : public SVGPropertyHelper<SVGNumber> {
   typedef SVGNumberTearOff TearOffType;
   typedef float PrimitiveType;
 
-  static SVGNumber* Create(float value = 0.0f) {
-    return MakeGarbageCollected<SVGNumber>(value);
-  }
-
   explicit SVGNumber(float = 0.0f);
 
   virtual SVGNumber* Clone() const;
@@ -89,10 +85,6 @@ DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGNumber);
 //   offset = "<number> | <percentage>"
 class SVGNumberAcceptPercentage final : public SVGNumber {
  public:
-  static SVGNumberAcceptPercentage* Create(float value = 0) {
-    return MakeGarbageCollected<SVGNumberAcceptPercentage>(value);
-  }
-
   explicit SVGNumberAcceptPercentage(float = 0);
 
   SVGNumber* Clone() const override;

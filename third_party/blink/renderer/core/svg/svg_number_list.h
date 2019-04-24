@@ -44,10 +44,6 @@ class SVGNumberList final
  public:
   typedef SVGNumberListTearOff TearOffType;
 
-  static SVGNumberList* Create() {
-    return MakeGarbageCollected<SVGNumberList>();
-  }
-
   SVGNumberList();
   ~SVGNumberList() override;
 

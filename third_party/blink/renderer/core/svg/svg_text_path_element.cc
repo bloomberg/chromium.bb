@@ -69,8 +69,6 @@ SVGTextPathElement::SVGTextPathElement(Document& document)
   AddToPropertyMap(spacing_);
 }
 
-DEFINE_NODE_FACTORY(SVGTextPathElement)
-
 SVGTextPathElement::~SVGTextPathElement() = default;
 
 void SVGTextPathElement::Trace(blink::Visitor* visitor) {

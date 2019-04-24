@@ -50,18 +50,6 @@ class SVGTransform final : public SVGPropertyBase {
     kConstructZeroTransform
   };
 
-  static SVGTransform* Create() { return MakeGarbageCollected<SVGTransform>(); }
-
-  static SVGTransform* Create(
-      SVGTransformType type,
-      ConstructionMode mode = kConstructIdentityTransform) {
-    return MakeGarbageCollected<SVGTransform>(type, mode);
-  }
-
-  static SVGTransform* Create(const AffineTransform& affine_transform) {
-    return MakeGarbageCollected<SVGTransform>(affine_transform);
-  }
-
   SVGTransform();
   explicit SVGTransform(SVGTransformType,
                         ConstructionMode = kConstructIdentityTransform);
