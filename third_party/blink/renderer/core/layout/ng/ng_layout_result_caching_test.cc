@@ -326,7 +326,7 @@ TEST_F(NGLayoutResultCachingTest, MissFloatWillIntrude2) {
   EXPECT_EQ(result.get(), nullptr);
 }
 
-TEST_F(NGLayoutResultCachingTest, MissPushedByFloats1) {
+TEST_F(NGLayoutResultCachingTest, HitPushedByFloats1) {
   ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
 
   // Same BFC offset, different exclusion space, pushed by floats.
@@ -343,7 +343,76 @@ TEST_F(NGLayoutResultCachingTest, MissPushedByFloats1) {
     </div>
     <div class="bfc">
       <div style="height: 50px;">
-        <div class="float" style="height: 40px;"></div>
+        <div class="float" style="height: 70px;"></div>
+      </div>
+      <div id="src" style="height: 20px; clear: left;"></div>
+    </div>
+  )HTML");
+
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
+
+  const NGConstraintSpace& space =
+      src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result =
+      test->CachedLayoutResult(space, nullptr);
+
+  EXPECT_NE(result.get(), nullptr);
+}
+
+TEST_F(NGLayoutResultCachingTest, HitPushedByFloats2) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  // Different BFC offset, same exclusion space, pushed by floats.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .bfc { display: flow-root; width: 300px; height: 300px; }
+      .float { float: left; width: 50px; }
+    </style>
+    <div class="bfc">
+      <div style="height: 50px;">
+        <div class="float" style="height: 60px;"></div>
+      </div>
+      <div id="test" style="height: 20px; clear: left;"></div>
+    </div>
+    <div class="bfc">
+      <div style="height: 30px;">
+        <div class="float" style="height: 60px;"></div>
+      </div>
+      <div id="src" style="height: 20px; clear: left;"></div>
+    </div>
+  )HTML");
+
+  auto* test = To<LayoutBlockFlow>(GetLayoutObjectByElementId("test"));
+  auto* src = To<LayoutBlockFlow>(GetLayoutObjectByElementId("src"));
+
+  const NGConstraintSpace& space =
+      src->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result =
+      test->CachedLayoutResult(space, nullptr);
+
+  EXPECT_NE(result.get(), nullptr);
+}
+
+TEST_F(NGLayoutResultCachingTest, MissPushedByFloats1) {
+  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
+
+  // Same BFC offset, different exclusion space, pushed by floats.
+  // Miss due to shrinking offset.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      .bfc { display: flow-root; width: 300px; height: 300px; }
+      .float { float: left; width: 50px; }
+    </style>
+    <div class="bfc">
+      <div style="height: 50px;">
+        <div class="float" style="height: 70px;"></div>
+      </div>
+      <div id="test" style="height: 20px; clear: left;"></div>
+    </div>
+    <div class="bfc">
+      <div style="height: 50px;">
+        <div class="float" style="height: 60px;"></div>
       </div>
       <div id="src" style="height: 20px; clear: left;"></div>
     </div>
@@ -364,19 +433,20 @@ TEST_F(NGLayoutResultCachingTest, MissPushedByFloats2) {
   ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
 
   // Different BFC offset, same exclusion space, pushed by floats.
+  // Miss due to shrinking offset.
   SetBodyInnerHTML(R"HTML(
     <style>
       .bfc { display: flow-root; width: 300px; height: 300px; }
       .float { float: left; width: 50px; }
     </style>
     <div class="bfc">
-      <div style="height: 50px;">
+      <div style="height: 30px;">
         <div class="float" style="height: 60px;"></div>
       </div>
       <div id="test" style="height: 20px; clear: left;"></div>
     </div>
     <div class="bfc">
-      <div style="height: 30px;">
+      <div style="height: 50px;">
         <div class="float" style="height: 60px;"></div>
       </div>
       <div id="src" style="height: 20px; clear: left;"></div>
