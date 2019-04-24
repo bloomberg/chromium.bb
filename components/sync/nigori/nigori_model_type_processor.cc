@@ -15,7 +15,8 @@ namespace syncer {
 
 namespace {
 
-// TODO(mamir): remove those and adjust the code accordingly.
+// TODO(mamir): remove those and adjust the code accordingly. Similarly in
+// tests.
 const char kNigoriStorageKey[] = "NigoriStorageKey";
 const char kNigoriClientTagHash[] = "NigoriClientTagHash";
 
@@ -89,7 +90,20 @@ void NigoriModelTypeProcessor::OnCommitCompleted(
     const sync_pb::ModelTypeState& type_state,
     const CommitResponseDataList& response_list) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  DCHECK(entity_);
+
+  model_type_state_ = type_state;
+  if (!response_list.empty()) {
+    entity_->ReceiveCommitResponse(response_list[0], /*commit_only=*/false,
+                                   ModelType::NIGORI);
+  } else {
+    // If the entity hasn't been mentioned in response_list, then it's not
+    // committed and we should reset its commit_requested_sequence_number so
+    // they are committed again on next sync cycle.
+    entity_->ClearTransientSyncState();
+  }
+  // Ask the bridge to persist the new metadata.
+  bridge_->ApplySyncChanges(/*data=*/base::nullopt);
 }
 
 void NigoriModelTypeProcessor::OnUpdateReceived(
