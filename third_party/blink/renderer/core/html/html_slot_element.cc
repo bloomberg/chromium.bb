@@ -75,7 +75,7 @@ HTMLSlotElement* HTMLSlotElement::CreateUserAgentCustomAssignSlot(
   return slot;
 }
 
-inline HTMLSlotElement::HTMLSlotElement(Document& document)
+HTMLSlotElement::HTMLSlotElement(Document& document)
     : HTMLElement(kSlotTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLSlotElement);
   SetHasCustomStyleCallbacks();

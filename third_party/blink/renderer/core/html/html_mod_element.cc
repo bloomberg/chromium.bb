@@ -28,8 +28,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLModElement::HTMLModElement(const QualifiedName& tag_name,
-                                      Document& document)
+HTMLModElement::HTMLModElement(const QualifiedName& tag_name,
+                               Document& document)
     : HTMLElement(tag_name, document) {}
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLModElement)

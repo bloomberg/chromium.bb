@@ -123,7 +123,7 @@ constexpr int kUndefinedQualityValue = -1.0;
 
 }  // namespace
 
-inline HTMLCanvasElement::HTMLCanvasElement(Document& document)
+HTMLCanvasElement::HTMLCanvasElement(Document& document)
     : HTMLElement(kCanvasTag, document),
       ContextLifecycleObserver(&document),
       PageVisibilityObserver(document.GetPage()),

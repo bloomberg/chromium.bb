@@ -40,7 +40,7 @@ using namespace html_names;
 
 DEFINE_NODE_FACTORY(HTMLContentElement)
 
-inline HTMLContentElement::HTMLContentElement(Document& document)
+HTMLContentElement::HTMLContentElement(Document& document)
     : V0InsertionPoint(kContentTag, document),
       should_parse_select_(false),
       is_valid_selector_(true) {

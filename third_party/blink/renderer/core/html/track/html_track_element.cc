@@ -48,7 +48,7 @@ static String UrlForLoggingTrack(const KURL& url) {
   return url.GetString().Substring(0, kMaximumURLLengthForLogging) + "...";
 }
 
-inline HTMLTrackElement::HTMLTrackElement(Document& document)
+HTMLTrackElement::HTMLTrackElement(Document& document)
     : HTMLElement(kTrackTag, document),
       load_timer_(document.GetTaskRunner(TaskType::kNetworking),
                   this,

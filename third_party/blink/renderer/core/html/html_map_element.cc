@@ -35,7 +35,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLMapElement::HTMLMapElement(Document& document)
+HTMLMapElement::HTMLMapElement(Document& document)
     : HTMLElement(kMapTag, document) {
   UseCounter::Count(document, WebFeature::kMapElement);
 }

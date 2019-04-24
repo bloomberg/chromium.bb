@@ -51,7 +51,7 @@
 
 namespace blink {
 
-inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
+HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
     : HTMLElement(html_names::kMarqueeTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLMarqueeElement);
 }

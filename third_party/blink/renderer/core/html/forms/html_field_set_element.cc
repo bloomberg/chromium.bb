@@ -40,7 +40,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLFieldSetElement::HTMLFieldSetElement(Document& document)
+HTMLFieldSetElement::HTMLFieldSetElement(Document& document)
     : HTMLFormControlElement(kFieldsetTag, document) {}
 
 HTMLFieldSetElement* HTMLFieldSetElement::Create(Document& document) {

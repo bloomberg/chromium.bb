@@ -44,7 +44,7 @@ float ClampCoordinate(double value) {
 
 using namespace html_names;
 
-inline HTMLAreaElement::HTMLAreaElement(Document& document)
+HTMLAreaElement::HTMLAreaElement(Document& document)
     : HTMLAnchorElement(kAreaTag, document), shape_(kRect) {}
 
 // An explicit empty destructor should be in html_area_element.cc, because

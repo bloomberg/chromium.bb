@@ -41,7 +41,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
+HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
     : HTMLElement(kFramesetTag, document),
       border_(6),
       border_set_(false),

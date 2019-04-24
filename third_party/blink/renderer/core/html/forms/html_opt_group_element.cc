@@ -39,7 +39,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
+HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
     : HTMLElement(kOptgroupTag, document) {}
 
 // An explicit empty destructor should be in html_opt_group_element.cc, because

@@ -37,8 +37,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLTableColElement::HTMLTableColElement(const QualifiedName& tag_name,
-                                                Document& document)
+HTMLTableColElement::HTMLTableColElement(const QualifiedName& tag_name,
+                                         Document& document)
     : HTMLTablePartElement(tag_name, document), span_(kDefaultColSpan) {}
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableColElement)

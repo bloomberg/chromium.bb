@@ -39,7 +39,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLNoEmbedElement::HTMLNoEmbedElement(Document& document)
+HTMLNoEmbedElement::HTMLNoEmbedElement(Document& document)
     : HTMLElement(kNoembedTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLNoEmbedElement)

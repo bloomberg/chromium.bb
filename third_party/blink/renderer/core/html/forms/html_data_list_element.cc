@@ -39,7 +39,7 @@
 
 namespace blink {
 
-inline HTMLDataListElement::HTMLDataListElement(Document& document)
+HTMLDataListElement::HTMLDataListElement(Document& document)
     : HTMLElement(html_names::kDatalistTag, document) {}
 
 HTMLDataListElement* HTMLDataListElement::Create(Document& document) {

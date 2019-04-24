@@ -15,7 +15,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLPictureElement::HTMLPictureElement(Document& document)
+HTMLPictureElement::HTMLPictureElement(Document& document)
     : HTMLElement(kPictureTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLPictureElement)

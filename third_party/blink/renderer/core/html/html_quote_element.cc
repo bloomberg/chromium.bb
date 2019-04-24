@@ -29,8 +29,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLQuoteElement::HTMLQuoteElement(const QualifiedName& tag_name,
-                                          Document& document)
+HTMLQuoteElement::HTMLQuoteElement(const QualifiedName& tag_name,
+                                   Document& document)
     : HTMLElement(tag_name, document) {
   DCHECK(HasTagName(kQTag) || HasTagName(kBlockquoteTag));
 }

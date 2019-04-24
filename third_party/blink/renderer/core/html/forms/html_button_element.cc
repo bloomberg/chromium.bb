@@ -37,7 +37,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLButtonElement::HTMLButtonElement(Document& document)
+HTMLButtonElement::HTMLButtonElement(Document& document)
     : HTMLFormControlElement(kButtonTag, document),
       type_(SUBMIT),
       is_activated_submit_(false) {}

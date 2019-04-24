@@ -95,7 +95,7 @@ static void InertSubtreesChanged(Document& document) {
   document.ClearAXObjectCache();
 }
 
-inline HTMLDialogElement::HTMLDialogElement(Document& document)
+HTMLDialogElement::HTMLDialogElement(Document& document)
     : HTMLElement(kDialogTag, document),
       centering_mode_(kNotCentered),
       centered_position_(0),

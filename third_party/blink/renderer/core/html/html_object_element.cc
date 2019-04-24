@@ -48,8 +48,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLObjectElement::HTMLObjectElement(Document& document,
-                                            const CreateElementFlags flags)
+HTMLObjectElement::HTMLObjectElement(Document& document,
+                                     const CreateElementFlags flags)
     : HTMLPlugInElement(kObjectTag,
                         document,
                         flags,

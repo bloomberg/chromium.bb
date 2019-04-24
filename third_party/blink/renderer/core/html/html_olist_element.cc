@@ -34,7 +34,7 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLOListElement::HTMLOListElement(Document& document)
+HTMLOListElement::HTMLOListElement(Document& document)
     : HTMLElement(kOlTag, document),
       start_(0xBADBEEF),
       item_count_(0),

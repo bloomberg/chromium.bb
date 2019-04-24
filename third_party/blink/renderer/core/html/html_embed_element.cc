@@ -42,8 +42,8 @@ namespace blink {
 
 using namespace html_names;
 
-inline HTMLEmbedElement::HTMLEmbedElement(Document& document,
-                                          const CreateElementFlags flags)
+HTMLEmbedElement::HTMLEmbedElement(Document& document,
+                                   const CreateElementFlags flags)
     : HTMLPlugInElement(kEmbedTag,
                         document,
                         flags,

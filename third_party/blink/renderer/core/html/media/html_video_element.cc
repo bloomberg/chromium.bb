@@ -78,7 +78,7 @@ enum VideoPersistenceControlsType {
 
 }  // anonymous namespace
 
-inline HTMLVideoElement::HTMLVideoElement(Document& document)
+HTMLVideoElement::HTMLVideoElement(Document& document)
     : HTMLMediaElement(kVideoTag, document),
       remoting_interstitial_(nullptr),
       picture_in_picture_interstitial_(nullptr),
