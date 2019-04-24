@@ -490,7 +490,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   layout_object_mapping_.Set(layout_object, axid);
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
-  if (node) {
+  if (node && node->GetLayoutObject() == layout_object) {
     AXID prev_axid = node_object_mapping_.at(node);
     if (prev_axid != 0 && prev_axid != axid) {
       Remove(node);
