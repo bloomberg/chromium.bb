@@ -421,6 +421,11 @@
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
         ],
       },
+      'Linux ASan Tests (sandboxed)': {
+        'swarming': {
+          'shards': 2, # https://crbug.com/955853
+        },
+      },
     },
   },
   'content_shell_crash_test': {
