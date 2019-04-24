@@ -1043,6 +1043,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Opens URL in a new non-incognito tab and dismisses the history view.
 - (void)openURLInNewTab:(const GURL&)URL {
+  base::RecordAction(
+      base::UserMetricsAction("MobileHistoryPage_EntryLinkOpenNewTab"));
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   [self.localDispatcher dismissHistoryWithCompletion:^{
     UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
@@ -1052,6 +1054,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Opens URL in a new incognito tab and dismisses the history view.
 - (void)openURLInNewIncognitoTab:(const GURL&)URL {
+  base::RecordAction(base::UserMetricsAction(
+      "MobileHistoryPage_EntryLinkOpenNewIncognitoTab"));
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   params.in_incognito = YES;
   [self.localDispatcher dismissHistoryWithCompletion:^{
