@@ -875,11 +875,12 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (!mRequestShipping) {
+        if (!mRequestShipping && !mRequestPayerName && !mRequestPayerEmail && !mRequestPayerPhone) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
             disconnectFromClientWithDebugMessage(
                     "PaymentRequestUpdateEvent.updateWith() called without passing a promise into "
-                    + "PaymentRequest.show() and without requestShipping:true");
+                    + "PaymentRequest.show() and without payment options "
+                    + "(e.g. requestShipping: true)");
             return;
         }
 
