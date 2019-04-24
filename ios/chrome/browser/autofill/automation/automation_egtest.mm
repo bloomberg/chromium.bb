@@ -26,6 +26,7 @@
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_error_util.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
@@ -232,10 +233,14 @@ static const int kRecipeRetryLimit = 5;
   for (auto const& actionValue : actionsValues) {
     GREYAssert(actionValue.is_dict(),
                @"Expecting each action to be a dictionary in the JSON file.");
-    [actions_ addObject:[AutomationAction
-                            actionWithValueDictionary:
-                                static_cast<const base::DictionaryValue&>(
-                                    actionValue)]];
+
+    NSError* actionCreationError = nil;
+    AutomationAction* action = [AutomationAction
+        actionWithValueDictionary:static_cast<const base::DictionaryValue&>(
+                                      actionValue)
+                            error:&actionCreationError];
+    CHROME_EG_ASSERT_NO_ERROR(actionCreationError);
+    [actions_ addObject:action];
   }
 }
 
@@ -284,7 +289,7 @@ static const int kRecipeRetryLimit = 5;
     [ChromeEarlGrey loadURL:startUrl];
 
     for (AutomationAction* action in actions_) {
-      [action execute];
+      CHROME_EG_ASSERT_NO_ERROR([action execute]);
     }
   } @catch (NSException* e) {
     return false;

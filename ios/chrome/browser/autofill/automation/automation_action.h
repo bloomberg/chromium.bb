@@ -17,14 +17,14 @@
 
 // Returns an concrete instance of a subclass of AutomationAction.
 + (instancetype)actionWithValueDictionary:
-    (const base::DictionaryValue&)actionDictionary;
+                    (const base::DictionaryValue&)actionDictionary
+                                    error:(NSError**)error;
 
 // Prevents creating rogue instances, the init methods are private.
 - (instancetype)init NS_UNAVAILABLE;
 
-// For subclasses to implement, execute the action. Use GREYAssert in case of
-// issue.
-- (void)execute;
+// For subclasses to implement, execute the action.
+- (NSError*)execute WARN_UNUSED_RESULT;
 @end
 
 #endif  // IOS_CHROME_BROWSER_AUTOFILL_AUTOMATION_AUTOMATION_ACTION_H_
