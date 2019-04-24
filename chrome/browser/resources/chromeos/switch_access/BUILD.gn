@@ -18,6 +18,7 @@ group("build") {
     ":switch_access_copied_files",
     ":switch_access_guest_manifest",
     ":switch_access_manifest",
+    "strings:switch_access_strings",
   ]
 }
 
