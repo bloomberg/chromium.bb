@@ -457,7 +457,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       service->QueryDetailedSyncStatusForDebugging(&full_status);
   const SyncCycleSnapshot& snapshot =
       service->GetLastCycleSnapshotForDebugging();
-  const SyncTokenStatus& token_status = service->GetSyncTokenStatus();
+  const SyncTokenStatus& token_status =
+      service->GetSyncTokenStatusForDebugging();
 
   // Version Info.
   // |client_version| was already set above.

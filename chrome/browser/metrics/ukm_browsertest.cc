@@ -132,7 +132,7 @@ class SyncConnectionOkChecker : public SingleClientStatusChangeChecker {
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
-    return service()->GetSyncTokenStatus().connection_status ==
+    return service()->GetSyncTokenStatusForDebugging().connection_status ==
            syncer::CONNECTION_OK;
   }
 

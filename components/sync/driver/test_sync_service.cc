@@ -203,7 +203,7 @@ UserShare* TestSyncService::GetUserShare() const {
   return nullptr;
 }
 
-SyncTokenStatus TestSyncService::GetSyncTokenStatus() const {
+SyncTokenStatus TestSyncService::GetSyncTokenStatusForDebugging() const {
   SyncTokenStatus token;
 
   if (GetAuthError().state() != GoogleServiceAuthError::NONE) {

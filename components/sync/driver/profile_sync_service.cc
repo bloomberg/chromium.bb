@@ -1759,7 +1759,7 @@ std::string ProfileSyncService::GetAccessTokenForTest() const {
   return auth_manager_->access_token();
 }
 
-SyncTokenStatus ProfileSyncService::GetSyncTokenStatus() const {
+SyncTokenStatus ProfileSyncService::GetSyncTokenStatusForDebugging() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return auth_manager_->GetSyncTokenStatus();
 }

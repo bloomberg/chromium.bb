@@ -57,7 +57,9 @@ class TestForAuthError : public UpdatedProgressMarkerChecker {
 
   // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied() override {
-    return (service()->GetSyncTokenStatus().last_get_token_error.state() !=
+    return (service()
+                ->GetSyncTokenStatusForDebugging()
+                .last_get_token_error.state() !=
             GoogleServiceAuthError::NONE) ||
            UpdatedProgressMarkerChecker::IsExitConditionSatisfied();
   }
@@ -98,8 +100,9 @@ class SyncAuthTest : public SyncTest {
     // Run until the bookmark is committed or an auth error is encountered.
     TestForAuthError(GetSyncService(0)).Wait();
 
-    GoogleServiceAuthError oauth_error =
-        GetSyncService(0)->GetSyncTokenStatus().last_get_token_error;
+    GoogleServiceAuthError oauth_error = GetSyncService(0)
+                                             ->GetSyncTokenStatusForDebugging()
+                                             .last_get_token_error;
 
     return oauth_error.state() != GoogleServiceAuthError::NONE;
   }

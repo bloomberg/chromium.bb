@@ -375,9 +375,7 @@ class SyncService : public KeyedService {
 
   // Returns the state of the access token and token request, for display in
   // internals UI.
-  // TODO(crbug.com/953272): This method should also be marked as "ForDebugging"
-  // but it's currently still used by non-debugging UKM code.
-  virtual SyncTokenStatus GetSyncTokenStatus() const = 0;
+  virtual SyncTokenStatus GetSyncTokenStatusForDebugging() const = 0;
 
   // Initializes a struct of status indicators with data from the engine.
   // Returns false if the engine was not available for querying; in that case

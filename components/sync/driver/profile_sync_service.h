@@ -139,7 +139,7 @@ class ProfileSyncService : public SyncService,
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;
   UserShare* GetUserShare() const override;
-  SyncTokenStatus GetSyncTokenStatus() const override;
+  SyncTokenStatus GetSyncTokenStatusForDebugging() const override;
   bool QueryDetailedSyncStatusForDebugging(SyncStatus* result) const override;
   base::Time GetLastSyncedTimeForDebugging() const override;
   SyncCycleSnapshot GetLastCycleSnapshotForDebugging() const override;
