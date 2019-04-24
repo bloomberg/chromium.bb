@@ -44,17 +44,18 @@ AssistantClient::~AssistantClient() {
 }
 
 void AssistantClient::MaybeInit(Profile* profile) {
-  if (!profile_) {
-    profile_ = profile;
-    identity_manager_ = IdentityManagerFactory::GetForProfile(profile_);
-    identity_manager_->AddObserver(this);
-  }
-  DCHECK_EQ(profile_, profile);
-
   if (assistant::IsAssistantAllowedForProfile(profile) !=
       ash::mojom::AssistantAllowedState::ALLOWED) {
     return;
   }
+
+  if (!profile_) {
+    profile_ = profile;
+    identity_manager_ = IdentityManagerFactory::GetForProfile(profile_);
+    DCHECK(identity_manager_);
+    identity_manager_->AddObserver(this);
+  }
+  DCHECK_EQ(profile_, profile);
 
   if (initialized_)
     return;
