@@ -74,13 +74,6 @@
 
 namespace {
 
-// The color used for the frame when showing a non-tabbed WebUI, such as
-// the Settings window.
-// TODO(hsuregan): Replace kMdWebUiFrameColor's value with
-// kUpdatedMdWebUiFrameColor's value once complete.
-constexpr SkColor kMdWebUiFrameColor = SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
-constexpr SkColor kUpdatedMdWebUiFrameColor = gfx::kGoogleGrey100;
-
 // Color for the window title text.
 constexpr SkColor kNormalWindowTitleTextColor = SkColorSetRGB(40, 40, 40);
 constexpr SkColor kIncognitoWindowTitleTextColor = SK_ColorWHITE;
@@ -819,8 +812,8 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
   } else if (!browser_view()->browser()->is_app()) {
     active_color =
         base::FeatureList::IsEnabled(chromeos::features::kSplitSettings)
-            ? kUpdatedMdWebUiFrameColor
-            : kMdWebUiFrameColor;
+            ? gfx::kGoogleGrey050
+            : SkColorSetARGB(0xff, 0x25, 0x4f, 0xae);
   }
 
   if (active_color) {
