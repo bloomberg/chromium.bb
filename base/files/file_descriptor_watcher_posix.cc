@@ -153,7 +153,7 @@ void FileDescriptorWatcher::Controller::Watcher::
 
 FileDescriptorWatcher::Controller::Controller(MessagePumpForIO::Mode mode,
                                               int fd,
-                                              const Closure& callback)
+                                              const RepeatingClosure& callback)
     : callback_(callback),
       io_thread_task_runner_(
           tls_fd_watcher.Get().Get()->io_thread_task_runner()),
@@ -252,12 +252,12 @@ FileDescriptorWatcher::~FileDescriptorWatcher() {
 }
 
 std::unique_ptr<FileDescriptorWatcher::Controller>
-FileDescriptorWatcher::WatchReadable(int fd, const Closure& callback) {
+FileDescriptorWatcher::WatchReadable(int fd, const RepeatingClosure& callback) {
   return WrapUnique(new Controller(MessagePumpForIO::WATCH_READ, fd, callback));
 }
 
 std::unique_ptr<FileDescriptorWatcher::Controller>
-FileDescriptorWatcher::WatchWritable(int fd, const Closure& callback) {
+FileDescriptorWatcher::WatchWritable(int fd, const RepeatingClosure& callback) {
   return WrapUnique(
       new Controller(MessagePumpForIO::WATCH_WRITE, fd, callback));
 }

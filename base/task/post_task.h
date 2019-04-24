@@ -102,15 +102,16 @@ bool PostTaskAndReplyWithResult(const Location& from_here,
       from_here, TaskTraits(), std::move(task), std::move(reply));
 }
 
-// Callback version of PostTaskAndReplyWithResult above.
+// RepeatingCallback version of PostTaskAndReplyWithResult above.
 // Though RepeatingCallback is convertible to OnceCallback, we need this since
 // we can not use template deduction and object conversion at once on the
 // overload resolution.
-// TODO(tzik): Update all callers of the Callback version to use OnceCallback.
+// TODO(tzik): Update all callers of the RepeatingCallback version to use
+// OnceCallback.
 template <typename TaskReturnType, typename ReplyArgType>
 bool PostTaskAndReplyWithResult(const Location& from_here,
-                                Callback<TaskReturnType()> task,
-                                Callback<void(ReplyArgType)> reply) {
+                                RepeatingCallback<TaskReturnType()> task,
+                                RepeatingCallback<void(ReplyArgType)> reply) {
   return PostTaskAndReplyWithResult(
       from_here, OnceCallback<TaskReturnType()>(std::move(task)),
       OnceCallback<void(ReplyArgType)>(std::move(reply)));
@@ -163,16 +164,18 @@ bool PostTaskWithTraitsAndReplyWithResult(
                std::move(reply), Owned(result)));
 }
 
-// Callback version of PostTaskWithTraitsAndReplyWithResult above.
+// RepeatingCallback version of PostTaskWithTraitsAndReplyWithResult above.
 // Though RepeatingCallback is convertible to OnceCallback, we need this since
 // we can not use template deduction and object conversion at once on the
 // overload resolution.
-// TODO(tzik): Update all callers of the Callback version to use OnceCallback.
+// TODO(tzik): Update all callers of the RepeatingCallback version to use
+// OnceCallback.
 template <typename TaskReturnType, typename ReplyArgType>
-bool PostTaskWithTraitsAndReplyWithResult(const Location& from_here,
-                                          const TaskTraits& traits,
-                                          Callback<TaskReturnType()> task,
-                                          Callback<void(ReplyArgType)> reply) {
+bool PostTaskWithTraitsAndReplyWithResult(
+    const Location& from_here,
+    const TaskTraits& traits,
+    RepeatingCallback<TaskReturnType()> task,
+    RepeatingCallback<void(ReplyArgType)> reply) {
   return PostTaskWithTraitsAndReplyWithResult(
       from_here, traits, OnceCallback<TaskReturnType()>(std::move(task)),
       OnceCallback<void(ReplyArgType)>(std::move(reply)));

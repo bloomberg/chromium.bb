@@ -280,7 +280,7 @@ void ImportantFileWriter::ScheduleWrite(DataSerializer* serializer) {
   if (!timer().IsRunning()) {
     timer().Start(
         FROM_HERE, commit_interval_,
-        Bind(&ImportantFileWriter::DoScheduledWrite, Unretained(this)));
+        BindOnce(&ImportantFileWriter::DoScheduledWrite, Unretained(this)));
   }
 }
 

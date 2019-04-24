@@ -93,10 +93,10 @@ class WriteCallbacksObserver {
 void WriteCallbacksObserver::ObserveNextWriteCallbacks(
     ImportantFileWriter* writer) {
   writer->RegisterOnNextWriteCallbacks(
-      base::Bind(&WriteCallbacksObserver::OnBeforeWrite,
-                 base::Unretained(this)),
-      base::Bind(&WriteCallbacksObserver::OnAfterWrite,
-                 base::Unretained(this)));
+      base::BindOnce(&WriteCallbacksObserver::OnBeforeWrite,
+                     base::Unretained(this)),
+      base::BindOnce(&WriteCallbacksObserver::OnAfterWrite,
+                     base::Unretained(this)));
 }
 
 WriteCallbackObservationState

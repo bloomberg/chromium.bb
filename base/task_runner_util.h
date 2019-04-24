@@ -48,17 +48,17 @@ bool PostTaskAndReplyWithResult(TaskRunner* task_runner,
                std::move(reply), Owned(result)));
 }
 
-// Callback version of PostTaskAndReplyWithResult above.
+// RepeatingCallback version of PostTaskAndReplyWithResult above.
 // Though RepeatingCallback is convertible to OnceCallback, we need this since
 // we cannot use template deduction and object conversion at once on the
 // overload resolution.
-// TODO(crbug.com/714018): Update all callers of the Callback version to use
-// OnceCallback.
+// TODO(crbug.com/714018): Update all callers of the RepeatingCallback version
+// to use OnceCallback.
 template <typename TaskReturnType, typename ReplyArgType>
 bool PostTaskAndReplyWithResult(TaskRunner* task_runner,
                                 const Location& from_here,
-                                Callback<TaskReturnType()> task,
-                                Callback<void(ReplyArgType)> reply) {
+                                RepeatingCallback<TaskReturnType()> task,
+                                RepeatingCallback<void(ReplyArgType)> reply) {
   return PostTaskAndReplyWithResult(
       task_runner, from_here, OnceCallback<TaskReturnType()>(std::move(task)),
       OnceCallback<void(ReplyArgType)>(std::move(reply)));

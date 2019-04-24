@@ -486,7 +486,7 @@ void TestSuite::Initialize() {
     SuppressErrorDialogs();
     debug::SetSuppressDebugUI(true);
     assert_handler_ = std::make_unique<logging::ScopedLogAssertHandler>(
-        Bind(&TestSuite::UnitTestAssertHandler, Unretained(this)));
+        BindRepeating(&TestSuite::UnitTestAssertHandler, Unretained(this)));
   }
 
   test::InitializeICUForTesting();

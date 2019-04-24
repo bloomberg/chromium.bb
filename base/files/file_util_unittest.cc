@@ -2392,7 +2392,7 @@ TEST_F(FileUtilTest, OpenFileNoInheritance) {
     FILE* file = OpenFile(file_path, mode);
     ASSERT_NE(nullptr, file);
     {
-      ScopedClosureRunner file_closer(Bind(IgnoreResult(&CloseFile), file));
+      ScopedClosureRunner file_closer(BindOnce(IgnoreResult(&CloseFile), file));
       bool is_inheritable = true;
       ASSERT_NO_FATAL_FAILURE(GetIsInheritable(file, &is_inheritable));
       EXPECT_FALSE(is_inheritable);

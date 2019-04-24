@@ -101,7 +101,7 @@ class FileDescriptorWatcherTest
     std::unique_ptr<FileDescriptorWatcher::Controller> controller =
         FileDescriptorWatcher::WatchReadable(
             read_file_descriptor(),
-            Bind(&Mock::ReadableCallback, Unretained(&mock_)));
+            BindRepeating(&Mock::ReadableCallback, Unretained(&mock_)));
     EXPECT_TRUE(controller);
 
     // Unless read_file_descriptor() was readable before the callback was
@@ -117,7 +117,7 @@ class FileDescriptorWatcherTest
     std::unique_ptr<FileDescriptorWatcher::Controller> controller =
         FileDescriptorWatcher::WatchWritable(
             write_file_descriptor(),
-            Bind(&Mock::WritableCallback, Unretained(&mock_)));
+            BindRepeating(&Mock::WritableCallback, Unretained(&mock_)));
     EXPECT_TRUE(controller);
     return controller;
   }

@@ -26,7 +26,7 @@ struct BindLambdaHelper<F, R(Args...)> {
 
 }  // namespace internal
 
-// A variant of Bind() that can bind capturing lambdas for testing.
+// A variant of BindRepeating() that can bind capturing lambdas for testing.
 // This doesn't support extra arguments binding as the lambda itself can do.
 template <typename F>
 decltype(auto) BindLambdaForTesting(F&& f) {
