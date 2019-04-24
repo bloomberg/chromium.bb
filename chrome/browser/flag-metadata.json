@@ -534,8 +534,10 @@
   },
   {
     "name": "disable-javascript-harmony-shipping",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "adamk", "hablich" ],
+    // This flag is used for field debugging along with
+    // enable-javascript-harmony.
+    "expiry_milestone": -1
   },
   {
     "name": "disable-office-editing-component-app",
@@ -1205,8 +1207,9 @@
   },
   {
     "name": "enable-javascript-harmony",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "adamk", "hablich" ],
+    // This flag is used by web developers to test upcoming javascript features.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-built-in-module-all",
