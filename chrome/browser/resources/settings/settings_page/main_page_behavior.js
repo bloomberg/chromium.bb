@@ -160,11 +160,8 @@ cr.define('settings', function() {
         return Promise.resolve(section);
       }
 
-      // TODO(dpapad): Remove condition when Polymer 2 migration is complete.
       // The function to use to wait for <dom-if>s to render.
-      const waitFn = Polymer.DomIf ?
-          Polymer.RenderStatus.beforeNextRender.bind(null, this) :
-          requestAnimationFrame;
+      const waitFn = Polymer.RenderStatus.beforeNextRender.bind(null, this);
 
       return new Promise(resolve => {
         if (this.shouldExpandAdvanced_(route)) {

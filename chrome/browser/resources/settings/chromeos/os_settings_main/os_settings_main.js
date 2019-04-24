@@ -65,12 +65,7 @@ Polymer({
     },
 
     /** @private */
-    showingSubpage_: {
-      type: Boolean,
-      // TODO(dpapad): Initial value only needed for Polymer 1, remove once
-      // Polymer 2 migration is done.
-      value: false,
-    },
+    showingSubpage_: Boolean,
 
     toolbarSpinnerActive: {
       type: Boolean,

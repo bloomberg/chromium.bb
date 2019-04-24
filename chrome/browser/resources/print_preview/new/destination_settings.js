@@ -466,17 +466,9 @@ Polymer({
       return;
     }
 
-    // TODO (rbpotter): Remove this conditional when the Polymer 2 migration
-    // is completed.
-    if (Polymer.DomIf) {
-      Polymer.RenderStatus.beforeNextRender(this.$.destinationSelect, () => {
-        this.$.destinationSelect.updateDestination();
-      });
-    } else {
-      this.$.destinationSelect.async(() => {
-        this.$.destinationSelect.updateDestination();
-      });
-    }
+    Polymer.RenderStatus.beforeNextRender(this.$.destinationSelect, () => {
+      this.$.destinationSelect.updateDestination();
+    });
   },
 });
 })();

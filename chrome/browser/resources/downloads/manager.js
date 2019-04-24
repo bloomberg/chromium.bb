@@ -102,12 +102,6 @@ cr.define('downloads', function() {
         this.mojoEventTarget_.updateItem.addListener(
             this.updateItem_.bind(this)),
       ];
-
-      // TODO(aee): Remove this conditional when the Polymer 2 migration
-      // is completed. Polymer.DomIf exists in Polymer 2 and not in Polymer 1.
-      if (typeof Polymer.DomIf == 'undefined') {
-        this.$.downloadsList.preserveFocus = false;
-      }
     },
 
     /** @override */
@@ -323,19 +317,7 @@ cr.define('downloads', function() {
       this.items_[index] = data;
       this.updateHideDates_(index, index);
 
-      // TODO(aee): Remove this conditional when the Polymer 2 migration
-      // is completed. Polymer.DomIf exists in Polymer 2 and not in Polymer 1.
-      if (Polymer.DomIf) {
-        this.notifyPath(`items_.${index}`);
-      } else {
-        this.notifySplices('items_', [{
-                             index: index,
-                             addedCount: 0,
-                             object: this.items_,
-                             type: 'splice',
-                             removed: [],
-                           }]);
-      }
+      this.notifyPath(`items_.${index}`);
       this.async(() => {
         const list = /** @type {!IronListElement} */ (this.$.downloadsList);
         list.updateSizeForIndex(index);

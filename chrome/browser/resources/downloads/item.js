@@ -307,14 +307,8 @@ cr.define('downloads', function() {
 
       // Wait for dom-if to switch to true, in case the text has just changed
       // from empty.
-      // TODO (rbpotter): Remove this conditional when Polymer 2 migration is
-      // complete.
-      if (Polymer.DomIf) {
-        Polymer.RenderStatus.beforeNextRender(
-            this, () => this.toggleButtonClass_());
-      } else {
-        this.async(() => this.toggleButtonClass_());
-      }
+      Polymer.RenderStatus.beforeNextRender(
+          this, () => this.toggleButtonClass_());
     },
 
     /**

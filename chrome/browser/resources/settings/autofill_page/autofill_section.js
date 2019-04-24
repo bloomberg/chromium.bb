@@ -160,11 +160,7 @@ Polymer({
    */
   onAddressMenuTap_: function(e) {
     const menuEvent = /** @type {!{model: !{item: !Object}}} */ (e);
-
-    // TODO(dpapad): The [dataHost][dataHost] workaround is only necessary for
-    // Polymer 1. Remove once migration to Polymer 2 has completed.
-    const item = Polymer.DomIf ? menuEvent.model.item :
-                                 menuEvent.model['dataHost']['dataHost'].item;
+    const item = menuEvent.model.item;
 
     // Copy item so dialog won't update model on cancel.
     this.activeAddress = /** @type {!chrome.autofillPrivate.AddressEntry} */ (

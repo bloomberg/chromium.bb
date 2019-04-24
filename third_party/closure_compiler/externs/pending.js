@@ -133,6 +133,21 @@ Polymer.IronIconsetSvg.prototype.createIcon = function(iconName, targetIsRTL) {}
 
 /**
  * @see
+ * https://polymer-library.polymer-project.org/2.0/api/elements/Polymer.DomIf
+ * @constructor
+ */
+Polymer.DomIf = function() {};
+
+/**
+ * @param {!HTMLTemplateElement} template
+ * @return {!HTMLElement}
+ * TODO(dpapad): Figure out if there is a better way to type-check Polymer2
+ * while still using legacy Polymer1 syntax.
+ */
+Polymer.DomIf._contentForTemplate = function(template) {};
+
+/**
+ * @see
  * https://github.com/tc39/proposal-bigint
  * This supports wrapping and operating on arbitrarily large integers.
  *

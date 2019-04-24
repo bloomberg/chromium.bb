@@ -110,15 +110,9 @@ Polymer({
 
   /** @override */
   attached: function() {
-    // TODO (rbpotter): Remove this conditional when the migration to Polymer 2
-    // is completed.
-    if (Polymer.DomIf) {
-      Polymer.RenderStatus.beforeNextRender(this, () => {
-        this.updateExpandedStateAndFinishAnimations_();
-      });
-    } else {
+    Polymer.RenderStatus.beforeNextRender(this, () => {
       this.updateExpandedStateAndFinishAnimations_();
-    }
+    });
   },
 
   /**
