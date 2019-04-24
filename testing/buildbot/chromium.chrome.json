@@ -25,6 +25,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -37,6 +38,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -49,6 +51,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -61,6 +64,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -73,6 +77,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -89,6 +94,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -101,6 +107,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -113,6 +120,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -125,6 +133,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -137,6 +146,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -149,6 +159,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -161,6 +172,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -174,6 +186,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -186,6 +199,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -198,6 +212,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -210,6 +225,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ],
@@ -230,6 +246,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ],
@@ -248,6 +265,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ],
@@ -265,6 +283,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ],
@@ -283,6 +302,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -295,6 +315,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -310,6 +331,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -322,6 +344,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -334,6 +357,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -346,6 +370,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -358,6 +383,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -370,6 +396,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -382,6 +409,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -394,6 +422,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -406,6 +435,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -418,6 +448,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -430,6 +461,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ],
@@ -448,6 +480,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ],
@@ -466,6 +499,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -482,6 +516,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ],
@@ -495,6 +530,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -511,6 +547,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -527,6 +564,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -539,6 +577,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -551,6 +590,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -563,6 +603,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -575,6 +616,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -587,6 +629,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -599,6 +642,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -615,6 +659,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -627,6 +672,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -639,6 +685,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -651,6 +698,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -663,6 +711,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -675,6 +724,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -687,6 +737,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -699,6 +750,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -711,6 +763,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -723,6 +776,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -735,6 +789,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ],
@@ -752,6 +807,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ],
@@ -765,6 +821,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -777,6 +834,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -789,6 +847,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -801,6 +860,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -813,6 +873,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -825,6 +886,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -837,6 +899,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -849,6 +912,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -861,6 +925,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -873,6 +938,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -885,6 +951,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -897,6 +964,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -909,6 +977,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -921,6 +990,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -933,6 +1003,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -945,6 +1016,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -957,6 +1029,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -972,6 +1045,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -984,6 +1058,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -996,6 +1071,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1008,6 +1084,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1020,6 +1097,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1032,6 +1110,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1044,6 +1123,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1056,6 +1136,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1068,6 +1149,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1080,6 +1162,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1092,6 +1175,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1104,6 +1188,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1116,6 +1201,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1128,6 +1214,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1140,6 +1227,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1152,6 +1240,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1164,6 +1253,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1176,6 +1266,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1188,6 +1279,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1200,6 +1292,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1212,6 +1305,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1224,6 +1318,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1240,6 +1335,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1252,6 +1348,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1264,6 +1361,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1276,6 +1374,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1288,6 +1387,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1300,6 +1400,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1312,6 +1413,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]
@@ -1324,6 +1426,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "os": "Ubuntu-14.04",
               "pool": "chrome.tests"
             }
           ]

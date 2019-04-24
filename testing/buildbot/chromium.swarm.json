@@ -690,7 +690,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "cores": "2"
+              "cores": "2",
+              "os": "Ubuntu-14.04"
             }
           ]
         },
@@ -701,7 +702,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "cores": "8"
+              "cores": "8",
+              "os": "Ubuntu-14.04"
             }
           ],
           "shards": 2
@@ -713,7 +715,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "cores": "8"
+              "cores": "8",
+              "os": "Ubuntu-14.04"
             }
           ]
         },
@@ -724,7 +727,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "cores": "2"
+              "cores": "2",
+              "os": "Ubuntu-14.04"
             }
           ]
         },
@@ -735,7 +739,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "cores": "8"
+              "cores": "8",
+              "os": "Ubuntu-14.04"
             }
           ]
         },
@@ -746,7 +751,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "cores": "8"
+              "cores": "8",
+              "os": "Ubuntu-14.04"
             }
           ]
         },
@@ -757,7 +763,8 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "cores": "2"
+              "cores": "2",
+              "os": "Ubuntu-14.04"
             }
           ]
         },
