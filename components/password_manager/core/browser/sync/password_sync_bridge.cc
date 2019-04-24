@@ -518,6 +518,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           // and the last one should be the one representing the actual addition
           // in the DB.
           if (changes.empty()) {
+            metrics_util::LogApplySyncChangesState(
+                metrics_util::ApplySyncChangesState::kApplyAddFailed);
             return syncer::ModelError(
                 FROM_HERE, "Failed to add an entry to the password store.");
           }
@@ -546,6 +548,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           changes = password_store_sync_->UpdateLoginSync(
               PasswordFromEntityChange(*entity_change, /*sync_time=*/time_now));
           if (changes.empty()) {
+            metrics_util::LogApplySyncChangesState(
+                metrics_util::ApplySyncChangesState::kApplyUpdateFailed);
             return syncer::ModelError(
                 FROM_HERE, "Failed to update an entry in the password store.");
           }
@@ -558,6 +562,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
           changes =
               password_store_sync_->RemoveLoginByPrimaryKeySync(primary_key);
           if (changes.empty()) {
+            metrics_util::LogApplySyncChangesState(
+                metrics_util::ApplySyncChangesState::kApplyDeleteFailed);
             return syncer::ModelError(
                 FROM_HERE,
                 "Failed to delete an entry from the password store.");
@@ -582,6 +588,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
     base::Optional<syncer::ModelError> error =
         sync_metadata_store_change_list.TakeError();
     if (error) {
+      metrics_util::LogApplySyncChangesState(
+          metrics_util::ApplySyncChangesState::kApplyMetadataChangesFailed);
       return error;
     }
     transaction.Commit();
@@ -593,6 +601,8 @@ base::Optional<syncer::ModelError> PasswordSyncBridge::ApplySyncChanges(
     // observers since they aren't interested in changes to sync metadata.
     password_store_sync_->NotifyLoginsChanged(password_store_changes);
   }
+  metrics_util::LogApplySyncChangesState(
+      metrics_util::ApplySyncChangesState::kApplyOK);
   return base::nullopt;
 }
 
