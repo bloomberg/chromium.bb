@@ -479,8 +479,8 @@ class TouchExplorationController : public ui::EventRewriter,
   // A copy of the previous event passed.
   std::unique_ptr<ui::TouchEvent> prev_event_;
 
-  // This toggles whether VLOGS are turned on or not.
-  bool VLOG_on_;
+  // This toggles whether DVLOGS are turned on or not.
+  bool DVLOG_on_;
 
   // LocatedEvents within this area should be left alone.
   gfx::Rect exclude_bounds_;

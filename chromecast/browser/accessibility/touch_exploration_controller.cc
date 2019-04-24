@@ -22,8 +22,8 @@
 #include "ui/gfx/geometry/rect.h"
 
 #define SET_STATE(state) SetState(state, __func__)
-#define VLOG_EVENT(event) \
-  if (VLOG_IS_ON(1))      \
+#define DVLOG_EVENT(event)             \
+  if (DCHECK_IS_ON() && VLOG_IS_ON(1)) \
   VlogEvent(event, __func__)
 
 namespace chromecast {
@@ -50,8 +50,7 @@ TouchExplorationController::TouchExplorationController(
       anchor_point_state_(ANCHOR_POINT_NONE),
       gesture_provider_(new ui::GestureProviderAura(this, this)),
       prev_state_(NO_FINGERS_DOWN),
-      VLOG_on_(true) {
-}
+      DVLOG_on_(true) {}
 
 TouchExplorationController::~TouchExplorationController() {
 }
@@ -73,10 +72,10 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
   if (!event.IsTouchEvent()) {
     if (event.IsKeyEvent()) {
       const ui::KeyEvent& key_event = static_cast<const ui::KeyEvent&>(event);
-      VLOG(1) << "\nKeyboard event: " << key_event.GetName()
-              << "\n Key code: " << key_event.key_code()
-              << ", Flags: " << key_event.flags()
-              << ", Is char: " << key_event.is_char();
+      DVLOG(1) << "\nKeyboard event: " << key_event.GetName()
+               << "\n Key code: " << key_event.key_code()
+               << ", Flags: " << key_event.flags()
+               << ", Is char: " << key_event.is_char();
     }
     return ui::EVENT_REWRITE_CONTINUE;
   }
@@ -171,20 +170,20 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
     NOTREACHED() << "Unexpected event type received: " << event.GetName();
     return ui::EVENT_REWRITE_CONTINUE;
   }
-  VLOG_EVENT(touch_event);
+  DVLOG_EVENT(touch_event);
 
   // In order to avoid accidentally double tapping when moving off the edge
   // of the screen, the state will be rewritten to NoFingersDown.
   if ((type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) &&
       FindEdgesWithinInset(location, kLeavingScreenEdge) != NO_EDGE) {
-    if (VLOG_on_)
-      VLOG(1) << "Leaving screen";
+    if (DVLOG_on_)
+      DVLOG(1) << "Leaving screen";
 
     if (current_touch_ids_.size() == 0) {
       SET_STATE(NO_FINGERS_DOWN);
-      if (VLOG_on_) {
-        VLOG(1) << "Reset to no fingers in Rewrite event because the touch  "
-                   "release or cancel was on the edge of the screen.";
+      if (DVLOG_on_) {
+        DVLOG(1) << "Reset to no fingers in Rewrite event because the touch  "
+                    "release or cancel was on the edge of the screen.";
       }
       return ui::EVENT_REWRITE_DISCARD;
     }
@@ -309,11 +308,11 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
     float delta_time =
         (event.time_stamp() - most_recent_press_timestamp_).InSecondsF();
     float velocity = distance / delta_time;
-    if (VLOG_on_) {
-      VLOG(1) << "\n Delta time: " << delta_time << "\n Distance: " << distance
-              << "\n Velocity of click: " << velocity
-              << "\n Minimum swipe velocity: "
-              << gesture_detector_config_.minimum_swipe_velocity;
+    if (DVLOG_on_) {
+      DVLOG(1) << "\n Delta time: " << delta_time << "\n Distance: " << distance
+               << "\n Velocity of click: " << velocity
+               << "\n Minimum swipe velocity: "
+               << gesture_detector_config_.minimum_swipe_velocity;
     }
 
     // If the user moves fast enough from the initial touch location, start
@@ -774,8 +773,8 @@ void TouchExplorationController::OnSwipeEvent(ui::GestureEvent* swipe_gesture) {
   // there will also be a menu for users to pick custom mappings.
   ui::GestureEventDetails event_details = swipe_gesture->details();
   int num_fingers = event_details.touch_points();
-  if (VLOG_on_)
-    VLOG(1) << "\nSwipe with " << num_fingers << " fingers.";
+  if (DVLOG_on_)
+    DVLOG(1) << "\nSwipe with " << num_fingers << " fingers.";
 
   ax::mojom::Gesture gesture = ax::mojom::Gesture::kNone;
   if (event_details.swipe_left()) {
@@ -880,11 +879,11 @@ void TouchExplorationController::DispatchKeyWithFlags(
   ui::KeyEvent key_up(ui::ET_KEY_RELEASED, key, flags);
   DispatchEvent(&key_down);
   DispatchEvent(&key_up);
-  if (VLOG_on_) {
-    VLOG(1) << "\nKey down: key code : " << key_down.key_code()
-            << ", flags: " << key_down.flags()
-            << "\nKey up: key code : " << key_up.key_code()
-            << ", flags: " << key_up.flags();
+  if (DVLOG_on_) {
+    DVLOG(1) << "\nKey down: key code : " << key_down.key_code()
+             << ", flags: " << key_down.flags()
+             << "\nKey up: key code : " << key_up.key_code()
+             << ", flags: " << key_up.flags();
   }
 }
 
@@ -964,19 +963,19 @@ void TouchExplorationController::SetState(State new_state,
 }
 
 void TouchExplorationController::VlogState(const char* function_name) {
-  if (!VLOG_on_)
+  if (!DVLOG_on_)
     return;
   if (prev_state_ == state_)
     return;
   prev_state_ = state_;
   const char* state_string = EnumStateToString(state_);
-  VLOG(1) << "\n Function name: " << function_name
-          << "\n State: " << state_string;
+  DVLOG(1) << "\n Function name: " << function_name
+           << "\n State: " << state_string;
 }
 
 void TouchExplorationController::VlogEvent(const ui::TouchEvent& touch_event,
                                            const char* function_name) {
-  if (!VLOG_on_)
+  if (!DVLOG_on_)
     return;
 
   if (prev_event_ && prev_event_->type() == touch_event.type() &&
@@ -995,9 +994,9 @@ void TouchExplorationController::VlogEvent(const ui::TouchEvent& touch_event,
   const gfx::PointF& location = touch_event.location_f();
   const int touch_id = touch_event.pointer_details().id;
 
-  VLOG(1) << "\n Function name: " << function_name << "\n Event Type: " << type
-          << "\n Location: " << location.ToString()
-          << "\n Touch ID: " << touch_id;
+  DVLOG(1) << "\n Function name: " << function_name << "\n Event Type: " << type
+           << "\n Location: " << location.ToString()
+           << "\n Touch ID: " << touch_id;
   prev_event_ = std::make_unique<ui::TouchEvent>(touch_event);
 }
 

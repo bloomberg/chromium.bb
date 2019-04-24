@@ -29,7 +29,7 @@ std::string GetAndroidProperty(const std::string& key,
   char value[PROP_VALUE_MAX];
   int ret = __system_property_get(key.c_str(), value);
   if (ret <= 0) {
-    VLOG(1) << "No value set for property: " << key;
+    DVLOG(1) << "No value set for property: " << key;
     return default_value;
   }
 

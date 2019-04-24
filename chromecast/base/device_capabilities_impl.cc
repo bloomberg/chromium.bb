@@ -334,7 +334,7 @@ void DeviceCapabilitiesImpl::SetPublicValidatedValue(
       public_data_->dictionary().Get(path, &cur_value) &&
       cur_value->Equals(new_value.get());
   if (capability_unchanged) {
-    VLOG(1) << "Ignoring unchanged public capability: " << path;
+    DVLOG(1) << "Ignoring unchanged public capability: " << path;
     return;
   }
 
@@ -393,7 +393,7 @@ void DeviceCapabilitiesImpl::SetPrivateValidatedValue(
   bool capability_unchanged = all_data_->dictionary().Get(path, &cur_value) &&
                               cur_value->Equals(new_value.get());
   if (capability_unchanged) {
-    VLOG(1) << "Ignoring unchanged capability: " << path;
+    DVLOG(1) << "Ignoring unchanged capability: " << path;
     return;
   }
 

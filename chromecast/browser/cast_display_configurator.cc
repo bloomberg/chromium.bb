@@ -198,8 +198,8 @@ void CastDisplayConfigurator::OnDisplayConfigured(
   DCHECK_EQ(display, display_);
 
   const gfx::Rect bounds(origin, mode->size());
-  VLOG(1) << __func__ << " success=" << success
-          << " bounds=" << bounds.ToString();
+  DVLOG(1) << __func__ << " success=" << success
+           << " bounds=" << bounds.ToString();
   if (success) {
     // Need to update the display state otherwise it becomes stale.
     display_->set_current_mode(mode);

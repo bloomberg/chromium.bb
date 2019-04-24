@@ -237,16 +237,16 @@ void CastWebViewDefault::RequestMediaAccessPermission(
       content::MediaCaptureDevices::GetInstance()->GetAudioCaptureDevices();
   auto video_devices =
       content::MediaCaptureDevices::GetInstance()->GetVideoCaptureDevices();
-  VLOG(2) << __func__ << " audio_devices=" << audio_devices.size()
-          << " video_devices=" << video_devices.size();
+  DVLOG(2) << __func__ << " audio_devices=" << audio_devices.size()
+           << " video_devices=" << video_devices.size();
 
   blink::MediaStreamDevices devices;
   if (request.audio_type == blink::MEDIA_DEVICE_AUDIO_CAPTURE) {
     const blink::MediaStreamDevice* device = GetRequestedDeviceOrDefault(
         audio_devices, request.requested_audio_device_id);
     if (device) {
-      VLOG(1) << __func__ << "Using audio device: id=" << device->id
-              << " name=" << device->name;
+      DVLOG(1) << __func__ << "Using audio device: id=" << device->id
+               << " name=" << device->name;
       devices.push_back(*device);
     }
   }
@@ -255,8 +255,8 @@ void CastWebViewDefault::RequestMediaAccessPermission(
     const blink::MediaStreamDevice* device = GetRequestedDeviceOrDefault(
         video_devices, request.requested_video_device_id);
     if (device) {
-      VLOG(1) << __func__ << "Using video device: id=" << device->id
-              << " name=" << device->name;
+      DVLOG(1) << __func__ << "Using video device: id=" << device->id
+               << " name=" << device->name;
       devices.push_back(*device);
     }
   }

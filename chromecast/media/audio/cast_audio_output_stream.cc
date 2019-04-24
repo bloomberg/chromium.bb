@@ -327,7 +327,7 @@ void CastAudioOutputStream::CmaWrapper::PushBuffer() {
 
   int frame_count =
       source_callback_->OnMoreData(delay, delay_timestamp, 0, audio_bus_.get());
-  VLOG(3) << "frames_filled=" << frame_count << " with latency=" << delay;
+  DVLOG(3) << "frames_filled=" << frame_count << " with latency=" << delay;
 
   DCHECK_EQ(frame_count, audio_bus_->frames());
   DCHECK_EQ(static_cast<int>(decoder_buffer_->data_size()),
@@ -369,7 +369,7 @@ void CastAudioOutputStream::CmaWrapper::OnPushBufferComplete(
 }
 
 void CastAudioOutputStream::CmaWrapper::OnDecoderError() {
-  VLOG(1) << this << ": " << __func__;
+  DVLOG(1) << this << ": " << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
 
   encountered_error_ = true;
@@ -563,8 +563,8 @@ CastAudioOutputStream::CastAudioOutputStream(
   DCHECK(audio_manager_);
   DCHECK(connector_);
   DETACH_FROM_THREAD(audio_thread_checker_);
-  VLOG(1) << __func__ << " " << this << " created from group_id=" << group_id_
-          << " with audio_params=" << audio_params_.AsHumanReadableString();
+  DVLOG(1) << __func__ << " " << this << " created from group_id=" << group_id_
+           << " with audio_params=" << audio_params_.AsHumanReadableString();
 }
 
 CastAudioOutputStream::~CastAudioOutputStream() {
@@ -573,7 +573,7 @@ CastAudioOutputStream::~CastAudioOutputStream() {
 
 bool CastAudioOutputStream::Open() {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
-  VLOG(1) << this << ": " << __func__;
+  DVLOG(1) << this << ": " << __func__;
   if (audio_thread_state_ != kClosed)
     return false;
 
@@ -592,8 +592,8 @@ bool CastAudioOutputStream::Open() {
 
   const std::string application_session_id =
       audio_manager_->GetSessionId(group_id_);
-  VLOG(1) << this << ": " << __func__
-          << ", session_id=" << application_session_id;
+  DVLOG(1) << this << ": " << __func__
+           << ", session_id=" << application_session_id;
 
   // Connect to the Multiroom interface and fetch the current info.
   connector_->BindInterface(chromecast::mojom::kChromecastServiceName,
@@ -621,7 +621,7 @@ bool CastAudioOutputStream::Open() {
 
 void CastAudioOutputStream::Close() {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
-  VLOG(1) << this << ": " << __func__;
+  DVLOG(1) << this << ": " << __func__;
 
   audio_thread_state_ = kPendingClose;
   base::OnceClosure finish_callback = base::BindOnce(
@@ -650,7 +650,7 @@ void CastAudioOutputStream::Start(AudioSourceCallback* source_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
   // We allow calls to start even in the unopened state.
   DCHECK(audio_thread_state_ != kPendingClose);
-  VLOG(2) << this << ": " << __func__;
+  DVLOG(2) << this << ": " << __func__;
   audio_thread_state_ = kStarted;
   metrics::CastMetricsHelper::GetInstance()->LogTimeToFirstAudio();
 
@@ -673,7 +673,7 @@ void CastAudioOutputStream::Start(AudioSourceCallback* source_callback) {
 
 void CastAudioOutputStream::Stop() {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
-  VLOG(2) << this << ": " << __func__;
+  DVLOG(2) << this << ": " << __func__;
   // We allow calls to stop even in the unstarted/unopened state.
   if (audio_thread_state_ != kStarted)
     return;
@@ -696,7 +696,7 @@ void CastAudioOutputStream::Stop() {
 void CastAudioOutputStream::SetVolume(double volume) {
   DCHECK_CALLED_ON_VALID_THREAD(audio_thread_checker_);
   DCHECK(audio_thread_state_ != kPendingClose);
-  VLOG(2) << this << ": " << __func__ << "(" << volume << ")";
+  DVLOG(2) << this << ": " << __func__ << "(" << volume << ")";
   volume_ = volume;
 
   if (!cma_wrapper_ && !mixer_service_wrapper_) {

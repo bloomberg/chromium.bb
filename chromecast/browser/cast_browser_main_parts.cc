@@ -319,10 +319,10 @@ void AddDefaultCommandLineSwitches(base::CommandLine* command_line) {
     std::string name(default_switch.switch_name);
     if (!command_line->HasSwitch(name)) {
       std::string value(default_switch.switch_value);
-      VLOG(2) << "Set default switch '" << name << "' = '" << value << "'";
+      DVLOG(2) << "Set default switch '" << name << "' = '" << value << "'";
       command_line->AppendSwitchASCII(name, value);
     } else {
-      VLOG(2) << "Skip setting default switch '" << name << "', already set";
+      DVLOG(2) << "Skip setting default switch '" << name << "', already set";
     }
   }
 }
