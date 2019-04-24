@@ -1,0 +1,14 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/rules.gni")
+
+# Only need to depend on this target if explicitly calling ManualFillingComponent#createComponent.
+android_library("java") {
+  deps = [
+    "//chrome/android/features/keyboard_accessory/public:java",
+  ]
+  java_files = [ "generated/java/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingComponentFactory.java" ]
+  jar_excluded_patterns = [ "*" ]
+}

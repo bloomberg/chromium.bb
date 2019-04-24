@@ -238,12 +238,22 @@ java_cpp_template("vr_build_config") {
   }
 }
 
+# This prevents a cyclic dependency for features depending on the compositor.
+# TODO(crbug.com/846440): Move this to features/compositor when ready.
+android_library("chrome_public_java") {
+  java_files = [ "//chrome/android/java/src/org/chromium/chrome/browser/compositor/CompositorViewResizer.java" ]
+  deps = [
+    "//third_party/android_deps:com_android_support_support_annotations_java",
+  ]
+}
+
 android_library("chrome_java") {
   deps = [
     ":chrome_app_java_resources",
     ":chrome_download_java_resources",
     ":chrome_public_android_manifest",
     ":chrome_public_apk_template_resources",
+    ":chrome_public_java",
     ":chrome_version_constants",
     ":document_tab_model_info_proto_java",
     ":partner_location_descriptor_proto_java",
@@ -260,6 +270,8 @@ android_library("chrome_java") {
     "$google_play_services_package:google_play_services_tasks_java",
     "//base:base_java",
     "//base:jni_java",
+    "//chrome/android/features/keyboard_accessory/factory:java",
+    "//chrome/android/features/keyboard_accessory/public:java",
     "//chrome/android/third_party/compositor_animator:compositor_animator_java",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
@@ -459,6 +471,7 @@ android_library("chrome_java") {
 java_group("chrome_all_java") {
   deps = [
     ":chrome_java",
+    "//chrome/android/features/keyboard_accessory/internal:java",
     "//chrome/android/features/media_router:java",
   ]
 }
@@ -469,6 +482,7 @@ group("jni_headers") {
   public_deps = [
     ":chrome_jni_headers",
     "//chrome/android/features/autofill_assistant:jni_headers",
+    "//chrome/android/features/keyboard_accessory:jni_headers",
     "//chrome/android/features/media_router:jni_headers",
   ]
 }
@@ -504,12 +518,10 @@ java_cpp_enum("chrome_android_java_enums_srcjar") {
     "//chrome/browser/android/webapk/webapk_install_service.h",
     "//chrome/browser/android/webapk/webapk_installer.h",
     "//chrome/browser/android/webapk/webapk_types.h",
-    "//chrome/browser/autofill/manual_filling_view_interface.h",
     "//chrome/browser/banners/app_banner_settings_helper.h",
     "//chrome/browser/notifications/notification_channels_provider_android.h",
     "//chrome/browser/notifications/notification_platform_bridge_android.cc",
     "//chrome/browser/ntp_snippets/ntp_snippets_metrics.h",
-    "//chrome/browser/password_manager/password_accessory_metrics_util.h",
     "//chrome/browser/profiles/profile_metrics.h",
     "//chrome/browser/translate/android/translate_utils.h",
     "//chrome/browser/ui/android/infobars/infobar_android.h",
@@ -606,6 +618,7 @@ junit_binary("chrome_junit_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//chrome/android/features/keyboard_accessory/internal:java",
     "//chrome/android/features/tab_ui:java",
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
@@ -1923,6 +1936,7 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     ":chrome_test_apk_template_resources",
     ":chrome_test_java",
     "//chrome/android/features/autofill_assistant:test_java",
+    "//chrome/android/features/keyboard_accessory:test_java",
     "//chrome/android/features/media_router:test_java",
     "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
@@ -2298,8 +2312,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/autofill/CreditCardScannerBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/PersonalDataManager.java",
     "java/src/org/chromium/chrome/browser/autofill/PhoneNumberUtil.java",
-    "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/AutofillKeyboardAccessoryBridge.java",
-    "java/src/org/chromium/chrome/browser/autofill/keyboard_accessory/ManualFillingBridge.java",
     "java/src/org/chromium/chrome/browser/background_sync/BackgroundSyncBackgroundTask.java",
     "java/src/org/chromium/chrome/browser/background_sync/BackgroundSyncBackgroundTaskScheduler.java",
     "java/src/org/chromium/chrome/browser/banners/AppBannerManager.java",

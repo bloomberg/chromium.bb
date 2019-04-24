@@ -463,9 +463,6 @@ CHAR-LIMIT guidelines:
       </message>
 
       <!-- Autofill and Payments preferences -->
-      <message name="IDS_AUTOFILL_KEYBOARD_ACCESSORY_CONTENT_DESCRIPTION" desc="The text announced by the screen reader when the autofill suggestions are shown.">
-        Passwords available
-      </message>
       <message name="IDS_PAYMENT_APPS_TITLE" desc="Title of the preference to list the payment apps on device.">
         Payment apps
       </message>
@@ -3976,24 +3973,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_IPH_HOMEPAGE_TILE_ACCESSIBILITY_TEXT" desc="The in-product-help message to use first tile in Most Visited as homepage tile when accessibility mode is enabled.">
         Links to your favorite websites can be found on this page
       </message>
-
-      <!-- Password Accessory Strings -->
-      <message name="IDS_KEYBOARD_ACCESSORY_SHEET_HIDE" desc="Description for the active icon button that closes an accessory sheet and brings back the keyboard.">
-          Show keyboard
-      </message>
-      <message name="IDS_PASSWORD_GENERATION_ACCESSORY_BUTTON" desc="Text for the button used to generate a password.">
-          Suggest strong password
-      </message>
-      <message name="IDS_PASSWORD_GENERATION_ACCESSORY_BUTTON_SHORT" desc="Shortened text for the button used to generate a password. This is used for devices with small screen.">
-          Suggest password
-      </message>
-      <message name="IDS_PASSWORD_ACCESSORY_SHEET_TOGGLE" desc="Description for the icon button used to open and close the password accessory sheet.">
-          Show passwords
-      </message>
-      <message name="IDS_PASSWORD_ACCESSORY_SHEET_OPENED" desc="Accessibility announcement when opening a password bottom sheet containing saved credentials and options like managing and generating passwords.">
-          Showing saved passwords and password options
-      </message>
-
 
       <!-- Launcher Shortcuts -->
       <message name="IDS_DISABLED_INCOGNITO_LAUNCHER_SHORTCUT_MESSAGE" desc="Text for a toast displayed prompting the user to remove the disabled 'New incognito tab' app shortcut and recreate it.">

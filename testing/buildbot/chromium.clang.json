@@ -5869,6 +5869,9 @@
         "test": "junit_unit_tests"
       },
       {
+        "test": "keyboard_accessory_junit_tests"
+      },
+      {
         "test": "media_base_junit_tests"
       },
       {

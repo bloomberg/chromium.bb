@@ -1344,6 +1344,10 @@
     "label": "//testing/android/junit:junit_unit_tests",
     "type": "junit_test",
   },
+  "keyboard_accessory_junit_tests": {
+    "label": "//chrome/android/features/keyboard_accessory:keyboard_accessory_junit_tests",
+    "type": "junit_test",
+  },
   "keyboard_unittests": {
     "label": "//ui/keyboard:keyboard_unittests",
     "type": "windowed_test_launcher",

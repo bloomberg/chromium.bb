@@ -87,8 +87,7 @@ class FooterCommand {
   base::string16 display_text_;
 };
 
-// GENERATED_JAVA_ENUM_PACKAGE: (
-//   org.chromium.chrome.browser.autofill.keyboard_accessory)
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.keyboard_accessory
 enum class FallbackSheetType {
   // Indicates the data type to which an AccessorySheetData object corresponds.
   PASSWORD,

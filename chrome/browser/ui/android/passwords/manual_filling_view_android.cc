@@ -22,7 +22,7 @@
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "components/autofill/core/browser/accessory_sheet_data.h"
 #include "components/autofill/core/common/password_form.h"
-#include "jni/ManualFillingBridge_jni.h"
+#include "jni/ManualFillingComponentBridge_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -40,15 +40,15 @@ ManualFillingViewAndroid::ManualFillingViewAndroid(
   ui::ViewAndroid* view_android = controller_->container_view();
 
   DCHECK(view_android);
-  java_object_.Reset(Java_ManualFillingBridge_create(
+  java_object_.Reset(Java_ManualFillingComponentBridge_create(
       base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this),
       view_android->GetWindowAndroid()->GetJavaObject()));
 }
 
 ManualFillingViewAndroid::~ManualFillingViewAndroid() {
   DCHECK(!java_object_.is_null());
-  Java_ManualFillingBridge_destroy(base::android::AttachCurrentThread(),
-                                   java_object_);
+  Java_ManualFillingComponentBridge_destroy(
+      base::android::AttachCurrentThread(), java_object_);
   java_object_.Reset(nullptr);
 }
 
@@ -57,28 +57,28 @@ void ManualFillingViewAndroid::OnItemsAvailable(
   DCHECK(!java_object_.is_null());
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ManualFillingBridge_onItemsAvailable(
+  Java_ManualFillingComponentBridge_onItemsAvailable(
       env, java_object_, ConvertAccessorySheetDataToJavaObject(env, data));
 }
 
 void ManualFillingViewAndroid::CloseAccessorySheet() {
-  Java_ManualFillingBridge_closeAccessorySheet(
+  Java_ManualFillingComponentBridge_closeAccessorySheet(
       base::android::AttachCurrentThread(), java_object_);
 }
 
 void ManualFillingViewAndroid::SwapSheetWithKeyboard() {
-  Java_ManualFillingBridge_swapSheetWithKeyboard(
+  Java_ManualFillingComponentBridge_swapSheetWithKeyboard(
       base::android::AttachCurrentThread(), java_object_);
 }
 
 void ManualFillingViewAndroid::ShowWhenKeyboardIsVisible() {
-  Java_ManualFillingBridge_showWhenKeyboardIsVisible(
+  Java_ManualFillingComponentBridge_showWhenKeyboardIsVisible(
       base::android::AttachCurrentThread(), java_object_);
 }
 
 void ManualFillingViewAndroid::Hide() {
-  Java_ManualFillingBridge_hide(base::android::AttachCurrentThread(),
-                                java_object_);
+  Java_ManualFillingComponentBridge_hide(base::android::AttachCurrentThread(),
+                                         java_object_);
 }
 
 void ManualFillingViewAndroid::OnAutomaticGenerationStatusChanged(
@@ -87,8 +87,8 @@ void ManualFillingViewAndroid::OnAutomaticGenerationStatusChanged(
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ManualFillingBridge_onAutomaticGenerationStatusChanged(env, java_object_,
-                                                              available);
+  Java_ManualFillingComponentBridge_onAutomaticGenerationStatusChanged(
+      env, java_object_, available);
 }
 
 void ManualFillingViewAndroid::OnFaviconRequested(
@@ -141,16 +141,16 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
     JNIEnv* env,
     const AccessorySheetData& tab_data) {
   ScopedJavaLocalRef<jobject> j_tab_data =
-      Java_ManualFillingBridge_createAccessorySheetData(
+      Java_ManualFillingComponentBridge_createAccessorySheetData(
           env, static_cast<int>(tab_data.get_sheet_type()),
           ConvertUTF16ToJavaString(env, tab_data.title()));
 
   for (const UserInfo& user_info : tab_data.user_info_list()) {
     ScopedJavaLocalRef<jobject> j_user_info =
-        Java_ManualFillingBridge_addUserInfoToAccessorySheetData(
+        Java_ManualFillingComponentBridge_addUserInfoToAccessorySheetData(
             env, java_object_, j_tab_data);
     for (const UserInfo::Field& field : user_info.fields()) {
-      Java_ManualFillingBridge_addFieldToUserInfo(
+      Java_ManualFillingComponentBridge_addFieldToUserInfo(
           env, java_object_, j_user_info,
           ConvertUTF16ToJavaString(env, field.display_text()),
           ConvertUTF16ToJavaString(env, field.a11y_description()),
@@ -159,7 +159,7 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
   }
 
   for (const FooterCommand& footer_command : tab_data.footer_commands()) {
-    Java_ManualFillingBridge_addFooterCommandToAccessorySheetData(
+    Java_ManualFillingComponentBridge_addFooterCommandToAccessorySheetData(
         env, java_object_, j_tab_data,
         ConvertUTF16ToJavaString(env, footer_command.display_text()));
   }
@@ -167,7 +167,7 @@ ManualFillingViewAndroid::ConvertAccessorySheetDataToJavaObject(
 }
 
 // static
-void JNI_ManualFillingBridge_CachePasswordSheetDataForTesting(
+void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_web_contents,
     const base::android::JavaParamRef<jobjectArray>& j_usernames,

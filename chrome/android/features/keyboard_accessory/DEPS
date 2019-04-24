@@ -1,0 +1,5 @@
+include_rules = [
+  "+components/autofill/android/java/src/org/chromium/components/autofill",
+  "-content/public/android",
+  "+content/public/android/java/src/org/chromium/content_public",
+]
