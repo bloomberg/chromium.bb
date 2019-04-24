@@ -728,16 +728,16 @@ CHAR-LIMIT guidelines:
         Use a prediction service to show related queries and popular websites as you type in the address bar
       </message>
       <message name="IDS_SAFE_BROWSING_SCOUT_REPORTING_TITLE" desc="Title for checkbox that controls reporting data to detect bad apps/sites. Please ensure ‘Safe Browsing’ in this message matches the ‘Safe Browsing’ settings title.">
-        Help improve Safe Browsing
+        Help improve Chrome security
       </message>
       <message name="IDS_SAFE_BROWSING_SCOUT_REPORTING_SUMMARY" desc="Body text for Chrome setting under 'Help Improve Safe Browsing'. This feature sends small amounts of data to Google about potentially-dangerous pages to help Safe Browsing improve Chrome's protection against malware and phishing.">
-        Sends some system information and page content to Google
+        To detect dangerous apps and sites, Chrome sends URLs of some pages you visit, limited system information, and some page content to Google
       </message>
       <message name="IDS_SAFE_BROWSING_TITLE" desc="Title for safe browsing.">
-        Safe Browsing
+        Safe Browsing (protects you and your device from dangerous sites)
       </message>
       <message name="IDS_SAFE_BROWSING_SUMMARY" desc="Summary for safe browsing.">
-        Protects you and your device from dangerous sites
+        Sends URLs of some pages you visit to Google, when your security is at risk
       </message>
       <message name="IDS_NETWORK_PREDICTIONS_TITLE" desc="Title of a setting in Chrome settings. Followed by a body that describes the setting. If setting is turned on, Chrome will download certain pages to the user’s phone automatically for offline reading. 'predictions' convey the idea that Chrome is using predictive models to figure out pages likely of interest to the user.">
         Use page predictions
