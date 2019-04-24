@@ -525,29 +525,34 @@ int PropertyTreeManager::EnsureCompositorScrollNode(
 }
 
 void PropertyTreeManager::EmitClipMaskLayer() {
-  if (RuntimeEnabledFeatures::FastBorderRadiusEnabled())
-    return;
-
   cc::EffectNode& mask_isolation = *GetEffectTree().Node(current_.effect_id);
-  if (pending_synthetic_mask_layers_.Contains(mask_isolation.id))
-    return;
+
+  bool needs_layer =
+      !pending_synthetic_mask_layers_.Contains(mask_isolation.id) &&
+      !RuntimeEnabledFeatures::FastBorderRadiusEnabled();
 
   int clip_id = EnsureCompositorClipNode(*current_.clip);
   CompositorElementId mask_isolation_id, mask_effect_id;
-  cc::Layer* mask_layer = client_.CreateOrReuseSynthesizedClipLayer(
-      *current_.clip, mask_isolation_id, mask_effect_id);
+  SynthesizedClip& clip = client_.CreateOrReuseSynthesizedClipLayer(
+      *current_.clip, needs_layer, mask_isolation_id, mask_effect_id);
 
   // Assignment of mask_isolation.stable_id was delayed until now.
   // See PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded().
   DCHECK_EQ(static_cast<uint64_t>(cc::EffectNode::INVALID_STABLE_ID),
             mask_isolation.stable_id);
+
   mask_isolation.stable_id = mask_isolation_id.GetInternalValue();
+
+  if (!needs_layer)
+    return;
 
   cc::EffectNode& mask_effect = *GetEffectTree().Node(
       GetEffectTree().Insert(cc::EffectNode(), current_.effect_id));
   mask_effect.stable_id = mask_effect_id.GetInternalValue();
   mask_effect.clip_id = clip_id;
   mask_effect.blend_mode = SkBlendMode::kDstIn;
+
+  cc::Layer* mask_layer = clip.Layer();
 
   const auto& clip_space = current_.clip->LocalTransformSpace();
   layer_list_builder_->Add(mask_layer);

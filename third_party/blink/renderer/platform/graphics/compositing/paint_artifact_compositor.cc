@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "cc/layers/layer.h"
-#include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
@@ -685,104 +684,74 @@ void PaintArtifactCompositor::CollectPendingLayers(
   DCHECK_EQ(paint_artifact.PaintChunks().end(), cursor);
 }
 
-// This class maintains a persistent mask layer and unique stable cc effect IDs
-// for reuse across compositing cycles. The mask layer paints a rounded rect,
-// which is an updatable parameter of the class. The caller is responsible for
-// inserting the layer into layer list and associating with property nodes.
-//
-// The typical application of the mask layer is to create an isolating effect
-// node to paint the clipped contents, and at the end draw the mask layer with
-// a kDstIn blend effect. This is why two stable cc effect IDs are provided for
-// the convenience of the caller, although they are not directly related to the
-// class functionality.
-class SynthesizedClip : private cc::ContentLayerClient {
- public:
-  SynthesizedClip() : layer_(cc::PictureLayer::Create(this)) {
-    mask_isolation_id_ =
-        CompositorElementIdFromUniqueObjectId(NewUniqueObjectId());
-    mask_effect_id_ =
-        CompositorElementIdFromUniqueObjectId(NewUniqueObjectId());
+void SynthesizedClip::UpdateLayer(bool needs_layer,
+                                  const FloatRoundedRect& rrect,
+                                  scoped_refptr<const RefCountedPath> path) {
+  if (!needs_layer) {
+    layer_.reset();
+    return;
+  }
+  if (!layer_) {
+    layer_ = cc::PictureLayer::Create(this);
     layer_->SetIsDrawable(true);
   }
-  ~SynthesizedClip() override { layer_->ClearClient(); }
 
-  void Update(const FloatRoundedRect& rrect,
-              scoped_refptr<const RefCountedPath> path) {
-    IntRect layer_bounds = EnclosingIntRect(rrect.Rect());
-    gfx::Vector2dF new_layer_origin(layer_bounds.X(), layer_bounds.Y());
+  IntRect layer_bounds = EnclosingIntRect(rrect.Rect());
+  gfx::Vector2dF new_layer_origin(layer_bounds.X(), layer_bounds.Y());
 
-    SkRRect new_local_rrect = rrect;
-    new_local_rrect.offset(-new_layer_origin.x(), -new_layer_origin.y());
+  SkRRect new_local_rrect = rrect;
+  new_local_rrect.offset(-new_layer_origin.x(), -new_layer_origin.y());
 
-    bool path_in_layer_changed = false;
-    if (path_ == path) {
-      path_in_layer_changed = path && layer_origin_ != new_layer_origin;
-    } else if (!path_ || !path) {
-      path_in_layer_changed = true;
-    } else {
-      SkPath new_path = path->GetSkPath();
-      new_path.offset(layer_origin_.x() - new_layer_origin.x(),
-                      layer_origin_.y() - new_layer_origin.y());
-      path_in_layer_changed = path_->GetSkPath() != new_path;
-    }
-
-    if (local_rrect_ != new_local_rrect || path_in_layer_changed) {
-      layer_->SetNeedsDisplay();
-    }
-    layer_->SetOffsetToTransformParent(new_layer_origin);
-    layer_->SetBounds(gfx::Size(layer_bounds.Width(), layer_bounds.Height()));
-
-    layer_origin_ = new_layer_origin;
-    local_rrect_ = new_local_rrect;
-    path_ = std::move(path);
+  bool path_in_layer_changed = false;
+  if (path_ == path) {
+    path_in_layer_changed = path && layer_origin_ != new_layer_origin;
+  } else if (!path_ || !path) {
+    path_in_layer_changed = true;
+  } else {
+    SkPath new_path = path->GetSkPath();
+    new_path.offset(layer_origin_.x() - new_layer_origin.x(),
+                    layer_origin_.y() - new_layer_origin.y());
+    path_in_layer_changed = path_->GetSkPath() != new_path;
   }
 
-  cc::Layer* GetLayer() const { return layer_.get(); }
-  CompositorElementId GetMaskIsolationId() const { return mask_isolation_id_; }
-  CompositorElementId GetMaskEffectId() const { return mask_effect_id_; }
-
- private:
-  // ContentLayerClient implementation.
-  gfx::Rect PaintableRegion() final { return gfx::Rect(layer_->bounds()); }
-  bool FillsBoundsCompletely() const final { return false; }
-  size_t GetApproximateUnsharedMemoryUsage() const final { return 0; }
-
-  scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
-      PaintingControlSetting) final {
-    auto cc_list = base::MakeRefCounted<cc::DisplayItemList>(
-        cc::DisplayItemList::kTopLevelDisplayItemList);
-    PaintFlags flags;
-    flags.setAntiAlias(true);
-    cc_list->StartPaint();
-    if (!path_) {
-      cc_list->push<cc::DrawRRectOp>(local_rrect_, flags);
-    } else {
-      cc_list->push<cc::SaveOp>();
-      cc_list->push<cc::TranslateOp>(-layer_origin_.x(), -layer_origin_.x());
-      cc_list->push<cc::ClipPathOp>(path_->GetSkPath(), SkClipOp::kIntersect,
-                                    true);
-      SkRRect rrect = local_rrect_;
-      rrect.offset(layer_origin_.x(), layer_origin_.y());
-      cc_list->push<cc::DrawRRectOp>(rrect, flags);
-      cc_list->push<cc::RestoreOp>();
-    }
-    cc_list->EndPaintOfUnpaired(gfx::Rect(layer_->bounds()));
-    cc_list->Finalize();
-    return cc_list;
+  if (local_rrect_ != new_local_rrect || path_in_layer_changed) {
+    layer_->SetNeedsDisplay();
   }
+  layer_->SetOffsetToTransformParent(new_layer_origin);
+  layer_->SetBounds(gfx::Size(layer_bounds.Width(), layer_bounds.Height()));
 
- private:
-  scoped_refptr<cc::PictureLayer> layer_;
-  gfx::Vector2dF layer_origin_;
-  SkRRect local_rrect_ = SkRRect::MakeEmpty();
-  scoped_refptr<const RefCountedPath> path_;
-  CompositorElementId mask_isolation_id_;
-  CompositorElementId mask_effect_id_;
-};
+  layer_origin_ = new_layer_origin;
+  local_rrect_ = new_local_rrect;
+  path_ = std::move(path);
+}
 
-// TODO(pdr): There is no test that synthetic clip layers are re-used.
-cc::Layer* PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
+scoped_refptr<cc::DisplayItemList> SynthesizedClip::PaintContentsToDisplayList(
+    PaintingControlSetting) {
+  auto cc_list = base::MakeRefCounted<cc::DisplayItemList>(
+      cc::DisplayItemList::kTopLevelDisplayItemList);
+  PaintFlags flags;
+  flags.setAntiAlias(true);
+  cc_list->StartPaint();
+  if (!path_) {
+    cc_list->push<cc::DrawRRectOp>(local_rrect_, flags);
+  } else {
+    cc_list->push<cc::SaveOp>();
+    cc_list->push<cc::TranslateOp>(-layer_origin_.x(), -layer_origin_.x());
+    cc_list->push<cc::ClipPathOp>(path_->GetSkPath(), SkClipOp::kIntersect,
+                                  true);
+    SkRRect rrect = local_rrect_;
+    rrect.offset(layer_origin_.x(), layer_origin_.y());
+    cc_list->push<cc::DrawRRectOp>(rrect, flags);
+    cc_list->push<cc::RestoreOp>();
+  }
+  cc_list->EndPaintOfUnpaired(gfx::Rect(layer_->bounds()));
+  cc_list->Finalize();
+  return cc_list;
+}
+
+SynthesizedClip& PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
     const ClipPaintPropertyNode& node,
+    bool needs_layer,
     CompositorElementId& mask_isolation_id,
     CompositorElementId& mask_effect_id) {
   auto entry =
@@ -792,17 +761,19 @@ cc::Layer* PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
                    });
   if (entry == synthesized_clip_cache_.end()) {
     auto clip = std::make_unique<SynthesizedClip>();
-    clip->GetLayer()->SetLayerTreeHost(root_layer_->layer_tree_host());
     entry = synthesized_clip_cache_.insert(
         entry, SynthesizedClipEntry{&node, std::move(clip), false});
   }
 
   entry->in_use = true;
   SynthesizedClip& synthesized_clip = *entry->synthesized_clip;
-  synthesized_clip.Update(node.ClipRect(), node.ClipPath());
+  if (needs_layer) {
+    synthesized_clip.UpdateLayer(needs_layer, node.ClipRect(), node.ClipPath());
+    synthesized_clip.Layer()->SetLayerTreeHost(root_layer_->layer_tree_host());
+  }
   mask_isolation_id = synthesized_clip.GetMaskIsolationId();
   mask_effect_id = synthesized_clip.GetMaskEffectId();
-  return synthesized_clip.GetLayer();
+  return synthesized_clip;
 }
 
 static void UpdateCompositorViewportProperties(
@@ -1060,7 +1031,7 @@ void PaintArtifactCompositor::Update(
   if (extra_data_for_testing_enabled_) {
     for (const auto& entry : synthesized_clip_cache_) {
       extra_data_for_testing_->synthesized_clip_layers.push_back(
-          entry.synthesized_clip->GetLayer());
+          entry.synthesized_clip->Layer());
     }
   }
 

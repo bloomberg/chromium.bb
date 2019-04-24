@@ -30,12 +30,14 @@ class ClipPaintPropertyNode;
 class LayerListBuilder;
 class EffectPaintPropertyNode;
 class ScrollPaintPropertyNode;
+class SynthesizedClip;
 class TransformPaintPropertyNode;
 
 class PropertyTreeManagerClient {
  public:
-  virtual cc::Layer* CreateOrReuseSynthesizedClipLayer(
+  virtual SynthesizedClip& CreateOrReuseSynthesizedClipLayer(
       const ClipPaintPropertyNode&,
+      bool needs_layer,
       CompositorElementId& mask_isolation_id,
       CompositorElementId& mask_effect_id) = 0;
 };
