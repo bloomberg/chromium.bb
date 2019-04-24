@@ -195,6 +195,23 @@ cr.define('devices_page', function() {
         }
       });
 
+      const getBosDescriptorButton =
+          tabPanelClone.querySelector('#bos-descriptor-button');
+      const bosDescriptorElement =
+          tabPanelClone.querySelector('.bos-descriptor-panel');
+      const bosDescriptorPanel = new descriptor_panel.DescriptorPanel(
+          usbDeviceProxy, bosDescriptorElement);
+      getBosDescriptorButton.addEventListener('click', () => {
+        bosDescriptorElement.hidden = !bosDescriptorElement.hidden;
+
+        // Clear the panel before rendering new data.
+        bosDescriptorPanel.clearView();
+
+        if (!bosDescriptorElement.hidden) {
+          bosDescriptorPanel.renderBosDescriptor();
+        }
+      });
+
       tabPanels.appendChild(tabPanelClone);
       cr.ui.decorate('tabpanel', cr.ui.TabPanel);
     }

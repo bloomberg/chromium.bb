@@ -152,14 +152,20 @@
         <button id="string-descriptor-button">Get String Descriptor</button>
       </div>
       <div class="string-descriptor-panel" hidden>
-        String Descriptor Index: 
+        String Descriptor Index:
         <input id="index-input" type="number" min="1" list="indexes">
         <datalist id="indexes"></datalist>
-        Language Code: 
+        Language Code:
         <input id="language-code-input" list="languages">
         <datalist id="languages"></datalist>
         <button>GET</button>
       </div>
+      <div class="descriptor-button">
+        <button id="bos-descriptor-button">
+          Get WebUSB & Microsoft OS 2.0 Descriptors
+        </button>
+      </div>
+      <div class="bos-descriptor-panel" hidden></div>
     </tabpanel>
   </template>
 
