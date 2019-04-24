@@ -58,7 +58,7 @@
     <color name="app_banner_install_button_bg">#0F9D58</color>
 
     <!-- App menu colors -->
-    <color name="update_menu_item_text_color">#DC5554</color>
+    <color name="update_menu_item_text_color">@color/default_red</color>
 
     <!-- URL Emphasizer colors -->
     <color name="url_emphasis_non_emphasized_text">#80333333</color>

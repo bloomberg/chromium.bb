@@ -288,7 +288,7 @@ public class UpdateMenuItemHelper {
                 mMenuUiState.itemState = new MenuItemState();
                 mMenuUiState.itemState.title = R.string.menu_update;
                 mMenuUiState.itemState.titleColor = R.color.error_text_color;
-                mMenuUiState.itemState.icon = R.drawable.badge_update_dark;
+                mMenuUiState.itemState.icon = R.drawable.badge_update;
                 mMenuUiState.itemState.enabled = true;
                 mMenuUiState.itemState.summary = UpdateConfigs.getCustomSummary();
                 if (TextUtils.isEmpty(mMenuUiState.itemState.summary)) {
