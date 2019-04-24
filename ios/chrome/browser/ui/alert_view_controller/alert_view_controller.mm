@@ -22,7 +22,7 @@ constexpr CGFloat kShadowRadius = 13;
 constexpr float kShadowOpacity = 0.12;
 
 // Properties of the alert view.
-constexpr CGFloat kCornerRadius = 12;
+constexpr CGFloat kCornerRadius = 14;
 constexpr CGFloat kMinimumWidth = 30;
 constexpr CGFloat kMinimumHeight = 30;
 constexpr CGFloat kMinimumMargin = 4;
