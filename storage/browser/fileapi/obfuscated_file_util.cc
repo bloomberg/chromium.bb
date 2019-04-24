@@ -339,8 +339,8 @@ base::File::Error ObfuscatedFileUtil::EnsureFileExists(
   int64_t growth = UsageForPath(file_info.name.size());
   if (!AllocateQuota(context, growth))
     return base::File::FILE_ERROR_NO_SPACE;
-  base::File::Error error = CreateFile(context, base::FilePath(), url,
-                                       &file_info);
+  base::File::Error error = CreateFile(
+      context, base::FilePath(), false /* foreign_source */, url, &file_info);
   if (created && base::File::FILE_OK == error) {
     *created = true;
     UpdateUsage(context, url, growth);
@@ -599,7 +599,8 @@ base::File::Error ObfuscatedFileUtil::CopyOrMoveFile(
           src_local_path, dest_local_path, option,
           delegate_->CopyOrMoveModeForDestination(dest_url, true /* copy */));
     } else {  // non-overwrite
-      error = CreateFile(context, src_local_path, dest_url, &dest_file_info);
+      error = CreateFile(context, src_local_path, false /* foreign_source */,
+                         dest_url, &dest_file_info);
     }
   } else {
     if (overwrite) {
@@ -651,8 +652,10 @@ base::File::Error ObfuscatedFileUtil::CopyInForeignFile(
     return base::File::FILE_ERROR_FAILED;
 
   base::File::Info src_platform_file_info;
-  if (delegate_->GetFileInfo(src_file_path, &src_platform_file_info) !=
-      base::File::FILE_OK)
+  // Foreign files are from another on-disk file system and don't require path
+  // conversion.
+  if (ObfuscatedFileUtilDiskDelegate().GetFileInfo(
+          src_file_path, &src_platform_file_info) != base::File::FILE_OK)
     return base::File::FILE_ERROR_NOT_FOUND;
 
   FileId dest_file_id;
@@ -697,11 +700,12 @@ base::File::Error ObfuscatedFileUtil::CopyInForeignFile(
   if (overwrite) {
     base::FilePath dest_local_path =
         DataPathToLocalPath(dest_url, dest_file_info.data_path);
-    error = delegate_->CopyOrMoveFile(
+    error = delegate_->CopyInForeignFile(
         src_file_path, dest_local_path, FileSystemOperation::OPTION_NONE,
         delegate_->CopyOrMoveModeForDestination(dest_url, true /* copy */));
   } else {
-    error = CreateFile(context, src_file_path, dest_url, &dest_file_info);
+    error = CreateFile(context, src_file_path, true /* foreign_source */,
+                       dest_url, &dest_file_info);
   }
 
   if (error != base::File::FILE_OK)
@@ -1120,6 +1124,7 @@ base::File ObfuscatedFileUtil::CreateAndOpenFile(
 base::File::Error ObfuscatedFileUtil::CreateFile(
     FileSystemOperationContext* context,
     const base::FilePath& src_file_path,
+    bool foreign_source,
     const FileSystemURL& dest_url,
     FileInfo* dest_file_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1143,9 +1148,15 @@ base::File::Error ObfuscatedFileUtil::CreateFile(
 
     error = delegate_->EnsureFileExists(dest_local_path, &created);
   } else {
-    error = delegate_->CopyOrMoveFile(
-        src_file_path, dest_local_path, FileSystemOperation::OPTION_NONE,
-        delegate_->CopyOrMoveModeForDestination(dest_url, true /* copy */));
+    if (foreign_source) {
+      error = delegate_->CopyInForeignFile(
+          src_file_path, dest_local_path, FileSystemOperation::OPTION_NONE,
+          delegate_->CopyOrMoveModeForDestination(dest_url, true /* copy */));
+    } else {
+      error = delegate_->CopyOrMoveFile(
+          src_file_path, dest_local_path, FileSystemOperation::OPTION_NONE,
+          delegate_->CopyOrMoveModeForDestination(dest_url, true /* copy */));
+    }
     created = true;
   }
 

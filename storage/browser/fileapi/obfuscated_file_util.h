@@ -264,12 +264,14 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtil
 
   // The same as CreateAndOpenFile except that a file is not returned and if a
   // path is provided in |source_path|, it will be used as a source from which
-  // to COPY data.
-  base::File::Error CreateFile(
-      FileSystemOperationContext* context,
-      const base::FilePath& source_file_path,
-      const FileSystemURL& dest_url,
-      FileInfo* dest_file_info);
+  // to COPY data. If |foreign_source| is true, the source file is considered
+  // from another (on disk) file system and its path is considered not
+  // obfuscated.
+  base::File::Error CreateFile(FileSystemOperationContext* context,
+                               const base::FilePath& source_file_path,
+                               bool foreign_source,
+                               const FileSystemURL& dest_url,
+                               FileInfo* dest_file_info);
 
   // Updates |db| and |dest_file_info| at the end of creating a new file.
   base::File::Error CommitCreateFile(

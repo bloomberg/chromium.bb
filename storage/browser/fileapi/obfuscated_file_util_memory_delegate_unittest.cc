@@ -12,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace storage {
@@ -297,6 +298,51 @@ TEST_F(ObfuscatedFileUtilMemoryDelegateTest, CopyFile) {
                                      FileSystemOperation::OPTION_NONE, nosync));
   EXPECT_TRUE(FileExists(to_dir_file));
   EXPECT_EQ(1020, GetSize(to_dir_file));
+}
+
+TEST_F(ObfuscatedFileUtilMemoryDelegateTest, CopyForeignFile) {
+  base::ScopedTempDir source_dir;
+  ASSERT_TRUE(source_dir.CreateUniqueTempDir());
+  base::FilePath from_file = source_dir.GetPath().AppendASCII("from_file");
+
+  base::FilePath valid_to_file = Path("to_file");
+  base::FilePath invalid_to_file = Path("dir").AppendASCII("to_file");
+
+  char test_data[] = "0123456789";
+  const int test_data_len = strlen(test_data);
+
+  const storage::NativeFileUtil::CopyOrMoveMode sync =
+      storage::NativeFileUtil::COPY_SYNC;
+
+  // Test copying nonexistent file.
+  EXPECT_EQ(
+      base::File::FILE_ERROR_NOT_FOUND,
+      file_util()->CopyInForeignFile(from_file, valid_to_file,
+                                     FileSystemOperation::OPTION_NONE, sync));
+
+  // Create source file.
+  EXPECT_EQ(test_data_len,
+            base::WriteFile(from_file, test_data, test_data_len));
+
+  // Test copying to a nonexistent directory.
+  EXPECT_EQ(
+      base::File::FILE_ERROR_NOT_FOUND,
+      file_util()->CopyInForeignFile(from_file, invalid_to_file,
+                                     FileSystemOperation::OPTION_NONE, sync));
+  EXPECT_FALSE(FileExists(invalid_to_file));
+
+  // Test copying to a valid path.
+  EXPECT_EQ(base::File::FILE_OK, file_util()->CopyInForeignFile(
+                                     from_file, valid_to_file,
+                                     FileSystemOperation::OPTION_NONE, sync));
+  EXPECT_TRUE(FileExists(valid_to_file));
+  EXPECT_EQ(test_data_len, GetSize(valid_to_file));
+  scoped_refptr<net::IOBuffer> content =
+      base::MakeRefCounted<net::IOBuffer>(static_cast<size_t>(test_data_len));
+  EXPECT_EQ(test_data_len, file_util()->ReadFile(valid_to_file, 0,
+                                                 content.get(), test_data_len));
+  EXPECT_EQ(std::string(test_data),
+            std::string(content->data(), test_data_len));
 }
 
 TEST_F(ObfuscatedFileUtilMemoryDelegateTest, CopyFileNonExistingFile) {

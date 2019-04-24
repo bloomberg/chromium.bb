@@ -88,6 +88,14 @@ base::File::Error ObfuscatedFileUtilDiskDelegate::CopyOrMoveFile(
   return NativeFileUtil::CopyOrMoveFile(src_path, dest_path, option, mode);
 }
 
+base::File::Error ObfuscatedFileUtilDiskDelegate::CopyInForeignFile(
+    const base::FilePath& src_path,
+    const base::FilePath& dest_path,
+    FileSystemOperation::CopyOrMoveOption option,
+    NativeFileUtil::CopyOrMoveMode mode) {
+  return NativeFileUtil::CopyOrMoveFile(src_path, dest_path, option, mode);
+}
+
 base::File::Error ObfuscatedFileUtilDiskDelegate::DeleteFile(
     const base::FilePath& path) {
   return NativeFileUtil::DeleteFile(path);
