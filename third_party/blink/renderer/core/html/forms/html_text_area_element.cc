@@ -108,7 +108,7 @@ void HTMLTextAreaElement::ChildrenChanged(const ChildrenChange& change) {
   if (is_dirty_)
     SetInnerEditorValue(value());
   else
-    SetNonDirtyValue(defaultValue());
+    SetNonDirtyValue(defaultValue(), TextControlSetValueSelection::kClamp);
 }
 
 bool HTMLTextAreaElement::IsPresentationAttribute(
@@ -231,7 +231,8 @@ void HTMLTextAreaElement::AppendToFormData(FormData& form_data) {
 }
 
 void HTMLTextAreaElement::ResetImpl() {
-  SetNonDirtyValue(defaultValue());
+  SetNonDirtyValue(defaultValue(),
+                   TextControlSetValueSelection::kSetSelectionToEnd);
 }
 
 bool HTMLTextAreaElement::HasCustomFocusLogic() const {
@@ -386,9 +387,10 @@ void HTMLTextAreaElement::setValue(const String& value,
   is_dirty_ = true;
 }
 
-void HTMLTextAreaElement::SetNonDirtyValue(const String& value) {
-  SetValueCommon(value, TextFieldEventBehavior::kDispatchNoEvent,
-                 TextControlSetValueSelection::kSetSelectionToEnd);
+void HTMLTextAreaElement::SetNonDirtyValue(
+    const String& value,
+    TextControlSetValueSelection selection) {
+  SetValueCommon(value, TextFieldEventBehavior::kDispatchNoEvent, selection);
   is_dirty_ = false;
 }
 
@@ -411,6 +413,13 @@ void HTMLTextAreaElement::SetValueCommon(
   if (normalized_value == value())
     return;
 
+  // selectionStart and selectionEnd values can be changed by
+  // SetInnerEditorValue(). We need to get them before SetInnerEditorValue() to
+  // clamp them later in a case of kClamp.
+  const bool is_clamp = selection == TextControlSetValueSelection::kClamp;
+  const unsigned selection_start = is_clamp ? selectionStart() : 0;
+  const unsigned selection_end = is_clamp ? selectionEnd() : 0;
+
   if (event_behavior != TextFieldEventBehavior::kDispatchNoEvent)
     SetValueBeforeFirstUserEditIfNotSet();
   value_ = normalized_value;
@@ -429,6 +438,10 @@ void HTMLTextAreaElement::SetValueCommon(
     // Set the caret to the end of the text value except for initialize.
     unsigned end_of_string = value_.length();
     SetSelectionRange(end_of_string, end_of_string);
+  } else if (is_clamp) {
+    const unsigned end_of_string = value_.length();
+    SetSelectionRange(std::min(end_of_string, selection_start),
+                      std::min(end_of_string, selection_end));
   }
 
   NotifyFormStateChanged();
