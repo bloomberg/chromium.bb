@@ -593,7 +593,7 @@
   },
   {
     "name": "disallow-doc-written-script-loads",
-    // "owners": [ "your-team" ],
+    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     "expiry_milestone": 76
   },
   {
