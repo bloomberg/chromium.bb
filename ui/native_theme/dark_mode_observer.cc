@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/dark_mode_observer.h"
+#include "ui/native_theme/dark_mode_observer.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_observer.h"
 
+namespace ui {
+
 DarkModeObserver::DarkModeObserver(
-    ui::NativeTheme* theme,
+    NativeTheme* theme,
     const base::RepeatingCallback<void(bool)>& callback)
     : theme_(theme),
       callback_(callback),
@@ -28,7 +30,7 @@ void DarkModeObserver::Stop() {
   theme_observer_.RemoveAll();
 }
 
-void DarkModeObserver::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
+void DarkModeObserver::OnNativeThemeUpdated(NativeTheme* observed_theme) {
   DCHECK_EQ(observed_theme, theme_);
   RunCallbackIfChanged();
 }
@@ -40,3 +42,5 @@ void DarkModeObserver::RunCallbackIfChanged() {
   in_dark_mode_ = in_dark_mode;
   callback_.Run(in_dark_mode_);
 }
+
+}  // namespace ui

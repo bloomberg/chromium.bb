@@ -32,7 +32,6 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/dark_mode_observer.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_paths.h"
@@ -53,6 +52,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/native_theme/dark_mode_observer.h"
 
 namespace {
 
@@ -761,7 +761,7 @@ void InstantService::AddValidBackdropUrlForTesting(const GURL& url) const {
 }
 
 void InstantService::CreateDarkModeObserver(ui::NativeTheme* theme) {
-  dark_mode_observer_ = std::make_unique<DarkModeObserver>(
+  dark_mode_observer_ = std::make_unique<ui::DarkModeObserver>(
       theme, base::BindRepeating(&InstantService::OnDarkModeChanged,
                                  weak_ptr_factory_.GetWeakPtr()));
   dark_mode_observer_->Start();

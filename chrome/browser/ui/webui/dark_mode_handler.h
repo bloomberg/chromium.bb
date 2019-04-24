@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/dark_mode_observer.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "ui/native_theme/dark_mode_observer.h"
 #include "ui/native_theme/native_theme.h"
 
 namespace base {
@@ -70,7 +70,7 @@ class DarkModeHandler : public content::WebUIMessageHandler {
   // Profile to update data sources on. Injected for testing.
   Profile* const profile_;
 
-  DarkModeObserver dark_mode_observer_;
+  ui::DarkModeObserver dark_mode_observer_;
 
   // Populated if feature is enabled.
   std::string source_name_;

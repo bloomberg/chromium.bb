@@ -32,7 +32,6 @@
 #error "Instant is only used on desktop";
 #endif
 
-class DarkModeObserver;
 class InstantIOContext;
 class InstantServiceObserver;
 class NtpBackgroundService;
@@ -43,6 +42,10 @@ struct ThemeBackgroundInfo;
 namespace content {
 class RenderProcessHost;
 }  // namespace content
+
+namespace ui {
+class DarkModeObserver;
+}  // namespace ui
 
 // Tracks render process host IDs that are associated with Instant, i.e.
 // processes that are used to render an NTP. Also responsible for keeping
@@ -254,7 +257,7 @@ class InstantService : public KeyedService,
   PrefService* pref_service_;
 
   // Keeps track of any changes to system dark mode.
-  std::unique_ptr<DarkModeObserver> dark_mode_observer_;
+  std::unique_ptr<ui::DarkModeObserver> dark_mode_observer_;
 
   NtpBackgroundService* background_service_;
 
