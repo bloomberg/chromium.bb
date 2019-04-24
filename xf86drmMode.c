@@ -1259,7 +1259,7 @@ drm_public drmModeAtomicReqPtr drmModeAtomicDuplicate(drmModeAtomicReqPtr old)
 			return NULL;
 		}
 		memcpy(new->items, old->items,
-		       old->size_items * sizeof(*new->items));
+		       old->cursor * sizeof(*new->items));
 	} else {
 		new->items = NULL;
 	}
@@ -1322,12 +1322,13 @@ drm_public int drmModeAtomicAddProperty(drmModeAtomicReqPtr req,
 		return -EINVAL;
 
 	if (req->cursor >= req->size_items) {
+		const uint32_t item_size_inc = getpagesize() / sizeof(*req->items);
 		drmModeAtomicReqItemPtr new;
 
-		req->size_items += 16;
+		req->size_items += item_size_inc;
 		new = realloc(req->items, req->size_items * sizeof(*req->items));
 		if (!new) {
-			req->size_items -= 16;
+			req->size_items -= item_size_inc;
 			return -ENOMEM;
 		}
 		req->items = new;
