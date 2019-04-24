@@ -10,6 +10,7 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -402,6 +403,13 @@ public class FeedNewTabPage extends NewTabPage {
         mStream.setHeaderViews(Arrays.asList(new NonDismissibleHeader(mNewTabPageLayout),
                 new NonDismissibleHeader(mSectionHeaderView)));
         mStream.addScrollListener(new FeedLoggingBridge.ScrollEventReporter(loggingBridge));
+
+        // Work around https://crbug.com/943873 where default focus highlight shows up after
+        // toggling dark mode.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            view.setDefaultFocusHighlightEnabled(false);
+        }
+
         // Explicitly request focus on the scroll container to avoid UrlBar being focused after
         // the scroll container for policy is removed.
         view.requestFocus();
