@@ -53,9 +53,11 @@ bool CanShowGoogleAppModule(const policy::PolicyMap& policies) {
   return true;
 }
 
-bool CanShowNTPBackgroundModule(const policy::PolicyMap& policies) {
-  // We shouldn't show this module if any policy is set that overrides the NTP.
-  return !policies.GetValue(policy::key::kNewTabPageLocation);
+bool CanShowNTPBackgroundModule(const policy::PolicyMap& policies,
+                                Profile* profile) {
+  // We can't set the background if the NTP is something other than Google.
+  return !policies.GetValue(policy::key::kNewTabPageLocation) &&
+         search::DefaultSearchProviderIsGoogle(profile);
 }
 
 bool CanShowSetDefaultModule(const policy::PolicyMap& policies) {
@@ -173,13 +175,13 @@ const policy::PolicyMap& GetPoliciesFromProfile(Profile* profile) {
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
 }
 
-std::vector<std::string> GetAvailableModules(
-    const policy::PolicyMap& policies) {
+std::vector<std::string> GetAvailableModules(Profile* profile) {
+  const policy::PolicyMap& policies = GetPoliciesFromProfile(profile);
   std::vector<std::string> available_modules;
 
   if (CanShowGoogleAppModule(policies))
     available_modules.push_back("nux-google-apps");
-  if (CanShowNTPBackgroundModule(policies))
+  if (CanShowNTPBackgroundModule(policies, profile))
     available_modules.push_back("nux-ntp-background");
   if (CanShowSetDefaultModule(policies))
     available_modules.push_back("nux-set-as-default");
@@ -190,7 +192,7 @@ std::vector<std::string> GetAvailableModules(
 }
 
 bool DoesOnboardingHaveModulesToShow(Profile* profile) {
-  return !GetAvailableModules(GetPoliciesFromProfile(profile)).empty();
+  return !GetAvailableModules(profile).empty();
 }
 
 std::string FilterModules(const std::string& requested_modules,
@@ -225,8 +227,7 @@ base::DictionaryValue GetNuxOnboardingModules(Profile* profile) {
     returning_user_modules = kNuxOnboardingReturningUserModules.Get();
   }
 
-  const policy::PolicyMap& policies = GetPoliciesFromProfile(profile);
-  std::vector<std::string> available_modules = GetAvailableModules(policies);
+  std::vector<std::string> available_modules = GetAvailableModules(profile);
 
   base::DictionaryValue modules;
   modules.SetString("new-user",
