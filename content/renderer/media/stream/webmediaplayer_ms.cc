@@ -782,20 +782,17 @@ void WebMediaPlayerMS::Paint(cc::PaintCanvas* canvas,
 
   const scoped_refptr<media::VideoFrame> frame = compositor_->GetCurrentFrame();
 
-  media::Context3D context_3d;
-  gpu::ContextSupport* context_support = nullptr;
+  viz::ContextProvider* provider = nullptr;
   if (frame && frame->HasTextures()) {
-    auto* provider =
+    provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
     // GPU Process crashed.
     if (!provider)
       return;
-    context_3d = media::Context3D(provider->ContextGL(), provider->GrContext());
-    context_support = provider->ContextSupport();
   }
   const gfx::RectF dest_rect(rect.x, rect.y, rect.width, rect.height);
   video_renderer_.Paint(frame, canvas, dest_rect, flags, video_rotation_,
-                        context_3d, context_support);
+                        provider);
 }
 
 bool WebMediaPlayerMS::WouldTaintOrigin() const {
@@ -957,18 +954,15 @@ bool WebMediaPlayerMS::CopyVideoTextureToPlatformTexture(
   if (!video_frame.get() || !video_frame->HasTextures())
     return false;
 
-  media::Context3D context_3d;
   auto* provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
   // GPU Process crashed.
   if (!provider)
     return false;
-  context_3d = media::Context3D(provider->ContextGL(), provider->GrContext());
-  DCHECK(context_3d.gl);
 
   return video_renderer_.CopyVideoFrameTexturesToGLTexture(
-      context_3d, provider->ContextSupport(), gl, video_frame.get(), target,
-      texture, internal_format, format, type, level, premultiply_alpha, flip_y);
+      provider, gl, video_frame.get(), target, texture, internal_format, format,
+      type, level, premultiply_alpha, flip_y);
 }
 
 bool WebMediaPlayerMS::CopyVideoYUVDataToPlatformTexture(
@@ -993,18 +987,15 @@ bool WebMediaPlayerMS::CopyVideoYUVDataToPlatformTexture(
   if (video_frame->HasTextures())
     return false;
 
-  media::Context3D context_3d;
   auto* provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
   // GPU Process crashed.
   if (!provider)
     return false;
-  context_3d = media::Context3D(provider->ContextGL(), provider->GrContext());
-  DCHECK(context_3d.gl);
 
   return video_renderer_.CopyVideoFrameYUVDataToGLTexture(
-      context_3d, gl, video_frame.get(), target, texture, internal_format,
-      format, type, level, premultiply_alpha, flip_y);
+      provider, gl, video_frame.get(), target, texture, internal_format, format,
+      type, level, premultiply_alpha, flip_y);
 }
 
 bool WebMediaPlayerMS::TexImageImpl(TexImageFunctionID functionID,

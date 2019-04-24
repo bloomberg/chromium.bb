@@ -20,7 +20,6 @@
 #include "media/base/media_switches.h"
 #include "media/base/routing_token_callback.h"
 #include "media/blink/media_blink_export.h"
-#include "media/filters/context_3d.h"
 #include "media/mojo/interfaces/media_metrics_provider.mojom.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
@@ -51,8 +50,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
  public:
   // Returns true if load will deferred. False if it will run immediately.
   using DeferLoadCB = base::RepeatingCallback<bool(base::OnceClosure)>;
-
-  using Context3DCB = base::Callback<Context3D()>;
 
   // Callback to obtain the media ContextProvider.
   // Requires being called on the media thread.

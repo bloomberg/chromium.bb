@@ -14,6 +14,7 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_image.h"
 #include "cc/paint/paint_image_builder.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -128,10 +129,10 @@ struct YUVPlaneTextureInfo {
 using YUVTexturesInfo = std::array<YUVPlaneTextureInfo, kNumYUVPlanes>;
 
 YUVTexturesInfo GetYUVTexturesInfo(const VideoFrame* video_frame,
-                                   const Context3D& context_3d) {
+                                   viz::ContextProvider* context_provider) {
   YUVTexturesInfo yuv_textures_info;
 
-  gpu::gles2::GLES2Interface* gl = context_3d.gl;
+  gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
   DCHECK(gl);
   // TODO(bsalomon): Use GL_RGB8 once Skia supports it.
   // skbug.com/7533
@@ -179,9 +180,9 @@ YUVTexturesInfo GetYUVTexturesInfo(const VideoFrame* video_frame,
 }
 
 void DeleteYUVTextures(const VideoFrame* video_frame,
-                       const Context3D& context_3d,
+                       viz::ContextProvider* context_provider,
                        const YUVTexturesInfo& yuv_textures_info) {
-  gpu::gles2::GLES2Interface* gl = context_3d.gl;
+  gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
   DCHECK(gl);
 
   for (size_t i = 0; i < video_frame->NumTextures(); ++i) {
@@ -197,8 +198,10 @@ void DeleteYUVTextures(const VideoFrame* video_frame,
 
 sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
     const VideoFrame* video_frame,
-    const Context3D& context_3d) {
+    viz::ContextProvider* context_provider) {
   DCHECK(video_frame->HasTextures());
+  GrContext* gr_context = context_provider->GrContext();
+  DCHECK(gr_context);
   // TODO: We should compare the DCHECK vs when UpdateLastImage calls this
   // function. (crbug.com/674185)
   DCHECK(video_frame->format() == PIXEL_FORMAT_I420 ||
@@ -209,7 +212,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
                         (ya_tex_size.height() + 1) / 2);
 
   YUVTexturesInfo yuv_textures_info =
-      GetYUVTexturesInfo(video_frame, context_3d);
+      GetYUVTexturesInfo(video_frame, context_provider);
 
   GrBackendTexture yuv_textures[3] = {
       GrBackendTexture(ya_tex_size.width(), ya_tex_size.height(),
@@ -220,22 +223,24 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
                        GrMipMapped::kNo, yuv_textures_info[2].texture),
   };
 
-  sk_sp<SkImage> img = YUVGrBackendTexturesToSkImage(
-      context_3d.gr_context, video_frame->ColorSpace(), video_frame->format(),
-      yuv_textures);
-  context_3d.gr_context->flush();
+  sk_sp<SkImage> img =
+      YUVGrBackendTexturesToSkImage(gr_context, video_frame->ColorSpace(),
+                                    video_frame->format(), yuv_textures);
+  gr_context->flush();
 
-  DeleteYUVTextures(video_frame, context_3d, yuv_textures_info);
+  DeleteYUVTextures(video_frame, context_provider, yuv_textures_info);
 
   return img;
 }
 
 sk_sp<SkImage> NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
     const VideoFrame* video_frame,
-    const Context3D& context_3d,
+    viz::ContextProvider* context_provider,
     unsigned int texture_target,
     unsigned int texture_id) {
   DCHECK(video_frame->HasTextures());
+  GrContext* gr_context = context_provider->GrContext();
+  DCHECK(gr_context);
   // TODO: We should compare the DCHECK vs when UpdateLastImage calls this
   // function. (https://crbug.com/674185)
   DCHECK(video_frame->format() == PIXEL_FORMAT_I420 ||
@@ -248,7 +253,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
   GrGLTextureInfo backend_texture{};
 
   YUVTexturesInfo yuv_textures_info =
-      GetYUVTexturesInfo(video_frame, context_3d);
+      GetYUVTexturesInfo(video_frame, context_provider);
 
   GrBackendTexture yuv_textures[3] = {
       GrBackendTexture(ya_tex_size.width(), ya_tex_size.height(),
@@ -268,19 +273,20 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
   };
 
   sk_sp<SkImage> img = YUVGrBackendTexturesToSkImage(
-      context_3d.gr_context, video_frame->ColorSpace(), video_frame->format(),
+      gr_context, video_frame->ColorSpace(), video_frame->format(),
       yuv_textures, result_texture);
-  context_3d.gr_context->flush();
+  gr_context->flush();
 
-  DeleteYUVTextures(video_frame, context_3d, yuv_textures_info);
+  DeleteYUVTextures(video_frame, context_provider, yuv_textures_info);
 
   return img;
 }
 
 // Creates a SkImage from a |video_frame| backed by native resources.
 // The SkImage will take ownership of the underlying resource.
-sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
-                                              const Context3D& context_3d) {
+sk_sp<SkImage> NewSkImageFromVideoFrameNative(
+    VideoFrame* video_frame,
+    viz::ContextProvider* context_provider) {
   DCHECK(PIXEL_FORMAT_ARGB == video_frame->format() ||
          PIXEL_FORMAT_XRGB == video_frame->format() ||
          PIXEL_FORMAT_RGB24 == video_frame->format() ||
@@ -296,7 +302,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
       << "Unsupported texture target " << std::hex << std::showbase
       << mailbox_holder.texture_target;
 
-  gpu::gles2::GLES2Interface* gl = context_3d.gl;
+  gpu::gles2::GLES2Interface* gl = context_provider->ContextGL();
   unsigned source_texture = 0;
   gfx::ColorSpace color_space_for_skia;
   if (mailbox_holder.texture_target != GL_TEXTURE_2D) {
@@ -327,8 +333,8 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
       video_frame->coded_size().width(), video_frame->coded_size().height(),
       GrMipMapped::kNo, source_texture_info);
   return SkImage::MakeFromAdoptedTexture(
-      context_3d.gr_context, source_backend_texture, kTopLeft_GrSurfaceOrigin,
-      kRGBA_8888_SkColorType, kPremul_SkAlphaType,
+      context_provider->GrContext(), source_backend_texture,
+      kTopLeft_GrSurfaceOrigin, kRGBA_8888_SkColorType, kPremul_SkAlphaType,
       color_space_for_skia.ToSkColorSpace());
 }
 
@@ -573,8 +579,7 @@ void PaintCanvasVideoRenderer::Paint(
     const gfx::RectF& dest_rect,
     cc::PaintFlags& flags,
     VideoRotation video_rotation,
-    const Context3D& context_3d,
-    gpu::ContextSupport* context_support) {
+    viz::ContextProvider* context_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (flags.getAlpha() == 0) {
     return;
@@ -596,8 +601,7 @@ void PaintCanvasVideoRenderer::Paint(
     return;
   }
 
-  gpu::gles2::GLES2Interface* gl = context_3d.gl;
-  if (!UpdateLastImage(video_frame, context_3d))
+  if (!UpdateLastImage(video_frame, context_provider))
     return;
 
   cc::PaintFlags video_flags;
@@ -669,21 +673,21 @@ void PaintCanvasVideoRenderer::Paint(
   if (video_frame->HasTextures()) {
     // Synchronize |video_frame| with the read operations in UpdateLastImage(),
     // which are triggered by canvas->flush().
-    SynchronizeVideoFrameRead(video_frame, gl, context_support);
+    SynchronizeVideoFrameRead(video_frame, context_provider->ContextGL(),
+                              context_provider->ContextSupport());
   }
 }
 
 void PaintCanvasVideoRenderer::Copy(
     const scoped_refptr<VideoFrame>& video_frame,
     cc::PaintCanvas* canvas,
-    const Context3D& context_3d,
-    gpu::ContextSupport* context_support) {
+    viz::ContextProvider* context_provider) {
   cc::PaintFlags flags;
   flags.setBlendMode(SkBlendMode::kSrc);
   flags.setFilterQuality(kLow_SkFilterQuality);
   Paint(video_frame, canvas,
         gfx::RectF(gfx::SizeF(video_frame->visible_rect().size())), flags,
-        media::VIDEO_ROTATION_0, context_3d, context_support);
+        media::VIDEO_ROTATION_0, context_provider);
 }
 
 namespace {
@@ -1080,8 +1084,7 @@ void PaintCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
 }
 
 bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
-    const Context3D& context_3d,
-    gpu::ContextSupport* context_support,
+    viz::ContextProvider* context_provider,
     gpu::gles2::GLES2Interface* destination_gl,
     const scoped_refptr<VideoFrame>& video_frame,
     unsigned int target,
@@ -1098,9 +1101,12 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
   if (video_frame->NumTextures() > 1 ||
       video_frame->metadata()->IsTrue(
           VideoFrameMetadata::READ_LOCK_FENCES_ENABLED)) {
-    if (!context_3d.gr_context)
+    if (!context_provider)
       return false;
-    if (!UpdateLastImage(video_frame, context_3d))
+    GrContext* gr_context = context_provider->GrContext();
+    if (!gr_context)
+      return false;
+    if (!UpdateLastImage(video_frame, context_provider))
       return false;
 
     GrBackendTexture backend_texture =
@@ -1113,8 +1119,9 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
 
     // Synchronize |video_frame| with the read operations in UpdateLastImage(),
     // which are triggered by getBackendTexture().
-    gpu::gles2::GLES2Interface* canvas_gl = context_3d.gl;
-    SynchronizeVideoFrameRead(video_frame, canvas_gl, context_support);
+    gpu::gles2::GLES2Interface* canvas_gl = context_provider->ContextGL();
+    SynchronizeVideoFrameRead(video_frame, canvas_gl,
+                              context_provider->ContextSupport());
 
     gpu::MailboxHolder mailbox_holder;
     mailbox_holder.texture_target = texture_info.fTarget;
@@ -1154,7 +1161,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
 }
 
 bool PaintCanvasVideoRenderer::PrepareVideoFrameForWebGL(
-    const Context3D& context_3d,
+    viz::ContextProvider* context_provider,
     gpu::gles2::GLES2Interface* destination_gl,
     const scoped_refptr<VideoFrame>& video_frame,
     unsigned int target,
@@ -1173,7 +1180,7 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrameForWebGL(
     return false;
   }
 
-  if (!context_3d.gr_context)
+  if (!context_provider || !context_provider->GrContext())
     return false;
 
   // Take webgl video texture as 2D texture. Setting it as external render
@@ -1184,7 +1191,7 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrameForWebGL(
                              video_frame->coded_size().height(), 0, GL_RGBA,
                              GL_UNSIGNED_BYTE, nullptr);
 
-  gpu::gles2::GLES2Interface* source_gl = context_3d.gl;
+  gpu::gles2::GLES2Interface* source_gl = context_provider->ContextGL();
   gpu::MailboxHolder mailbox_holder;
   mailbox_holder.texture_target = target;
   destination_gl->ProduceTextureDirectCHROMIUM(texture,
@@ -1198,7 +1205,8 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrameForWebGL(
   uint32_t shared_texture =
       source_gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
 
-  if (!PrepareVideoFrame(video_frame, context_3d, target, shared_texture)) {
+  if (!PrepareVideoFrame(video_frame, context_provider, target,
+                         shared_texture)) {
     return false;
   }
 
@@ -1227,7 +1235,7 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrameForWebGL(
 }
 
 bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
-    const Context3D& context_3d,
+    viz::ContextProvider* context_provider,
     gpu::gles2::GLES2Interface* destination_gl,
     const scoped_refptr<VideoFrame>& video_frame,
     unsigned int target,
@@ -1238,7 +1246,9 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
     int level,
     bool premultiply_alpha,
     bool flip_y) {
-  if (!context_3d.gr_context) {
+  DCHECK(context_provider);
+  GrContext* gr_context = context_provider->GrContext();
+  if (!gr_context) {
     return false;
   }
 
@@ -1284,8 +1294,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
 
     // Upload the CPU-side SkImage into a GPU-side SkImage.
     // (Note the original video_frame data is no longer used after this point.)
-    yuv_images[plane] =
-        plane_image_cpu->makeTextureImage(context_3d.gr_context, nullptr);
+    yuv_images[plane] = plane_image_cpu->makeTextureImage(gr_context, nullptr);
     DCHECK(yuv_images[plane]);
 
     // Extract the backend texture from the GPU-side image.
@@ -1293,9 +1302,9 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
   }
 
   // Decode 3 GPU-side Y,U,V SkImages into a GPU-side RGB SkImage.
-  sk_sp<SkImage> yuv_image = YUVGrBackendTexturesToSkImage(
-      context_3d.gr_context, video_frame->ColorSpace(), video_frame->format(),
-      yuv_textures);
+  sk_sp<SkImage> yuv_image =
+      YUVGrBackendTexturesToSkImage(gr_context, video_frame->ColorSpace(),
+                                    video_frame->format(), yuv_textures);
   if (!yuv_image) {
     return false;
   }
@@ -1303,7 +1312,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
   GrGLTextureInfo src_texture_info{};
   yuv_image->getBackendTexture(true).getGLTextureInfo(&src_texture_info);
 
-  gpu::gles2::GLES2Interface* source_gl = context_3d.gl;
+  gpu::gles2::GLES2Interface* source_gl = context_provider->ContextGL();
   gpu::MailboxHolder mailbox_holder;
   mailbox_holder.texture_target = src_texture_info.fTarget;
   source_gl->ProduceTextureDirectCHROMIUM(src_texture_info.fID,
@@ -1420,7 +1429,7 @@ void PaintCanvasVideoRenderer::ResetCache() {
 
 bool PaintCanvasVideoRenderer::UpdateLastImage(
     const scoped_refptr<VideoFrame>& video_frame,
-    const Context3D& context_3d) {
+    viz::ContextProvider* context_provider) {
   if (!last_image_ || video_frame->unique_id() != last_id_ ||
       !last_image_.GetSkImage()->getBackendTexture(true).isValid()) {
     ResetCache();
@@ -1437,15 +1446,16 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
     // Holding |video_frame| longer than this call when using GPUVideoDecoder
     // could cause problems since the pool of VideoFrames has a fixed size.
     if (video_frame->HasTextures()) {
-      DCHECK(context_3d.gr_context);
-      DCHECK(context_3d.gl);
+      DCHECK(context_provider);
+      DCHECK(context_provider->GrContext());
+      DCHECK(context_provider->ContextGL());
       if (video_frame->NumTextures() > 1) {
-        paint_image_builder.set_image(
-            NewSkImageFromVideoFrameYUVTextures(video_frame.get(), context_3d),
-            cc::PaintImage::GetNextContentId());
+        paint_image_builder.set_image(NewSkImageFromVideoFrameYUVTextures(
+                                          video_frame.get(), context_provider),
+                                      cc::PaintImage::GetNextContentId());
       } else {
         paint_image_builder.set_image(
-            NewSkImageFromVideoFrameNative(video_frame.get(), context_3d),
+            NewSkImageFromVideoFrameNative(video_frame.get(), context_provider),
             cc::PaintImage::GetNextContentId());
       }
     } else {
@@ -1466,7 +1476,7 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
 
 bool PaintCanvasVideoRenderer::PrepareVideoFrame(
     const scoped_refptr<VideoFrame>& video_frame,
-    const Context3D& context_3d,
+    viz::ContextProvider* context_provider,
     unsigned int textureTarget,
     unsigned int texture) {
   auto paint_image_builder =
@@ -1481,12 +1491,13 @@ bool PaintCanvasVideoRenderer::PrepareVideoFrame(
   // Holding |video_frame| longer than this call when using GPUVideoDecoder
   // could cause problems since the pool of VideoFrames has a fixed size.
   if (video_frame->HasTextures()) {
-    DCHECK(context_3d.gr_context);
-    DCHECK(context_3d.gl);
+    DCHECK(context_provider);
+    DCHECK(context_provider->GrContext());
+    DCHECK(context_provider->ContextGL());
     if (video_frame->NumTextures() > 1) {
       paint_image_builder.set_image(
           NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
-              video_frame.get(), context_3d, textureTarget, texture),
+              video_frame.get(), context_provider, textureTarget, texture),
           cc::PaintImage::GetNextContentId());
     } else {
       // We don't support Android now.

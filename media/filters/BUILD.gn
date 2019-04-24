@@ -24,7 +24,6 @@ jumbo_source_set("filters") {
     "audio_timestamp_validator.h",
     "chunk_demuxer.cc",
     "chunk_demuxer.h",
-    "context_3d.h",
     "decoder_selector.cc",
     "decoder_selector.h",
     "decoder_stream.cc",

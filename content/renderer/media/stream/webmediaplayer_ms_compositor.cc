@@ -68,10 +68,7 @@ scoped_refptr<media::VideoFrame> CopyFrame(
     cc::SkiaPaintCanvas paint_canvas(bitmap);
 
     DCHECK(provider->ContextGL());
-    video_renderer->Copy(
-        frame.get(), &paint_canvas,
-        media::Context3D(provider->ContextGL(), provider->GrContext()),
-        provider->ContextSupport());
+    video_renderer->Copy(frame.get(), &paint_canvas, provider);
 
     SkPixmap pixmap;
     const bool result = bitmap.peekPixels(&pixmap);

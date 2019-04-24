@@ -23,7 +23,6 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "media/filters/context_3d.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
@@ -311,11 +310,7 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
     if (!video_renderer_)
       video_renderer_.reset(new media::PaintCanvasVideoRenderer);
 
-    DCHECK(context_provider->ContextGL());
-    video_renderer_->Copy(video_frame.get(), canvas_.get(),
-                          media::Context3D(context_provider->ContextGL(),
-                                           context_provider->GrContext()),
-                          context_provider->ContextSupport());
+    video_renderer_->Copy(video_frame.get(), canvas_.get(), context_provider);
 
     SkPixmap pixmap;
     if (!bitmap_.peekPixels(&pixmap)) {

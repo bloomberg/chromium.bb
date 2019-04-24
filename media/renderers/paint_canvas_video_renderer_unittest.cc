@@ -11,9 +11,11 @@
 #include "base/message_loop/message_loop.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
@@ -225,7 +227,7 @@ void PaintCanvasVideoRendererTest::PaintWithoutFrame(cc::PaintCanvas* canvas) {
   cc::PaintFlags flags;
   flags.setFilterQuality(kLow_SkFilterQuality);
   renderer_.Paint(nullptr, canvas, kNaturalRect, flags, VIDEO_ROTATION_0,
-                  Context3D(), nullptr);
+                  nullptr);
 }
 
 void PaintCanvasVideoRendererTest::Paint(
@@ -260,13 +262,13 @@ void PaintCanvasVideoRendererTest::PaintRotated(
   flags.setBlendMode(mode);
   flags.setFilterQuality(kLow_SkFilterQuality);
   renderer_.Paint(video_frame, canvas, dest_rect, flags, video_rotation,
-                  Context3D(), nullptr);
+                  nullptr);
 }
 
 void PaintCanvasVideoRendererTest::Copy(
     const scoped_refptr<VideoFrame>& video_frame,
     cc::PaintCanvas* canvas) {
-  renderer_.Copy(video_frame, canvas, Context3D(), nullptr);
+  renderer_.Copy(video_frame, canvas, nullptr);
 }
 
 TEST_F(PaintCanvasVideoRendererTest, NoFrame) {
@@ -564,7 +566,7 @@ TEST_F(PaintCanvasVideoRendererTest, Y16) {
   flags.setFilterQuality(kNone_SkFilterQuality);
   renderer_.Paint(video_frame, &canvas,
                   gfx::RectF(bitmap.width(), bitmap.height()), flags,
-                  VIDEO_ROTATION_0, Context3D(), nullptr);
+                  VIDEO_ROTATION_0, nullptr);
   for (int j = 0; j < bitmap.height(); j++) {
     for (int i = 0; i < bitmap.width(); i++) {
       const int value = i + j * bitmap.width();
@@ -633,6 +635,53 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
                       const void* pixels)>
       texsubimage2d_callback_;
 };
+
+class TestContextProvider : public base::RefCounted<TestContextProvider>,
+                            public viz::ContextProvider {
+ public:
+  explicit TestContextProvider(sk_sp<::GrContext> gr_context)
+      : gr_context_(std::move(gr_context)) {}
+
+  void AddRef() const override {
+    base::RefCounted<TestContextProvider>::AddRef();
+  }
+  void Release() const override {
+    base::RefCounted<TestContextProvider>::Release();
+  }
+  gpu::ContextResult BindToCurrentThread() override {
+    return gpu::ContextResult::kSuccess;
+  }
+  void AddObserver(viz::ContextLostObserver* obs) override { NOTREACHED(); }
+  void RemoveObserver(viz::ContextLostObserver* obs) override { NOTREACHED(); }
+  base::Lock* GetLock() override { return nullptr; }
+  viz::ContextCacheController* CacheController() override {
+    NOTREACHED();
+    return nullptr;
+  }
+  gpu::ContextSupport* ContextSupport() override { return nullptr; }
+  ::GrContext* GrContext() override { return gr_context_.get(); }
+  gpu::SharedImageInterface* SharedImageInterface() override {
+    NOTREACHED();
+    return nullptr;
+  }
+  const gpu::Capabilities& ContextCapabilities() const override {
+    return capabilities_;
+  }
+  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override {
+    return feature_info_;
+  }
+  TestGLES2Interface* ContextGL() override { return &gles2_; }
+
+ private:
+  friend base::RefCounted<TestContextProvider>;
+  ~TestContextProvider() override = default;
+
+  TestGLES2Interface gles2_;
+  sk_sp<::GrContext> gr_context_;
+  gpu::Capabilities capabilities_;
+  gpu::GpuFeatureInfo feature_info_;
+};
+
 void MailboxHoldersReleased(const gpu::SyncToken& sync_token) {}
 }  // namespace
 
@@ -646,8 +695,8 @@ TEST_F(PaintCanvasVideoRendererTest, ContextLost) {
 
   cc::SkiaPaintCanvas canvas(AllocBitmap(kWidth, kHeight));
 
-  TestGLES2Interface gles2;
-  Context3D context_3d(&gles2, gr_context.get());
+  auto context_provider =
+      base::MakeRefCounted<TestContextProvider>(std::move(gr_context));
   gfx::Size size(kWidth, kHeight);
   gpu::MailboxHolder holders[VideoFrame::kMaxPlanes] = {gpu::MailboxHolder(
       gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_RECTANGLE_ARB)};
@@ -658,7 +707,7 @@ TEST_F(PaintCanvasVideoRendererTest, ContextLost) {
   cc::PaintFlags flags;
   flags.setFilterQuality(kLow_SkFilterQuality);
   renderer_.Paint(video_frame, &canvas, kNaturalRect, flags, VIDEO_ROTATION_90,
-                  context_3d, nullptr);
+                  context_provider.get());
 }
 
 void EmptyCallback(const gpu::SyncToken& sync_token) {}
@@ -683,7 +732,7 @@ TEST_F(PaintCanvasVideoRendererTest, CorrectFrameSizeToVisibleRect) {
   gfx::RectF visible_rect(visible_size.width(), visible_size.height());
   cc::PaintFlags flags;
   renderer_.Paint(video_frame, &canvas, visible_rect, flags, VIDEO_ROTATION_0,
-                  Context3D(), nullptr);
+                  nullptr);
 
   EXPECT_EQ(fWidth / 2, renderer_.LastImageDimensionsForTesting().width());
   EXPECT_EQ(fWidth / 2, renderer_.LastImageDimensionsForTesting().height());

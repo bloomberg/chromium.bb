@@ -21,7 +21,6 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_rotation.h"
-#include "media/filters/context_3d.h"
 
 namespace gfx {
 class RectF;
@@ -29,7 +28,14 @@ class RectF;
 
 namespace gpu {
 struct Capabilities;
-class ContextSupport;
+
+namespace gles2 {
+class GLES2Interface;
+}
+}  // namespace gpu
+
+namespace viz {
+class ContextProvider;
 }
 
 namespace media {
@@ -52,8 +58,7 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
              const gfx::RectF& dest_rect,
              cc::PaintFlags& flags,
              VideoRotation video_rotation,
-             const Context3D& context_3d,
-             gpu::ContextSupport* context_support);
+             viz::ContextProvider* context_provider);
 
   // Paints |video_frame| scaled to its visible size on |canvas|.
   //
@@ -61,8 +66,7 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   // and |context_support| must be provided.
   void Copy(const scoped_refptr<VideoFrame>& video_frame,
             cc::PaintCanvas* canvas,
-            const Context3D& context_3d,
-            gpu::ContextSupport* context_support);
+            viz::ContextProvider* context_provider);
 
   // Convert the contents of |video_frame| to raw RGB pixels. |rgb_pixels|
   // should point into a buffer large enough to hold as many 32 bit RGBA pixels
@@ -91,8 +95,7 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   //
   // The format of |video_frame| must be VideoFrame::NATIVE_TEXTURE.
   bool CopyVideoFrameTexturesToGLTexture(
-      const Context3D& context_3d,
-      gpu::ContextSupport* context_support,
+      viz::ContextProvider* context_provider,
       gpu::gles2::GLES2Interface* destination_gl,
       const scoped_refptr<VideoFrame>& video_frame,
       unsigned int target,
@@ -104,7 +107,7 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
       bool premultiply_alpha,
       bool flip_y);
 
-  bool PrepareVideoFrameForWebGL(const Context3D& context_3d,
+  bool PrepareVideoFrameForWebGL(viz::ContextProvider* context_provider,
                                  gpu::gles2::GLES2Interface* gl,
                                  const scoped_refptr<VideoFrame>& video_frame,
                                  unsigned int target,
@@ -118,7 +121,7 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   // CorrectLastImageDimensions() ensures that the source texture will be
   // cropped to |visible_rect|. Returns true on success.
   bool CopyVideoFrameYUVDataToGLTexture(
-      const Context3D& context_3d,
+      viz::ContextProvider* context_provider,
       gpu::gles2::GLES2Interface* destination_gl,
       const scoped_refptr<VideoFrame>& video_frame,
       unsigned int target,
@@ -183,12 +186,12 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   // Update the cache holding the most-recently-painted frame. Returns false
   // if the image couldn't be updated.
   bool UpdateLastImage(const scoped_refptr<VideoFrame>& video_frame,
-                       const Context3D& context_3d);
+                       viz::ContextProvider* context_provider);
 
   void CorrectLastImageDimensions(const SkIRect& visible_rect);
 
   bool PrepareVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
-                         const Context3D& context_3d,
+                         viz::ContextProvider* context_provider,
                          unsigned int textureTarget,
                          unsigned int texture);
 
