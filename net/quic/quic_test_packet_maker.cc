@@ -266,9 +266,11 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
-QuicTestPacketMaker::MakeStreamIdBlockedPacket(uint64_t num,
-                                               bool include_version,
-                                               quic::QuicStreamId stream_id) {
+QuicTestPacketMaker::MakeStreamsBlockedPacket(
+    uint64_t num,
+    bool include_version,
+    quic::QuicStreamCount stream_count,
+    bool unidirectional) {
   quic::QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
   header.destination_connection_id_included = HasDestinationConnectionId();
@@ -287,15 +289,16 @@ QuicTestPacketMaker::MakeStreamIdBlockedPacket(uint64_t num,
     header.length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_2;
   }
 
-  quic::QuicStreamIdBlockedFrame frame(1, stream_id);
+  quic::QuicStreamsBlockedFrame frame(1, stream_count, unidirectional);
   DVLOG(1) << "Adding frame: " << quic::QuicFrame(frame);
   return MakePacket(header, quic::QuicFrame(frame));
 }
 
 std::unique_ptr<quic::QuicReceivedPacket>
-QuicTestPacketMaker::MakeMaxStreamIdPacket(uint64_t num,
-                                           bool include_version,
-                                           quic::QuicStreamId stream_id) {
+QuicTestPacketMaker::MakeMaxStreamsPacket(uint64_t num,
+                                          bool include_version,
+                                          quic::QuicStreamCount stream_count,
+                                          bool unidirectional) {
   quic::QuicPacketHeader header;
   header.destination_connection_id = connection_id_;
   header.destination_connection_id_included = HasDestinationConnectionId();
@@ -314,7 +317,7 @@ QuicTestPacketMaker::MakeMaxStreamIdPacket(uint64_t num,
     header.length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_2;
   }
 
-  quic::QuicMaxStreamIdFrame frame(1, stream_id);
+  quic::QuicMaxStreamsFrame frame(1, stream_count, unidirectional);
   DVLOG(1) << "Adding frame: " << quic::QuicFrame(frame);
   return MakePacket(header, quic::QuicFrame(frame));
 }

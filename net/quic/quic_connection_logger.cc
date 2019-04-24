@@ -395,9 +395,9 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
       break;
     case quic::NEW_CONNECTION_ID_FRAME:
       break;
-    case quic::MAX_STREAM_ID_FRAME:
+    case quic::MAX_STREAMS_FRAME:
       break;
-    case quic::STREAM_ID_BLOCKED_FRAME:
+    case quic::STREAMS_BLOCKED_FRAME:
       break;
     case quic::PATH_RESPONSE_FRAME:
       break;
@@ -479,9 +479,9 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
       break;
     case quic::NEW_CONNECTION_ID_FRAME:
       break;
-    case quic::MAX_STREAM_ID_FRAME:
+    case quic::MAX_STREAMS_FRAME:
       break;
-    case quic::STREAM_ID_BLOCKED_FRAME:
+    case quic::STREAMS_BLOCKED_FRAME:
       break;
     case quic::PATH_RESPONSE_FRAME:
       break;

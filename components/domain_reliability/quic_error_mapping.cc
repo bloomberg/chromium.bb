@@ -271,10 +271,10 @@ const struct QuicErrorMapping {
     // Received a MAX STREAM DATA frame with errors.
     {quic::QUIC_INVALID_MAX_STREAM_DATA_FRAME_DATA,
      "quic.invalid.max_stream_data_frame_data"},
-    // Received a MAX STREAM ID frame with bad data
-    {quic::QUIC_MAX_STREAM_ID_DATA, "quic.max_stream_id_data"},
-    // Received a STREAM ID BLOCKED frame with bad data
-    {quic::QUIC_STREAM_ID_BLOCKED_DATA, "quic.stream_id_blocked_data"},
+    // Received a MAX STREAMS frame with bad data
+    {quic::QUIC_MAX_STREAMS_DATA, "quic.max_streams_data"},
+    // Received a STREAMS BLOCKED frame with bad data
+    {quic::QUIC_STREAMS_BLOCKED_DATA, "quic.streams_blocked_data"},
     // Error deframing a STREAM BLOCKED frame.
     {quic::QUIC_INVALID_STREAM_BLOCKED_DATA,
      "quic.invalid.stream_blocked_data"},
@@ -297,9 +297,9 @@ const struct QuicErrorMapping {
      "quic.try.to.write.data.on.read.unidirectional.stream"},
     {quic::QUIC_INVALID_RETIRE_CONNECTION_ID_DATA,
      "quic.invalid.retire.connection.id.data"},
-    {quic::QUIC_STREAM_ID_BLOCKED_ERROR,
-     "quic.stream.id.in.stream_id_blocked.frame"},
-    {quic::QUIC_MAX_STREAM_ID_ERROR, "quic.stream.id.in.max_stream_id.frame"},
+    {quic::QUIC_STREAMS_BLOCKED_ERROR,
+     "quic.stream.id.in.streams_blocked.frame"},
+    {quic::QUIC_MAX_STREAMS_ERROR, "quic.stream.id.in.max_streams.frame"},
     {quic::QUIC_HTTP_DECODER_ERROR, "quic.http.decoder.error"},
     {quic::QUIC_STALE_CONNECTION_CANCELLED, "quic.stale.connection.cancelled"},
     {quic::QUIC_IETF_GQUIC_ERROR_MISSING, "quic.ietf.gquic.error_missing"},

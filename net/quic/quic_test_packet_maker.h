@@ -64,15 +64,17 @@ class QuicTestPacketMaker {
       uint64_t smallest_received,
       uint64_t least_unacked);
 
-  std::unique_ptr<quic::QuicReceivedPacket> MakeStreamIdBlockedPacket(
+  std::unique_ptr<quic::QuicReceivedPacket> MakeStreamsBlockedPacket(
       uint64_t num,
       bool include_version,
-      quic::QuicStreamId stream_id);
+      quic::QuicStreamCount stream_count,
+      bool unidirectional);
 
-  std::unique_ptr<quic::QuicReceivedPacket> MakeMaxStreamIdPacket(
+  std::unique_ptr<quic::QuicReceivedPacket> MakeMaxStreamsPacket(
       uint64_t num,
       bool include_version,
-      quic::QuicStreamId stream_id);
+      quic::QuicStreamCount stream_count,
+      bool unidirectional);
 
   std::unique_ptr<quic::QuicReceivedPacket> MakeRstPacket(
       uint64_t num,
