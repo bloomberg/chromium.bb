@@ -19,12 +19,14 @@
 #include "base/values.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/sessions/core/session_id.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
 namespace content {
@@ -370,6 +372,12 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
 
   // Get the content area size of current browsing window.
   virtual gfx::Size GetCurrentContentAreaSize() const = 0;
+
+  // Binds the |phishing_detector| to the appropriate interface, as provided by
+  // |provider|.
+  virtual void GetPhishingDetector(
+      service_manager::InterfaceProvider* provider,
+      mojom::PhishingDetectorPtr* phishing_detector);
 
   // Number of verdict stored for this profile for password on focus pings.
   int stored_verdict_count_password_on_focus_;

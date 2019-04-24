@@ -875,4 +875,10 @@ bool PasswordProtectionService::IsSupportedPasswordTypeForModalWarning(
          reused_password_type == PasswordReuseEvent::ENTERPRISE_PASSWORD;
 }
 
+void PasswordProtectionService::GetPhishingDetector(
+    service_manager::InterfaceProvider* provider,
+    mojom::PhishingDetectorPtr* phishing_detector) {
+  provider->GetInterface(phishing_detector);
+}
+
 }  // namespace safe_browsing

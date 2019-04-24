@@ -5,6 +5,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -12,18 +13,23 @@
 #include "base/test/null_task_runner.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
+#include "components/safe_browsing/common/safe_browsing.mojom-forward.h"
+#include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/mock_password_protection_service.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -61,6 +67,30 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   DISALLOW_COPY_AND_ASSIGN(MockSafeBrowsingDatabaseManager);
 };
 
+class TestPhishingDetector : public mojom::PhishingDetector {
+ public:
+  TestPhishingDetector() : binding_(this) {}
+  ~TestPhishingDetector() override {}
+
+  void Bind(mojo::ScopedMessagePipeHandle handle) {
+    binding_.Bind(mojom::PhishingDetectorRequest(std::move(handle)));
+  }
+
+  void StartPhishingDetection(
+      const GURL& url,
+      StartPhishingDetectionCallback callback) override {
+    ClientPhishingRequest verdict;
+    verdict.set_is_phishing(false);
+    verdict.set_client_score(0.1);
+    std::move(callback).Run(verdict.SerializeAsString());
+  }
+
+ private:
+  mojo::Binding<mojom::PhishingDetector> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestPhishingDetector);
+};
+
 class TestPasswordProtectionService : public MockPasswordProtectionService {
  public:
   TestPasswordProtectionService(
@@ -95,10 +125,23 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
     return latest_request_ ? latest_request_->request_proto() : nullptr;
   }
 
+  void GetPhishingDetector(
+      service_manager::InterfaceProvider* provider,
+      mojom::PhishingDetectorPtr* phishing_detector) override {
+    service_manager::InterfaceProvider::TestApi test_api(provider);
+    test_api.SetBinderForName(
+        mojom::PhishingDetector::Name_,
+        base::BindRepeating(&TestPhishingDetector::Bind,
+                            base::Unretained(&test_phishing_detector_)));
+    provider->GetInterface(phishing_detector);
+    test_api.ClearBinderForName(mojom::PhishingDetector::Name_);
+  }
+
  private:
   PasswordProtectionRequest* latest_request_;
   base::RunLoop run_loop_;
   std::unique_ptr<LoginReputationClientResponse> latest_response_;
+  TestPhishingDetector test_phishing_detector_;
   DISALLOW_COPY_AND_ASSIGN(TestPasswordProtectionService);
 };
 
@@ -1356,6 +1399,26 @@ TEST_P(PasswordProtectionServiceTest,
     EXPECT_TRUE(password_protection_service_->GetLatestRequestProto()
                     ->has_visual_features());
   }
+}
+
+TEST_P(PasswordProtectionServiceTest, TestDomFeaturesPopulated) {
+  LoginReputationClientResponse expected_response =
+      CreateVerdictProto(LoginReputationClientResponse::PHISHING, 10 * kMinute,
+                         GURL("about:blank").host());
+  test_url_loader_factory_.AddResponse(url_.spec(),
+                                       expected_response.SerializeAsString());
+  EXPECT_CALL(*password_protection_service_, GetCurrentContentAreaSize())
+      .Times(AnyNumber())
+      .WillOnce(Return(gfx::Size(1000, 1000)));
+  password_protection_service_->StartRequest(
+      GetWebContents(), GURL("about:blank"), GURL(), GURL(),
+      PasswordReuseEvent::SAVED_PASSWORD, {"example.com"},
+      LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE, true);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_NE(nullptr, password_protection_service_->GetLatestRequestProto());
+  EXPECT_TRUE(password_protection_service_->GetLatestRequestProto()
+                  ->has_dom_features());
 }
 
 INSTANTIATE_TEST_SUITE_P(Regular,

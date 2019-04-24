@@ -30,6 +30,7 @@
 #include "components/safe_browsing/browser/referrer_chain_provider.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_prefs/user_prefs.h"
@@ -878,6 +879,28 @@ base::Value SerializeChromeUserPopulation(
   return std::move(population_dict);
 }
 
+base::Value SerializeDomFeatures(const DomFeatures& dom_features) {
+  base::DictionaryValue dom_features_dict;
+  auto feature_map = std::make_unique<base::ListValue>();
+  for (const auto& feature : dom_features.feature_map()) {
+    auto feature_dict = std::make_unique<base::DictionaryValue>();
+    feature_dict->SetStringKey("name", feature.name());
+    feature_dict->SetDoubleKey("value", feature.value());
+    feature_map->Append(std::move(feature_dict));
+  }
+  dom_features_dict.SetList("feature_map", std::move(feature_map));
+
+  auto shingle_hashes = std::make_unique<base::ListValue>();
+  for (const auto& hash : dom_features.shingle_hashes()) {
+    shingle_hashes->AppendInteger(hash);
+  }
+  dom_features_dict.SetList("shingle_hashes", std::move(shingle_hashes));
+
+  dom_features_dict.SetInteger("model_version", dom_features.model_version());
+
+  return std::move(dom_features_dict);
+}
+
 std::string SerializePGPing(const LoginReputationClientRequest& request) {
   base::DictionaryValue request_dict;
 
@@ -921,6 +944,11 @@ std::string SerializePGPing(const LoginReputationClientRequest& request) {
   if (request.has_content_area_width()) {
     request_dict.SetKey("content_area_width",
                         base::Value(request.content_area_width()));
+  }
+
+  if (request.has_dom_features()) {
+    request_dict.SetKey("dom_features",
+                        SerializeDomFeatures(request.dom_features()));
   }
 
   std::string request_serialized;

@@ -4,17 +4,21 @@
 
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 
+#include <cstddef>
 #include <memory>
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "base/time/time.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
+#include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/db/whitelist_checker_client.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
 #include "components/safe_browsing/password_protection/visual_utils.h"
+#include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -26,6 +30,7 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "url/origin.h"
 
 using content::BrowserThread;
@@ -231,6 +236,47 @@ void PasswordProtectionRequest::FillRequestProto() {
       NOTREACHED();
   }
 
+  // Get the page DOM features.
+  content::RenderFrameHost* rfh = web_contents_->GetMainFrame();
+  password_protection_service_->GetPhishingDetector(rfh->GetRemoteInterfaces(),
+                                                    &phishing_detector_);
+  phishing_detector_->StartPhishingDetection(
+      main_frame_url_,
+      base::BindRepeating(&PasswordProtectionRequest::OnGetDomFeatures,
+                          GetWeakPtr()));
+  dom_feature_start_time_ = base::TimeTicks::Now();
+}
+
+void PasswordProtectionRequest::OnGetDomFeatures(const std::string& verdict) {
+  ClientPhishingRequest dom_features_request;
+  if (dom_features_request.ParseFromString(verdict)) {
+    for (const ClientPhishingRequest::Feature& feature :
+         dom_features_request.feature_map()) {
+      DomFeatures::Feature* new_feature =
+          request_proto_->mutable_dom_features()->add_feature_map();
+      new_feature->set_name(feature.name());
+      new_feature->set_value(feature.value());
+    }
+
+    for (const ClientPhishingRequest::Feature& feature :
+         dom_features_request.non_model_feature_map()) {
+      DomFeatures::Feature* new_feature =
+          request_proto_->mutable_dom_features()->add_feature_map();
+      new_feature->set_name(feature.name());
+      new_feature->set_value(feature.value());
+    }
+
+    request_proto_->mutable_dom_features()->mutable_shingle_hashes()->Swap(
+        dom_features_request.mutable_shingle_hashes());
+    request_proto_->mutable_dom_features()->set_model_version(
+        dom_features_request.model_version());
+  }
+
+  UMA_HISTOGRAM_TIMES("PasswordProtection.DomFeatureExtractionDuration",
+                      base::TimeTicks::Now() - dom_feature_start_time_);
+
+  // Once the DOM features are collected, either collect visual features, or go
+  // straight to sending the ping.
   if (trigger_type_ == LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE &&
       password_protection_service_->IsExtendedReporting() &&
       zoom::ZoomController::GetZoomLevelForWebContents(web_contents_) <=
