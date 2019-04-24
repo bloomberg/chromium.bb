@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+
+<div id="main" role="main">
+
+    <div id="contenteditable-textbox" role="textbox" contenteditable="true">
+        <div id="contenteditable-line1">Line 1</div>
+        <textarea id="contenteditable-line2" rows="1" cols="40">Line 2</textarea>
+    </div>
+
+    <div id="contenteditable-div" contenteditable>
+        <p id="paragraph1">Line 1<br>
+            Line 2</p>
+        <p id="paragraph2">Line 3</p>
+    </div>
+
+</div>
+
+<script>
+    test_after_layout_and_paint(function()
+    {
+        let mainAccessible = accessibilityController.accessibleElementById("main");
+
+        assert_equals(mainAccessible.selectionAnchorObject, null);
+        assert_equals(mainAccessible.selectionAnchorOffset, -1);
+        assert_equals(mainAccessible.selectionFocusObject, null);
+        assert_equals(mainAccessible.selectionFocusOffset, -1);
+    }, "Initially there should be no selection under the main object.");
+
+    test_after_layout_and_paint(function()
+    {
+        let rootAccessible = accessibilityController.rootElement;
+
+        assert_equals(rootAccessible.selectionAnchorObject, null);
+        assert_equals(rootAccessible.selectionAnchorOffset, -1);
+        assert_equals(rootAccessible.selectionFocusObject, null);
+        assert_equals(rootAccessible.selectionFocusOffset, -1);
+    }, "Initially there should be no selection on the root object.");
+
+    test_after_layout_and_paint(function()
+    {
+        let textbox = document.getElementById("contenteditable-textbox");
+        textbox.focus();
+        let textboxAccessible = accessibilityController.accessibleElementById("contenteditable-textbox");
+
+        assert_equals(textboxAccessible.selectionAnchorOffset, 0);
+        assert_equals(textboxAccessible.selectionFocusOffset, 0);
+    }, "Moving the focus to an ARIA textbox should place the caret at its beginning.");
+
+    test_after_layout_and_paint(function()
+    {
+        let selection = window.getSelection();
+        let selectionRange = document.createRange();
+        let textboxAccessible = accessibilityController.accessibleElementById("contenteditable-textbox");
+        let mainAccessible = accessibilityController.accessibleElementById("main");
+        let rootAccessible = accessibilityController.rootElement;
+        let line1 = document.getElementById("contenteditable-line1");
+        let line1Accessible = accessibilityController.accessibleElementById("contenteditable-line1");
+        let line1TextAccessible = line1Accessible.childAtIndex(0);
+
+        selectionRange.setStart(line1.firstChild, 1);
+        selectionRange.setEnd(line1.firstChild, 1);
+        selection.removeAllRanges();
+        selection.addRange(selectionRange);
+
+        assert_equals(textboxAccessible.selectionAnchorObject, line1TextAccessible);
+        assert_equals(textboxAccessible.selectionAnchorOffset, 1);
+        assert_equals(textboxAccessible.selectionFocusObject, line1TextAccessible);
+        assert_equals(textboxAccessible.selectionFocusOffset, 1);
+
+        assert_equals(mainAccessible.selectionAnchorObject, line1TextAccessible);
+        assert_equals(mainAccessible.selectionAnchorOffset, 1);
+        assert_equals(mainAccessible.selectionFocusObject, line1TextAccessible);
+        assert_equals(mainAccessible.selectionFocusOffset, 1);
+
+        assert_equals(rootAccessible.selectionAnchorObject, line1TextAccessible);
+        assert_equals(rootAccessible.selectionAnchorOffset, 1);
+        assert_equals(rootAccessible.selectionFocusObject, line1TextAccessible);
+        assert_equals(rootAccessible.selectionFocusOffset, 1);
+    }, "Setting a new caret position in the ARIA textbox should be reflected in the accessibility APIs.");
+
+    test_after_layout_and_paint(function()
+    {
+        let selection = window.getSelection();
+        let textboxAccessible = accessibilityController.accessibleElementById("contenteditable-textbox");
+        let mainAccessible = accessibilityController.accessibleElementById("main");
+        let rootAccessible = accessibilityController.rootElement;
+
+        selection.removeAllRanges();
+
+        assert_equals(textboxAccessible.selectionAnchorObject, null);
+        assert_equals(textboxAccessible.selectionAnchorOffset, -1);
+        assert_equals(textboxAccessible.selectionFocusObject, null);
+        assert_equals(textboxAccessible.selectionFocusOffset, -1);
+
+        assert_equals(mainAccessible.selectionAnchorObject, null);
+        assert_equals(mainAccessible.selectionAnchorOffset, -1);
+        assert_equals(mainAccessible.selectionFocusObject, null);
+        assert_equals(mainAccessible.selectionFocusOffset, -1);
+
+        assert_equals(rootAccessible.selectionAnchorObject, null);
+        assert_equals(rootAccessible.selectionAnchorOffset, -1);
+        assert_equals(rootAccessible.selectionFocusObject, null);
+        assert_equals(rootAccessible.selectionFocusOffset, -1);
+    }, "Removing the selection should remove the caret completely.");
+
+    test_after_layout_and_paint(function()
+    {
+        let selection = window.getSelection();
+        let textboxAccessible = accessibilityController.accessibleElementById("contenteditable-textbox");
+        let mainAccessible = accessibilityController.accessibleElementById("main");
+        let rootAccessible = accessibilityController.rootElement;
+        let line1Accessible = accessibilityController.accessibleElementById("contenteditable-line1");
+        let line1TextAccessible = line1Accessible.childAtIndex(0);
+
+        line1TextAccessible.setSelectedTextRange(2, 0);
+
+        assert_equals(textboxAccessible.selectionAnchorObject, line1TextAccessible);
+        assert_equals(textboxAccessible.selectionAnchorOffset, 2);
+        assert_equals(textboxAccessible.selectionFocusObject, line1TextAccessible);
+        assert_equals(textboxAccessible.selectionFocusOffset, 2);
+
+        assert_equals(mainAccessible.selectionAnchorObject, line1TextAccessible);
+        assert_equals(mainAccessible.selectionAnchorOffset, 2);
+        assert_equals(mainAccessible.selectionFocusObject, line1TextAccessible);
+        assert_equals(mainAccessible.selectionFocusOffset, 2);
+
+        assert_equals(rootAccessible.selectionAnchorObject, line1TextAccessible);
+        assert_equals(rootAccessible.selectionAnchorOffset, 2);
+        assert_equals(rootAccessible.selectionFocusObject, line1TextAccessible);
+        assert_equals(rootAccessible.selectionFocusOffset, 2);
+    }, "Positioning the caret using the accessibility API instead of the DOM should work.");
+
+    test_after_layout_and_paint(function()
+    {
+        let line2Accessible = accessibilityController.accessibleElementById("contenteditable-line2");
+        let textboxAccessible = accessibilityController.accessibleElementById("contenteditable-textbox");
+        let mainAccessible = accessibilityController.accessibleElementById("main");
+        let line2 = document.getElementById("contenteditable-line2");
+        line2.focus();
+
+        assert_equals(line2Accessible.selectionAnchorObject, line2Accessible);
+        assert_equals(line2Accessible.selectionAnchorOffset, 0);
+        assert_equals(line2Accessible.selectionFocusObject, line2Accessible);
+        assert_equals(line2Accessible.selectionFocusOffset, 0);
+
+        assert_equals(textboxAccessible.selectionAnchorObject, line2Accessible);
+        assert_equals(textboxAccessible.selectionAnchorOffset, 0);
+        assert_equals(textboxAccessible.selectionFocusObject, line2Accessible);
+        assert_equals(textboxAccessible.selectionFocusOffset, 0);
+
+        assert_equals(mainAccessible.selectionAnchorObject, line2Accessible);
+        assert_equals(mainAccessible.selectionAnchorOffset, 0);
+        assert_equals(mainAccessible.selectionFocusObject, line2Accessible);
+        assert_equals(mainAccessible.selectionFocusOffset, 0);
+    }, "Moving the focus into a textarea should remove the caret from the ARIA textbox.");
+
+    test_after_layout_and_paint(function()
+    {
+        document.getElementById("contenteditable-line2").focus();
+        let rootAccessible = accessibilityController.rootElement;
+        let line2Accessible = accessibilityController.focusedElement;
+
+        assert_equals(rootAccessible.selectionAnchorObject, line2Accessible);
+        assert_equals(rootAccessible.selectionAnchorOffset, 0);
+        assert_equals(rootAccessible.selectionFocusObject, line2Accessible);
+        assert_equals(rootAccessible.selectionFocusOffset, 0);
+
+        assert_equals(line2Accessible.selectionAnchorObject, line2Accessible);
+        assert_equals(line2Accessible.selectionAnchorOffset, 0);
+        assert_equals(line2Accessible.selectionFocusObject, line2Accessible);
+        assert_equals(line2Accessible.selectionFocusOffset, 0);
+    }, "Standard text fields start with the caret at the beginning of their contents.");
+
+    test_after_layout_and_paint(function()
+    {
+        let line2 = document.getElementById("contenteditable-line2");
+        line2.focus();
+        let line2Accessible = accessibilityController.focusedElement;
+
+        line2.setSelectionRange(3, 3);
+
+        assert_equals(line2Accessible.selectionAnchorObject, line2Accessible);
+        assert_equals(line2Accessible.selectionAnchorOffset, 3);
+        assert_equals(line2Accessible.selectionFocusObject, line2Accessible);
+        assert_equals(line2Accessible.selectionFocusOffset, 3);
+    }, "Setting a new caret position in the textarea should be exposed in the accessibility APIs.");
+
+    test_after_layout_and_paint(function()
+    {
+        let textboxAccessible = accessibilityController.accessibleElementById("contenteditable-textbox");
+        let mainAccessible = accessibilityController.accessibleElementById("main");
+        let rootAccessible = accessibilityController.rootElement;
+        document.getElementById("contenteditable-line2").focus();
+        let line2Accessible = accessibilityController.focusedElement;
+
+        assert_equals(textboxAccessible.selectionAnchorObject, line2Accessible);
+        assert_equals(textboxAccessible.selectionAnchorOffset, 3);
+        assert_equals(textboxAccessible.selectionFocusObject, line2Accessible);
+        assert_equals(textboxAccessible.selectionFocusOffset, 3);
+
+        assert_equals(mainAccessible.selectionAnchorObject, line2Accessible);
+        assert_equals(mainAccessible.selectionAnchorOffset, 3);
+        assert_equals(mainAccessible.selectionFocusObject, line2Accessible);
+        assert_equals(mainAccessible.selectionFocusOffset, 3);
+
+        assert_equals(rootAccessible.selectionAnchorObject, line2Accessible);
+        assert_equals(rootAccessible.selectionAnchorOffset, 3);
+        assert_equals(rootAccessible.selectionFocusObject, line2Accessible);
+        assert_equals(rootAccessible.selectionFocusOffset, 3);
+    }, "Offsets in text fields should be reported from the beginning of the field and not from the top of the container.");
+
+    test_after_layout_and_paint(function()
+    {
+        var line1Accessible = accessibilityController.accessibleElementById("contenteditable-line1");
+        var line2Accessible = accessibilityController.accessibleElementById("contenteditable-line2");
+
+        assert_equals(line1Accessible.selectionAnchorObject, line2Accessible);
+        assert_equals(line1Accessible.selectionAnchorOffset, 3);
+        assert_equals(line1Accessible.selectionFocusObject, line2Accessible);
+        assert_equals(line1Accessible.selectionFocusOffset, 3);
+        assert_equals(line2Accessible.selectionAnchorObject, line2Accessible);
+        assert_equals(line2Accessible.selectionAnchorOffset, 3);
+        assert_equals(line2Accessible.selectionFocusObject, line2Accessible);
+        assert_equals(line2Accessible.selectionFocusOffset, 3);
+    }, "The caret position should be retrievable from any object.");
+
+    test_after_layout_and_paint(function()
+    {
+        let selection = window.getSelection();
+        let selectionRange = document.createRange();
+        let mainAccessible = accessibilityController.accessibleElementById("main");
+        let rootAccessible = accessibilityController.rootElement;
+
+        let contenteditable = document.getElementById("contenteditable-div");
+        contenteditable.focus();
+        // The offset from the beginning of the main div to the first character of
+        // contenteditable-div.
+        var mainOffset = 9;
+        // The offset from the newline character between the two lines of the
+        // first paragraph to the first character of its second line.
+        // (Needed for skipping wide space.)
+        let line2Offset = 13;
+
+        let line1 = document.getElementById("paragraph1").firstChild;
+        let line2 = document.getElementById("paragraph1").lastChild;
+        let line3 = document.getElementById("paragraph2").firstChild;
+        let contenteditableLines = [ line1, line2, line3 ];
+        let contenteditableAccessible = accessibilityController.accessibleElementById("contenteditable-div");
+
+        for (let lineNumber = 0; lineNumber < 3; ++lineNumber) {
+            let lineOffset = lineNumber * 7;
+            // Paragraphs should be separated by an empty line.
+            if (lineNumber == 2)
+                ++lineOffset;
+
+            for (let characterOffset = 0; characterOffset < 7; ++characterOffset) {
+                // Any widespace in the DOM should be stripped out.
+                let selectionOffset = characterOffset;
+                if (lineNumber == 1)
+                    selectionOffset += line2Offset;
+
+                selectionRange.setStart(contenteditableLines[lineNumber], selectionOffset);
+                selectionRange.setEnd(contenteditableLines[lineNumber], selectionOffset);
+                selection.removeAllRanges();
+                selection.addRange(selectionRange);
+
+                assert_equals(contenteditableAccessible.selectionAnchorOffset, characterOffset);
+                assert_equals(contenteditableAccessible.selectionFocusOffset, characterOffset);
+
+                assert_equals(mainAccessible.selectionAnchorOffset, characterOffset);
+                assert_equals(mainAccessible.selectionFocusOffset, characterOffset);
+
+                assert_equals(rootAccessible.selectionAnchorObject.name,
+                    contenteditableLines[lineNumber].textContent.trim());
+                assert_equals(rootAccessible.selectionAnchorOffset, characterOffset);
+                assert_equals(rootAccessible.selectionFocusObject.name,
+                    contenteditableLines[lineNumber].textContent.trim());
+                assert_equals(rootAccessible.selectionFocusOffset, characterOffset);
+            }
+        }
+
+    }, "Test moving the caret across two paragraphs.");
+</script>

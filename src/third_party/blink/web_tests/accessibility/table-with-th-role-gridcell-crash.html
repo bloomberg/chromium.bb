@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+
+<style>
+tr {
+    display: grid;
+  }
+</style>
+<table role="grid">
+  <th id="cell1" role="gridcell"></th>
+</table>
+
+<script>
+function axElementById(id) {
+    return accessibilityController.accessibleElementById(id);
+}
+
+test_after_layout_and_paint(function(t) {
+    var ax = axElementById("cell1");
+    assert_equals(ax.role, "AXRole: AXCell");
+}, "A <th role='gridcell'> in a table with extra layout objects doesn't crash");
+</script>
+<!--
+
+<script>
+function axElementById(id) {
+    return accessibilityController.accessibleElementById(id);
+}
+</script>
+-->

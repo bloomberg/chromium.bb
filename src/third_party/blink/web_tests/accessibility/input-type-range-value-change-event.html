@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+
+<input id="range" type="range" min=0 max=10 value=5>
+
+<script>
+async_test_after_layout_and_paint(function(t)
+{
+    var target = document.getElementById("range");
+    target.addEventListener("change", function() {
+        assert_equals(target.value, "6");
+        target.style.display = "none";
+        t.done();
+    }, false);
+
+    var axTarget = accessibilityController.accessibleElementById("range");
+    axTarget.setValue("6");
+}, "changing the value of a range control fires a change event on it.");
+</script>

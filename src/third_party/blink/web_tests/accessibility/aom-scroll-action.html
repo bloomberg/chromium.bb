@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<script src="../resources/gc.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+<script src="../http/tests/resources/permissions-helper.js"></script>
+<script src="resources/aom-helper.js"></script>
+
+<!--
+
+Accessibility Object Model
+Explainer: https://github.com/WICG/aom/blob/gh-pages/explainer.md
+Spec: https://wicg.github.io/aom/spec/
+
+-->
+<script>
+test_after_layout_and_paint(function(t) {
+    assert_true(internals.runtimeFlags.accessibilityObjectModelEnabled);
+}, "Make sure that Accessibility Object Model is enabled");
+</script>
+
+<input id="scroll_target" style="margin-top: 1000px;">
+
+<script>
+async_test_after_layout_and_paint(function(t) {
+  enableAccessibilityEventsPermission().then(function() {
+    var target = document.getElementById("scroll_target");
+    var axTarget = accessibilityController.accessibleElementById("scroll_target");
+
+    var oldY = window.pageYOffset;
+
+    var gotAccessibleEvent = false;
+    target.accessibleNode.onaccessiblescrollintoview = function() {
+      gotAccessibleEvent = true;
+    };
+    axTarget.scrollToMakeVisible();
+
+    assert_true(gotAccessibleEvent);
+    assert_true(window.pageYOffset > oldY);
+    t.done();
+  });
+}, "AccessibleNode.onaccessiblescroll");
+</script>

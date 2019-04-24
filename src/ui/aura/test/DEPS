@@ -1,0 +1,9 @@
+include_rules = [
+  "+cc/test",
+  "+components/viz/test",
+  "+mojo/core/embedder/embedder.h",
+  "+services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h",
+  "+services/ws/public/cpp/input_devices",
+  "+ui/gl",
+  "+ui/wm/core/wm_state.h",
+]

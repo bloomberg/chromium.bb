@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+</head>
+<body>
+
+<select id="menulist">
+    <option>1</option>
+    <script src="data:text/javascript,document.write('<option selected>2');"></script>
+</select>
+
+<script>
+test_after_layout_and_paint((t) => {
+    var menulist = document.getElementById("menulist");
+    menulist.focus();
+    window.accessibleMenulist = accessibilityController.focusedElement;
+    assert_equals(accessibleMenulist.childAtIndex(0).childrenCount, 2);
+    menulist.removeChild(menulist.selectedOptions[0]);
+    assert_equals(accessibleMenulist.childAtIndex(0).childrenCount, 1);
+}, "Adding via document.write does not trigger a crash");
+
+
+</script>
+</body>
+</html>

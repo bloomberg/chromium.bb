@@ -1,0 +1,62 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package content.fuzzing.proto;
+
+message RenderPass {
+  required Rect output_rect = 1;
+  required Rect damage_rect = 2;
+  repeated DrawQuad quad_list = 3;
+}
+
+message DrawQuad {
+  required SharedQuadState sqs = 1;
+  required Rect rect = 2;
+  required Rect visible_rect = 3;
+  required SolidColorDrawQuad quad = 4;
+}
+
+message SharedQuadState {
+  required Transform transform = 1;
+  required Rect layer_rect = 2;
+  required Rect visible_rect = 3;
+  required Rect clip_rect = 4;
+  required bool is_clipped = 5;
+  required bool are_contents_opaque = 6;
+
+  // Will be normalized to a float in [0,1].
+  required fixed32 opacity = 7 [default = 0xffffffff];
+
+  // TODO(celineo): add fuzzable SkBlendMode, crbug.com/923088
+
+  required sint32 sorting_context_id = 9;
+}
+
+message SolidColorDrawQuad {
+  required fixed32 color = 1 [default = 0xffffffff];
+  required bool force_anti_aliasing_off = 2;
+}
+
+// Spec to initialize a gfx::Rect.
+// Defaults to the size of the renderer frame as defined in
+// fuzzer_browser_process.cc, in the hopes that this generally yields more
+// interesting values more quickly.
+message Rect {
+  required sint32 x = 1 [default = 0];
+  required sint32 y = 2 [default = 0];
+  required sint32 width = 3 [default = 620];
+  required sint32 height = 4 [default = 400];
+}
+
+message Transform {
+  required double rotate = 1 [default = 0];
+
+  required float scale_x = 2 [default = 1];
+  required float scale_y = 3 [default = 1];
+
+  required float translate_x = 4 [default = 0];
+  required float translate_y = 5 [default = 0];
+}

@@ -1,0 +1,10 @@
+include_rules = [
+    "+base/logging.h",
+    "+base/memory/scoped_refptr.h",
+    "+base/process/process_metrics.h",
+    "+gin/public",
+    "+third_party/blink/renderer/bindings",
+    "+third_party/blink/renderer/core",
+    "+third_party/blink/renderer/modules",
+    "+web/api",
+]

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+
+<div id="main" role="main">
+
+    <p id="para">This<br> is a<a href="#g">test</a>of selection</p>
+
+</div>
+
+<script>
+    test_after_layout_and_paint(function()
+    {
+        assert_not_equals(window.accessibilityController, undefined, 'This test requires accessibilityController');
+
+        var axPara = accessibilityController.accessibleElementById("para");
+        var axLastText = axPara.childAtIndex(4);
+        assert_equals(axLastText.role, "AXRole: AXStaticText");
+        assert_equals(axLastText.name, "of selection");
+
+        axLastText.setSelectedTextRange(0, 2);
+
+        var selection = window.getSelection();
+        var range = selection.getRangeAt(0);
+
+        assert_equals(range.toString(), "of");
+    }, "Select text after a link.");
+</script>

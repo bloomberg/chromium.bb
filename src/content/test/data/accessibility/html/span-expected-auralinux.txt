@@ -1,0 +1,70 @@
+[document web]
+++[paragraph]
+++++[text] name='This'
+++++[text] name=' '
+++++[text] name='paragraph has '
+++++[text] name='text'
+++++[text] name=' '
+++++[text] name='in'
+++++[text] name=' '
+++++[text] name='spans'
+++++[text] name='.'
+++[paragraph]
+++++[text] name='E1. Eat'
+++++[text] name=' '
+++++[link] name='space'
+++++++[text] name='space'
+++[paragraph]
+++++[text] name='E2. Eat'
+++++[text] name=' '
+++++[link] name='space'
+++++++[text] name='space'
+++[paragraph]
+++++[text] name='E3. Eat'
+++++[text] name=' '
+++++[link] name='space'
+++++++[text] name='space'
+++[paragraph]
+++++[link] name='E4. Eat'
+++++++[text] name='E4. Eat'
+++++[text] name=' '
+++++[text] name='space'
+++[paragraph]
+++++[link] name='E5. Eat'
+++++++[text] name='E5. Eat'
+++++[text] name=' '
+++++[text] name='space'
+++[paragraph]
+++++[link] name='E6. Eat'
+++++++[text] name='E6. Eat'
+++++[text] name=' '
+++++[text] name='space'
+++[paragraph]
+++++[text] name='K1. Keep'
+++++[text] name=' '
+++++[text] name='space'
+++[paragraph]
+++++[text] name='K2. Keep'
+++++[text] name=' '
+++++[text] name='space'
+++[paragraph]
+++++[text] name='K3. Keep'
+++++[text] name=' '
+++++[text] name='space'
+++[paragraph]
+++++[text] name='K4. Keep '
+++++[text] name='space'
+++[paragraph]
+++++[text] name='K5. Keep'
+++++[text] name=' '
+++++[text] name='space'
+++[paragraph]
+++++[text] name='K6. Keep '
+++++[text] name='space'
+++[paragraph]
+++++[text] name='K7. Keep'
+++++[text] name=' space'
+++[paragraph]
+++++[text] name='K8. Keep'
+++++[text] name=' '
+++++[text] name='space'

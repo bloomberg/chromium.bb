@@ -1,0 +1,80 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
+<link rel="import" href="chrome://resources/html/cr/ui/focus_row_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="../i18n_setup.html">
+<link rel="import" href="../icons.html">
+<link rel="import" href="../route.html">
+<link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="../site_favicon.html">
+<link rel="import" href="constants.html">
+<link rel="import" href="site_settings_behavior.html">
+<link rel="import" href="site_settings_prefs_browser_proxy.html">
+
+<dom-module id="site-list-entry">
+  <template>
+    <style include="settings-shared">
+      :host {
+        padding-inline-end: 4px;
+      }
+
+      .settings-row {
+        flex: 1
+      }
+
+      /* Tooltip is hidden since site-list will display a common tooltip. */
+      cr-policy-pref-indicator {
+        --cr-tooltip: {
+          display: none;
+        };
+      }
+    </style>
+    <div class="list-item" focus-row-container>
+      <div class="settings-row"
+          actionable$="[[allowNavigateToSiteDetail_]]" on-click="onOriginTap_">
+        <site-favicon url="[[model.origin]]"></site-favicon>
+        <div class="middle no-min-width">
+          <div class="text-elide">
+            <span class="url-directionality">[[model.displayName]]</span>
+          </div>
+
+          <!-- This div must not contain extra whitespace. -->
+          <div class="secondary text-elide"
+              id="siteDescription">[[siteDescription_]]</div>
+        </div>
+        <template is="dom-if" if="[[allowNavigateToSiteDetail_]]">
+          <paper-icon-button-light class="subpage-arrow">
+            <button aria-label$="[[model.displayName]]"
+                aria-describedby="siteDescription" focus-row-control
+                focus-type="site-details"></button>
+          </paper-icon-button-light>
+          <div class="separator"></div>
+        </template>
+      </div>
+      <template is="dom-if" if="[[showPolicyPrefIndicator_]]">
+        <cr-policy-pref-indicator pref="[[model]]"
+            icon-aria-label="[[label]]" on-mouseenter="onShowTooltip_"
+            on-focus="onShowTooltip_" focus-row-control focus-type="policy">
+        </cr-policy-pref-indicator>
+      </template>
+      <paper-icon-button-light id="resetSiteContainer"
+          class="icon-delete-gray"
+          hidden="[[shouldHideResetButton_(model, readOnlyList)]]">
+        <button id="resetSite" on-click="onResetButtonTap_"
+            aria-label="$i18n{siteSettingsActionReset}" focus-row-control
+            focus-type="reset"></button>
+      </paper-icon-button-light>
+      <paper-icon-button-light id="actionMenuButtonContainer"
+          class="icon-more-vert"
+          hidden="[[shouldHideActionMenu_(model, readOnlyList)]]">
+        <button id="actionMenuButton" on-click="onShowActionMenuTap_"
+            title="$i18n{moreActions}" focus-row-control focus-type="menu">
+        </button>
+      </paper-icon-button-light>
+    </div>
+  </template>
+  <script src="site_list_entry.js"></script>
+</dom-module>

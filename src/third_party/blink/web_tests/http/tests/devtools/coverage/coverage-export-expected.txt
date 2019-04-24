@@ -1,0 +1,64 @@
+Tests the coverage export functionality and format.
+
+
+
+File: http://127.0.0.1:8000/devtools/coverage/resources/highlight-in-source.css
+
+Usage:
+body {
+    background-color: lightblue;
+}
+
+Usage:
+.class {
+    color: red;
+}
+
+
+File: http://127.0.0.1:8000/devtools/coverage/resources/basic-coverage.html
+
+Usage:
+function foo() {}
+foo();
+
+Usage:
+function bar() {}
+bar();
+
+
+File: http://127.0.0.1:8000/devtools/coverage/resources/coverage.js
+
+Usage:
+function outer(index) {
+
+Usage:
+function inner2(a) {
+    return a + 2;
+  }
+
+Usage:
+function inner4(a) { return a + 4; }
+
+Usage:
+if (index === 7)
+
+Usage:
+// Make sure these are not collected.
+  if (!self.__funcs)
+    self.__funcs = [inner1, inner2, inner3, inner4, inner5];
+  return self.__funcs[index];
+}
+
+function performActions() {
+  return outer(1)(0) + outer(3)(0);
+}
+
+Usage:
+
+
+
+File: test://evaluations/0/coverage-export.js
+
+Usage:
+performActions()//# sourceURL=test://evaluations/0/coverage-export.js
+

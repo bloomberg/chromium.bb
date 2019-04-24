@@ -1,0 +1,7 @@
+include_rules = [
+  "+mojo/public",
+  "+services/service_manager/public",
+  "+third_party/re2",
+  "+sandbox",
+  "+services/service_manager/sandbox",
+]

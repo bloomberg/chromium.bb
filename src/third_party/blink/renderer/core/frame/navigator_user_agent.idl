@@ -1,0 +1,12 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://github.com/WICG/ua-client-hints
+[
+    NoInterfaceObject, // Always used on target of 'implements'
+    RuntimeEnabled=UserAgentClientHint,
+    Exposed=Window
+] interface NavigatorUserAgent {
+  [SecureContext, CallWith=ScriptState] Promise<UserAgent> getUserAgent();
+};

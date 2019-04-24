@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+</head>
+<body>
+
+<div id="list" role="list">
+  <div role="listitem" aria-setSize="10" aria-posinset="3"></div>
+  <div role="listitem" aria-setSize="10" aria-posinset="5"></div>
+</div>
+
+<script>
+  test_after_layout_and_paint(function(t) {
+    var list = accessibilityController.accessibleElementById("list");
+    assert_equals(list.childAtIndex(0).posInSet,3);
+    assert_equals(list.childAtIndex(1).posInSet,5);
+    assert_equals(list.childAtIndex(0).setSize,10);
+    assert_equals(list.childAtIndex(1).setSize,10);
+
+  }, "Tests that aria-posinset and aria-setSize for a simple list are exposed to accessibility correctly");
+</script>
+
+<form id ="form">
+  <input type="radio" name="meals" value="breakfast">
+  <input type="radio" name="meals" value="lunch">
+  <input type="radio" name="meals" value="dinner">
+</form>
+
+<script>
+  test_after_layout_and_paint(function(t){
+    var form = accessibilityController.accessibleElementById("form");
+    // aria-posinset and aria-setSize can be implicitly caluclated for input type of radio.
+    assert_equals(form.childAtIndex(0).posInSet,1);
+    assert_equals(form.childAtIndex(1).posInSet,2);
+    assert_equals(form.childAtIndex(2).posInSet,3);
+    assert_equals(form.childAtIndex(0).setSize,3);
+    assert_equals(form.childAtIndex(1).setSize,3);
+    assert_equals(form.childAtIndex(2).setSize,3);
+  }, "Tests that aria-posinset and aria-setSize for native radio inputs are exposed to accessibility correctly");
+</script>
+
+<div id="radiogroup" role="radiogroup">
+  <hr>
+  <div id="radio1" role="radio" aria-setSize="3" aria-posinset="2">Radio 1</div>
+</div>
+
+<script>
+  test_after_layout_and_paint(function(t){
+    var radio1 = accessibilityController.accessibleElementById("radio1");
+    assert_equals(radio1.posInSet,2);
+    assert_equals(radio1.setSize,3);
+  },"Tests that aria-posinset and aria-setSize for a radio are exposed to accessibility correctly");
+</script>
+
+<p id="description"></p>
+<div id="console"></div>
+
+</body>
+</html>

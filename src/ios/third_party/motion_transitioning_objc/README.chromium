@@ -1,0 +1,13 @@
+Name: Motion Transitioning for Objective-C
+URL: https://github.com/material-motion/motion-transitioning-objc
+Version: 0
+Revision: 78ac32badf9ca9c1ad497a6131ce2bd539094812
+License: Apache 2.0
+License File: LICENSE
+Security Critical: yes
+
+Description:
+Light-weight API for building UIViewController transitions.
+
+Local Modifications:
+None

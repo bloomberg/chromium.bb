@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+ Copyright 2018 The Chromium Authors. All rights reserved.
+ Use of this source code is governed by a BSD-style license that can be
+ found in the LICENSE file.
+-->
+
+<head>
+  <title>Super Size Tiger View</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4285f4">
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans:400,500|Roboto:400,500" rel="stylesheet">
+  <link rel="stylesheet" href="main.css">
+  <link rel="stylesheet" href="options.css">
+  <style>
+body {
+  grid-template-columns: auto;
+  grid-template-areas: "appbar" "select";
+}
+form {
+  grid-area: 'select';
+  margin: auto;
+}
+  </style>
+  <link rel="icon" href="favicon.ico" sizes="16x16 32x32 256x256" type="image/x-icon">
+  <script>
+/**
+ * @param {string[]} options
+ * @param {string} key
+ */
+function buildOptions(options, key) {
+  const fragment = document.createDocumentFragment();
+  if (key) {
+    options = options
+      .map((item, i, self) => { return item[key] })
+      .filter((item, i, self) => { return i === self.indexOf(item) })
+      .sort();
+  }
+  for (let option of options) {
+    const optionEl = document.createElement('option');
+    optionEl.value = option;
+    optionEl.textContent = option;
+    fragment.appendChild(optionEl);
+  }
+  return fragment;
+}
+
+/**
+ * Is `v1` a larger version than `v2`?
+ * @param {string} v1
+ * @param {string} v2
+ */
+function isGreaterOrEqual(v1, v2) {
+  const [version1] = v1.split('.', 1).map(n => parseInt(n, 10));
+  const [version2] = v2.split('.', 1).map(n => parseInt(n, 10));
+  return version1 >= version2;
+}
+
+function selectOption(optList, index) {
+  const n = optList.length;
+  if (n > 0) optList[((index % n) + n) % n].selected = true;
+}
+
+function setSubmitListener(form, fetchDataUrl) {
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    const dataUrl = fetchDataUrl();
+    // Exclude unwind_cfi via a filter as a work-around for it being included
+    // in the size data. It's a file that exists in dev but not beta/stable.
+    window.open(`viewer.html?load_url=${dataUrl}&exclude=assets%2Funwind_cfi`);
+  });
+}
+
+// Milestones.
+(async () => {
+  const response = await fetch('milestones/milestones.json');
+  const {pushed} = await response.json();
+
+  if (document.readyState === 'loading') {
+    await new Promise(resolve => {
+      document.onreadystatechange = () => {
+        if (document.readyState !== 'loading') {
+          resolve();
+          document.onreadystatechange = null;
+        }
+      }
+    });
+  }
+
+  /** @type {HTMLFormElement} */
+  const form = document.getElementById('select-form');
+  const selMode = form.elements.namedItem('mode');
+  const selCpu = form.elements.namedItem('cpu');
+  const selApk = form.elements.namedItem('apk');
+  const selVersion1 = form.elements.namedItem('version1');
+  const selVersion2 = form.elements.namedItem('version2');
+  const btnOpen = form.querySelector('button[type="submit"]');
+  const msgBadCompare = form.querySelector('.msg-bad-compare');
+
+  selCpu.appendChild(buildOptions(pushed.cpu));
+  selApk.appendChild(buildOptions(pushed.apk));
+  const versionOptions = buildOptions(pushed.version);
+  selVersion1.appendChild(versionOptions.cloneNode(true));
+  selVersion2.appendChild(versionOptions);
+
+  selectOption(selVersion1.querySelectorAll('option'), -2);
+  selectOption(selVersion2.querySelectorAll('option'), -1);
+
+  let viewMode = null;
+  function readViewMode() {
+    viewMode = document.querySelector('#sel-mode').value;
+    form.classList.toggle('mode-view', viewMode === 'view');
+  }
+  readViewMode();
+
+  function disableButtonIfNoDiffPair() {
+    const isDisabled = (viewMode === 'compare') &&
+        isGreaterOrEqual(selVersion1.value, selVersion2.value);
+    btnOpen.disabled = isDisabled;
+    msgBadCompare.classList.toggle('visible', isDisabled);
+  }
+  disableButtonIfNoDiffPair();
+
+  selMode.addEventListener('change', () => {
+    readViewMode();
+    disableButtonIfNoDiffPair();
+  });
+
+  function getDataUrl() {
+    let ret = `milestones/${cpu.value}/${apk.value}/`;
+    if (viewMode === 'view') {
+      ret += `report_${selVersion2.value}.ndjson`;
+    } else if (viewMode === 'compare') {
+      ret += `report_${selVersion1.value}_${selVersion2.value}.ndjson`;
+    }
+    return ret;
+  }
+
+  selVersion1.addEventListener('change', disableButtonIfNoDiffPair);
+  selVersion2.addEventListener('change', disableButtonIfNoDiffPair);
+  setSubmitListener(form, getDataUrl);
+})();
+
+// Official Builds.
+(async () => {
+  const response = await fetch('official_builds/reports.json');
+  const { pushed } = await response.json();
+
+  if (document.readyState === 'loading') {
+    await new Promise(resolve => {
+      document.onreadystatechange = () => {
+        if (document.readyState !== 'loading') {
+          resolve();
+          document.onreadystatechange = null;
+        }
+      }
+    });
+  }
+
+  /** @type {HTMLFormElement} */
+  const form = document.getElementById('ob_form');
+  const selCpu = form.elements.namedItem('ob_cpu');
+  const selApk = form.elements.namedItem('ob_apk');
+  const selVersion = form.elements.namedItem('ob_version');
+  const viewMode = form.elements.namedItem('ob_viewmode');
+
+  selCpu.appendChild(buildOptions(pushed, 'cpu'));
+  selApk.appendChild(buildOptions(pushed, 'apk'));
+  selVersion.appendChild(buildOptions(pushed, 'version'));
+
+  selectOption(selVersion.querySelectorAll('option'), -1);
+
+  function getDataUrl() {
+    let path = `official_builds/reports/${ob_cpu.value}/${ob_apk.value}/`;
+    if (viewMode.value === 'view') {
+      return path + `report_${selVersion.value}.ndjson`;
+    } else if (viewMode.value === 'diff') {
+      for (const item of pushed) {
+        if (item['version'] == selVersion.value) {
+          const refVersion = item['reference_version'];
+          return path + `report_${refVersion}_${selVersion.value}.ndjson`;
+        }
+      }
+    }
+  }
+
+  setSubmitListener(form, getDataUrl);
+})();
+  </script>
+</head>
+
+<body>
+  <div class="scrim toggle-options" hidden></div>
+  <header class="appbar">
+    <div class="appbar-inner">
+      <h1 class="headline">Super Size Tiger View</h1>
+    </div>
+  </header>
+  <table class="table center-text">
+    <tr>
+      <td class="form">
+        <form id="select-form">
+          <h2 class="subhead">Select milestones to
+            <select id="sel-mode" class="sel-small" name="mode">
+              <option value="view">view</option>
+              <option value="compare" selected="selected">compare</option>
+            </select>
+          </h2>
+          <p class="select-wrapper">
+            <select id="cpu" class="sel-big" name="cpu"></select>
+            <label class="select-label" for="cpu">Architecture</label>
+          </p>
+          <p class="select-wrapper">
+            <select id="apk" class="sel-big" name="apk"></select>
+            <label class="select-label" for="apk">APK</label>
+          </p>
+          <p class="select-wrapper hide-on-mode-view">
+            <select id="version1" class="sel-big" name="version1"></select>
+            <label class="select-label" for="version1">Version 1</label>
+          </p>
+          <p class="select-wrapper">
+            <select id="version2" class="sel-big" name="version2"></select>
+            <label class="select-label" for="version2">
+              Version <span class="hide-on-mode-view"> 2</span>
+            </label>
+          </p>
+
+          <button type="submit" class="text-button filled-button">
+            Open Milestone Report
+          </button>
+          <div class="msg-bad-compare">Version 1 must be older than Version 2</div>
+          <div style="margin:20pt 0 10pt">
+            <b>Note:</b> AndroidWebview.apk size information exists only for M71 and above.<br>
+            <b>Note:</b> Starting wih M73, Monochrome.apk is actually Monochrome.minimal.apks<br>
+            <b>Note:</b> Chrome.apk not available for arm_64.
+          </div>
+        </form>
+      </td>
+
+      <td class="form-divider">
+        <h2 class="subhead"><b>or</b></h2>
+      </td>
+
+      <td class="form">
+        <form id="ob_form">
+          <h2 class="subhead">Select Official Build to View</h2>
+          <p class="select-wrapper">
+            <select id="ob_cpu" class="sel-big" name="ob_cpu"></select>
+            <label class="select-label" for="ob_cpu">Architecture</label>
+          </p>
+          <p class="select-wrapper">
+            <select id="ob_apk" class="sel-big" name="ob_apk"></select>
+            <label class="select-label" for="ob_apk">APK</label>
+          </p>
+          <p class="select-wrapper">
+            <select id="ob_version" class="sel-big" name="ob_version"></select>
+            <label class="select-label" for="ob_version">Version</label>
+          </p>
+          <p class="select-wrapper">
+            <select id="ob_viewmode" class="sel-big" name="ob_viewmode">
+              <option value="view">Full Build Report</option>
+              <option value="diff" selected="selected">Diff with Previous Branch</option>
+            </select>
+            <label class="select-label" for="ob_viewmode">Type</label>
+          </p>
+
+          <button type="submit" class="text-button filled-button">
+            Open Official Build Report
+          </button>
+          <div class="msg-bad-compare">&nbsp;</div>
+          <div class="note"><b>Note:</b> Official build size information exists only for M72 and above.</div>
+        </form>
+      </td>
+    </tr>
+    <tr>
+      <td class="center-text" colspan=3>
+        <p>To upload your own .ndjson file, use the upload button within <a href="viewer.html">the viewer</a>.</p>
+      </td>
+    </tr>
+  </table>
+</body>
+
+</html>

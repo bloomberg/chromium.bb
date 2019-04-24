@@ -1,0 +1,49 @@
+Tests that cache data is correctly populated in the Inspector.
+
+Dumping CacheStorage tree:
+    (empty)
+Dumping CacheStorage tree:
+    cache: testCache1 - http://127.0.0.1:8000
+        (cache empty)
+    cache: testCache2 - http://127.0.0.1:8000
+        (cache empty)
+    cache: testCache3 - http://127.0.0.1:8000
+        (cache empty)
+Dumping CacheStorage tree:
+    cache: testCache1 - http://127.0.0.1:8000
+        /1, default, text/plain, 0
+        /2, default, text/plain, 0
+        /T, default, image/png, 0
+    cache: testCache2 - http://127.0.0.1:8000
+        /1, default, text/plain, 0
+        /2, default, text/plain, 0
+        /H/22, default, text/plain, 0
+        /L/11, default, text/plain, 0
+        /T, default, text/javascript, 0
+    cache: testCache3 - http://127.0.0.1:8000
+        /devtools/resources/image.png, basic, image/png, 647
+        /vars, default, text/plain, 0
+Dumping CacheStorage tree with URL path filter string "2"
+    cache: testCache1 - http://127.0.0.1:8000
+        /2, default, text/plain, 0
+    cache: testCache2 - http://127.0.0.1:8000
+        /2, default, text/plain, 0
+        /H/22, default, text/plain, 0
+    cache: testCache3 - http://127.0.0.1:8000
+        (no matching entries)
+Dumping CacheStorage tree with URL path filter string "image"
+    cache: testCache1 - http://127.0.0.1:8000
+        (no matching entries)
+    cache: testCache2 - http://127.0.0.1:8000
+        (no matching entries)
+    cache: testCache3 - http://127.0.0.1:8000
+        /devtools/resources/image.png, basic, image/png, 647
+Dumping testCache2's entry with request URL: http://fake.request.com/1
+        Y
+Dumping testCache3's entry with request URL: http://fake.request.com/vars
+    the original request has headers; query with headers? true
+        Z
+Dumping testCache3's entry with request URL: http://fake.request.com/vars
+    the original request has headers; query with headers? false
+        (nothing to preview)
+

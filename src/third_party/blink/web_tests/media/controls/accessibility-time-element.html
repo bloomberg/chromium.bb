@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<title>Media Controls: time elements accessibility test</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../media-controls.js"></script>
+<video controls></video>
+<script>
+async_test(t => {
+  var video = document.querySelector('video');
+  video.src = '../content/test.ogv';
+
+  enableTestMode(video);
+
+  var current_time = currentTimeElement(video);
+  var remaining_time = timeRemainingElement(video);
+  assert_not_equals(current_time, null);
+  assert_not_equals(remaining_time, null);
+
+  assert_equals(current_time.getAttribute('aria-label'),
+                'elapsed time: 0:00');
+
+  assert_equals(remaining_time.getAttribute('aria-label'),
+                'remaining time: / 0:00');
+
+  video.oncanplaythrough = t.step_func_done(_ => {
+    assert_equals(current_time.getAttribute('aria-label'),
+                  'elapsed time: 0:00');
+
+    assert_equals(remaining_time.getAttribute('aria-label'),
+                  'remaining time: / 0:06');
+
+    video.currentTime = 1;
+    video.onseeked = t.step_func(_ => {
+      assert_equals(current_time.getAttribute('aria-label'),
+                    'elapsed time: 0:01');
+
+      assert_equals(remaining_time.getAttribute('aria-label'),
+                    'remaining time: / 0:06');
+    });
+  });
+});
+</script>
+</html>

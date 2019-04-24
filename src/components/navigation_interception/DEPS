@@ -1,0 +1,8 @@
+include_rules = [
+  "+jni",
+  "+ui/base",
+
+  "+content/public/browser",
+  "+content/public/common",
+  "+content/public/test",
+]

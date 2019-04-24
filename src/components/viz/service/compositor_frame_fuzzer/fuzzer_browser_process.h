@@ -1,0 +1,58 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef COMPONENTS_VIZ_SERVICE_COMPOSITOR_FRAME_FUZZER_FUZZER_BROWSER_PROCESS_H_
+#define COMPONENTS_VIZ_SERVICE_COMPOSITOR_FRAME_FUZZER_FUZZER_BROWSER_PROCESS_H_
+
+#include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
+#include "components/viz/service/compositor_frame_fuzzer/fuzzer_software_display_provider.h"
+#include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "components/viz/test/fake_compositor_frame_sink_client.h"
+#include "components/viz/test/fake_display_client.h"
+
+namespace viz {
+
+// A fake browser process to use as a fuzzer target.
+// Uses software compositing.
+class FuzzerBrowserProcess {
+ public:
+  explicit FuzzerBrowserProcess(base::Optional<base::FilePath> png_dir_path);
+  ~FuzzerBrowserProcess();
+
+  // Fuzz target mimicking the process of submitting a rendered CompositorFrame
+  // to be embedded in the browser UI.
+  //
+  // Submits the provided fuzzed CompositorFrame to a new
+  // CompositorFrameSinkImpl.
+  //
+  // Submits a CompositorFrame to the RootCompositorFrameSinkImpl
+  // with a SolidColorDrawQuad "toolbar" and a SurfaceDrawQuad "renderer frame"
+  // embedding the fuzzed CompositorFrame.
+  void EmbedFuzzedCompositorFrame(CompositorFrame fuzzed_frame);
+
+ private:
+  mojom::RootCompositorFrameSinkParamsPtr BuildRootCompositorFrameSinkParams();
+  CompositorFrame BuildBrowserUICompositorFrame(SurfaceId renderer_surface_id);
+
+  const LocalSurfaceId root_local_surface_id_;
+
+  ServerSharedBitmapManager shared_bitmap_manager_;
+  FuzzerSoftwareDisplayProvider display_provider_;
+  FrameSinkManagerImpl frame_sink_manager_;
+
+  mojom::CompositorFrameSinkAssociatedPtr root_compositor_frame_sink_ptr_;
+  FakeCompositorFrameSinkClient root_compositor_frame_sink_client_;
+  mojom::DisplayPrivateAssociatedPtr display_private_;
+  FakeDisplayClient display_client_;
+
+  ParentLocalSurfaceIdAllocator lsi_allocator_;
+
+  DISALLOW_COPY_AND_ASSIGN(FuzzerBrowserProcess);
+};
+
+}  // namespace viz
+
+#endif  // COMPONENTS_VIZ_SERVICE_COMPOSITOR_FRAME_FUZZER_FUZZER_BROWSER_PROCESS_H_

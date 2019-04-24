@@ -1,0 +1,35 @@
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset=utf-8>
+    <link rel="stylesheet" href="arc_graphics_tracing.css">
+    <script src="chrome://resources/js/cr.js"></script>
+    <script src="chrome://resources/js/cr/ui.js"></script>
+    <script src="chrome://resources/js/util.js"></script>
+    <script src="arc_graphics_tracing_ui.js"></script>
+    <script src="arc_graphics_tracing.js"></script>
+  </head>
+  <title>Graphics buffer</title>
+<body>
+  <div id="arc-graphics-tracing-control">
+    <h4>ARC graphics tracing</h4>
+    <input type="button"
+           id="arc-graphics-tracing-start"
+           value="Start tracing in ">
+    <input type="text"
+           id="arc-graphics-tracing-start-delay"
+           value="3">
+    seconds for
+    <input type="text"
+           id="arc-graphics-tracing-duration"
+           value="2">
+    seconds.
+  </div>
+  <div id='arc-event-bands'></div>
+  <svg id='arc-event-band-tooltip'></svg>
+</body>
+</html>

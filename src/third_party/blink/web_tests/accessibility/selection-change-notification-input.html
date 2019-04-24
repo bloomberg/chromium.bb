@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+</head>
+<body id="static_eventTarget">
+
+<input id="input" value="input">
+
+<div id="console"></div>
+<script>
+window.jsTestIsAsync = true;
+
+async_test_after_layout_and_paint((t) => {
+    // This forces building the accessibility tree, because selection change
+    // events only fire on elements that already exist.
+    accessibilityController.accessibleElementById('dummy');
+
+    var inputElement = document.getElementById('input');
+    var axRootElement = accessibilityController.rootElement;
+    var axInputElement = accessibilityController.accessibleElementById('input');
+    inputElement.focus();
+
+    var gotDocumentSelectionChanged = false;
+    var gotSelectedTextChanged = false;
+    succeedIfDone = t.step_func(() => {
+        if (gotDocumentSelectionChanged && gotSelectedTextChanged)
+            t.done();
+    });
+
+    axRootElement.addNotificationListener(function(notification) {
+        if (notification == 'DocumentSelectionChanged') {
+            console.log('Got DocumentSelectionChanged notification on root element.');
+            gotDocumentSelectionChanged = true;
+            axRootElement.removeNotificationListener();
+            succeedIfDone();
+        }
+    });
+
+    axInputElement.addNotificationListener(function(notification) {
+        if (notification == 'SelectedTextChanged') {
+            console.log('Got SelectedTextChanged notification on input element.');
+            gotSelectedTextChanged = true;
+            axInputElement.removeNotificationListener();
+            succeedIfDone();
+        }
+    });
+
+    inputElement.setSelectionRange(0, 1);
+}, "Tests that a 'selected text changed' notification fires on an input element when the user moves the cursor.");
+
+</script>
+
+</body>
+</html>

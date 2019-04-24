@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<resources>
+    <dimen name="autofill_assistant_bottombar_horizontal_spacing">24dp</dimen>
+    <dimen name="autofill_assistant_bottombar_vertical_spacing">20dp</dimen>
+    <dimen name="autofill_assistant_details_image_size">48dp</dimen>
+    <dimen name="autofill_assistant_poodle_size">24dp</dimen>
+    <dimen name="autofill_assistant_poodle_view_size">34dp</dimen>
+</resources>

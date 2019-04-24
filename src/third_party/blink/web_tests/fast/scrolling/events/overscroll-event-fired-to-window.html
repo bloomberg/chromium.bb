@@ -1,0 +1,59 @@
+<!DOCTYPE HTML>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/gesture-util.js"></script>
+<style>
+#targetDiv {
+  width: 200px;
+  height: 200px;
+  overflow: scroll;
+}
+
+#innerDiv {
+  width: 400px;
+  height: 400px;
+}
+</style>
+
+<body style="margin:0">
+<div id="targetDiv">
+  <div id="innerDiv">
+  </div>
+</div>
+</body>
+
+<script>
+if (window.internals)
+  internals.runtimeFlags.overscrollCustomizationEnabled = true;
+
+var target_div = document.getElementById('targetDiv');
+var rect = target_div.getBoundingClientRect();
+var x = rect.left + rect.width / 2;
+var y = rect.top + rect.height / 2;
+
+function scrollUp() {
+  return smoothScroll(1000, x, y, GestureSourceType.TOUCH_INPUT, "up");
+}
+
+var window_received_autoscroll = false;
+function onOverscroll(event) {
+  assert_false(event.cancelable);
+  // overscroll events targetting document are bubbled to the window.
+  assert_true(event.bubbles);
+  window_received_autoscroll = true;
+}
+window.addEventListener("overscroll", onOverscroll);
+
+promise_test (async (t) => {
+  // Make sure that no overscroll event is sent to target_div.
+  target_div.addEventListener("overscroll",
+      t.unreached_func("target_div got unexpected overscroll event."));
+
+  await waitForCompositorCommit();
+
+  // Scroll up on target div and wait for the window to get overscroll event.
+  await scrollUp();
+  await waitFor(() => { return window_received_autoscroll; },
+      'Window did not receive overscroll event after scroll up on target.');
+}, 'Tests that the window gets overscroll event when no element scrolls.');
+</script>

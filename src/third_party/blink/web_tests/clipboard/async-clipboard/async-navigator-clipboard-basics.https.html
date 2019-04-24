@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Async Clipboard input type validation tests</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../http/tests/resources/permissions-helper.js"></script>
+<script>
+// Permissions are required in order to invoke navigator.clipboard functions in
+// an automated test.
+async function getPermissions() {
+  await PermissionsHelper.setPermission('clipboard-read', 'granted');
+  await PermissionsHelper.setPermission('clipboard-write', 'granted');
+}
+
+test(() => {
+  assert_not_equals(navigator.clipboard, undefined);
+  assert_true(navigator.clipboard instanceof Clipboard);
+  assert_equals(navigator.clipboard, navigator.clipboard);
+}, "navigator.clipboard exists");
+
+/* clipboard.write(text/plain Blob) */
+
+promise_test(async () => {
+  await getPermissions();
+  const blob = new Blob(["hello"], {type: 'text/plain'});
+  await navigator.clipboard.write(blob);
+}, "navigator.clipboard.write(text/plain Blob) succeeds");
+
+promise_test(async t => {
+  await getPermissions();
+  await promise_rejects(t, new TypeError(),
+                         navigator.clipboard.write());
+}, "navigator.clipboard.write() fails (expect Blob)");
+
+promise_test(async t => {
+  await getPermissions();
+  await promise_rejects(t, new TypeError(),
+                         navigator.clipboard.write(null));
+}, "navigator.clipboard.write(null) fails (expect Blob)");
+
+promise_test(async t => {
+  await getPermissions();
+  await promise_rejects(t, new TypeError(),
+                         navigator.clipboard.write("Bad string"));
+}, "navigator.clipboard.write(DOMString) fails (expect Blob)");
+
+
+/* clipboard.writeText() */
+
+promise_test(async () => {
+  await getPermissions();
+  await navigator.clipboard.writeText("New clipboard text");
+}, "navigator.clipboard.writeText(DOMString) succeeds");
+
+promise_test(async t => {
+  await getPermissions();
+  await promise_rejects(t, new TypeError(),
+                         navigator.clipboard.writeText());
+}, "navigator.clipboard.writeText() fails (expect DOMString)");
+
+/* text/plain or image/png Blob clipboard.read() */
+
+promise_test(async () => {
+  await getPermissions();
+  const result = await navigator.clipboard.read();
+  assert_true(result instanceof Blob);
+  assert_equals(typeof result, "object");
+}, "navigator.clipboard.read() succeeds");
+
+
+/* clipboard.readText() */
+
+promise_test(async () => {
+  await getPermissions();
+  const result = await navigator.clipboard.readText();
+  assert_equals(typeof result, "string");
+}, "navigator.clipboard.readText() succeeds");
+
+</script>

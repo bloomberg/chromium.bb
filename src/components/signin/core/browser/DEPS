@@ -1,0 +1,13 @@
+include_rules = [
+  "+components/account_id",
+  "+components/data_use_measurement/core",
+  "+components/image_fetcher/core",
+  "+components/metrics",
+  "+jni",
+  "+mojo/public",
+  "+services/identity/public",
+  "+services/network/public",
+  "+services/network/test",
+  "+third_party/re2",
+  "+ui/gfx",
+]

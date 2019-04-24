@@ -1,0 +1,28 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+</head>
+<body id="body">
+
+<label for="target">Label</label>
+
+<div id="a">A</div>
+<div id="b">B</div>
+<div id="c">C</div>
+
+<input id="target" aria-labelledby="a b c" value="10">
+
+<script>
+test_after_layout_and_paint((t) => {
+    var axTarget = accessibilityController.accessibleElementById("target");
+    assert_equals(axTarget.name, "A B C");
+    assert_equals(axTarget.nameElementCount(), 3);
+}, "This tests that if aria-labelledby is used, then label elements are not used");
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,20 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://immersive-web.github.io/webxr/#xrview-interface
+enum XREye {
+  "left",
+  "right"
+};
+
+[
+    SecureContext,
+    Exposed=Window,
+    OriginTrialEnabled=WebXR
+] interface XRView {
+  readonly attribute XREye eye;
+  readonly attribute Float32Array projectionMatrix;
+  readonly attribute Float32Array viewMatrix;
+  readonly attribute XRRigidTransform transform;
+};

@@ -1,0 +1,16 @@
+Name: R8
+URL: https://r8.googlesource.com/r8
+Revision: 03ab76ff37d7995f76b639dec680cd49ff6fbc41
+Version: 1.4.14-dev
+License: BSD 3-Clause
+License File: NOT_SHIPPED
+Security Critical: no
+
+Description:
+D8 is a dexer that converts java byte code to dex code. R8 is a proguard-like
+optimizer that also has the ability to dex. D8 is found within R8's repo.
+
+Local Modifications:
+Turning off vertical and horizontal class merging, as described in
+https://issuetracker.google.com/122902374#comment11. We should no longer make
+this modification once the linked bug is fixed.

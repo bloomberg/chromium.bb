@@ -1,0 +1,95 @@
+{
+    "0": {
+        "benchmarks": {
+            "blink_perf.accessibility": {},
+            "blink_perf.bindings": {},
+            "blink_perf.canvas": {},
+            "blink_perf.css": {},
+            "blink_perf.dom": {},
+            "blink_perf.events": {},
+            "blink_perf.image_decoder": {},
+            "blink_perf.layout": {},
+            "blink_perf.owp_storage": {},
+            "blink_perf.paint": {},
+            "blink_perf.parser": {},
+            "blink_perf.shadow_dom": {},
+            "blink_perf.svg": {},
+            "dromaeo": {},
+            "dummy_benchmark.noisy_benchmark_1": {},
+            "dummy_benchmark.stable_benchmark_1": {},
+            "jetstream": {},
+            "kraken": {},
+            "loading.desktop": {},
+            "media.desktop": {},
+            "memory.desktop": {},
+            "octane": {},
+            "power.desktop": {
+                "end": 1
+            }
+        }
+    },
+    "1": {
+        "benchmarks": {
+            "power.desktop": {
+                "begin": 1
+            },
+            "rasterize_and_record_micro.partial_invalidation": {},
+            "rasterize_and_record_micro.top_25": {},
+            "rendering.desktop": {},
+            "smoothness.gpu_rasterization.tough_pinch_zoom_cases": {},
+            "smoothness.tough_pinch_zoom_cases": {},
+            "speedometer": {},
+            "speedometer-future": {},
+            "speedometer2": {},
+            "speedometer2-future": {},
+            "system_health.common_desktop": {
+                "end": 67
+            }
+        }
+    },
+    "2": {
+        "benchmarks": {
+            "system_health.common_desktop": {
+                "begin": 67
+            },
+            "system_health.memory_desktop": {
+                "end": 90
+            }
+        }
+    },
+    "3": {
+        "benchmarks": {
+            "system_health.memory_desktop": {
+                "begin": 90
+            },
+            "tab_switching.typical_25": {},
+            "tracing.tracing_with_background_memory_infra": {},
+            "v8.browsing_desktop": {},
+            "v8.browsing_desktop-future": {
+                "end": 1
+            }
+        }
+    },
+    "4": {
+        "benchmarks": {
+            "v8.browsing_desktop-future": {
+                "begin": 1
+            },
+            "v8.runtime_stats.top_25": {},
+            "wasm": {},
+            "webrtc": {}
+        }
+    },
+    "extra_infos": {
+        "num_stories": 2056,
+        "predicted_min_shard_time": 19846.0,
+        "predicted_min_shard_index": 4,
+        "predicted_max_shard_time": 20282.0,
+        "predicted_max_shard_index": 3,
+        "shard #0": 20026.0,
+        "shard #1": 20062.0,
+        "shard #2": 20068.0,
+        "shard #3": 20282.0,
+        "shard #4": 19846.0
+    }
+}

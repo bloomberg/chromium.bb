@@ -1,0 +1,9 @@
+CONSOLE WARNING: HTML Imports is deprecated and will be removed in M73, around March 2019. Please use ES modules instead. See https://www.chromestatus.com/features/5144752345317376 for more details.
+PASS toSuccess.import.querySelector('h1').innerHTML is 'Hello'
+PASS toSuccess.import.querySelector('html') is non-null.
+PASS toFail.import is null
+PASS notImport.import is null
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

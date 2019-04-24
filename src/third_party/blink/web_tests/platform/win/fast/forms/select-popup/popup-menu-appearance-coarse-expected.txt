@@ -1,0 +1,11 @@
+foo
+bar
+qux
+baz
+Item 5
+Item 6
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,15 @@
+Name: Motion Interchange for Objective-C
+URL: https://github.com/material-motion/motion-interchange-objc
+Version: 0
+Revision: 6c385396ae7d3ee6752c3d625e322138eb8e25fc
+License: Apache 2.0
+License File: LICENSE
+Security Critical: yes
+
+Description:
+This library defines a format for representing motion in Objective-C and
+Swift applications. The primary data type, MotionTiming, allows you to
+describe the duration, delay, timing curve, and repetition for an animation.
+
+Local Modifications:
+None

@@ -1,0 +1,32 @@
+# Python
+*.py[co]
+.virtualenv/
+_venv/
+.cache/
+.pytest_cache/
+.tox/
+.coverage*
+
+# Node
+node_modules/
+
+# WPT repo stuff
+/MANIFEST.json
+.wptcache/
+/config.json
+
+# Files generated when regenerating pre-generated certs
+/tools/certs/0*.pem
+/tools/certs/index.txt*
+/tools/certs/serial*
+
+# Various OS/editor specific files
+*#
+*.sw[po]
+*~
+\#*
+scratch
+.idea/
+.vscode/
+.DS_Store
+*.rej

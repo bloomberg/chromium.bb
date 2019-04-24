@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+
+<style>
+button {
+  padding: 30px;
+}
+</style>
+
+<button id="cake">Button with image of <img alt="cake" src="resources/cake.png" width="40px"></button>
+
+<script>
+test_after_layout_and_paint((t) => {
+    var button = document.getElementById('cake');
+    button.focus();
+    assert_equals(document.activeElement == button, true);
+    window.axButton = accessibilityController.focusedElement;
+    assert_equals(axButton.name.indexOf('Button with image of cake') >= 0, true);
+}, "This test makes sure that a generic focusable div can get accessibility focus and gets its accessible text from contents..");
+
+
+
+</script>
+
+</body>
+</html>

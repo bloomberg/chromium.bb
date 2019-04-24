@@ -1,0 +1,52 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_DATA_USE_METRICS_OBSERVER_H_
+#define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_DATA_USE_METRICS_OBSERVER_H_
+
+#include "base/macros.h"
+#include "base/sequence_checker.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
+#include "chrome/common/page_load_metrics/page_load_timing.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
+
+namespace content {
+class NavigationHandle;
+}  // namespace content
+
+// Records the data use of user-initiated traffic broken down by different
+// conditions.
+class DataUseMetricsObserver
+    : public page_load_metrics::PageLoadMetricsObserver {
+ public:
+  DataUseMetricsObserver();
+  ~DataUseMetricsObserver() override;
+
+ private:
+  // page_load_metrics::PageLoadMetricsObserver:
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
+                         ukm::SourceId source_id) override;
+  ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
+                        const GURL& currently_committed_url,
+                        bool started_in_foreground) override;
+  ObservePolicy OnHidden(
+      const page_load_metrics::mojom::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  ObservePolicy OnShown() override;
+  void OnResourceDataUseObserved(
+      FrameTreeNodeId frame_tree_node_id,
+      const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+          resources) override;
+  ObservePolicy ShouldObserveMimeType(
+      const std::string& mime_type) const override;
+
+  bool currently_in_foreground_ = false;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  DISALLOW_COPY_AND_ASSIGN(DataUseMetricsObserver);
+};
+
+#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_DATA_USE_METRICS_OBSERVER_H_

@@ -1,0 +1,12 @@
+Checks the RunMicrotasks event is emitted.
+
+RunMicrotasks Properties:
+{
+    data : {
+        microtask_count : 1
+    }
+    endTime : <number>
+    startTime : <number>
+    type : "RunMicrotasks"
+}
+

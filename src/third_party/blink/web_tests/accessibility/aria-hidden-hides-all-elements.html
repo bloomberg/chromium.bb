@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+</head>
+<body id="body">
+
+<div id="content" role="group">
+
+<main id="main" aria-hidden="true">
+    <video controls="controls"></video>
+    <select id="select"><option>a</select>
+    <input type="range">
+    <input type="data">
+    <progress></progress>
+    <ul id="ul"><li>item</li></ul>
+    <select size="10"><option>a</select>
+    <img src="resources/cake.png" width="145" height="126" usemap="#map">
+    <map name="map">
+        <area shape="rect" coords="0,0,100,100" href="#" alt="cake">
+    </map>
+</main>
+
+</div>
+
+<script>
+test_after_layout_and_paint(function(t) {
+    var content = accessibilityController.accessibleElementById("content");
+    assert_equals(content.childrenCount, 6);
+
+    document.getElementById("ul").tabIndex = -1;
+
+    assert_equals(content.childrenCount, 7,
+                      "Making list focusable should make it not hidden");
+    document.getElementById("ul").removeAttribute("tabindex");
+
+    assert_equals(content.childrenCount, 6,
+                          "Making list unfocusable should make it hidden again");
+});
+</script>
+
+</body>
+</html>
