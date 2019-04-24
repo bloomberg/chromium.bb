@@ -89,7 +89,7 @@ class Logger {
 #elif defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
-    stream << str_buffer << std::endl;
+    stream << str_buffer;
     free(str_buffer);
   }
 
