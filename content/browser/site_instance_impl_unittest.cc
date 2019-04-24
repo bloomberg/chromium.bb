@@ -47,10 +47,6 @@
 namespace content {
 namespace {
 
-GURL GetWebUIURL(std::string host) {
-  return GURL(std::string(kChromeUIScheme) + "://" + host);
-}
-
 bool IsSameWebSite(BrowserContext* context,
                    const GURL& url1,
                    const GURL& url2) {
@@ -738,10 +734,10 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURL) {
   EXPECT_FALSE(instance->HasWrongProcessForURL(
       GURL("javascript:alert(document.location.href);")));
 
-  EXPECT_TRUE(instance->HasWrongProcessForURL(GURL("chrome://gpu")));
+  EXPECT_TRUE(instance->HasWrongProcessForURL(GetWebUIURL(kChromeUIGpuHost)));
 
   // Test that WebUI SiteInstances reject normal web URLs.
-  const GURL webui_url("chrome://gpu");
+  const GURL webui_url(GetWebUIURL(kChromeUIGpuHost));
   scoped_refptr<SiteInstanceImpl> webui_instance(
       SiteInstanceImpl::Create(browser_context.get()));
   webui_instance->SetSite(webui_url);
@@ -796,7 +792,7 @@ TEST_F(SiteInstanceTest, HasWrongProcessForURLInSitePerProcess) {
   EXPECT_FALSE(instance->HasWrongProcessForURL(
       GURL("javascript:alert(document.location.href);")));
 
-  EXPECT_TRUE(instance->HasWrongProcessForURL(GURL("chrome://gpu")));
+  EXPECT_TRUE(instance->HasWrongProcessForURL(GetWebUIURL(kChromeUIGpuHost)));
 
   DrainMessageLoop();
 }
@@ -815,7 +811,7 @@ TEST_F(SiteInstanceTest, ProcessPerSiteWithWrongBindings) {
 
   // Simulate navigating to a WebUI URL in a process that does not have WebUI
   // bindings.  This already requires bypassing security checks.
-  const GURL webui_url("chrome://gpu");
+  const GURL webui_url(GetWebUIURL(kChromeUIGpuHost));
   instance->SetSite(webui_url);
   EXPECT_TRUE(instance->HasSite());
 

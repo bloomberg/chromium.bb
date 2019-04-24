@@ -400,7 +400,7 @@ TEST_F(WebContentsImplTest, UpdateTitleBeforeFirstNavigation) {
 }
 
 TEST_F(WebContentsImplTest, DontUseTitleFromPendingEntry) {
-  const GURL kGURL("chrome://blah");
+  const GURL kGURL(GetWebUIURL("blah"));
   controller().LoadURL(
       kGURL, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(base::string16(), contents()->GetTitle());
@@ -412,7 +412,7 @@ TEST_F(WebContentsImplTest, DontUseTitleFromPendingEntry) {
 }
 
 TEST_F(WebContentsImplTest, UseTitleFromPendingEntryIfSet) {
-  const GURL kGURL("chrome://blah");
+  const GURL kGURL(GetWebUIURL("blah"));
   const base::string16 title = base::ASCIIToUTF16("My Title");
   controller().LoadURL(
       kGURL, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
@@ -426,9 +426,9 @@ TEST_F(WebContentsImplTest, UseTitleFromPendingEntryIfSet) {
 
 // Browser initiated navigations to view-source URLs of WebUI pages should work.
 TEST_F(WebContentsImplTest, DirectNavigationToViewSourceWebUI) {
-  const GURL kGURL("view-source:chrome://blah/");
+  const GURL kGURL("view-source:" + GetWebUIURLString("blah/"));
   // NavigationControllerImpl rewrites view-source URLs, simulating that here.
-  const GURL kRewrittenURL("chrome://blah");
+  const GURL kRewrittenURL(GetWebUIURL("blah"));
 
   process()->sink().ClearMessages();
 
@@ -2880,7 +2880,7 @@ TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
 
   // Navigate to a URL with WebUI. This will change BrowsingInstances.
-  const GURL kWebUIUrl = GURL("chrome://gpu");
+  const GURL kWebUIUrl = GURL(GetWebUIURL(kChromeUIGpuHost));
   auto web_ui_navigation =
       NavigationSimulator::CreateBrowserInitiated(kWebUIUrl, contents.get());
   web_ui_navigation->Start();

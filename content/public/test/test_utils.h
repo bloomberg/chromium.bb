@@ -102,6 +102,12 @@ void IsolateAllSitesForTesting(base::CommandLine* command_line);
 // Resets the internal secure schemes/origins whitelist.
 void ResetSchemesAndOriginsWhitelist();
 
+// Returns a GURL constructed from the WebUI scheme and the given host.
+GURL GetWebUIURL(const std::string& host);
+
+// Returns a string constructed from the WebUI scheme and the given host.
+std::string GetWebUIURLString(const std::string& host);
+
 // Appends command line switches to |command_line| to enable the |feature| and
 // to set field trial params associated with the feature as specified by
 // |param_name| and |param_value|.

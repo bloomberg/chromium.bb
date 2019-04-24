@@ -37,6 +37,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/test_launcher.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -196,6 +197,15 @@ void ResetSchemesAndOriginsWhitelist() {
   url::Shutdown();
   RegisterContentSchemes(false);
   url::Initialize();
+}
+
+GURL GetWebUIURL(const std::string& host) {
+  return GURL(GetWebUIURLString(host));
+}
+
+std::string GetWebUIURLString(const std::string& host) {
+  return std::string(content::kChromeUIScheme) + url::kStandardSchemeSeparator +
+         host;
 }
 
 void DeprecatedEnableFeatureWithParam(const base::Feature& feature,
