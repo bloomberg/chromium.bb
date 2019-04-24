@@ -114,8 +114,7 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
     network::mojom::URLLoaderPtr loader;
     network::ResourceRequest resource_request;
     resource_request.url = scope_;
-    resource_request.resource_type =
-        static_cast<int>(ResourceType::kServiceWorker);
+    resource_request.resource_type = ResourceType::kServiceWorker;
     factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
         network::mojom::kURLLoadOptionNone, resource_request,

@@ -276,7 +276,7 @@ WebRequestInfo::WebRequestInfo(net::URLRequest* url_request)
       render_process_id = url_loader->GetProcessId();
       frame_id = url_loader->GetRenderFrameId();
     }
-    type = static_cast<content::ResourceType>(url_loader->GetResourceType());
+    type = url_loader->GetResourceType();
   } else {
     // There may be basic process and frame info associated with the request
     // even when |info| is null. Attempt to grab it as a last ditch effort. If

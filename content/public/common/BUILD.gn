@@ -327,6 +327,7 @@ source_set("resource_type_header") {
   ]
   public_deps = [
     "//content:export",
+    "//services/network/public/cpp",
   ]
 }
 

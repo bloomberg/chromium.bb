@@ -663,8 +663,7 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     return false;
 
   network::ResourceRequest resource_request(original_request);
-  resource_request.resource_type =
-      static_cast<int>(ResourceType::kNavigationPreload);
+  resource_request.resource_type = ResourceType::kNavigationPreload;
   resource_request.skip_service_worker = true;
   resource_request.do_not_prompt_for_login = true;
 

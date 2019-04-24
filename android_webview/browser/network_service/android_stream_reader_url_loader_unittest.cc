@@ -159,8 +159,7 @@ class AndroidStreamReaderURLLoaderTest : public ::testing::Test {
     network::ResourceRequest request;
     request.url = url;
     request.method = "GET";
-    request.resource_type =
-        static_cast<int>(content::ResourceType::kSubResource);
+    request.resource_type = content::ResourceType::kSubResource;
     return request;
   }
 

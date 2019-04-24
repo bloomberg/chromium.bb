@@ -2666,7 +2666,7 @@ TEST_F(URLLoaderTest, HttpAuthResponseHeadersAvailable) {
 // This simulates plugins without universal access, like PNaCl. These make
 // cross-origin fetches with CORS, and we expect CORB to block them.
 TEST_F(URLLoaderTest, CorbEffectiveWithCors) {
-  int kResourceType = 1;
+  ResourceType kResourceType = static_cast<ResourceType>(1);
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL("/hello.html"));
   request.resource_type = kResourceType;
@@ -2677,7 +2677,7 @@ TEST_F(URLLoaderTest, CorbEffectiveWithCors) {
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
-  params.corb_excluded_resource_type = kResourceType;
+  params.corb_excluded_resource_type = static_cast<int>(kResourceType);
   url_loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
@@ -2702,7 +2702,7 @@ TEST_F(URLLoaderTest, CorbEffectiveWithCors) {
 // This simulates plugins with universal access, like Flash. These can make
 // cross-origin requests that are not subject to CORB.
 TEST_F(URLLoaderTest, CorbExcludedWithNoCors) {
-  int kResourceType = 1;
+  ResourceType kResourceType = static_cast<ResourceType>(1);
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL("/hello.html"));
   request.resource_type = kResourceType;
@@ -2713,7 +2713,7 @@ TEST_F(URLLoaderTest, CorbExcludedWithNoCors) {
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
-  params.corb_excluded_resource_type = kResourceType;
+  params.corb_excluded_resource_type = static_cast<int>(kResourceType);
   params.process_id = 123;
   CrossOriginReadBlocking::AddExceptionForPlugin(123);
   url_loader = std::make_unique<URLLoader>(
@@ -2742,7 +2742,7 @@ TEST_F(URLLoaderTest, CorbExcludedWithNoCors) {
 // process via CrossOriginReadBlocking::AddExceptionForPlugin).  We should still
 // apply CORB in this case.
 TEST_F(URLLoaderTest, CorbEffectiveWithNoCorsWhenNoActualPlugin) {
-  int kResourceType = 1;
+  ResourceType kResourceType = static_cast<ResourceType>(1);
   ResourceRequest request =
       CreateResourceRequest("GET", test_server()->GetURL("/hello.html"));
   request.resource_type = kResourceType;
@@ -2753,7 +2753,7 @@ TEST_F(URLLoaderTest, CorbEffectiveWithNoCorsWhenNoActualPlugin) {
   mojom::URLLoaderPtr loader;
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
-  params.corb_excluded_resource_type = kResourceType;
+  params.corb_excluded_resource_type = static_cast<int>(kResourceType);
   params.process_id = 234;
   // No call to CrossOriginReadBlocking::AddExceptionForPlugin(123) - this is
   // what we primarily want to cover in this test.

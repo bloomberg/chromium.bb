@@ -46,8 +46,7 @@ net::RedirectInfo CreateRedirectInfo(const GURL& redirected_url,
 
 bool ShouldCreateLoader(const network::ResourceRequest& resource_request) {
   // Ignore the requests not for the main frame.
-  if (resource_request.resource_type !=
-      static_cast<int>(content::ResourceType::kMainFrame))
+  if (resource_request.resource_type != content::ResourceType::kMainFrame)
     return false;
 
   // Ignore non-http/https requests.

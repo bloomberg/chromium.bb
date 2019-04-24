@@ -5,12 +5,15 @@
 #ifndef CONTENT_PUBLIC_COMMON_RESOURCE_TYPE_H_
 #define CONTENT_PUBLIC_COMMON_RESOURCE_TYPE_H_
 
-#include "content/common/content_export.h"
+#include <stdint.h>
 
-namespace content {
+#include "content/common/content_export.h"
+#include "services/network/public/cpp/resource_type.h"
+
+namespace network {
 
 // Used in histograms; explicitly assign each type and do not re-use old values.
-enum class ResourceType {
+enum class ResourceType : int32_t {
   kMainFrame = 0,           // top level page
   kSubFrame = 1,            // frame or iframe
   kStylesheet = 2,          // a CSS stylesheet
@@ -32,6 +35,12 @@ enum class ResourceType {
   kNavigationPreload = 18,  // a service worker navigation preload request.
   kMaxValue = kNavigationPreload,
 };
+
+}  // namespace network
+
+namespace content {
+
+using ResourceType = network::ResourceType;
 
 CONTENT_EXPORT bool IsResourceTypeFrame(ResourceType type);
 

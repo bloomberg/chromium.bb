@@ -122,8 +122,7 @@ ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
   // If the request is a MAIN_FRAME request, the first-party URL gets
   // updated on redirects.
   const net::URLRequest::FirstPartyURLPolicy first_party_url_policy =
-      original_request.resource_type ==
-              static_cast<int>(ResourceType::kMainFrame)
+      original_request.resource_type == ResourceType::kMainFrame
           ? net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT
           : net::URLRequest::NEVER_CHANGE_FIRST_PARTY_URL;
   return net::RedirectInfo::ComputeRedirectInfo(
