@@ -102,9 +102,6 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
   explicit PrinterConfigurerImpl(Profile* profile)
       : ppd_provider_(CreatePpdProvider(profile)), weak_factory_(this) {}
 
-  PrinterConfigurerImpl(const PrinterConfigurerImpl&) = delete;
-  PrinterConfigurerImpl& operator=(const PrinterConfigurerImpl&) = delete;
-
   ~PrinterConfigurerImpl() override {}
 
   void SetUpPrinter(const Printer& printer,
@@ -241,6 +238,8 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
 
   scoped_refptr<PpdProvider> ppd_provider_;
   base::WeakPtrFactory<PrinterConfigurerImpl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrinterConfigurerImpl);
 };
 
 }  // namespace
@@ -258,6 +257,12 @@ std::string PrinterConfigurer::SetupFingerprint(const Printer& printer) {
   base::MD5Digest digest;
   base::MD5Final(&digest, &ctx);
   return std::string(reinterpret_cast<char*>(&digest.a[0]), sizeof(digest.a));
+}
+
+// static
+void PrinterConfigurer::RecordUsbPrinterSetupSource(
+    UsbPrinterSetupSource source) {
+  UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.UsbSetupSource", source);
 }
 
 // static
