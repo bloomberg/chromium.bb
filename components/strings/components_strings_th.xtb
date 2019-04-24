@@ -524,7 +524,7 @@
 <translation id="3761718714832595332">ซ่อนสถานะ</translation>
 <translation id="3765032636089507299">หน้า Google Safe Browsing อยู่ในระหว่างการปรับปรุง</translation>
 <translation id="3778403066972421603">คุณต้องการบันทึกบัตรนี้ลงในบัญชี Google และในอุปกรณ์นี้ไหม</translation>
-<translation id="3779973883630527594">บริษัท โรงเรียน หรือองค์กรที่จัดการบัญชีนี้:</translation>
+<translation id="3779973883630527594">บริษัท สถานศึกษา หรือองค์กรที่จัดการบัญชีนี้</translation>
 <translation id="3781428340399460090">ชมพูเจิดจ้า</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">หมดอายุ <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -723,7 +723,7 @@
 <translation id="4926159001844873046"><ph name="SITE" /> บอกว่า</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">ไม่มีผลการค้นหา</translation>
-<translation id="4945672369594656571">ควบคุมวิธีจัดการข้อมูลอุปกรณ์และบัญชีของคุณ Google ประมวลผลข้อมูลอุปกรณ์และบัญชีภายใต้คำแนะนำของผู้จัดการอุปกรณ์และบัญชีของคุณโดยเฉพาะและตามวัตถุประสงค์ที่ผู้จัดการอุปกรณ์และบัญชีระบุไว้เท่านั้น</translation>
+<translation id="4945672369594656571">ควบคุมวิธีจัดการข้อมูลอุปกรณ์และบัญชีของคุณ Google ประมวลผลข้อมูลอุปกรณ์และบัญชีของคุณภายใต้คำแนะนำของผู้จัดการฝ่ายดูแลลูกค้าและอุปกรณ์ของคุณโดยเฉพาะและตามวัตถุประสงค์ที่ผู้จัดการฝ่ายดูแลลูกค้าและอุปกรณ์ระบุไว้เท่านั้น</translation>
 <translation id="4950898438188848926">ปุ่มเปลี่ยนแท็บ โปรดกด Enter เพื่อเปลี่ยนไปยังแท็บที่เปิดอยู่ <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">การทำงาน</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
@@ -1166,7 +1166,7 @@
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">จัดการรหัสผ่าน…</translation>
 <translation id="7419106976560586862">เส้นทางโปรไฟล์</translation>
-<translation id="7424427397225027541">ควบคุมวิธีจัดการข้อมูลบัญชีของคุณ Google ประมวลผลข้อมูลบัญชีภายใต้คำแนะนำของผู้จัดการบัญชีของคุณโดยเฉพาะและตามวัตถุประสงค์ที่ผู้จัดการบัญชีระบุไว้เท่านั้น</translation>
+<translation id="7424427397225027541">ควบคุมวิธีจัดการข้อมูลบัญชีของคุณ Google ประมวลผลข้อมูลบัญชีภายใต้คำแนะนำของผู้จัดการฝ่ายดูแลลูกค้าของคุณโดยเฉพาะและตามวัตถุประสงค์ที่ผู้จัดการฝ่ายดูแลลูกค้าระบุไว้เท่านั้น</translation>
 <translation id="7437289804838430631">เพิ่มข้อมูลติดต่อ</translation>
 <translation id="7440140511386898319">สำรวจขณะที่ออฟไลน์</translation>
 <translation id="7441627299479586546">หัวเรื่องนโยบายไม่ถูกต้อง</translation>

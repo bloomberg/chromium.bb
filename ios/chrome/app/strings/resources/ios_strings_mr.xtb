@@ -42,7 +42,7 @@
 <translation id="152234381334907219">कधीही सेव्ह न केलेले</translation>
 <translation id="1540800554400757039">पत्ता 1</translation>
 <translation id="1545749641540134597">QR कोड स्कॅन करा</translation>
-<translation id="1552525382687785070">तुमच्या अॅडमिनिस्ट्रेटरने सिंक बंद केले आहे</translation>
+<translation id="1552525382687785070">तुमच्या ॲडमिनिस्ट्रेटरने सिंक बंद केले आहे</translation>
 <translation id="1558704936695638228">अधिक टॅब पर्यायांसाठी दाबा आणि धरून ठेवा</translation>
 <translation id="1580783302095112590">मेल पाठवले.</translation>
 <translation id="1582732959743469162">यामुळे तुमच्या सुरू असलेल्या डाउनलोडची पुढची सर्व प्रगती थांबेल.</translation>
@@ -73,7 +73,7 @@
 <translation id="1952728750904661634">व्यवस्थापित केलेल्या खात्यासह साइन इन करा</translation>
 <translation id="1974060860693918893">प्रगत</translation>
 <translation id="1989112275319619282">ब्राउझ करा</translation>
-<translation id="2000419248597011803">अॅड्रेस बार आणि सर्च बॉक्समधून तुमच्या डीफॉल्ट शोध इंजिनला काही कुकीज आणि शोध पाठवते</translation>
+<translation id="2000419248597011803">ॲड्रेस बार आणि सर्च बॉक्समधून तुमच्या डीफॉल्ट शोध इंजिनला काही कुकीज आणि शोध पाठवते</translation>
 <translation id="2015722694326466240">पासवर्ड पाहण्यासाठी, तुम्ही प्रथम तुमच्या डीव्हाइसवर पासकोड सेट करणे आवश्यक आहे.</translation>
 <translation id="2068952045031577364">गेल्या आठवड्यात</translation>
 <translation id="2074131957428911366">तुम्ही काय सिंक करायचे हे <ph name="BEGIN_LINK" />सेटिंग्ज<ph name="END_LINK" /> मध्ये कधीही निवडू शकता.</translation>
@@ -200,7 +200,7 @@
 <translation id="3995521777587992544">पेज लोड प्रगती बार, <ph name="EMAIL" /> लोड झाले.</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4004204301268239848">तुम्हाला कोणत्याही डिव्हाइसवर वापरता यावेत म्हणून तुमच्या Google खात्यामध्ये पासवर्ड सेव्ह केले जातात.</translation>
-<translation id="4038354071007134711">या डिव्हाइसवरील कोणतीही अॅप्लिकेशन फाइल उघडू शकत नाही.</translation>
+<translation id="4038354071007134711">या डिव्हाइसवरील कोणतीही ॲप्लिकेशन फाइल उघडू शकत नाही.</translation>
 <translation id="4042870976416480368">पेजमध्ये शोधा</translation>
 <translation id="4049507953662678203">आपल्याकडे नेटवर्क कनेक्शन आहे हे सुनिश्चित करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="4071530748369333746">सिंक रद्द करायचे का?</translation>
@@ -217,7 +217,7 @@
 <translation id="4272631900155121838">QR कोड स्कॅन करण्‍यासाठी, सेटिंग्ज मधून कॅमेरा सक्षम करा</translation>
 <translation id="4281844954008187215">सेवा अटी</translation>
 <translation id="430793432425771671">प्रत्येकगोष्ट संंकालित करा</translation>
-<translation id="4359125752503270327">हे पेज दुसऱ्या अॅप्समध्ये उघडेल.</translation>
+<translation id="4359125752503270327">हे पेज दुसऱ्या ॲप्समध्ये उघडेल.</translation>
 <translation id="4370827530403103842">संकालन कार्य करत नाही. निराकरण करण्यासाठी टॅप करा.</translation>
 <translation id="4375040482473363939">QR कोड शोध</translation>
 <translation id="4378154925671717803">फोन</translation>
@@ -278,7 +278,7 @@
 <translation id="5317780077021120954">सेव्ह करा</translation>
 <translation id="5327248766486351172">नाव</translation>
 <translation id="5388358297987318779">इमेज उघडा</translation>
-<translation id="5409365236829784218">ही फाईल उघडू शकणारे कोणतेही अॅप्लिकेशन इंस्टॉल केलेले नाहीत.</translation>
+<translation id="5409365236829784218">ही फाईल उघडू शकणारे कोणतेही ॲप्लिकेशन इंस्टॉल केलेले नाहीत.</translation>
 <translation id="5433691172869980887">वापरकर्तानाव कॉपी केले</translation>
 <translation id="54401264925851789">पृष्‍ठ सुरक्षितता माहिती</translation>
 <translation id="5443952882982198570">क्रेडिट कार्ड</translation>
@@ -332,7 +332,7 @@
 <translation id="6187302354554850004">अखेरचे संंकालित: <ph name="LAST_USED_TIME" /></translation>
 <translation id="6189413832092199491">न वाचलेले</translation>
 <translation id="6196207969502475924">व्हॉइस शोध</translation>
-<translation id="6254066287920239840">ब्राउझर ऐवजी अॅपमध्ये लिंक उघडा.</translation>
+<translation id="6254066287920239840">ब्राउझर ऐवजी ॲपमध्ये लिंक उघडा.</translation>
 <translation id="6255097610484507482">क्रेडिट कार्ड संपादित करा</translation>
 <translation id="6303969859164067831">साइन आउट करा आणि सिंक बंद करा</translation>
 <translation id="6308436439357671616">हे तुम्हाला फोटो घेऊ आणि अपलोड करू देते.</translation>
@@ -383,12 +383,14 @@
 <translation id="6903907808598579934">संकालन चालू करा</translation>
 <translation id="6914583639806229067">तुम्ही कॉपी केलेली इमेज शोधा</translation>
 <translation id="6914783257214138813">एक्सपोर्ट करण्यात आलेली फाइल दिसणार्‍या प्रत्येकाला, तुमचा पासवर्ड दिसेल.</translation>
+<translation id="692898627499215142">सुरुवातीचे सिंक सेट करणे पूर्ण झाले नाही. सिंक सुरू करण्यासाठी, सिंक टॉगल सुरू करा.</translation>
 <translation id="6944369514868857500">दुसरे खाते निवडा</translation>
 <translation id="6945221475159498467">निवडा</translation>
 <translation id="6973630695168034713">फोल्डर</translation>
 <translation id="6979158407327259162">Google ड्राइव्ह</translation>
 <translation id="7004499039102548441">अलीकडील टॅब</translation>
 <translation id="7006788746334555276">सामग्री सेटिंग्ज</translation>
+<translation id="7015203776128479407">सुरुवातीचे सिंक सेट करणे पूर्ण झाले नाही. सिंक बंद आहे.</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
 <translation id="7031882061095297553">यावर संकालित करा</translation>
 <translation id="7053983685419859001">अवरोधित करा</translation>
@@ -400,6 +402,7 @@
 <translation id="7136892417564438900">कॅमेरा अनुपलब्ध आहे</translation>
 <translation id="7159472599653637159">मोबाइल साइटची विनंती करा</translation>
 <translation id="7167621057293532233">डेटा प्रकार</translation>
+<translation id="7173114856073700355">सेटिंग्ज उघडा</translation>
 <translation id="7189598951263744875">सामयिक करा...</translation>
 <translation id="7192050974311852563">लॉग इन करणे सुरू करा</translation>
 <translation id="7203585745079012652">उत्तरे वाचून सांगा</translation>
@@ -476,6 +479,7 @@
 <translation id="850600235656508448">गुप्त प्रकारात उघडा</translation>
 <translation id="8517375800490286174">मुक्त स्त्रोत परवाने</translation>
 <translation id="8524799873541103884"><ph name="NUMBER_OF_OPEN_TABS" /> पैकी <ph name="LAST_VISIBLE_TAB" /> ते <ph name="FIRST_VISIBLE_TAB" /> <ph name="INCOGNITO" /> टॅब</translation>
+<translation id="8529767659511976195">नवीन</translation>
 <translation id="8532105204136943229">कालबाह्य होण्याचे वर्ष</translation>
 <translation id="8534481786647257214">Google+ पोस्ट पूर्ण केले.</translation>
 <translation id="8548878600947630424">पृष्ठामध्ये शोधा...</translation>
@@ -499,7 +503,7 @@
 <translation id="895541991026785598">समस्या नोंदवणे</translation>
 <translation id="8971089644512329999">ठीक आहे, समजले</translation>
 <translation id="8976382372951310360">मदत</translation>
-<translation id="8981454092730389528">Google अॅक्टिव्हिटी नियंत्रणे</translation>
+<translation id="8981454092730389528">Google ॲक्टिव्हिटी नियंत्रणे</translation>
 <translation id="8985320356172329008">Google मध्ये हे म्हणून साइन इन केले</translation>
 <translation id="902659348151742535">शोध, जाहिरात आणि इतर Google सेवा वैयक्तीकृत करण्यासाठी Google आपल्या ब्राउझिंग इतिहासाचा वापर करू शकते.</translation>
 <translation id="9034759925968272072">तुम्हाला आपल्या Google खात्यामधून साइन आउट केले जाणार नाही. आपल्या Google खात्यात <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> वर ब्राउझिंग इतिहासाची इतर स्वरूपे असू शकतात.</translation>

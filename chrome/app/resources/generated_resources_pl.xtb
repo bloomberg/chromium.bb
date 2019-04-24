@@ -2023,7 +2023,6 @@
 <translation id="4109135793348361820">Przesuń okno do: <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Pobrano plik: <ph name="FILE_NAME" />. Naciśnij Shift+F6, by przejść do obszaru paska pobranych plików.</translation>
 <translation id="4110895898888439383">Przeglądaj strony w trybie dużego kontrastu</translation>
-<translation id="4112221174576828331">Jeśli obraz nie ma przydatnego opisu, Chrome stworzy go dla Ciebie. Obrazy są skanowane przez Google.</translation>
 <translation id="4115002065223188701">Sieć poza zasięgiem</translation>
 <translation id="4115080753528843955">Niektóre usługi związane z treściami używają unikalnych identyfikatorów na potrzeby autoryzacji dostępu do chronionych treści</translation>
 <translation id="4118579674665737931">Uruchom ponownie urządzenie i spróbuj jeszcze raz.</translation>
@@ -4492,6 +4491,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8008356846765065031">Brak łączności z internetem. Sprawdź połączenie.</translation>
 <translation id="8009225694047762179">Zarządzaj hasłami</translation>
 <translation id="8012382203418782830">Ta strona została przetłumaczona.</translation>
+<translation id="8013993649590906847">Jeśli obraz nie ma przydatnego opisu, Chrome spróbuje go dla Ciebie stworzyć. W tym celu obrazy zostaną wysłane do Google.</translation>
 <translation id="8014154204619229810">Obecnie działa aktualizator. Odśwież za minutę, by sprawdzić ponownie.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> nie może przywrócić poprzednio zainstalowanej wersji. Spróbuj ponownie, by wykonać Powerwash na urządzeniu.</translation>
 <translation id="8014210335923519270">Pomóż nam ulepszyć działanie i zwiększyć bezpieczeństwo <ph name="IDS_SHORT_PRODUCT_NAME" />, wysyłając informacje o systemie i użytkowaniu do Google</translation>
@@ -5065,7 +5065,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="891365694296252935">Wysyłaj dane diagnostyczne oraz informacje o użyciu. To urządzenie automatycznie wysyła do Google dane diagnostyczne oraz informacje o używaniu urządzenia i aplikacji. Nie zostaną one użyte do zidentyfikowania Twojego dziecka. Wykorzystamy je, by poprawić stabilność systemu i aplikacji oraz wprowadzić inne ulepszenia. Niektóre dane zbiorcze pomogą nam też udoskonalić aplikacje Google lub zostaną wykorzystane przez naszych partnerów, na przykład deweloperów aplikacji na Androida. To ustawienie jest wymuszone przez właściciela. Jeśli dodatkowo na koncie Google dziecka włączysz ustawienie Aktywność w internecie i aplikacjach, te dane mogą być zapisywane na tym koncie. <ph name="BEGIN_LINK1" />Więcej informacji<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Ładuję sugestie</translation>
 <translation id="8916476537757519021">Ramka podrzędna incognito: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917490105272468696">Tak, zgadzam się</translation>
 <translation id="8919275547519617350">Aby korzystać ze wszystkich swoich haseł na innych urządzeniach, zaloguj się i włącz synchronizację.</translation>
 <translation id="8921366488406707015">Weryfikuję klucz bezpieczeństwa…</translation>
 <translation id="8922013791253848639">Zawsze zezwalaj na wyświetlanie reklam na tej stronie</translation>

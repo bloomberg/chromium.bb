@@ -382,12 +382,14 @@
 <translation id="6903907808598579934">Включване на синхронизирането</translation>
 <translation id="6914583639806229067">Търсене на копираното изображение</translation>
 <translation id="6914783257214138813">Паролите ви ще бъдат видими за всички, които могат да видят експортирания файл.</translation>
+<translation id="692898627499215142">Първоначалното настройване на синхронизирането не бе завършено. За да стартирате синхронизирането, активирайте съответния превключвател.</translation>
 <translation id="6944369514868857500">Избиране на друг профил</translation>
 <translation id="6945221475159498467">Избиране</translation>
 <translation id="6973630695168034713">Папки</translation>
 <translation id="6979158407327259162">Google Диск</translation>
 <translation id="7004499039102548441">Скорошни раздели</translation>
 <translation id="7006788746334555276">Настройки за съдържанието</translation>
+<translation id="7015203776128479407">Първоначалното настройване на синхронизирането не бе завършено. Синхронизирането е изключено.</translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7031882061095297553">Синхронизиране със</translation>
 <translation id="7053983685419859001">Блокиране</translation>
@@ -399,6 +401,7 @@
 <translation id="7136892417564438900">Няма достъп до камерата</translation>
 <translation id="7159472599653637159">Мобилен сайт</translation>
 <translation id="7167621057293532233">Типове данни</translation>
+<translation id="7173114856073700355">Към настройките</translation>
 <translation id="7189598951263744875">Споделяне...</translation>
 <translation id="7192050974311852563">Стартиране на регистрирането</translation>
 <translation id="7203585745079012652">Изговаряне на отговорите</translation>
@@ -475,6 +478,7 @@
 <translation id="850600235656508448">Отваряне в режим „инкогнито“</translation>
 <translation id="8517375800490286174">Лицензи за отворен код</translation>
 <translation id="8524799873541103884">Раздели в режим „<ph name="INCOGNITO" />“: <ph name="FIRST_VISIBLE_TAB" /> до <ph name="LAST_VISIBLE_TAB" /> от общо <ph name="NUMBER_OF_OPEN_TABS" /></translation>
+<translation id="8529767659511976195">Ново</translation>
 <translation id="8532105204136943229">Година на валидност</translation>
 <translation id="8534481786647257214">Публикацията в Google+ е завършена.</translation>
 <translation id="8548878600947630424">Търсене в страницата...</translation>

@@ -2023,7 +2023,6 @@
 <translation id="4109135793348361820">Mover janela para <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Download concluído: <ph name="FILE_NAME" />. Pressione Shift+F6 para voltar à área da barra de downloads.</translation>
 <translation id="4110895898888439383">Navegue na Web usando o modo de alto contraste</translation>
-<translation id="4112221174576828331">Se uma imagem não tiver uma descrição útil, o Chrome fornecerá uma para você. As imagens são verificadas pelo Google.</translation>
 <translation id="4115002065223188701">Rede fora de alcance</translation>
 <translation id="4115080753528843955">Alguns serviços de conteúdo usam identificadores exclusivos para autorizar o acesso a conteúdo protegido</translation>
 <translation id="4118579674665737931">Reinicialize o dispositivo e tente novamente.</translation>
@@ -4494,6 +4493,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8008356846765065031">Internet desconectada. Verifique sua conexão com a Internet.</translation>
 <translation id="8009225694047762179">Gerenciar senha</translation>
 <translation id="8012382203418782830">Esta página foi traduzida.</translation>
+<translation id="8013993649590906847">Se uma imagem não tiver uma descrição útil, o Chrome tentará fornecer uma para você. As imagens serão enviadas ao Google para a criação de descrições.</translation>
 <translation id="8014154204619229810">O atualizador está sendo executado no momento. Aguarde um minuto e atualize para verificar novamente.</translation>
 <translation id="8014206674403687691">Não foi possível reverter o produto <ph name="IDS_SHORT_PRODUCT_NAME" /> para a versão anteriormente instalada. Tente executar novamente o Powerwash no seu dispositivo.</translation>
 <translation id="8014210335923519270">Melhore o <ph name="IDS_SHORT_PRODUCT_NAME" /> e a segurança dele enviando informações do sistema e sobre o uso para o Google</translation>
@@ -5067,7 +5067,6 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="891365694296252935">Envie dados de uso e diagnóstico. No momento, este dispositivo está enviando automaticamente ao Google dados de diagnóstico, de uso de apps e do dispositivo. Eles não serão usados para identificar seu filho e ajudarão a melhorar o sistema, a estabilidade de apps e muito mais. Alguns dados agregados também ajudarão os apps do Google e os nossos parceiros, como os desenvolvedores Android. Essa configuração é aplicada pelo proprietário. Se a opção "Atividade na Web e de apps adicional" estiver ativada para seu filho, esses dados poderão ser salvos na Conta do Google dele. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Carregando sugestão</translation>
 <translation id="8916476537757519021">Subquadro anônimo: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917490105272468696">Sim</translation>
 <translation id="8919275547519617350">Para ter todas as suas senhas em todos os seus dispositivos, faça login e ative a sincronização.</translation>
 <translation id="8921366488406707015">Verificando sua chave de segurança…</translation>
 <translation id="8922013791253848639">Sempre permitir anúncios neste site</translation>

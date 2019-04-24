@@ -2021,7 +2021,6 @@
 <translation id="4109135793348361820">Presunúť okno k používateľovi <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Dokončilo sa sťahovanie súboru: <ph name="FILE_NAME" />. Stláčaním klávesov Shift+F6 prejdite do oblasti panela so stiahnutými súbormi.</translation>
 <translation id="4110895898888439383">Prehliadajte web v režime vysokého kontrastu</translation>
-<translation id="4112221174576828331">Ak obrázok nemá užitočný popis, Chrome vám ho poskytne. Obrázky skenuje Google.</translation>
 <translation id="4115002065223188701">Sieť je mimo dosahu</translation>
 <translation id="4115080753528843955">Niektoré obsahové služby používajú jedinečné identifikátory na autorizáciu prístupu ku chránenému obsahu</translation>
 <translation id="4118579674665737931">Reštartujte zariadenie a skúste to znova.</translation>
@@ -4490,6 +4489,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8008356846765065031">Internet je odpojený. Skontrolujte svoje pripojenie k internetu.</translation>
 <translation id="8009225694047762179">Spravovať heslá</translation>
 <translation id="8012382203418782830">Táto stránka bola preložená.</translation>
+<translation id="8013993649590906847">Ak obrázok nemá užitočný popis, Chrome sa vám ho pokúsi poskytnúť. Obrázky sa odosielajú Googlu, aby bolo možné vytvoriť popisy.</translation>
 <translation id="8014154204619229810">Aktualizačný nástroj je práve spustený. Obnovením stránky o minútu to znova skontrolujte.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> sa nedokáže vrátiť späť na predchádzajúcu nainštalovanú verziu. Skúste znova vykonať úplné obnovenie svojho zariadenia (tzv. Powerwash).</translation>
 <translation id="8014210335923519270">Zlepšite <ph name="IDS_SHORT_PRODUCT_NAME" /> a jeho zabezpečenie odosielaním informácií o systéme a využití do Googlu</translation>
@@ -5061,7 +5061,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="891365694296252935">Odosielať údaje o využití a diagnostiky. Toto zariadenie momentálne automaticky odosiela Googlu diagnostiky a údaje o používaní zariadenia a aplikácií. Nebudú slúžiť na zistenie totožnosti vášho dieťaťa. Pomôžu zvýšiť stabilitu systému a aplikácií a poskytovať ďalšie vylepšenia. Niektoré súhrnné údaje tiež pomôžu aplikáciám Google a partnerom, ako napríklad vývojárom Androidu. Používanie tohto nastavenia je presadzované vlastníkom. Ak pre dieťa aktivujete dodatočnú aktivitu na internete a v aplikáciách, tieto údaje sa môžu uložiť do jeho účtu Google. <ph name="BEGIN_LINK1" />Ďalšie informácie<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Načítavajú sa návrhy</translation>
 <translation id="8916476537757519021">Podrámec inkognito: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917490105272468696">Áno, súhlasím</translation>
 <translation id="8919275547519617350">Ak chcete získať svoje heslá vo všetkých zariadeniach, prihláste sa a zapnite synchronizáciu.</translation>
 <translation id="8921366488406707015">Overuje sa bezpečnostný kľúč…</translation>
 <translation id="8922013791253848639">Vždy povoliť reklamy na tomto webe</translation>

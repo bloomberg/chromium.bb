@@ -86,6 +86,7 @@
 <translation id="225680501294068881">סורק לאיתור מכשירים...</translation>
 <translation id="2268130516524549846">‏Bluetooth מושבת</translation>
 <translation id="2268813581635650749">הוצא את כולם</translation>
+<translation id="2277103315734023688">הרצה קדימה</translation>
 <translation id="2292698582925480719">קנה המידה של התצוגה</translation>
 <translation id="2302092602801625023">‏החשבון הזה מנוהל באמצעות Family Link</translation>
 <translation id="2303600792989757991">החלף סקירת חלון</translation>
@@ -166,6 +167,7 @@
 <translation id="3371140690572404006">‏מכשיר עם יציאת USB-C (יציאה ימנית-קדמית)</translation>
 <translation id="3400357268283240774">הגדרות נוספות</translation>
 <translation id="3413817803639110246">עדיין אין מה לראות</translation>
+<translation id="343571671045587506">עריכת תזכורת</translation>
 <translation id="3445925074670675829">‏מכשיר עם יציאת USB-C</translation>
 <translation id="3454224730401036106">החיבור שלך הועבר לרשת מאובטחת יותר</translation>
 <translation id="3465223694362104965">מקלדת אחרת חוברה למכשיר לאחר הכניסה האחרונה שלך. חשוב לוודא שזו מקלדת מהימנה לפני שמשתמשים בה.</translation>
@@ -198,12 +200,14 @@
 <translation id="3900355044994618856">הסשן יסתיים בעוד <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">מתחבר אל: <ph name="NAME" /></translation>
 <translation id="394485226368336402">הגדרות אודיו</translation>
+<translation id="3962859241508114581">הטראק הקודם</translation>
 <translation id="397105322502079400">מחשב...</translation>
 <translation id="3995138139523574647">‏מכשיר עם יציאת USB-C (יציאה ימנית-אחורית)</translation>
 <translation id="4017989525502048489">סמן לייזר</translation>
 <translation id="4042660782729322247">המסך שלך משותף</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{מושבת לאפליקציה אחת}two{מושבת ל-2 אפליקציות}many{מושבת ל-# אפליקציות}other{מושבת ל-# אפליקציות}}</translation>
 <translation id="4072264167173457037">אות בינוני</translation>
+<translation id="4112140312785995938">הרצה לאחור</translation>
 <translation id="4129129681837227511">כדי להציג הודעות במסך הנעילה, יש לבטל את הנעילה כדי לשנות את ההגדרה</translation>
 <translation id="4146833061457621061">השמעת מוזיקה</translation>
 <translation id="4181841719683918333">שפות</translation>
@@ -227,6 +231,7 @@
 <translation id="4421231901400348175">שיתוף השליטה במסך עם <ph name="HELPER_NAME" /> דרך סיוע מרחוק.</translation>
 <translation id="4430019312045809116">עוצמת קול</translation>
 <translation id="4450893287417543264">אין להציג שוב</translation>
+<translation id="4477350412780666475">הטראק הבא</translation>
 <translation id="4479639480957787382">אתרנט</translation>
 <translation id="4481530544597605423">מכשירים לא מותאמים</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: מתחבר...</translation>
@@ -392,6 +397,7 @@
 <translation id="7222902781030499995">הפסקת הטיימר</translation>
 <translation id="7256634071279256947">מיקרופון אחורי</translation>
 <translation id="726276584504105859">לשימוש במסך מפוצל יש לגרור לכאן</translation>
+<translation id="7262906531272962081">יצירת תזכורת</translation>
 <translation id="7303365578352795231">התשובה מתקבלת במכשיר אחר.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">מקלדת על המסך</translation>

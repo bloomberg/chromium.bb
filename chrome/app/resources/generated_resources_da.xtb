@@ -2021,7 +2021,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4109135793348361820">Flyt vindue til <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">[=1]1 download er fuldført: <ph name="FILE_NAME" />. Tryk på Shift+F6 for at skifte til downloadlinjen.</translation>
 <translation id="4110895898888439383">Brug internettet i tilstanden Stor kontrast</translation>
-<translation id="4112221174576828331">Hvis dit billede ikke har en brugbar beskrivelse, angiver Chrome en for dig. Billeder scannes af Google.</translation>
 <translation id="4115002065223188701">Netværket er uden for rækkevidde</translation>
 <translation id="4115080753528843955">Nogle indholdstjenester anvender unikke id'er for at give adgang til beskyttet indhold</translation>
 <translation id="4118579674665737931">Genstart enheden, og prøv igen.</translation>
@@ -4490,6 +4489,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8008356846765065031">Internetforbindelsen blev afbrudt. Kontrollér din internetforbindelse.</translation>
 <translation id="8009225694047762179">Administrer adgangskoder</translation>
 <translation id="8012382203418782830">Denne side er oversat.</translation>
+<translation id="8013993649590906847">Hvis et billede ikke har en brugbar beskrivelse, forsøger Chrome at angive en for dig. Billederne sendes til Google, så der kan oprettes beskrivelser.</translation>
 <translation id="8014154204619229810">Opdateringsprogrammet kører i øjeblikket. Opdater om et minut for at kontrollere igen.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> kan ikke vende tilbage til den tidligere version. Prøv Powerwash i stedet.</translation>
 <translation id="8014210335923519270">Gør <ph name="IDS_SHORT_PRODUCT_NAME" /> og dens sikkerhed bedre ved at sende systemoplysninger og brug til Google</translation>
@@ -5063,7 +5063,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="891365694296252935">Send brugs- og diagnosticeringsdata. Denne enhed sender i øjeblikket automatisk diagnosticerings- og enhedsdata samt data om brug af apps til Google. Disse data bruges ikke til at identificere dit barn. De bruges kun til forbedring af bl.a. systemets og appens stabilitet. Visse samlede data hjælper også Google-apps og -partnere, f.eks. Android-udviklere. Denne indstilling håndhæves af ejeren. Hvis indstillingen til yderligere web- og appaktivitet er aktiveret for dit barn, gemmes disse data muligvis på barnets Google-konto. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">Indlæser forslag</translation>
 <translation id="8916476537757519021">Underramme for inkognitotilstand: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917490105272468696">Ja tak</translation>
 <translation id="8919275547519617350">Log ind, og aktivér synkronisering for at få alle dine adgangskoder på alle dine enheder.</translation>
 <translation id="8921366488406707015">Bekræfter din sikkerhedsnøgle...</translation>
 <translation id="8922013791253848639">Tillad altid annoncer på dette website</translation>

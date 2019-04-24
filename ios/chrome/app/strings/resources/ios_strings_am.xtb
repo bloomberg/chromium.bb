@@ -382,12 +382,14 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6903907808598579934">ስምረትን አብራ</translation>
 <translation id="6914583639806229067">የቀዱትን ምስል ይፈልጉ</translation>
 <translation id="6914783257214138813">የእርስዎ የይለፍ ቃላት ወደ ውጭ የተላከውን ፋይልን መመልከት ለሚችል ማንኛውም ሰው የሚታዩ ይሆናሉ።</translation>
+<translation id="692898627499215142">የመጀመሪያው የስምረት ውቅረት አላለቀም። ስምረትን ለመጀመር የስምረት መቀየሪያውን ያንቁ።</translation>
 <translation id="6944369514868857500">ሌላ መለያ ይምረጡ</translation>
 <translation id="6945221475159498467">ይምረጡ</translation>
 <translation id="6973630695168034713">አቃፊዎች</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">የቅርብ ጊዜ ትሮች</translation>
 <translation id="7006788746334555276">የይዘት ቅንብሮች </translation>
+<translation id="7015203776128479407">የመጀመሪያው የስምረት ውቅረት አላለቀም። ስምረት ጠፍቷል።</translation>
 <translation id="7029809446516969842">የይለፍ ቃላት</translation>
 <translation id="7031882061095297553">አሥምር ወደ</translation>
 <translation id="7053983685419859001">አግድ</translation>
@@ -399,6 +401,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="7136892417564438900">ካሜራ አይገኝም</translation>
 <translation id="7159472599653637159">የተንቀሳቃሽ ስልክ ጣቢያ ጠይቅ</translation>
 <translation id="7167621057293532233">የውሂብ ዓይነቶች</translation>
+<translation id="7173114856073700355">ቅንብሮችን ክፈት</translation>
 <translation id="7189598951263744875">አጋራ...</translation>
 <translation id="7192050974311852563">መግባት ይጀምሩ</translation>
 <translation id="7203585745079012652">መልሶችን ተመልሰህ ተናገር</translation>
@@ -475,6 +478,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="850600235656508448">ማንነት በማያሳውቅ ሁነታ ይክፈቱ</translation>
 <translation id="8517375800490286174">የክፍት ምንጭ ፍቃዶች</translation>
 <translation id="8524799873541103884">ከ<ph name="NUMBER_OF_OPEN_TABS" /> <ph name="INCOGNITO" /> ትሮች ውስጥ ከ<ph name="FIRST_VISIBLE_TAB" /> እስከ <ph name="LAST_VISIBLE_TAB" /> ያሉት</translation>
+<translation id="8529767659511976195">አዲስ</translation>
 <translation id="8532105204136943229">ጊዜው የሚያልፍበት ዓመት</translation>
 <translation id="8534481786647257214">የGoogle+ ልጥፍ ተጠናቅቋል።</translation>
 <translation id="8548878600947630424">በዚህ ገጽ ውስጥ አግኝ...</translation>

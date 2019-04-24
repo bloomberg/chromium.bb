@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">ይህን ጣቢያ በጭራሽ አትተርጉም</translation>
 <translation id="1291207594882862231">ታሪክ፣ ኩኪዎች፣ የጣቢያ ውሂብ፣ መሸጎጫን አጽዳ…</translation>
 <translation id="129553762522093515">በቅርብ ጊዜ የተዘጉ</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> - ከ<ph name="DEVICE_NAME" /> የተላከ</translation>
 <translation id="1326317727527857210">ትሮችዎን ከሌሎች መሣሪያዎችዎ ለማግኘት ወደ Chrome ይግቡ።</translation>
 <translation id="1331212799747679585">Chrome መዘመን አይችልም። ተጨማሪ አማራጮች</translation>
 <translation id="1332501820983677155">የGoogle Chrome ባህሪ አቋራጮች</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">ካርትን ያርትዑ</translation>
 <translation id="2154710561487035718">URL ቅዳ</translation>
 <translation id="2156074688469523661">ቀሪ ጣቢያዎች (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">ማጋራት</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />፣ የድር መተግበሪያ። <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">እንደ <ph name="USER_FULL_NAME" /> ሆነው ይቀጥሉ</translation>
 <translation id="2232379019872353004">አንዳንድ የስርዓት መረጃ እና የገጽ ይዘት ወደ Google ይልካል</translation>
@@ -650,6 +652,7 @@
 <translation id="5797070761912323120">Google ፍለጋን፣ ማስታወቂያዎችን እና ሌሎች የGoogle አገልግሎቶችን ግላዊነት ለማላበስ የእርስዎን ታሪክ ሊጠቀም ይችላል</translation>
 <translation id="5804241973901381774">ፍቃዶች</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{ከ# ሰዓት በፊት}one{ከ# ሰዓቶች በፊት}other{ከ# ሰዓቶች በፊት}}</translation>
+<translation id="5810288467834065221">የቅጂ መብት <ph name="YEAR" /> Google LLC. ሁሉም መብቶች በህግ የተጠበቁ ናቸው።</translation>
 <translation id="5817918615728894473">አጣምር</translation>
 <translation id="583281660410589416">ያልታወቀ </translation>
 <translation id="5833984609253377421">አገናኝ አጋራ</translation>
@@ -901,6 +904,7 @@
 <translation id="756809126120519699">የChrome ውሂብ ጸድቷል</translation>
 <translation id="757524316907819857">ጣቢያዎች ጥበቃ የሚደረግለትን ይዘት እንዳያጫውቱ ያግዱ</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" />ፋይል ወርዷል}one{<ph name="FILES_DOWNLOADED_MANY" /> ፋይሎች ወርደዋል}other{<ph name="FILES_DOWNLOADED_MANY" /> ፋይሎች ወርደዋል}}</translation>
+<translation id="7588219262685291874">የመሣሪያዎ ባትሪ ቆጣቢ ሲበራ ጨለማ ገጽታን ያብሩ</translation>
 <translation id="7589445247086920869">አሁን ላለው የፍለጋ ፕሮግራም አግድ</translation>
 <translation id="7593557518625677601">የChrome ስምረትን ለመጀመር የAndroid ቅንብሮችን ይክፈቱና የAndroid ስርዓት ስምረትን ዳግም ያንቁ</translation>
 <translation id="7596558890252710462">ስርዓተ ክወና</translation>
@@ -1000,6 +1004,7 @@
 <translation id="8266862848225348053">የሚወርድበት ቦታ</translation>
 <translation id="8274165955039650276">ውርዶችን ይመልከቱ</translation>
 <translation id="8283853025636624853">ከ<ph name="SYNC_ACCOUNT_USER_NAME" /> ጋር ማሥመር</translation>
+<translation id="8300705686683892304">በመተግበሪያ የሚቀናበር</translation>
 <translation id="8310344678080805313">መደበኛ ትሮች</translation>
 <translation id="8313455859591948645">የጅምር መነሻ ገጽን ያርትዑ</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> እና ተጨማሪ ጣቢያዎች</translation>

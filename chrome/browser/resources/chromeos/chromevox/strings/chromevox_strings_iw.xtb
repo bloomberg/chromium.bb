@@ -214,6 +214,7 @@
 <translation id="2626530649491650971">clickable</translation>
 <translation id="2628764385451019380">אין תיבה משולבת קודמת.</translation>
 <translation id="2637227747952042642">Math</translation>
+<translation id="2638785836053527382">ההורדה נמשכת <ph name="FILE_NAME" /></translation>
 <translation id="2639750663247012216">‏מקש צירוף של ChromeVox</translation>
 <translation id="2644542693584024604">misspelled</translation>
 <translation id="2661530546602071611">הודעה</translation>
@@ -253,6 +254,7 @@
 <translation id="287383510823843610">כתום כהה</translation>
 <translation id="2879867157561757640">החלקה מטה עם שלוש אצבעות</translation>
 <translation id="288178314850623291">‏השתמש בפקודות מעבר כדי לדלג אל סוגים ספציפיים של רכיבים. כדי לעבור קדימה בין כותרות, הקש על מקש החיפוש ועל מקש H. כדי לעבור אחורה, הקש יחד על מקש החיפוש, Shift ו-H.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{דקה}two{דקות}many{דקות}other{דקות}}</translation>
 <translation id="2894654529758326923">מידע</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{סוגר מסולסל שמאלי}two{# סימני סוגר מסולסל שמאלי}many{# סימני סוגר מסולסל שמאלי}other{# סימני סוגר מסולסל שמאלי}}</translation>
 <translation id="2911433807131383493">‏פתח את המדריך של ChromeVox</translation>
@@ -287,6 +289,7 @@
 <translation id="3084806535845658316">ללא הד הקלדה</translation>
 <translation id="3086746722712840547">note</translation>
 <translation id="308895241372589742">אין עוד ביטוי מתמטי.</translation>
+<translation id="3090227230165225418">הכרזה על הודעות הורדה</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">ציון הדרך הבא</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -439,6 +442,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{סוגר מסולסל ימני}two{# סימני סוגר מסולסל ימני}many{# סימני סוגר מסולסל ימני}other{# סימני סוגר מסולסל ימני}}</translation>
 <translation id="4158704014418536539">תלוי רישיות.</translation>
 <translation id="4159784952369912983">סגול</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{שנייה}two{שניות}many{שניות}other{שניות}}</translation>
 <translation id="4161663686871496107">‏המשוב בדיבור של ChromeVox מוכן</translation>
 <translation id="4173994908659439270">אין עוד שדה טקסט הניתן לעריכה.</translation>
 <translation id="4176463684765177261">מושבת</translation>
@@ -619,6 +623,7 @@
 <translation id="5349770431644471053">קישור לאחור</translation>
 <translation id="536031132345979795">דלג אחורה בזמן קריאה רציפה</translation>
 <translation id="5368000168321181111">‏Earcons כבוי</translation>
+<translation id="5368505757342402527">‏הושלמו ‎<ph name="PROGRESS" />%‎ מההורדה של <ph name="FILE_NAME" />. נותרו עוד <ph name="TIME" /> <ph name="UNITS" />.</translation>
 <translation id="5374320867641260420">אין עוד לחצן.</translation>
 <translation id="5376407118396657359">‏כדי לנווט לפי תא, יש להקיש על חיפוש+Ctrl+‏Alt ביחד עם מקשי החיצים.</translation>
 <translation id="5382299583965267720">אין עוד כותרת ברמה 1.</translation>
@@ -801,6 +806,7 @@
 <translation id="667999046851023355">מסמך</translation>
 <translation id="6688209025607531203">התראה שלא מוצגת בחלון קופץ</translation>
 <translation id="6689672606256159458">סלמון כהה</translation>
+<translation id="669617842401078250">ההורדה הושהתה <ph name="FILE_NAME" /></translation>
 <translation id="6696967141280706829">הקדמה</translation>
 <translation id="6697092096875747123">התיבה המשולבת הקודמת</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{סימן קריאה}two{# סימני קריאה}many{# סימני קריאה}other{# סימני קריאה}}</translation>
@@ -939,6 +945,7 @@
 <translation id="7641134354185483015">אין כותרת קודמת של רמה 3.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, תיבת טקסט</translation>
 <translation id="7663318257180412551">כותרת 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{שעה}two{שעות}many{שעות}other{שעות}}</translation>
 <translation id="7674576868851035240">הקישור הבא</translation>
 <translation id="7674768236845044097">mark</translation>
 <translation id="7684431668231950609">ערוך טקסט, רשומת כתובת אתר</translation>
@@ -953,6 +960,7 @@
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912">ההורדה התחילה <ph name="FILE_NAME" /></translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, תיבת טקסט של סיסמה</translation>
 <translation id="7776293189010177726">‏פתיחת תפריטי ChromeVox</translation>
 <translation id="7800558923657349506">אפילוג</translation>
@@ -1077,6 +1085,7 @@
 <translation id="8096975275316362544">מנטה בהיר</translation>
 <translation id="8098587210054821856">אפור תכלת</translation>
 <translation id="8110647606445335195">‏אין ציוני דרך מסוג ARIA.</translation>
+<translation id="812886159861361726">ההורדה נפסקה <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">מגע</translation>
 <translation id="8153880621934657047">לא בתוך טבלה.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{קו תחתון}two{# סימני קו תחתון}many{# סימני קו תחתון}other{# סימני קו תחתון}}</translation>
@@ -1146,6 +1155,7 @@
 <translation id="8743786158317878347">היכנס לתוכן מובנה, כמו טבלאות</translation>
 <translation id="8747966237988593539">רשימה לפי סדר</translation>
 <translation id="8749988712346667988">כסף</translation>
+<translation id="875769700429317857">ההורדה הושלמה <ph name="FILE_NAME" /></translation>
 <translation id="8759334257841767240">אין קישור הבא.</translation>
 <translation id="8767968232364267681">הכותרת הבאה של רמה 4</translation>
 <translation id="8770473310765924354">צא מתוכן מובנה, כמו טבלאות</translation>

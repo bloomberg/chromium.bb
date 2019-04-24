@@ -86,6 +86,7 @@
 <translation id="225680501294068881">Recherche d'appareils…</translation>
 <translation id="2268130516524549846">Bluetooth désactivé</translation>
 <translation id="2268813581635650749">Déconnecter tous les utilisateurs</translation>
+<translation id="2277103315734023688">Avance rapide</translation>
 <translation id="2292698582925480719">Échelle d'affichage</translation>
 <translation id="2302092602801625023">Ce compte est géré par Family Link</translation>
 <translation id="2303600792989757991">Activer/Désactiver la vue d'ensemble des fenêtres</translation>
@@ -166,6 +167,7 @@
 <translation id="3371140690572404006">Appareil USB de type C (port situé sur la droite de l'appareil, à l'avant)</translation>
 <translation id="3400357268283240774">Autres paramètres</translation>
 <translation id="3413817803639110246">Aucune notification</translation>
+<translation id="343571671045587506">Modifier le rappel</translation>
 <translation id="3445925074670675829">Appareil USB de type C</translation>
 <translation id="3454224730401036106">La connexion a été établie sur un réseau plus sûr</translation>
 <translation id="3465223694362104965">Un autre clavier a été connecté à cet appareil depuis votre dernière connexion. Avant d'utiliser ce clavier, assurez-vous qu'il s'agit d'un clavier de confiance.</translation>
@@ -198,12 +200,14 @@
 <translation id="3900355044994618856">Votre session va être fermée dans <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Connexion à <ph name="NAME" /> en cours…</translation>
 <translation id="394485226368336402">Paramètres audio</translation>
+<translation id="3962859241508114581">Titre précédent</translation>
 <translation id="397105322502079400">Calcul en cours…</translation>
 <translation id="3995138139523574647">Appareil USB de type C (port situé sur la droite de l'appareil, à l'arrière)</translation>
 <translation id="4017989525502048489">Pointeur laser</translation>
 <translation id="4042660782729322247">Vous partagez votre écran</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Notifications désactivées pour une application}one{Notifications désactivées pour # application}other{Notifications désactivées pour # applications}}</translation>
 <translation id="4072264167173457037">Signal de moyenne intensité</translation>
+<translation id="4112140312785995938">Retour rapide</translation>
 <translation id="4129129681837227511">Pour afficher les notifications sur l'écran de verrouillage, déverrouillez votre appareil afin de modifier ce paramètre</translation>
 <translation id="4146833061457621061">Joue de la musique</translation>
 <translation id="4181841719683918333">Langues</translation>
@@ -228,6 +232,7 @@
 <translation id="4421231901400348175">Partager le contrôle de votre écran avec <ph name="HELPER_NAME" /> via l'assistance à distance</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Ne plus afficher</translation>
+<translation id="4477350412780666475">Titre suivant</translation>
 <translation id="4479639480957787382">Ethernet </translation>
 <translation id="4481530544597605423">Appareils dissociés</translation>
 <translation id="4508225577814909926"><ph name="NAME" /> : Connexion en cours…</translation>
@@ -393,6 +398,7 @@
 <translation id="7222902781030499995">Arrête le minuteur</translation>
 <translation id="7256634071279256947">Micro arrière</translation>
 <translation id="726276584504105859">Faire glisser ici pour utiliser l'écran partagé</translation>
+<translation id="7262906531272962081">Créer un rappel</translation>
 <translation id="7303365578352795231">Réponse sur un autre appareil.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Clavier virtuel</translation>

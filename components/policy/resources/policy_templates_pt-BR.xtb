@@ -1996,7 +1996,7 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4802905909524200151">Configurar o comportamento de atualização do firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">É sempre reinicializado quando o usuário sai.</translation>
 <translation id="4807950475297505572">Os usuários menos utilizados ​​recentemente serão removidos até que haja espaço livre suficiente</translation>
-<translation id="4816674326202173458">Permitir que o usuário empresarial seja ao mesmo tempo primário e secundário (comportamento padrão para usuários não gerenciados)</translation>
+<translation id="4816674326202173458">Permitir que o usuário corporativo seja ao mesmo tempo primário e secundário (comportamento padrão para usuários não gerenciados)</translation>
 <translation id="4826326557828204741">Ação a ser executada quando o tempo de inatividade for atingido durante execução com bateria</translation>
 <translation id="4832852360828533362">Relatórios de usuário e do dispositivo</translation>
 <translation id="4834526953114077364">Os usuários menos utilizados ​​recentemente que não se conectaram nos últimos três meses serão removidos até que haja espaço livre suficiente</translation>
@@ -3758,7 +3758,7 @@ Esses favoritos são colocados em uma pasta que não pode ser modificada pelo us
       Esta política é limitada a 1.000 entradas. Entradas subsequentes serão ignoradas.
 
       Se esta política não for definida, não haverá exceções para a lista de proibições na política "URLBlacklist".</translation>
-<translation id="8176035528522326671">Permitir que o usuário empresarial seja o usuário principal de diversos perfis (comportamento padrão para usuários gerenciados por empresa)</translation>
+<translation id="8176035528522326671">Permitir que o usuário corporativo seja o usuário principal de diversos perfis (comportamento padrão para usuários gerenciados por empresa)</translation>
 <translation id="8214600119442850823">Configura o gerenciador de senhas.</translation>
 <translation id="8217516105848565518">O uso desta política foi suspenso. Use RemoteAccessHostDomainList.</translation>
 <translation id="8244171102276095471">Ativar pacotes de criptografia RC4 em TLS</translation>

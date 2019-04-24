@@ -382,12 +382,14 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6903907808598579934">Attiva la sincronizzazione</translation>
 <translation id="6914583639806229067">Cerca l'immagine copiata</translation>
 <translation id="6914783257214138813">Le tue password saranno visibili a chiunque abbia accesso al file esportato.</translation>
+<translation id="692898627499215142">La configurazione della sincronizzazione iniziale non è stata terminata. Per avviare la sincronizzazione, attivala.</translation>
 <translation id="6944369514868857500">Scegli un altro account</translation>
 <translation id="6945221475159498467">Seleziona</translation>
 <translation id="6973630695168034713">Cartelle</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Schede recenti</translation>
 <translation id="7006788746334555276">Impostazioni contenuti</translation>
+<translation id="7015203776128479407">La configurazione della sincronizzazione iniziale non è stata terminata. La sincronizzazione è disattivata.</translation>
 <translation id="7029809446516969842">Password</translation>
 <translation id="7031882061095297553">Sincronizza con</translation>
 <translation id="7053983685419859001">Blocca</translation>
@@ -399,6 +401,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7136892417564438900">La videocamera non è disponibile</translation>
 <translation id="7159472599653637159">Richiedi sito per dispositivi mobili</translation>
 <translation id="7167621057293532233">Tipi di dati</translation>
+<translation id="7173114856073700355">Apri Impostazioni</translation>
 <translation id="7189598951263744875">Condividi...</translation>
 <translation id="7192050974311852563">Avvia logging</translation>
 <translation id="7203585745079012652">Pronuncia le risposte</translation>
@@ -475,6 +478,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="850600235656508448">Apri in modalità di navigazione in incognito</translation>
 <translation id="8517375800490286174">Licenze open source</translation>
 <translation id="8524799873541103884">Schede <ph name="INCOGNITO" /> dalla <ph name="FIRST_VISIBLE_TAB" /> alla <ph name="LAST_VISIBLE_TAB" /> di <ph name="NUMBER_OF_OPEN_TABS" /></translation>
+<translation id="8529767659511976195">Novità</translation>
 <translation id="8532105204136943229">Anno di scadenza</translation>
 <translation id="8534481786647257214">Pubblicazione su Google+ completata.</translation>
 <translation id="8548878600947630424">Trova nella pagina...</translation>

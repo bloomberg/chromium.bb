@@ -382,12 +382,14 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="6903907808598579934">Activer la synchronisation</translation>
 <translation id="6914583639806229067">Rechercher l'image copiée</translation>
 <translation id="6914783257214138813">Toute personne ayant accès au fichier exporté pourra voir ces mots de passe.</translation>
+<translation id="692898627499215142">La configuration de la synchronisation initiale n'était pas terminée. Pour lancer la synchronisation, activez-la à l'aide du bouton associé.</translation>
 <translation id="6944369514868857500">Sélectionner un autre compte</translation>
 <translation id="6945221475159498467">Sélectionner</translation>
 <translation id="6973630695168034713">Dossiers</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Onglets récents</translation>
 <translation id="7006788746334555276">Paramètres de contenu</translation>
+<translation id="7015203776128479407">La configuration de la synchronisation initiale n'était pas terminée. La synchronisation est désactivée.</translation>
 <translation id="7029809446516969842">Mots de passe</translation>
 <translation id="7031882061095297553">Synchroniser avec</translation>
 <translation id="7053983685419859001">Bloquer</translation>
@@ -399,6 +401,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7136892417564438900">Appareil photo non disponible</translation>
 <translation id="7159472599653637159">Voir version mobile</translation>
 <translation id="7167621057293532233">Types de données</translation>
+<translation id="7173114856073700355">Ouvrir les paramètres</translation>
 <translation id="7189598951263744875">Partager…</translation>
 <translation id="7192050974311852563">Démarrer la journalisation</translation>
 <translation id="7203585745079012652">Énoncer les réponses</translation>
@@ -475,6 +478,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="850600235656508448">Ouvrir en mode navigation privée</translation>
 <translation id="8517375800490286174">Licences Open Source</translation>
 <translation id="8524799873541103884">Onglets <ph name="INCOGNITO" /> <ph name="FIRST_VISIBLE_TAB" /> à <ph name="LAST_VISIBLE_TAB" /> sur <ph name="NUMBER_OF_OPEN_TABS" /></translation>
+<translation id="8529767659511976195">Nouveau</translation>
 <translation id="8532105204136943229">Année d'expiration</translation>
 <translation id="8534481786647257214">Post Google+ publié.</translation>
 <translation id="8548878600947630424">Rechercher sur la page…</translation>

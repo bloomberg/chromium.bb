@@ -86,6 +86,7 @@
 <translation id="225680501294068881">መሣሪያዎችን በመቃኘት ላይ...</translation>
 <translation id="2268130516524549846">ብሉቱዝ ተሰናክሏል</translation>
 <translation id="2268813581635650749">ሁሉንም ዘግተህ ውጣ</translation>
+<translation id="2277103315734023688">ወደ ፊት ፈልግ</translation>
 <translation id="2292698582925480719">ልኬትን አሳይ</translation>
 <translation id="2302092602801625023">ይህ መለያ በFamily Link የሚተዳደር ነው</translation>
 <translation id="2303600792989757991">የመስኮት አጠቃላይ እይታን ቀያይር</translation>
@@ -166,6 +167,7 @@
 <translation id="3371140690572404006">የUSB-C መሣሪያ (የቀኝ ጎን የፊት ወደብ)</translation>
 <translation id="3400357268283240774">ተጨማሪ ቅንብሮች</translation>
 <translation id="3413817803639110246">ገና ምንም የሚታይ ነገር የለም</translation>
+<translation id="343571671045587506">አስታዋሽን ያርትዑ</translation>
 <translation id="3445925074670675829">USB-C መሣሪያ</translation>
 <translation id="3454224730401036106">የእርስዎ ግንኙነት ደህንነቱ ይበልጥ ወደተጠበቀ አውታረ መረብ ቀይሯል</translation>
 <translation id="3465223694362104965">ባለፈው በመለያ ከገቡ ወዲህ ወደዚህ መሣሪያ ሌላ የቁልፍ ሰሌዳ ተገናኝቷል። ከመጠቀምዎ በፊት ይህን የቁልፍ ሰሌዳ እንደሚያምኑት ያረጋግጡ።</translation>
@@ -198,12 +200,14 @@
 <translation id="3900355044994618856">የእርስዎ ክፍለ ጊዜ በ<ph name="SESSION_TIME_REMAINING" /> ውስጥ ያበቃል</translation>
 <translation id="3901991538546252627">ከ<ph name="NAME" /> ጋር በመገናኘት ላይ</translation>
 <translation id="394485226368336402">የድምጽ ቅንብሮች</translation>
+<translation id="3962859241508114581">ቀዳሚ ትራክ</translation>
 <translation id="397105322502079400">በማስላት ላይ...</translation>
 <translation id="3995138139523574647">የUSB-C መሣሪያ (የቀኝ ጎን የኋላ ወደብ)</translation>
 <translation id="4017989525502048489">የሌዘር ጨረር</translation>
 <translation id="4042660782729322247">ማያ ገጽዎን እያጋሩ ነው</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ቅናሽ ለአንድ መተግበሪያ}one{ቅናሽ ለ# መተግበሪያዎች}other{ቅናሽ ለ# መተግበሪያዎች}}</translation>
 <translation id="4072264167173457037">መካከለኛ ሲግናል</translation>
+<translation id="4112140312785995938">ወደኋላ ፈልግ</translation>
 <translation id="4129129681837227511">በማያ ገጽ መቆለፊያዎ ላይ ማሳወቂያዎችን ለማየት ቅንብሩችን ለመቀየር ይክፈቱ</translation>
 <translation id="4146833061457621061">Play ሙዚቃ</translation>
 <translation id="4181841719683918333">ቋንቋዎች</translation>
@@ -227,6 +231,7 @@
 <translation id="4421231901400348175">የማያ ገጽዎን ቁጥጥር በርቀት እርዳታ በኩል ለ<ph name="HELPER_NAME" /> በማጋራት ላይ።</translation>
 <translation id="4430019312045809116">ድምፅ</translation>
 <translation id="4450893287417543264">ዳግም አታሳይ</translation>
+<translation id="4477350412780666475">ቀጣይ ትራክ</translation>
 <translation id="4479639480957787382">ኢተርኔት</translation>
 <translation id="4481530544597605423">ያልተጣመሩ መሣሪያዎች</translation>
 <translation id="4508225577814909926"><ph name="NAME" />፦ በመገናኘት ላይ...</translation>
@@ -392,6 +397,7 @@
 <translation id="7222902781030499995">ሰዓት ቆጣሪ አቁም</translation>
 <translation id="7256634071279256947">የኋላ ማይክሮፎን</translation>
 <translation id="726276584504105859">የተከፈለ ማያ ገጽን ለመጠቀም ወደዚህ ይጎትቱ</translation>
+<translation id="7262906531272962081">አስታዋሽ ይፍጠሩ</translation>
 <translation id="7303365578352795231">በሌላ መሣሪያ ላይ ምላሽ በመስጠት ላይ።</translation>
 <translation id="7305884605064981971">ኤጅ</translation>
 <translation id="7348093485538360975">የታይታ የቁልፍ ሰሌዳ</translation>

@@ -213,6 +213,7 @@
 <translation id="2626530649491650971">क्लिक करण्‍यायोग्य</translation>
 <translation id="2628764385451019380">मागील कॉम्‍बो बॉक्‍स नाही.</translation>
 <translation id="2637227747952042642">गणित</translation>
+<translation id="2638785836053527382"><ph name="FILE_NAME" /> चे डाउनलोड पुन्हा सुरू केले</translation>
 <translation id="2639750663247012216">ChromeVox सुधारक</translation>
 <translation id="2644542693584024604">चुकीचे शब्दलेखन केले</translation>
 <translation id="2661530546602071611">सूचना</translation>
@@ -252,6 +253,7 @@
 <translation id="287383510823843610">गडद नारिंगी</translation>
 <translation id="2879867157561757640">तीन बोटांनी खालच्या दिशेला स्वाइप करा</translation>
 <translation id="288178314850623291">विशिष्ट प्रकारच्या घटकांवर जाण्यासाठी यावर जा आदेशांचा वापर करा. शीर्षलेखांमध्ये पुढे जाण्यासाठी, Search + H किंवा मागे जाण्यासाठी Search + Shift + H दाबा.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{मिनिट}one{मिनिट}other{मिनिटे}}</translation>
 <translation id="2894654529758326923">माहिती</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{डावा महिरपी कंस}one{# डावे महिरपी कंस}other{# डावे महिरपी कंस}}</translation>
 <translation id="2911433807131383493">ChromeVox ट्यूटोरियल उघडा</translation>
@@ -286,6 +288,7 @@
 <translation id="3084806535845658316">कोणताही टायपिंग प्रतिध्वनी नाही</translation>
 <translation id="3086746722712840547">टीप</translation>
 <translation id="308895241372589742">पुढे कोणतीही गणित पदावली नाही.</translation>
+<translation id="3090227230165225418">डाउनलोड सूचनांची घोषणा करा</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">पुढील महत्त्वाची खूण</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -438,6 +441,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{उजवा महिरपी कंस}one{# उजवे महिरपी कंस}other{# उजवे महिरपी कंस}}</translation>
 <translation id="4158704014418536539">केस संवेदनशील.</translation>
 <translation id="4159784952369912983">जांभळा</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{सेकंद}one{सेकंद}other{सेकंद}}</translation>
 <translation id="4161663686871496107">ChromeVox बोललेला अभिप्राय तयार आहे</translation>
 <translation id="4173994908659439270">पुढील संपादन करण्‍यायोग्‍य मजकूर फील्‍ड नाही.</translation>
 <translation id="4176463684765177261">अक्षम</translation>
@@ -449,7 +453,7 @@
 <translation id="4204126831294769023">निळाभोर</translation>
 <translation id="4204864733111726379">पांढरा</translation>
 <translation id="4206289001967551965">सारणीमध्‍ये</translation>
-<translation id="4209770650650780359">आपोआप पूर्ण करण्यासाठी अप किंवा डाउन अॅरो दाबा.</translation>
+<translation id="4209770650650780359">आपोआप पूर्ण करण्यासाठी अप किंवा डाउन ॲरो दाबा.</translation>
 <translation id="4215733775853809057">पुढील स्‍लायडर</translation>
 <translation id="42164919740161077">फिकट निळा</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{डॅश}one{# डॅश}other{# डॅश}}</translation>
@@ -499,7 +503,7 @@
 <translation id="4532633738839459153">{COUNT,plural, =1{स्लॅश}one{# स्लॅश}other{# स्लॅश}}</translation>
 <translation id="4547556996012970016">पुढील स्तर 5 मथळा</translation>
 <translation id="4562381607973973258">शीर्षलेख</translation>
-<translation id="4569941707103739422">नेव्हिगेट करण्यासाठी अप किंवा डाउन अॅरो दाबा, अ‍ॅक्टिव्ह करण्यासाठी एंटर दाबा.</translation>
+<translation id="4569941707103739422">नेव्हिगेट करण्यासाठी अप किंवा डाउन ॲरो दाबा, अ‍ॅक्टिव्ह करण्यासाठी एंटर दाबा.</translation>
 <translation id="4570424871453628777">चुकीचे शब्दलेखन संपले</translation>
 <translation id="4591507479202817876">, निवडले</translation>
 <translation id="4597532268155981612">फॉर्म</translation>
@@ -618,8 +622,9 @@
 <translation id="5349770431644471053">मागील लिंक</translation>
 <translation id="536031132345979795">सतत वाचन करताना मागील वगळा</translation>
 <translation id="5368000168321181111">इअरकॉन बंद आहेत</translation>
+<translation id="5368505757342402527"><ph name="FILE_NAME" /> चे <ph name="PROGRESS" />% डाउनलोड पूर्ण झाले. <ph name="TIME" /> <ph name="UNITS" /> शिल्लक.</translation>
 <translation id="5374320867641260420">पुढील बटण नाही.</translation>
-<translation id="5376407118396657359">सेलने नेव्हिगेट करण्यासाठी अॅरोंसोबत Search+Ctrl+Alt दाबा.</translation>
+<translation id="5376407118396657359">सेलने नेव्हिगेट करण्यासाठी ॲरोंसोबत Search+Ctrl+Alt दाबा.</translation>
 <translation id="5382299583965267720">कोणताही पुढील स्‍तर 1 मथळा नाही.</translation>
 <translation id="5400836586163650660">राखाडी</translation>
 <translation id="5402367795255837559">ब्रेल</translation>
@@ -800,6 +805,7 @@
 <translation id="667999046851023355">दस्तऐवज</translation>
 <translation id="6688209025607531203">एक मॉडेल नसलेली सूचना</translation>
 <translation id="6689672606256159458">गडद तांबूस पिवळा</translation>
+<translation id="669617842401078250"><ph name="FILE_NAME" /> चे डाउनलोड थांबले</translation>
 <translation id="6696967141280706829">प्रस्तावना</translation>
 <translation id="6697092096875747123">मागील कॉम्बो बॉक्स</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{उद्गार चिन्ह}one{# उद्गार चिन्ह}other{# उद्गार चिन्हेे}}</translation>
@@ -845,7 +851,7 @@
 <translation id="7043850226734279132">गडद खाकी</translation>
 <translation id="7048792632163898198">पुढील काही शॉर्टकट ChromeVox कमांड नाहीत, परंतु तरीही Chrome मधून बरेच काही मिळवण्यासाठी ते खूप उपयुक्त आहेत.
 बटणे आणि लिंक यांसारख्या कृती करण्यायोग्य आयटममधून पुढे नेव्हिगेट करण्यासाठी, Tab की दाबा. मागे नेव्हिगेट करण्यासाठी, Shift+Tab दाबा.
-Chrome ब्राउझरच्या, ऑम्निबॉक्स देखील म्हणवल्या जाणाऱ्या, अॅड्रेस बॉक्समध्ये अॅक्सेस करण्यासाठी Control + L दाबा.
+Chrome ब्राउझरच्या, ऑम्निबॉक्स देखील म्हणवल्या जाणाऱ्या, ॲड्रेस बॉक्समध्ये ॲक्सेस करण्यासाठी Control + L दाबा.
 नवीन टॅब उघडण्यासाठी आणि त्यामध्ये आपोआप जाण्यासाठी, Control+T दाबा. तुमचा कर्सर ऑम्निबॉक्समध्ये असेल.
 टॅब बंद करण्यासाठी, Control+W दाबा.
 उघडलेल्या टॅबमध्ये पुढे जाण्यासाठी, Control+Tab वापरा.
@@ -853,7 +859,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="7051308646573997571">लाल</translation>
 <translation id="7062635574500127092">हिरवट निळा</translation>
 <translation id="7086377898680121060">चकाकी वाढवा</translation>
-<translation id="7088743565397416204">ज्यावर फोकस केला आहे ते अॅक्टिव्हेट करण्यासाठी दोनदा टॅप करा</translation>
+<translation id="7088743565397416204">ज्यावर फोकस केला आहे ते ॲक्टिव्हेट करण्यासाठी दोनदा टॅप करा</translation>
 <translation id="7091296112653361280">गुलाबी पांढरा</translation>
 <translation id="7095834689119144465">केवळ अंकीय मजकूर संपादित करा</translation>
 <translation id="7096001299300236431">मागील माध्यम</translation>
@@ -938,6 +944,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="7641134354185483015">मागील स्‍तर 3 मथळा नाही.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, मजकूर बॉक्स</translation>
 <translation id="7663318257180412551">मथळा 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{तास}one{तास}other{तास}}</translation>
 <translation id="7674576868851035240">पुढील दुवा</translation>
 <translation id="7674768236845044097">चिन्ह</translation>
 <translation id="7684431668231950609">मजकूर, URL प्रविष्टी संपादित करा</translation>
@@ -952,6 +959,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912"><ph name="FILE_NAME" /> चे डाउनलोड सुरू झाले</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, पासवर्ड मजकूर बॉक्स</translation>
 <translation id="7776293189010177726">ChromeVox मेनू उघडा</translation>
 <translation id="7800558923657349506">उपसंहार</translation>
@@ -1076,6 +1084,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="8096975275316362544">दुधाळ</translation>
 <translation id="8098587210054821856">भडक राखाडी</translation>
 <translation id="8110647606445335195">कोणत्याही ARIA च्‍या महत्त्वाच्या खुणा नाहीत.</translation>
+<translation id="812886159861361726"><ph name="FILE_NAME" /> चे डाउनलोड थांबले</translation>
 <translation id="8138880386467279117">स्पर्श करा</translation>
 <translation id="8153880621934657047">सारणीमध्ये नाही.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{अंडरस्कोअर}one{# अंडरस्कोअर}other{# अंडरस्कोअर}}</translation>
@@ -1145,6 +1154,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="8743786158317878347">संरचित सामग्री एंटर करा, जसे की सारण्या</translation>
 <translation id="8747966237988593539">क्रमांकित सूची</translation>
 <translation id="8749988712346667988">चंदेरी</translation>
+<translation id="875769700429317857"><ph name="FILE_NAME" /> चे डाउनलोड पूर्ण झाले</translation>
 <translation id="8759334257841767240">पुढील दुवा नाही.</translation>
 <translation id="8767968232364267681">पुढील स्तर 4 शीर्षक</translation>
 <translation id="8770473310765924354">संरचित सामग्रीच्या बाहेर पडा, जसे की सारण्या</translation>

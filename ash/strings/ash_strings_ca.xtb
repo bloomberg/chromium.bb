@@ -86,6 +86,7 @@
 <translation id="225680501294068881">S'estan cercant dispositius...</translation>
 <translation id="2268130516524549846">S'ha desactivat el Bluetooth</translation>
 <translation id="2268813581635650749">Tanca la sessió de tots els usuaris</translation>
+<translation id="2277103315734023688">Avança</translation>
 <translation id="2292698582925480719">Escala de visualització</translation>
 <translation id="2302092602801625023">Family Link gestiona aquest compte</translation>
 <translation id="2303600792989757991">Commuta la visió general de la finestra</translation>
@@ -166,6 +167,7 @@
 <translation id="3371140690572404006">Dispositiu USB-C (port frontal dret)</translation>
 <translation id="3400357268283240774">Configuració addicional</translation>
 <translation id="3413817803639110246">Encara no hi ha res per veure</translation>
+<translation id="343571671045587506">Edita el recordatori</translation>
 <translation id="3445925074670675829">Dispositiu USB-C</translation>
 <translation id="3454224730401036106">La connexió ha canviat a una xarxa més segura</translation>
 <translation id="3465223694362104965">Des del darrer inici de sessió, s'ha connectat un altre teclat a aquest dispositiu. Abans d'utilitzar-lo, assegura't que hi confiïs.</translation>
@@ -198,12 +200,14 @@
 <translation id="3900355044994618856">La sessió finalitzarà d'aquí a <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">S'està connectant amb <ph name="NAME" /></translation>
 <translation id="394485226368336402">Configuració d'àudio</translation>
+<translation id="3962859241508114581">Pista anterior</translation>
 <translation id="397105322502079400">S’està calculant...</translation>
 <translation id="3995138139523574647">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="4017989525502048489">Punter làser</translation>
 <translation id="4042660782729322247">Estàs compartint la pantalla</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivades en una aplicació}other{Desactivades en # aplicacions}}</translation>
 <translation id="4072264167173457037">Senyal mitjà</translation>
+<translation id="4112140312785995938">Retrocedeix</translation>
 <translation id="4129129681837227511">Per veure notificacions a la pantalla de bloqueig, desbloqueja el dispositiu per canviar aquesta opció</translation>
 <translation id="4146833061457621061">Reprodueix música</translation>
 <translation id="4181841719683918333">Idiomes</translation>
@@ -227,6 +231,7 @@
 <translation id="4421231901400348175">Es comparteix el control de la pantalla amb <ph name="HELPER_NAME" /> mitjançant l'Assistència remota.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4450893287417543264">No ho tornis a mostrar</translation>
+<translation id="4477350412780666475">Pista següent</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Dispositius desvinculats</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: s'està connectant...</translation>
@@ -392,6 +397,7 @@
 <translation id="7222902781030499995">Atura el temporitzador</translation>
 <translation id="7256634071279256947">Micròfon posterior</translation>
 <translation id="726276584504105859">Arrossega-la aquí per utilitzar la pantalla dividida</translation>
+<translation id="7262906531272962081">Crea un recordatori</translation>
 <translation id="7303365578352795231">S'està responent en un altre dispositiu.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Teclat en pantalla</translation>

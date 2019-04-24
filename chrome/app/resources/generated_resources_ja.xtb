@@ -2023,7 +2023,6 @@
 <translation id="4109135793348361820"><ph name="USER_NAME" />（<ph name="USER_EMAIL" />）にウィンドウを移動</translation>
 <translation id="4110490973560452005">ダウンロードが完了しました（<ph name="FILE_NAME" />）。ダウンロード バーの領域に切り替えるには Shift+F6 キーを押してください。</translation>
 <translation id="4110895898888439383">ハイ コントラスト モードでウェブをブラウジングする</translation>
-<translation id="4112221174576828331">画像に有効な説明がない場合に、Chrome で説明を自動的に生成できるよう画像をスキャンします。</translation>
 <translation id="4115002065223188701">ネットワークが圏外です</translation>
 <translation id="4115080753528843955">コンテンツ サービスによっては、保護されたコンテンツへのアクセスを認証する目的で、固有の識別子が使用されます</translation>
 <translation id="4118579674665737931">デバイスを再起動してもう一度お試しください。</translation>
@@ -4493,6 +4492,7 @@
 <translation id="8008356846765065031">インターネットが切断されました。インターネット接続を確認してください。</translation>
 <translation id="8009225694047762179">パスワードを管理</translation>
 <translation id="8012382203418782830">このページは翻訳されました。</translation>
+<translation id="8013993649590906847">画像に有効な説明が設定されていない場合に、Chrome で説明を自動的に生成できるよう Google に画像が送信されます。</translation>
 <translation id="8014154204619229810">現在アップデータを実行中です。しばらくしてから更新して、もう一度ご確認ください。</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> を以前のインストール バージョンに戻せません。デバイスでもう一度 Powerwash を実行してみてください。</translation>
 <translation id="8014210335923519270">システム情報と使用状況が Google に送信され、<ph name="IDS_SHORT_PRODUCT_NAME" /> とそのセキュリティの向上に役立てられます</translation>
@@ -5065,7 +5065,6 @@
 <translation id="891365694296252935">使用状況データや診断データを送信します。このデバイスは現在、診断データやデバイスとアプリの使用状況データを Google に自動送信するように設定されています。この情報を使ってお子様個人が特定されることはありません。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。この設定は所有者によって管理されています。お子様の [その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータはお子様の Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">候補を読み込んでいます</translation>
 <translation id="8916476537757519021">シークレット サブフレーム: <ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917490105272468696">有効にする</translation>
 <translation id="8919275547519617350">お使いのどのデバイスでも同じパスワードを使用するには、ログインして同期を有効にします。</translation>
 <translation id="8921366488406707015">セキュリティ キーの確認中...</translation>
 <translation id="8922013791253848639">このサイトで常に広告を許可します</translation>

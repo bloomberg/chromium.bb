@@ -2003,7 +2003,6 @@
 <translation id="4109135793348361820">將視窗傳送給 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">下載完成：<ph name="FILE_NAME" />。按下 Shift+F6 即可回到下載內容列區域。</translation>
 <translation id="4110895898888439383">以高對比模式瀏覽網路</translation>
-<translation id="4112221174576828331">如果圖片缺少有用的說明，Chrome 會嘗試為你提供說明。Google 會對圖片進行掃描。</translation>
 <translation id="4115002065223188701">偵測不到網路</translation>
 <translation id="4115080753528843955">部分內容服務會使用唯一識別碼來授予受保護內容的存取權</translation>
 <translation id="4118579674665737931">請重新啟動裝置，然後再試一次。</translation>
@@ -4455,6 +4454,7 @@
 <translation id="8008356846765065031">網路連線中斷，請檢查你的網際網路連線。</translation>
 <translation id="8009225694047762179">管理密碼</translation>
 <translation id="8012382203418782830">這個網頁的內容已經過翻譯。</translation>
+<translation id="8013993649590906847">如果圖片缺少有用的說明，Chrome 會嘗試為你提供說明。系統會將圖片傳送給 Google，以便產生說明。</translation>
 <translation id="8014154204619229810">正在執行更新程式。請稍後片刻，重新整理之後再試一次。</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> 無法還原至先前安裝的版本，請嘗試再次為你的裝置執行 Powerwash。</translation>
 <translation id="8014210335923519270">傳送系統資訊和使用情形資料給 Google，協助改善 <ph name="IDS_SHORT_PRODUCT_NAME" /> 及其安全性。</translation>
@@ -5023,7 +5023,6 @@
 <translation id="891365694296252935">傳送使用狀況與診斷資料。這個裝置目前會自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google。這些資料將有助於系統和應用程式提高穩定性及做出其他改善，並不會用於識別貴子女的身分。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。這項設定是由裝置擁有者執行。如果貴子女的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到他們的 Google 帳戶。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="8915370057835397490">正在載入建議</translation>
 <translation id="8916476537757519021">無痕模式子頁框：<ph name="SUBFRAME_SITE" /></translation>
-<translation id="8917490105272468696">是，我同意</translation>
 <translation id="8919275547519617350">如要將密碼同步到所有裝置，請登入並開啟同步處理功能。</translation>
 <translation id="8921366488406707015">正在驗證安全金鑰...</translation>
 <translation id="8922013791253848639">一律允許在這個網站中顯示廣告</translation>

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
+<translation id="1001338328714563407">Sebagai pengurus peranti dan akaun anda, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="1008557486741366299">Bukan Sekarang</translation>
 <translation id="1010200102790553230">Muatkan halaman kemudian</translation>
 <translation id="1015730422737071372">Berikan butiran tambahan</translation>
@@ -301,6 +302,7 @@
 <translation id="2586657967955657006">Papan Keratan</translation>
 <translation id="2587730715158995865">Daripada <ph name="ARTICLE_PUBLISHER" />. Baca artikel ini dan <ph name="OTHER_ARTICLE_COUNT" /> cerita lain.</translation>
 <translation id="2587841377698384444">ID API Direktori:</translation>
+<translation id="2595719060046994702">Peranti dan akaun ini tidak diurus oleh syarikat atau organisasi lain.</translation>
 <translation id="2597378329261239068">Dokumen ini dilindungi kata laluan.  Sila masukkan kata laluan.</translation>
 <translation id="2609632851001447353">Variasi</translation>
 <translation id="2618023639789766142">C10 (Sampul Surat)</translation>
@@ -335,6 +337,7 @@
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Sambungan ditetapkan semula.</translation>
 <translation id="2788784517760473862">Kad kredit yang diterima</translation>
+<translation id="2792012897584536778">Pentadbir peranti ini telah menyediakan sijil keselamatan yang mungkin membolehkan mereka melihat kandungan tapak web yang anda lawati.</translation>
 <translation id="2794233252405721443">Tapak disekat</translation>
 <translation id="2799020568854403057">Tapak yang akan disemak imbas mengandungi apl yang memudaratkan</translation>
 <translation id="2799223571221894425">Lancarkan semula</translation>
@@ -351,6 +354,7 @@
 <translation id="2903493209154104877">Alamat</translation>
 <translation id="290376772003165898">Halaman bukan dalam <ph name="LANGUAGE" />?</translation>
 <translation id="2909946352844186028">Perubahan rangkaian dikesan.</translation>
+<translation id="2910133103376701357">Peranti dan akaun anda diurus oleh <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="2916038427272391327">Tutup atur cara lain</translation>
 <translation id="2922350208395188000">Sijil pelayan tidak boleh diperiksa.</translation>
 <translation id="2925673989565098301">Kaedah Penghantaran</translation>
@@ -361,6 +365,7 @@
 <translation id="2948083400971632585">Anda boleh melumpuhkan sebarang proksi yang dikonfigurasi untuk sambungan dari halaman tetapan.</translation>
 <translation id="2955913368246107853">Tutup bar cari</translation>
 <translation id="2969319727213777354">Untuk mewujudkan sambungan yang selamat, jam anda perlu ditetapkan dengan betul. Perkara ini perlu dilakukan kerana sijil yang digunakan laman web untuk mengenal pastinya hanya sah untuk tempoh masa yang tertentu. Memandangkan jam peranti anda tidak betul, Google Chrome tidak boleh mengesahkan sijil ini.</translation>
+<translation id="2970515157925768593">Boleh menukar penyediaan peranti dan akaun anda dari jauh.</translation>
 <translation id="2972581237482394796">&amp;Buat Semula</translation>
 <translation id="2977665033722899841"><ph name="ROW_NAME" />, dipilih pada masa ini. <ph name="ROW_CONTENT" /></translation>
 <translation id="2982481275546140226">Kosongkan Data</translation>
@@ -372,6 +377,7 @@
 <translation id="3005723025932146533">Paparkan salinan disimpan</translation>
 <translation id="3008447029300691911">Masukkan CVC untuk <ph name="CREDIT_CARD" />. Setelah anda mengesahkan, butiran kad anda akan dikongsi dengan tapak ini.</translation>
 <translation id="3010559122411665027">Masukan senarai "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
+<translation id="3014389611820813634">Sebagai pengurus peranti ini, <ph name="ENROLLMENT_DOMAIN" />:</translation>
 <translation id="301521992641321250">Disekat secara automatik</translation>
 <translation id="3023071826883856138">You4 (Sampul Surat)</translation>
 <translation id="3024663005179499861">Jenis dasar salah</translation>
@@ -417,6 +423,7 @@
 <translation id="3287510313208355388">Muat turun semasa dalam talian</translation>
 <translation id="3293642807462928945">Ketahui lebih lanjut tentang dasar <ph name="POLICY_NAME" /></translation>
 <translation id="3303855915957856445">Tiada hasil carian ditemui</translation>
+<translation id="3311730110465560799">Boleh menukar penyediaan peranti anda dari jauh.</translation>
 <translation id="3320021301628644560">Tambahkan alamat pengebilan</translation>
 <translation id="3324983252691184275">Merah lembayung</translation>
 <translation id="3338095232262050444">Selamat</translation>
@@ -512,6 +519,7 @@
 <translation id="3761718714832595332">Sembunyikan status</translation>
 <translation id="3765032636089507299">Halaman Penyemakan Imbas Selamat sedang dalam pembinaan.</translation>
 <translation id="3778403066972421603">Adakah anda ingin menyimpan maklumat kad ini ke Akaun Google anda dan pada peranti ini?</translation>
+<translation id="3779973883630527594">Syarikat, institusi pengajian atau organisasi yang mengurus akaun ini:</translation>
 <translation id="3781428340399460090">Merah Jambu Hangat</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Tamat tempoh pada <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -552,6 +560,7 @@
 <translation id="4072486802667267160">Ralat berlaku semasa memproses pesanan anda. Sila cuba lagi.</translation>
 <translation id="4075732493274867456">Pelanggan dan pelayan tidak menyokong versi protokol SSL atau set sifer biasa.</translation>
 <translation id="4079302484614802869">Konfigurasi proksi ditetapkan kepada penggunaaan URL skrip .pac, bukannya pelayan proksi tetap.</translation>
+<translation id="4082393374666368382">Tetapan - Pengurusan</translation>
 <translation id="4092411512356034591">Teruskan ke <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">Tapak menipu di hadapan</translation>
 <translation id="4103249731201008433">Nombor siri peranti tidak sah</translation>
@@ -684,6 +693,7 @@
 <translation id="4759118997339041434">Ciri autolengkap pembayaran dilumpuhkan</translation>
 <translation id="4764776831041365478">Laman web di <ph name="URL" /> mungkin tergendala buat sementara waktu atau ia mungkin dpindahkan secara kekal ke alamat web baharu.</translation>
 <translation id="4771973620359291008">Ralat tidak diketahui telah berlaku.</translation>
+<translation id="4780900888022378816">Peranti anda diurus oleh <ph name="ENROLLMENT_DOMAIN" /> dan akaun anda diurus oleh <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Beralih ke tab ini</translation>
 <translation id="4798078619018708837">Masukkan tarikh tamat tempoh dan CVC <ph name="CREDIT_CARD" /> untuk mengemas kini butiran kad anda. Setelah anda mengesahkan maklumat, butiran kad daripada Akaun Google anda akan dikongsi dengan tapak ini.</translation>
 <translation id="4800132727771399293">Semak tarikh tamat tempoh serta CVC anda dan cuba lagi</translation>
@@ -708,6 +718,7 @@
 <translation id="4926159001844873046"><ph name="SITE" /> menyatakan</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4943872375798546930">Tiada hasil carian</translation>
+<translation id="4945672369594656571">Mengawal cara data peranti dan akaun anda dikendalikan. Google memproses data peranti dan akaun anda secara eksklusif di bawah arahan pengurus peranti serta akaun anda dan semata-mata untuk tujuan yang dinyatakan oleh pengurus peranti dan akaun anda.</translation>
 <translation id="4950898438188848926">Butang peralihan tab, tekan Enter untuk beralih ke tab yang terbuka, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Tindakan</translation>
 <translation id="4955242332710481440">A5-Ekstra</translation>
@@ -721,6 +732,7 @@
 <translation id="5017554619425969104">Teks yang anda salin</translation>
 <translation id="5018422839182700155">Tidak dapat membuka halaman ini</translation>
 <translation id="5019198164206649151">Simpanan penyandaran dalam keadaan buruk</translation>
+<translation id="5020154601324912079">Mengawal cara data peranti anda dikendalikan. Google memproses data peranti anda secara eksklusif di bawah arahan pengurus peranti anda dan semata-mata untuk tujuan yang dinyatakan oleh pengurus peranti anda.</translation>
 <translation id="5023310440958281426">Semak dasar pentadbir anda</translation>
 <translation id="5029568752722684782">Hapuskan salinan</translation>
 <translation id="503069730517007720">Sijil akar bagi "<ph name="SOFTWARE_NAME" />" diperlukan tetapi tidak dipasang. Pentadbir IT anda harus melihat arahan konfigurasi "<ph name="SOFTWARE_NAME" />" untuk menyelesaikan masalah ini. <ph name="FURTHER_EXPLANATION" /></translation>
@@ -878,6 +890,7 @@
 <translation id="5838278095973806738">Anda tidak seharusnya memasukkan sebarang maklumat sensitif pada tapak ini (contohnya, kata laluan atau maklumat kad kredit) kerana maklumat ini boleh dicuri oleh penyerang.</translation>
 <translation id="5860033963881614850">Dimatikan</translation>
 <translation id="5863847714970149516">Halaman yang seterusnya mungkin cuba mengenakan bayaran kepada anda</translation>
+<translation id="5865951947699094510">Boleh menukar persediaan akaun anda dari jauh.</translation>
 <translation id="5866257070973731571">Tambahkan Nombor Telefon</translation>
 <translation id="5869405914158311789">Tapak ini tidak dapat dicapai</translation>
 <translation id="5869522115854928033">Kata laluan disimpan</translation>
@@ -898,6 +911,7 @@
 <translation id="5977976211062815271">Pada peranti ini</translation>
 <translation id="5980920751713728343">Indeks-3x5</translation>
 <translation id="598637245381783098">Tidak dapat membuka apl pembayaran</translation>
+<translation id="5988826871883769516">Peranti anda diurus oleh <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="5989320800837274978">Pelayan proksi tetap begitu juga URL skrip .pac, kedua-duanya tidak ditetapkan.</translation>
 <translation id="5990559369517809815">Permintaan pada pelayan telah disekat oleh sambungan.</translation>
 <translation id="6008256403891681546">JCB</translation>
@@ -915,6 +929,7 @@
 <translation id="6047233362582046994">Jika anda memahami risiko terhadap keselamatan anda, anda boleh <ph name="BEGIN_LINK" />melawat tapak ini<ph name="END_LINK" /> sebelum program yang berbahaya ini dialih keluar.</translation>
 <translation id="6047927260846328439">Kandungan ini mungkin menggunakan tipu muslihat supaya anda memasang perisian atau mendedahkan maklumat peribadi. <ph name="BEGIN_LINK" />Tunjukkan juga<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Anda tidak boleh melawati <ph name="SITE" /> sekarang kerana tapak web ini menggunakan penyematan sijil. Ralat dan serangan rangkaian biasanya bersifat sementara. Oleh sebab itu, halaman ini mungkin akan berfungsi semula kemudian.</translation>
+<translation id="6052284303005792909">•</translation>
 <translation id="6058977677006700226">Gunakan kad anda pada semua peranti anda?</translation>
 <translation id="6059925163896151826">Peranti USB</translation>
 <translation id="6080696365213338172">Anda telah mengakses kandungan menggunakan perakuan yang disediakan oleh pentadbir. Data yang anda berikan kepada <ph name="DOMAIN" /> boleh dipintas oleh pentadbir anda.</translation>
@@ -984,6 +999,7 @@
 <translation id="6508722015517270189">Mulakan semula Chrome</translation>
 <translation id="6529602333819889595">&amp;Buat Semula Pemadaman</translation>
 <translation id="6534179046333460208">Cadangan Web Fizikal</translation>
+<translation id="6554795675067793129">Akaun anda diurus oleh <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Buat semula</translation>
 <translation id="6563469144985748109">Pengurus anda belum meluluskannya</translation>
 <translation id="6569060085658103619">Anda sedang melihat halaman sambungan</translation>
@@ -1068,6 +1084,7 @@
 <translation id="7062635574500127092">Hijau kebiruan</translation>
 <translation id="7064851114919012435">Maklumat hubungan</translation>
 <translation id="7079718277001814089">Tapak ini mengandungi perisian hasad</translation>
+<translation id="7081564429925484109">Amaran: Dasar ini tidak digabungkan seperti yang dinyatakan dalam dasar PolicyListMultipleSourceMergeList kerana dasar ini bukan senarai.</translation>
 <translation id="7087282848513945231">Daerah</translation>
 <translation id="7090678807593890770">Cari <ph name="LINK" /> di Google</translation>
 <translation id="7108338896283013870">Sembunyikan</translation>
@@ -1141,6 +1158,7 @@ Butiran tambahan:
 <translation id="741007362987735528">Format-Lebar</translation>
 <translation id="7416351320495623771">Urus Kata Laluan…</translation>
 <translation id="7419106976560586862">Laluan Profil</translation>
+<translation id="7424427397225027541">Mengawal cara data akaun anda dikendalikan. Google memproses data akaun anda secara eksklusif di bawah arahan pengurus akaun anda dan semata-mata untuk tujuan yang dinyatakan oleh pengurus akaun anda.</translation>
 <translation id="7437289804838430631">Tambahkan Maklumat Hubungan</translation>
 <translation id="7440140511386898319">Teroka semasa di luar talian</translation>
 <translation id="7441627299479586546">Subjek dasar salah</translation>
@@ -1226,6 +1244,7 @@ Butiran tambahan:
 <translation id="780301667611848630">Tidak, terima kasih</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7806344367022510803">Tukar tetapan Enjin Carian dalam Chrome</translation>
+<translation id="7810209002420871817">Sebagai pengurus akaun anda, <ph name="ACCOUNT_DOMAIN" />:</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">Alih keluar cadangan borang daripada Chrome?</translation>
 <translation id="7815407501681723534">Menemui <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> untuk '<ph name="SEARCH_STRING" />'</translation>

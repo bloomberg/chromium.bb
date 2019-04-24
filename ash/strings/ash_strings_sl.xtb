@@ -86,6 +86,7 @@
 <translation id="225680501294068881">Iskanje naprav ...</translation>
 <translation id="2268130516524549846">Bluetooth onemogočen</translation>
 <translation id="2268813581635650749">Odjava vseh</translation>
+<translation id="2277103315734023688">Išči naprej</translation>
 <translation id="2292698582925480719">Zaslonsko razmerje</translation>
 <translation id="2302092602801625023">Ta račun upravlja Family Link</translation>
 <translation id="2303600792989757991">Preklop pregleda okna</translation>
@@ -166,6 +167,7 @@
 <translation id="3371140690572404006">Naprava USB-C (vrata desno spredaj)</translation>
 <translation id="3400357268283240774">Dodatne nastavitve</translation>
 <translation id="3413817803639110246">Zaenkrat ni še ničesar</translation>
+<translation id="343571671045587506">Urejanje opomnika</translation>
 <translation id="3445925074670675829">Naprava USB-C</translation>
 <translation id="3454224730401036106">Vaša povezava je preklopila na varnejše omrežje</translation>
 <translation id="3465223694362104965">Odkar ste se nazadnje prijavili, se je s to napravo povezala druga tipkovnica. Pred uporabo te tipkovnice se prepričajte, da ji zaupate.</translation>
@@ -198,12 +200,14 @@
 <translation id="3900355044994618856">Seja se bo končala čez <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Vzpostavljanje povezave z omrežjem <ph name="NAME" /></translation>
 <translation id="394485226368336402">Nastavitve zvoka</translation>
+<translation id="3962859241508114581">Prejšnja skladba</translation>
 <translation id="397105322502079400">Izračunavanje …</translation>
 <translation id="3995138139523574647">Naprava USB-C (vrata desno zadaj)</translation>
 <translation id="4017989525502048489">Laserski kazalnik</translation>
 <translation id="4042660782729322247">Zaslon delite z drugimi</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Izklopljeno za eno aplikacijo}one{Izklopljeno za # aplikacijo}two{Izklopljeno za # aplikaciji}few{Izklopljeno za # aplikacije}other{Izklopljeno za # aplikacij}}</translation>
 <translation id="4072264167173457037">Srednje močan signal</translation>
+<translation id="4112140312785995938">Išči nazaj</translation>
 <translation id="4129129681837227511">Če si želite ogledati obvestila na zaklenjenem zaslonu, ga odklenite in spremenite nastavitev</translation>
 <translation id="4146833061457621061">Predvajaj glasbo</translation>
 <translation id="4181841719683918333">Jeziki</translation>
@@ -227,6 +231,7 @@
 <translation id="4421231901400348175">Deljenje nadzora nad zaslonom z osebo <ph name="HELPER_NAME" /> prek pomoči na daljavo.</translation>
 <translation id="4430019312045809116">Glasnost</translation>
 <translation id="4450893287417543264">Tega ne prikaži več</translation>
+<translation id="4477350412780666475">Naslednja skladba</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Naprave, za katere je bila preklicana seznanitev</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: vzpostavljanje povezave ...</translation>
@@ -392,6 +397,7 @@
 <translation id="7222902781030499995">Ustavi merilnik časa</translation>
 <translation id="7256634071279256947">Zadnji mikrofon</translation>
 <translation id="726276584504105859">Povlecite sem za razdeljeni zaslon</translation>
+<translation id="7262906531272962081">Ustvarjanje opomnika</translation>
 <translation id="7303365578352795231">Odgovor v drugi napravi.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Zaslonska tipkovnica</translation>

@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">Jangan sekali-kali menterjemahkan tapak ini</translation>
 <translation id="1291207594882862231">Hapuskan sejarah, kuki, data tapak, cache...</translation>
 <translation id="129553762522093515">Ditutup baru-baru ini</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> - Dihantar daripada <ph name="DEVICE_NAME" /></translation>
 <translation id="1326317727527857210">Log masuk ke Chrome untuk mendapatkan tab daripada peranti anda yang lain.</translation>
 <translation id="1331212799747679585">Chrome tidak dapat dikemas kini. Lagi pilihan</translation>
 <translation id="1332501820983677155">Pintasan ciri Google Chrome</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">Edit kad</translation>
 <translation id="2154710561487035718">Salin URL</translation>
 <translation id="2156074688469523661">Baki tapak (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">Perkongsian</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, apl web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Teruskan sebagai <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Menghantar beberapa maklumat sistem dan kandungan halaman kepada Google</translation>
@@ -650,6 +652,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="5797070761912323120">Google boleh menggunakan sejarah anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain</translation>
 <translation id="5804241973901381774">Kebenaran</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# jam yang lalu}other{# jam yang lalu}}</translation>
+<translation id="5810288467834065221">Hak Cipta <ph name="YEAR" /> Google LLC. Hak cipta terpelihara.</translation>
 <translation id="5817918615728894473">Gandingkan</translation>
 <translation id="583281660410589416">Tidak diketahui</translation>
 <translation id="5833984609253377421">Kongsi pautan</translation>
@@ -901,6 +904,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="756809126120519699">Data Chrome dikosongkan</translation>
 <translation id="757524316907819857">Sekat tapak daripada memainkan kandungan yang dilindungi</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> fail dimuat turun}other{<ph name="FILES_DOWNLOADED_MANY" /> fail dimuat turun}}</translation>
+<translation id="7588219262685291874">Hidupkan tema gelap apabila Penjimat Bateri peranti anda dihidupkan</translation>
 <translation id="7589445247086920869">Sekat untuk enjin carian semasa</translation>
 <translation id="7593557518625677601">Buka ttpn Android dan dayakan smla pnyegerakan sistem Android utk mulakan pnyegerakan Chrome</translation>
 <translation id="7596558890252710462">Sistem pengendalian</translation>
@@ -1000,6 +1004,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="8266862848225348053">Lokasi muat turun</translation>
 <translation id="8274165955039650276">Lihat muat turun</translation>
 <translation id="8283853025636624853">Menyegerakkan ke <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8300705686683892304">Diurus oleh apl</translation>
 <translation id="8310344678080805313">Tab standard</translation>
 <translation id="8313455859591948645">Edit halaman permulaan</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> dan lebih banyak tapak</translation>

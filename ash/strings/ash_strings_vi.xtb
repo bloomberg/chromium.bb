@@ -86,6 +86,7 @@
 <translation id="225680501294068881">Đang quét tìm thiết bị...</translation>
 <translation id="2268130516524549846">Đã tắt bluetooth</translation>
 <translation id="2268813581635650749">Đăng xuất tất cả</translation>
+<translation id="2277103315734023688">Tua đi</translation>
 <translation id="2292698582925480719">Tỷ lệ hiển thị</translation>
 <translation id="2302092602801625023">Tài khoản này do Family Link quản lý</translation>
 <translation id="2303600792989757991">Tổng quan về chuyển đổi cửa sổ</translation>
@@ -166,6 +167,7 @@
 <translation id="3371140690572404006">Thiết bị USB-C (cổng phía trước, bên phải)</translation>
 <translation id="3400357268283240774">Cài đặt bổ sung</translation>
 <translation id="3413817803639110246">Chưa có thông báo nào để xem</translation>
+<translation id="343571671045587506">Chỉnh sửa lời nhắc</translation>
 <translation id="3445925074670675829">Thiết bị USB-C</translation>
 <translation id="3454224730401036106">Kết nối của bạn đã chuyển sang một mạng an toàn hơn</translation>
 <translation id="3465223694362104965">Một bàn phím khác đã kết nối với thiết bị này kể từ lần đăng nhập cuối của bạn. Hãy đảm bảo rằng bạn tin tưởng bàn phím này trước khi sử dụng.</translation>
@@ -198,12 +200,14 @@
 <translation id="3900355044994618856">Phiên hoạt động của bạn sẽ kết thúc sau <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Đang kết nối với <ph name="NAME" /></translation>
 <translation id="394485226368336402">Cài đặt âm thanh</translation>
+<translation id="3962859241508114581">Bản nhạc trước</translation>
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="3995138139523574647">Thiết bị USB-C (cổng phía sau, bên phải)</translation>
 <translation id="4017989525502048489">Con trỏ laser</translation>
 <translation id="4042660782729322247">Bạn đang chia sẻ màn hình</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Tắt thông báo của một ứng dụng}other{Tắt thông báo của # ứng dụng}}</translation>
 <translation id="4072264167173457037">Tín hiệu trung bình</translation>
+<translation id="4112140312785995938">Tua lại</translation>
 <translation id="4129129681837227511">Để xem thông báo trên màn hình khóa, hãy mở khóa thiết bị để thay đổi tùy chọn cài đặt này</translation>
 <translation id="4146833061457621061">Phát nhạc</translation>
 <translation id="4181841719683918333">Ngôn ngữ</translation>
@@ -228,6 +232,7 @@
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME" /> qua Trợ giúp từ xa.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>
 <translation id="4450893287417543264">Không hiển thị lại</translation>
+<translation id="4477350412780666475">Bản nhạc tiếp theo</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Thiết bị được hủy ghép nối</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Đang kết nối...</translation>
@@ -393,6 +398,7 @@
 <translation id="7222902781030499995">Dừng lịch hẹn giờ</translation>
 <translation id="7256634071279256947">Micrô mặt sau</translation>
 <translation id="726276584504105859">Kéo vào đây để sử dụng chế độ chia đôi màn hình</translation>
+<translation id="7262906531272962081">Tạo lời nhắc</translation>
 <translation id="7303365578352795231">Đang trả lời trên thiết bị khác.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Bàn phím ảo</translation>

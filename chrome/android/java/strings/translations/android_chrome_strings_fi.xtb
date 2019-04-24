@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">Älä käännä tätä sivustoa</translation>
 <translation id="1291207594882862231">Tyhjennä historia, evästeet, sivustojen tiedot, välimuisti ja niin edelleen.</translation>
 <translation id="129553762522093515">Hiljattain suljetut välilehdet</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> – Lähetetty laitteelta <ph name="DEVICE_NAME" /></translation>
 <translation id="1326317727527857210">Käytä välilehtiä muilta laitteiltasi kirjautumalla Chromeen.</translation>
 <translation id="1331212799747679585">Chromea ei voi päivittää. Lisää vaihtoehtoja</translation>
 <translation id="1332501820983677155">Google Chromen ominaisuuksien pikanäppäimet</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">Muokkaa korttia</translation>
 <translation id="2154710561487035718">Kopioi URL-osoite</translation>
 <translation id="2156074688469523661">Jäljellä olevat sivustot (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">Jakaminen</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, verkkosovellus. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Jatka tilillä <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Lähettää joitain järjestelmän tietoja ja sivujen sisältöjä Googlelle</translation>
@@ -650,6 +652,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5797070761912323120">Google voi muokata Hakua, mainoksia ja muita Googlen palveluita historiasi perusteella</translation>
 <translation id="5804241973901381774">Käyttöoikeudet</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# tunti sitten}other{# tuntia sitten}}</translation>
+<translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Kaikki oikeudet pidätetään.</translation>
 <translation id="5817918615728894473">Muodosta laitepari</translation>
 <translation id="583281660410589416">Tuntematon</translation>
 <translation id="5833984609253377421">Jaa linkki</translation>
@@ -901,6 +904,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="756809126120519699">Chrome-tiedot tyhjennetty</translation>
 <translation id="757524316907819857">Estä sivustoja toistamasta suojattua sisältöä</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> tiedosto ladattu}other{<ph name="FILES_DOWNLOADED_MANY" /> tiedostoa ladattu}}</translation>
+<translation id="7588219262685291874">Ota tumma teema käyttöön, kun laitteen virransäästö on käytössä</translation>
 <translation id="7589445247086920869">Estä nykyiselle hakukoneelle</translation>
 <translation id="7593557518625677601">Avaa Android-asetukset ja ota järjestelmän synkronointi uudelleen käyttöön.</translation>
 <translation id="7596558890252710462">Käyttöjärjestelmä</translation>
@@ -1000,6 +1004,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8266862848225348053">Lataussijainti</translation>
 <translation id="8274165955039650276">Näytä lataukset</translation>
 <translation id="8283853025636624853">Synkronoidaan tietoja tilille <ph name="SYNC_ACCOUNT_USER_NAME" />.</translation>
+<translation id="8300705686683892304">Sovelluksen ylläpitämät</translation>
 <translation id="8310344678080805313">Tavalliset välilehdet</translation>
 <translation id="8313455859591948645">Muokkaa aloitussivua</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> ja muita sivustoja</translation>

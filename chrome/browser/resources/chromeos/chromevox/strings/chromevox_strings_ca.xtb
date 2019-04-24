@@ -213,6 +213,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2626530649491650971">s'hi pot fer clic</translation>
 <translation id="2628764385451019380">No hi ha cap quadre combinat anterior.</translation>
 <translation id="2637227747952042642">Matemàtic</translation>
+<translation id="2638785836053527382">S'ha reprès la baixada del fitxer <ph name="FILE_NAME" /></translation>
 <translation id="2639750663247012216">Tecla modificadora de ChromeVox</translation>
 <translation id="2644542693584024604">amb errors ortogràfics</translation>
 <translation id="2661530546602071611">Avís</translation>
@@ -252,6 +253,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="287383510823843610">Taronja fosc</translation>
 <translation id="2879867157561757640">Fes lliscar tres dits cap avall</translation>
 <translation id="288178314850623291">Fes servir les ordres de salt per ometre tipus d'elements específics. Per avançar pels encapçalaments, prem Cerca+H i, per tornar enrere, prem Cerca+Maj+H.</translation>
+<translation id="2885764457467528513">{COUNT,plural, =1{minut}other{minuts}}</translation>
 <translation id="2894654529758326923">Informació</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{clau d'obertura}other{# claus d'obertura}}</translation>
 <translation id="2911433807131383493">Obre el tutorial de ChromeVox</translation>
@@ -286,6 +288,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="3084806535845658316">sense retorn d'escriptura</translation>
 <translation id="3086746722712840547">nota</translation>
 <translation id="308895241372589742">No hi ha cap expressió matemàtica següent.</translation>
+<translation id="3090227230165225418">Anuncia les notificacions de baixada</translation>
 <translation id="3090532668523289635">grup</translation>
 <translation id="3093176084511590672">Punt de referència següent</translation>
 <translation id="3096671415663099226">cbo</translation>
@@ -438,6 +441,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4148180433151187540">{COUNT,plural, =1{clau de tancament}other{# claus de tancament}}</translation>
 <translation id="4158704014418536539">Es distingeix entre majúscules i minúscules.</translation>
 <translation id="4159784952369912983">Porpra</translation>
+<translation id="4161104397932142764">{COUNT,plural, =1{segon}other{segons}}</translation>
 <translation id="4161663686871496107">Ja podeu utilitzar els comentaris de veu de ChromeVox.</translation>
 <translation id="4173994908659439270">No hi ha cap més camp de text que es pugui editar.</translation>
 <translation id="4176463684765177261">Desactivat</translation>
@@ -618,6 +622,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5349770431644471053">Enllaç d'entrada</translation>
 <translation id="536031132345979795">Retrocedeix durant la lectura contínua</translation>
 <translation id="5368000168321181111">Earcons desactivats</translation>
+<translation id="5368505757342402527">S'ha baixat un <ph name="PROGRESS" />% del fitxer <ph name="FILE_NAME" />. Temps restant: <ph name="TIME" /> <ph name="UNITS" />.</translation>
 <translation id="5374320867641260420">No hi ha cap botó més.</translation>
 <translation id="5376407118396657359">Prem Cerca+Ctrl+Alt i les fletxes per navegar de cel·la en cel·la.</translation>
 <translation id="5382299583965267720">No hi ha cap capçalera més del nivell 1.</translation>
@@ -800,6 +805,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="667999046851023355">Document</translation>
 <translation id="6688209025607531203">Una alerta no modal</translation>
 <translation id="6689672606256159458">Salmó fosc</translation>
+<translation id="669617842401078250">La baixada del fitxer <ph name="FILE_NAME" /> s'ha posat en pausa</translation>
 <translation id="6696967141280706829">Prefaci</translation>
 <translation id="6697092096875747123">Quadre combinat anterior</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{exclamació}other{# exclamacions}}</translation>
@@ -938,6 +944,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="7641134354185483015">No hi ha cap capçalera anterior del nivell 3.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, quadre de text</translation>
 <translation id="7663318257180412551">Capçalera 2</translation>
+<translation id="7668307052366682650">{COUNT,plural, =1{hora}other{hores}}</translation>
 <translation id="7674576868851035240">Enllaç següent</translation>
 <translation id="7674768236845044097">marca</translation>
 <translation id="7684431668231950609">Edició de text, entrada d'URL</translation>
@@ -952,6 +959,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7763537600611320912">S'ha començat a baixar <ph name="FILE_NAME" /></translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, quadre de text de la contrasenya</translation>
 <translation id="7776293189010177726">Obre els menús de ChromeVox</translation>
 <translation id="7800558923657349506">Epíleg</translation>
@@ -1076,6 +1084,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="8096975275316362544">Menta</translation>
 <translation id="8098587210054821856">Gris pissarra</translation>
 <translation id="8110647606445335195">No hi ha cap punt de referència ARIA.</translation>
+<translation id="812886159861361726">S'ha aturat la baixada del fitxer <ph name="FILE_NAME" /></translation>
 <translation id="8138880386467279117">Tàctil</translation>
 <translation id="8153880621934657047">No sou dins la taula.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{ratlla baixa}other{# ratlles baixes}}</translation>
@@ -1145,6 +1154,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="8743786158317878347">entra al contingut estructurat, com ara les taules</translation>
 <translation id="8747966237988593539">Llista ordenada</translation>
 <translation id="8749988712346667988">Plata</translation>
+<translation id="875769700429317857"><ph name="FILE_NAME" /> s'ha acabat de baixar</translation>
 <translation id="8759334257841767240">No hi ha cap més enllaç.</translation>
 <translation id="8767968232364267681">Capçalera del nivell 4 següent</translation>
 <translation id="8770473310765924354">surt del contingut estructurat, com ara les taules</translation>

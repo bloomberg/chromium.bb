@@ -382,12 +382,14 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6903907808598579934">Bật đồng bộ hóa</translation>
 <translation id="6914583639806229067">Tìm kiếm hình ảnh bạn đã sao chép</translation>
 <translation id="6914783257214138813">Bất cứ ai có thể xem tệp đã xuất đều có thể biết mật khẩu của bạn.</translation>
+<translation id="692898627499215142">Quá trình thiết lập đồng bộ hóa ban đầu chưa hoàn tất. Để bắt đầu Đồng bộ hóa, hãy bật tính năng Đồng bộ hóa.</translation>
 <translation id="6944369514868857500">Chọn một tài khoản khác</translation>
 <translation id="6945221475159498467">Chọn</translation>
 <translation id="6973630695168034713">Thư mục</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="7004499039102548441">Các tab gần đây</translation>
 <translation id="7006788746334555276">Cài đặt nội dung</translation>
+<translation id="7015203776128479407">Quá trình thiết lập đồng bộ hóa ban đầu chưa hoàn tất. Tính năng đồng bộ hóa đã tắt.</translation>
 <translation id="7029809446516969842">Mật khẩu</translation>
 <translation id="7031882061095297553">Đồng bộ hóa với</translation>
 <translation id="7053983685419859001">Chặn</translation>
@@ -399,6 +401,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="7136892417564438900">Máy ảnh không khả dụng</translation>
 <translation id="7159472599653637159">Yêu cầu trang web cho di động</translation>
 <translation id="7167621057293532233">Loại dữ liệu</translation>
+<translation id="7173114856073700355">Mở Cài đặt</translation>
 <translation id="7189598951263744875">Chia sẻ...</translation>
 <translation id="7192050974311852563">Bắt đầu ghi nhật ký</translation>
 <translation id="7203585745079012652">Trả lời bằng giọng nói</translation>
@@ -475,6 +478,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="850600235656508448">Mở trong chế độ ẩn danh</translation>
 <translation id="8517375800490286174">Giấy phép nguồn mở</translation>
 <translation id="8524799873541103884"><ph name="INCOGNITO" /> Tab <ph name="FIRST_VISIBLE_TAB" /> qua <ph name="LAST_VISIBLE_TAB" /> / <ph name="NUMBER_OF_OPEN_TABS" /></translation>
+<translation id="8529767659511976195">Mới</translation>
 <translation id="8532105204136943229">Năm hết hạn</translation>
 <translation id="8534481786647257214">Đã đăng lên Google+.</translation>
 <translation id="8548878600947630424">Tìm trong trang...</translation>

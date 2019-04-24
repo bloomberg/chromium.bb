@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">Този сайт да не се превежда никога</translation>
 <translation id="1291207594882862231">Изчистване на историята, „бисквитките“, данните за сайтове и кеша…</translation>
 <translation id="129553762522093515">Наскоро затворени</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> – Изпратено от <ph name="DEVICE_NAME" /></translation>
 <translation id="1326317727527857210">Влезте в Chrome, за да получите разделите си от другите си устройства.</translation>
 <translation id="1331212799747679585">Chrome не може да се актуализира. Още опции</translation>
 <translation id="1332501820983677155">Комбинации за функции на Google Chrome</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">Редактиране на картата</translation>
 <translation id="2154710561487035718">Копиране на URL адреса</translation>
 <translation id="2156074688469523661">Останали сайтове (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">Споделяне</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, уеб приложение. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Продължаване като <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Изпраща до Google системна информация и част от съдържанието на страниците</translation>
@@ -651,6 +653,7 @@
 <translation id="5797070761912323120">Възможно е да използваме историята ви, за да персонализираме търсенето, рекламите и други услуги на Google</translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{преди # час}other{преди # часа}}</translation>
+<translation id="5810288467834065221">Авторски права <ph name="YEAR" /> г. Google LLC. Всички права запазени.</translation>
 <translation id="5817918615728894473">Сдвояване</translation>
 <translation id="583281660410589416">Неизвестно</translation>
 <translation id="5833984609253377421">Споделяне на връзката</translation>
@@ -902,6 +905,7 @@
 <translation id="756809126120519699">Данните в Chrome са изчистени</translation>
 <translation id="757524316907819857">Блокиране на възможността на сайтовете да възпроизвеждат защитено съдържание</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> файл бе изтеглен}other{<ph name="FILES_DOWNLOADED_MANY" /> файла бяха изтеглени}}</translation>
+<translation id="7588219262685291874">Включване на тъмната тема, когато режимът за запазване на батерията на устройството ви е включен</translation>
 <translation id="7589445247086920869">Блокиране за текущата търсеща машина</translation>
 <translation id="7593557518625677601">За старт на синхронизирането активирайте системното синхронизиране на Android</translation>
 <translation id="7596558890252710462">Операционна система</translation>
@@ -1001,6 +1005,7 @@
 <translation id="8266862848225348053">Местоположение за изтеглянията</translation>
 <translation id="8274165955039650276">Преглед на изтеглянията</translation>
 <translation id="8283853025636624853">Синхронизира се със: <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
+<translation id="8300705686683892304">Управлявани от приложението</translation>
 <translation id="8310344678080805313">Стандартни раздели</translation>
 <translation id="8313455859591948645">Редактиране на страницата при стартиране</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> и още сайтове</translation>

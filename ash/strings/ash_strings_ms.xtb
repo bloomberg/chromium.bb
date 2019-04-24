@@ -86,6 +86,7 @@
 <translation id="225680501294068881">Mengimbas untuk peranti...</translation>
 <translation id="2268130516524549846">Bluetooth dilumpuhkan</translation>
 <translation id="2268813581635650749">Log keluar semua</translation>
+<translation id="2277103315734023688">Cari Ke Hadapan</translation>
 <translation id="2292698582925480719">Skala paparan</translation>
 <translation id="2302092602801625023">Akaun ini diurus oleh Family Link</translation>
 <translation id="2303600792989757991">Togol gambaran keseluruhan tetingkap</translation>
@@ -166,6 +167,7 @@
 <translation id="3371140690572404006">Peranti USB-C (port depan sebelah kanan)</translation>
 <translation id="3400357268283240774">Tetapan tambahan</translation>
 <translation id="3413817803639110246">Tiada apa-apa untuk dilihat</translation>
+<translation id="343571671045587506">Edit peringatan</translation>
 <translation id="3445925074670675829">Peranti USB-C</translation>
 <translation id="3454224730401036106">Sambungan anda telah beralih kepada rangkaian yang lebih selamat</translation>
 <translation id="3465223694362104965">Papan kekunci lain telah disambungkan ke peranti ini sejak kali terakhir anda log masuk. Pastikan anda mempercayai papan kekunci ini sebelum anda menggunakannya.</translation>
@@ -199,12 +201,14 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="3900355044994618856">Sesi anda akan tamat dalam <ph name="SESSION_TIME_REMAINING" /></translation>
 <translation id="3901991538546252627">Menyambung ke <ph name="NAME" /></translation>
 <translation id="394485226368336402">Tetapan audio</translation>
+<translation id="3962859241508114581">Lagu Sebelumnya</translation>
 <translation id="397105322502079400">Mengira...</translation>
 <translation id="3995138139523574647">Peranti USB-C (port belakang sebelah kanan)</translation>
 <translation id="4017989525502048489">Penuding laser</translation>
 <translation id="4042660782729322247">Anda berkongsi skrin anda</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Matikan untuk satu apl}other{Matikan untuk # apl}}</translation>
 <translation id="4072264167173457037">Isyarat sederhana</translation>
+<translation id="4112140312785995938">Cari Ke Belakang</translation>
 <translation id="4129129681837227511">Untuk melihat pemberitahuan pada skrin kunci anda, buka kunci untuk menukar tetapan</translation>
 <translation id="4146833061457621061">Mainkan muzik</translation>
 <translation id="4181841719683918333">Bahasa</translation>
@@ -228,6 +232,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4421231901400348175">Berkongsi kawalan skrin anda dengan <ph name="HELPER_NAME" /> melalui Bantuan Jauh.</translation>
 <translation id="4430019312045809116">Kelantangan</translation>
 <translation id="4450893287417543264">Jangan tunjukkan lagi</translation>
+<translation id="4477350412780666475">Lagu Seterusnya</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Peranti dinyahganding</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Menyambung...</translation>
@@ -393,6 +398,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7222902781030499995">Hentikan pemasa</translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
 <translation id="726276584504105859">Seret ke sini untuk menggunakan skrin pisah</translation>
+<translation id="7262906531272962081">Buat peringatan</translation>
 <translation id="7303365578352795231">Menjawab menggunakan peranti lain.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Papan kekunci pada skrin</translation>

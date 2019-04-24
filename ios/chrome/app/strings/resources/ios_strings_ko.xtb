@@ -382,12 +382,14 @@
 <translation id="6903907808598579934">동기화 사용 설정</translation>
 <translation id="6914583639806229067">복사한 이미지 검색</translation>
 <translation id="6914783257214138813">내보낸 파일을 볼 수 있는 모든 사용자에게 비밀번호가 표시됩니다.</translation>
+<translation id="692898627499215142">초기 동기화 설정이 완료되지 않았습니다. 동기화를 시작하려면 동기화를 사용으로 전환하세요.</translation>
 <translation id="6944369514868857500">다른 계정 선택</translation>
 <translation id="6945221475159498467">선택</translation>
 <translation id="6973630695168034713">폴더</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
 <translation id="7004499039102548441">최근 탭</translation>
 <translation id="7006788746334555276">콘텐츠 설정</translation>
+<translation id="7015203776128479407">초기 동기화 설정이 완료되지 않았습니다. 동기화가 사용 중지되었습니다.</translation>
 <translation id="7029809446516969842">비밀번호</translation>
 <translation id="7031882061095297553">동기화 가능 계정</translation>
 <translation id="7053983685419859001">차단</translation>
@@ -399,6 +401,7 @@
 <translation id="7136892417564438900">카메라를 사용할 수 없음</translation>
 <translation id="7159472599653637159">모바일 사이트 요청</translation>
 <translation id="7167621057293532233">데이터 유형</translation>
+<translation id="7173114856073700355">설정 열기</translation>
 <translation id="7189598951263744875">공유...</translation>
 <translation id="7192050974311852563">로깅 시작</translation>
 <translation id="7203585745079012652">음성 응답</translation>
@@ -475,6 +478,7 @@
 <translation id="850600235656508448">시크릿 모드에서 열기</translation>
 <translation id="8517375800490286174">오픈소스 라이선스</translation>
 <translation id="8524799873541103884">전체 <ph name="NUMBER_OF_OPEN_TABS" />개 탭 중 <ph name="FIRST_VISIBLE_TAB" />~<ph name="LAST_VISIBLE_TAB" />번째 탭이 <ph name="INCOGNITO" /> 탭입니다.</translation>
+<translation id="8529767659511976195">신규</translation>
 <translation id="8532105204136943229">만료 연도</translation>
 <translation id="8534481786647257214">Google+ 게시가 완료되었습니다.</translation>
 <translation id="8548878600947630424">페이지에서 찾기...</translation>

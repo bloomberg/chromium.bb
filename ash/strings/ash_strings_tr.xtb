@@ -86,6 +86,7 @@
 <translation id="225680501294068881">Cihazlar taranıyor...</translation>
 <translation id="2268130516524549846">Bluetooth devre dışı</translation>
 <translation id="2268813581635650749">Tüm kullanıcıların oturumunu kapat</translation>
+<translation id="2277103315734023688">İleri Sar</translation>
 <translation id="2292698582925480719">Görüntüyü ölçekle</translation>
 <translation id="2302092602801625023">Bu hesap Family Link tarafından yönetiliyor</translation>
 <translation id="2303600792989757991">Pencere genel bakışını değiştir</translation>
@@ -166,6 +167,7 @@
 <translation id="3371140690572404006">USB-C cihaz (sağ ön bağlantı noktası)</translation>
 <translation id="3400357268283240774">Ek ayarlar</translation>
 <translation id="3413817803639110246">Henüz görülecek bir şey yok</translation>
+<translation id="343571671045587506">Hatırlatıcıyı düzenleyin</translation>
 <translation id="3445925074670675829">USB-C cihaz</translation>
 <translation id="3454224730401036106">Bağlantınız daha güvenli bir ağa geçti</translation>
 <translation id="3465223694362104965">Açtığınız son oturumdan sonra bu cihaza başka bir klavye bağlandı. Kullanmadan önce bu klavyeye güvendiğinizden emin olun.</translation>
@@ -198,12 +200,14 @@
 <translation id="3900355044994618856">Oturumunuz <ph name="SESSION_TIME_REMAINING" /> içinde sona erecek</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> ağına bağlanılıyor</translation>
 <translation id="394485226368336402">Ses ayarları</translation>
+<translation id="3962859241508114581">Önceki Parça</translation>
 <translation id="397105322502079400">Hesaplanııyor...</translation>
 <translation id="3995138139523574647">USB-C cihaz (sağ arka bağlantı noktası)</translation>
 <translation id="4017989525502048489">Lazer işaretçi</translation>
 <translation id="4042660782729322247">Ekranınızı paylaşıyorsunuz</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Bir uygulama için kapalı}other{# uygulama için kapalı}}</translation>
 <translation id="4072264167173457037">Orta düzeyde sinyal</translation>
+<translation id="4112140312785995938">Geriye Doğru Ara</translation>
 <translation id="4129129681837227511">Kilit ekranınızda bildirim göstermek için cihazın kilidini açarak ayarı değiştirin</translation>
 <translation id="4146833061457621061">Müzik çal</translation>
 <translation id="4181841719683918333">Diller</translation>
@@ -227,6 +231,7 @@
 <translation id="4421231901400348175">Ekranınızın kontrolü, Uzaktan Yardım kullanılarak <ph name="HELPER_NAME" /> ile paylaşılıyor.</translation>
 <translation id="4430019312045809116">Ses</translation>
 <translation id="4450893287417543264">Bir daha gösterme</translation>
+<translation id="4477350412780666475">Sonraki Parça</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Eşlemesi kaldırılmış cihazlar</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: Bağlanıyor...</translation>
@@ -393,6 +398,7 @@
 <translation id="7222902781030499995">Kronometreyi durdur</translation>
 <translation id="7256634071279256947">Arka mikrofon</translation>
 <translation id="726276584504105859">Ekranı bölünmüş olarak kullanmak için burayı sürükleyin</translation>
+<translation id="7262906531272962081">Hatırlatıcı oluştur</translation>
 <translation id="7303365578352795231">Başka bir cihazda yanıtlanıyor.</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7348093485538360975">Ekran klavyesi</translation>

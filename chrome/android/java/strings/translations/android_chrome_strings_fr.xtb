@@ -45,6 +45,7 @@
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="1291207594882862231">Efface l'historique, vider le cache, supprimer les cookies et les données de site…</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
+<translation id="1303507811548703290"><ph name="DOMAIN" /> (envoyé depuis <ph name="DEVICE_NAME" />)</translation>
 <translation id="1326317727527857210">Connectez-vous à Chrome pour accéder à vos onglets sur vos autres appareils.</translation>
 <translation id="1331212799747679585">Impossible de mettre à jour Chrome. Plus d'options</translation>
 <translation id="1332501820983677155">Raccourcis liés aux fonctionnalités de Google Chrome</translation>
@@ -171,6 +172,7 @@
 <translation id="2154484045852737596">Modifier la carte</translation>
 <translation id="2154710561487035718">Copier l'URL</translation>
 <translation id="2156074688469523661">Sites restants (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="218608176142494674">Partage</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, application Web : <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continuer en tant que <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Envoie des informations système et du contenu de pages à Google</translation>
@@ -650,6 +652,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5797070761912323120">Google peut utiliser votre historique pour personnaliser la recherche, les annonces et d'autres services Google</translation>
 <translation id="5804241973901381774">Autorisations</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Il y a # heure}one{Il y a # heure}other{Il y a # heures}}</translation>
+<translation id="5810288467834065221">© <ph name="YEAR" /> Google LLC. Tous droits réservés.</translation>
 <translation id="5817918615728894473">Associer</translation>
 <translation id="583281660410589416">Inconnu</translation>
 <translation id="5833984609253377421">Partager le lien</translation>
@@ -901,6 +904,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="756809126120519699">Données de Chrome effacées</translation>
 <translation id="757524316907819857">Empêcher les sites de lire les contenus protégés</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> fichier téléchargé}one{<ph name="FILES_DOWNLOADED_MANY" /> fichier téléchargé}other{<ph name="FILES_DOWNLOADED_MANY" /> fichiers téléchargés}}</translation>
+<translation id="7588219262685291874">Activer le thème foncé lorsque l'économiseur de batterie de l'appareil est activé</translation>
 <translation id="7589445247086920869">Bloquer l'accès pour le moteur de recherche actuel</translation>
 <translation id="7593557518625677601">Ouvrez paramètres Android et réactivez synchro système Android pour démarrer synchro Chrome.</translation>
 <translation id="7596558890252710462">Système d'exploitation</translation>
@@ -1000,6 +1004,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8266862848225348053">Emplacement de téléchargement</translation>
 <translation id="8274165955039650276">Voir les téléchargements</translation>
 <translation id="8283853025636624853">Synchronisation avec <ph name="SYNC_ACCOUNT_USER_NAME" />…</translation>
+<translation id="8300705686683892304">Gérées par l'application</translation>
 <translation id="8310344678080805313">Onglets standards</translation>
 <translation id="8313455859591948645">Modifier la page de démarrage</translation>
 <translation id="8316092324682955408"><ph name="DOMAIN_NAME" /> et autres sites</translation>
