@@ -122,7 +122,6 @@ DocumentLoader::DocumentLoader(
       data_received_(false),
       navigation_type_(navigation_type),
       document_load_timing_(*this),
-      application_cache_host_(MakeGarbageCollected<ApplicationCacheHost>(this)),
       service_worker_network_provider_(
           std::move(params_->service_worker_network_provider)),
       was_blocked_after_csp_(false),
@@ -269,7 +268,6 @@ DocumentLoader::DocumentLoader(
     redirect_chain_.push_back(url_);
 
   response_ = params_->response.ToResourceResponse();
-  probe::LifecycleEvent(frame_, this, "init", CurrentTimeTicksInSeconds());
 }
 
 FrameLoader& DocumentLoader::GetFrameLoader() const {
@@ -1042,11 +1040,20 @@ void DocumentLoader::DetachFromFrame(bool flush_microtask_queue) {
   if (!frame_)
     return;
 
-  application_cache_host_->DetachFromDocumentLoader();
-  application_cache_host_.Clear();
+  if (application_cache_host_) {
+    application_cache_host_->DetachFromDocumentLoader();
+    application_cache_host_.Clear();
+  }
   service_worker_network_provider_ = nullptr;
   WeakIdentifierMap<DocumentLoader>::NotifyObjectDestroyed(this);
   frame_ = nullptr;
+}
+
+void DocumentLoader::CleanupWithoutStart() {
+  DCHECK(!application_cache_host_);
+  frame_ = nullptr;
+  params_ = nullptr;
+  state_ = kSentDidFinishLoad;
 }
 
 const KURL& DocumentLoader::UnreachableURL() const {
@@ -1114,6 +1121,7 @@ bool DocumentLoader::PrepareForLoad() {
 }
 
 void DocumentLoader::StartLoading() {
+  probe::LifecycleEvent(frame_, this, "init", CurrentTimeTicksInSeconds());
   StartLoadingInternal();
   params_ = nullptr;
 }
@@ -1123,6 +1131,7 @@ void DocumentLoader::StartLoadingInternal() {
   DCHECK_EQ(state_, kNotStarted);
   DCHECK(params_);
   state_ = kProvisional;
+  application_cache_host_ = MakeGarbageCollected<ApplicationCacheHost>(this);
 
   if (loading_url_as_empty_document_) {
     LoadEmpty();

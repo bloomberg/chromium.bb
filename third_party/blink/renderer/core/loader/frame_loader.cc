@@ -973,16 +973,19 @@ void FrameLoader::CommitNavigation(
 
   // TODO(dgozman): get rid of provisional document loader and most of the code
   // below. We should probably call DocumentLoader::CommitNavigation directly.
-  provisional_document_loader_ = Client()->CreateDocumentLoader(
+  DocumentLoader* provisional_document_loader = Client()->CreateDocumentLoader(
       frame_, navigation_type, std::move(navigation_params),
       std::move(extra_data));
   if (history_item)
-    provisional_document_loader_->SetItemForHistoryNavigation(history_item);
-  if (!provisional_document_loader_->PrepareForLoad()) {
-    DetachDocumentLoader(provisional_document_loader_);
+    provisional_document_loader->SetItemForHistoryNavigation(history_item);
+  if (!provisional_document_loader->PrepareForLoad()) {
+    provisional_document_loader->CleanupWithoutStart();
+    DidFinishNavigation();
     return;
   }
 
+  progress_tracker_->ProgressStarted();
+  provisional_document_loader_ = provisional_document_loader;
   frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_);
   probe::DidStartProvisionalLoad(frame_);
@@ -1047,6 +1050,8 @@ bool FrameLoader::CreatePlaceholderDocumentLoader(
           false /* is_starting_blank_navigation */)) {
     return false;
   }
+
+  progress_tracker_->ProgressStarted();
 
   auto navigation_params = std::make_unique<WebNavigationParams>();
   navigation_params->url = info.url_request.Url();
@@ -1532,8 +1537,6 @@ bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
   // can be used to detach this frame.
   if (!frame_->GetPage())
     return false;
-
-  progress_tracker_->ProgressStarted();
 
   // If this is an about:blank navigation committing asynchronously, don't
   // cancel scheduled navigations, so that the scheduled navigation still goes

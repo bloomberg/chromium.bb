@@ -105,6 +105,10 @@ class CORE_EXPORT DocumentLoader
 
   virtual void DetachFromFrame(bool flush_microtask_queue);
 
+  // Called when we did not start the load, before abandoning this
+  // DocumentLoader.
+  virtual void CleanupWithoutStart();
+
   uint64_t MainResourceIdentifier() const;
 
   void ReplaceDocumentWhileExecutingJavaScriptURL(const KURL&,
