@@ -16,6 +16,7 @@
 #include "ios/web/public/web_client.h"
 #import "ios/web/web_state/js/page_script_util.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
+#import "ios/web/web_state/ui/wk_web_view_configuration_provider_observer.h"
 #import "ios/web/webui/crw_web_ui_scheme_handler.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -80,6 +81,8 @@ WKWebViewConfigurationProvider::WKWebViewConfigurationProvider(
     : browser_state_(browser_state) {}
 
 WKWebViewConfigurationProvider::~WKWebViewConfigurationProvider() {
+  for (auto& observer : observers_)
+    observer.ConfigurationProviderDestroyed(this);
 }
 
 WKWebViewConfiguration*
@@ -126,6 +129,18 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
                                forURLScheme:base::SysUTF8ToNSString(scheme)];
       }
     }
+
+    for (auto& observer : observers_)
+      observer.DidCreateNewConfiguration(this, configuration_);
+
+    // Workaround to force the creation of the WKWebsiteDataStore. This
+    // workaround need to be done here, because this method returns a copy of
+    // the already created configuration.
+    NSSet* data_types = [NSSet setWithObject:WKWebsiteDataTypeCookies];
+    [configuration_.websiteDataStore
+        fetchDataRecordsOfTypes:data_types
+              completionHandler:^(NSArray<WKWebsiteDataRecord*>* records){
+              }];
   }
 
   // This is a shallow copy to prevent callers from changing the internals of
@@ -149,6 +164,16 @@ void WKWebViewConfigurationProvider::Purge() {
   DCHECK([NSThread isMainThread]);
   configuration_ = nil;
   router_ = nil;
+}
+
+void WKWebViewConfigurationProvider::AddObserver(
+    WKWebViewConfigurationProviderObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void WKWebViewConfigurationProvider::RemoveObserver(
+    WKWebViewConfigurationProviderObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace web
