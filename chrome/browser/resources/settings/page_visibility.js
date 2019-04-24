@@ -12,7 +12,7 @@
  *   appearance: (boolean|undefined|AppearancePageVisibility),
  *   autofill: (boolean|undefined),
  *   bluetooth: (boolean|undefined),
- *   dateTime: (boolean|undefined|DateTimePageVisibility),
+ *   dateTime: (boolean|undefined),
  *   defaultBrowser: (boolean|undefined),
  *   device: (boolean|undefined),
  *   downloads: (boolean|undefined|DownloadsPageVisibility),
@@ -36,13 +36,6 @@ let PageVisibility;
  * }}
  */
 let AppearancePageVisibility;
-
-/**
- * @typedef {{
- *   timeZoneSelector: boolean,
- * }}
- */
-let DateTimePageVisibility;
 
 /**
  * @typedef {{
@@ -101,6 +94,7 @@ cr.define('settings', function() {
       },
       device: showOSSettings,
       advancedSettings: true,
+      dateTime: showOSSettings,
       privacy: {
         searchPrediction: false,
         networkPrediction: false,
@@ -132,6 +126,7 @@ cr.define('settings', function() {
       },
       device: showOSSettings,
       advancedSettings: true,
+      dateTime: showOSSettings,
       privacy: {
         searchPrediction: true,
         networkPrediction: true,
