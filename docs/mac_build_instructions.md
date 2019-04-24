@@ -31,9 +31,10 @@ Clone the `depot_tools` repository:
 $ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ```
 
-Add `depot_tools` to the end of your PATH (you will probably want to put this
-in your `~/.bashrc` or `~/.zshrc`). Assuming you cloned `depot_tools` to
-`/path/to/depot_tools`:
+Add `depot_tools` to the end of your PATH (you will probably want to put this in
+your `~/.bash_profile` or `~/.zshrc`). Assuming you cloned `depot_tools` to
+`/path/to/depot_tools` (note: you **must** use the absolute path or Python will
+not be able to find infra tools):
 
 ```shell
 $ export PATH="$PATH:/path/to/depot_tools"
