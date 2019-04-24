@@ -543,11 +543,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "disable-mtp-write-support",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "disable-office-editing-component-app",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76

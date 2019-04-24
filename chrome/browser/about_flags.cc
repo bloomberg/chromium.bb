@@ -1779,11 +1779,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMediaRouterCastAllowAllIPsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media_router::kCastAllowAllIPsFeature)},
 #endif  // !OS_ANDROID
-#if defined(OS_CHROMEOS)
-    {"disable-mtp-write-support", flag_descriptions::kMtpWriteSupportName,
-     flag_descriptions::kMtpWriteSupportDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableMtpWriteSupport)},
-#endif  // OS_CHROMEOS
 #if defined(OS_ANDROID)
     {"autofill-keyboard-accessory-view",
      flag_descriptions::kAutofillAccessoryViewName,

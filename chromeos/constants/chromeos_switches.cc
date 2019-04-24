@@ -233,9 +233,6 @@ const char kDisableLoginAnimations[] = "disable-login-animations";
 // Disables requests for an enterprise machine certificate during attestation.
 const char kDisableMachineCertRequest[] = "disable-machine-cert-request";
 
-// Disables mtp write support.
-const char kDisableMtpWriteSupport[] = "disable-mtp-write-support";
-
 // Disables the multiple display layout UI.
 const char kDisableMultiDisplayLayout[] = "disable-multi-display-layout";
 

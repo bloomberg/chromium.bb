@@ -3219,11 +3219,6 @@ const char kAggressiveTabDiscardThresholds[] =
 const char kAggressiveThresholds[] =
     "Aggressive tab and cache release strategy";
 
-const char kMtpWriteSupportName[] = "MTP write support";
-const char kMtpWriteSupportDescription[] =
-    "MTP write support in File System API (and file manager). In-place editing "
-    "operations are not supported.";
-
 const char kNetworkPortalNotificationName[] =
     "Notifications about captive portals";
 const char kNetworkPortalNotificationDescription[] =

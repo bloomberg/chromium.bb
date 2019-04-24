@@ -1195,8 +1195,6 @@ void VolumeManager::DoAttachMtpStorage(
   // hierarchical file system, and writing to external storage devices is not
   // prohibited by the preference.
   const bool read_only =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableMtpWriteSupport) ||
       mtp_storage_info->access_capability != kAccessCapabilityReadWrite ||
       mtp_storage_info->filesystem_type !=
           kFilesystemTypeGenericHierarchical ||

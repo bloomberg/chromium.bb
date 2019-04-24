@@ -1948,9 +1948,6 @@ extern const char kAggressiveThresholds[];
 extern const char kMojoImfName[];
 extern const char kMojoImfDescription[];
 
-extern const char kMtpWriteSupportName[];
-extern const char kMtpWriteSupportDescription[];
-
 extern const char kNetworkPortalNotificationName[];
 extern const char kNetworkPortalNotificationDescription[];
 

@@ -84,8 +84,6 @@ extern const char kDisableLoginAnimations[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableMachineCertRequest[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisableMtpWriteSupport[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableMultiDisplayLayout[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableNewZIPUnpacker[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
