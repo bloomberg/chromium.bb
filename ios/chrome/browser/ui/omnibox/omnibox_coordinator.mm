@@ -11,6 +11,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
@@ -72,6 +73,8 @@
   self.mediator = [[OmniboxMediator alloc] init];
   self.mediator.templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(self.browserState);
+  self.mediator.faviconLoader =
+      IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
   self.mediator.consumer = self.viewController;
 
   DCHECK(self.editController);
