@@ -815,7 +815,13 @@ void BlinkTestRunner::OnReset() {
   // Navigating to about:blank will make sure that no new loads are initiated
   // by the renderer.
   waiting_for_reset_ = true;
-  main_frame->StartNavigation(WebURLRequest(GURL(url::kAboutBlankURL)));
+
+  auto request = blink::WebURLRequest(GURL(url::kAboutBlankURL));
+  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
+  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
+  request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
+  request.SetRequestorOrigin(blink::WebSecurityOrigin::CreateUniqueOpaque());
+  main_frame->StartNavigation(request);
 }
 
 void BlinkTestRunner::OnTestFinishedInSecondaryRenderer() {

@@ -97,6 +97,7 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/range/range.h"
 #include "ui/native_theme/native_theme_features.h"
+#include "url/url_constants.h"
 
 #if defined(OS_ANDROID)
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
@@ -887,15 +888,19 @@ class AlwaysForkingRenderViewTest : public RenderViewImplTest {
 TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkEmptyUrl) {
   GURL example_url("http://example.com");
   GURL empty_url("");
-  GURL blank_url("about:blank");
 
   LoadHTMLWithUrlOverride("<body></body", example_url.spec().c_str());
   EXPECT_EQ(example_url,
             GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetUrl()));
 
   // Empty url should never fork.
+  blink::WebURLRequest request(empty_url);
+  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
+  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
+  request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
+  request.SetRequestorOrigin(blink::WebSecurityOrigin::Create(example_url));
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
-  navigation_info->url_request = blink::WebURLRequest(empty_url);
+  navigation_info->url_request = request;
   navigation_info->frame_type =
       network::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
@@ -906,15 +911,20 @@ TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkEmptyUrl) {
 
 TEST_F(AlwaysForkingRenderViewTest, BeginNavigationDoesNotForkAboutBlank) {
   GURL example_url("http://example.com");
-  GURL blank_url("about:blank");
+  GURL blank_url(url::kAboutBlankURL);
 
   LoadHTMLWithUrlOverride("<body></body", example_url.spec().c_str());
   EXPECT_EQ(example_url,
             GURL(frame()->GetWebFrame()->GetDocumentLoader()->GetUrl()));
 
-  // About blank should never fork.
+  // about:blank should never fork.
+  blink::WebURLRequest request(blank_url);
+  request.SetFetchRequestMode(network::mojom::FetchRequestMode::kNavigate);
+  request.SetFetchRedirectMode(network::mojom::FetchRedirectMode::kManual);
+  request.SetRequestContext(blink::mojom::RequestContextType::INTERNAL);
+  request.SetRequestorOrigin(blink::WebSecurityOrigin::Create(example_url));
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
-  navigation_info->url_request = blink::WebURLRequest(blank_url);
+  navigation_info->url_request = request;
   navigation_info->frame_type =
       network::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;

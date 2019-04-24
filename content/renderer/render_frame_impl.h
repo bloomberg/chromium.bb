@@ -1762,6 +1762,11 @@ class CONTENT_EXPORT RenderFrameImpl
 
   RenderFrameMediaPlaybackOptions renderer_media_playback_options_;
 
+  // Used by renderer initiated navigations not driven by the browser process:
+  // - navigation to about:srcdoc.
+  // - navigation using an MHTML archive.
+  // TODO(arthursonzogni): Remove this. Everything should use the default code
+  // path and be driven by the browser process.
   base::CancelableOnceCallback<void()> sync_navigation_callback_;
 
   class MHTMLBodyLoaderClient;
