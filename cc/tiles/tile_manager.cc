@@ -40,37 +40,6 @@ namespace {
 // a tile is of solid color.
 const bool kUseColorEstimator = true;
 
-DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
-    ScopedSoftwareRasterTaskTimer,
-    "Compositing.%s.RasterTask.RasterUs.Software",
-    "Compositing.%s.RasterTask.RasterPixelsPerMs2.Software")
-
-DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
-    ScopedGpuRasterTaskTimer,
-    "Compositing.%s.RasterTask.RasterUs.Gpu",
-    "Compositing.%s.RasterTask.RasterPixelsPerMs2.Gpu")
-
-class ScopedRasterTaskTimer {
- public:
-  explicit ScopedRasterTaskTimer(bool use_gpu_rasterization) {
-    if (use_gpu_rasterization)
-      gpu_timer_.emplace();
-    else
-      software_timer_.emplace();
-  }
-
-  void SetArea(int area) {
-    if (software_timer_)
-      software_timer_->SetArea(area);
-    if (gpu_timer_)
-      gpu_timer_->SetArea(area);
-  }
-
- private:
-  base::Optional<ScopedSoftwareRasterTaskTimer> software_timer_;
-  base::Optional<ScopedGpuRasterTaskTimer> gpu_timer_;
-};
-
 // This class is wrapper for both ImageProvider and PaintWorkletImageProvider,
 // which is used in RasterSource::PlaybackSettings. It looks at the draw image
 // and decides which one of the two providers to dispatch the request to.
@@ -132,7 +101,6 @@ class RasterTaskImpl : public TileTask {
         tile_tracing_id_(static_cast<void*>(tile)),
         new_content_id_(tile->id()),
         source_frame_number_(tile->source_frame_number()),
-        is_gpu_rasterization_(is_gpu_rasterization),
         raster_buffer_(std::move(raster_buffer)),
         image_provider_(std::move(image_provider)),
         url_(std::move(url)) {
@@ -152,8 +120,6 @@ class RasterTaskImpl : public TileTask {
 
     frame_viewer_instrumentation::ScopedRasterTask raster_task(
         tile_tracing_id_, tile_resolution_, source_frame_number_, layer_id_);
-    ScopedRasterTaskTimer timer(is_gpu_rasterization_);
-    timer.SetArea(content_rect_.size().GetArea());
 
     DCHECK(raster_source_);
 
@@ -203,7 +169,6 @@ class RasterTaskImpl : public TileTask {
   void* tile_tracing_id_;
   uint64_t new_content_id_;
   int source_frame_number_;
-  bool is_gpu_rasterization_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
   DispatchingImageProvider image_provider_;
   GURL url_;
