@@ -2272,10 +2272,6 @@ const char kContextualSearchUnityIntegrationName[] =
 const char kContextualSearchUnityIntegrationDescription[] =
     "Enables integration of Tap to Search with Unified Consent.";
 
-const char kDontPrefetchLibrariesName[] = "Don't Prefetch Libraries";
-const char kDontPrefetchLibrariesDescription[] =
-    "Don't prefetch libraries after loading.";
-
 const char kDownloadsLocationChangeName[] = "Enable downloads location change";
 const char kDownloadsLocationChangeDescription[] =
     "Enable changing default downloads storage location on Android.";

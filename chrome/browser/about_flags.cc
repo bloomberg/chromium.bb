@@ -2763,12 +2763,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kScrollableTabStrip)},
 
 #if defined(OS_ANDROID)
-    {"dont-prefetch-libraries", flag_descriptions::kDontPrefetchLibrariesName,
-     flag_descriptions::kDontPrefetchLibrariesDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kDontPrefetchLibraries)},
-#endif  // defined(OS_ANDROID)
-
-#if defined(OS_ANDROID)
     {"enable-reader-mode-in-cct", flag_descriptions::kReaderModeInCCTName,
      flag_descriptions::kReaderModeInCCTDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kReaderModeInCCT)},

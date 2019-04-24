@@ -11,7 +11,6 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -85,9 +84,6 @@ public class LibraryLoader {
 
     // Location of extracted native libraries.
     private static final String LIBRARY_DIR = "native_libraries";
-
-    // SharedPreferences key for "don't prefetch libraries" flag
-    private static final String DONT_PREFETCH_LIBRARIES_KEY = "dont_prefetch_libraries";
 
     // Shared preferences key for the reached code profiler.
     private static final String REACHED_CODE_PROFILER_ENABLED_KEY = "reached_code_profiler_enabled";
@@ -303,37 +299,6 @@ public class LibraryLoader {
     }
 
     /**
-     * Disables prefetching for subsequent runs. The value comes from "DontPrefetchLibraries"
-     * finch experiment, and is pushed on every run. I.e. the effect of the finch experiment
-     * lags by one run, which is the best we can do considering that prefetching happens way
-     * before finch is initialized. Note that since LibraryLoader is in //base, it can't depend
-     * on ChromeFeatureList, and has to rely on external code pushing the value.
-     *
-     * @param dontPrefetch whether not to prefetch libraries
-     */
-    public static void setDontPrefetchLibrariesOnNextRuns(boolean dontPrefetch) {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putBoolean(DONT_PREFETCH_LIBRARIES_KEY, dontPrefetch)
-                .apply();
-    }
-
-    /**
-     * @return whether not to prefetch libraries (see setDontPrefetchLibrariesOnNextRun()).
-     */
-    private static boolean isNotPrefetchingLibraries() {
-        // This might be the first time getAppSharedPreferences() is used, so relax strict mode
-        // to allow disk reads.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            return ContextUtils.getAppSharedPreferences().getBoolean(
-                    DONT_PREFETCH_LIBRARIES_KEY, false);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-    }
-
-    /**
      * Enables the reached code profiler. The value comes from "ReachedCodeProfiler"
      * finch experiment, and is pushed on every run. I.e. the effect of the finch experiment
      * lags by one run, which is the best we can do considering that the profiler has to be enabled
@@ -372,10 +337,8 @@ public class LibraryLoader {
      */
     public void asyncPrefetchLibrariesToMemory() {
         SysUtils.logPageFaultCountToTracing();
-        if (isNotPrefetchingLibraries()) return;
 
         final boolean coldStart = mPrefetchLibraryHasBeenCalled.compareAndSet(false, true);
-
         // Collection should start close to the native library load, but doesn't have
         // to be simultaneous with it. Also, don't prefetch in this case, as this would
         // skew the results.
@@ -402,6 +365,8 @@ public class LibraryLoader {
                     RecordHistogram.recordPercentageHistogram(histogram, percentage);
                 }
             }
+            // Removes a dead flag, don't remove the removal code before M77 at least.
+            ContextUtils.getAppSharedPreferences().edit().remove("dont_prefetch_libraries").apply();
         });
     }
 
