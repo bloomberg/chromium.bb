@@ -20,6 +20,7 @@ class SpellCheckRequester;
 // mode invocation. Not to be confused with SpellCheckRequester. The class
 // iteratively checks the editing host currently focused when the document is
 // idle.
+// See design doc for details: https://goo.gl/zONC3v
 class ColdModeSpellCheckRequester
     : public GarbageCollected<ColdModeSpellCheckRequester> {
  public:
