@@ -38,16 +38,10 @@ const double HTMLProgressElement::kInvalidPosition = -2;
 HTMLProgressElement::HTMLProgressElement(Document& document)
     : HTMLElement(kProgressTag, document), value_(nullptr) {
   UseCounter::Count(document, WebFeature::kProgressElement);
+  EnsureUserAgentShadowRoot();
 }
 
 HTMLProgressElement::~HTMLProgressElement() = default;
-
-HTMLProgressElement* HTMLProgressElement::Create(Document& document) {
-  HTMLProgressElement* progress =
-      MakeGarbageCollected<HTMLProgressElement>(document);
-  progress->EnsureUserAgentShadowRoot();
-  return progress;
-}
 
 LayoutObject* HTMLProgressElement::CreateLayoutObject(
     const ComputedStyle& style,

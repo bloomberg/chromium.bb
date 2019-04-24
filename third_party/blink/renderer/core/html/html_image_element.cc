@@ -90,6 +90,10 @@ class HTMLImageElement::ViewportChangeListener final
   Member<HTMLImageElement> element_;
 };
 
+HTMLImageElement::HTMLImageElement(Document& document,
+                                   const CreateElementFlags flags)
+    : HTMLImageElement(document, flags.IsCreatedByParser()) {}
+
 HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
     : HTMLElement(kImgTag, document),
       image_loader_(MakeGarbageCollected<HTMLImageLoader>(this)),

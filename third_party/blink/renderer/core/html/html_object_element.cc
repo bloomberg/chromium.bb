@@ -54,16 +54,11 @@ HTMLObjectElement::HTMLObjectElement(Document& document,
                         document,
                         flags,
                         kShouldNotPreferPlugInsForImages),
-      use_fallback_content_(false) {}
+      use_fallback_content_(false) {
+  EnsureUserAgentShadowRoot();
+}
 
 inline HTMLObjectElement::~HTMLObjectElement() = default;
-
-HTMLObjectElement* HTMLObjectElement::Create(Document& document,
-                                             const CreateElementFlags flags) {
-  auto* element = MakeGarbageCollected<HTMLObjectElement>(document, flags);
-  element->EnsureUserAgentShadowRoot();
-  return element;
-}
 
 void HTMLObjectElement::Trace(Visitor* visitor) {
   ListedElement::Trace(visitor);

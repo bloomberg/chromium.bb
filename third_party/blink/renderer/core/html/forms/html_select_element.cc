@@ -97,12 +97,11 @@ HTMLSelectElement::HTMLSelectElement(Document& document)
       index_to_select_on_cancel_(-1),
       popup_is_visible_(false) {
   SetHasCustomStyleCallbacks();
+  EnsureUserAgentShadowRoot();
 }
 
 HTMLSelectElement* HTMLSelectElement::Create(Document& document) {
-  HTMLSelectElement* select = MakeGarbageCollected<HTMLSelectElement>(document);
-  select->EnsureUserAgentShadowRoot();
-  return select;
+  return MakeGarbageCollected<HTMLSelectElement>(document);
 }
 
 HTMLSelectElement::~HTMLSelectElement() = default;

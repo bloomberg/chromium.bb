@@ -30,7 +30,6 @@ class HTMLDetailsElement final : public HTMLElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static HTMLDetailsElement* Create(Document&);
   void ToggleOpen();
 
   explicit HTMLDetailsElement(Document&);

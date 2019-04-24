@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 
 #include <memory>
+
 #include "base/bind_helpers.h"
 #include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
@@ -101,13 +102,13 @@ HTMLVideoElement::HTMLVideoElement(Document& document)
   }
 
   wake_lock_ = MakeGarbageCollected<VideoWakeLock>(*this);
+
+  EnsureUserAgentShadowRoot();
+  UpdateStateIfNeeded();
 }
 
 HTMLVideoElement* HTMLVideoElement::Create(Document& document) {
-  HTMLVideoElement* video = MakeGarbageCollected<HTMLVideoElement>(document);
-  video->EnsureUserAgentShadowRoot();
-  video->UpdateStateIfNeeded();
-  return video;
+  return MakeGarbageCollected<HTMLVideoElement>(document);
 }
 
 void HTMLVideoElement::Trace(Visitor* visitor) {

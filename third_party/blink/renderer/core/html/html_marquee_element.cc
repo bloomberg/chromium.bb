@@ -54,13 +54,7 @@ namespace blink {
 HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
     : HTMLElement(html_names::kMarqueeTag, document) {
   UseCounter::Count(document, WebFeature::kHTMLMarqueeElement);
-}
-
-HTMLMarqueeElement* HTMLMarqueeElement::Create(Document& document) {
-  HTMLMarqueeElement* marquee_element =
-      MakeGarbageCollected<HTMLMarqueeElement>(document);
-  marquee_element->EnsureUserAgentShadowRoot();
-  return marquee_element;
+  EnsureUserAgentShadowRoot();
 }
 
 void HTMLMarqueeElement::DidAddUserAgentShadowRoot(ShadowRoot& shadow_root) {

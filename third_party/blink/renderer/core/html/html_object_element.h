@@ -44,8 +44,6 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   USING_GARBAGE_COLLECTED_MIXIN(HTMLObjectElement);
 
  public:
-  static HTMLObjectElement* Create(Document&, const CreateElementFlags);
-
   HTMLObjectElement(Document&, const CreateElementFlags);
   ~HTMLObjectElement() override;
   void Trace(Visitor*) override;

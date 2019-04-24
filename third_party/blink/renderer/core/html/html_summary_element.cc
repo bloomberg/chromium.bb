@@ -38,15 +38,13 @@ namespace blink {
 using namespace html_names;
 
 HTMLSummaryElement* HTMLSummaryElement::Create(Document& document) {
-  HTMLSummaryElement* summary =
-      MakeGarbageCollected<HTMLSummaryElement>(document);
-  summary->EnsureUserAgentShadowRoot();
-  return summary;
+  return MakeGarbageCollected<HTMLSummaryElement>(document);
 }
 
 HTMLSummaryElement::HTMLSummaryElement(Document& document)
     : HTMLElement(kSummaryTag, document) {
   SetHasCustomStyleCallbacks();
+  EnsureUserAgentShadowRoot();
 }
 
 LayoutObject* HTMLSummaryElement::CreateLayoutObject(const ComputedStyle& style,

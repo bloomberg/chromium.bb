@@ -185,10 +185,7 @@ void MediaControlInputElement::UpdateOverflowString() {
 MediaControlInputElement::MediaControlInputElement(
     MediaControlsImpl& media_controls)
     : HTMLInputElement(media_controls.GetDocument(), CreateElementFlags()),
-      MediaControlElementBase(media_controls, this) {
-  CreateUserAgentShadowRoot();
-  CreateShadowSubtree();
-}
+      MediaControlElementBase(media_controls, this) {}
 
 WebLocalizedString::Name MediaControlInputElement::GetOverflowStringName()
     const {

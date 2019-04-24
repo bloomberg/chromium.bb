@@ -47,7 +47,9 @@ namespace blink {
 using namespace html_names;
 
 HTMLOptionElement::HTMLOptionElement(Document& document)
-    : HTMLElement(kOptionTag, document), is_selected_(false) {}
+    : HTMLElement(kOptionTag, document), is_selected_(false) {
+  EnsureUserAgentShadowRoot();
+}
 
 // An explicit empty destructor should be in html_option_element.cc, because
 // if an implicit destructor is used or an empty destructor is defined in
@@ -57,9 +59,7 @@ HTMLOptionElement::HTMLOptionElement(Document& document)
 HTMLOptionElement::~HTMLOptionElement() = default;
 
 HTMLOptionElement* HTMLOptionElement::Create(Document& document) {
-  HTMLOptionElement* option = MakeGarbageCollected<HTMLOptionElement>(document);
-  option->EnsureUserAgentShadowRoot();
-  return option;
+  return MakeGarbageCollected<HTMLOptionElement>(document);
 }
 
 HTMLOptionElement* HTMLOptionElement::CreateForJSConstructor(

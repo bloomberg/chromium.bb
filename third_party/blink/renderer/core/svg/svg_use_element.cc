@@ -83,13 +83,8 @@ SVGUseElement::SVGUseElement(Document& document)
   AddToPropertyMap(y_);
   AddToPropertyMap(width_);
   AddToPropertyMap(height_);
-}
 
-SVGUseElement* SVGUseElement::Create(Document& document) {
-  // Always build a user agent #shadow-root for SVGUseElement.
-  SVGUseElement* use = MakeGarbageCollected<SVGUseElement>(document);
-  use->AttachShadowRootInternal(ShadowRootType::kClosed);
-  return use;
+  AttachShadowRootInternal(ShadowRootType::kClosed);
 }
 
 SVGUseElement::~SVGUseElement() = default;

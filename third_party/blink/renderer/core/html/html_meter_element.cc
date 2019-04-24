@@ -37,15 +37,10 @@ using namespace html_names;
 HTMLMeterElement::HTMLMeterElement(Document& document)
     : HTMLElement(kMeterTag, document) {
   UseCounter::Count(document, WebFeature::kMeterElement);
+  EnsureUserAgentShadowRoot();
 }
 
 HTMLMeterElement::~HTMLMeterElement() = default;
-
-HTMLMeterElement* HTMLMeterElement::Create(Document& document) {
-  HTMLMeterElement* meter = MakeGarbageCollected<HTMLMeterElement>(document);
-  meter->EnsureUserAgentShadowRoot();
-  return meter;
-}
 
 LayoutObject* HTMLMeterElement::CreateLayoutObject(const ComputedStyle& style,
                                                    LegacyLayout legacy) {

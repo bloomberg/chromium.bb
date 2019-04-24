@@ -39,8 +39,6 @@ class SVGUseElement final : public SVGGraphicsElement,
   USING_PRE_FINALIZER(SVGUseElement, Dispose);
 
  public:
-  static SVGUseElement* Create(Document&);
-
   explicit SVGUseElement(Document&);
   ~SVGUseElement() override;
 

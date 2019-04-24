@@ -47,13 +47,13 @@ HTMLEmbedElement::HTMLEmbedElement(Document& document,
     : HTMLPlugInElement(kEmbedTag,
                         document,
                         flags,
-                        kShouldPreferPlugInsForImages) {}
+                        kShouldPreferPlugInsForImages) {
+  EnsureUserAgentShadowRoot();
+}
 
 HTMLEmbedElement* HTMLEmbedElement::Create(Document& document,
                                            const CreateElementFlags flags) {
-  auto* element = MakeGarbageCollected<HTMLEmbedElement>(document, flags);
-  element->EnsureUserAgentShadowRoot();
-  return element;
+  return MakeGarbageCollected<HTMLEmbedElement>(document, flags);
 }
 
 const AttrNameToTrustedType& HTMLEmbedElement::GetCheckedAttributeTypes()

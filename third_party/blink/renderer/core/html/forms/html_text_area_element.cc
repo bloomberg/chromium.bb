@@ -75,13 +75,12 @@ HTMLTextAreaElement::HTMLTextAreaElement(Document& document)
       cols_(kDefaultCols),
       wrap_(kSoftWrap),
       is_dirty_(false),
-      is_placeholder_visible_(false) {}
+      is_placeholder_visible_(false) {
+  EnsureUserAgentShadowRoot();
+}
 
 HTMLTextAreaElement* HTMLTextAreaElement::Create(Document& document) {
-  HTMLTextAreaElement* text_area =
-      MakeGarbageCollected<HTMLTextAreaElement>(document);
-  text_area->EnsureUserAgentShadowRoot();
-  return text_area;
+  return MakeGarbageCollected<HTMLTextAreaElement>(document);
 }
 
 void HTMLTextAreaElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {

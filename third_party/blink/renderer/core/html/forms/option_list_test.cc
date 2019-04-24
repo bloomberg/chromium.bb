@@ -23,7 +23,7 @@ class OptionListTest : public testing::Test {
  protected:
   void SetUp() override {
     HTMLDocument* document = HTMLDocument::CreateForTest();
-    HTMLSelectElement* select = HTMLSelectElement::Create(*document);
+    auto* select = MakeGarbageCollected<HTMLSelectElement>(*document);
     document->AppendChild(select);
     select_ = select;
   }

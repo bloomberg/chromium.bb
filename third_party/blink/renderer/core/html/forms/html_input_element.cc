@@ -123,17 +123,17 @@ HTMLInputElement::HTMLInputElement(Document& document,
                                             : InputType::CreateText(*this)),
       input_type_view_(input_type_ ? input_type_->CreateView() : nullptr) {
   SetHasCustomStyleCallbacks();
+
+  if (!flags.IsCreatedByParser()) {
+    DCHECK(input_type_view_->NeedsShadowSubtree());
+    CreateUserAgentShadowRoot();
+    CreateShadowSubtree();
+  }
 }
 
 HTMLInputElement* HTMLInputElement::Create(Document& document,
                                            const CreateElementFlags flags) {
-  auto* input_element = MakeGarbageCollected<HTMLInputElement>(document, flags);
-  if (!flags.IsCreatedByParser()) {
-    DCHECK(input_element->input_type_view_->NeedsShadowSubtree());
-    input_element->CreateUserAgentShadowRoot();
-    input_element->CreateShadowSubtree();
-  }
-  return input_element;
+  return MakeGarbageCollected<HTMLInputElement>(document, flags);
 }
 
 void HTMLInputElement::Trace(Visitor* visitor) {
