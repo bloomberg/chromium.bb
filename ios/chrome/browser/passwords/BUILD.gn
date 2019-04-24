@@ -167,6 +167,7 @@ source_set("unit_tests") {
     "//google_apis",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/passwords/test",
     "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/ui/autofill:autofill",
     "//ios/chrome/browser/ui/commands",
