@@ -362,17 +362,32 @@ void TabSpecificContentSettings::OnContentAllowed(ContentSettingsType type) {
       << "Media stream settings handled by OnMediaStreamPermissionSet";
   bool access_changed = false;
   ContentSettingsStatus& status = content_settings_status_[type];
+
+  // Whether to reset status for the |blocked| setting to avoid ending up
+  // with both |allowed| and |blocked| set, which can mean multiple things
+  // (allowed setting that got disabled, disabled setting that got enabled).
+  bool must_reset_blocked_status = false;
+
+  // For sensors, the status with both allowed/blocked flags set means that
+  // access was previously allowed but the last decision was to block.
+  // Reset the blocked flag so that the UI will properly indicate that the
+  // last decision here instead was to allow sensor access.
+  if (type == CONTENT_SETTINGS_TYPE_SENSORS)
+    must_reset_blocked_status = true;
+
 #if defined(OS_ANDROID)
-  if (type == CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER &&
-      status.blocked) {
-    // content_settings_status_[type].allowed is always set to true in
-    // OnContentBlocked, so we have to use
-    // content_settings_status_[type].blocked to detect whether the protected
-    // media setting has changed.
+  // content_settings_status_[type].allowed is always set to true in
+  // OnContentBlocked, so we have to use
+  // content_settings_status_[type].blocked to detect whether the protected
+  // media setting has changed.
+  if (type == CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER)
+    must_reset_blocked_status = true;
+#endif
+
+  if (must_reset_blocked_status && status.blocked) {
     status.blocked = false;
     access_changed = true;
   }
-#endif
 
   if (!status.allowed) {
     status.allowed = true;

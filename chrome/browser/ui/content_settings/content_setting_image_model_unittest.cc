@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/web_contents_tester.h"
 #include "net/cookies/cookie_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -189,6 +190,125 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
   EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
   EXPECT_EQ(content_setting_image_model->get_tooltip(),
             l10n_util::GetStringUTF16(IDS_SENSORS_BLOCKED_TOOLTIP));
+}
+
+// Regression test for https://crbug.com/955408
+// See also: ContentSettingBubbleModelTest.SensorAccessPermissionsChanged
+TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
+  TabSpecificContentSettings::CreateForWebContents(web_contents());
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com"));
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+
+  auto content_setting_image_model =
+      ContentSettingImageModel::CreateForContentType(
+          ContentSettingImageModel::ImageType::SENSORS);
+  EXPECT_FALSE(content_setting_image_model->is_visible());
+  EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
+
+  // Go from allow by default to block by default to allow by default.
+  {
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_ALLOW);
+    content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_SENSORS);
+    content_setting_image_model->Update(web_contents());
+    EXPECT_FALSE(content_setting_image_model->is_visible());
+    EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
+
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_BLOCK);
+    content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_SENSORS);
+    content_setting_image_model->Update(web_contents());
+    EXPECT_TRUE(content_setting_image_model->is_visible());
+    EXPECT_TRUE(HasIcon(*content_setting_image_model));
+    EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
+    EXPECT_EQ(content_setting_image_model->get_tooltip(),
+              l10n_util::GetStringUTF16(IDS_SENSORS_BLOCKED_TOOLTIP));
+
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_ALLOW);
+    content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_SENSORS);
+    content_setting_image_model->Update(web_contents());
+    // The icon and toolip remain set to the values above, but it is not a
+    // problem since the image model is not visible.
+    EXPECT_FALSE(content_setting_image_model->is_visible());
+  }
+
+  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+
+  // Go from block by default to allow by default to block by default.
+  {
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_BLOCK);
+    content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_SENSORS);
+    content_setting_image_model->Update(web_contents());
+    EXPECT_TRUE(content_setting_image_model->is_visible());
+    EXPECT_TRUE(HasIcon(*content_setting_image_model));
+    EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
+    EXPECT_EQ(content_setting_image_model->get_tooltip(),
+              l10n_util::GetStringUTF16(IDS_SENSORS_BLOCKED_TOOLTIP));
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_ALLOW);
+
+    content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_SENSORS);
+    content_setting_image_model->Update(web_contents());
+    // The icon and toolip remain set to the values above, but it is not a
+    // problem since the image model is not visible.
+    EXPECT_FALSE(content_setting_image_model->is_visible());
+
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_BLOCK);
+    content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_SENSORS);
+    content_setting_image_model->Update(web_contents());
+    EXPECT_TRUE(content_setting_image_model->is_visible());
+    EXPECT_TRUE(HasIcon(*content_setting_image_model));
+    EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
+    EXPECT_EQ(content_setting_image_model->get_tooltip(),
+              l10n_util::GetStringUTF16(IDS_SENSORS_BLOCKED_TOOLTIP));
+  }
+
+  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+
+  // Block by default but allow a specific site.
+  {
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_BLOCK);
+    settings_map->SetContentSettingDefaultScope(
+        web_contents()->GetURL(), web_contents()->GetURL(),
+        CONTENT_SETTINGS_TYPE_SENSORS, std::string(), CONTENT_SETTING_ALLOW);
+    content_settings->OnContentAllowed(CONTENT_SETTINGS_TYPE_SENSORS);
+    content_setting_image_model->Update(web_contents());
+
+    EXPECT_TRUE(content_setting_image_model->is_visible());
+    EXPECT_TRUE(HasIcon(*content_setting_image_model));
+    EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
+    EXPECT_EQ(content_setting_image_model->get_tooltip(),
+              l10n_util::GetStringUTF16(IDS_SENSORS_ALLOWED_TOOLTIP));
+  }
+
+  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+  // Clear site-specific exceptions.
+  settings_map->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_SENSORS);
+
+  // Allow by default but allow a specific site.
+  {
+    settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_SENSORS,
+                                           CONTENT_SETTING_ALLOW);
+    settings_map->SetContentSettingDefaultScope(
+        web_contents()->GetURL(), web_contents()->GetURL(),
+        CONTENT_SETTINGS_TYPE_SENSORS, std::string(), CONTENT_SETTING_BLOCK);
+    content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_SENSORS);
+    content_setting_image_model->Update(web_contents());
+
+    EXPECT_TRUE(content_setting_image_model->is_visible());
+    EXPECT_TRUE(HasIcon(*content_setting_image_model));
+    EXPECT_FALSE(content_setting_image_model->get_tooltip().empty());
+    EXPECT_EQ(content_setting_image_model->get_tooltip(),
+              l10n_util::GetStringUTF16(IDS_SENSORS_BLOCKED_TOOLTIP));
+  }
 }
 
 // Regression test for http://crbug.com/161854.
