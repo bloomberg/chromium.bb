@@ -1,0 +1,17 @@
+specific_include_rules = {
+  ".*": [
+    "+modules/video_coding",
+  ],
+  ".*": [
+    "+video"
+  ],
+  "fake_constraints\.h": [
+    "+rtc_base/string_encode.h",
+  ],
+  "loopback_media_transport\.h": [
+    "+rtc_base/async_invoker.h",
+    "+rtc_base/critical_section.h",
+    "+rtc_base/thread.h",
+    "+rtc_base/thread_checker.h",
+  ],
+}
