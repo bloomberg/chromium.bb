@@ -439,6 +439,9 @@ public class VrBrowserWebInputEditingTest {
     @Feature({"Browser", "RenderTest"})
     public void testFullscreenVideoControls()
             throws InterruptedException, TimeoutException, IOException {
+        // There's occasionally slight AA differences along the play button, so tolerate a small
+        // amount of differing.
+        mRenderTestRule.setPixelDiffThreshold(2);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         NativeUiUtils.enableMockedInput();
         mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
