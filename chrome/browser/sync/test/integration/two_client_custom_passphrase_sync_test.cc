@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -90,8 +91,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest, ClientsCanSyncData) {
   EXPECT_TRUE(WaitForBookmarksToMatchVerifier());
 }
 
+#if defined(OS_CHROMEOS)
+// https://crbug.com/956012
+#define MAYBE_SetPassphraseAndThenSetupSync \
+  DISABLED_SetPassphraseAndThenSetupSync
+#else
+#define MAYBE_SetPassphraseAndThenSetupSync SetPassphraseAndThenSetupSync
+#endif
+
 IN_PROC_BROWSER_TEST_F(TwoClientCustomPassphraseSyncTest,
-                       SetPassphraseAndThenSetupSync) {
+                       MAYBE_SetPassphraseAndThenSetupSync) {
   ASSERT_TRUE(SetupClients());
   ASSERT_TRUE(GetClient(kEncryptingClientId)->SetupSync());
 

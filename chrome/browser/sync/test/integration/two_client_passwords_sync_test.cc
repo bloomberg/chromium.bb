@@ -287,8 +287,12 @@ IN_PROC_BROWSER_TEST_P(TwoClientPasswordsSyncTest, MAYBE_Delete) {
   ASSERT_TRUE(AllProfilesContainSamePasswordFormsAsVerifier());
 }
 
-// Flaky on TSAN: crbug.com/915219
 #if defined(THREAD_SANITIZER)
+// Flaky on TSAN: crbug.com/915219
+#define MAYBE_SetPassphraseAndThenSetupSync \
+  DISABLED_SetPassphraseAndThenSetupSync
+#elif defined(OS_CHROMEOS)
+// https://crbug.com/956012
 #define MAYBE_SetPassphraseAndThenSetupSync \
   DISABLED_SetPassphraseAndThenSetupSync
 #else
