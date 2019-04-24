@@ -162,6 +162,23 @@ void TestSharedImageInterface::DestroySharedImage(
   shared_images_.erase(mailbox);
 }
 
+#if defined(OS_WIN)
+gpu::SharedImageInterface::SwapChainMailboxes
+TestSharedImageInterface::CreateSwapChain(ResourceFormat format,
+                                          const gfx::Size& size,
+                                          const gfx::ColorSpace& color_space,
+                                          uint32_t usage) {
+  NOTREACHED();
+  return {};
+}
+
+void TestSharedImageInterface::PresentSwapChain(
+    const gpu::SyncToken& sync_token,
+    const gpu::Mailbox& mailbox) {
+  NOTREACHED();
+}
+#endif  // OS_WIN
+
 gpu::SyncToken TestSharedImageInterface::GenVerifiedSyncToken() {
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId(), ++release_id_);

@@ -34,6 +34,10 @@
 #include "gpu/command_buffer/service/shared_image_backing_factory_iosurface.h"
 #endif
 
+#if defined(OS_WIN)
+#include "gpu/command_buffer/service/swap_chain_factory_dxgi.h"
+#endif  // OS_WIN
+
 namespace gpu {
 
 // Overrides for flat_set lookups:
@@ -100,6 +104,11 @@ SharedImageFactory::SharedImageFactory(
     wrapped_sk_image_factory_ =
         std::make_unique<raster::WrappedSkImageFactory>(context_state);
   }
+
+#if defined(OS_WIN)
+  // For Windows
+  swap_chain_factory_ = std::make_unique<SwapChainFactoryDXGI>();
+#endif  // OS_WIN
 }
 
 SharedImageFactory::~SharedImageFactory() {
@@ -210,6 +219,35 @@ void SharedImageFactory::DestroyAllSharedImages(bool have_context) {
   }
   shared_images_.clear();
 }
+
+#if defined(OS_WIN)
+bool SharedImageFactory::CreateSwapChain(const Mailbox& front_buffer_mailbox,
+                                         const Mailbox& back_buffer_mailbox,
+                                         viz::ResourceFormat format,
+                                         const gfx::Size& size,
+                                         const gfx::ColorSpace& color_space,
+                                         uint32_t usage) {
+  DCHECK(swap_chain_factory_);
+  bool allow_legacy_mailbox = true;
+  auto backings = swap_chain_factory_->CreateSwapChain(
+      front_buffer_mailbox, back_buffer_mailbox, format, size, color_space,
+      usage);
+  return RegisterBacking(std::move(backings.front_buffer),
+                         allow_legacy_mailbox) &&
+         RegisterBacking(std::move(backings.back_buffer), allow_legacy_mailbox);
+}
+
+bool SharedImageFactory::PresentSwapChain(const Mailbox& mailbox) {
+  DCHECK(swap_chain_factory_);
+  auto it = shared_images_.find(mailbox);
+  if (it == shared_images_.end()) {
+    DLOG(ERROR) << "PresentSwapChain: Could not find shared image mailbox";
+    return false;
+  }
+  (*it)->PresentSwapChain();
+  return true;
+}
+#endif  // OS_WIN
 
 // TODO(ericrk): Move this entirely to SharedImageManager.
 bool SharedImageFactory::OnMemoryDump(

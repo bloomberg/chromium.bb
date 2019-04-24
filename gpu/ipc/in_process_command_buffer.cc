@@ -206,6 +206,21 @@ class InProcessCommandBuffer::SharedImageInterface
     return mailbox;
   }
 
+#if defined(OS_WIN)
+  SwapChainMailboxes CreateSwapChain(viz::ResourceFormat format,
+                                     const gfx::Size& size,
+                                     const gfx::ColorSpace& color_space,
+                                     uint32_t usage) override {
+    NOTREACHED();
+    return {};
+  }
+
+  void PresentSwapChain(const SyncToken& sync_token,
+                        const Mailbox& mailbox) override {
+    NOTREACHED();
+  }
+#endif  // OS_WIN
+
   void UpdateSharedImage(const SyncToken& sync_token,
                          const Mailbox& mailbox) override {
     base::AutoLock lock(lock_);

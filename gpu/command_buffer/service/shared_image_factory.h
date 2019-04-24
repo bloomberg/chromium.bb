@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/scoped_refptr.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
@@ -29,6 +30,10 @@ class SharedImageBackingFactoryGLTexture;
 struct GpuFeatureInfo;
 struct GpuPreferences;
 class MemoryTracker;
+
+#if defined(OS_WIN)
+class SwapChainFactoryDXGI;
+#endif  // OS_WIN
 
 namespace raster {
 class WrappedSkImageFactory;
@@ -73,6 +78,17 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   bool DestroySharedImage(const Mailbox& mailbox);
   bool HasImages() const { return !shared_images_.empty(); }
   void DestroyAllSharedImages(bool have_context);
+
+#if defined(OS_WIN)
+  bool CreateSwapChain(const Mailbox& front_buffer_mailbox,
+                       const Mailbox& back_buffer_mailbox,
+                       viz::ResourceFormat format,
+                       const gfx::Size& size,
+                       const gfx::ColorSpace& color_space,
+                       uint32_t usage);
+  bool PresentSwapChain(const Mailbox& mailbox);
+#endif  // OS_WIN
+
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd,
                     int client_id,
@@ -103,6 +119,11 @@ class GPU_GLES2_EXPORT SharedImageFactory {
 
   // Non-null if compositing with SkiaRenderer.
   std::unique_ptr<raster::WrappedSkImageFactory> wrapped_sk_image_factory_;
+
+#if defined(OS_WIN)
+  // Used for creating DXGI Swap Chain.
+  std::unique_ptr<SwapChainFactoryDXGI> swap_chain_factory_;
+#endif  // OS_WIN
 };
 
 class GPU_GLES2_EXPORT SharedImageRepresentationFactory {

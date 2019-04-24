@@ -105,6 +105,18 @@ IPC_STRUCT_BEGIN(GpuChannelMsg_CreateGMBSharedImage_Params)
   IPC_STRUCT_MEMBER(uint32_t, release_id)
 IPC_STRUCT_END()
 
+#if defined(OS_WIN)
+IPC_STRUCT_BEGIN(GpuChannelMsg_CreateSwapChain_Params)
+  IPC_STRUCT_MEMBER(gpu::Mailbox, front_buffer_mailbox)
+  IPC_STRUCT_MEMBER(gpu::Mailbox, back_buffer_mailbox)
+  IPC_STRUCT_MEMBER(viz::ResourceFormat, format)
+  IPC_STRUCT_MEMBER(gfx::Size, size)
+  IPC_STRUCT_MEMBER(gfx::ColorSpace, color_space)
+  IPC_STRUCT_MEMBER(uint32_t, usage)
+  IPC_STRUCT_MEMBER(uint32_t, release_id)
+IPC_STRUCT_END()
+#endif  // OS_WIN
+
 IPC_STRUCT_BEGIN(GpuChannelMsg_ScheduleImageDecode_Params)
   IPC_STRUCT_MEMBER(std::vector<uint8_t>, encoded_data)
   IPC_STRUCT_MEMBER(gfx::Size, output_size)
@@ -157,6 +169,13 @@ IPC_MESSAGE_ROUTED2(GpuChannelMsg_UpdateSharedImage,
                     gpu::Mailbox /* id */,
                     uint32_t /* release_id */)
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_DestroySharedImage, gpu::Mailbox /* id */)
+#if defined(OS_WIN)
+IPC_MESSAGE_ROUTED1(GpuChannelMsg_CreateSwapChain,
+                    GpuChannelMsg_CreateSwapChain_Params /* params */)
+IPC_MESSAGE_ROUTED2(GpuChannelMsg_PresentSwapChain,
+                    gpu::Mailbox /* mailbox */,
+                    uint32_t /* release_id */)
+#endif  // OS_WIN
 IPC_MESSAGE_ROUTED1(GpuChannelMsg_RegisterSharedImageUploadBuffer,
                     base::ReadOnlySharedMemoryRegion /* shm */)
 

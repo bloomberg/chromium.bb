@@ -135,6 +135,9 @@ SharedImageManager::ProduceGLTexture(const Mailbox& mailbox,
 std::unique_ptr<SharedImageRepresentationGLTexture>
 SharedImageManager::ProduceRGBEmulationGLTexture(const Mailbox& mailbox,
                                                  MemoryTypeTracker* tracker) {
+  CALLED_ON_VALID_THREAD();
+
+  AutoLock autolock(this);
   auto found = images_.find(mailbox);
   if (found == images_.end()) {
     LOG(ERROR) << "SharedImageManager::ProduceRGBEmulationGLTexture: Trying to "

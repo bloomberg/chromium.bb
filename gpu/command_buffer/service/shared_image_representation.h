@@ -8,6 +8,7 @@
 #include <dawn/dawn.h>
 
 #include "base/callback_helpers.h"
+#include "build/build_config.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
@@ -69,6 +70,9 @@ class SharedImageRepresentationFactoryRef : public SharedImageRepresentation {
 
   const Mailbox& mailbox() const { return backing()->mailbox(); }
   void Update() { backing()->Update(); }
+#if defined(OS_WIN)
+  void PresentSwapChain() { backing()->PresentSwapChain(); }
+#endif  // OS_WIN
   bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) {
     return backing()->ProduceLegacyMailbox(mailbox_manager);
   }

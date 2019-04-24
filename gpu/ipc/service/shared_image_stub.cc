@@ -75,6 +75,10 @@ bool SharedImageStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroySharedImage, OnDestroySharedImage)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_RegisterSharedImageUploadBuffer,
                         OnRegisterSharedImageUploadBuffer)
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateSwapChain, OnCreateSwapChain)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_PresentSwapChain, OnPresentSwapChain)
+#endif  // OS_WIN
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -253,6 +257,61 @@ void SharedImageStub::OnDestroySharedImage(const Mailbox& mailbox) {
     return;
   }
 }
+
+#if defined(OS_WIN)
+void SharedImageStub::OnCreateSwapChain(
+    const GpuChannelMsg_CreateSwapChain_Params& params) {
+  TRACE_EVENT0("gpu", "SharedImageStub::OnCreateSwapChain");
+
+  if (!params.front_buffer_mailbox.IsSharedImage() ||
+      !params.back_buffer_mailbox.IsSharedImage()) {
+    DLOG(ERROR) << "SharedImageStub: Trying to access SharedImage with a "
+                   "non-SharedImage mailbox.";
+    OnError();
+    return;
+  }
+
+  if (!MakeContextCurrent()) {
+    OnError();
+    return;
+  }
+
+  if (!factory_->CreateSwapChain(
+          params.front_buffer_mailbox, params.back_buffer_mailbox,
+          params.format, params.size, params.color_space, params.usage)) {
+    DLOG(ERROR) << "SharedImageStub: Unable to create swap chain";
+    OnError();
+    return;
+  }
+
+  sync_point_client_state_->ReleaseFenceSync(params.release_id);
+}
+
+void SharedImageStub::OnPresentSwapChain(const Mailbox& mailbox,
+                                         uint32_t release_id) {
+  TRACE_EVENT0("gpu", "SharedImageStub::OnPresentSwapChain");
+
+  if (!mailbox.IsSharedImage()) {
+    DLOG(ERROR) << "SharedImageStub: Trying to access a SharedImage with a "
+                   "non-SharedImage mailbox.";
+    OnError();
+    return;
+  }
+
+  if (!MakeContextCurrent()) {
+    OnError();
+    return;
+  }
+
+  if (!factory_->PresentSwapChain(mailbox)) {
+    DLOG(ERROR) << "SharedImageStub: Unable to present swap chain";
+    OnError();
+    return;
+  }
+
+  sync_point_client_state_->ReleaseFenceSync(release_id);
+}
+#endif  // OS_WIN
 
 void SharedImageStub::OnRegisterSharedImageUploadBuffer(
     base::ReadOnlySharedMemoryRegion shm) {
