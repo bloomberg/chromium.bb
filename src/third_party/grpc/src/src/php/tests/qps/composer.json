@@ -1,0 +1,11 @@
+{
+  "require": {
+    "grpc/grpc": "dev-master",
+    "google/protobuf": "v3.5.1.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "": "generated_code/"
+    }
+  }
+}
