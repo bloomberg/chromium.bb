@@ -192,6 +192,15 @@ std::vector<std::string> GetAvailableModules(Profile* profile) {
 }
 
 bool DoesOnboardingHaveModulesToShow(Profile* profile) {
+  const base::Value* force_ephemeral_profiles_value =
+      GetPoliciesFromProfile(profile).GetValue(
+          policy::key::kForceEphemeralProfiles);
+  // Modules won't have a lasting effect if profile is ephemeral.
+  if (force_ephemeral_profiles_value &&
+      force_ephemeral_profiles_value->GetBool()) {
+    return false;
+  }
+
   return !GetAvailableModules(profile).empty();
 }
 
