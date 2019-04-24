@@ -17,6 +17,7 @@
 #include "base/strings/pattern.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "content/browser/tracing/background_startup_tracing_observer.h"
 #include "content/browser/tracing/background_tracing_active_scenario.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
@@ -436,8 +437,15 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 // the full WaitForTracingEnabled() callback (background tracing will directly
 // enable the TraceLog so we get events prior to waiting for the whole IPC
 // sequence to enable tracing coming back from the tracing service).
+// Temporarily disabled startup tracing on Android to be able to unblock
+// Perfetto-based background tracing: https://crbug.com/941318
+#if defined(OS_ANDROID)
+#define MAYBE_EarlyTraceEventsInTrace DISABLED_EarlyTraceEventsInTrace
+#else
+#define MAYBE_EarlyTraceEventsInTrace EarlyTraceEventsInTrace
+#endif
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       EarlyTraceEventsInTrace) {
+                       MAYBE_EarlyTraceEventsInTrace) {
   TestTraceReceiverHelper trace_receiver_helper;
   TestBackgroundTracingHelper background_tracing_helper;
 

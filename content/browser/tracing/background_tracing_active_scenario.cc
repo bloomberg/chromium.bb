@@ -142,12 +142,14 @@ void BackgroundTracingActiveScenario::StartTracing(
     config.SetTraceBufferSizeInEvents(20000);
     config.SetTraceBufferSizeInKb(500);
   }
-#endif
-
+#else
+  // TODO(crbug.com/941318): Re-enable startup tracing for Android once all
+  // Perfetto-related deadlocks are resolved.
   if (!TracingControllerImpl::GetInstance()->IsTracing() &&
       tracing::TracingUsesPerfettoBackend()) {
     tracing::TraceEventDataSource::GetInstance()->SetupStartupTracing();
   }
+#endif
 
   if (!TracingControllerImpl::GetInstance()->StartTracing(
           config,
