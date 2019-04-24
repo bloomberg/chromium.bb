@@ -83,6 +83,7 @@ FakePowerManagerClient::~FakePowerManagerClient() {
 
 void FakePowerManagerClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
+  observer->PowerManagerBecameAvailable(true);
 }
 
 void FakePowerManagerClient::RemoveObserver(Observer* observer) {
@@ -91,12 +92,6 @@ void FakePowerManagerClient::RemoveObserver(Observer* observer) {
 
 bool FakePowerManagerClient::HasObserver(const Observer* observer) const {
   return observers_.HasObserver(observer);
-}
-
-void FakePowerManagerClient::WaitForServiceToBeAvailable(
-    WaitForServiceToBeAvailableCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 void FakePowerManagerClient::SetRenderProcessManagerDelegate(

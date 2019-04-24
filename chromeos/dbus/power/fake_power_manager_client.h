@@ -80,8 +80,6 @@ class COMPONENT_EXPORT(DBUS_POWER) FakePowerManagerClient
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   bool HasObserver(const Observer* observer) const override;
-  void WaitForServiceToBeAvailable(
-      WaitForServiceToBeAvailableCallback callback) override;
   void SetRenderProcessManagerDelegate(
       base::WeakPtr<RenderProcessManagerDelegate> delegate) override;
   void DecreaseScreenBrightness(bool allow_off) override;

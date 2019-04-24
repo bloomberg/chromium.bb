@@ -37,18 +37,21 @@ class BrightnessMonitorImpl : public BrightnessMonitor,
   BrightnessMonitorImpl();
   ~BrightnessMonitorImpl() override;
 
+  // Must be called before the BrightnessMonitorImpl is used.
+  void Init();
+
   // BrightnessMonitor overrides:
   void AddObserver(BrightnessMonitor::Observer* observer) override;
   void RemoveObserver(BrightnessMonitor::Observer* observer) override;
 
   // chromeos::PowerManagerClient::Observer overrides:
+  void PowerManagerBecameAvailable(bool service_is_ready) override;
   void ScreenBrightnessChanged(
       const power_manager::BacklightBrightnessChange& change) override;
 
   base::TimeDelta GetBrightnessSampleDelayForTesting() const;
 
  private:
-  void OnPowerManagerServiceAvailable(bool service_is_ready);
 
   // Sets initial brightness obtained from powerd. If nullopt is received from
   // powerd, the monitor status will be set to kDisabled.

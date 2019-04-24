@@ -167,9 +167,11 @@ class Adapter : public AlsReader::Observer,
           BrightnessMonitor* brightness_monitor,
           Modeller* modeller,
           ModelConfigLoader* model_config_loader,
-          MetricsReporter* metrics_reporter,
-          chromeos::PowerManagerClient* power_manager_client);
+          MetricsReporter* metrics_reporter);
   ~Adapter() override;
+
+  // Must be called before the Adapter is used.
+  void Init();
 
   // AlsReader::Observer overrides:
   void OnAmbientLightUpdated(int lux) override;
@@ -191,6 +193,7 @@ class Adapter : public AlsReader::Observer,
   void OnModelConfigLoaded(base::Optional<ModelConfig> model_config) override;
 
   // chromeos::PowerManagerClient::Observer overrides:
+  void PowerManagerBecameAvailable(bool service_is_ready) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   Status GetStatusForTesting() const;
@@ -217,7 +220,6 @@ class Adapter : public AlsReader::Observer,
       Modeller* modeller,
       ModelConfigLoader* model_config_loader,
       MetricsReporter* metrics_reporter,
-      chromeos::PowerManagerClient* power_manager_client,
       const base::TickClock* tick_clock);
 
  private:
@@ -227,16 +229,12 @@ class Adapter : public AlsReader::Observer,
           Modeller* modeller,
           ModelConfigLoader* model_config_loader,
           MetricsReporter* metrics_reporter,
-          chromeos::PowerManagerClient* power_manager_client,
           const base::TickClock* tick_clock);
 
   // Called by |OnModelConfigLoaded|. It will initialize all params used by
   // the modeller from |model_config| and also other experiment flags. If
   // any param is invalid, it will disable the adapter.
   void InitParams(const ModelConfig& model_config);
-
-  // Called when powerd becomes available.
-  void OnPowerManagerServiceAvailable(bool service_is_ready);
 
   // Called to update |adapter_status_| when there's some status change from
   // AlsReader, BrightnessMonitor, Modeller, power manager and after
@@ -291,22 +289,20 @@ class Adapter : public AlsReader::Observer,
 
   Profile* const profile_;
 
-  ScopedObserver<AlsReader, AlsReader::Observer> als_reader_observer_;
+  ScopedObserver<AlsReader, AlsReader::Observer> als_reader_observer_{this};
   ScopedObserver<BrightnessMonitor, BrightnessMonitor::Observer>
-      brightness_monitor_observer_;
-  ScopedObserver<Modeller, Modeller::Observer> modeller_observer_;
+      brightness_monitor_observer_{this};
+  ScopedObserver<Modeller, Modeller::Observer> modeller_observer_{this};
 
   ScopedObserver<ModelConfigLoader, ModelConfigLoader::Observer>
-      model_config_loader_observer_;
+      model_config_loader_observer_{this};
 
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>
-      power_manager_client_observer_;
+      power_manager_client_observer_{this};
 
   // Used to report daily metrics to UMA. This may be null in unit tests.
   MetricsReporter* metrics_reporter_;
-
-  chromeos::PowerManagerClient* const power_manager_client_;
 
   Params params_;
 
@@ -385,8 +381,6 @@ class Adapter : public AlsReader::Observer,
 
   // Used to record number of model-triggered brightness changes.
   int model_brightness_change_counter_ = 1;
-
-  base::WeakPtrFactory<Adapter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Adapter);
 };

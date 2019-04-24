@@ -63,6 +63,11 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
    public:
     virtual ~Observer() {}
 
+    // Called when the power manager service becomes available. Will be called
+    // immediately and synchronously when a new observer is added to
+    // PowerManagerClient if the service's availability is already known.
+    virtual void PowerManagerBecameAvailable(bool available) {}
+
     // Called if the power manager process restarts.
     virtual void PowerManagerRestarted() {}
 
@@ -153,10 +158,6 @@ class COMPONENT_EXPORT(DBUS_POWER) PowerManagerClient {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual bool HasObserver(const Observer* observer) const = 0;
-
-  // Runs the callback as soon as the service becomes available.
-  virtual void WaitForServiceToBeAvailable(
-      WaitForServiceToBeAvailableCallback callback) = 0;
 
   // Interface for managing the power consumption of renderer processes.
   class RenderProcessManagerDelegate {

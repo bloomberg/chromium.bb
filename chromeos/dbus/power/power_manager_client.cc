@@ -164,6 +164,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::Bind(&PowerManagerClientImpl::NameOwnerChangedReceived,
                    weak_ptr_factory_.GetWeakPtr()));
 
+    power_manager_proxy_->WaitForServiceToBeAvailable(
+        base::BindOnce(&PowerManagerClientImpl::NotifyServiceBecameAvailable,
+                       weak_ptr_factory_.GetWeakPtr()));
+
     // Listen to D-Bus signals emitted by powerd.
     typedef void (PowerManagerClientImpl::*SignalMethod)(dbus::Signal*);
     const std::map<const char*, SignalMethod> kSignalMethods = {
@@ -211,6 +215,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
   void AddObserver(Observer* observer) override {
     DCHECK(observer);  // http://crbug.com/119976
     observers_.AddObserver(observer);
+
+    if (service_available_)
+      observer->PowerManagerBecameAvailable(*service_available_);
   }
 
   void RemoveObserver(Observer* observer) override {
@@ -219,11 +226,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   bool HasObserver(const Observer* observer) const override {
     return observers_.HasObserver(observer);
-  }
-
-  void WaitForServiceToBeAvailable(
-      WaitForServiceToBeAvailableCallback callback) override {
-    power_manager_proxy_->WaitForServiceToBeAvailable(std::move(callback));
   }
 
   void SetRenderProcessManagerDelegate(
@@ -548,6 +550,12 @@ class PowerManagerClientImpl : public PowerManagerClient {
     power_manager_proxy_->CallMethod(&method_call,
                                      dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                                      base::DoNothing());
+  }
+
+  void NotifyServiceBecameAvailable(bool available) {
+    service_available_ = available;
+    for (auto& observer : observers_)
+      observer.PowerManagerBecameAvailable(available);
   }
 
   void NameOwnerChangedReceived(const std::string& old_owner,
@@ -1093,6 +1101,8 @@ class PowerManagerClientImpl : public PowerManagerClient {
 
   dbus::ObjectProxy* power_manager_proxy_ = nullptr;
   base::ObserverList<Observer>::Unchecked observers_;
+
+  base::Optional<bool> service_available_ = false;
 
   // The delay ID obtained from the RegisterSuspendDelay request.
   int32_t suspend_delay_id_ = -1;

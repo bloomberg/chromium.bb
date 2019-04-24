@@ -102,6 +102,7 @@ class BrightnessMonitorImplTest : public testing::Test {
     }
 
     monitor_ = std::make_unique<BrightnessMonitorImpl>();
+    monitor_->Init();
     test_observer_ = std::make_unique<TestObserver>();
     monitor_->AddObserver(test_observer_.get());
     scoped_task_environment_.RunUntilIdle();

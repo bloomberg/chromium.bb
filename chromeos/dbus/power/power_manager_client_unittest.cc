@@ -202,35 +202,40 @@ class PowerManagerClientTest : public testing::Test {
 
     // |client_|'s Init() method should request a proxy for communicating with
     // powerd.
-    EXPECT_CALL(*bus_.get(),
+    EXPECT_CALL(*bus_,
                 GetObjectProxy(
                     power_manager::kPowerManagerServiceName,
                     dbus::ObjectPath(power_manager::kPowerManagerServicePath)))
         .WillRepeatedly(Return(proxy_.get()));
 
+    EXPECT_CALL(*bus_, GetDBusTaskRunner())
+        .WillRepeatedly(Return(message_loop_.task_runner().get()));
+    EXPECT_CALL(*bus_, GetOriginTaskRunner())
+        .WillRepeatedly(Return(message_loop_.task_runner().get()));
+
     // Save |client_|'s signal and name-owner-changed callbacks.
-    EXPECT_CALL(*proxy_.get(), DoConnectToSignal(kInterface, _, _, _))
+    EXPECT_CALL(*proxy_, DoConnectToSignal(kInterface, _, _, _))
         .WillRepeatedly(Invoke(this, &PowerManagerClientTest::ConnectToSignal));
-    EXPECT_CALL(*proxy_.get(), SetNameOwnerChangedCallback(_))
+    EXPECT_CALL(*proxy_, SetNameOwnerChangedCallback(_))
         .WillRepeatedly(SaveArg<0>(&name_owner_changed_callback_));
 
     // |client_|'s Init() method should register regular and dark suspend
     // delays.
     EXPECT_CALL(
-        *proxy_.get(),
+        *proxy_,
         DoCallMethod(HasMember(power_manager::kRegisterSuspendDelayMethod), _,
                      _))
         .WillRepeatedly(
             Invoke(this, &PowerManagerClientTest::RegisterSuspendDelay));
     EXPECT_CALL(
-        *proxy_.get(),
+        *proxy_,
         DoCallMethod(HasMember(power_manager::kRegisterDarkSuspendDelayMethod),
                      _, _))
         .WillRepeatedly(
             Invoke(this, &PowerManagerClientTest::RegisterSuspendDelay));
     // Init should also request a fresh power status.
     EXPECT_CALL(
-        *proxy_.get(),
+        *proxy_,
         DoCallMethod(HasMember(power_manager::kGetPowerSupplyPropertiesMethod),
                      _, _));
 

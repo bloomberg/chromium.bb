@@ -27,6 +27,7 @@ PowerManagerMojoClient::~PowerManagerMojoClient() {
 
 void PowerManagerMojoClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
+  // TODO(estade): Call PowerManagerBecameAvailable as appropriate.
 }
 
 void PowerManagerMojoClient::RemoveObserver(Observer* observer) {
@@ -36,9 +37,6 @@ void PowerManagerMojoClient::RemoveObserver(Observer* observer) {
 bool PowerManagerMojoClient::HasObserver(const Observer* observer) const {
   return observers_.HasObserver(observer);
 }
-
-void PowerManagerMojoClient::WaitForServiceToBeAvailable(
-    WaitForServiceToBeAvailableCallback callback) {}
 
 void PowerManagerMojoClient::SetRenderProcessManagerDelegate(
     base::WeakPtr<RenderProcessManagerDelegate> delegate) {}

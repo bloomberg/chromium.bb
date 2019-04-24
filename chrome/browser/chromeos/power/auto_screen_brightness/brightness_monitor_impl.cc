@@ -24,14 +24,10 @@ namespace auto_screen_brightness {
 
 constexpr base::TimeDelta BrightnessMonitorImpl::kBrightnessSampleDelay;
 
-BrightnessMonitorImpl::BrightnessMonitorImpl() {
-  power_manager_client_observer_.Add(chromeos::PowerManagerMojoClient::Get());
+BrightnessMonitorImpl::BrightnessMonitorImpl() = default;
+BrightnessMonitorImpl::~BrightnessMonitorImpl() = default;
 
-  // TODO(estade): use Mojo.
-  chromeos::PowerManagerClient::Get()->WaitForServiceToBeAvailable(
-      base::BindOnce(&BrightnessMonitorImpl::OnPowerManagerServiceAvailable,
-                     weak_ptr_factory_.GetWeakPtr()));
-
+void BrightnessMonitorImpl::Init() {
   const int brightness_sample_delay_seconds = GetFieldTrialParamByFeatureAsInt(
       features::kAutoScreenBrightness, "brightness_sample_delay_seconds",
       kBrightnessSampleDelay.InSeconds());
@@ -40,9 +36,9 @@ BrightnessMonitorImpl::BrightnessMonitorImpl() {
       brightness_sample_delay_seconds < 0
           ? kBrightnessSampleDelay
           : base::TimeDelta::FromSeconds(brightness_sample_delay_seconds);
-}
 
-BrightnessMonitorImpl::~BrightnessMonitorImpl() = default;
+  power_manager_client_observer_.Add(PowerManagerMojoClient::Get());
+}
 
 void BrightnessMonitorImpl::AddObserver(
     BrightnessMonitor::Observer* const observer) {
@@ -58,6 +54,18 @@ void BrightnessMonitorImpl::RemoveObserver(
     BrightnessMonitor::Observer* const observer) {
   DCHECK(observer);
   observers_.RemoveObserver(observer);
+}
+
+void BrightnessMonitorImpl::PowerManagerBecameAvailable(
+    const bool service_is_ready) {
+  if (!service_is_ready) {
+    brightness_monitor_status_ = Status::kDisabled;
+    OnInitializationComplete();
+    return;
+  }
+  PowerManagerMojoClient::Get()->GetScreenBrightnessPercent(
+      base::BindOnce(&BrightnessMonitorImpl::OnReceiveInitialBrightnessPercent,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BrightnessMonitorImpl::ScreenBrightnessChanged(
@@ -103,18 +111,6 @@ void BrightnessMonitorImpl::ScreenBrightnessChanged(
 base::TimeDelta BrightnessMonitorImpl::GetBrightnessSampleDelayForTesting()
     const {
   return brightness_sample_delay_;
-}
-
-void BrightnessMonitorImpl::OnPowerManagerServiceAvailable(
-    const bool service_is_ready) {
-  if (!service_is_ready) {
-    brightness_monitor_status_ = Status::kDisabled;
-    OnInitializationComplete();
-    return;
-  }
-  chromeos::PowerManagerMojoClient::Get()->GetScreenBrightnessPercent(
-      base::BindOnce(&BrightnessMonitorImpl::OnReceiveInitialBrightnessPercent,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void BrightnessMonitorImpl::OnReceiveInitialBrightnessPercent(

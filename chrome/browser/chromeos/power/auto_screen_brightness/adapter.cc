@@ -85,18 +85,21 @@ Adapter::Adapter(Profile* profile,
                  BrightnessMonitor* brightness_monitor,
                  Modeller* modeller,
                  ModelConfigLoader* model_config_loader,
-                 MetricsReporter* metrics_reporter,
-                 chromeos::PowerManagerClient* power_manager_client)
+                 MetricsReporter* metrics_reporter)
     : Adapter(profile,
               als_reader,
               brightness_monitor,
               modeller,
               model_config_loader,
               metrics_reporter,
-              power_manager_client,
               base::DefaultTickClock::GetInstance()) {}
 
 Adapter::~Adapter() = default;
+
+void Adapter::Init() {
+  // Deferred to Init() because it can result in a virtual method being called.
+  power_manager_client_observer_.Add(PowerManagerClient::Get());
+}
 
 void Adapter::OnAmbientLightUpdated(int lux) {
   // Ambient light data is only used when adapter is initialized to success.
@@ -278,6 +281,11 @@ void Adapter::OnModelConfigLoaded(base::Optional<ModelConfig> model_config) {
   UpdateStatus();
 }
 
+void Adapter::PowerManagerBecameAvailable(bool service_is_ready) {
+  power_manager_service_available_ = service_is_ready;
+  UpdateStatus();
+}
+
 void Adapter::SuspendDone(const base::TimeDelta& /* sleep_duration */) {
   // We skip this notification if adapter hasn't been initialised (because its
   // |params_| may change), or, if adapter is disabled (because adapter won't
@@ -332,11 +340,10 @@ std::unique_ptr<Adapter> Adapter::CreateForTesting(
     Modeller* modeller,
     ModelConfigLoader* model_config_loader,
     MetricsReporter* metrics_reporter,
-    chromeos::PowerManagerClient* power_manager_client,
     const base::TickClock* tick_clock) {
-  return base::WrapUnique(new Adapter(
-      profile, als_reader, brightness_monitor, modeller, model_config_loader,
-      metrics_reporter, power_manager_client, tick_clock));
+  return base::WrapUnique(new Adapter(profile, als_reader, brightness_monitor,
+                                      modeller, model_config_loader,
+                                      metrics_reporter, tick_clock));
 }
 
 Adapter::Adapter(Profile* profile,
@@ -345,34 +352,20 @@ Adapter::Adapter(Profile* profile,
                  Modeller* modeller,
                  ModelConfigLoader* model_config_loader,
                  MetricsReporter* metrics_reporter,
-                 chromeos::PowerManagerClient* power_manager_client,
                  const base::TickClock* tick_clock)
     : profile_(profile),
-      als_reader_observer_(this),
-      brightness_monitor_observer_(this),
-      modeller_observer_(this),
-      model_config_loader_observer_(this),
-      power_manager_client_observer_(this),
       metrics_reporter_(metrics_reporter),
-      power_manager_client_(power_manager_client),
-      tick_clock_(tick_clock),
-      weak_ptr_factory_(this) {
+      tick_clock_(tick_clock) {
   DCHECK(profile);
   DCHECK(als_reader);
   DCHECK(brightness_monitor);
   DCHECK(modeller);
   DCHECK(model_config_loader);
-  DCHECK(power_manager_client);
 
   als_reader_observer_.Add(als_reader);
   brightness_monitor_observer_.Add(brightness_monitor);
   modeller_observer_.Add(modeller);
   model_config_loader_observer_.Add(model_config_loader);
-  power_manager_client_observer_.Add(power_manager_client);
-
-  power_manager_client_->WaitForServiceToBeAvailable(
-      base::BindOnce(&Adapter::OnPowerManagerServiceAvailable,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void Adapter::InitParams(const ModelConfig& model_config) {
@@ -437,11 +430,6 @@ void Adapter::InitParams(const ModelConfig& model_config) {
 
   UMA_HISTOGRAM_ENUMERATION("AutoScreenBrightness.UserAdjustmentEffect",
                             params_.user_adjustment_effect);
-}
-
-void Adapter::OnPowerManagerServiceAvailable(bool service_is_ready) {
-  power_manager_service_available_ = service_is_ready;
-  UpdateStatus();
 }
 
 void Adapter::UpdateStatus() {
@@ -605,7 +593,7 @@ void Adapter::AdjustBrightness(BrightnessChangeCause cause,
   request.set_transition(
       power_manager::SetBacklightBrightnessRequest_Transition_GRADUAL);
   request.set_cause(power_manager::SetBacklightBrightnessRequest_Cause_MODEL);
-  power_manager_client_->SetScreenBrightness(request);
+  PowerManagerClient::Get()->SetScreenBrightness(request);
 
   const base::TimeTicks brightness_change_time = tick_clock_->NowTicks();
   if (!latest_model_brightness_change_time_.is_null()) {

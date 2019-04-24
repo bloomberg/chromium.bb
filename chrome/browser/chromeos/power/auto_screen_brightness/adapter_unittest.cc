@@ -210,8 +210,8 @@ class AdapterTest : public testing::Test {
     adapter_ = Adapter::CreateForTesting(
         profile_.get(), &fake_als_reader_, &fake_brightness_monitor_,
         &fake_modeller_, &fake_model_config_loader_,
-        nullptr /* metrics_reporter */, chromeos::PowerManagerClient::Get(),
-        thread_bundle_.GetMockTickClock());
+        nullptr /* metrics_reporter */, thread_bundle_.GetMockTickClock());
+    adapter_->Init();
     thread_bundle_.RunUntilIdle();
   }
 
