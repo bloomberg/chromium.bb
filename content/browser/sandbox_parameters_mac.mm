@@ -24,6 +24,7 @@
 #include "content/public/common/pepper_plugin_info.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 
 namespace content {
@@ -45,8 +46,9 @@ std::string GetOSVersion() {
   return std::to_string(final_os_version);
 }
 
-}  // namespace
-
+// All of the below functions populate the |client| with the parameters that the
+// sandbox needs to resolve information that cannot be known at build time, such
+// as the user's home directory.
 void SetupCommonSandboxParameters(sandbox::SeatbeltExecClient* client) {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -163,6 +165,37 @@ void SetupCDMSandboxParameters(sandbox::SeatbeltExecClient* client) {
 void SetupUtilitySandboxParameters(sandbox::SeatbeltExecClient* client,
                                    const base::CommandLine& command_line) {
   SetupCommonSandboxParameters(client);
+}
+
+}  // namespace
+
+void SetupSandboxParameters(service_manager::SandboxType sandbox_type,
+                            const base::CommandLine& command_line,
+                            sandbox::SeatbeltExecClient* client) {
+  switch (sandbox_type) {
+    case service_manager::SANDBOX_TYPE_AUDIO:
+    case service_manager::SANDBOX_TYPE_GPU:
+    case service_manager::SANDBOX_TYPE_NACL_LOADER:
+    case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
+    case service_manager::SANDBOX_TYPE_RENDERER:
+      SetupCommonSandboxParameters(client);
+      break;
+    case service_manager::SANDBOX_TYPE_CDM:
+      SetupCDMSandboxParameters(client);
+      break;
+    case service_manager::SANDBOX_TYPE_NETWORK:
+      SetupNetworkSandboxParameters(client);
+      break;
+    case service_manager::SANDBOX_TYPE_PPAPI:
+      SetupPPAPISandboxParameters(client);
+      break;
+    case service_manager::SANDBOX_TYPE_PROFILING:
+    case service_manager::SANDBOX_TYPE_UTILITY:
+      SetupUtilitySandboxParameters(client, command_line);
+      break;
+    default:
+      CHECK(false) << "Unhandled parameters for sandbox_type " << sandbox_type;
+  }
 }
 
 }  // namespace content

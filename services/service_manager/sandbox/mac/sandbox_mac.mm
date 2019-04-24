@@ -39,7 +39,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "sandbox/mac/sandbox_compiler.h"
+#include "services/service_manager/sandbox/mac/audio.sb.h"
+#include "services/service_manager/sandbox/mac/cdm.sb.h"
+#include "services/service_manager/sandbox/mac/common.sb.h"
 #include "services/service_manager/sandbox/mac/gpu.sb.h"
+#include "services/service_manager/sandbox/mac/gpu_v2.sb.h"
+#include "services/service_manager/sandbox/mac/nacl_loader.sb.h"
+#include "services/service_manager/sandbox/mac/network.sb.h"
+#include "services/service_manager/sandbox/mac/pdf_compositor.sb.h"
+#include "services/service_manager/sandbox/mac/ppapi.sb.h"
+#include "services/service_manager/sandbox/mac/renderer.sb.h"
+#include "services/service_manager/sandbox/mac/utility.sb.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
 
@@ -215,6 +225,49 @@ base::FilePath SandboxMac::GetCanonicalPath(const base::FilePath& path) {
   }
 
   return base::FilePath(canonical_path);
+}
+
+// static
+std::string SandboxMac::GetSandboxProfile(SandboxType sandbox_type) {
+  std::string profile =
+      std::string(service_manager::kSeatbeltPolicyString_common);
+
+  switch (sandbox_type) {
+    case service_manager::SANDBOX_TYPE_AUDIO:
+      profile += service_manager::kSeatbeltPolicyString_audio;
+      break;
+    case service_manager::SANDBOX_TYPE_CDM:
+      profile += service_manager::kSeatbeltPolicyString_cdm;
+      break;
+    case service_manager::SANDBOX_TYPE_GPU:
+      profile += service_manager::kSeatbeltPolicyString_gpu_v2;
+      break;
+    case service_manager::SANDBOX_TYPE_NACL_LOADER:
+      profile += service_manager::kSeatbeltPolicyString_nacl_loader;
+      break;
+    case service_manager::SANDBOX_TYPE_NETWORK:
+      profile += service_manager::kSeatbeltPolicyString_network;
+      break;
+    case service_manager::SANDBOX_TYPE_PDF_COMPOSITOR:
+      profile += service_manager::kSeatbeltPolicyString_pdf_compositor;
+      break;
+    case service_manager::SANDBOX_TYPE_PPAPI:
+      profile += service_manager::kSeatbeltPolicyString_ppapi;
+      break;
+    case service_manager::SANDBOX_TYPE_PROFILING:
+    case service_manager::SANDBOX_TYPE_UTILITY:
+      profile += service_manager::kSeatbeltPolicyString_utility;
+      break;
+    case service_manager::SANDBOX_TYPE_RENDERER:
+      profile += service_manager::kSeatbeltPolicyString_renderer;
+      break;
+    case service_manager::SANDBOX_TYPE_INVALID:
+    case service_manager::SANDBOX_TYPE_FIRST_TYPE:
+    case service_manager::SANDBOX_TYPE_AFTER_LAST_TYPE:
+      CHECK(false);
+      break;
+  }
+  return profile;
 }
 
 }  // namespace service_manager
