@@ -10,11 +10,10 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "components/sync/driver/sync_token_status.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "components/sync/engine/connection_status.h"
 #include "components/unified_consent/feature.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 using unified_consent::UrlKeyedDataCollectionConsentHelper;
 
@@ -80,7 +79,6 @@ bool SyncDisableObserver::SyncState::AllowsUkmWithExtension() const {
 SyncDisableObserver::SyncState SyncDisableObserver::GetSyncState(
     syncer::SyncService* sync_service,
     UrlKeyedDataCollectionConsentHelper* consent_helper) {
-  syncer::SyncTokenStatus status = sync_service->GetSyncTokenStatus();
   SyncState state;
 
   // For the following two settings, we want them to match the state of a user
@@ -107,11 +105,19 @@ SyncDisableObserver::SyncState SyncDisableObserver::GetSyncState(
 
   state.initialized = sync_service->IsEngineInitialized();
 
-  // We use CONNECTION_OK here as an auth error can be used in the sync
-  // paused state. Therefore we need to be more direct and check CONNECTION_OK
-  // as opposed to using something like IsSyncFeatureActive().
-  state.connected = !base::FeatureList::IsEnabled(kUkmCheckAuthErrorFeature) ||
-                    status.connection_status == syncer::CONNECTION_OK;
+  // Reasoning for the individual checks:
+  // - IsSyncFeatureActive() makes sure Sync is enabled and initialized.
+  // - HasCompletedSyncCycle() makes sure Sync has actually talked to the
+  //   server. Without this, it's possible that there is some auth issue that we
+  //   just haven't detected yet.
+  // - Finally, GetAuthError() makes sure Sync is not in an auth error state. In
+  //   particular, this includes the "Sync paused" state (which is implemented
+  //   as an auth error).
+  state.connected =
+      !base::FeatureList::IsEnabled(kUkmCheckAuthErrorFeature) ||
+      (sync_service->IsSyncFeatureActive() &&
+       sync_service->HasCompletedSyncCycle() &&
+       sync_service->GetAuthError() == GoogleServiceAuthError::AuthErrorNone());
 
   state.passphrase_protected =
       state.initialized &&

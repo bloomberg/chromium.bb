@@ -56,6 +56,7 @@ static_library("observers") {
     "//base",
     "//components/history/core/browser",
     "//components/sync",
+    "//google_apis",
   ]
 
   public_deps = [
