@@ -45,33 +45,26 @@ Image* GeneratedImageCache::GetImage(const FloatSize& size) const {
   GeneratedImageMap::const_iterator image_iter = images_.find(size);
   if (image_iter == images_.end())
     return nullptr;
-  return image_iter->second.get();
+  return image_iter->value.get();
 }
 
 void GeneratedImageCache::PutImage(const FloatSize& size,
                                    scoped_refptr<Image> image) {
   DCHECK(!size.IsEmpty());
-  images_.insert(
-      std::pair<FloatSize, scoped_refptr<Image>>(size, std::move(image)));
+  images_.insert(size, std::move(image));
 }
 
 void GeneratedImageCache::AddSize(const FloatSize& size) {
   DCHECK(!size.IsEmpty());
-  ImageSizeCountMap::iterator size_entry = sizes_.find(size);
-  if (size_entry == sizes_.end())
-    sizes_.insert(std::pair<FloatSize, unsigned>(size, 1));
-  else
-    size_entry->second++;
+  sizes_.insert(size);
 }
 
 void GeneratedImageCache::RemoveSize(const FloatSize& size) {
   DCHECK(!size.IsEmpty());
   SECURITY_DCHECK(sizes_.find(size) != sizes_.end());
-  unsigned& count = sizes_[size];
-  count--;
-  if (count == 0) {
+  bool fully_erased = sizes_.erase(size);
+  if (fully_erased) {
     DCHECK(images_.find(size) != images_.end());
-    sizes_.erase(sizes_.find(size));
     images_.erase(images_.find(size));
   }
 }

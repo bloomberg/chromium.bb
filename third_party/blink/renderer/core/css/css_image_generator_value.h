@@ -43,24 +43,11 @@ class Image;
 class ComputedStyle;
 class ImageResourceObserver;
 
-struct FloatSizeCompare {
-  bool operator()(const FloatSize& lhs, const FloatSize& rhs) const {
-    if (lhs.Width() < rhs.Width())
-      return true;
-    if (lhs.Width() > rhs.Width())
-      return false;
-    return lhs.Height() < rhs.Height();
-  }
-};
-
-// Use std::map because the WTF versions require a hashing function, while
-// the stl maps require a weak comparison operator that can be defined for
-// FloatSize. These maps do not contain many objects because we do not expect
-// any particular CSSGeneratedImageValue to have clients at many different
+// These maps do not contain many objects because we do not expect any
+// particular CSSGeneratedImageValue to have clients at many different
 // sizes at any given time.
-using ImageSizeCountMap = std::map<FloatSize, unsigned, FloatSizeCompare>;
-using GeneratedImageMap =
-    std::map<FloatSize, scoped_refptr<Image>, FloatSizeCompare>;
+using ImageSizeCountMap = HashCountedSet<FloatSize>;
+using GeneratedImageMap = HashMap<FloatSize, scoped_refptr<Image>>;
 
 class GeneratedImageCache {
   DISALLOW_NEW();
