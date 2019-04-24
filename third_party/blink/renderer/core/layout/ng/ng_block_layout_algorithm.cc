@@ -2109,7 +2109,11 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     builder.SetTextDirection(style.Direction());
   }
   builder.SetClearanceOffset(clearance_offset);
-  if (child_data.force_clearance)
+
+  // If we were told to force clearance, we need to propagate this down to our
+  // children if we haven't resolved our BFC-block-offset yet.
+  if (child_data.force_clearance || (!container_builder_.BfcBlockOffset() &&
+                                     ConstraintSpace().ShouldForceClearance()))
     builder.SetShouldForceClearance(true);
 
   if (!child_data.is_new_fc) {
