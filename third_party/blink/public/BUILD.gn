@@ -264,7 +264,6 @@ source_set("blink_headers") {
     "platform/web_http_load_info.h",
     "platform/web_icon_sizes_parser.h",
     "platform/web_image.h",
-    "platform/web_image_capture_frame_grabber.h",
     "platform/web_image_generator.h",
     "platform/web_inband_text_track.h",
     "platform/web_inband_text_track_client.h",

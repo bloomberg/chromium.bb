@@ -110,7 +110,6 @@ class WebCrypto;
 class WebDatabaseObserver;
 class WebDedicatedWorker;
 class WebGraphicsContext3DProvider;
-class WebImageCaptureFrameGrabber;
 class WebLocalFrame;
 class WebMediaCapabilitiesClient;
 class WebMediaPlayer;
@@ -653,11 +652,6 @@ class BLINK_PLATFORM_EXPORT Platform {
       WebMediaStream*,
       WebMediaPlayer*,
       scoped_refptr<base::SingleThreadTaskRunner>) {}
-
-  // Creates a WebImageCaptureFrameGrabber to take a snapshot of a Video Tracks.
-  // May return null if the functionality is not available.
-  virtual std::unique_ptr<WebImageCaptureFrameGrabber>
-  CreateImageCaptureFrameGrabber();
 
   // Returns the most optimistic view of the capabilities of the system for
   // sending or receiving media of the given kind ("audio" or "video").

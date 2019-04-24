@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/image_capture/image_capture_frame_grabber.h"
+#include "third_party/blink/renderer/modules/imagecapture/image_capture_frame_grabber.h"
 
-#include "base/bind.h"
-#include "cc/paint/paint_canvas.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_types.h"
 #include "media/base/video_util.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
+#include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
-namespace content {
-
-using blink::WebImageCaptureGrabFrameCallbacks;
+namespace blink {
 
 namespace {
 
@@ -29,22 +28,37 @@ void OnError(std::unique_ptr<WebImageCaptureGrabFrameCallbacks> callbacks) {
 
 }  // anonymous namespace
 
+// Template specialization of [1], needed to be able to pass callbacks
+// that have ScopedWebCallbacks paramaters across threads.
+//
+// [1] third_party/blink/renderer/platform/cross_thread_copier.h.
+template <typename T>
+struct CrossThreadCopier<ScopedWebCallbacks<T>>
+    : public CrossThreadCopierPassThrough<ScopedWebCallbacks<T>> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = ScopedWebCallbacks<T>;
+  static ScopedWebCallbacks<T> Copy(ScopedWebCallbacks<T> pointer) {
+    return pointer;
+  }
+};
+
 // Ref-counted class to receive a single VideoFrame on IO thread, convert it and
 // send it to |main_task_runner_|, where this class is created and destroyed.
 class ImageCaptureFrameGrabber::SingleShotFrameHandler
-    : public base::RefCountedThreadSafe<SingleShotFrameHandler> {
+    : public WTF::ThreadSafeRefCounted<SingleShotFrameHandler> {
  public:
   SingleShotFrameHandler() : first_frame_received_(false) {}
 
   // Receives a |frame| and converts its pixels into a SkImage via an internal
   // PaintSurface and SkPixmap. Alpha channel, if any, is copied.
-  void OnVideoFrameOnIOThread(SkImageDeliverCB callback,
-                              const scoped_refptr<media::VideoFrame>& frame,
-                              base::TimeTicks current_time);
+  void OnVideoFrameOnIOThread(
+      SkImageDeliverCB callback,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const scoped_refptr<media::VideoFrame>& frame,
+      base::TimeTicks current_time);
 
  private:
-  friend class base::RefCountedThreadSafe<SingleShotFrameHandler>;
-  virtual ~SingleShotFrameHandler() {}
+  friend class WTF::ThreadSafeRefCounted<SingleShotFrameHandler>;
 
   // Flag to indicate that the first frames has been processed, and subsequent
   // ones can be safely discarded.
@@ -55,6 +69,7 @@ class ImageCaptureFrameGrabber::SingleShotFrameHandler
 
 void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
     SkImageDeliverCB callback,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const scoped_refptr<media::VideoFrame>& frame,
     base::TimeTicks /* current_time */) {
   DCHECK(frame->format() == media::PIXEL_FORMAT_I420 ||
@@ -73,10 +88,13 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
   sk_sp<SkSurface> surface = SkSurface::MakeRaster(info);
   DCHECK(surface);
 
+  auto wrapper_callback = media::BindToLoop(
+      std::move(task_runner), ConvertToBaseCallback(std::move(callback)));
+
   SkPixmap pixmap;
   if (!skia::GetWritablePixels(surface->getCanvas(), &pixmap)) {
     DLOG(ERROR) << "Error trying to map SkSurface's pixels";
-    std::move(callback).Run(sk_sp<SkImage>());
+    std::move(wrapper_callback).Run(sk_sp<SkImage>());
     return;
   }
 
@@ -104,25 +122,25 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
                              pixmap.height());
   }
 
-  std::move(callback).Run(surface->makeImageSnapshot());
+  std::move(wrapper_callback).Run(surface->makeImageSnapshot());
 }
 
 ImageCaptureFrameGrabber::ImageCaptureFrameGrabber()
     : frame_grab_in_progress_(false), weak_factory_(this) {}
 
 ImageCaptureFrameGrabber::~ImageCaptureFrameGrabber() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void ImageCaptureFrameGrabber::GrabFrame(
-    blink::WebMediaStreamTrack* track,
-    std::unique_ptr<blink::WebImageCaptureGrabFrameCallbacks> callbacks,
+    WebMediaStreamTrack* track,
+    std::unique_ptr<WebImageCaptureGrabFrameCallbacks> callbacks,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!!callbacks);
 
   DCHECK(track && !track->IsNull() && track->GetPlatformTrack());
-  DCHECK_EQ(blink::WebMediaStreamSource::kTypeVideo, track->Source().GetType());
+  DCHECK_EQ(WebMediaStreamSource::kTypeVideo, track->Source().GetType());
 
   if (frame_grab_in_progress_) {
     // Reject grabFrame()s too close back to back.
@@ -130,8 +148,8 @@ void ImageCaptureFrameGrabber::GrabFrame(
     return;
   }
 
-  auto scoped_callbacks = blink::MakeScopedWebCallbacks(
-      std::move(callbacks), base::BindOnce(&OnError));
+  auto scoped_callbacks =
+      MakeScopedWebCallbacks(std::move(callbacks), WTF::Bind(&OnError));
 
   // A SingleShotFrameHandler is bound and given to the Track to guarantee that
   // only one VideoFrame is converted and delivered to OnSkImage(), otherwise
@@ -139,26 +157,24 @@ void ImageCaptureFrameGrabber::GrabFrame(
   // is being processed, which might be further held up if UI is busy, see
   // https://crbug.com/623042.
   frame_grab_in_progress_ = true;
-  blink::MediaStreamVideoSink::ConnectToTrack(
+  MediaStreamVideoSink::ConnectToTrack(
       *track,
-      base::BindRepeating(
+      ConvertToBaseCallback(CrossThreadBind(
           &SingleShotFrameHandler::OnVideoFrameOnIOThread,
           base::MakeRefCounted<SingleShotFrameHandler>(),
-          media::BindToLoop(
-              std::move(task_runner),
-              base::BindRepeating(&ImageCaptureFrameGrabber::OnSkImage,
-                                  weak_factory_.GetWeakPtr(),
-                                  base::Passed(&scoped_callbacks)))),
+          WTF::Passed(CrossThreadBind(
+              &ImageCaptureFrameGrabber::OnSkImage, weak_factory_.GetWeakPtr(),
+              WTF::Passed(std::move(scoped_callbacks)))),
+          WTF::Passed(std::move(task_runner)))),
       false);
 }
 
 void ImageCaptureFrameGrabber::OnSkImage(
-    blink::ScopedWebCallbacks<blink::WebImageCaptureGrabFrameCallbacks>
-        callbacks,
+    ScopedWebCallbacks<WebImageCaptureGrabFrameCallbacks> callbacks,
     sk_sp<SkImage> image) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  blink::MediaStreamVideoSink::DisconnectFromTrack();
+  MediaStreamVideoSink::DisconnectFromTrack();
   frame_grab_in_progress_ = false;
   if (image)
     callbacks.PassCallbacks()->OnSuccess(image);
@@ -166,4 +182,4 @@ void ImageCaptureFrameGrabber::OnSkImage(
     callbacks.PassCallbacks()->OnError();
 }
 
-}  // namespace content
+}  // namespace blink

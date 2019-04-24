@@ -46,7 +46,6 @@
 #include "content/renderer/dom_storage/local_storage_namespace.h"
 #include "content/renderer/dom_storage/session_web_storage_namespace_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
-#include "content/renderer/image_capture/image_capture_frame_grabber.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/resource_dispatcher.h"
@@ -131,7 +130,6 @@ using blink::WebAudioLatencyHint;
 using blink::WebBlobRegistry;
 using blink::WebCanvasCaptureHandler;
 using blink::WebDatabaseObserver;
-using blink::WebImageCaptureFrameGrabber;
 using blink::WebMediaPlayer;
 using blink::WebMediaRecorderHandler;
 using blink::WebMediaStream;
@@ -817,13 +815,6 @@ void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
 
   media_stream_source->ConnectToTrack(web_media_stream_track);
   web_media_stream->AddTrack(web_media_stream_track);
-}
-
-//------------------------------------------------------------------------------
-
-std::unique_ptr<WebImageCaptureFrameGrabber>
-RendererBlinkPlatformImpl::CreateImageCaptureFrameGrabber() {
-  return std::make_unique<ImageCaptureFrameGrabber>();
 }
 
 //------------------------------------------------------------------------------

@@ -42,7 +42,6 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_canvas_capture_handler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/public/platform/web_image_capture_frame_grabber.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler.h"
 #include "third_party/blink/public/platform/web_media_stream_center.h"
 #include "third_party/blink/public/platform/web_prerendering_support.h"
@@ -339,11 +338,6 @@ std::unique_ptr<WebCanvasCaptureHandler> Platform::CreateCanvasCaptureHandler(
     const WebSize&,
     double,
     WebMediaStreamTrack*) {
-  return nullptr;
-}
-
-std::unique_ptr<WebImageCaptureFrameGrabber>
-Platform::CreateImageCaptureFrameGrabber() {
   return nullptr;
 }
 

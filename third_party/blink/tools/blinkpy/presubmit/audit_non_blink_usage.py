@@ -528,6 +528,15 @@ _CONFIG = [
     },
     {
         'paths': [
+            'third_party/blink/renderer/modules/imagecapture/',
+        ],
+        'allowed': [
+            'media::.+',
+            'libyuv::.+',
+        ]
+    },
+    {
+        'paths': [
             'third_party/blink/renderer/modules/media_capabilities/',
         ],
         'allowed': [

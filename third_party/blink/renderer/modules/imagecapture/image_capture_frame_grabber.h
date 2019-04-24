@@ -2,63 +2,64 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_IMAGE_CAPTURE_IMAGE_CAPTURE_FRAME_GRABBER_H_
-#define CONTENT_RENDERER_IMAGE_CAPTURE_IMAGE_CAPTURE_FRAME_GRABBER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGECAPTURE_IMAGE_CAPTURE_FRAME_GRABBER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGECAPTURE_IMAGE_CAPTURE_FRAME_GRABBER_H_
 
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/content_export.h"
 #include "third_party/blink/public/platform/scoped_web_callbacks.h"
-#include "third_party/blink/public/platform/web_image_capture_frame_grabber.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+
+class SkImage;
 
 namespace blink {
-class WebMediaStreamTrack;
-}
 
-namespace content {
+class WebMediaStreamTrack;
+
+// TODO(crbug.com/945851): Avoid referencing to WebCallbacks, and reference to
+// CallbackPromiseAdapter directly.
+using WebImageCaptureGrabFrameCallbacks = WebCallbacks<sk_sp<SkImage>, void>;
 
 // This class grabs Video Frames from a given Media Stream Video Track, binding
 // a method of an ephemeral SingleShotFrameHandler every time grabFrame() is
 // called. This method receives an incoming media::VideoFrame on a background
 // thread and converts it into the appropriate SkBitmap which is sent back to
 // OnSkBitmap(). This class is single threaded throughout.
-class CONTENT_EXPORT ImageCaptureFrameGrabber final
-    : public blink::WebImageCaptureFrameGrabber,
-      public blink::MediaStreamVideoSink {
+class ImageCaptureFrameGrabber final : public MediaStreamVideoSink {
  public:
-  using SkImageDeliverCB = base::Callback<void(sk_sp<SkImage>)>;
+  using SkImageDeliverCB = WTF::CrossThreadFunction<void(sk_sp<SkImage>)>;
 
   ImageCaptureFrameGrabber();
   ~ImageCaptureFrameGrabber() override;
 
-  // blink::WebImageCaptureFrameGrabber implementation.
-  void GrabFrame(
-      blink::WebMediaStreamTrack* track,
-      std::unique_ptr<blink::WebImageCaptureGrabFrameCallbacks> callbacks,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
+  void GrabFrame(WebMediaStreamTrack* track,
+                 std::unique_ptr<WebImageCaptureGrabFrameCallbacks> callbacks,
+                 scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
   // Internal class to receive, convert and forward one frame.
   class SingleShotFrameHandler;
 
-  void OnSkImage(blink::ScopedWebCallbacks<
-                     blink::WebImageCaptureGrabFrameCallbacks> callbacks,
-                 sk_sp<SkImage> image);
+  void OnSkImage(
+      ScopedWebCallbacks<WebImageCaptureGrabFrameCallbacks> callbacks,
+      sk_sp<SkImage> image);
 
   // Flag to indicate that there is a frame grabbing in progress.
   bool frame_grab_in_progress_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<ImageCaptureFrameGrabber> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageCaptureFrameGrabber);
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_RENDERER_IMAGE_CAPTURE_IMAGE_CAPTURE_FRAME_GRABBER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_IMAGECAPTURE_IMAGE_CAPTURE_FRAME_GRABBER_H_

@@ -9,7 +9,6 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_image_capture_frame_grabber.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -18,6 +17,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/imagecapture/image_capture_frame_grabber.h"
 #include "third_party/blink/renderer/modules/imagecapture/media_settings_range.h"
 #include "third_party/blink/renderer/modules/imagecapture/photo_capabilities.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
@@ -312,7 +312,7 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* script_state) {
 
   // Create |m_frameGrabber| the first time.
   if (!frame_grabber_) {
-    frame_grabber_ = Platform::Current()->CreateImageCaptureFrameGrabber();
+    frame_grabber_ = std::make_unique<ImageCaptureFrameGrabber>();
   }
 
   if (!frame_grabber_) {
