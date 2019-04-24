@@ -5,7 +5,6 @@
 /**
  * @fileoverview Test suite for the Site Engagement WebUI.
  */
-var ROOT_PATH = '../../../../../';
 var EXAMPLE_URL_1 = 'http://example.com/';
 var EXAMPLE_URL_2 = 'http://shmlexample.com/';
 
@@ -33,8 +32,8 @@ SiteEngagementBrowserTest.prototype = {
   },
 
   extraLibraries: [
-    ROOT_PATH + 'third_party/mocha/mocha.js',
-    ROOT_PATH + 'chrome/test/data/webui/mocha_adapter.js',
+    '//third_party/mocha/mocha.js',
+    '//chrome/test/data/webui/mocha_adapter.js',
   ],
 
   /** @override */

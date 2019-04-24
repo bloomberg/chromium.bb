@@ -6,9 +6,6 @@
  * @fileoverview Tests for chrome://usb-internals
  */
 
-/** @const {string} Path to source root. */
-const ROOT_PATH = '../../../../';
-
 /**
  * Test fixture for testing async methods of cr.js.
  * @constructor
@@ -32,12 +29,12 @@ UsbInternalsTest.prototype = {
 
   /** @override */
   extraLibraries: [
-    ROOT_PATH + 'third_party/mocha/mocha.js',
-    ROOT_PATH + 'chrome/test/data/webui/mocha_adapter.js',
-    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
-    ROOT_PATH + 'ui/webui/resources/js/cr.js',
-    ROOT_PATH + 'ui/webui/resources/js/util.js',
-    ROOT_PATH + 'chrome/test/data/webui/test_browser_proxy.js',
+    '//third_party/mocha/mocha.js',
+    '//chrome/test/data/webui/mocha_adapter.js',
+    '//ui/webui/resources/js/promise_resolver.js',
+    '//ui/webui/resources/js/cr.js',
+    '//ui/webui/resources/js/util.js',
+    '//chrome/test/data/webui/test_browser_proxy.js',
   ],
 
   preLoad: function() {
