@@ -153,14 +153,15 @@ PreflightResult::EnsureAllowedCrossOriginHeaders(
   return base::nullopt;
 }
 
+bool PreflightResult::IsExpired() const {
+  return absolute_expiry_time_ <= Now();
+}
+
 bool PreflightResult::EnsureAllowedRequest(
     mojom::FetchCredentialsMode credentials_mode,
     const std::string& method,
     const net::HttpRequestHeaders& headers,
     bool is_revalidating) const {
-  if (absolute_expiry_time_ <= Now())
-    return false;
-
   if (!credentials_ &&
       credentials_mode == mojom::FetchCredentialsMode::kInclude) {
     return false;

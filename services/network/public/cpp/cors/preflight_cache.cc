@@ -7,6 +7,7 @@
 #include <iterator>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
@@ -17,6 +18,22 @@ namespace cors {
 
 namespace {
 constexpr size_t kMaxCacheEntries = 4096;
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class CacheMetric {
+  kHitAndPass = 0,
+  kHitAndFail = 1,
+  kMiss = 2,
+  kStale = 3,
+
+  kMaxValue = kStale,
+};
+
+void ReportCacheMetric(CacheMetric metric) {
+  UMA_HISTOGRAM_ENUMERATION("Net.Cors.PreflightCacheResult", metric);
+}
+
 }  // namespace
 
 PreflightCache::PreflightCache() {
@@ -49,18 +66,29 @@ bool PreflightCache::CheckIfRequestCanSkipPreflight(
     bool is_revalidating) {
   // Either |origin| or |url| are not in cache.
   auto cache_per_origin = cache_.find(origin);
-  if (cache_per_origin == cache_.end())
+  if (cache_per_origin == cache_.end()) {
+    ReportCacheMetric(CacheMetric::kMiss);
     return false;
+  }
 
   auto cache_entry = cache_per_origin->second.find(url.spec());
-  if (cache_entry == cache_per_origin->second.end())
+  if (cache_entry == cache_per_origin->second.end()) {
+    ReportCacheMetric(CacheMetric::kMiss);
     return false;
+  }
 
-  // Both |origin| and |url| are in cache. Check if the entry is still valid and
-  // sufficient to skip CORS-preflight.
-  if (cache_entry->second->EnsureAllowedRequest(
-          credentials_mode, method, request_headers, is_revalidating)) {
-    return true;
+  // Check if the entry is still valid.
+  if (cache_entry->second->IsExpired()) {
+    ReportCacheMetric(CacheMetric::kStale);
+  } else {
+    // Both |origin| and |url| are in cache. Check if the entry is sufficient to
+    // skip CORS-preflight.
+    if (cache_entry->second->EnsureAllowedRequest(
+            credentials_mode, method, request_headers, is_revalidating)) {
+      ReportCacheMetric(CacheMetric::kHitAndPass);
+      return true;
+    }
+    ReportCacheMetric(CacheMetric::kHitAndFail);
   }
 
   // The cache entry is either stale or not sufficient. Remove the item from the
