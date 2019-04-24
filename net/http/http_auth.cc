@@ -67,6 +67,7 @@ HttpAuth::AuthorizationResult HttpAuth::HandleChallengeResponse(
     std::string* challenge_used) {
   DCHECK(handler);
   DCHECK(challenge_used);
+
   challenge_used->clear();
   HttpAuth::Scheme current_scheme = handler->auth_scheme();
   if (disabled_schemes.find(current_scheme) != disabled_schemes.end())
@@ -78,11 +79,12 @@ HttpAuth::AuthorizationResult HttpAuth::HandleChallengeResponse(
   HttpAuth::AuthorizationResult authorization_result =
       HttpAuth::AUTHORIZATION_RESULT_INVALID;
   while (response_headers.EnumerateHeader(&iter, header_name, &challenge)) {
-    HttpAuthChallengeTokenizer props(challenge.begin(), challenge.end());
-    if (!base::LowerCaseEqualsASCII(props.scheme(),
-                                    current_scheme_name.c_str()))
+    HttpAuthChallengeTokenizer challenge_tokens(challenge.begin(),
+                                                challenge.end());
+    if (!base::LowerCaseEqualsASCII(challenge_tokens.scheme(),
+                                    current_scheme_name))
       continue;
-    authorization_result = handler->HandleAnotherChallenge(&props);
+    authorization_result = handler->HandleAnotherChallenge(&challenge_tokens);
     if (authorization_result != HttpAuth::AUTHORIZATION_RESULT_INVALID) {
       *challenge_used = challenge;
       return authorization_result;
