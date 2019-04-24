@@ -1815,11 +1815,6 @@ const char kSmoothScrollingName[] = "Smooth Scrolling";
 const char kSmoothScrollingDescription[] =
     "Animate smoothly when scrolling page content.";
 
-const char kSoleIntegrationName[] = "Sole integration";
-const char kSoleIntegrationDescription[] =
-    "Enable Sole integration for browser customization. You must restart "
-    "the browser twice for changes to take effect.";
-
 const char kSpeculativeServiceWorkerStartOnQueryInputName[] =
     "Enable speculative start of a service worker when a search is predicted.";
 const char kSpeculativeServiceWorkerStartOnQueryInputDescription[] =
