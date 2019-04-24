@@ -73,6 +73,7 @@ void ExtensionServiceWorkerMessageFilter::OnIncrementServiceWorkerActivity(
     int64_t service_worker_version_id,
     const std::string& request_uuid) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  active_request_uuids_.insert(request_uuid);
   // The worker might have already stopped before we got here, so the increment
   // below might fail legitimately. Therefore, we do not send bad_message to the
   // worker even if it fails.
@@ -86,7 +87,12 @@ void ExtensionServiceWorkerMessageFilter::OnDecrementServiceWorkerActivity(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   bool status = service_worker_context_->FinishedExternalRequest(
       service_worker_version_id, request_uuid);
-  if (!status) {
+  if (!status)
+    LOG(ERROR) << "ServiceWorkerContext::FinishedExternalRequest failed.";
+  bool erased = active_request_uuids_.erase(request_uuid) == 1;
+  // The worker may have already stopped before we got here, so only report
+  // a bad message if we didn't have an increment for the UUID.
+  if (!erased) {
     bad_message::ReceivedBadMessage(
         this, bad_message::ESWMF_INVALID_DECREMENT_ACTIVITY);
   }
