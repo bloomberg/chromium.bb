@@ -24,9 +24,40 @@
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
-// #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
+#include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
 
 namespace IPC {
+
+void ParamTraits<content::WebCursor>::Write(base::Pickle* m,
+                                            const param_type& p) {
+  WriteParam(m, p.info().type);
+  if (p.info().type == blink::WebCursorInfo::kTypeCustom) {
+    WriteParam(m, p.info().hotspot);
+    WriteParam(m, p.info().image_scale_factor);
+    WriteParam(m, p.info().custom_image);
+  }
+}
+
+bool ParamTraits<content::WebCursor>::Read(const base::Pickle* m,
+                                           base::PickleIterator* iter,
+                                           param_type* r) {
+  content::CursorInfo info;
+  if (!ReadParam(m, iter, &info.type))
+    return false;
+
+  if (info.type == blink::WebCursorInfo::kTypeCustom &&
+      (!ReadParam(m, iter, &info.hotspot) ||
+       !ReadParam(m, iter, &info.image_scale_factor) ||
+       !ReadParam(m, iter, &info.custom_image))) {
+    return false;
+  }
+
+  return r->SetInfo(info);
+}
+
+void ParamTraits<content::WebCursor>::Log(const param_type& p, std::string* l) {
+  l->append("<WebCursor>");
+}
 
 void ParamTraits<WebInputEventPointer>::Write(base::Pickle* m,
                                               const param_type& p) {
@@ -141,14 +172,14 @@ void ParamTraits<blink::PolicyValue>::Log(const param_type& p, std::string* l) {
 }
 
 void ParamTraits<ui::AXMode>::Write(base::Pickle* m, const param_type& p) {
-  IPC::WriteParam(m, p.mode());
+  WriteParam(m, p.mode());
 }
 
 bool ParamTraits<ui::AXMode>::Read(const base::Pickle* m,
                                    base::PickleIterator* iter,
                                    param_type* r) {
   uint32_t value;
-  if (!IPC::ReadParam(m, iter, &value))
+  if (!ReadParam(m, iter, &value))
     return false;
   *r = ui::AXMode(value);
   return true;

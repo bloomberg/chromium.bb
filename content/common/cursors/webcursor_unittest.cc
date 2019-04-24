@@ -4,7 +4,6 @@
 
 #include <stddef.h>
 
-#include "base/pickle.h"
 #include "build/build_config.h"
 #include "content/common/cursors/webcursor.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -65,68 +64,6 @@ TEST(WebCursorTest, CopyConstructorCustom) {
   EXPECT_EQ(cursor, copy);
 }
 
-TEST(WebCursorTest, SerializationDefault) {
-  WebCursor cursor;
-  base::Pickle pickle;
-  cursor.Serialize(&pickle);
-
-  WebCursor copy;
-  base::PickleIterator iter(pickle);
-  ASSERT_TRUE(copy.Deserialize(&pickle, &iter));
-  EXPECT_EQ(cursor, copy);
-}
-
-TEST(WebCursorTest, SerializationCustom) {
-  CursorInfo info(blink::WebCursorInfo::kTypeCustom);
-  info.custom_image = CreateTestBitmap(32, 32);
-  info.hotspot = gfx::Point(10, 20);
-  info.image_scale_factor = 1.5f;
-  WebCursor cursor(info);
-  base::Pickle pickle;
-  cursor.Serialize(&pickle);
-
-  WebCursor copy;
-  base::PickleIterator iter(pickle);
-  ASSERT_TRUE(copy.Deserialize(&pickle, &iter));
-  EXPECT_EQ(cursor, copy);
-}
-
-TEST(WebCursorTest, DeserializeBadMessage) {
-  WebCursor cursor((CursorInfo(blink::WebCursorInfo::kTypeHand)));
-  WebCursor unmodified_cursor(cursor);
-  WebCursor invalid_cursor;
-
-  // Serialize a cursor with a small scale; deserialization should fail.
-  CursorInfo small_scale_info(blink::WebCursorInfo::kTypeCustom);
-  small_scale_info.image_scale_factor = 0.001f;
-  invalid_cursor.set_info_for_testing(small_scale_info);
-  base::Pickle small_scale_pickle;
-  invalid_cursor.Serialize(&small_scale_pickle);
-  base::PickleIterator iter = base::PickleIterator(small_scale_pickle);
-  EXPECT_FALSE(cursor.Deserialize(&small_scale_pickle, &iter));
-  EXPECT_EQ(unmodified_cursor, cursor);
-
-  // Serialize a cursor with a big scale; deserialization should fail.
-  CursorInfo big_scale_info(blink::WebCursorInfo::kTypeCustom);
-  big_scale_info.image_scale_factor = 1000.f;
-  invalid_cursor.set_info_for_testing(big_scale_info);
-  base::Pickle big_scale_pickle;
-  invalid_cursor.Serialize(&big_scale_pickle);
-  iter = base::PickleIterator(big_scale_pickle);
-  EXPECT_FALSE(cursor.Deserialize(&big_scale_pickle, &iter));
-  EXPECT_EQ(unmodified_cursor, cursor);
-
-  // Serialize a cursor with a big image; deserialization should fail.
-  CursorInfo big_image_info(blink::WebCursorInfo::kTypeCustom);
-  big_image_info.custom_image = CreateTestBitmap(1025, 3);
-  invalid_cursor.set_info_for_testing(big_image_info);
-  base::Pickle big_image_pickle;
-  invalid_cursor.Serialize(&big_image_pickle);
-  iter = base::PickleIterator(big_image_pickle);
-  EXPECT_FALSE(cursor.Deserialize(&big_image_pickle, &iter));
-  EXPECT_EQ(unmodified_cursor, cursor);
-}
-
 TEST(WebCursorTest, ClampHotspot) {
   // Initialize a cursor with an invalid hotspot; it should be clamped.
   CursorInfo info(blink::WebCursorInfo::kTypeCustom);
@@ -134,14 +71,49 @@ TEST(WebCursorTest, ClampHotspot) {
   info.custom_image = CreateTestBitmap(5, 7);
   WebCursor cursor(info);
   EXPECT_EQ(gfx::Point(4, 6), cursor.info().hotspot);
-
-  // Serialize a cursor with an invalid hotspot; it should be clamped.
-  cursor.set_info_for_testing(info);
-  base::Pickle pickle;
-  cursor.Serialize(&pickle);
-  base::PickleIterator iter = base::PickleIterator(pickle);
-  EXPECT_TRUE(cursor.Deserialize(&pickle, &iter));
+  // SetInfo should also clamp the hotspot.
+  EXPECT_TRUE(cursor.SetInfo(info));
   EXPECT_EQ(gfx::Point(4, 6), cursor.info().hotspot);
+}
+
+TEST(WebCursorTest, SetInfo) {
+  WebCursor cursor;
+  EXPECT_TRUE(cursor.SetInfo(CursorInfo()));
+  EXPECT_TRUE(cursor.SetInfo(CursorInfo(blink::WebCursorInfo::kTypeHand)));
+  EXPECT_TRUE(cursor.SetInfo(CursorInfo(blink::WebCursorInfo::kTypeCustom)));
+
+  CursorInfo info(blink::WebCursorInfo::kTypeCustom);
+  info.custom_image = CreateTestBitmap(32, 32);
+  info.hotspot = gfx::Point(10, 20);
+  info.image_scale_factor = 1.5f;
+  EXPECT_TRUE(cursor.SetInfo(info));
+
+  // SetInfo should return false when the scale factor is too small.
+  info.image_scale_factor = 0.001f;
+  EXPECT_FALSE(cursor.SetInfo(info));
+
+  // SetInfo should return false when the scale factor is too large.
+  info.image_scale_factor = 1000.f;
+  EXPECT_FALSE(cursor.SetInfo(info));
+
+  // SetInfo should return false when the image width is too large.
+  info.image_scale_factor = 1.f;
+  info.custom_image = CreateTestBitmap(1025, 3);
+  EXPECT_FALSE(cursor.SetInfo(info));
+
+  // SetInfo should return false when the image height is too large.
+  info.custom_image = CreateTestBitmap(3, 1025);
+  EXPECT_FALSE(cursor.SetInfo(info));
+
+  // SetInfo should return false when the scaled image width is too large.
+  info.image_scale_factor = 0.02f;
+  info.custom_image = CreateTestBitmap(50, 5);
+  EXPECT_FALSE(cursor.SetInfo(info));
+
+  // SetInfo should return false when the scaled image height is too large.
+  info.image_scale_factor = 0.1f;
+  info.custom_image = CreateTestBitmap(5, 200);
+  EXPECT_FALSE(cursor.SetInfo(info));
 }
 
 #if defined(USE_AURA)

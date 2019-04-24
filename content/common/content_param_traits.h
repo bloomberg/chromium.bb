@@ -42,17 +42,13 @@ class SurfaceInfo;
 namespace IPC {
 
 template <>
-struct ParamTraits<content::WebCursor> {
+struct CONTENT_EXPORT ParamTraits<content::WebCursor> {
   typedef content::WebCursor param_type;
-  static void Write(base::Pickle* m, const param_type& p) { p.Serialize(m); }
+  static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
-                   param_type* r) {
-    return r->Deserialize(m, iter);
-  }
-  static void Log(const param_type& p, std::string* l) {
-    l->append("<WebCursor>");
-  }
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
 };
 
 typedef const blink::WebInputEvent* WebInputEventPointer;

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "components/viz/common/surfaces/surface_info.h"
+#include "content/common/content_param_traits.h"
 #include "content/common/resource_messages.h"
 #include "content/public/common/content_constants.h"
 #include "ipc/ipc_message.h"
@@ -300,4 +301,19 @@ TEST(IPCMessageTest, SurfaceInfo) {
       IPC::ParamTraits<viz::SurfaceInfo>::Read(&msg, &iter, &surface_info_out));
 
   ASSERT_EQ(surface_info_in, surface_info_out);
+}
+
+TEST(IPCMessageTest, WebCursor) {
+  content::CursorInfo info(blink::WebCursorInfo::kTypeCustom);
+  info.custom_image.allocN32Pixels(32, 32);
+  info.hotspot = gfx::Point(10, 20);
+  info.image_scale_factor = 1.5f;
+  content::WebCursor input(info);
+  IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
+  IPC::ParamTraits<content::WebCursor>::Write(&msg, input);
+
+  content::WebCursor output;
+  base::PickleIterator iter(msg);
+  ASSERT_TRUE(IPC::ParamTraits<content::WebCursor>::Read(&msg, &iter, &output));
+  EXPECT_EQ(output, input);
 }
