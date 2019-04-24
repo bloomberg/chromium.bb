@@ -26,6 +26,7 @@ class TestInstallFinalizer final : public InstallFinalizer {
                        InstallFinalizedCallback callback) override;
   bool CanCreateOsShortcuts() const override;
   void CreateOsShortcuts(const AppId& app_id,
+                         bool add_to_desktop,
                          CreateOsShortcutsCallback callback) override;
   bool CanPinAppToShelf() const override;
   void PinAppToShelf(const AppId& app_id) override;

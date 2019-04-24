@@ -101,15 +101,44 @@ void BookmarkAppInstallationTask::OnWebAppInstalled(
     ResultCallback result_callback,
     const web_app::AppId& app_id,
     web_app::InstallResultCode code) {
-  if (code == web_app::InstallResultCode::kSuccess) {
-    extension_ids_map_.Insert(install_options_.url, app_id,
-                              install_options_.install_source);
-    extension_ids_map_.SetIsPlaceholder(install_options_.url, is_placeholder);
-
-    std::move(result_callback)
-        .Run(Result(web_app::InstallResultCode::kSuccess, app_id));
-  } else {
+  if (code != web_app::InstallResultCode::kSuccess) {
     std::move(result_callback).Run(Result(code, base::nullopt));
+    return;
+  }
+
+  extension_ids_map_.Insert(install_options_.url, app_id,
+                            install_options_.install_source);
+  extension_ids_map_.SetIsPlaceholder(install_options_.url, is_placeholder);
+
+  auto success_closure =
+      base::BindOnce(std::move(result_callback),
+                     Result(web_app::InstallResultCode::kSuccess, app_id));
+
+  if (!is_placeholder) {
+    std::move(success_closure).Run();
+    return;
+  }
+
+  // Installation through InstallFinalizer doesn't create shortcuts so create
+  // them here.
+  if (install_options_.add_to_quick_launch_bar &&
+      install_finalizer_->CanPinAppToShelf()) {
+    install_finalizer_->PinAppToShelf(app_id);
+  }
+
+  // TODO(ortuno): Make adding a shortcut to the applications menu independent
+  // from adding a shortcut to desktop.
+  if (install_options_.add_to_applications_menu &&
+      install_finalizer_->CanCreateOsShortcuts()) {
+    install_finalizer_->CreateOsShortcuts(
+        app_id, install_options_.add_to_desktop,
+        base::BindOnce(
+            [](base::OnceClosure success_closure, bool shortcuts_created) {
+              // Even if the shortcuts failed to be created, we consider the
+              // installation successful since an app was created.
+              std::move(success_closure).Run();
+            },
+            std::move(success_closure)));
   }
 }
 

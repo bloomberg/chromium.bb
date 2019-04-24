@@ -51,6 +51,7 @@ bool TestInstallFinalizer::CanCreateOsShortcuts() const {
 
 void TestInstallFinalizer::CreateOsShortcuts(
     const AppId& app_id,
+    bool add_to_desktop,
     CreateOsShortcutsCallback callback) {
   ++num_create_os_shortcuts_calls_;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
