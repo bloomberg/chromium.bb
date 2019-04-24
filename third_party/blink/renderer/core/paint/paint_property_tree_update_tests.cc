@@ -1647,30 +1647,13 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   // there is no cc::LayerTreeHost.
   paint_artifact_compositor->ClearNeedsUpdateForTesting();
 
-  // Simulates changing transform during animation.
+  // Simulates changing transform and transform-origin during an animation.
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
   style = ComputedStyle::Clone(target->StyleRef());
   TransformOperations transform;
   transform.Operations().push_back(
       RotateTransformOperation::Create(10, TransformOperation::kRotate));
   style->SetTransform(transform);
-  target->SetStyle(std::move(style));
-  EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-
-  ASSERT_EQ(transform_node,
-            target->FirstFragment().PaintProperties()->Transform());
-  EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
-  EXPECT_EQ(TransformationMatrix().Rotate(10), transform_node->Matrix());
-  EXPECT_EQ(FloatPoint3D(50, 50, 0), transform_node->Origin());
-  // Only transform value change during composited animation should not schedule
-  // PaintArtifactCompositor update.
-  EXPECT_FALSE(paint_artifact_compositor->NeedsUpdate());
-
-  // Simulates changing transform origin during animation.
-  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  style = ComputedStyle::Clone(target->StyleRef());
   style->SetTransformOrigin(TransformOrigin(Length(70, Length::kFixed),
                                             Length(30, Length::kFixed), 0));
   target->SetStyle(std::move(style));
@@ -1683,8 +1666,29 @@ TEST_P(PaintPropertyTreeUpdateTest, ChangeDuringAnimation) {
   EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
   EXPECT_EQ(TransformationMatrix().Rotate(10), transform_node->Matrix());
   EXPECT_EQ(FloatPoint3D(70, 30, 0), transform_node->Origin());
-  // Only transform value change during composited animation should not schedule
-  // PaintArtifactCompositor update.
+  EXPECT_TRUE(transform_node->BackfaceVisibilitySameAsParent());
+  // Changing only transform or transform-origin values during a composited
+  // animation should not schedule a PaintArtifactCompositor update.
+  EXPECT_FALSE(paint_artifact_compositor->NeedsUpdate());
+
+  // Simulates changing backface visibility during animation.
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  style = ComputedStyle::Clone(target->StyleRef());
+  style->SetBackfaceVisibility(EBackfaceVisibility::kHidden);
+  target->SetStyle(std::move(style));
+  EXPECT_TRUE(target->NeedsPaintPropertyUpdate());
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  ASSERT_EQ(transform_node,
+            target->FirstFragment().PaintProperties()->Transform());
+  EXPECT_TRUE(transform_node->HasActiveTransformAnimation());
+  EXPECT_EQ(TransformationMatrix().Rotate(10), transform_node->Matrix());
+  EXPECT_EQ(FloatPoint3D(70, 30, 0), transform_node->Origin());
+  EXPECT_FALSE(transform_node->BackfaceVisibilitySameAsParent());
+  // Only transform and transform-origin value changes during composited
+  // animation should not schedule PaintArtifactCompositor update. Backface
+  // visibility changes should schedule an update.
   EXPECT_TRUE(paint_artifact_compositor->NeedsUpdate());
 }
 

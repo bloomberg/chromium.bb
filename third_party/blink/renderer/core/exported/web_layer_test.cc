@@ -553,6 +553,60 @@ TEST_P(WebLayerListSimTest, DirectTransformPropertyUpdate) {
   EXPECT_FALSE(transform_node->transform_changed);
 }
 
+// When a property tree change occurs that affects layer transform-origin, the
+// transform can be directly updated without explicitly marking the layer as
+// damaged. The ensure damage occurs, the transform node should have
+// |transform_changed| set. In non-layer-list mode, this occurs in
+// cc::Layer::SetTransformOrigin.
+TEST_P(WebLayerListSimTest, DirectTransformOriginPropertyUpdate) {
+  // TODO(crbug.com/765003): CAP may make different layerization decisions and
+  // we cannot guarantee that both divs will be composited in this test. When
+  // CAP gets closer to launch, this test should be updated to pass.
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  InitializeWithHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        html { overflow: hidden; }
+        #box {
+          width: 100px;
+          height: 100px;
+          transform: rotate3d(3, 2, 1, 45deg);
+          transform-origin: 10px 10px 100px;
+        }
+      </style>
+      <div id='box'></div>
+  )HTML");
+
+  Compositor().BeginFrame();
+
+  auto* box_element = GetElementById("box");
+  auto* box_element_layer = ContentLayerAt(ContentLayerCount() - 1);
+  DCHECK_EQ(box_element_layer->element_id(),
+            CompositorElementIdFromUniqueObjectId(
+                box_element->GetLayoutObject()->UniqueId(),
+                CompositorElementIdNamespace::kPrimary));
+  auto transform_tree_index = box_element_layer->transform_tree_index();
+  auto* transform_node =
+      GetPropertyTrees()->transform_tree.Node(transform_tree_index);
+
+  // Initially, transform should be unchanged.
+  EXPECT_FALSE(transform_node->transform_changed);
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  // Modifying the transform-origin in a simple way allowed for a direct update.
+  box_element->setAttribute(html_names::kStyleAttr,
+                            "transform-origin: -10px -10px -100px");
+  UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_TRUE(transform_node->transform_changed);
+  EXPECT_FALSE(paint_artifact_compositor()->NeedsUpdate());
+
+  // After a frame the |transform_changed| value should be reset.
+  Compositor().BeginFrame();
+  EXPECT_FALSE(transform_node->transform_changed);
+}
+
 // This test is similar to |LayerSubtreeTransformPropertyChanged| but for
 // effect property node changes.
 TEST_P(WebLayerListSimTest, LayerSubtreeEffectPropertyChanged) {
