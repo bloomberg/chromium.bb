@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/task/post_task.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -29,6 +30,8 @@ using content::BrowserThread;
 namespace safe_browsing {
 
 namespace {
+
+using CommandLineSwitchAndThreatType = std::pair<std::string, ThreatType>;
 
 const ThreatSeverity kLeastSeverity =
     std::numeric_limits<ThreatSeverity>::max();
@@ -90,6 +93,15 @@ ListInfos GetListInfos() {
   // NOTE(vakh): IMPORTANT: Please make sure that the server already supports
   // any list before adding it to this list otherwise the prefix updates break
   // for all Canary users.
+}
+
+std::vector<CommandLineSwitchAndThreatType> GetSwitchAndThreatTypes() {
+  static const std::vector<CommandLineSwitchAndThreatType>
+      command_line_switch_and_threat_type = {
+          {"mark_as_phishing", SOCIAL_ENGINEERING},
+          {"mark_as_malware", MALWARE_THREAT},
+          {"mark_as_uws", UNWANTED_SOFTWARE}};
+  return command_line_switch_and_threat_type;
 }
 
 // Returns the severity information about a given SafeBrowsing list. The lowest
@@ -529,6 +541,8 @@ void V4LocalDatabaseManager::DatabaseReadyForChecks(
 
     v4_database_->RecordFileSizeHistograms();
 
+    PopulateArtificialDatabase();
+
     // The consistency of the stores read from the disk needs to verified. Post
     // that task on the task runner. It calls |DatabaseReadyForUpdates|
     // callback with the stores to reset, if any, and then we can schedule the
@@ -592,6 +606,25 @@ void V4LocalDatabaseManager::DeleteUnusedStoreFiles() {
     } else {
       NOTREACHED() << "Trying to delete a store file that's in use: "
                    << store_filename_to_delete;
+    }
+  }
+}
+
+void V4LocalDatabaseManager::GetArtificialPrefixMatches(
+    const std::unique_ptr<PendingCheck>& check) {
+  if (artificially_marked_store_and_hash_prefixes_.empty()) {
+    return;
+  }
+  for (const auto& full_hash : check->full_hashes) {
+    for (const StoreAndHashPrefix& artificial_store_and_hash_prefix :
+         artificially_marked_store_and_hash_prefixes_) {
+      FullHash artificial_full_hash =
+          artificial_store_and_hash_prefix.hash_prefix;
+      DCHECK_EQ(crypto::kSHA256Length, artificial_full_hash.size());
+      if (artificial_full_hash == full_hash) {
+        (check->full_hash_to_store_and_hash_prefixes)[full_hash] = {
+            artificial_store_and_hash_prefix};
+      }
     }
   }
 }
@@ -698,12 +731,30 @@ bool V4LocalDatabaseManager::HandleCheck(std::unique_ptr<PendingCheck> check) {
     return false;
   }
 
-  if (!GetPrefixMatches(check)) {
+  GetPrefixMatches(check);
+  GetArtificialPrefixMatches(check);
+  if (check->full_hash_to_store_and_hash_prefixes.empty()) {
     return true;
   }
-
   ScheduleFullHashCheck(std::move(check));
   return false;
+}
+
+void V4LocalDatabaseManager::PopulateArtificialDatabase() {
+  for (const auto& switch_and_threat_type : GetSwitchAndThreatTypes()) {
+    const std::string raw_artificial_urls =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switch_and_threat_type.first);
+    base::StringTokenizer tokenizer(raw_artificial_urls, ",");
+    while (tokenizer.GetNext()) {
+      ListIdentifier artificial_list_id(GetCurrentPlatformType(), URL,
+                                        switch_and_threat_type.second);
+      FullHash full_hash =
+          V4ProtocolManagerUtil::GetFullHash(GURL(tokenizer.token()));
+      artificially_marked_store_and_hash_prefixes_.emplace_back(
+          artificial_list_id, full_hash);
+    }
+  }
 }
 
 void V4LocalDatabaseManager::ScheduleFullHashCheck(

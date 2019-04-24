@@ -7,12 +7,15 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing/db/v4_database.h"
@@ -323,6 +326,10 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
 
   ExtendedReportingLevel GetExtendedReportingLevel() {
     return extended_reporting_level_;
+  }
+
+  void PopulateArtificialDatabase() {
+    v4_local_database_manager_->PopulateArtificialDatabase();
   }
 
   void ReplaceV4Database(const StoreAndHashPrefixes& store_and_hash_prefixes,
@@ -1128,6 +1135,84 @@ TEST_F(V4LocalDatabaseManagerTest, NotificationOnUpdate) {
   v4_local_database_manager_->DatabaseUpdated();
 
   run_loop.Run();
+}
+
+TEST_F(V4LocalDatabaseManagerTest, FlagOneUrlAsPhishing) {
+  WaitForTasksOnTaskRunner();
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "mark_as_phishing", "https://example.com/1/");
+  PopulateArtificialDatabase();
+
+  const GURL url_bad("https://example.com/1/");
+  EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
+      url_bad, usual_threat_types_, nullptr));
+  const GURL url_good("https://other.example.com");
+  EXPECT_TRUE(v4_local_database_manager_->CheckBrowseUrl(
+      url_good, usual_threat_types_, nullptr));
+
+  // Wait for PerformFullHashCheck to complete.
+  WaitForTasksOnTaskRunner();
+}
+
+TEST_F(V4LocalDatabaseManagerTest, FlagOneUrlAsMalware) {
+  WaitForTasksOnTaskRunner();
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "mark_as_malware", "https://example.com/1/");
+  PopulateArtificialDatabase();
+
+  const GURL url_bad("https://example.com/1/");
+  EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
+      url_bad, usual_threat_types_, nullptr));
+  const GURL url_good("https://other.example.com");
+  EXPECT_TRUE(v4_local_database_manager_->CheckBrowseUrl(
+      url_good, usual_threat_types_, nullptr));
+
+  // Wait for PerformFullHashCheck to complete.
+  WaitForTasksOnTaskRunner();
+}
+
+TEST_F(V4LocalDatabaseManagerTest, FlagOneUrlAsUWS) {
+  WaitForTasksOnTaskRunner();
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "mark_as_uws", "https://example.com/1/");
+  PopulateArtificialDatabase();
+
+  const GURL url_bad("https://example.com/1/");
+  EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
+      url_bad, usual_threat_types_, nullptr));
+  const GURL url_good("https://other.example.com");
+  EXPECT_TRUE(v4_local_database_manager_->CheckBrowseUrl(
+      url_good, usual_threat_types_, nullptr));
+
+  // Wait for PerformFullHashCheck to complete.
+  WaitForTasksOnTaskRunner();
+}
+
+TEST_F(V4LocalDatabaseManagerTest, FlagMultipleUrls) {
+  WaitForTasksOnTaskRunner();
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "mark_as_phishing", "https://example.com/1/");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "mark_as_malware", "https://2.example.com");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "mark_as_uws", "https://example.test.com");
+  PopulateArtificialDatabase();
+
+  const GURL url_phishing("https://example.com/1/");
+  EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
+      url_phishing, usual_threat_types_, nullptr));
+  const GURL url_malware("https://2.example.com");
+  EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
+      url_malware, usual_threat_types_, nullptr));
+  const GURL url_uws("https://example.test.com");
+  EXPECT_FALSE(v4_local_database_manager_->CheckBrowseUrl(
+      url_uws, usual_threat_types_, nullptr));
+  const GURL url_good("https://other.example.com");
+  EXPECT_TRUE(v4_local_database_manager_->CheckBrowseUrl(
+      url_good, usual_threat_types_, nullptr));
+
+  // Wait for PerformFullHashCheck to complete.
+  WaitForTasksOnTaskRunner();
 }
 
 }  // namespace safe_browsing
