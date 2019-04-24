@@ -174,7 +174,9 @@ class SharedImageRepresentationSkiaIOSurface
     }
   }
 
-  sk_sp<SkPromiseImageTexture> BeginReadAccess() override {
+  sk_sp<SkPromiseImageTexture> BeginReadAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) override {
     return promise_texture_;
   }
 

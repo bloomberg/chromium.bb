@@ -56,8 +56,10 @@ void ExternalVkImageSkiaRepresentation::EndWriteAccess(
   access_mode_ = kNone;
 }
 
-sk_sp<SkPromiseImageTexture>
-ExternalVkImageSkiaRepresentation::BeginReadAccess() {
+sk_sp<SkPromiseImageTexture> ExternalVkImageSkiaRepresentation::BeginReadAccess(
+    std::vector<GrBackendSemaphore>* begin_semaphores,
+    std::vector<GrBackendSemaphore>* end_semaphores) {
+  // TODO(penghuang): provide begin and end semaphores.
   DCHECK_EQ(access_mode_, kNone) << "Previous access hasn't ended yet";
   DCHECK(!surface_);
 

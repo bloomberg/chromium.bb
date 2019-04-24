@@ -28,7 +28,9 @@ class ExternalVkImageSkiaRepresentation : public SharedImageRepresentationSkia {
       int final_msaa_count,
       const SkSurfaceProps& surface_props) override;
   void EndWriteAccess(sk_sp<SkSurface> surface) override;
-  sk_sp<SkPromiseImageTexture> BeginReadAccess() override;
+  sk_sp<SkPromiseImageTexture> BeginReadAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) override;
   void EndReadAccess() override;
 
  private:

@@ -29,6 +29,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/latency/latency_tracker.h"
 
+class GrBackendSemaphore;
 class SkDeferredDisplayList;
 
 namespace base {
@@ -138,7 +139,9 @@ class SkiaOutputSurfaceImplOnGpu {
                   const gfx::ColorSpace& color_space,
                   std::unique_ptr<CopyOutputRequest> request);
 
-  void BeginAccessImages(const std::vector<ImageContext*>& image_contexts);
+  void BeginAccessImages(const std::vector<ImageContext*>& image_contexts,
+                         std::vector<GrBackendSemaphore>* begin_semaphores,
+                         std::vector<GrBackendSemaphore>* end_semaphores);
   void EndAccessImages(const std::vector<ImageContext*>& image_contexts);
 
   sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();

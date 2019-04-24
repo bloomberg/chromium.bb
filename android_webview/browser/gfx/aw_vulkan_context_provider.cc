@@ -7,11 +7,15 @@
 #include <utility>
 
 #include "android_webview/public/browser/draw_fn.h"
+#include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "gpu/vulkan/init/vulkan_factory.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_util.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/vk/GrVkBackendContext.h"
 #include "third_party/skia/include/gpu/vk/GrVkExtensions.h"
@@ -66,7 +70,6 @@ bool InitVulkanForWebView(VkInstance instance, VkDevice device) {
 // static
 scoped_refptr<AwVulkanContextProvider>
 AwVulkanContextProvider::GetOrCreateInstance(AwDrawFn_InitVkParams* params) {
-  DCHECK(g_vulkan_context_provider || params);
   if (g_vulkan_context_provider) {
     DCHECK(!params || params->device == g_vulkan_context_provider->device());
     DCHECK(!params || params->queue == g_vulkan_context_provider->queue());
@@ -106,10 +109,24 @@ GrContext* AwVulkanContextProvider::GetGrContext() {
 
 GrVkSecondaryCBDrawContext*
 AwVulkanContextProvider::GetGrSecondaryCBDrawContext() {
-  return draw_context_;
+  return draw_context_.get();
+}
+
+void AwVulkanContextProvider::EnqueueSecondaryCBSemaphores(
+    std::vector<VkSemaphore> semaphores) {
+  post_submit_semaphores_.reserve(post_submit_semaphores_.size() +
+                                  semaphores.size());
+  std::copy(semaphores.begin(), semaphores.end(),
+            std::back_inserter(post_submit_semaphores_));
+}
+
+void AwVulkanContextProvider::EnqueueSecondaryCBPostSubmitTask(
+    base::OnceClosure closure) {
+  post_submit_tasks_.push_back(std::move(closure));
 }
 
 bool AwVulkanContextProvider::Initialize(AwDrawFn_InitVkParams* params) {
+  DCHECK(params);
   // Don't call init on implementation. Instead call InitVulkanForWebView,
   // which avoids creating a new instance.
   implementation_ = gpu::CreateVulkanImplementation();
@@ -155,6 +172,41 @@ bool AwVulkanContextProvider::Initialize(AwDrawFn_InitVkParams* params) {
     return false;
   }
   return true;
+}
+
+void AwVulkanContextProvider::SecondaryCBDrawBegin(
+    sk_sp<GrVkSecondaryCBDrawContext> draw_context) {
+  DCHECK(draw_context);
+  DCHECK(!draw_context_);
+  DCHECK(post_submit_tasks_.empty());
+  draw_context_ = draw_context;
+}
+
+void AwVulkanContextProvider::SecondaryCMBDrawSubmitted() {
+  DCHECK(draw_context_);
+  auto draw_context = std::move(draw_context_);
+
+  auto* fence_helper = device_queue_->GetFenceHelper();
+  VkFence vk_fence = VK_NULL_HANDLE;
+  auto result = fence_helper->GetFence(&vk_fence);
+  DCHECK(result == VK_SUCCESS);
+  gpu::SubmitSignalVkSemaphores(queue(), post_submit_semaphores_, vk_fence);
+
+  post_submit_semaphores_.clear();
+  fence_helper->EnqueueCleanupTaskForSubmittedWork(base::BindOnce(
+      [](sk_sp<GrVkSecondaryCBDrawContext> context,
+         gpu::VulkanDeviceQueue* device_queue, bool device_lost) {
+        context->releaseResources();
+        DCHECK(context->unique());
+        context = nullptr;
+      },
+      std::move(draw_context)));
+  for (auto& closure : post_submit_tasks_)
+    std::move(closure).Run();
+  post_submit_tasks_.clear();
+
+  fence_helper->EnqueueFence(vk_fence);
+  fence_helper->ProcessCleanupTasks();
 }
 
 }  // namespace android_webview

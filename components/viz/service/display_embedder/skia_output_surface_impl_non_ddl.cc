@@ -31,6 +31,7 @@
 #include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
+#include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/color_space_utils.h"
 #include "ui/gl/gl_bindings.h"
@@ -210,9 +211,8 @@ void SkiaOutputSurfaceImplNonDDL::SetNeedsSwapSizeNotifications(
 SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintCurrentFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(current_render_pass_id_, 0u);
-  DCHECK_EQ(order_num_, 0u);
-  order_num_ = sync_point_order_data_->GenerateUnprocessedOrderNumber();
-  sync_point_order_data_->BeginProcessingOrderNumber(order_num_);
+  DCHECK(!scoped_gpu_task_);
+  scoped_gpu_task_.emplace(sync_point_order_data_.get());
 
   if (shared_context_state_->GrContextIsVulkan()) {
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -233,8 +233,8 @@ SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintCurrentFrame() {
       Reshape(reshape_surface_size_, reshape_device_scale_factor_,
               reshape_color_space_, reshape_has_alpha_, reshape_use_stencil_);
     }
-
-    return sk_surface_->getCanvas();
+    sk_current_surface_ = sk_surface_.get();
+    return sk_current_surface_->getCanvas();
   }
 }
 
@@ -248,16 +248,17 @@ sk_sp<SkImage> SkiaOutputSurfaceImplNonDDL::MakePromiseSkImage(
       image_context = MakeSkImageFromSharedImage(metadata);
     if (image_context) {
       if (!image_context->representation_is_being_accessed) {
-        // TODO(penghuang): create gather read access semaphores and call skia
-        // flush() with them. https://crbug.com/944194
+        std::vector<GrBackendSemaphore> begin_semaphores;
         auto promise_image_texture =
-            image_context->representation->BeginReadAccess();
+            image_context->representation->BeginReadAccess(
+                &begin_semaphores, &pending_semaphores_);
         // The image has been created and cached. It is too late to tell skia
         // the backing of the cached image is not accessible right now, so crash
         // for now.
         // TODO(penghuang): find a way to notify skia.
         CHECK(promise_image_texture);
         image_context->representation_is_being_accessed = true;
+        WaitSemaphores(std::move(begin_semaphores));
       }
       images_in_current_paint_.push_back(image_context.get());
     }
@@ -348,9 +349,6 @@ void SkiaOutputSurfaceImplNonDDL::ReleaseCachedResources(
     const std::vector<ResourceId>& ids) {
   if (ids.empty())
     return;
-  DCHECK_EQ(order_num_, 0u);
-  order_num_ = sync_point_order_data_->GenerateUnprocessedOrderNumber();
-  sync_point_order_data_->BeginProcessingOrderNumber(order_num_);
   for (auto id : ids) {
     auto it = promise_image_cache_.find(id);
     if (it == promise_image_cache_.end())
@@ -358,8 +356,6 @@ void SkiaOutputSurfaceImplNonDDL::ReleaseCachedResources(
     it->second->image = nullptr;
     promise_image_cache_.erase(it);
   }
-  sync_point_order_data_->FinishProcessingOrderNumber(order_num_);
-  order_num_ = 0u;
 }
 
 void SkiaOutputSurfaceImplNonDDL::SkiaSwapBuffers(OutputSurfaceFrame frame) {
@@ -380,9 +376,8 @@ SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintRenderPass(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Make sure there is no unsubmitted PaintFrame or PaintRenderPass.
   DCHECK_EQ(current_render_pass_id_, 0u);
-  DCHECK_EQ(order_num_, 0u);
-  order_num_ = sync_point_order_data_->GenerateUnprocessedOrderNumber();
-  sync_point_order_data_->BeginProcessingOrderNumber(order_num_);
+  DCHECK(!scoped_gpu_task_);
+  scoped_gpu_task_.emplace(sync_point_order_data_.get());
   current_render_pass_id_ = id;
   auto& sk_surface = offscreen_sk_surfaces_[id];
 
@@ -395,53 +390,63 @@ SkCanvas* SkiaOutputSurfaceImplNonDDL::BeginPaintRenderPass(
     sk_surface =
         SkSurface::MakeRenderTarget(gr_context(), SkBudgeted::kNo, image_info);
   }
-  return sk_surface->getCanvas();
+
+  sk_current_surface_ = sk_surface.get();
+  return sk_current_surface_->getCanvas();
 }
 
 gpu::SyncToken SkiaOutputSurfaceImplNonDDL::SubmitPaint() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  if (current_render_pass_id_ == 0) {
-    if (shared_context_state_->GrContextIsVulkan()) {
-#if BUILDFLAG(ENABLE_VULKAN)
-      DCHECK(draw_context_);
-      draw_context_->flush();
-      draw_context_ = nullptr;
-#else
-      NOTREACHED();
-#endif
-    } else {
-      sk_surface_->flush();
-    }
-  } else {
-    offscreen_sk_surfaces_[current_render_pass_id_]->flush();
-  }
-
-  for (auto* image_context : images_in_current_paint_) {
-    if (!image_context->representation_is_being_accessed)
-      continue;
-    // TODO(penghuang): create end read access semaphores and call
-    // EndReadAccess() with them. https://crbug.com/944194
-    DCHECK(image_context->representation);
-    image_context->representation->EndReadAccess();
-    image_context->representation_is_being_accessed = false;
-  }
-
-  images_in_current_paint_.clear();
-
+  // To make sure sync_token is valid, we need make sure we are processing a gpu
+  // task.
+  DCHECK(scoped_gpu_task_);
   gpu::SyncToken sync_token(
       gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE_NON_DDL,
       sync_point_client_state_->command_buffer_id(), ++sync_fence_release_);
   sync_token.SetVerifyFlush();
-  sync_point_client_state_->ReleaseFenceSync(sync_fence_release_);
-  if (shared_context_state_->GrContextIsGL()) {
-    DCHECK(mailbox_manager_->UsesSync());
-    mailbox_manager_->PushTextureUpdates(sync_token);
+
+  if (!sk_current_surface_) {
+#if BUILDFLAG(ENABLE_VULKAN)
+    DCHECK(shared_context_state_->GrContextIsVulkan());
+    DCHECK(draw_context_);
+    draw_context_->flush();
+    draw_context_ = nullptr;
+    // Enqueue vk_semaphores which will be signalled when SecondaryCB is
+    // executed and finished.
+    std::vector<VkSemaphore> vk_semaphores;
+    vk_semaphores.reserve(pending_semaphores_.size());
+    for (const auto& semaphore : pending_semaphores_) {
+      DCHECK(semaphore.vkSemaphore() != VK_NULL_HANDLE);
+      vk_semaphores.push_back(semaphore.vkSemaphore());
+    }
+    pending_semaphores_.clear();
+    auto* vk_context_provider = shared_context_state_->vk_context_provider();
+    vk_context_provider->EnqueueSecondaryCBSemaphores(std::move(vk_semaphores));
+    // Enqueue FinishPaint which will be executed when the SecondaryCB is
+    // submitted and all enqueued semaphores have been submitted for signalling.
+    // WebView will not destroy OutputSurface when DrawVk is pending
+    // (PostDrawVK is not called), so it is safe to use base::Unretaied() here.
+    vk_context_provider->EnqueueSecondaryCBPostSubmitTask(
+        base::BindOnce(&SkiaOutputSurfaceImplNonDDL::FinishPaint,
+                       base::Unretained(this), sync_fence_release_));
+    return sync_token;
+#else
+    NOTREACHED();
+    return gpu::SyncToken();
+#endif
   }
-  DCHECK_NE(order_num_, 0u);
-  sync_point_order_data_->FinishProcessingOrderNumber(order_num_);
-  order_num_ = 0u;
-  current_render_pass_id_ = 0;
+
+  auto access = current_render_pass_id_ == 0
+                    ? SkSurface::BackendSurfaceAccess::kPresent
+                    : SkSurface::BackendSurfaceAccess::kNoAccess;
+  auto result = sk_current_surface_->flush(access, SkSurface::kNone_FlushFlags,
+                                           pending_semaphores_.size(),
+                                           pending_semaphores_.data());
+  DCHECK_EQ(result, GrSemaphoresSubmitted::kYes);
+  pending_semaphores_.clear();
+  sk_current_surface_ = nullptr;
+
+  FinishPaint(sync_fence_release_);
   return sync_token;
 }
 
@@ -521,16 +526,17 @@ SkiaOutputSurfaceImplNonDDL::MakeSkImageFromSharedImage(
     return nullptr;
   }
 
-  // TODO(penghuang): create gather read access semaphores and call skia flush()
-  // with them. https://crbug.com/944194
+  std::vector<GrBackendSemaphore> begin_semaphores;
   image_context->promise_image_texture =
-      image_context->representation->BeginReadAccess();
+      image_context->representation->BeginReadAccess(&begin_semaphores,
+                                                     &pending_semaphores_);
   if (!image_context->promise_image_texture) {
     DLOG(ERROR)
         << "Failed to make the SkImage - SharedImage begin access failed.";
     return nullptr;
   }
   image_context->representation_is_being_accessed = true;
+  WaitSemaphores(std::move(begin_semaphores));
 
   SkColorType color_type = ResourceFormatToClosestSkColorType(
       true /* gpu_compositing */, metadata.resource_format);
@@ -572,6 +578,30 @@ bool SkiaOutputSurfaceImplNonDDL::GetGrBackendTexture(
                                   metadata.resource_format, backend_texture);
 }
 
+void SkiaOutputSurfaceImplNonDDL::FinishPaint(uint64_t sync_fence_release) {
+  DCHECK(scoped_gpu_task_);
+  for (auto* image_context : images_in_current_paint_) {
+    if (!image_context->representation_is_being_accessed)
+      continue;
+    DCHECK(image_context->representation);
+    image_context->representation->EndReadAccess();
+    image_context->representation_is_being_accessed = false;
+  }
+  images_in_current_paint_.clear();
+
+  if (shared_context_state_->GrContextIsGL()) {
+    DCHECK(mailbox_manager_->UsesSync());
+    gpu::SyncToken sync_token(
+        gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE_NON_DDL,
+        sync_point_client_state_->command_buffer_id(), sync_fence_release);
+    sync_token.SetVerifyFlush();
+    mailbox_manager_->PushTextureUpdates(sync_token);
+  }
+  sync_point_client_state_->ReleaseFenceSync(sync_fence_release);
+  scoped_gpu_task_.reset();
+  current_render_pass_id_ = 0;
+}
+
 void SkiaOutputSurfaceImplNonDDL::BufferPresented(
     const gfx::PresentationFeedback& feedback) {
   client_->DidReceivePresentationFeedback(feedback);
@@ -581,6 +611,35 @@ void SkiaOutputSurfaceImplNonDDL::ContextLost() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto& observer : observers_)
     observer.OnContextLost();
+}
+
+void SkiaOutputSurfaceImplNonDDL::WaitSemaphores(
+    std::vector<GrBackendSemaphore> semaphores) {
+  if (semaphores.empty())
+    return;
+#if BUILDFLAG(ENABLE_VULKAN)
+  DCHECK(sk_current_surface_ || draw_context_);
+  auto result =
+      sk_current_surface_
+          ? sk_current_surface_->wait(semaphores.size(), semaphores.data())
+          : draw_context_->wait(semaphores.size(), semaphores.data());
+#else
+  DCHECK(sk_current_surface_);
+  auto result = sk_current_surface_->wait(semaphores.size(), semaphores.data());
+#endif
+
+  DCHECK(result);
+}
+
+SkiaOutputSurfaceImplNonDDL::ScopedGpuTask::ScopedGpuTask(
+    gpu::SyncPointOrderData* sync_point_order_data)
+    : sync_point_order_data_(sync_point_order_data),
+      order_num_(sync_point_order_data_->GenerateUnprocessedOrderNumber()) {
+  sync_point_order_data_->BeginProcessingOrderNumber(order_num_);
+}
+
+SkiaOutputSurfaceImplNonDDL::ScopedGpuTask::~ScopedGpuTask() {
+  sync_point_order_data_->FinishProcessingOrderNumber(order_num_);
 }
 
 }  // namespace viz

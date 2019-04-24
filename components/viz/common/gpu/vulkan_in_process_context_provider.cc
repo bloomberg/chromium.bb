@@ -114,6 +114,16 @@ VulkanInProcessContextProvider::GetGrSecondaryCBDrawContext() {
   return nullptr;
 }
 
+void VulkanInProcessContextProvider::EnqueueSecondaryCBSemaphores(
+    std::vector<VkSemaphore> semaphores) {
+  NOTREACHED();
+}
+
+void VulkanInProcessContextProvider::EnqueueSecondaryCBPostSubmitTask(
+    base::OnceClosure closure) {
+  NOTREACHED();
+}
+
 VulkanInProcessContextProvider::VulkanInProcessContextProvider(
     gpu::VulkanImplementation* vulkan_implementation)
     : vulkan_implementation_(vulkan_implementation) {}

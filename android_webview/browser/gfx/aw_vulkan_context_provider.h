@@ -11,6 +11,8 @@
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/gpu/GrBackendSemaphore.h"
+#include "third_party/skia/src/gpu/vk/GrVkSecondaryCBDrawContext.h"
 
 struct AwDrawFn_InitVkParams;
 class GrContext;
@@ -25,19 +27,19 @@ namespace android_webview {
 
 class AwVulkanContextProvider final : public viz::VulkanContextProvider {
  public:
-  class ScopedDrawContext {
+  class ScopedSecondaryCBDraw {
    public:
-    ScopedDrawContext(AwVulkanContextProvider* provider,
-                      GrVkSecondaryCBDrawContext* draw_context)
+    ScopedSecondaryCBDraw(AwVulkanContextProvider* provider,
+                          sk_sp<GrVkSecondaryCBDrawContext> draw_context)
         : provider_(provider) {
-      provider_->set_draw_context(draw_context);
+      provider_->SecondaryCBDrawBegin(std::move(draw_context));
     }
-    ~ScopedDrawContext() { provider_->set_draw_context(nullptr); }
+    ~ScopedSecondaryCBDraw() { provider_->SecondaryCMBDrawSubmitted(); }
 
    private:
     AwVulkanContextProvider* const provider_;
 
-    DISALLOW_COPY_AND_ASSIGN(ScopedDrawContext);
+    DISALLOW_COPY_AND_ASSIGN(ScopedSecondaryCBDraw);
   };
 
   static scoped_refptr<AwVulkanContextProvider> GetOrCreateInstance(
@@ -48,6 +50,9 @@ class AwVulkanContextProvider final : public viz::VulkanContextProvider {
   gpu::VulkanDeviceQueue* GetDeviceQueue() override;
   GrContext* GetGrContext() override;
   GrVkSecondaryCBDrawContext* GetGrSecondaryCBDrawContext() override;
+  void EnqueueSecondaryCBSemaphores(
+      std::vector<VkSemaphore> semaphores) override;
+  void EnqueueSecondaryCBPostSubmitTask(base::OnceClosure closure) override;
 
   VkPhysicalDevice physical_device() {
     return device_queue_->GetVulkanPhysicalDevice();
@@ -64,16 +69,15 @@ class AwVulkanContextProvider final : public viz::VulkanContextProvider {
   ~AwVulkanContextProvider() override;
 
   bool Initialize(AwDrawFn_InitVkParams* params);
-
-  void set_draw_context(GrVkSecondaryCBDrawContext* draw_context) {
-    DCHECK_NE(!!draw_context_, !!draw_context);
-    draw_context_ = draw_context;
-  }
+  void SecondaryCBDrawBegin(sk_sp<GrVkSecondaryCBDrawContext> draw_context);
+  void SecondaryCMBDrawSubmitted();
 
   std::unique_ptr<gpu::VulkanImplementation> implementation_;
   std::unique_ptr<gpu::VulkanDeviceQueue> device_queue_;
   sk_sp<GrContext> gr_context_;
-  GrVkSecondaryCBDrawContext* draw_context_ = nullptr;
+  sk_sp<GrVkSecondaryCBDrawContext> draw_context_;
+  std::vector<base::OnceClosure> post_submit_tasks_;
+  std::vector<VkSemaphore> post_submit_semaphores_;
 
   DISALLOW_COPY_AND_ASSIGN(AwVulkanContextProvider);
 };

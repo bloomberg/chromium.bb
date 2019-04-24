@@ -42,6 +42,7 @@
 #include "gpu/vulkan/buildflags.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
+#include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/private/SkDeferredDisplayList.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/skia_util.h"
@@ -73,9 +74,12 @@ class SkiaOutputSurfaceImplOnGpu::ScopedPromiseImageAccess {
   ScopedPromiseImageAccess(SkiaOutputSurfaceImplOnGpu* impl_on_gpu,
                            std::vector<ImageContext*> image_contexts)
       : impl_on_gpu_(impl_on_gpu), image_contexts_(std::move(image_contexts)) {
+    begin_semaphores_.reserve(image_contexts_.size());
+    end_semaphores_.reserve(image_contexts_.size());
     // TODO(penghuang): gather begin read access semaphores from shared images.
     // https://crbug.com/944194
-    impl_on_gpu_->BeginAccessImages(image_contexts_);
+    impl_on_gpu_->BeginAccessImages(image_contexts_, &begin_semaphores_,
+                                    &end_semaphores_);
   }
 
   ~ScopedPromiseImageAccess() {
@@ -84,9 +88,17 @@ class SkiaOutputSurfaceImplOnGpu::ScopedPromiseImageAccess {
     impl_on_gpu_->EndAccessImages(image_contexts_);
   }
 
+  std::vector<GrBackendSemaphore>& begin_semaphores() {
+    return begin_semaphores_;
+  }
+
+  std::vector<GrBackendSemaphore>& end_semaphores() { return end_semaphores_; }
+
  private:
   SkiaOutputSurfaceImplOnGpu* const impl_on_gpu_;
   std::vector<ImageContext*> image_contexts_;
+  std::vector<GrBackendSemaphore> begin_semaphores_;
+  std::vector<GrBackendSemaphore> end_semaphores_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedPromiseImageAccess);
 };
@@ -417,8 +429,23 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     }
     ScopedPromiseImageAccess scoped_promise_image_access(
         this, std::move(image_contexts));
+    auto wait_result = output_sk_surface()->wait(
+        scoped_promise_image_access.begin_semaphores().size(),
+        scoped_promise_image_access.begin_semaphores().data());
+    DCHECK(wait_result);
     output_sk_surface()->draw(ddl.get());
-    gr_context()->flush();
+    GrFlushInfo flush_info = {
+        .fFlags = kNone_GrFlushFlags,
+        .fNumSemaphores = scoped_promise_image_access.end_semaphores().size(),
+        .fSignalSemaphores =
+            scoped_promise_image_access.end_semaphores().data(),
+    };
+    // TODO(penghuang): flush output_sk_surface() with kPresent.
+    if (gr_context()->flush(flush_info) != GrSemaphoresSubmitted::kYes) {
+      // TODO(penghuang): handle vulkan device lost.
+      DLOG(ERROR) << "GrContext::flush() failed.";
+      return;
+    }
   }
 
   // Note that the ScopedCacheUse for GrShaderCache is scoped until the
@@ -493,8 +520,6 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
 
   auto& offscreen = offscreen_surfaces_[id];
   SkSurfaceCharacterization characterization;
-  // TODO(penghuang): Using characterization != ddl->characterization(), when
-  // the SkSurfaceCharacterization::operator!= is implemented in Skia.
   if (!offscreen.surface() ||
       !offscreen.surface()->characterize(&characterization) ||
       characterization != ddl->characterization()) {
@@ -508,8 +533,23 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
       cache_use.emplace(gr_shader_cache_, gpu::kInProcessCommandBufferClientId);
     ScopedPromiseImageAccess scoped_promise_image_access(
         this, std::move(image_contexts));
+    auto wait_result = offscreen.surface()->wait(
+        scoped_promise_image_access.begin_semaphores().size(),
+        scoped_promise_image_access.begin_semaphores().data());
+    DCHECK(wait_result);
     offscreen.surface()->draw(ddl.get());
-    gr_context()->flush();
+    GrFlushInfo flush_info = {
+        .fFlags = kNone_GrFlushFlags,
+        .fNumSemaphores = scoped_promise_image_access.end_semaphores().size(),
+        .fSignalSemaphores =
+            scoped_promise_image_access.end_semaphores().data(),
+    };
+    // TODO(penghuang): flush offscreen.surface() only.
+    if (gr_context()->flush(flush_info) != GrSemaphoresSubmitted::kYes) {
+      // TODO(penghuang): handle vulkan device lost.
+      DLOG(ERROR) << "GrContext::flush() failed.";
+      return;
+    }
   }
   ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
 }
@@ -718,7 +758,9 @@ sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FallbackPromiseImage(
 }
 
 void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
-    const std::vector<ImageContext*>& image_contexts) {
+    const std::vector<ImageContext*>& image_contexts,
+    std::vector<GrBackendSemaphore>* begin_semaphores,
+    std::vector<GrBackendSemaphore>* end_semaphores) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   for (auto* context : image_contexts) {
     // Skip the context if it has been processed.
@@ -752,8 +794,8 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
         if (context->representation) {
           // TODO(penghuang): create gather read access semaphores and call
           // skia flush() with them. https://crbug.com/944194
-          auto promise_image_texture =
-              context->representation->BeginReadAccess();
+          auto promise_image_texture = context->representation->BeginReadAccess(
+              begin_semaphores, end_semaphores);
           // The image has been fulfilled and cached. It is too late to tell
           // skia the backing of the cached image is not accessible right now,
           // so crash for now.
@@ -785,8 +827,8 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
       context->representation = std::move(representation);
       // TODO(penghuang): create gather read access semaphores and call
       // skia flush() with them. https://crbug.com/944194
-      context->promise_image_texture =
-          context->representation->BeginReadAccess();
+      context->promise_image_texture = context->representation->BeginReadAccess(
+          begin_semaphores, end_semaphores);
       if (!context->promise_image_texture) {
         DLOG(ERROR) << "Failed to fulfill the promise texture - SharedImage "
                        "begin read access failed..";

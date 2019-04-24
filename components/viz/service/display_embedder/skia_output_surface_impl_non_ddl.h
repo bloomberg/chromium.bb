@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/service/viz_service_export.h"
@@ -116,6 +117,18 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   void ReleaseCachedResources(const std::vector<ResourceId>& ids) override;
 
  private:
+  class ScopedGpuTask {
+   public:
+    explicit ScopedGpuTask(gpu::SyncPointOrderData* sync_point_order_data);
+    ~ScopedGpuTask();
+
+   private:
+    gpu::SyncPointOrderData* const sync_point_order_data_;
+    const uint32_t order_num_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedGpuTask);
+  };
+
   GrContext* gr_context() { return shared_context_state_->gr_context(); }
 
   bool WaitSyncToken(const gpu::SyncToken& sync_token);
@@ -123,9 +136,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
       const ResourceMetadata& metadata);
   bool GetGrBackendTexture(const ResourceMetadata& metadata,
                            GrBackendTexture* backend_texture);
-
+  void FinishPaint(uint64_t sync_fence_release);
   void BufferPresented(const gfx::PresentationFeedback& feedback);
   void ContextLost();
+  void WaitSemaphores(std::vector<GrBackendSemaphore> semaphores);
 
   uint64_t sync_fence_release_ = 0;
 
@@ -137,7 +151,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   scoped_refptr<gpu::SyncPointOrderData> sync_point_order_data_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
   const bool need_swapbuffers_ack_;
-  uint32_t order_num_ = 0u;
+  base::Optional<ScopedGpuTask> scoped_gpu_task_;
 
   OutputSurfaceClient* client_ = nullptr;
 
@@ -162,6 +176,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   GrVkSecondaryCBDrawContext* draw_context_ = nullptr;
 #endif
 
+  SkSurface* sk_current_surface_ = nullptr;
+
   // Offscreen SkSurfaces for render passes.
   base::flat_map<RenderPassId, sk_sp<SkSurface>> offscreen_sk_surfaces_;
 
@@ -171,6 +187,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
 
   // Images for current frame or render pass.
   std::vector<ImageContext*> images_in_current_paint_;
+
+  // Semaphores which need to be signalled for the current paint.
+  std::vector<GrBackendSemaphore> pending_semaphores_;
 
   THREAD_CHECKER(thread_checker_);
 

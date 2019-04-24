@@ -154,7 +154,16 @@ class SharedImageRepresentationSkia : public SharedImageRepresentation {
       int final_msaa_count,
       const SkSurfaceProps& surface_props) = 0;
   virtual void EndWriteAccess(sk_sp<SkSurface> surface) = 0;
-  virtual sk_sp<SkPromiseImageTexture> BeginReadAccess() = 0;
+  // Begin the read access. The implementations should insert semaphores into
+  // begin_semaphores vector which client will wait on before reading the
+  // backing. The ownership of begin_semaphores will be passed to client.
+  // The implementations should also insert semaphores into end_semaphores,
+  // client must submit them with drawing operations which use the backing.
+  // The ownership of end_semaphores are not passed to client. And client must
+  // submit the end_semaphores before calling EndReadAccess().
+  virtual sk_sp<SkPromiseImageTexture> BeginReadAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) = 0;
   virtual void EndReadAccess() = 0;
 };
 

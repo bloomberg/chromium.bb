@@ -120,26 +120,14 @@ void EndVulkanAccess(viz::VulkanContextProvider* context_provider,
   VulkanFenceHelper* fence_helper =
       context_provider->GetDeviceQueue()->GetFenceHelper();
 
-  // Create a vk semaphore which can be exported.
-  VkExportSemaphoreCreateInfo export_info;
-  export_info.sType = VK_STRUCTURE_TYPE_EXPORT_SEMAPHORE_CREATE_INFO;
-  export_info.pNext = nullptr;
-  export_info.handleTypes = VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT;
-
-  VkSemaphore vk_semaphore;
-  VkSemaphoreCreateInfo sem_info;
-  sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-  sem_info.pNext = &export_info;
-  sem_info.flags = 0;
-  VkResult result =
-      vkCreateSemaphore(vk_device, &sem_info, nullptr, &vk_semaphore);
-  if (result != VK_SUCCESS) {
-    LOG(ERROR) << "vkCreateSemaphore failed";
+  VkSemaphore vk_semaphore =
+      context_provider->GetVulkanImplementation()->CreateExternalSemaphore(
+          vk_device);
+  if (vk_semaphore == VK_NULL_HANDLE)
     return;
-  }
 
   VkFence vk_fence;
-  result = fence_helper->GetFence(&vk_fence);
+  auto result = fence_helper->GetFence(&vk_fence);
   if (result != VK_SUCCESS) {
     LOG(ERROR) << "Failed to create fence.";
     vkDestroySemaphore(vk_device, vk_semaphore, nullptr);
@@ -433,7 +421,9 @@ class SharedImageRepresentationSkiaGLAHB
     EndWriteAccessInternal();
   }
 
-  sk_sp<SkPromiseImageTexture> BeginReadAccess() override {
+  sk_sp<SkPromiseImageTexture> BeginReadAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) override {
     DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
     CheckContext();
 
@@ -560,28 +550,67 @@ class SharedImageRepresentationSkiaVkAHB
     EndWriteAccessInternal();
   }
 
-  sk_sp<SkPromiseImageTexture> BeginReadAccess() override {
+  sk_sp<SkPromiseImageTexture> BeginReadAccess(
+      std::vector<GrBackendSemaphore>* begin_semaphores,
+      std::vector<GrBackendSemaphore>* end_semaphores) override {
+    DCHECK(begin_semaphores);
+    DCHECK(end_semaphores);
     DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
+    DCHECK(end_access_semaphore_ == VK_NULL_HANDLE);
 
     // Synchronise the read access with the writes.
     base::ScopedFD sync_fd;
     if (!ahb_backing()->BeginRead(this, &sync_fd))
       return nullptr;
 
-    mode_ = RepresentationAccessMode::kRead;
+    VkSemaphore begin_access_semaphore = VK_NULL_HANDLE;
+    if (sync_fd.is_valid()) {
+      begin_access_semaphore = vk_implementation()->ImportSemaphoreHandle(
+          vk_device(),
+          SemaphoreHandle(VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_SYNC_FD_BIT,
+                          std::move(sync_fd)));
+      if (begin_access_semaphore == VK_NULL_HANDLE)
+        return nullptr;
+    }
 
+    end_access_semaphore_ =
+        vk_implementation()->CreateExternalSemaphore(vk_device());
+
+    if (end_access_semaphore_ == VK_NULL_HANDLE) {
+      if (begin_access_semaphore != VK_NULL_HANDLE) {
+        vkDestroySemaphore(vk_device(), begin_access_semaphore,
+                           nullptr /* pAllocator */);
+      }
+      return nullptr;
+    }
+
+    if (begin_access_semaphore != VK_NULL_HANDLE) {
+      begin_semaphores->emplace_back();
+      begin_semaphores->back().initVulkan(begin_access_semaphore);
+    }
+    end_semaphores->emplace_back();
+    end_semaphores->back().initVulkan(end_access_semaphore_);
+
+    mode_ = RepresentationAccessMode::kRead;
     return promise_texture_;
   }
 
   void EndReadAccess() override {
     DCHECK_EQ(mode_, RepresentationAccessMode::kRead);
     DCHECK(!surface_);
+    DCHECK(end_access_semaphore_ != VK_NULL_HANDLE);
 
-    base::ScopedFD sync_fd;
-    EndVulkanAccess(context_state_->vk_context_provider(), &sync_fd);
-    // pass this sync fd to the backing.
+    SemaphoreHandle semaphore_handle = vk_implementation()->GetSemaphoreHandle(
+        vk_device(), end_access_semaphore_);
+    auto sync_fd = semaphore_handle.TakeHandle();
     ahb_backing()->EndRead(this, std::move(sync_fd));
 
+    VulkanFenceHelper* fence_helper = context_state_->vk_context_provider()
+                                          ->GetDeviceQueue()
+                                          ->GetFenceHelper();
+    fence_helper->EnqueueSemaphoreCleanupForSubmittedWork(
+        end_access_semaphore_);
+    end_access_semaphore_ = VK_NULL_HANDLE;
     mode_ = RepresentationAccessMode::kNone;
   }
 
@@ -629,6 +658,7 @@ class SharedImageRepresentationSkiaVkAHB
   RepresentationAccessMode mode_ = RepresentationAccessMode::kNone;
   SkSurface* surface_ = nullptr;
   scoped_refptr<SharedContextState> context_state_;
+  VkSemaphore end_access_semaphore_ = VK_NULL_HANDLE;
 };
 
 SharedImageBackingAHB::SharedImageBackingAHB(

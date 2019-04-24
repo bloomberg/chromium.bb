@@ -141,7 +141,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Basic) {
   EXPECT_EQ(size.width(), surface->width());
   EXPECT_EQ(size.height(), surface->height());
   skia_representation->EndWriteAccess(std::move(surface));
-  auto promise_texture = skia_representation->BeginReadAccess();
+  auto promise_texture = skia_representation->BeginReadAccess(nullptr, nullptr);
   EXPECT_TRUE(promise_texture);
   if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();
@@ -202,7 +202,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, GL_SkiaGL) {
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
       mailbox, context_state_);
   EXPECT_TRUE(skia_representation);
-  auto promise_texture = skia_representation->BeginReadAccess();
+  auto promise_texture = skia_representation->BeginReadAccess(nullptr, nullptr);
   EXPECT_TRUE(promise_texture);
   if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();
@@ -312,7 +312,7 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
   auto skia_representation = shared_image_representation_factory_->ProduceSkia(
       mailbox, context_state_);
   EXPECT_TRUE(skia_representation);
-  auto promise_texture = skia_representation->BeginReadAccess();
+  auto promise_texture = skia_representation->BeginReadAccess(nullptr, nullptr);
   EXPECT_TRUE(promise_texture);
   if (promise_texture) {
     GrBackendTexture backend_texture = promise_texture->backendTexture();
