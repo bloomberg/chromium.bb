@@ -73,6 +73,7 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -291,21 +292,32 @@ HitTestResult EventHandler::HitTestResultAtLocation(
       LocalFrameView* frame_view = frame_->View();
       LocalFrameView* main_view = main_frame.View();
       if (frame_view && main_view) {
+        HitTestLocation adjusted_location;
         if (location.IsRectBasedTest()) {
           DCHECK(location.IsRectilinear());
-          LayoutPoint main_content_point =
-              main_view->ConvertFromRootFrame(frame_view->ConvertToRootFrame(
-                  location.BoundingBox().Location()));
-          HitTestLocation adjusted_location(
-              (LayoutRect(main_content_point, location.BoundingBox().Size())));
-          return main_frame.GetEventHandler().HitTestResultAtLocation(
-              adjusted_location, hit_type, stop_node, no_lifecycle_update);
+          if (hit_type & HitTestRequest::kHitTestVisualOverflow) {
+            // Apply ancestor transforms to location rect
+            FloatQuad local_quad(FloatRect(location.BoundingBox()));
+            FloatQuad main_frame_quad(
+                frame_view->GetLayoutView()->LocalToAncestorQuad(
+                    local_quad, main_view->GetLayoutView(),
+                    kTraverseDocumentBoundaries));
+            adjusted_location =
+                HitTestLocation(LayoutRect(main_frame_quad.BoundingBox()));
+          } else {
+            // Don't apply ancestor transforms to bounding box
+            LayoutPoint main_content_point =
+                main_view->ConvertFromRootFrame(frame_view->ConvertToRootFrame(
+                    location.BoundingBox().Location()));
+            adjusted_location = HitTestLocation(
+                LayoutRect(main_content_point, location.BoundingBox().Size()));
+          }
         } else {
-          HitTestLocation adjusted_location(main_view->ConvertFromRootFrame(
+          adjusted_location = HitTestLocation(main_view->ConvertFromRootFrame(
               frame_view->ConvertToRootFrame(location.Point())));
-          return main_frame.GetEventHandler().HitTestResultAtLocation(
-              adjusted_location, hit_type, stop_node, no_lifecycle_update);
         }
+        return main_frame.GetEventHandler().HitTestResultAtLocation(
+            adjusted_location, hit_type, stop_node, no_lifecycle_update);
       }
     }
   }
