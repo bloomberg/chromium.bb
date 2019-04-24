@@ -150,6 +150,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Dismisses the UI, cleans up and sets the state to CLOSED.
   void Dismiss();
 
+  // Resets the child views before showing the AppListView.
+  void ResetForShow();
+
   // Closes opened folder or search result page if they are opened.
   void CloseOpenedPage();
 

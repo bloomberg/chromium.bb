@@ -386,6 +386,7 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
         HandleCloseOpenSearchBox();
       } else if (applist_window->Contains(gained_focus)) {
         home_launcher_shown_ = true;
+        view_->ResetForShow();
       }
     }
 

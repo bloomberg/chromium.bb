@@ -452,6 +452,16 @@ void AppListView::Dismiss() {
   GetWidget()->Deactivate();
 }
 
+void AppListView::ResetForShow() {
+  if (GetFocusManager()->GetFocusedView() != GetInitiallyFocusedView())
+    GetInitiallyFocusedView()->RequestFocus();
+
+  if (GetAppsPaginationModel()->total_pages() > 0 &&
+      GetAppsPaginationModel()->selected_page() != 0) {
+    GetAppsPaginationModel()->SelectPage(0, false /* animate */);
+  }
+}
+
 void AppListView::CloseOpenedPage() {
   if (HandleCloseOpenFolder())
     return;
