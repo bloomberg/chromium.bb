@@ -250,7 +250,8 @@ void AssistantOptInFlowScreenHandler::OnEmailOptInResult(bool opted_in) {
 
 void AssistantOptInFlowScreenHandler::OnDialogClosed() {
   // Disable hotword for user if voice match enrollment has not completed.
-  if (!voice_match_enrollment_done_ && !is_retrain_flow_) {
+  if (!voice_match_enrollment_done_ &&
+      flow_type_ == ash::mojom::FlowType::SPEAKER_ID_ENROLLMENT) {
     ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
         arc::prefs::kVoiceInteractionHotwordEnabled, false);
   }
@@ -476,7 +477,7 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
     ShowNextScreen();
   } else if (action == kSkipPressed) {
     RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_SKIPPED);
-    if (!is_retrain_flow_) {
+    if (flow_type_ != ash::mojom::FlowType::SPEAKER_ID_RETRAIN) {
       // No need to disable hotword for retrain flow since user has a model.
       prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
     }
@@ -489,8 +490,9 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
 
     assistant::mojom::SpeakerIdEnrollmentClientPtr client_ptr;
     client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-    settings_manager_->StartSpeakerIdEnrollment(is_retrain_flow_,
-                                                std::move(client_ptr));
+    settings_manager_->StartSpeakerIdEnrollment(
+        flow_type_ == ash::mojom::FlowType::SPEAKER_ID_RETRAIN,
+        std::move(client_ptr));
   }
 }
 
@@ -561,13 +563,13 @@ void AssistantOptInFlowScreenHandler::HandleFlowInitialized(
   if (on_initialized_)
     std::move(on_initialized_).Run();
 
+  flow_type_ = static_cast<ash::mojom::FlowType>(flow_type);
+  DCHECK(IsKnownEnumValue(flow_type_));
+
   if (settings_manager_.is_bound() &&
-      flow_type == static_cast<int>(ash::mojom::FlowType::CONSENT_FLOW)) {
+      flow_type_ == ash::mojom::FlowType::CONSENT_FLOW) {
     SendGetSettingsRequest();
   }
-
-  if (flow_type == static_cast<int>(ash::mojom::FlowType::SPEAKER_ID_RETRAIN))
-    is_retrain_flow_ = true;
 }
 
 }  // namespace chromeos

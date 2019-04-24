@@ -152,7 +152,8 @@ class AssistantOptInFlowScreenHandler
   // Whether the use has completed voice match enrollment.
   bool voice_match_enrollment_done_ = false;
 
-  bool is_retrain_flow_ = false;
+  // Assistant optin flow type.
+  ash::mojom::FlowType flow_type_ = ash::mojom::FlowType::CONSENT_FLOW;
 
   // Time that get settings request is sent.
   base::TimeTicks send_request_time_;
