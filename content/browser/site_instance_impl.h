@@ -142,12 +142,10 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
 
   // Returns the site for the given URL, which includes only the scheme and
   // registered domain.  Returns an empty GURL if the URL has no host.
-  // |should_use_effective_urls| defaults to true and specifies whether to
-  // resolve |url| to an effective URL (via
+  // |url| will be resolved to an effective URL (via
   // ContentBrowserClient::GetEffectiveURL()) before determining the site.
   static GURL GetSiteForURL(const IsolationContext& isolation_context,
-                            const GURL& url,
-                            bool should_use_effective_urls = true);
+                            const GURL& url);
 
   // Returns the site of a given |origin|.  Unlike GetSiteForURL(), this does
   // not utilize effective URLs, isolated origins, or other special logic.  It
@@ -288,6 +286,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
  private:
   friend class BrowsingInstance;
   friend class SiteInstanceTestBrowserClient;
+  FRIEND_TEST_ALL_PREFIXES(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL);
 
   // Create a new SiteInstance.  Only BrowsingInstance should call this
   // directly; clients should use Create() or GetRelatedSiteInstance() instead.
@@ -309,6 +308,15 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // BrowsingInstance as the default process for SiteInstances that don't need
   // a dedicated process.
   void MaybeSetBrowsingInstanceDefaultProcess();
+
+  // Returns the site for the given URL, which includes only the scheme and
+  // registered domain.  Returns an empty GURL if the URL has no host.
+  // |should_use_effective_urls| specifies whether to resolve |url| to an
+  // effective URL (via ContentBrowserClient::GetEffectiveURL()) before
+  // determining the site.
+  static GURL GetSiteForURLInternal(const IsolationContext& isolation_context,
+                                    const GURL& url,
+                                    bool should_use_effective_urls);
 
   // An object used to construct RenderProcessHosts.
   static const RenderProcessHostFactory* g_render_process_host_factory_;

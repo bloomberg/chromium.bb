@@ -3881,8 +3881,7 @@ RenderProcessHost* RenderProcessHostImpl::GetSoleProcessHostForURL(
     BrowserContext* browser_context,
     const IsolationContext& isolation_context,
     const GURL& url) {
-  GURL site_url = SiteInstanceImpl::GetSiteForURL(
-      isolation_context, url, true /* should_use_effective_urls */);
+  GURL site_url = SiteInstanceImpl::GetSiteForURL(isolation_context, url);
   GURL lock_url =
       SiteInstanceImpl::DetermineProcessLockURL(isolation_context, url);
   return GetSoleProcessHostForSite(browser_context, isolation_context, site_url,

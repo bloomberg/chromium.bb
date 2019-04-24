@@ -505,8 +505,8 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(browser_context);
 
-  // By default, GetSiteForURL will resolve |real_url| to an effective URL
-  // before computing its site, so set |should_use_effective_urls| to true.
+  // By default, GetSiteForURL will resolve |url| to an effective URL
+  // before computing its site.
   //
   // TODO(alexmos): Callers inside content/ should already be using the
   // internal SiteInstanceImpl version and providing a proper IsolationContext.
@@ -514,9 +514,8 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
   // where needed.  Eventually, GetSiteForURL should always require an
   // IsolationContext to be passed in, and this implementation should just
   // become SiteInstanceImpl::GetSiteForURL.
-  return SiteInstanceImpl::GetSiteForURL(
-      IsolationContext(browser_context), url,
-      true /* should_use_effective_urls */);
+  return SiteInstanceImpl::GetSiteForURL(IsolationContext(browser_context),
+                                         url);
 }
 
 // static
@@ -525,14 +524,22 @@ GURL SiteInstanceImpl::DetermineProcessLockURL(
     const GURL& url) {
   // For the process lock URL, convert |url| to a site without resolving |url|
   // to an effective URL.
-  return SiteInstanceImpl::GetSiteForURL(isolation_context, url,
-                                         false /* should_use_effective_urls */);
+  return SiteInstanceImpl::GetSiteForURLInternal(
+      isolation_context, url, false /* should_use_effective_urls */);
 }
 
 // static
 GURL SiteInstanceImpl::GetSiteForURL(const IsolationContext& isolation_context,
-                                     const GURL& real_url,
-                                     bool should_use_effective_urls) {
+                                     const GURL& real_url) {
+  return GetSiteForURLInternal(isolation_context, real_url,
+                               true /* should_use_effective_urls */);
+}
+
+// static
+GURL SiteInstanceImpl::GetSiteForURLInternal(
+    const IsolationContext& isolation_context,
+    const GURL& real_url,
+    bool should_use_effective_urls) {
   // TODO(fsamuel, creis): For some reason appID is not recognized as a host.
   if (real_url.SchemeIs(kGuestScheme))
     return real_url;
@@ -574,8 +581,8 @@ GURL SiteInstanceImpl::GetSiteForURL(const IsolationContext& isolation_context,
     // a proper security principal.
     if (should_use_effective_urls && url != real_url) {
       std::string non_translated_site_url(
-          GetSiteForURL(isolation_context, real_url,
-                        false /* should_use_effective_urls */)
+          GetSiteForURLInternal(isolation_context, real_url,
+                                false /* should_use_effective_urls */)
               .spec());
       GURL::Replacements replacements;
       replacements.SetRefStr(non_translated_site_url.c_str());
@@ -671,8 +678,7 @@ bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
     return true;
 
   // Always require a dedicated process for isolated origins.
-  GURL site_url = SiteInstanceImpl::GetSiteForURL(
-      isolation_context, url, true /* should_compare_effective_urls */);
+  GURL site_url = SiteInstanceImpl::GetSiteForURL(isolation_context, url);
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (policy->IsIsolatedOrigin(isolation_context,
                                url::Origin::Create(site_url)))

@@ -98,8 +98,7 @@ void BrowsingInstance::GetSiteAndLockForURL(const GURL& url,
     return;
   }
 
-  *site_url = SiteInstanceImpl::GetSiteForURL(
-      isolation_context_, url, true /* should_use_effective_urls */);
+  *site_url = SiteInstanceImpl::GetSiteForURL(isolation_context_, url);
   *lock_url =
       SiteInstanceImpl::DetermineProcessLockURL(isolation_context_, url);
 }
