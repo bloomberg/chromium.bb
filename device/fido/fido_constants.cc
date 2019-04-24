@@ -27,6 +27,8 @@ const char kDisplayNameMapKey[] = "displayName";
 const char kIconUrlMapKey[] = "icon";
 const char kCredentialTypeMapKey[] = "type";
 const char kCredentialAlgorithmMapKey[] = "alg";
+const char kCredentialManagementMapKey[] = "credMgmt";
+const char kCredentialManagementPreviewMapKey[] = "credentialMgmtPreview";
 
 const base::TimeDelta kDeviceTimeout = base::TimeDelta::FromSeconds(3);
 const base::TimeDelta kU2fRetryDelay = base::TimeDelta::FromMilliseconds(200);

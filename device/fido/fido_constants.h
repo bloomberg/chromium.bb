@@ -247,6 +247,7 @@ enum class CtapRequestCommand : uint8_t {
   kAuthenticatorGetInfo = 0x04,
   kAuthenticatorClientPin = 0x06,
   kAuthenticatorReset = 0x07,
+  kAuthenticatorCredentialManagement = 0x0a,
 };
 
 enum class CoseAlgorithmIdentifier : int { kCoseEs256 = -7 };
@@ -314,6 +315,9 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kDisplayNameMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kIconUrlMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCredentialTypeMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCredentialAlgorithmMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCredentialManagementMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const char kCredentialManagementPreviewMapKey[];
 
 // HID transport specific constants.
 constexpr uint32_t kHidBroadcastChannel = 0xffffffff;

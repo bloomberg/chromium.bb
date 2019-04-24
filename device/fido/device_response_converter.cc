@@ -279,6 +279,24 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
             ClientPinAvailability::kSupportedButPinNotSet;
       }
     }
+
+    option_map_it = option_map.find(CBOR(kCredentialManagementMapKey));
+    if (option_map_it != option_map.end()) {
+      if (!option_map_it->second.is_bool()) {
+        return base::nullopt;
+      }
+      options.supports_credential_management = option_map_it->second.GetBool();
+    }
+
+    option_map_it = option_map.find(CBOR(kCredentialManagementPreviewMapKey));
+    if (option_map_it != option_map.end()) {
+      if (!option_map_it->second.is_bool()) {
+        return base::nullopt;
+      }
+      options.supports_credential_management_preview =
+          option_map_it->second.GetBool();
+    }
+
     response.options = std::move(options);
   }
 

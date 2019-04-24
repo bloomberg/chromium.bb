@@ -3454,8 +3454,8 @@ TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredential) {
 
 TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingle) {
   ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
-      /*credential_id=*/{4, 3, 2, 1}, kTestRelyingPartyId,
-      /*user_id=*/{1, 2, 3, 4}, "test@example.com", "Test User"));
+      /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
+      /*user_id=*/{{1, 2, 3, 4}}, "test@example.com", "Test User"));
 
   TestServiceManagerContext smc;
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
@@ -3471,11 +3471,11 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingle) {
 
 TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionMulti) {
   ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
-      /*credential_id=*/{4, 3, 2, 1}, kTestRelyingPartyId,
-      /*user_id=*/{1, 2, 3, 4}, "test@example.com", "Test User"));
+      /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
+      /*user_id=*/{{1, 2, 3, 4}}, "test@example.com", "Test User"));
   ASSERT_TRUE(virtual_device_.mutable_state()->InjectResidentKey(
-      /*credential_id=*/{4, 3, 2, 2}, kTestRelyingPartyId,
-      /*user_id=*/{5, 6, 7, 8}, "test2@example.com", "Test User 2"));
+      /*credential_id=*/{{4, 3, 2, 2}}, kTestRelyingPartyId,
+      /*user_id=*/{{5, 6, 7, 8}}, "test2@example.com", "Test User 2"));
 
   TestServiceManagerContext smc;
   AuthenticatorPtr authenticator = ConnectToAuthenticator();

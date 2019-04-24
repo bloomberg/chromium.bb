@@ -51,6 +51,13 @@ cbor::Value ConvertToCBOR(const AuthenticatorSupportedOptions& options) {
       break;
   }
 
+  if (options.supports_credential_management) {
+    option_map.emplace(kCredentialManagementMapKey, true);
+  }
+  if (options.supports_credential_management_preview) {
+    option_map.emplace(kCredentialManagementPreviewMapKey, true);
+  }
+
   return cbor::Value(std::move(option_map));
 }
 

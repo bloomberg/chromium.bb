@@ -33,6 +33,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
  public:
   struct COMPONENT_EXPORT(DEVICE_FIDO) Config {
     Config();
+    Config(const Config&);
+    Config& operator=(const Config&);
+    ~Config();
 
     // u2f_support, if true, makes this device a dual-protocol (i.e. CTAP2 and
     // U2F) device.
@@ -40,6 +43,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     bool pin_support = false;
     bool internal_uv_support = false;
     bool resident_key_support = false;
+    bool credential_management_support = false;
     // resident_credential_storage is the number of resident credentials that
     // the device will store before returning KEY_STORE_FULL.
     size_t resident_credential_storage = 3;
@@ -83,9 +87,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
                                             std::vector<uint8_t>* response);
   CtapDeviceResponseCode OnPINCommand(base::span<const uint8_t> request,
                                       std::vector<uint8_t>* response);
-
+  CtapDeviceResponseCode OnCredentialManagement(
+      base::span<const uint8_t> request,
+      std::vector<uint8_t>* response);
   CtapDeviceResponseCode OnAuthenticatorGetInfo(
       std::vector<uint8_t>* response) const;
+
+  void InitPendingRPs();
+  void GetNextRP(cbor::Value::MapValue* response_map);
+  void InitPendingRegistrations(base::span<const uint8_t> rp_id_hash);
 
   AttestedCredentialData ConstructAttestedCredentialData(
       std::vector<uint8_t> u2f_data,
