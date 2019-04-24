@@ -73,6 +73,8 @@ blink_core_sources("layout") {
     "fragmentainer_iterator.h",
     "fragmentation_context.h",
     "generated_children.h",
+    "geometry/transform_state.cc",
+    "geometry/transform_state.h",
     "grid.cc",
     "grid.h",
     "grid_baseline_alignment.cc",

@@ -1360,8 +1360,6 @@ jumbo_component("platform") {
     "transforms/skew_transform_operation.h",
     "transforms/transform_operations.cc",
     "transforms/transform_operations.h",
-    "transforms/transform_state.cc",
-    "transforms/transform_state.h",
     "transforms/transformation_matrix.cc",
     "transforms/transformation_matrix.h",
     "transforms/translate_transform_operation.cc",

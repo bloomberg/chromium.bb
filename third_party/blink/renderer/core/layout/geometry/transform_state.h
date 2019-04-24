@@ -23,10 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORM_STATE_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORM_STATE_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GEOMETRY_TRANSFORM_STATE_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GEOMETRY_TRANSFORM_STATE_H_
 
 #include <memory>
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
@@ -38,7 +39,7 @@
 
 namespace blink {
 
-class PLATFORM_EXPORT TransformState {
+class CORE_EXPORT TransformState {
   STACK_ALLOCATED();
 
  public:
@@ -154,4 +155,4 @@ class PLATFORM_EXPORT TransformState {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_TRANSFORMS_TRANSFORM_STATE_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GEOMETRY_TRANSFORM_STATE_H_
