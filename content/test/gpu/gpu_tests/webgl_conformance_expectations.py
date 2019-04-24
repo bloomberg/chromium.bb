@@ -99,8 +99,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # ========================
     # Fails on all platforms
 
-    self.Fail('conformance/extensions/oes-texture-float.html',
-        bug=930993)
     # TODO(shrekshao): Remove this after applying the new draw buffer
     # validation. And then uncomment the failure expectation for
     # angle bug 1523 (L160)
@@ -315,6 +313,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'd3d9'], bug=617148)
     self.Skip('conformance/glsl/misc/large-loop-compile.html',
         ['win', 'd3d9'], bug=674572)
+    self.Skip('conformance/extensions/webgl-depth-texture.html',
+        ['win', 'd3d9'], bug=956134)
 
     # WIN / OpenGL / NVIDIA failures
     self.Fail('conformance/limits/gl-max-texture-dimensions.html',

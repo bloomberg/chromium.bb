@@ -59,8 +59,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/' +
         'fs-color-type-mismatch-color-buffer-type.html',
         bug=927908)
-    self.Fail('conformance2/rendering/vertex-id.html',
-        ['win'], bug=945903)
 
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
