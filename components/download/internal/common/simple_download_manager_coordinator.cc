@@ -20,6 +20,8 @@ SimpleDownloadManagerCoordinator::SimpleDownloadManagerCoordinator()
       weak_factory_(this) {}
 
 SimpleDownloadManagerCoordinator::~SimpleDownloadManagerCoordinator() {
+  if (simple_download_manager_)
+    simple_download_manager_->RemoveObserver(this);
   for (auto& observer : observers_)
     observer.OnManagerGoingDown();
 }
@@ -68,10 +70,6 @@ DownloadItem* SimpleDownloadManagerCoordinator::GetDownloadByGuid(
   if (simple_download_manager_)
     return simple_download_manager_->GetDownloadByGuid(guid);
   return nullptr;
-}
-
-bool SimpleDownloadManagerCoordinator::HasSetDownloadManager() {
-  return simple_download_manager_;
 }
 
 void SimpleDownloadManagerCoordinator::OnDownloadsInitialized() {

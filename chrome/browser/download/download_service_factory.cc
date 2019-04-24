@@ -27,6 +27,7 @@
 #include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/download/public/background_service/features.h"
+#include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "components/download/public/task/task_scheduler.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
@@ -34,6 +35,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -129,12 +131,14 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
 #else
     task_scheduler = std::make_unique<DownloadTaskSchedulerImpl>(context);
 #endif
-
-    return download::BuildDownloadService(
-        context, profile->GetProfileKey(), profile->GetPrefs(),
-        std::move(clients), content::GetNetworkConnectionTracker(), storage_dir,
+    download::SimpleDownloadManagerCoordinator* coordinator =
         SimpleDownloadManagerCoordinatorFactory::GetForKey(
-            profile->GetProfileKey()),
+            profile->GetProfileKey());
+    coordinator->SetSimpleDownloadManager(
+        content::BrowserContext::GetDownloadManager(context), true);
+    return download::BuildDownloadService(
+        profile->GetProfileKey(), profile->GetPrefs(), std::move(clients),
+        content::GetNetworkConnectionTracker(), storage_dir, coordinator,
         background_task_runner, std::move(task_scheduler));
   }
 }

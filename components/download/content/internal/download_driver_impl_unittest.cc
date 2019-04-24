@@ -12,8 +12,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/content/public/all_download_item_notifier.h"
 #include "components/download/internal/background_service/test/mock_download_driver_client.h"
+#include "components/download/public/common//mock_simple_download_manager.h"
 #include "content/public/test/fake_download_item.h"
-#include "content/public/test/mock_download_manager.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -59,11 +59,13 @@ class DownloadDriverImplTest : public testing::Test {
   void SetUp() override {
     EXPECT_CALL(mock_client_, IsTrackingDownload(_))
         .WillRepeatedly(Return(true));
-    driver_ = std::make_unique<DownloadDriverImpl>(&mock_manager_, nullptr);
+    driver_ = std::make_unique<DownloadDriverImpl>(&coordinator_);
+    coordinator_.SetSimpleDownloadManager(&mock_manager_, true);
   }
 
   // TODO(xingliu): implements test download manager for embedders to test.
-  NiceMock<content::MockDownloadManager> mock_manager_;
+  SimpleDownloadManagerCoordinator coordinator_;
+  NiceMock<MockSimpleDownloadManager> mock_manager_;
   MockDriverClient mock_client_;
   std::unique_ptr<DownloadDriverImpl> driver_;
 
@@ -77,20 +79,18 @@ class DownloadDriverImplTest : public testing::Test {
 
 // Ensure the download manager can be initialized after the download driver.
 TEST_F(DownloadDriverImplTest, ManagerLateInitialization) {
-  EXPECT_CALL(mock_manager_, IsManagerInitialized())
-      .Times(1)
-      .WillOnce(Return(false));
   driver_->Initialize(&mock_client_);
 
-  EXPECT_CALL(mock_client_, OnDriverReady(true));
-  static_cast<AllDownloadItemNotifier::Observer*>(driver_.get())
-      ->OnManagerInitialized(&mock_manager_);
+  EXPECT_CALL(mock_client_, OnDriverReady(true)).Times(0);
+  static_cast<AllDownloadEventNotifier::Observer*>(driver_.get())
+      ->OnDownloadsInitialized(&coordinator_, true);
+
+  EXPECT_CALL(mock_client_, OnDriverReady(true)).Times(1);
+  static_cast<AllDownloadEventNotifier::Observer*>(driver_.get())
+      ->OnDownloadsInitialized(&coordinator_, false);
 }
 
 TEST_F(DownloadDriverImplTest, TestHardRecover) {
-  EXPECT_CALL(mock_manager_, IsManagerInitialized())
-      .Times(1)
-      .WillOnce(Return(false));
   driver_->Initialize(&mock_client_);
 
   EXPECT_CALL(mock_client_, OnDriverHardRecoverComplete(true)).Times(1);
@@ -102,14 +102,10 @@ TEST_F(DownloadDriverImplTest, TestHardRecover) {
 TEST_F(DownloadDriverImplTest, RemoveBeforeCreated) {
   using DownloadState = download::DownloadItem::DownloadState;
 
-  EXPECT_CALL(mock_manager_, IsManagerInitialized())
-      .Times(1)
-      .WillOnce(Return(false));
   driver_->Initialize(&mock_client_);
 
   EXPECT_CALL(mock_client_, OnDriverReady(true));
-  static_cast<AllDownloadItemNotifier::Observer*>(driver_.get())
-      ->OnManagerInitialized(&mock_manager_);
+  mock_manager_.NotifyOnDownloadInitialized();
 
   const std::string kTestGuid = "abc";
   content::FakeDownloadItem fake_item;
@@ -126,8 +122,8 @@ TEST_F(DownloadDriverImplTest, RemoveBeforeCreated) {
   ON_CALL(mock_manager_, GetDownloadByGuid(kTestGuid))
       .WillByDefault(Return(&fake_item));
   EXPECT_CALL(mock_client_, OnDownloadCreated(_)).Times(0);
-  static_cast<AllDownloadItemNotifier::Observer*>(driver_.get())
-      ->OnDownloadCreated(&mock_manager_, &fake_item);
+  static_cast<AllDownloadEventNotifier::Observer*>(driver_.get())
+      ->OnDownloadCreated(&coordinator_, &fake_item);
   task_runner_->RunUntilIdle();
 
   // Expect a remove call down to content layer download item.
@@ -139,9 +135,7 @@ TEST_F(DownloadDriverImplTest, DownloadItemUpdateEvents) {
   using DownloadState = download::DownloadItem::DownloadState;
   using DownloadInterruptReason = download::DownloadInterruptReason;
 
-  EXPECT_CALL(mock_manager_, IsManagerInitialized())
-      .Times(1)
-      .WillOnce(Return(true));
+  mock_manager_.NotifyOnDownloadInitialized();
   EXPECT_CALL(mock_client_, OnDriverReady(true)).Times(1);
   driver_->Initialize(&mock_client_);
 
@@ -155,13 +149,13 @@ TEST_F(DownloadDriverImplTest, DownloadItemUpdateEvents) {
   EXPECT_CALL(mock_client_, OnDownloadUpdated(DriverEntryEqual(entry)))
       .Times(1)
       .RetiresOnSaturation();
-  static_cast<AllDownloadItemNotifier::Observer*>(driver_.get())
-      ->OnDownloadUpdated(&mock_manager_, &fake_item);
+  static_cast<AllDownloadEventNotifier::Observer*>(driver_.get())
+      ->OnDownloadUpdated(&coordinator_, &fake_item);
 
   // Nothing happens for cancelled state.
   fake_item.SetState(DownloadState::CANCELLED);
-  static_cast<AllDownloadItemNotifier::Observer*>(driver_.get())
-      ->OnDownloadUpdated(&mock_manager_, &fake_item);
+  static_cast<AllDownloadEventNotifier::Observer*>(driver_.get())
+      ->OnDownloadUpdated(&coordinator_, &fake_item);
 
   fake_item.SetReceivedBytes(1024);
   fake_item.SetState(DownloadState::COMPLETE);
@@ -170,8 +164,8 @@ TEST_F(DownloadDriverImplTest, DownloadItemUpdateEvents) {
   EXPECT_CALL(mock_client_, OnDownloadSucceeded(DriverEntryEqual(entry)))
       .Times(1)
       .RetiresOnSaturation();
-  static_cast<AllDownloadItemNotifier::Observer*>(driver_.get())
-      ->OnDownloadUpdated(&mock_manager_, &fake_item);
+  static_cast<AllDownloadEventNotifier::Observer*>(driver_.get())
+      ->OnDownloadUpdated(&coordinator_, &fake_item);
 
   fake_item.SetState(DownloadState::INTERRUPTED);
   fake_item.SetLastReason(
@@ -181,8 +175,8 @@ TEST_F(DownloadDriverImplTest, DownloadItemUpdateEvents) {
                                              FailureType::RECOVERABLE))
       .Times(1)
       .RetiresOnSaturation();
-  static_cast<AllDownloadItemNotifier::Observer*>(driver_.get())
-      ->OnDownloadUpdated(&mock_manager_, &fake_item);
+  static_cast<AllDownloadEventNotifier::Observer*>(driver_.get())
+      ->OnDownloadUpdated(&coordinator_, &fake_item);
 }
 
 TEST_F(DownloadDriverImplTest, TestGetActiveDownloadsCall) {
@@ -208,9 +202,7 @@ TEST_F(DownloadDriverImplTest, TestGetActiveDownloadsCall) {
   ON_CALL(mock_manager_, GetAllDownloads(_))
       .WillByDefault(PopulateVector(items));
 
-  EXPECT_CALL(mock_manager_, IsManagerInitialized())
-      .Times(1)
-      .WillOnce(Return(true));
+  mock_manager_.NotifyOnDownloadInitialized();
   EXPECT_CALL(mock_client_, OnDriverReady(true)).Times(1);
   driver_->Initialize(&mock_client_);
 

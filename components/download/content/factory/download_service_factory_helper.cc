@@ -25,6 +25,7 @@
 #include "components/download/public/task/empty_task_scheduler.h"
 #include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
 #include "components/download/internal/background_service/android/battery_status_listener_android.h"
@@ -95,7 +96,6 @@ DownloadService* CreateDownloadServiceInternal(
 
 // Create download service for normal profile.
 DownloadService* BuildDownloadService(
-    content::BrowserContext* browser_context,
     SimpleFactoryKey* simple_factory_key,
     PrefService* prefs,
     std::unique_ptr<DownloadClientMap> clients,
@@ -107,7 +107,6 @@ DownloadService* BuildDownloadService(
   auto config = Configuration::CreateFromFinch();
 
   auto driver = std::make_unique<DownloadDriverImpl>(
-      content::BrowserContext::GetDownloadManager(browser_context),
       download_manager_coordinator);
 
   auto entry_db_storage_dir = storage_dir.Append(kEntryDBStorageDir);

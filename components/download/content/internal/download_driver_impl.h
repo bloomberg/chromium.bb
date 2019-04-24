@@ -11,11 +11,9 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
-#include "components/download/content/public/all_download_item_notifier.h"
 #include "components/download/internal/background_service/download_driver.h"
 #include "components/download/public/background_service/download_params.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/download_manager.h"
+#include "components/download/public/common/all_download_event_notifier.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace download {
@@ -27,14 +25,13 @@ struct DriverEntry;
 // Aggregates and handles all interaction between download service and content
 // download logic.
 class DownloadDriverImpl : public DownloadDriver,
-                           public AllDownloadItemNotifier::Observer {
+                           public AllDownloadEventNotifier::Observer {
  public:
   // Creates a driver entry based on a download item.
   static DriverEntry CreateDriverEntry(const download::DownloadItem* item);
 
   // Create the driver.
   DownloadDriverImpl(
-      content::DownloadManager* manager,
       SimpleDownloadManagerCoordinator* download_manager_coordinator);
   ~DownloadDriverImpl() override;
 
@@ -56,14 +53,16 @@ class DownloadDriverImpl : public DownloadDriver,
   size_t EstimateMemoryUsage() const override;
 
  private:
-  // content::AllDownloadItemNotifier::Observer implementation.
-  void OnManagerInitialized(content::DownloadManager* manager) override;
-  void OnManagerGoingDown(content::DownloadManager* manager) override;
-  void OnDownloadCreated(content::DownloadManager* manager,
+  // content::AllDownloadEventNotifier::Observer implementation.
+  void OnDownloadsInitialized(SimpleDownloadManagerCoordinator* coordinator,
+                              bool active_downloads_only) override;
+  void OnManagerGoingDown(
+      SimpleDownloadManagerCoordinator* coordinator) override;
+  void OnDownloadCreated(SimpleDownloadManagerCoordinator* coordinator,
                          download::DownloadItem* item) override;
-  void OnDownloadUpdated(content::DownloadManager* manager,
+  void OnDownloadUpdated(SimpleDownloadManagerCoordinator* coordinator,
                          download::DownloadItem* item) override;
-  void OnDownloadRemoved(content::DownloadManager* manager,
+  void OnDownloadRemoved(SimpleDownloadManagerCoordinator* coordinator,
                          download::DownloadItem* item) override;
 
   void OnUploadProgress(const std::string& guid, uint64_t bytes_uploaded);
@@ -73,14 +72,8 @@ class DownloadDriverImpl : public DownloadDriver,
   // Remove the download, used to be posted to the task queue.
   void DoRemoveDownload(const std::string& guid, bool remove_file);
 
-  // Low level download handle.
-  content::DownloadManager* download_manager_;
-
   // The client that receives updates from low level download logic.
   DownloadDriver::Client* client_;
-
-  // Built lazily on initialize and destroyed when/if the manager is torn down.
-  std::unique_ptr<AllDownloadItemNotifier> notifier_;
 
   // Pending guid set of downloads that will be removed soon.
   std::set<std::string> guid_to_remove_;

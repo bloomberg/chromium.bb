@@ -17,10 +17,6 @@
 class SimpleFactoryKey;
 class PrefService;
 
-namespace content {
-class BrowserContext;
-}  // namespace content
-
 namespace network {
 class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
@@ -43,7 +39,6 @@ class TaskScheduler;
 // restarts, no files written on completion, etc.).
 // |background_task_runner| will be used for all disk reads and writes.
 DownloadService* BuildDownloadService(
-    content::BrowserContext* browser_context,
     SimpleFactoryKey* simple_factory_key,
     PrefService* prefs,
     std::unique_ptr<DownloadClientMap> clients,

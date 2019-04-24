@@ -63,9 +63,6 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
   // Get the download item for |guid|.
   DownloadItem* GetDownloadByGuid(const std::string& guid);
 
-  // Return whether this object has download manager set.
-  bool HasSetDownloadManager();
-
   // Returns a non-empty notifier to be used for observing download events.
   AllDownloadEventNotifier* GetNotifier();
 
