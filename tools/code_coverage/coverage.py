@@ -14,8 +14,8 @@
   * Example usage:
 
   gn gen out/coverage \\
-      --args='use_clang_coverage=true is_component_build=false \\
-              dcheck_always_on=true'
+      --args="use_clang_coverage=true is_component_build=false\\
+              is_debug=false dcheck_always_on=true"
   gclient runhooks
   python tools/code_coverage/coverage.py crypto_unittests url_unittests \\
       -b out/coverage -o out/report -c 'out/coverage/crypto_unittests' \\
@@ -166,6 +166,7 @@ def _ConfigureLLVMCoverageTools(args):
                                 'both \'%s\' and \'%s\' exist.') % (
                                     LLVM_COV_PATH, LLVM_PROFDATA_PATH)
 
+
 def _GetPathWithLLVMSymbolizerDir():
   """Add llvm-symbolizer directory to path for symbolized stacks."""
   path = os.getenv('PATH')
@@ -188,7 +189,6 @@ def _GetTargetOS():
 def _IsIOS():
   """Returns true if the target_os specified in args.gn file is ios"""
   return _GetTargetOS() == 'ios'
-
 
 
 def _GeneratePerFileLineByLineCoverageInHtml(binary_paths, profdata_file_path,

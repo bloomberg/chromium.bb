@@ -62,8 +62,7 @@ def DownloadCoverageToolsIfNeeded():
       coverage_revision_stamp_file)
 
   has_coverage_tools = (
-      os.path.exists(cov_path)
-      and os.path.exists(profdata_path))
+      os.path.exists(cov_path) and os.path.exists(profdata_path))
 
   if (has_coverage_tools and coverage_revision == clang_revision and
       coverage_sub_revision == clang_sub_revision):
@@ -84,8 +83,8 @@ def DownloadCoverageToolsIfNeeded():
     coverage_tools_url = (clang_update.CDS_URL + '/Win/' + coverage_tools_file)
 
   try:
-    clang_update.DownloadAndUnpack(
-        coverage_tools_url, clang_update.LLVM_BUILD_DIR)
+    clang_update.DownloadAndUnpack(coverage_tools_url,
+                                   clang_update.LLVM_BUILD_DIR)
     with open(coverage_revision_stamp_file, 'w') as file_handle:
       file_handle.write('%s,%s' % (package_version, host_platform))
       file_handle.write('\n')

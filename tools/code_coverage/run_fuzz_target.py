@@ -215,13 +215,11 @@ def Main():
           },
           'num_regressions': 0,
           'tests': {
-            fuzzer_name: {
-                'expected': 'PASS',
-                'actual': 'PASS',
-                'times': [
-                    int(end_time - start_time),
-                ]
-            },
+              fuzzer_name: {
+                  'expected': 'PASS',
+                  'actual': 'PASS',
+                  'times': [int(end_time - start_time),]
+              },
           }
       }, f)
 
