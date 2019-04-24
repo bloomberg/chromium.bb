@@ -18,7 +18,7 @@ include_rules = [
   "+storage/browser/fileapi",
   "+third_party/re2",
   "+third_party/skia",
-  "+ui/base/ime",
+  "+ui/base",
   "+ui/gfx/geometry",
   "+ui/gfx/range/range.h",
 ]
