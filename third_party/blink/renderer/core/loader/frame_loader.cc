@@ -38,7 +38,6 @@
 
 #include <memory>
 #include "base/auto_reset.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
@@ -127,31 +126,6 @@ bool IsReloadLoadType(WebFrameLoadType type) {
 
 static bool NeedsHistoryItemRestore(WebFrameLoadType type) {
   return type == WebFrameLoadType::kBackForward || IsReloadLoadType(type);
-}
-
-static SinglePageAppNavigationType CategorizeSinglePageAppNavigation(
-    SameDocumentNavigationSource same_document_navigation_source,
-    WebFrameLoadType frame_load_type) {
-  // |SinglePageAppNavigationType| falls into this grid according to different
-  // combinations of |WebFrameLoadType| and |SameDocumentNavigationSource|:
-  //
-  //                 HistoryApi           Default
-  //  kBackForward   illegal              otherFragmentNav
-  // !kBackForward   sameDocBack/Forward  historyPushOrReplace
-  switch (same_document_navigation_source) {
-    case kSameDocumentNavigationDefault:
-      if (frame_load_type == WebFrameLoadType::kBackForward) {
-        return kSPANavTypeSameDocumentBackwardOrForward;
-      }
-      return kSPANavTypeOtherFragmentNavigation;
-    case kSameDocumentNavigationHistoryApi:
-      // It's illegal to have both kSameDocumentNavigationHistoryApi and
-      // WebFrameLoadType::kBackForward.
-      DCHECK(frame_load_type != WebFrameLoadType::kBackForward);
-      return kSPANavTypeHistoryPushStateOrReplaceState;
-  }
-  NOTREACHED();
-  return kSPANavTypeSameDocumentBackwardOrForward;
 }
 
 ResourceRequest FrameLoader::ResourceRequestForReload(
@@ -492,40 +466,6 @@ bool FrameLoader::AllowPlugins(ReasonForCallingAllowPlugins reason) {
   return allowed;
 }
 
-void FrameLoader::UpdateForSameDocumentNavigation(
-    const KURL& new_url,
-    SameDocumentNavigationSource same_document_navigation_source,
-    scoped_refptr<SerializedScriptValue> data,
-    HistoryScrollRestorationType scroll_restoration_type,
-    WebFrameLoadType type,
-    Document* initiating_document) {
-  SinglePageAppNavigationType single_page_app_navigation_type =
-      CategorizeSinglePageAppNavigation(same_document_navigation_source, type);
-  UMA_HISTOGRAM_ENUMERATION(
-      "RendererScheduler.UpdateForSameDocumentNavigationCount",
-      single_page_app_navigation_type, kSPANavTypeCount);
-
-  TRACE_EVENT1("blink", "FrameLoader::updateForSameDocumentNavigation", "url",
-               new_url.GetString().Ascii().data());
-
-  // Generate start and stop notifications only when loader is completed so that
-  // we don't fire them for fragment redirection that happens in window.onload
-  // handler. See https://bugs.webkit.org/show_bug.cgi?id=31838
-  // Do not fire the notifications if the frame is concurrently navigating away
-  // from the document, since a new document is already loading.
-  bool was_loading = frame_->IsLoading();
-  if (!was_loading)
-    Client()->DidStartLoading();
-
-  // Update the data source's request with the new URL to fake the URL change
-  frame_->GetDocument()->SetURL(new_url);
-  GetDocumentLoader()->UpdateForSameDocumentNavigation(
-      new_url, same_document_navigation_source, std::move(data),
-      scroll_restoration_type, type, initiating_document);
-  if (!was_loading)
-    Client()->DidStopLoading();
-}
-
 void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader,
                                        bool flush_microtask_queue) {
   if (!loader)
@@ -573,9 +513,9 @@ void FrameLoader::LoadInSameDocument(
     document_loader_->SetItemForHistoryNavigation(history_item);
   if (extra_data)
     Client()->UpdateDocumentLoader(document_loader_, std::move(extra_data));
-  UpdateForSameDocumentNavigation(url, kSameDocumentNavigationDefault, nullptr,
-                                  kScrollRestorationAuto, frame_load_type,
-                                  initiating_document);
+  GetDocumentLoader()->UpdateForSameDocumentNavigation(
+      url, kSameDocumentNavigationDefault, nullptr, kScrollRestorationAuto,
+      frame_load_type, initiating_document);
 
   document_loader_->GetInitialScrollState().was_scrolled_by_user = false;
 

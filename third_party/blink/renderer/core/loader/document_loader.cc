@@ -32,6 +32,7 @@
 #include <memory>
 #include <utility>
 #include "base/auto_reset.h"
+#include "base/metrics/histogram_macros.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/origin_policy/origin_policy.h"
@@ -390,6 +391,31 @@ static WebHistoryCommitType LoadTypeToCommitType(WebFrameLoadType type) {
   return kWebHistoryInertCommit;
 }
 
+static SinglePageAppNavigationType CategorizeSinglePageAppNavigation(
+    SameDocumentNavigationSource same_document_navigation_source,
+    WebFrameLoadType frame_load_type) {
+  // |SinglePageAppNavigationType| falls into this grid according to different
+  // combinations of |WebFrameLoadType| and |SameDocumentNavigationSource|:
+  //
+  //                 HistoryApi           Default
+  //  kBackForward   illegal              otherFragmentNav
+  // !kBackForward   sameDocBack/Forward  historyPushOrReplace
+  switch (same_document_navigation_source) {
+    case kSameDocumentNavigationDefault:
+      if (frame_load_type == WebFrameLoadType::kBackForward) {
+        return kSPANavTypeSameDocumentBackwardOrForward;
+      }
+      return kSPANavTypeOtherFragmentNavigation;
+    case kSameDocumentNavigationHistoryApi:
+      // It's illegal to have both kSameDocumentNavigationHistoryApi and
+      // WebFrameLoadType::kBackForward.
+      DCHECK(frame_load_type != WebFrameLoadType::kBackForward);
+      return kSPANavTypeHistoryPushStateOrReplaceState;
+  }
+  NOTREACHED();
+  return kSPANavTypeSameDocumentBackwardOrForward;
+}
+
 void DocumentLoader::UpdateForSameDocumentNavigation(
     const KURL& new_url,
     SameDocumentNavigationSource same_document_navigation_source,
@@ -397,6 +423,27 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     HistoryScrollRestorationType scroll_restoration_type,
     WebFrameLoadType type,
     Document* initiating_document) {
+  SinglePageAppNavigationType single_page_app_navigation_type =
+      CategorizeSinglePageAppNavigation(same_document_navigation_source, type);
+  UMA_HISTOGRAM_ENUMERATION(
+      "RendererScheduler.UpdateForSameDocumentNavigationCount",
+      single_page_app_navigation_type, kSPANavTypeCount);
+
+  TRACE_EVENT1("blink", "FrameLoader::updateForSameDocumentNavigation", "url",
+               new_url.GetString().Ascii().data());
+
+  // Generate start and stop notifications only when loader is completed so that
+  // we don't fire them for fragment redirection that happens in window.onload
+  // handler. See https://bugs.webkit.org/show_bug.cgi?id=31838
+  // Do not fire the notifications if the frame is concurrently navigating away
+  // from the document, since a new document is already loading.
+  bool was_loading = frame_->IsLoading();
+  if (!was_loading)
+    GetLocalFrameClient().DidStartLoading();
+
+  // Update the data source's request with the new URL to fake the URL change
+  frame_->GetDocument()->SetURL(new_url);
+
   if (type == WebFrameLoadType::kStandard && initiating_document &&
       !initiating_document->CanCreateHistoryEntry()) {
     type = WebFrameLoadType::kReplaceCurrentItem;
@@ -433,6 +480,8 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   GetLocalFrameClient().DidFinishSameDocumentNavigation(
       history_item_.Get(), commit_type, initiating_document);
   probe::DidNavigateWithinDocument(frame_);
+  if (!was_loading)
+    GetLocalFrameClient().DidStopLoading();
 }
 
 const KURL& DocumentLoader::UrlForHistory() const {

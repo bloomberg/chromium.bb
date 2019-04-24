@@ -300,7 +300,7 @@ void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
     return;
   }
 
-  GetFrame()->Loader().UpdateForSameDocumentNavigation(
+  GetFrame()->GetDocument()->Loader()->UpdateForSameDocumentNavigation(
       full_url, kSameDocumentNavigationHistoryApi, std::move(data),
       restoration_type, type, GetFrame()->GetDocument());
 }

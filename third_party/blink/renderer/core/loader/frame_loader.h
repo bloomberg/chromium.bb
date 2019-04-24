@@ -212,13 +212,6 @@ class CORE_EXPORT FrameLoader final {
 
   bool AllowPlugins(ReasonForCallingAllowPlugins);
 
-  void UpdateForSameDocumentNavigation(const KURL&,
-                                       SameDocumentNavigationSource,
-                                       scoped_refptr<SerializedScriptValue>,
-                                       HistoryScrollRestorationType,
-                                       WebFrameLoadType,
-                                       Document*);
-
   void SaveScrollAnchor();
   void SaveScrollState();
   void RestoreScrollPositionAndViewState();
