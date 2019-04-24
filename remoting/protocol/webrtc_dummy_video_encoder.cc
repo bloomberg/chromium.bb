@@ -114,15 +114,15 @@ int32_t WebrtcDummyVideoEncoder::Encode(
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-int32_t WebrtcDummyVideoEncoder::SetRates(uint32_t bitrate,
-                                          uint32_t framerate) {
+void WebrtcDummyVideoEncoder::SetRates(
+    const RateControlParameters& parameters) {
   main_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VideoChannelStateObserver::OnTargetBitrateChanged,
-                     video_channel_state_observer_, bitrate));
+                     video_channel_state_observer_,
+                     parameters.bitrate.get_sum_kbps()));
   // framerate is not expected to be valid given we never report captured
   // frames.
-  return WEBRTC_VIDEO_CODEC_OK;
 }
 
 webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
