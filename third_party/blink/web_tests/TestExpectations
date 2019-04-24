@@ -2729,8 +2729,6 @@ crbug.com/453002 [ Win ] fast/text/justify-ideograph-vertical.html [ Failure Pas
 crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
 
 crbug.com/600248 external/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
-crbug.com/771977 external/wpt/web-animations/interfaces/Animation/onfinish.html [ Failure ]
-crbug.com/772048 crbug.com/772060 external/wpt/web-animations/timing-model/animations/updating-the-finished-state.html [ Timeout ]
 crbug.com/771722 external/wpt/web-animations/timing-model/animations/the-current-time-of-an-animation.html [ Failure ]
 crbug.com/771722 crbug.com/771751 crbug.com/772060 external/wpt/web-animations/timing-model/animations/setting-the-start-time-of-an-animation.html [ Failure ]
 

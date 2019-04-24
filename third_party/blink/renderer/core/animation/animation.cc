@@ -648,34 +648,40 @@ void Animation::reverse(ExceptionState& exception_state) {
   play(exception_state);
 }
 
+// https://drafts.csswg.org/web-animations/#finishing-an-animation-section
 void Animation::finish(ExceptionState& exception_state) {
-  PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
+  // Force resolution of PlayStateUpdateScope to enable immediate queuing of
+  // the finished event.
+  {
+    PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
 
-  if (!playback_rate_) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot finish Animation with a playbackRate of 0.");
-    return;
+    if (!playback_rate_) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidStateError,
+          "Cannot finish Animation with a playbackRate of 0.");
+      return;
+    }
+    if (playback_rate_ > 0 &&
+        EffectEnd() == std::numeric_limits<double>::infinity()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidStateError,
+          "Cannot finish Animation with an infinite target effect end.");
+      return;
+    }
+
+    // Avoid updating start time when already finished.
+    if (CalculatePlayState() == kFinished)
+      return;
+
+    double new_current_time = playback_rate_ < 0 ? 0 : EffectEnd();
+    SetCurrentTimeInternal(new_current_time, kTimingUpdateOnDemand);
+    paused_ = false;
+    current_time_pending_ = false;
+    start_time_ = CalculateStartTime(new_current_time);
+    play_state_ = kFinished;
   }
-  if (playback_rate_ > 0 &&
-      EffectEnd() == std::numeric_limits<double>::infinity()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidStateError,
-        "Cannot finish Animation with an infinite target effect end.");
-    return;
-  }
-
-  // Avoid updating start time when already finished.
-  if (CalculatePlayState() == kFinished)
-    return;
-
-  double new_current_time = playback_rate_ < 0 ? 0 : EffectEnd();
-  SetCurrentTimeInternal(new_current_time, kTimingUpdateOnDemand);
-  paused_ = false;
-  current_time_pending_ = false;
-  start_time_ = CalculateStartTime(new_current_time);
-  play_state_ = kFinished;
-  ForceServiceOnNextFrame();
+  // Resolve finished event immediately.
+  QueueFinishedEvent();
 }
 
 ScriptPromise Animation::finished(ScriptState* script_state) {
@@ -979,24 +985,26 @@ bool Animation::Update(TimingUpdateReason reason) {
               pending_cancelled_event_);
         }
       } else {
-        const AtomicString& event_type = event_type_names::kFinish;
-        if (GetExecutionContext() && HasEventListeners(event_type)) {
-          double event_current_time = CurrentTimeInternal() * 1000;
-          pending_finished_event_ =
-              MakeGarbageCollected<AnimationPlaybackEvent>(
-                  event_type, event_current_time,
-                  TimelineInternal()->currentTime());
-          pending_finished_event_->SetTarget(this);
-          pending_finished_event_->SetCurrentTarget(this);
-          timeline_->GetDocument()->EnqueueAnimationFrameEvent(
-              pending_finished_event_);
-        }
+        QueueFinishedEvent();
       }
       finished_ = true;
     }
   }
   DCHECK(!outdated_);
   return !finished_ || std::isfinite(TimeToEffectChange());
+}
+
+void Animation::QueueFinishedEvent() {
+  const AtomicString& event_type = event_type_names::kFinish;
+  if (GetExecutionContext() && HasEventListeners(event_type)) {
+    double event_current_time = CurrentTimeInternal() * 1000;
+    pending_finished_event_ = MakeGarbageCollected<AnimationPlaybackEvent>(
+        event_type, event_current_time, TimelineInternal()->currentTime());
+    pending_finished_event_->SetTarget(this);
+    pending_finished_event_->SetCurrentTarget(this);
+    timeline_->GetDocument()->EnqueueAnimationFrameEvent(
+        pending_finished_event_);
+  }
 }
 
 void Animation::UpdateIfNecessary() {

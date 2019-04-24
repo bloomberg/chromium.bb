@@ -272,6 +272,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void RejectAndResetPromise(AnimationPromise*);
   void RejectAndResetPromiseMaybeAsync(AnimationPromise*);
 
+  void QueueFinishedEvent();
+
   String id_;
 
   AnimationPlayState play_state_;
