@@ -1028,7 +1028,8 @@ public class DateOrderedListMutatorTest {
     }
 
     private DateOrderedListMutator createMutatorWithoutJustNowProvider() {
-        DownloadManagerUiConfig config = new DownloadManagerUiConfig.Builder().build();
+        DownloadManagerUiConfig config =
+                new DownloadManagerUiConfig.Builder().setShowSectionHeaders(true).build();
         return new DateOrderedListMutator(mSource, mModel, config, new JustNowProvider(config) {
             @Override
             public boolean isJustNowItem(OfflineItem item) {
@@ -1038,7 +1039,8 @@ public class DateOrderedListMutatorTest {
     }
 
     private DateOrderedListMutator createMutatorWithJustNowProvider() {
-        DownloadManagerUiConfig config = new DownloadManagerUiConfig.Builder().build();
+        DownloadManagerUiConfig config =
+                new DownloadManagerUiConfig.Builder().setShowSectionHeaders(true).build();
         return new DateOrderedListMutator(mSource, mModel, config, new JustNowProvider(config));
     }
 
