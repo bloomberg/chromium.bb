@@ -414,7 +414,7 @@ drm_public int omap_bo_dmabuf(struct omap_bo *bo)
 	if (bo->fd < 0) {
 		struct drm_prime_handle req = {
 				.handle = bo->handle,
-				.flags = DRM_CLOEXEC,
+				.flags = DRM_CLOEXEC | DRM_RDWR,
 		};
 		int ret;
 
