@@ -312,13 +312,25 @@ void SyncAuthManager::OnRefreshTokenUpdatedForAccount(
     SetLastAuthError(token_error);
 
     credentials_changed_callback_.Run();
-    return;
-  }
+  } else if (IsWebSignout(last_auth_error_)) {
+    // Conversely, if we just exited the web-signout state, we need to reset the
+    // last auth error and tell our client (i.e. the SyncService) so that it'll
+    // know to resume syncing (if appropriate).
+    // TODO(blundell): Long-term, it would be nicer if Sync didn't have to
+    // cache signin-level authentication errors.
+    SetLastAuthError(token_error);
+    credentials_changed_callback_.Run();
 
-  // If we already have an access token or previously failed to retrieve one
-  // (and hence the retry timer is running), then request a fresh access token
-  // now. This will also drop the current access token.
-  if (!access_token_.empty() || request_access_token_retry_timer_.IsRunning()) {
+    // If we have an open connection to the server, then also get a new access
+    // token now.
+    if (connection_open_) {
+      RequestAccessToken();
+    }
+  } else if (!access_token_.empty() ||
+             request_access_token_retry_timer_.IsRunning()) {
+    // If we already have an access token or previously failed to retrieve one
+    // (and hence the retry timer is running), then request a fresh access token
+    // now. This will also drop the current access token.
     DCHECK(!ongoing_access_token_fetch_);
     RequestAccessToken();
   } else if (last_auth_error_ != GoogleServiceAuthError::AuthErrorNone() &&
@@ -326,8 +338,8 @@ void SyncAuthManager::OnRefreshTokenUpdatedForAccount(
     // If we were in an auth error state, then now's also a good time to try
     // again. In this case it's possible that there is already a pending
     // request, in which case RequestAccessToken will simply do nothing.
-    // Note: This is necessary to get out of the "Sync paused" state (see
-    // above), or to recover if the refresh token was previously removed.
+    // Note: This is necessary to recover if the refresh token was previously
+    // removed.
     RequestAccessToken();
   }
 }

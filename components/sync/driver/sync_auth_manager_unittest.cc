@@ -571,7 +571,13 @@ TEST_F(SyncAuthManagerTest,
 TEST_F(SyncAuthManagerTest, DoesNotRequestAccessTokenIfSyncInactive) {
   std::string account_id =
       identity_env()->MakePrimaryAccountAvailable("test@email.com").account_id;
-  auto auth_manager = CreateAuthManager();
+
+  base::MockCallback<AccountStateChangedCallback> account_state_changed;
+  base::MockCallback<CredentialsChangedCallback> credentials_changed;
+  EXPECT_CALL(account_state_changed, Run()).Times(0);
+  EXPECT_CALL(credentials_changed, Run()).Times(0);
+  auto auth_manager =
+      CreateAuthManager(account_state_changed.Get(), credentials_changed.Get());
   auth_manager->RegisterForAuthNotifications();
   ASSERT_EQ(auth_manager->GetActiveAccountInfo().account_info.account_id,
             account_id);
@@ -581,6 +587,7 @@ TEST_F(SyncAuthManagerTest, DoesNotRequestAccessTokenIfSyncInactive) {
   // An invalid refresh token gets set, i.e. we enter the "Sync paused" state
   // (only from SyncAuthManager's point of view - Sync as a whole is still
   // disabled).
+  EXPECT_CALL(credentials_changed, Run());
   identity_env()->SetInvalidRefreshTokenForPrimaryAccount();
   ASSERT_TRUE(auth_manager->GetCredentials().access_token.empty());
   ASSERT_TRUE(auth_manager->IsSyncPaused());
@@ -591,7 +598,11 @@ TEST_F(SyncAuthManagerTest, DoesNotRequestAccessTokenIfSyncInactive) {
   EXPECT_CALL(access_token_requested, Run()).Times(0);
   identity_env()->SetCallbackForNextAccessTokenRequest(
       access_token_requested.Get());
+  // This *should* notify about changed credentials though, so that the
+  // SyncService can decide to start syncing.
+  EXPECT_CALL(credentials_changed, Run());
   identity_env()->SetRefreshTokenForPrimaryAccount();
+  ASSERT_FALSE(auth_manager->IsSyncPaused());
 
   // Since the access token request goes through posted tasks, we have to spin
   // the message loop to make sure it didn't happen.
