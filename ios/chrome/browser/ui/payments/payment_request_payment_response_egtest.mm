@@ -63,10 +63,10 @@ const char kRequestEmailPage[] =
 - (void)testPaymentResponseNoShipping {
   // Create a billing address and a card that uses it.
   autofill::AutofillProfile billingAddress = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:billingAddress]);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:billingAddress]);
   autofill::CreditCard card = autofill::test::GetCreditCard();  // visa
   card.set_billing_address_id(billingAddress.guid());
-  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:card]);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kNoShippingPage)];
 
@@ -124,16 +124,16 @@ const char kRequestEmailPage[] =
 - (void)testPaymentResponseFreeShipping {
   // Create a billing address and a card that uses it.
   autofill::AutofillProfile billingAddress = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:billingAddress]);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:billingAddress]);
   autofill::CreditCard card = autofill::test::GetCreditCard();  // visa
   card.set_billing_address_id(billingAddress.guid());
-  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:card]);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
 
   // Create a shipping address with a higher frecency score, so that it is
   // selected as the default shipping address.
   autofill::AutofillProfile shippingAddress = autofill::test::GetFullProfile2();
   shippingAddress.set_use_count(2000);
-  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:shippingAddress]);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:shippingAddress]);
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kFreeShippingPage)];
 
@@ -183,11 +183,11 @@ const char kRequestEmailPage[] =
 - (void)testPaymentResponseAllContactDetails {
   // Create a billing address and a card that uses it.
   autofill::AutofillProfile billingAddress = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:billingAddress]);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:billingAddress]);
 
   autofill::CreditCard card = autofill::test::GetCreditCard();  // visa
   card.set_billing_address_id(billingAddress.guid());
-  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:card]);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kContactDetailsPage)];
 
@@ -219,11 +219,11 @@ const char kRequestEmailPage[] =
 - (void)testPaymentResponseOneContactDetail {
   // Create a billing address and a card that uses it.
   autofill::AutofillProfile billingAddress = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:billingAddress]);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:billingAddress]);
 
   autofill::CreditCard card = autofill::test::GetCreditCard();  // visa
   card.set_billing_address_id(billingAddress.guid());
-  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:card]);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kRequestEmailPage)];
 

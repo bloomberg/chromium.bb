@@ -81,13 +81,13 @@ id<GREYMatcher> PaymentMethodCellMatcher(
 
 - (void)addProfile {
   _profile = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:_profile]);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:_profile]);
 }
 
 - (void)addLocalCard {
   _localCard = autofill::test::GetCreditCard();  // Visa.
   _localCard.set_billing_address_id(_profile.guid());
-  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:_localCard]);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:_localCard]);
 }
 
 - (void)addServerCardWithType:(autofill::CreditCard::CardType)cardType {

@@ -87,7 +87,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [SigninEarlGreyUI signinWithIdentity:identity];
 
   // Check |identity| is signed-in.
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
 }
 
@@ -123,7 +123,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
 
   // Check the signed-in user did change.
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [SigninEarlGreyUtils checkSignedInWithIdentity:identity2]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
@@ -163,7 +163,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       performAction:grey_tap()];
 
   // Check the signed-in user did change.
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [SigninEarlGreyUtils checkSignedInWithIdentity:identity2]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
@@ -194,7 +194,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   SetEarlGreySynchronizationEnabled(YES);
 
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [SigninEarlGreyUtils checkSignedInWithIdentity:managed_identity]);
 
   // Switch Sync account to |identity|.
@@ -211,7 +211,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   TapButtonWithLabelId(IDS_IOS_MANAGED_SWITCH_ACCEPT_BUTTON);
   SetEarlGreySynchronizationEnabled(YES);
 
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
@@ -246,7 +246,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       performAction:grey_tap()];
 
   // Check that there is no signed in user.
-  CHROME_EG_ASSERT_ON_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
 }
 
 // Tests that signing out of a managed account from the Settings works
@@ -269,7 +269,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   SetEarlGreySynchronizationEnabled(YES);
 
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
 
   // Go to Accounts Settings and tap the sign out button.
@@ -290,7 +290,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       performAction:grey_tap()];
 
   // Check that there is no signed in user.
-  CHROME_EG_ASSERT_ON_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
 }
 
 // Tests that signing in, tapping the Settings link on the confirmation screen
@@ -323,7 +323,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
           IDS_IOS_SETTINGS_TITLE);
   [[EarlGrey selectElementWithMatcher:settings_matcher]
       assertWithMatcher:grey_notVisible()];
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
 }
 
@@ -436,7 +436,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       onElementWithMatcher:chrome_test_util::SettingsAccountsCollectionView()]
       performAction:grey_tap()];
   TapButtonWithLabelId(IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE);
-  CHROME_EG_ASSERT_ON_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
   [[EarlGrey selectElementWithMatcher:SecondarySignInButton()]
       performAction:grey_tap()];
   [SigninEarlGreyUI selectIdentityWithEmail:identity1.userEmail];
@@ -461,7 +461,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   TapButtonWithLabelId(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON);
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  CHROME_EG_ASSERT_ON_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
 }
 
 // Opens the sign in screen from the bookmarks and then cancel it by tapping on

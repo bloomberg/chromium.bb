@@ -79,7 +79,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  CHROME_EG_ASSERT_ON_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -105,7 +105,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
 
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  CHROME_EG_ASSERT_ON_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -138,7 +138,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
                                    grey_accessibilityLabel(identity2.userEmail),
                                    grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_nil()];
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [SigninEarlGreyUtils checkSignedInWithIdentity:identity1]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
@@ -178,7 +178,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
                                    grey_accessibilityLabel(identity2.userEmail),
                                    grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_nil()];
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [SigninEarlGreyUtils checkSignedInWithIdentity:identity1]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
@@ -205,7 +205,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
   // Check that the user is signed out and the Main Settings screen is shown.
   [[EarlGrey selectElementWithMatcher:PrimarySignInButton()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  CHROME_EG_ASSERT_ON_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -234,7 +234,7 @@ id<GREYMatcher> ButtonWithIdentity(ChromeIdentity* identity) {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::
                                           SettingsAccountsCollectionView()]
       assertWithMatcher:grey_sufficientlyVisible()];
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]

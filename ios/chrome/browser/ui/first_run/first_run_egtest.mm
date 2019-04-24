@@ -222,7 +222,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [[EarlGrey selectElementWithMatcher:AccountConsistencySetupSigninButton()]
       performAction:grey_tap()];
 
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
 
   // Undo the sign-in and dismiss the Sign In screen.
@@ -232,7 +232,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
       performAction:grey_tap()];
 
   // |identity| shouldn't be signed in.
-  CHROME_EG_ASSERT_ON_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
 }
 
 // Signs in to an account and then taps the Advanced link to go to settings.
@@ -275,7 +275,7 @@ void WaitForMatcher(id<GREYMatcher> matcher) {
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
 
   GREYAssertTrue(sync_service->HasFinishedInitialSetup(),

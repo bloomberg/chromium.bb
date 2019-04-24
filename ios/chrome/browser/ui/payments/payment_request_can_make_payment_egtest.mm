@@ -56,7 +56,7 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 
 // Tests canMakePayment() when visa is required and user has a visa instrument.
 - (void)testCanMakePaymentIsSupported {
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [self addCreditCard:autofill::test::GetCreditCard()]);  // visa.
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
 
@@ -68,7 +68,7 @@ const char kCanMakePaymentMethodIdentifierPage[] =
 // Tests canMakePayment() when visa is required, user has a visa instrument, and
 // user is in incognito mode.
 - (void)testCanMakePaymentIsSupportedInIncognitoMode {
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [self addCreditCard:autofill::test::GetCreditCard()]);  // visa.
   // Open an Incognito tab.
   [ChromeEarlGreyUI openToolsMenu];
@@ -119,7 +119,7 @@ const char kCanMakePaymentMethodIdentifierPage[] =
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   prefs->SetBoolean(payments::kCanMakePaymentEnabled, false);
 
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [self addCreditCard:autofill::test::GetCreditCard()]);  // visa.
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kCanMakePaymentPage)];
@@ -137,7 +137,7 @@ const char kCanMakePaymentMethodIdentifierPage[] =
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   prefs->SetBoolean(payments::kCanMakePaymentEnabled, false);
 
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [self addCreditCard:autofill::test::GetCreditCard()]);  // visa.
 
   // Open an Incognito tab.
@@ -203,7 +203,7 @@ const char kCanMakePaymentMethodIdentifierPage[] =
       waitForWebViewContainingTexts:
           {"NotAllowedError", "Not allowed to check whether can make payment"}];
 
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [self addCreditCard:autofill::test::GetCreditCard()]);  // visa.
 
   // Query visa payment method.
@@ -269,7 +269,7 @@ const char kCanMakePaymentMethodIdentifierPage[] =
       waitForWebViewContainingTexts:
           {"NotAllowedError", "Not allowed to check whether can make payment"}];
 
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [self addCreditCard:autofill::test::GetCreditCard()]);  // visa.
 
   // Query basic-card payment method with "supportedNetworks": ["visa"] in the

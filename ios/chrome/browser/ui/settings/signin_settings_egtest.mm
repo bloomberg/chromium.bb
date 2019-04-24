@@ -63,7 +63,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
 
   // User signed in.
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
   [SigninEarlGreyUI checkSigninPromoNotVisible];
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
@@ -84,7 +84,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
 
   // User signed in.
-  CHROME_EG_ASSERT_ON_ERROR(
+  CHROME_EG_ASSERT_NO_ERROR(
       [SigninEarlGreyUtils checkSignedInWithIdentity:identity]);
   [SigninEarlGreyUI checkSigninPromoNotVisible];
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]

@@ -50,11 +50,11 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
   [super setUp];
 
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:profile]);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:profile]);
 
   autofill::CreditCard localCard = autofill::test::GetCreditCard();  // Visa.
   localCard.set_billing_address_id(profile.guid());
-  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:localCard]);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:localCard]);
 }
 
 #pragma mark - Tests

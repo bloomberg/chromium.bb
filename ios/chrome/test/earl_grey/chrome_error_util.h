@@ -10,9 +10,9 @@
 
 // Wraps an expression that returns an NSError*, asserting if an error is
 // returned. Used in EG test code to assert if app helpers fail. For example:
-//  CHROME_EG_ASSERT_ON_ERROR(helperReturningNSError());
-//  CHROME_EG_ASSERT_ON_ERROR([ChromeEarlGrey helperReturningNSError]);
-#define CHROME_EG_ASSERT_ON_ERROR(expression)                           \
+//  CHROME_EG_ASSERT_NO_ERROR(helperReturningNSError());
+//  CHROME_EG_ASSERT_NO_ERROR([ChromeEarlGrey helperReturningNSError]);
+#define CHROME_EG_ASSERT_NO_ERROR(expression)                           \
   {                                                                     \
     NSError* error = expression;                                        \
     GREYAssert(error == nil || [error isKindOfClass:[NSError class]],   \

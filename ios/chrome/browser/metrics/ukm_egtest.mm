@@ -200,7 +200,7 @@ void SignOut() {
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
 
-  CHROME_EG_ASSERT_ON_ERROR([SigninEarlGreyUtils checkSignedOut]);
+  CHROME_EG_ASSERT_NO_ERROR([SigninEarlGreyUtils checkSignedOut]);
 }
 
 }  // namespace

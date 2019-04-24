@@ -103,14 +103,14 @@ id<GREYMatcher> RequiredSelectorEditorFieldMatcher(int string_id) {
   [super setUp];
 
   _profile = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:_profile]);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:_profile]);
 
   _creditCard1 = autofill::test::GetCreditCard();
   _creditCard1.set_billing_address_id(_profile.guid());
-  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:_creditCard1]);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:_creditCard1]);
 
   _creditCard2 = autofill::test::GetCreditCard2();
-  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:_creditCard2]);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:_creditCard2]);
 
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kPaymentRequestDemoPage)];

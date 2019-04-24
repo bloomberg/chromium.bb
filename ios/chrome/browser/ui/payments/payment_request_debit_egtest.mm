@@ -77,7 +77,7 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   [super setUp];
   _profile = std::make_unique<autofill::AutofillProfile>(
       autofill::test::GetFullProfile());
-  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:*_profile]);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:*_profile]);
 
   // Allow canMakePayment to return a truthful value by default.
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
@@ -181,7 +181,7 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   // All local cards have "unknown" card type by design.
   autofill::CreditCard card = autofill::test::GetCreditCard();
   card.set_billing_address_id(_profile->guid());
-  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:card]);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:card]);
 
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kDebitPage)];
 

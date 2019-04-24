@@ -38,22 +38,22 @@ using payments::JourneyLogger;
 
 - (void)addProfiles {
   _profile1 = autofill::test::GetFullProfile();
-  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:_profile1]);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:_profile1]);
 
   _profile2 = autofill::test::GetFullProfile2();
-  CHROME_EG_ASSERT_ON_ERROR([self addAutofillProfile:_profile2]);
+  CHROME_EG_ASSERT_NO_ERROR([self addAutofillProfile:_profile2]);
 }
 
 - (void)addCard1 {
   _creditCard1 = autofill::test::GetCreditCard();
   _creditCard1.set_billing_address_id(_profile1.guid());
-  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:_creditCard1]);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:_creditCard1]);
 }
 
 - (void)addCard2 {
   _creditCard2 = autofill::test::GetCreditCard2();
   _creditCard2.set_billing_address_id(_profile2.guid());
-  CHROME_EG_ASSERT_ON_ERROR([self addCreditCard:_creditCard2]);
+  CHROME_EG_ASSERT_NO_ERROR([self addCreditCard:_creditCard2]);
 }
 
 #pragma mark - Tests
