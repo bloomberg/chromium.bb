@@ -69,6 +69,11 @@ IdentityManager::IdentityManager(
 }
 
 IdentityManager::~IdentityManager() {
+  account_fetcher_service_->Shutdown();
+  gaia_cookie_manager_service_->Shutdown();
+  token_service_->Shutdown();
+  account_tracker_service_->Shutdown();
+
   signin_manager_->ClearObserver();
   token_service_->RemoveObserver(this);
   token_service_->RemoveDiagnosticsObserver(this);
@@ -408,13 +413,6 @@ void IdentityManager::AddDiagnosticsObserver(DiagnosticsObserver* observer) {
 
 void IdentityManager::RemoveDiagnosticsObserver(DiagnosticsObserver* observer) {
   diagnostics_observer_list_.RemoveObserver(observer);
-}
-
-void IdentityManager::Shutdown() {
-  account_fetcher_service_->Shutdown();
-  gaia_cookie_manager_service_->Shutdown();
-  token_service_->Shutdown();
-  account_tracker_service_->Shutdown();
 }
 
 SigninManagerBase* IdentityManager::GetSigninManager() {

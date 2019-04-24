@@ -474,9 +474,6 @@ class IdentityManager : public SigninManagerBase::Observer,
   void AddDiagnosticsObserver(DiagnosticsObserver* observer);
   void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
 
-  // Shut down IdentityManager and its owned dependencies.
-  void Shutdown();
-
  private:
   // These test helpers need to use some of the private methods below.
   friend CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,

@@ -37,9 +37,6 @@ class IdentityManagerWrapper : public KeyedService,
       std::unique_ptr<identity::AccountsMutator> accounts_mutator,
       std::unique_ptr<identity::AccountsCookieMutator> accounts_cookie_mutator,
       std::unique_ptr<identity::DiagnosticsProvider> diagnostics_provider);
-
-  // KeyedService overrides.
-  void Shutdown() override;
 };
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_IDENTITY_MANAGER_WRAPPER_H_

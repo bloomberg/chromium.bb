@@ -29,7 +29,3 @@ IdentityManagerWrapper::IdentityManagerWrapper(
                                 std::move(accounts_mutator),
                                 std::move(accounts_cookie_mutator),
                                 std::move(diagnostics_provider)) {}
-
-void IdentityManagerWrapper::Shutdown() {
-  IdentityManager::Shutdown();
-}

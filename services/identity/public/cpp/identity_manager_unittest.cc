@@ -219,7 +219,6 @@ class IdentityManagerTest : public testing::Test {
   }
 
   ~IdentityManagerTest() override {
-    identity_manager_->Shutdown();
     signin_client_.Shutdown();
   }
 
@@ -273,9 +272,6 @@ class IdentityManagerTest : public testing::Test {
     // trigger a DCHECK because there are still living observers.
     identity_manager_observer_.reset();
     identity_manager_diagnostics_observer_.reset();
-    if (identity_manager_) {
-      identity_manager_->Shutdown();
-    }
     identity_manager_.reset();
 
     auto token_service =
