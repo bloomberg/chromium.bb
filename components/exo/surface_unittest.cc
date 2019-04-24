@@ -788,7 +788,7 @@ TEST_P(SurfaceTest, OverlayCandidate) {
   ASSERT_EQ(1u, frame.render_pass_list.size());
   ASSERT_EQ(1u, frame.render_pass_list.back()->quad_list.size());
   viz::DrawQuad* draw_quad = frame.render_pass_list.back()->quad_list.back();
-  ASSERT_EQ(viz::DrawQuad::TEXTURE_CONTENT, draw_quad->material);
+  ASSERT_EQ(viz::DrawQuad::Material::kTextureContent, draw_quad->material);
 
   const viz::TextureDrawQuad* texture_quad =
       viz::TextureDrawQuad::MaterialCast(draw_quad);

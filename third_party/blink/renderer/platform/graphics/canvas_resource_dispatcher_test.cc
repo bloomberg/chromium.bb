@@ -247,7 +247,7 @@ TEST_P(CanvasResourceDispatcherTest, DispatchFrame) {
                       gfx::Rect(kDamageWidth, kDamageHeight));
 
             const auto* quad = render_pass->quad_list.front();
-            EXPECT_EQ(quad->material, viz::DrawQuad::TEXTURE_CONTENT);
+            EXPECT_EQ(quad->material, viz::DrawQuad::Material::kTextureContent);
             EXPECT_EQ(quad->rect, gfx::Rect(kWidth, kHeight));
             EXPECT_EQ(quad->visible_rect, gfx::Rect(kWidth, kHeight));
 

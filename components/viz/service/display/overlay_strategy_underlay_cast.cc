@@ -57,13 +57,13 @@ bool OverlayStrategyUnderlayCast::Attempt(
       // the underlay to be visible.
       // VIDEO_HOLE implies it requires overlay.
       is_underlay =
-          quad->material == DrawQuad::VIDEO_HOLE &&
+          quad->material == DrawQuad::Material::kVideoHole &&
           OverlayCandidate::FromDrawQuad(resource_provider, output_color_matrix,
                                          quad, &candidate);
       found_underlay = is_underlay;
     }
 
-    if (!found_underlay && quad->material == DrawQuad::SOLID_COLOR) {
+    if (!found_underlay && quad->material == DrawQuad::Material::kSolidColor) {
       const SolidColorDrawQuad* solid = SolidColorDrawQuad::MaterialCast(quad);
       if (solid->color == SK_ColorBLACK)
         continue;
@@ -92,7 +92,7 @@ bool OverlayStrategyUnderlayCast::Attempt(
 
     for (auto it = quad_list.begin(); it != quad_list.end(); ++it) {
       OverlayCandidate candidate;
-      if (it->material != DrawQuad::VIDEO_HOLE ||
+      if (it->material != DrawQuad::Material::kVideoHole ||
           !OverlayCandidate::FromDrawQuad(
               resource_provider, output_color_matrix, *it, &candidate)) {
         continue;

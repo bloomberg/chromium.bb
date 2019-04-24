@@ -840,7 +840,7 @@ TEST_F(SingleOverlayOnTopTest, SuccessfulOverlay) {
   const auto& quad_list = main_pass->quad_list;
   for (auto it = quad_list.BackToFrontBegin(); it != quad_list.BackToFrontEnd();
        ++it) {
-    EXPECT_NE(DrawQuad::TEXTURE_CONTENT, it->material);
+    EXPECT_NE(DrawQuad::Material::kTextureContent, it->material);
   }
 
   // Check that the right resource id got extracted.
@@ -1654,7 +1654,8 @@ TEST_F(UnderlayTest, OverlayLayerUnderMainLayer) {
   EXPECT_EQ(-1, candidate_list[0].plane_z_order);
   EXPECT_EQ(2U, main_pass->quad_list.size());
   // The overlay quad should have changed to a SOLID_COLOR quad.
-  EXPECT_EQ(main_pass->quad_list.back()->material, DrawQuad::SOLID_COLOR);
+  EXPECT_EQ(main_pass->quad_list.back()->material,
+            DrawQuad::Material::kSolidColor);
   auto* quad = static_cast<SolidColorDrawQuad*>(main_pass->quad_list.back());
   EXPECT_EQ(quad->rect, quad->visible_rect);
   EXPECT_EQ(false, quad->needs_blending);
@@ -1683,7 +1684,8 @@ TEST_F(UnderlayTest, AllowOnTop) {
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(-1, candidate_list[0].plane_z_order);
   // The overlay quad should have changed to a SOLID_COLOR quad.
-  EXPECT_EQ(main_pass->quad_list.front()->material, DrawQuad::SOLID_COLOR);
+  EXPECT_EQ(main_pass->quad_list.front()->material,
+            DrawQuad::Material::kSolidColor);
   auto* quad = static_cast<SolidColorDrawQuad*>(main_pass->quad_list.front());
   EXPECT_EQ(quad->rect, quad->visible_rect);
   EXPECT_EQ(false, quad->needs_blending);
@@ -2875,7 +2877,7 @@ TEST_F(DCLayerOverlayTest, MultiplePassDamageRect) {
   EXPECT_EQ(gfx::Rect(0, 0, 0, 0), overlay_damage);
 
   EXPECT_EQ(1u, pass_list[0]->quad_list.size());
-  EXPECT_EQ(DrawQuad::SOLID_COLOR,
+  EXPECT_EQ(DrawQuad::Material::kSolidColor,
             pass_list[0]->quad_list.ElementAt(0)->material);
 
   // The kHardwareProtectedVideo video quad is put into an underlay, and
@@ -2897,14 +2899,14 @@ TEST_F(DCLayerOverlayTest, MultiplePassDamageRect) {
   EXPECT_EQ(3u, pass_list[2]->quad_list.size());
 
   // The RPDQs are not modified.
-  EXPECT_EQ(DrawQuad::RENDER_PASS,
+  EXPECT_EQ(DrawQuad::Material::kRenderPass,
             pass_list[2]->quad_list.ElementAt(0)->material);
   EXPECT_EQ(child_pass1_id, static_cast<RenderPassDrawQuad*>(
                                 pass_list[2]->quad_list.ElementAt(0))
                                 ->render_pass_id);
 
   // A solid color quad is put behind the RPDQ containing the video.
-  EXPECT_EQ(DrawQuad::SOLID_COLOR,
+  EXPECT_EQ(DrawQuad::Material::kSolidColor,
             pass_list[2]->quad_list.ElementAt(1)->material);
   auto* rpdq_solid_color_quad =
       static_cast<SolidColorDrawQuad*>(pass_list[2]->quad_list.ElementAt(1));
@@ -2914,7 +2916,7 @@ TEST_F(DCLayerOverlayTest, MultiplePassDamageRect) {
   EXPECT_EQ(1.f, rpdq_solid_color_quad->shared_quad_state->opacity);
   EXPECT_FALSE(rpdq_solid_color_quad->ShouldDrawWithBlending());
 
-  EXPECT_EQ(DrawQuad::RENDER_PASS,
+  EXPECT_EQ(DrawQuad::Material::kRenderPass,
             pass_list[2]->quad_list.ElementAt(2)->material);
   EXPECT_EQ(child_pass2_id, static_cast<RenderPassDrawQuad*>(
                                 pass_list[2]->quad_list.ElementAt(2))

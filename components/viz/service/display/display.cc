@@ -745,7 +745,7 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
       // not entirely covered by draw quads in it; or the DrawQuad size is
       // smaller than the kMinimumDrawOcclusionSize; or the DrawQuad is inside
       // a 3d objects.
-      if (quad->material == ContentDrawQuadBase::Material::RENDER_PASS ||
+      if (quad->material == ContentDrawQuadBase::Material::kRenderPass ||
           (quad->visible_rect.width() <= minimum_draw_occlusion_width &&
            quad->visible_rect.height() <= minimum_draw_occlusion_height) ||
           quad->shared_quad_state->sorting_context_id != 0) {

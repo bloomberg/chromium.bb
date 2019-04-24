@@ -138,7 +138,7 @@ bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
     }
 
     switch (quad->material) {
-      case DrawQuad::SURFACE_CONTENT: {
+      case DrawQuad::Material::kSurfaceContent: {
         // We've hit a SurfaceDrawQuad, we need to recurse into this
         // Surface.
         const SurfaceDrawQuad* surface_quad =
@@ -175,7 +175,7 @@ bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
         break;
       }
 
-      case DrawQuad::RENDER_PASS: {
+      case DrawQuad::Material::kRenderPass: {
         // We've hit a RenderPassDrawQuad, we need to recurse into this
         // RenderPass.
         const RenderPassDrawQuad* render_quad =
@@ -257,7 +257,7 @@ bool SurfaceHittest::GetTransformToTargetSurfaceInternal(
   }
 
   for (const DrawQuad* quad : render_pass->quad_list) {
-    if (quad->material == DrawQuad::SURFACE_CONTENT) {
+    if (quad->material == DrawQuad::Material::kSurfaceContent) {
       gfx::Transform target_to_quad_transform;
       gfx::Transform quad_to_target_transform =
           quad->shared_quad_state->quad_to_target_transform;
@@ -285,7 +285,7 @@ bool SurfaceHittest::GetTransformToTargetSurfaceInternal(
       continue;
     }
 
-    if (quad->material == DrawQuad::RENDER_PASS) {
+    if (quad->material == DrawQuad::Material::kRenderPass) {
       // We've hit a RenderPassDrawQuad, we need to recurse into this
       // RenderPass.
       const RenderPassDrawQuad* render_quad =

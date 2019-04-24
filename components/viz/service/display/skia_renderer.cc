@@ -98,7 +98,7 @@ bool CanExplicitlyScissor(const DrawQuad* quad,
                           const gfx::Transform& contents_device_transform) {
   // PICTURE_CONTENT is not like the others, since it is executing a list of
   // draw calls into the canvas.
-  if (quad->material == DrawQuad::PICTURE_CONTENT)
+  if (quad->material == DrawQuad::Material::kPictureContent)
     return false;
   // Intersection with scissor and a quadrilateral is not necessarily a quad,
   // so don't complicate things
@@ -259,13 +259,13 @@ void GetClippedEdgeFlags(const DrawQuad* quad,
 
 bool IsAAForcedOff(const DrawQuad* quad) {
   switch (quad->material) {
-    case DrawQuad::PICTURE_CONTENT:
+    case DrawQuad::Material::kPictureContent:
       return PictureDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
-    case DrawQuad::RENDER_PASS:
+    case DrawQuad::Material::kRenderPass:
       return RenderPassDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
-    case DrawQuad::SOLID_COLOR:
+    case DrawQuad::Material::kSolidColor:
       return SolidColorDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
-    case DrawQuad::TILED_CONTENT:
+    case DrawQuad::Material::kTiledContent:
       return TileDrawQuad::MaterialCast(quad)->force_anti_aliasing_off;
     default:
       return false;
@@ -275,13 +275,13 @@ bool IsAAForcedOff(const DrawQuad* quad) {
 SkFilterQuality GetFilterQuality(const DrawQuad* quad) {
   bool nearest_neighbor;
   switch (quad->material) {
-    case DrawQuad::PICTURE_CONTENT:
+    case DrawQuad::Material::kPictureContent:
       nearest_neighbor = PictureDrawQuad::MaterialCast(quad)->nearest_neighbor;
       break;
-    case DrawQuad::TEXTURE_CONTENT:
+    case DrawQuad::Material::kTextureContent:
       nearest_neighbor = TextureDrawQuad::MaterialCast(quad)->nearest_neighbor;
       break;
-    case DrawQuad::TILED_CONTENT:
+    case DrawQuad::Material::kTiledContent:
       nearest_neighbor = TileDrawQuad::MaterialCast(quad)->nearest_neighbor;
       break;
     default:
@@ -825,35 +825,35 @@ void SkiaRenderer::DoDrawQuad(const DrawQuad* quad,
   }
 
   switch (quad->material) {
-    case DrawQuad::DEBUG_BORDER:
+    case DrawQuad::Material::kDebugBorder:
       DrawDebugBorderQuad(DebugBorderDrawQuad::MaterialCast(quad), &params);
       break;
-    case DrawQuad::PICTURE_CONTENT:
+    case DrawQuad::Material::kPictureContent:
       DrawPictureQuad(PictureDrawQuad::MaterialCast(quad), &params);
       break;
-    case DrawQuad::RENDER_PASS:
+    case DrawQuad::Material::kRenderPass:
       DrawRenderPassQuad(RenderPassDrawQuad::MaterialCast(quad), &params);
       break;
-    case DrawQuad::SOLID_COLOR:
+    case DrawQuad::Material::kSolidColor:
       DrawSolidColorQuad(SolidColorDrawQuad::MaterialCast(quad), &params);
       break;
-    case DrawQuad::STREAM_VIDEO_CONTENT:
+    case DrawQuad::Material::kStreamVideoContent:
       DrawStreamVideoQuad(StreamVideoDrawQuad::MaterialCast(quad), &params);
       break;
-    case DrawQuad::TEXTURE_CONTENT:
+    case DrawQuad::Material::kTextureContent:
       DrawTextureQuad(TextureDrawQuad::MaterialCast(quad), &params);
       break;
-    case DrawQuad::TILED_CONTENT:
+    case DrawQuad::Material::kTiledContent:
       DrawTileDrawQuad(TileDrawQuad::MaterialCast(quad), &params);
       break;
-    case DrawQuad::YUV_VIDEO_CONTENT:
+    case DrawQuad::Material::kYuvVideoContent:
       DrawYUVVideoQuad(YUVVideoDrawQuad::MaterialCast(quad), &params);
       break;
-    case DrawQuad::INVALID:
+    case DrawQuad::Material::kInvalid:
       DrawUnsupportedQuad(quad, &params);
       NOTREACHED();
       break;
-    case DrawQuad::VIDEO_HOLE:
+    case DrawQuad::Material::kVideoHole:
       // VideoHoleDrawQuad should only be used by Cast, and should
       // have been replaced by cast-specific OverlayProcessor before
       // reach here. In non-cast build, an untrusted render could send such
@@ -1029,10 +1029,10 @@ bool SkiaRenderer::MustFlushBatchedQuads(const DrawQuad* new_quad,
   if (batched_quads_.empty())
     return false;
 
-  if (new_quad->material != DrawQuad::RENDER_PASS &&
-      new_quad->material != DrawQuad::STREAM_VIDEO_CONTENT &&
-      new_quad->material != DrawQuad::TEXTURE_CONTENT &&
-      new_quad->material != DrawQuad::TILED_CONTENT)
+  if (new_quad->material != DrawQuad::Material::kRenderPass &&
+      new_quad->material != DrawQuad::Material::kStreamVideoContent &&
+      new_quad->material != DrawQuad::Material::kTextureContent &&
+      new_quad->material != DrawQuad::Material::kTiledContent)
     return true;
 
   if (batched_quad_state_.blend_mode != params.blend_mode ||

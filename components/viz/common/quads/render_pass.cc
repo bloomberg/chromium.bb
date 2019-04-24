@@ -147,7 +147,7 @@ std::unique_ptr<RenderPass> RenderPass::DeepCopy() const {
     }
     DCHECK(quad->shared_quad_state == *sqs_iter);
 
-    if (quad->material == DrawQuad::RENDER_PASS) {
+    if (quad->material == DrawQuad::Material::kRenderPass) {
       const RenderPassDrawQuad* pass_quad =
           RenderPassDrawQuad::MaterialCast(quad);
       copy_pass->CopyFromAndAppendRenderPassDrawQuad(pass_quad,
@@ -278,36 +278,36 @@ RenderPassDrawQuad* RenderPass::CopyFromAndAppendRenderPassDrawQuad(
 DrawQuad* RenderPass::CopyFromAndAppendDrawQuad(const DrawQuad* quad) {
   DCHECK(!shared_quad_state_list.empty());
   switch (quad->material) {
-    case DrawQuad::DEBUG_BORDER:
+    case DrawQuad::Material::kDebugBorder:
       CopyFromAndAppendTypedDrawQuad<DebugBorderDrawQuad>(quad);
       break;
-    case DrawQuad::PICTURE_CONTENT:
+    case DrawQuad::Material::kPictureContent:
       CopyFromAndAppendTypedDrawQuad<PictureDrawQuad>(quad);
       break;
-    case DrawQuad::TEXTURE_CONTENT:
+    case DrawQuad::Material::kTextureContent:
       CopyFromAndAppendTypedDrawQuad<TextureDrawQuad>(quad);
       break;
-    case DrawQuad::SOLID_COLOR:
+    case DrawQuad::Material::kSolidColor:
       CopyFromAndAppendTypedDrawQuad<SolidColorDrawQuad>(quad);
       break;
-    case DrawQuad::TILED_CONTENT:
+    case DrawQuad::Material::kTiledContent:
       CopyFromAndAppendTypedDrawQuad<TileDrawQuad>(quad);
       break;
-    case DrawQuad::STREAM_VIDEO_CONTENT:
+    case DrawQuad::Material::kStreamVideoContent:
       CopyFromAndAppendTypedDrawQuad<StreamVideoDrawQuad>(quad);
       break;
-    case DrawQuad::SURFACE_CONTENT:
+    case DrawQuad::Material::kSurfaceContent:
       CopyFromAndAppendTypedDrawQuad<SurfaceDrawQuad>(quad);
       break;
-    case DrawQuad::VIDEO_HOLE:
+    case DrawQuad::Material::kVideoHole:
       CopyFromAndAppendTypedDrawQuad<VideoHoleDrawQuad>(quad);
       break;
-    case DrawQuad::YUV_VIDEO_CONTENT:
+    case DrawQuad::Material::kYuvVideoContent:
       CopyFromAndAppendTypedDrawQuad<YUVVideoDrawQuad>(quad);
       break;
     // RenderPass quads need to use specific CopyFrom function.
-    case DrawQuad::RENDER_PASS:
-    case DrawQuad::INVALID:
+    case DrawQuad::Material::kRenderPass:
+    case DrawQuad::Material::kInvalid:
       // TODO(danakj): Why is this a check instead of dcheck, and validate from
       // IPC?
       CHECK(false);  // Invalid DrawQuad material.

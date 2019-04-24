@@ -16,39 +16,39 @@ viz::DrawQuad* AllocateAndConstruct(
   switch (material) {
     case viz::mojom::DrawQuadStateDataView::Tag::DEBUG_BORDER_QUAD_STATE:
       quad = list->AllocateAndConstruct<viz::DebugBorderDrawQuad>();
-      quad->material = viz::DrawQuad::DEBUG_BORDER;
+      quad->material = viz::DrawQuad::Material::kDebugBorder;
       return quad;
     case viz::mojom::DrawQuadStateDataView::Tag::RENDER_PASS_QUAD_STATE:
       quad = list->AllocateAndConstruct<viz::RenderPassDrawQuad>();
-      quad->material = viz::DrawQuad::RENDER_PASS;
+      quad->material = viz::DrawQuad::Material::kRenderPass;
       return quad;
     case viz::mojom::DrawQuadStateDataView::Tag::SOLID_COLOR_QUAD_STATE:
       quad = list->AllocateAndConstruct<viz::SolidColorDrawQuad>();
-      quad->material = viz::DrawQuad::SOLID_COLOR;
+      quad->material = viz::DrawQuad::Material::kSolidColor;
       return quad;
     case viz::mojom::DrawQuadStateDataView::Tag::STREAM_VIDEO_QUAD_STATE:
       quad = list->AllocateAndConstruct<viz::StreamVideoDrawQuad>();
-      quad->material = viz::DrawQuad::STREAM_VIDEO_CONTENT;
+      quad->material = viz::DrawQuad::Material::kStreamVideoContent;
       return quad;
     case viz::mojom::DrawQuadStateDataView::Tag::SURFACE_QUAD_STATE:
       quad = list->AllocateAndConstruct<viz::SurfaceDrawQuad>();
-      quad->material = viz::DrawQuad::SURFACE_CONTENT;
+      quad->material = viz::DrawQuad::Material::kSurfaceContent;
       return quad;
     case viz::mojom::DrawQuadStateDataView::Tag::TEXTURE_QUAD_STATE:
       quad = list->AllocateAndConstruct<viz::TextureDrawQuad>();
-      quad->material = viz::DrawQuad::TEXTURE_CONTENT;
+      quad->material = viz::DrawQuad::Material::kTextureContent;
       return quad;
     case viz::mojom::DrawQuadStateDataView::Tag::TILE_QUAD_STATE:
       quad = list->AllocateAndConstruct<viz::TileDrawQuad>();
-      quad->material = viz::DrawQuad::TILED_CONTENT;
+      quad->material = viz::DrawQuad::Material::kTiledContent;
       return quad;
     case viz::mojom::DrawQuadStateDataView::Tag::VIDEO_HOLE_QUAD_STATE:
       quad = list->AllocateAndConstruct<viz::VideoHoleDrawQuad>();
-      quad->material = viz::DrawQuad::VIDEO_HOLE;
+      quad->material = viz::DrawQuad::Material::kVideoHole;
       return quad;
     case viz::mojom::DrawQuadStateDataView::Tag::YUV_VIDEO_QUAD_STATE:
       quad = list->AllocateAndConstruct<viz::YUVVideoDrawQuad>();
-      quad->material = viz::DrawQuad::YUV_VIDEO_CONTENT;
+      quad->material = viz::DrawQuad::Material::kYuvVideoContent;
       return quad;
   }
   NOTREACHED();

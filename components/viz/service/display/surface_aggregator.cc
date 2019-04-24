@@ -782,7 +782,7 @@ void SurfaceAggregator::CopyQuadsToPass(
     DCHECK(quad->shared_quad_state->rounded_corner_bounds.IsEmpty() ||
            parent_rounded_corner_info.IsEmpty());
 
-    if (quad->material == DrawQuad::SURFACE_CONTENT) {
+    if (quad->material == DrawQuad::Material::kSurfaceContent) {
       const auto* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
       // HandleSurfaceQuad may add other shared quad state, so reset the
       // current data.
@@ -829,7 +829,7 @@ void SurfaceAggregator::CopyQuadsToPass(
       }
 
       DrawQuad* dest_quad;
-      if (quad->material == DrawQuad::RENDER_PASS) {
+      if (quad->material == DrawQuad::Material::kRenderPass) {
         const auto* pass_quad = RenderPassDrawQuad::MaterialCast(quad);
         RenderPassId original_pass_id = pass_quad->render_pass_id;
         RenderPassId remapped_pass_id =
@@ -843,7 +843,7 @@ void SurfaceAggregator::CopyQuadsToPass(
 
         dest_quad = dest_pass->CopyFromAndAppendRenderPassDrawQuad(
             pass_quad, remapped_pass_id);
-      } else if (quad->material == DrawQuad::TEXTURE_CONTENT) {
+      } else if (quad->material == DrawQuad::Material::kTextureContent) {
         const auto* texture_quad = TextureDrawQuad::MaterialCast(quad);
         if (texture_quad->secure_output_only &&
             (!output_is_secure_ || copy_request_passes_.count(dest_pass->id))) {
@@ -1055,7 +1055,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
         has_pixel_moving_filter ||
         base::ContainsKey(moved_pixel_passes_, remapped_pass_id);
     for (auto* quad : render_pass->quad_list) {
-      if (quad->material == DrawQuad::SURFACE_CONTENT) {
+      if (quad->material == DrawQuad::Material::kSurfaceContent) {
         const auto* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
         gfx::Transform target_to_surface_transform(
             render_pass->transform_to_root_target,
@@ -1075,7 +1075,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
             surface_quad->stretch_content_to_fill_bounds,
             surface_quad->shared_quad_state->is_clipped,
             clip_rect_in_root_target_space);
-      } else if (quad->material == DrawQuad::RENDER_PASS) {
+      } else if (quad->material == DrawQuad::Material::kRenderPass) {
         const auto* render_pass_quad = RenderPassDrawQuad::MaterialCast(quad);
         if (in_moved_pixel_pass) {
           moved_pixel_passes_.insert(RemapPassId(

@@ -215,7 +215,7 @@ const TileDrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
   // The quad is expected to be the entire layer so that AA edges are correct.
   if (quad->shared_quad_state->quad_layer_rect != quad->rect)
     return nullptr;
-  if (quad->material != DrawQuad::TILED_CONTENT)
+  if (quad->material != DrawQuad::Material::kTiledContent)
     return nullptr;
 
   // TODO(chrishtr): support could be added for opacity, but care needs

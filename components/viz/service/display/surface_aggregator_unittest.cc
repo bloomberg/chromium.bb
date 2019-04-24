@@ -137,7 +137,7 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
   struct Quad {
     static Quad SolidColorQuad(SkColor color, const gfx::Rect& rect) {
       Quad quad;
-      quad.material = DrawQuad::SOLID_COLOR;
+      quad.material = DrawQuad::Material::kSolidColor;
       quad.color = color;
       quad.rect = rect;
       return quad;
@@ -145,7 +145,7 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
 
     static Quad YUVVideoQuad(const gfx::Rect& rect) {
       Quad quad;
-      quad.material = DrawQuad::YUV_VIDEO_CONTENT;
+      quad.material = DrawQuad::Material::kYuvVideoContent;
       quad.rect = rect;
       return quad;
     }
@@ -158,7 +158,7 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
                             bool stretch_content_to_fill_bounds,
                             bool ignores_input_event) {
       Quad quad;
-      quad.material = DrawQuad::SURFACE_CONTENT;
+      quad.material = DrawQuad::Material::kSurfaceContent;
       quad.primary_surface_rect = primary_surface_rect;
       quad.surface_range = surface_range;
       quad.default_background_color = default_background_color;
@@ -175,7 +175,7 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
                             bool stretch_content_to_fill_bounds,
                             bool ignores_input_event) {
       Quad quad;
-      quad.material = DrawQuad::SURFACE_CONTENT;
+      quad.material = DrawQuad::Material::kSurfaceContent;
       quad.primary_surface_rect = primary_surface_rect;
       quad.opacity = opacity;
       quad.to_target_transform = transform;
@@ -188,13 +188,13 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
 
     static Quad RenderPassQuad(int id) {
       Quad quad;
-      quad.material = DrawQuad::RENDER_PASS;
+      quad.material = DrawQuad::Material::kRenderPass;
       quad.render_pass_id = id;
       return quad;
     }
 
     DrawQuad::Material material;
-    // Set when material==DrawQuad::SURFACE_CONTENT.
+    // Set when material==DrawQuad::Material::kSurfaceContent.
     SurfaceRange surface_range;
     SkColor default_background_color;
     bool stretch_content_to_fill_bounds;
@@ -202,14 +202,17 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
     gfx::Rect primary_surface_rect;
     float opacity;
     gfx::Transform to_target_transform;
-    // Set when material==DrawQuad::SOLID_COLOR.
+    // Set when material==DrawQuad::Material::kSolidColor.
     SkColor color;
     gfx::Rect rect;
-    // Set when material==DrawQuad::RENDER_PASS.
+    // Set when material==DrawQuad::Material::kRenderPass.
     RenderPassId render_pass_id;
 
    private:
-    Quad() : material(DrawQuad::INVALID), opacity(1.f), color(SK_ColorWHITE) {}
+    Quad()
+        : material(DrawQuad::Material::kInvalid),
+          opacity(1.f),
+          color(SK_ColorWHITE) {}
   };
 
   struct Pass {
@@ -234,10 +237,10 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
                             RenderPass* pass,
                             std::vector<SurfaceRange>* referenced_surfaces) {
     switch (desc.material) {
-      case DrawQuad::SOLID_COLOR:
+      case DrawQuad::Material::kSolidColor:
         cc::AddQuad(pass, desc.rect, desc.color);
         break;
-      case DrawQuad::SURFACE_CONTENT:
+      case DrawQuad::Material::kSurfaceContent:
         referenced_surfaces->emplace_back(desc.surface_range);
         AddSurfaceQuad(pass, desc.primary_surface_rect, desc.opacity,
                        desc.to_target_transform, desc.surface_range,
@@ -245,10 +248,10 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
                        desc.stretch_content_to_fill_bounds,
                        desc.ignores_input_event);
         break;
-      case DrawQuad::RENDER_PASS:
+      case DrawQuad::Material::kRenderPass:
         AddRenderPassQuad(pass, desc.render_pass_id);
         break;
-      case DrawQuad::YUV_VIDEO_CONTENT:
+      case DrawQuad::Material::kYuvVideoContent:
         AddYUVVideoQuad(pass, desc.rect);
         break;
       default:
@@ -272,8 +275,8 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
   static void TestQuadMatchesExpectations(Quad expected_quad,
                                           const DrawQuad* quad) {
     switch (expected_quad.material) {
-      case DrawQuad::SOLID_COLOR: {
-        ASSERT_EQ(DrawQuad::SOLID_COLOR, quad->material);
+      case DrawQuad::Material::kSolidColor: {
+        ASSERT_EQ(DrawQuad::Material::kSolidColor, quad->material);
 
         const auto* solid_color_quad = SolidColorDrawQuad::MaterialCast(quad);
 
@@ -281,8 +284,8 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
         EXPECT_EQ(expected_quad.rect, solid_color_quad->rect);
         break;
       }
-      case DrawQuad::RENDER_PASS: {
-        ASSERT_EQ(DrawQuad::RENDER_PASS, quad->material);
+      case DrawQuad::Material::kRenderPass: {
+        ASSERT_EQ(DrawQuad::Material::kRenderPass, quad->material);
 
         const auto* render_pass_quad = RenderPassDrawQuad::MaterialCast(quad);
 
@@ -1264,7 +1267,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillBounds) {
 
   auto* output_quad = render_pass->quad_list.back();
 
-  EXPECT_EQ(DrawQuad::SOLID_COLOR, output_quad->material);
+  EXPECT_EQ(DrawQuad::Material::kSolidColor, output_quad->material);
   gfx::RectF output_rect(100.f, 100.f);
 
   // SurfaceAggregator should stretch the SolidColorDrawQuad to fit the bounds
@@ -1337,7 +1340,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillStretchedBounds) {
 
   auto* output_quad = render_pass->quad_list.back();
 
-  EXPECT_EQ(DrawQuad::SOLID_COLOR, output_quad->material);
+  EXPECT_EQ(DrawQuad::Material::kSolidColor, output_quad->material);
   gfx::RectF output_rect(200.f, 200.f);
 
   // SurfaceAggregator should stretch the SolidColorDrawQuad to fit the bounds
@@ -1409,7 +1412,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, StretchContentToFillSquashedBounds) {
 
   auto* output_quad = render_pass->quad_list.back();
 
-  EXPECT_EQ(DrawQuad::SOLID_COLOR, output_quad->material);
+  EXPECT_EQ(DrawQuad::Material::kSolidColor, output_quad->material);
   gfx::RectF output_rect(50.f, 50.f);
 
   // SurfaceAggregator should stretch the SolidColorDrawQuad to fit the bounds
@@ -1867,7 +1870,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
 
     // This render pass pass quad will reference the first pass from the
     // embedded surface, which is the second pass in the aggregated frame.
-    ASSERT_EQ(DrawQuad::RENDER_PASS,
+    ASSERT_EQ(DrawQuad::Material::kRenderPass,
               third_pass_quad_list.ElementAt(1)->material);
     const auto* third_pass_render_pass_draw_quad =
         RenderPassDrawQuad::MaterialCast(third_pass_quad_list.ElementAt(1));
@@ -1889,7 +1892,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
 
     // The next quad will be a render pass quad referencing the second pass from
     // the embedded surface, which is the third pass in the aggregated frame.
-    ASSERT_EQ(DrawQuad::RENDER_PASS,
+    ASSERT_EQ(DrawQuad::Material::kRenderPass,
               fourth_pass_quad_list.ElementAt(1)->material);
     const auto* fourth_pass_first_render_pass_draw_quad =
         RenderPassDrawQuad::MaterialCast(fourth_pass_quad_list.ElementAt(1));
@@ -1898,7 +1901,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
 
     // The last quad will be a render pass quad referencing the first pass from
     // the root surface, which is the first pass overall.
-    ASSERT_EQ(DrawQuad::RENDER_PASS,
+    ASSERT_EQ(DrawQuad::Material::kRenderPass,
               fourth_pass_quad_list.ElementAt(2)->material);
     const auto* fourth_pass_second_render_pass_draw_quad =
         RenderPassDrawQuad::MaterialCast(fourth_pass_quad_list.ElementAt(2));
@@ -1917,7 +1920,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSurfaceReference) {
     // The last quad in the last pass will reference the second pass from the
     // root surface, which after aggregating is the fourth pass in the overall
     // list.
-    ASSERT_EQ(DrawQuad::RENDER_PASS,
+    ASSERT_EQ(DrawQuad::Material::kRenderPass,
               fifth_pass_quad_list.ElementAt(1)->material);
     const auto* fifth_pass_render_pass_draw_quad =
         RenderPassDrawQuad::MaterialCast(fifth_pass_quad_list.ElementAt(1));
@@ -2148,12 +2151,12 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, RenderPassIdMapping) {
   // Make sure the render pass quads reference the remapped pass IDs.
   DrawQuad* render_pass_quads[] = {aggregated_pass_list[1]->quad_list.front(),
                                    aggregated_pass_list[2]->quad_list.front()};
-  ASSERT_EQ(render_pass_quads[0]->material, DrawQuad::RENDER_PASS);
+  ASSERT_EQ(render_pass_quads[0]->material, DrawQuad::Material::kRenderPass);
   EXPECT_EQ(
       actual_pass_ids[0],
       RenderPassDrawQuad::MaterialCast(render_pass_quads[0])->render_pass_id);
 
-  ASSERT_EQ(render_pass_quads[1]->material, DrawQuad::RENDER_PASS);
+  ASSERT_EQ(render_pass_quads[1]->material, DrawQuad::Material::kRenderPass);
   EXPECT_EQ(
       actual_pass_ids[1],
       RenderPassDrawQuad::MaterialCast(render_pass_quads[1])->render_pass_id);
@@ -4178,7 +4181,8 @@ TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
 
   auto* render_pass = frame.render_pass_list.back().get();
 
-  EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, render_pass->quad_list.back()->material);
+  EXPECT_EQ(DrawQuad::Material::kTextureContent,
+            render_pass->quad_list.back()->material);
 
   {
     auto pass = RenderPass::Create();
@@ -4205,14 +4209,15 @@ TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
   render_pass = frame.render_pass_list.front().get();
 
   // Parent has copy request, so texture should not be drawn.
-  EXPECT_EQ(DrawQuad::SOLID_COLOR, render_pass->quad_list.back()->material);
+  EXPECT_EQ(DrawQuad::Material::kSolidColor,
+            render_pass->quad_list.back()->material);
 
   frame = aggregator_->Aggregate(surface2_id, GetNextDisplayTimeAndIncrement());
   EXPECT_EQ(1u, frame.render_pass_list.size());
   render_pass = frame.render_pass_list.front().get();
 
   // Copy request has been executed earlier, so texture should be drawn.
-  EXPECT_EQ(DrawQuad::TEXTURE_CONTENT,
+  EXPECT_EQ(DrawQuad::Material::kTextureContent,
             render_pass->quad_list.front()->material);
 
   aggregator_->set_output_is_secure(false);
@@ -4221,7 +4226,8 @@ TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
   render_pass = frame.render_pass_list.back().get();
 
   // Output is insecure, so texture should be drawn.
-  EXPECT_EQ(DrawQuad::SOLID_COLOR, render_pass->quad_list.back()->material);
+  EXPECT_EQ(DrawQuad::Material::kSolidColor,
+            render_pass->quad_list.back()->material);
 }
 
 // Ensure that the render passes have correct color spaces.

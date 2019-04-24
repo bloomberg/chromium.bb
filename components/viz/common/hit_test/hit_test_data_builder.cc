@@ -116,7 +116,7 @@ void AddHitTestDataFromRenderPass(
 
   const uint32_t render_pass_hit_test_region_list_start = regions->size();
   for (const DrawQuad* quad : render_pass->quad_list) {
-    if (quad->material == DrawQuad::SURFACE_CONTENT) {
+    if (quad->material == DrawQuad::Material::kSurfaceContent) {
       const SurfaceDrawQuad* surface_quad = SurfaceDrawQuad::MaterialCast(quad);
 
       // Skip the quad if the transform is not invertible (i.e. it will not
@@ -151,7 +151,7 @@ void AddHitTestDataFromRenderPass(
                            surface_quad->ignores_input_event);
         }
       }
-    } else if (quad->material == DrawQuad::RENDER_PASS) {
+    } else if (quad->material == DrawQuad::Material::kRenderPass) {
       const RenderPassDrawQuad* render_quad =
           RenderPassDrawQuad::MaterialCast(quad);
       AddHitTestDataFromRenderPass(frame, render_quad->render_pass_id, regions,
