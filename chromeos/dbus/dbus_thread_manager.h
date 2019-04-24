@@ -37,7 +37,6 @@ class DBusThreadManagerSetter;
 class DebugDaemonClient;
 class DiagnosticsdClient;
 class EasyUnlockClient;
-class GsmSMSClient;
 class ImageBurnerClient;
 class ImageLoaderClient;
 class LorgnetteManagerClient;
@@ -137,7 +136,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
 
   // DEPRECATED, DO NOT USE. The static getter for each of these classes should
   // be used instead. TODO(stevenjb): Remove. https://crbug.com/948390.
-  GsmSMSClient* GetGsmSMSClient();
   ModemMessagingClient* GetModemMessagingClient();
   SMSClient* GetSMSClient();
   ShillDeviceClient* GetShillDeviceClient();

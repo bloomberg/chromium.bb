@@ -4,7 +4,6 @@
 
 #include "chromeos/dbus/shill/shill_clients.h"
 
-#include "chromeos/dbus/shill/gsm_sms_client.h"
 #include "chromeos/dbus/shill/modem_messaging_client.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_ipconfig_client.h"
@@ -23,7 +22,6 @@ void Initialize(dbus::Bus* system_bus) {
     return InitializeFakes();
 #endif
   DCHECK(system_bus);
-  GsmSMSClient::Initialize(system_bus);
   ModemMessagingClient::Initialize(system_bus);
   SMSClient::Initialize(system_bus);
   ShillDeviceClient::Initialize(system_bus);
@@ -35,7 +33,6 @@ void Initialize(dbus::Bus* system_bus) {
 }
 
 void InitializeFakes() {
-  GsmSMSClient::InitializeFake();
   ModemMessagingClient::InitializeFake();
   SMSClient::InitializeFake();
   ShillDeviceClient::InitializeFake();
@@ -57,7 +54,6 @@ void Shutdown() {
   ShillDeviceClient::Shutdown();
   SMSClient::Shutdown();
   ModemMessagingClient::Shutdown();
-  GsmSMSClient::Shutdown();
 }
 
 }  // namespace shill_clients

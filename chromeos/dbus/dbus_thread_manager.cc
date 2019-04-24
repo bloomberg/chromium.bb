@@ -28,7 +28,6 @@
 #include "chromeos/dbus/lorgnette_manager_client.h"
 #include "chromeos/dbus/runtime_probe_client.h"
 #include "chromeos/dbus/seneschal_client.h"
-#include "chromeos/dbus/shill/gsm_sms_client.h"
 #include "chromeos/dbus/shill/modem_messaging_client.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
@@ -181,10 +180,6 @@ ShillProfileClient* DBusThreadManager::GetShillProfileClient() {
 ShillThirdPartyVpnDriverClient*
 DBusThreadManager::GetShillThirdPartyVpnDriverClient() {
   return ShillThirdPartyVpnDriverClient::Get();
-}
-
-GsmSMSClient* DBusThreadManager::GetGsmSMSClient() {
-  return GsmSMSClient::Get();
 }
 
 ImageBurnerClient* DBusThreadManager::GetImageBurnerClient() {
