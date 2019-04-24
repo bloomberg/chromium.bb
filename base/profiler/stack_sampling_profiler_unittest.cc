@@ -221,9 +221,14 @@ CallWithPlainFunction(const Closure& wait_for_sample) {
 NOINLINE FunctionAddressRange CallWithAlloca(const Closure& wait_for_sample) {
   const void* start_program_counter = GetProgramCounter();
 
-  const size_t alloca_size = 100;
-  // Memset to 0 to generate a clean failure.
-  std::memset(alloca(alloca_size), 0, alloca_size);
+  // Volatile to force a dynamic stack allocation.
+  const volatile size_t alloca_size = 100;
+  // Use the memory via volatile writes to prevent the allocation from being
+  // optimized out.
+  volatile char* const allocation =
+      const_cast<volatile char*>(static_cast<char*>(alloca(alloca_size)));
+  for (volatile char* p = allocation; p < allocation + alloca_size; ++p)
+    *p = '\0';
 
   if (!wait_for_sample.is_null())
     wait_for_sample.Run();
