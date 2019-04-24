@@ -166,7 +166,8 @@ class TabManager::TabManagerSessionRestoreObserver final
   TabManager* tab_manager_;
 };
 
-TabManager::TabManager(TabLoadTracker* tab_load_tracker)
+TabManager::TabManager(PageSignalReceiver* page_signal_receiver,
+                       TabLoadTracker* tab_load_tracker)
     : state_transitions_callback_(
           base::BindRepeating(&TabManager::PerformStateTransitions,
                               base::Unretained(this))),

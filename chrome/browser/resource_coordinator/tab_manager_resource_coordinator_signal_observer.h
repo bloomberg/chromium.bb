@@ -8,12 +8,15 @@
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/web_contents_proxy.h"
+#include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 
 namespace resource_coordinator {
 
-// TabManager::ResourceCoordinatorSignalObserver forwards data from the
-// performance manager graph.
+// TabManager::ResourceCoordinatorSignalObserver implements some observer
+// interfaces, for example it currently implements PageSignalObserver but can
+// implement more; and receives signals from resource coordinator through those
+// interfaces.
 // TODO(chrisha): Kill this thing entirely and move all of tab manager into the
 // performance manager.
 class TabManager::ResourceCoordinatorSignalObserver

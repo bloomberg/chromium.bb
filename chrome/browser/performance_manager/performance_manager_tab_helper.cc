@@ -22,6 +22,19 @@
 namespace performance_manager {
 
 PerformanceManagerTabHelper* PerformanceManagerTabHelper::first_ = nullptr;
+
+// static
+bool PerformanceManagerTabHelper::GetCoordinationIDForWebContents(
+    content::WebContents* web_contents,
+    resource_coordinator::CoordinationUnitID* id) {
+  PerformanceManagerTabHelper* helper = FromWebContents(web_contents);
+  if (!helper)
+    return false;
+  *id = helper->page_node_->id();
+
+  return true;
+}
+
 // static
 void PerformanceManagerTabHelper::DetachAndDestroyAll() {
   while (first_)

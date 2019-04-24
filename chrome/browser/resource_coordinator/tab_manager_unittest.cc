@@ -140,6 +140,10 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
 
   std::unique_ptr<WebContents> CreateWebContents() {
     std::unique_ptr<WebContents> web_contents = CreateTestWebContents();
+    // TODO(siggi): This is an abomination, remove this once the
+    //     PageSignalGenerator is folded into the performance manager.
+    performance_manager::PerformanceManagerTabHelper::CreateForWebContents(
+        web_contents.get());
     ResourceCoordinatorTabHelper::CreateForWebContents(web_contents.get());
     // Commit an URL to allow discarding.
     content::WebContentsTester::For(web_contents.get())
@@ -684,14 +688,14 @@ TEST_F(TabManagerTest, BackgroundTabLoadingMode) {
 }
 
 TEST_F(TabManagerTest, BackgroundTabLoadingSlots) {
-  TabManager tab_manager1(TabLoadTracker::Get());
+  TabManager tab_manager1(GetPageSignalReceiver(), TabLoadTracker::Get());
   MaybeThrottleNavigations(&tab_manager1, 1);
   EXPECT_FALSE(tab_manager1.IsNavigationDelayedForTest(nav_handle1_.get()));
   EXPECT_TRUE(tab_manager1.IsNavigationDelayedForTest(nav_handle2_.get()));
   EXPECT_TRUE(tab_manager1.IsNavigationDelayedForTest(nav_handle3_.get()));
   ResetState();
 
-  TabManager tab_manager2(TabLoadTracker::Get());
+  TabManager tab_manager2(GetPageSignalReceiver(), TabLoadTracker::Get());
   tab_manager2.SetLoadingSlotsForTest(2);
   MaybeThrottleNavigations(&tab_manager2, 2);
   EXPECT_FALSE(tab_manager2.IsNavigationDelayedForTest(nav_handle1_.get()));
@@ -699,7 +703,7 @@ TEST_F(TabManagerTest, BackgroundTabLoadingSlots) {
   EXPECT_TRUE(tab_manager2.IsNavigationDelayedForTest(nav_handle3_.get()));
   ResetState();
 
-  TabManager tab_manager3(TabLoadTracker::Get());
+  TabManager tab_manager3(GetPageSignalReceiver(), TabLoadTracker::Get());
   tab_manager3.SetLoadingSlotsForTest(3);
   MaybeThrottleNavigations(&tab_manager3, 3);
   EXPECT_FALSE(tab_manager3.IsNavigationDelayedForTest(nav_handle1_.get()));

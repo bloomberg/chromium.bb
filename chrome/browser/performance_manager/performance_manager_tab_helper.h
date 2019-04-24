@@ -34,6 +34,11 @@ class PerformanceManagerTabHelper
       public content::WebContentsUserData<PerformanceManagerTabHelper>,
       public WebContentsProxy {
  public:
+  // TODO(siggi): Remove this once the PageSignalGenerator has been abolished.
+  static bool GetCoordinationIDForWebContents(
+      content::WebContents* web_contents,
+      resource_coordinator::CoordinationUnitID* id);
+
   // Detaches all instances from their WebContents and destroys them.
   static void DetachAndDestroyAll();
 
