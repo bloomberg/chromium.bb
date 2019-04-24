@@ -42,6 +42,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 const CGFloat kTableViewSeparatorLeadingInset = 56;
 const CGFloat kTableViewSeparatorTrailingInset = 16;
+const int kFaviconDesiredSizeInPoint = 32;
+const int kFaviconMinSizeInPoint = 16;
 constexpr base::TimeDelta kMaxVisitAge = base::TimeDelta::FromDays(2);
 const size_t kMaxcustomSearchEngines = 3;
 const char kUmaSelectDefaultSearchEngine[] =
@@ -232,7 +234,7 @@ const char kUmaSelectDefaultSearchEngine[] =
     FaviconAttributes* cachedAttributes = nil;
     if (item.type == ItemTypePrepopulatedEngine) {
       cachedAttributes = _faviconLoader->FaviconForPageUrl(
-          engineItem.URL, kFaviconPreferredSize, kFaviconMinSize,
+          engineItem.URL, kFaviconDesiredSizeInPoint, kFaviconMinSizeInPoint,
           /*fallback_to_google_server=*/YES, ^(FaviconAttributes* attributes) {
             // Only set favicon if the cell hasn't been reused.
             if (urlCell.cellUniqueIdentifier == engineItem.uniqueIdentifier) {
@@ -242,7 +244,7 @@ const char kUmaSelectDefaultSearchEngine[] =
           });
     } else {
       cachedAttributes = _faviconLoader->FaviconForIconUrl(
-          engineItem.URL, kFaviconPreferredSize, kFaviconMinSize,
+          engineItem.URL, kFaviconDesiredSizeInPoint, kFaviconMinSizeInPoint,
           ^(FaviconAttributes* attributes) {
             // Only set favicon if the cell hasn't been reused.
             if (urlCell.cellUniqueIdentifier == engineItem.uniqueIdentifier) {
