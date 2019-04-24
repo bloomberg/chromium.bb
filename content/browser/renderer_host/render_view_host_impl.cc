@@ -728,7 +728,7 @@ void RenderViewHostImpl::RenderProcessExited(
   if (!GetWidget()->renderer_initialized())
     return;
 
-  GetWidget()->RendererExited(info.status, info.exit_code);
+  GetWidget()->RendererExited();
   delegate_->RenderViewTerminated(this, info.status, info.exit_code);
 }
 

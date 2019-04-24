@@ -447,6 +447,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
           RenderWidgetHostID(process->GetID(), routing_id_), this));
   CHECK(result.second) << "Inserting a duplicate item!";
   process_->AddRoute(routing_id_, this);
+  process_->AddObserver(this);
   render_process_blocked_state_changed_subscription_ =
       process_->RegisterBlockStateChangedCallback(base::BindRepeating(
           &RenderWidgetHostImpl::RenderProcessBlockedStateChanged,
@@ -679,7 +680,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderWidgetHostImpl, msg)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HittestData, OnHittestData)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_UpdateScreenRects_ACK,
@@ -1829,6 +1829,16 @@ RenderProcessHost::Priority RenderWidgetHostImpl::GetPriority() {
   return priority;
 }
 
+void RenderWidgetHostImpl::RenderProcessExited(
+    RenderProcessHost* host,
+    const ChildProcessTerminationInfo& info) {
+  // When the RenderViewHost or the RenderFrameHost own this instance, they
+  // manage its destruction. Otherwise it is owned by the renderer process and
+  // must self-destroy when it exits.
+  if (!owner_delegate_ && !owned_by_render_frame_host_)
+    Destroy(true);
+}
+
 mojom::WidgetInputHandler* RenderWidgetHostImpl::GetWidgetInputHandler() {
   if (associated_widget_input_handler_)
     return associated_widget_input_handler_.get();
@@ -1994,8 +2004,7 @@ void RenderWidgetHostImpl::OnCommitAndDrawCompositorFrame() {
     owner_delegate_->RenderWidgetDidCommitAndDrawCompositorFrame();
 }
 
-void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
-                                          int exit_code) {
+void RenderWidgetHostImpl::RendererExited() {
   if (!renderer_initialized_)
     return;
 
@@ -2034,7 +2043,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   StopInputEventAckTimeout();
 
   if (view_) {
-    view_->RenderProcessGone(status, exit_code);
+    view_->RenderProcessGone();
     view_.reset();  // The View should be deleted by RenderProcessGone.
   }
 
@@ -2178,6 +2187,7 @@ void RenderWidgetHostImpl::Destroy(bool also_delete) {
 
   render_process_blocked_state_changed_subscription_.reset();
   process_->RemovePriorityClient(this);
+  process_->RemoveObserver(this);
   process_->RemoveRoute(routing_id_);
   g_routing_id_widget_map.Get().erase(
       RenderWidgetHostID(process_->GetID(), routing_id_));
@@ -2260,19 +2270,6 @@ void RenderWidgetHostImpl::OnKeyboardEventAck(
   if (result_tracker)
     result_tracker->OnEventProcessingDone(processed ||
                                           event.event.skip_in_browser);
-}
-
-void RenderWidgetHostImpl::OnRenderProcessGone(int status, int exit_code) {
-  // RenderFrameHost owns a RenderWidgetHost when it needs one, in which case
-  // it handles destruction.
-  if (!owned_by_render_frame_host_) {
-    // TODO(evanm): This synchronously ends up calling "delete this".
-    // Is that really what we want in response to this message?  I'm matching
-    // previous behavior of the code here.
-    Destroy(true);
-  } else {
-    RendererExited(static_cast<base::TerminationStatus>(status), exit_code);
-  }
 }
 
 void RenderWidgetHostImpl::OnHittestData(

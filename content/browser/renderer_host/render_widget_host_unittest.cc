@@ -925,7 +925,7 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
       WidgetMsg_SynchronizeVisualProperties::ID));
 }
 
-// Test for crbug.com/25097.  If a renderer crashes between a resize and the
+// Test for crbug.com/25097. If a renderer crashes between a resize and the
 // corresponding update message, we must be sure to clear the visual properties
 // ACK logic.
 TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
@@ -941,11 +941,11 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
       WidgetMsg_SynchronizeVisualProperties::ID));
 
-  // Simulate a renderer crash before the update message.  Ensure all the
-  // visual properties ACK logic is cleared.  Must clear the view first so it
-  // doesn't get deleted.
+  // Simulate a renderer crash before the update message. Ensure all the visual
+  // properties ACK logic is cleared. Must clear the view first so it doesn't
+  // get deleted.
   host_->SetView(nullptr);
-  host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  host_->RendererExited();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(nullptr, host_->old_visual_properties_);
 
@@ -1623,7 +1623,7 @@ TEST_F(RenderWidgetHostTest, InputEventRWHLatencyComponent) {
 TEST_F(RenderWidgetHostTest, RendererExitedResetsInputRouter) {
   // RendererExited will delete the view.
   host_->SetView(new TestView(host_.get()));
-  host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  host_->RendererExited();
 
   // Make sure the input router is in a fresh state.
   ASSERT_FALSE(host_->input_router()->HasPendingEvents());
@@ -1636,7 +1636,7 @@ TEST_F(RenderWidgetHostTest, RendererExitedResetsIsHidden) {
   host_->WasShown(false /* record_presentation_time */);
 
   ASSERT_FALSE(host_->is_hidden());
-  host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  host_->RendererExited();
   ASSERT_TRUE(host_->is_hidden());
 
   // Make sure the input router is in a fresh state.
@@ -1675,7 +1675,7 @@ TEST_F(RenderWidgetHostTest, DISABLED_RendererExitedNoDrag) {
   EXPECT_EQ(delegate_->mock_delegate_view()->start_dragging_count(), 1);
 
   // Simulate that renderer exited due navigation to the next page.
-  host_->RendererExited(base::TERMINATION_STATUS_NORMAL_TERMINATION, 0);
+  host_->RendererExited();
   EXPECT_FALSE(host_->GetView());
   host_->OnStartDragging(drop_data, drag_operation, SkBitmap(), gfx::Vector2d(),
                          event_info);
@@ -1951,7 +1951,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
   EXPECT_EQ(1u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  host_->RendererExited();
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
   host_->Init();
@@ -1966,7 +1966,7 @@ TEST_F(RenderWidgetHostTest, FrameToken_RendererCrash) {
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
 
-  host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  host_->RendererExited();
   EXPECT_EQ(0u, host_->frame_token_message_queue_->size());
   EXPECT_EQ(0u, host_->processed_frame_messages_count());
   host_->SetView(view_.get());

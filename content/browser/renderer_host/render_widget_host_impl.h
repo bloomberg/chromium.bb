@@ -50,6 +50,7 @@
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/render_widget_surface_properties.h"
 #include "content/common/widget.mojom.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/input_event_ack_state.h"
 #include "content/public/common/page_zoom.h"
@@ -124,6 +125,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public InputRouterImplClient,
       public InputDispositionHandler,
       public RenderProcessHostImpl::PriorityClient,
+      public RenderProcessHostObserver,
       public TouchEmulatorClient,
       public SyntheticGestureController::Delegate,
       public viz::mojom::CompositorFrameSink,
@@ -245,6 +247,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // RenderProcessHostImpl::PriorityClient implementation.
   RenderProcessHost::Priority GetPriority() override;
+
+  // RenderProcessHostObserver implementation.
+  void RenderProcessExited(RenderProcessHost* host,
+                           const ChildProcessTerminationInfo& info) override;
 
   // Notification that the screen info has changed.
   void NotifyScreenInfoChanged();
@@ -588,7 +594,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Called when we receive a notification indicating that the renderer process
   // is gone. This will reset our state so that our state will be consistent if
   // a new renderer is created.
-  void RendererExited(base::TerminationStatus status, int exit_code);
+  void RendererExited();
 
   // Called from a RenderFrameHost when the text selection has changed.
   void SelectionChanged(const base::string16& text,
@@ -834,7 +840,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                           InputEventAckState ack_result);
 
   // IPC message handlers
-  void OnRenderProcessGone(int status, int error_code);
   void OnClose();
   void OnUpdateScreenRectsAck();
   void OnRequestSetBounds(const gfx::Rect& bounds);

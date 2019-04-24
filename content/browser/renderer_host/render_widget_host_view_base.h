@@ -511,8 +511,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual void SetIsLoading(bool is_loading) = 0;
 
   // Notifies the View that the renderer has ceased to exist.
-  virtual void RenderProcessGone(base::TerminationStatus status,
-                                 int error_code) = 0;
+  virtual void RenderProcessGone() = 0;
 
   // Tells the View to destroy itself.
   virtual void Destroy();

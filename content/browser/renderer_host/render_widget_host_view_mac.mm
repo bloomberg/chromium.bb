@@ -695,8 +695,7 @@ void RenderWidgetHostViewMac::OnRenderFrameMetadataChangedAfterActivation() {
   RenderWidgetHostViewBase::OnRenderFrameMetadataChangedAfterActivation();
 }
 
-void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
-                                                int error_code) {
+void RenderWidgetHostViewMac::RenderProcessGone() {
   Destroy();
 }
 

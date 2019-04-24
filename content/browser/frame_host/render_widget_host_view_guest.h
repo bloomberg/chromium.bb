@@ -105,8 +105,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) override;
 #endif
-  void RenderProcessGone(base::TerminationStatus status,
-                         int error_code) override;
+  void RenderProcessGone() override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
   void SelectionChanged(const base::string16& text,

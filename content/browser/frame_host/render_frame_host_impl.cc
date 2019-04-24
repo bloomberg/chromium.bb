@@ -1550,6 +1550,11 @@ bool RenderFrameHostImpl::AccessibilityIsMainFrame() {
 void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   DCHECK_EQ(site_instance_.get(), site_instance);
 
+  if (render_widget_host_ &&
+      render_widget_host_->owned_by_render_frame_host()) {
+    render_widget_host_->RendererExited();
+  }
+
   // The renderer process is gone, so this frame can no longer be loading.
   if (GetNavigationHandle())
     GetNavigationHandle()->set_net_error_code(net::ERR_ABORTED);

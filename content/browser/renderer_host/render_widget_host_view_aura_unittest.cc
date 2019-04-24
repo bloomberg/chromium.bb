@@ -5437,7 +5437,7 @@ TEST_F(RenderWidgetHostViewAuraTest, KeyEventAsyncNotifiedWhenRouterChanges) {
   EXPECT_FALSE(async_callback_run);
 
   // RendererExited() should result in running the callback.
-  widget_host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+  widget_host_->RendererExited();
   EXPECT_TRUE(async_callback_run);
   EXPECT_FALSE(async_callback_handled_result);
   // |async_callback_stopped_propagation_result| should always be false.

@@ -299,15 +299,13 @@ gfx::PointF RenderWidgetHostViewGuest::TransformRootPointToViewCoordSpace(
   return transformed_point;
 }
 
-void RenderWidgetHostViewGuest::RenderProcessGone(
-    base::TerminationStatus status,
-    int error_code) {
+void RenderWidgetHostViewGuest::RenderProcessGone() {
   // The |platform_view_| gets destroyed before we get here if this view
   // is for an InterstitialPage.
   if (platform_view_)
-    platform_view_->RenderProcessGone(status, error_code);
+    platform_view_->RenderProcessGone();
 
-  RenderWidgetHostViewChildFrame::RenderProcessGone(status, error_code);
+  RenderWidgetHostViewChildFrame::RenderProcessGone();
 }
 
 void RenderWidgetHostViewGuest::Destroy() {

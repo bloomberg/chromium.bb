@@ -146,8 +146,7 @@ void TestRenderWidgetHostView::WasOccluded() {
   is_occluded_ = true;
 }
 
-void TestRenderWidgetHostView::RenderProcessGone(base::TerminationStatus status,
-                                                 int error_code) {
+void TestRenderWidgetHostView::RenderProcessGone() {
   delete this;
 }
 

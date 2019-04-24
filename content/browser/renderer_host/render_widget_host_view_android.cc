@@ -837,8 +837,7 @@ void RenderWidgetHostViewAndroid::FocusedNodeChanged(
     ime_adapter_android_->FocusedNodeChanged(is_editable_node);
 }
 
-void RenderWidgetHostViewAndroid::RenderProcessGone(
-    base::TerminationStatus status, int error_code) {
+void RenderWidgetHostViewAndroid::RenderProcessGone() {
   Destroy();
 }
 
