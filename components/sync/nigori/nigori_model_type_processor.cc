@@ -196,7 +196,36 @@ void NigoriModelTypeProcessor::OnSyncStarting(
 void NigoriModelTypeProcessor::OnSyncStopping(
     SyncStopMetadataFate metadata_fate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  NOTIMPLEMENTED();
+  // Disabling sync for a type shouldn't happen before the model is loaded
+  // because OnSyncStopping() is not allowed to be called before
+  // OnSyncStarting() has completed.
+  DCHECK(!start_callback_);
+
+  worker_.reset();
+
+  switch (metadata_fate) {
+    case syncer::KEEP_METADATA: {
+      break;
+    }
+
+    case syncer::CLEAR_METADATA: {
+      // The bridge is responsible for deleting all data and metadata upon
+      // disabling sync.
+      bridge_->ApplyDisableSyncChanges();
+      model_ready_to_sync_ = false;
+      entity_.reset();
+      model_type_state_ = sync_pb::ModelTypeState();
+      model_type_state_.mutable_progress_marker()->set_data_type_id(
+          sync_pb::EntitySpecifics::kNigoriFieldNumber);
+      // The model is still ready to sync (with the same |bridge_|) and same
+      // sync metadata.
+      ModelReadyToSync(bridge_, NigoriMetadataBatch());
+      break;
+    }
+  }
+
+  // Do not let any delayed callbacks to be called.
+  weak_ptr_factory_for_worker_.InvalidateWeakPtrs();
 }
 
 void NigoriModelTypeProcessor::GetAllNodesForDebugging(

@@ -465,6 +465,34 @@ TEST_F(NigoriModelTypeProcessorTest, ShouldApplySyncChangesWhenReflection) {
                                 std::move(updates));
 }
 
+TEST_F(NigoriModelTypeProcessorTest, ShouldStopSyncingAndKeepMetadata) {
+  SimulateModelReadyToSync(/*initial_sync_done=*/true);
+  syncer::DataTypeActivationRequest request;
+  request.error_handler = base::DoNothing();
+  request.cache_guid = kCacheGuid;
+  processor()->OnSyncStarting(request, base::DoNothing());
+  SimulateConnectSync();
+
+  ASSERT_TRUE(processor()->IsConnectedForTest());
+  EXPECT_CALL(*mock_nigori_sync_bridge(), ApplyDisableSyncChanges()).Times(0);
+  processor()->OnSyncStopping(syncer::KEEP_METADATA);
+  EXPECT_FALSE(processor()->IsConnectedForTest());
+}
+
+TEST_F(NigoriModelTypeProcessorTest, ShouldStopSyncingAndClearMetadata) {
+  SimulateModelReadyToSync(/*initial_sync_done=*/true);
+  syncer::DataTypeActivationRequest request;
+  request.error_handler = base::DoNothing();
+  request.cache_guid = kCacheGuid;
+  processor()->OnSyncStarting(request, base::DoNothing());
+  SimulateConnectSync();
+
+  ASSERT_TRUE(processor()->IsConnectedForTest());
+  EXPECT_CALL(*mock_nigori_sync_bridge(), ApplyDisableSyncChanges());
+  processor()->OnSyncStopping(syncer::CLEAR_METADATA);
+  EXPECT_FALSE(processor()->IsConnectedForTest());
+}
+
 }  // namespace
 
 }  // namespace syncer
