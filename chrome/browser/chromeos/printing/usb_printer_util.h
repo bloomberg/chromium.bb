@@ -8,9 +8,7 @@
 #define CHROME_BROWSER_CHROMEOS_PRINTING_USB_PRINTER_UTIL_H__
 
 #include <memory>
-#include <string>
 
-#include "base/memory/ref_counted.h"
 #include "device/usb/public/mojom/device.mojom.h"
 
 namespace chromeos {
@@ -26,13 +24,6 @@ base::string16 GetSerialNumber(const device::mojom::UsbDeviceInfo& device_info);
 
 bool UsbDeviceIsPrinter(const device::mojom::UsbDeviceInfo& device_info);
 
-bool UsbDeviceSupportsIppusb(const device::mojom::UsbDeviceInfo& device_info);
-
-// Convert the interesting details of a device to a string, for
-// logging/debugging.
-std::string UsbPrinterDeviceDetailsAsString(
-    const device::mojom::UsbDeviceInfo& device_info);
-
 // Attempt to gather all the information we need to work with this printer by
 // querying the USB device.  This should only be called using devices we believe
 // are printers, not arbitrary USB devices, as we may get weird partial results
@@ -42,9 +33,6 @@ std::string UsbPrinterDeviceDetailsAsString(
 std::unique_ptr<Printer> UsbDeviceToPrinter(
     const device::mojom::UsbDeviceInfo& device_info);
 
-// Gets the URI CUPS would use to refer to this USB device.  Assumes device
-// is a printer.
-std::string UsbPrinterUri(const device::mojom::UsbDeviceInfo& device_info);
-
 }  // namespace chromeos
+
 #endif  // CHROME_BROWSER_CHROMEOS_PRINTING_USB_PRINTER_UTIL_H__
