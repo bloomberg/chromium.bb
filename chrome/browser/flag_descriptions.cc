@@ -3129,10 +3129,6 @@ const char kEnableZeroStateSuggestionsDescription[] =
     "Enable Zero State Suggestions feature in Launcher, which will show "
     "suggestions when launcher search box is active with an empty query";
 
-const char kEolNotificationName[] = "Disable Device End of Life notification.";
-const char kEolNotificationDescription[] =
-    "Disable Notifcation when Device is End of Life.";
-
 const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[] =
     "Enable experimental ChromeVox language switching.";
 const char kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[] =

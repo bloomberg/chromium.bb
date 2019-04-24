@@ -515,11 +515,6 @@
     "expiry_milestone": 75
   },
   {
-    "name": "disable-eol-notification",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "disable-explicit-dma-fences",
     "owners": [ "chromeos-gfx@google.com" ],
     // This flag is used for QA & debugging on ChromeOS, which has no way to

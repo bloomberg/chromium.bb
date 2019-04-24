@@ -1888,9 +1888,6 @@ extern const char kEnableVideoPlayerNativeControlsDescription[];
 extern const char kEnableZeroStateSuggestionsName[];
 extern const char kEnableZeroStateSuggestionsDescription[];
 
-extern const char kEolNotificationName[];
-extern const char kEolNotificationDescription[];
-
 extern const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[];
 extern const char
     kExperimentalAccessibilityChromeVoxLanguageSwitchingDescription[];

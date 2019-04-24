@@ -73,8 +73,6 @@ extern const char kDisableDeviceDisabling[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableEncryptionMigration[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const char kDisableEolNotification[];
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kDisableFineGrainedTimeZoneDetection[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kDisableGaiaServices[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)

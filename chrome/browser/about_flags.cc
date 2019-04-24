@@ -2192,11 +2192,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPerMethodCanMakePaymentQuotaDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          payments::features::kWebPaymentsPerMethodCanMakePaymentQuota)},
-#if defined(OS_CHROMEOS)
-    {"disable-eol-notification", flag_descriptions::kEolNotificationName,
-     flag_descriptions::kEolNotificationDescription, kOsCrOS,
-     SINGLE_DISABLE_VALUE_TYPE(chromeos::switches::kDisableEolNotification)},
-#endif  // OS_CHROMEOS
     {"fill-on-account-select", flag_descriptions::kFillOnAccountSelectName,
      flag_descriptions::kFillOnAccountSelectDescription, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelect)},

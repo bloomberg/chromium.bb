@@ -213,9 +213,6 @@ const char kDisableDeviceDisabling[] = "disable-device-disabling";
 // Disable encryption migration for user's cryptohome to run latest Arc.
 const char kDisableEncryptionMigration[] = "disable-encryption-migration";
 
-// Disables notification when device is in end of life status.
-const char kDisableEolNotification[] = "disable-eol-notification";
-
 // Disables fine grained time zone detection.
 const char kDisableFineGrainedTimeZoneDetection[] =
     "disable-fine-grained-time-zone-detection";

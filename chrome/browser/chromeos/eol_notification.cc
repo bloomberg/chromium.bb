@@ -16,7 +16,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "components/prefs/pref_service.h"
@@ -82,11 +81,6 @@ class EolNotificationDelegate : public message_center::NotificationDelegate {
 
 // static
 bool EolNotification::ShouldShowEolNotification() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableEolNotification)) {
-    return false;
-  }
-
   // Do not show end of life notification if this device is managed by
   // enterprise user.
   if (g_browser_process->platform_part()
