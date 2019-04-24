@@ -235,13 +235,13 @@ body.tablet-landscape .actions-group {
 }
 
 label.mode-item>span {
-  border-radius: 16px / 50%;
+  border-radius: 13px / 50%;
   color: white;
   display: inline-block;
   font-family: 'Roboto', sans-serif;
   font-size: 14px;
   font-weight: 500;
-  padding: 10px 15px;
+  padding: 8px 12px;
   text-shadow: 2px 3px 3px rgba(32, 33, 36, 0.3);
 }
 
