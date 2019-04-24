@@ -52,11 +52,28 @@ void MojoDecoderFactory::CreateVideoDecoders(
   if (!base::FeatureList::IsEnabled(media::kMojoVideoDecoder))
     return;
   mojom::VideoDecoderPtr video_decoder_ptr;
+
+#if defined(OS_WIN)
+  // If the D3D11VideoDecoder is enabled, then push a kAlternate decoder ahead
+  // of the default one.
+  if (base::FeatureList::IsEnabled(media::kD3D11VideoDecoder)) {
+    interface_factory_->CreateVideoDecoder(
+        mojo::MakeRequest(&video_decoder_ptr));
+
+    video_decoders->push_back(std::make_unique<MojoVideoDecoder>(
+        task_runner, gpu_factories, media_log, std::move(video_decoder_ptr),
+        VideoDecoderImplementation::kAlternate, request_overlay_info_cb,
+        target_color_space));
+  }
+#endif  // defined(OS_WIN)
+
   interface_factory_->CreateVideoDecoder(mojo::MakeRequest(&video_decoder_ptr));
 
   video_decoders->push_back(std::make_unique<MojoVideoDecoder>(
       task_runner, gpu_factories, media_log, std::move(video_decoder_ptr),
-      request_overlay_info_cb, target_color_space));
+      VideoDecoderImplementation::kDefault, request_overlay_info_cb,
+      target_color_space));
+
 #endif
 }
 

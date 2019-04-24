@@ -20,6 +20,7 @@
 #include "media/base/overlay_info.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_types.h"
+#include "media/video/supported_video_decoder_config.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -82,13 +83,16 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   virtual int32_t GetCommandBufferRouteId() = 0;
 
   // Return true if |config| is potentially supported by a decoder created with
-  // CreateVideoDecoder().
+  // CreateVideoDecoder() using |implementation|.
   //
   // May be called on any thread.
-  virtual bool IsDecoderConfigSupported(const VideoDecoderConfig& config) = 0;
+  virtual bool IsDecoderConfigSupported(
+      VideoDecoderImplementation implementation,
+      const VideoDecoderConfig& config) = 0;
 
   virtual std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
       MediaLog* media_log,
+      VideoDecoderImplementation implementation,
       const RequestOverlayInfoCB& request_overlay_info_cb) = 0;
 
   // Caller owns returned pointer, but should call Destroy() on it (instead of
