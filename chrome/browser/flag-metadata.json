@@ -1007,7 +1007,7 @@
   {
     "name": "enable-desktop-pwas-omnibox-install",
     "owners": [ "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 79
   },
   {
     "name": "enable-devtools-experiments",
