@@ -69,26 +69,6 @@ using FrameSets = std::vector<std::vector<Frame>>;
 
 namespace {
 
-// Configuration for the frames that appear on the stack.
-struct StackConfiguration {
-  enum Config { NORMAL, WITH_ALLOCA, WITH_OTHER_LIBRARY };
-
-  explicit StackConfiguration(Config config)
-      : StackConfiguration(config, nullptr) {
-    EXPECT_NE(config, WITH_OTHER_LIBRARY);
-  }
-
-  StackConfiguration(Config config, NativeLibrary library)
-      : config(config), library(library) {
-    EXPECT_TRUE(config != WITH_OTHER_LIBRARY || library);
-  }
-
-  Config config;
-
-  // Only used if config == WITH_OTHER_LIBRARY.
-  NativeLibrary library;
-};
-
 // Addresses near the start and end of a function.
 struct FunctionAddressRange {
   const void* start;
