@@ -587,7 +587,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <p contenteditable>
-      <img alt="dog"></img> is a <img alt="cat"</img> test
+      <img alt="dog"> is a <img alt="cat"> test
     </p>
     <button id="go">Go</button>
     <script>
@@ -604,7 +604,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextImageByCharacter', function() {
     this.listenOnce(input, 'focus', function() {
       var lineText = 'dog is a cat test mled';
       var lineOnDogText = 'dog img is a cat test mled';
-      var lineOnCatText = 'dog is a cat img test';
+      var lineOnCatText = 'dog is a cat img test mled';
       mockFeedback
           // This is initial output from focusing the contenteditable (which has
           // no role).

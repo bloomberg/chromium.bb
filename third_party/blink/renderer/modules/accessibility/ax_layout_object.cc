@@ -69,6 +69,7 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/layout/layout_html_canvas.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
@@ -76,6 +77,7 @@
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_menu_list.h"
+#include "third_party/blink/renderer/core/layout/layout_replaced.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_table_row.h"
@@ -1266,7 +1268,9 @@ AXObject* AXLayoutObject::NextOnLine() const {
     result = NextOnLineInternalNG(*this);
   } else {
     InlineBox* inline_box = nullptr;
-    if (GetLayoutObject()->IsLayoutInline()) {
+    if (GetLayoutObject()->IsBox()) {
+      inline_box = ToLayoutBox(GetLayoutObject())->InlineBoxWrapper();
+    } else if (GetLayoutObject()->IsLayoutInline()) {
       inline_box = ToLayoutInline(GetLayoutObject())->LastLineBox();
     } else if (GetLayoutObject()->IsText()) {
       inline_box = ToLayoutText(GetLayoutObject())->LastTextBox();
@@ -1339,7 +1343,9 @@ AXObject* AXLayoutObject::PreviousOnLine() const {
     result = PreviousOnLineInlineNG(*this);
   } else {
     InlineBox* inline_box = nullptr;
-    if (GetLayoutObject()->IsLayoutInline()) {
+    if (GetLayoutObject()->IsBox()) {
+      inline_box = ToLayoutBox(GetLayoutObject())->InlineBoxWrapper();
+    } else if (GetLayoutObject()->IsLayoutInline()) {
       inline_box = ToLayoutInline(GetLayoutObject())->FirstLineBox();
     } else if (GetLayoutObject()->IsText()) {
       inline_box = ToLayoutText(GetLayoutObject())->FirstTextBox();

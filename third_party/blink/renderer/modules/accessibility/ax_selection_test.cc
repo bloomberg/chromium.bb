@@ -1571,7 +1571,11 @@ TEST_F(AccessibilitySelectionTest, List) {
   RunSelectionTest("list");
 }
 
-TEST_F(AccessibilitySelectionTest, table) {
+TEST_F(AccessibilitySelectionTest, SVG) {
+  RunSelectionTest("svg");
+}
+
+TEST_F(AccessibilitySelectionTest, Table) {
   RunSelectionTest("table");
 }
 
