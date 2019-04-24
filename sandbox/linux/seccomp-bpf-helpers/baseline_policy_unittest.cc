@@ -10,7 +10,9 @@
 #include <sched.h>
 #include <signal.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/prctl.h>
 #include <sys/resource.h>
 #include <sys/socket.h>
@@ -128,6 +130,33 @@ BPF_TEST_C(BaselinePolicy, ForkArmEperm, BaselinePolicy) {
 
   BPF_ASSERT_EQ(-1, pid);
   BPF_ASSERT_EQ(EPERM, fork_errno);
+}
+
+BPF_TEST_C(BaselinePolicy, SystemEperm, BaselinePolicy) {
+  errno = 0;
+  int ret_val = system("echo SHOULD NEVER RUN");
+  BPF_ASSERT_EQ(-1, ret_val);
+  BPF_ASSERT_EQ(EPERM, errno);
+}
+
+BPF_TEST_C(BaselinePolicy, CloneVforkEperm, BaselinePolicy) {
+  errno = 0;
+  // Allocate a couple pages for the child's stack even though the child should
+  // never start.
+  constexpr size_t kStackSize = 4096 * 4;
+  void* child_stack = mmap(nullptr, kStackSize, PROT_READ | PROT_WRITE,
+                           MAP_PRIVATE | MAP_ANONYMOUS | MAP_STACK, -1, 0);
+  BPF_ASSERT_NE(child_stack, nullptr);
+  pid_t pid = syscall(__NR_clone, CLONE_VM | CLONE_VFORK | SIGCHLD,
+                      static_cast<char*>(child_stack) + kStackSize, nullptr,
+                      nullptr, nullptr);
+  const int clone_errno = errno;
+  TestUtils::HandlePostForkReturn(pid);
+
+  munmap(child_stack, kStackSize);
+
+  BPF_ASSERT_EQ(-1, pid);
+  BPF_ASSERT_EQ(EPERM, clone_errno);
 }
 
 BPF_TEST_C(BaselinePolicy, CreateThread, BaselinePolicy) {
