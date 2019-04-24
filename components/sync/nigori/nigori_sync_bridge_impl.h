@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "components/sync/base/cryptographer.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/model_error.h"
@@ -19,6 +20,8 @@
 #include "components/sync/nigori/nigori_sync_bridge.h"
 
 namespace syncer {
+
+class Encryptor;
 
 // USS implementation of SyncEncryptionHandler.
 // This class holds the current Nigori state and processes incoming changes and
@@ -32,7 +35,9 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
                              public NigoriSyncBridge,
                              public SyncEncryptionHandler {
  public:
-  NigoriSyncBridgeImpl();
+  // |encryptor| must not be null and must outlive this object and any copies
+  // of the Cryptographer exposed by this object.
+  explicit NigoriSyncBridgeImpl(Encryptor* encryptor);
   ~NigoriSyncBridgeImpl() override;
 
   // SyncEncryptionHandler implementation.
@@ -57,7 +62,19 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
                                      const EntityData& remote_data) override;
   void ApplyDisableSyncChanges() override;
 
+  // TODO(crbug.com/922900): investigate whether we need this getter outside of
+  // tests and decide whether this method should be a part of
+  // SyncEncryptionHandler interface.
+  const Cryptographer& GetCryptographerForTesting() const;
+
  private:
+  // Base64 encoded keystore keys. The last element is the current keystore
+  // key. These keys are not a part of Nigori node and are persisted
+  // separately. Should be encrypted with OSCrypt before persisting.
+  std::vector<std::string> keystore_keys_;
+
+  Cryptographer cryptographer_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(NigoriSyncBridgeImpl);

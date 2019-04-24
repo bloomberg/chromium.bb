@@ -757,6 +757,7 @@ source_set("unit_tests") {
     "model_impl/processor_entity_unittest.cc",
     "model_impl/syncable_service_based_bridge_unittest.cc",
     "nigori/nigori_model_type_processor_unittest.cc",
+    "nigori/nigori_sync_bridge_impl_unittest.cc",
     "protocol/proto_enum_conversions_unittest.cc",
     "protocol/proto_value_conversions_unittest.cc",
     "syncable/change_record_unittest.cc",
