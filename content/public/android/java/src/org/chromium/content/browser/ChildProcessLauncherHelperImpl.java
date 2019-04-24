@@ -273,8 +273,12 @@ public final class ChildProcessLauncherHelperImpl {
             public void run() {
                 ChildConnectionAllocator allocator =
                         getConnectionAllocator(context, true /* sandboxed */);
-                sBindingManager = new BindingManager(
-                        context, allocator.getNumberOfServices(), sSandboxedChildConnectionRanking);
+                if (ChildProcessConnection.supportVariableConnections()) {
+                    sBindingManager = new BindingManager(context, sSandboxedChildConnectionRanking);
+                } else {
+                    sBindingManager = new BindingManager(context, allocator.getNumberOfServices(),
+                            sSandboxedChildConnectionRanking);
+                }
             }
         });
 
@@ -364,6 +368,10 @@ public final class ChildProcessLauncherHelperImpl {
                         ChildConnectionAllocator.createFixedForTesting(freeSlotRunnable,
                                 packageName, serviceName, sSandboxedServicesCountForTesting,
                                 bindToCaller, bindAsExternalService, false /* useStrongBinding */);
+            } else if (ChildProcessConnection.supportVariableConnections()) {
+                connectionAllocator = ChildConnectionAllocator.createVariableSize(context,
+                        LauncherThread.getHandler(), packageName, SANDBOXED_SERVICES_NAME,
+                        bindToCaller, bindAsExternalService, false /* useStrongBinding */);
             } else {
                 connectionAllocator = ChildConnectionAllocator.create(context,
                         LauncherThread.getHandler(), freeSlotRunnable, packageName,
@@ -375,8 +383,12 @@ public final class ChildProcessLauncherHelperImpl {
                         sSandboxedServiceFactoryForTesting);
             }
             sSandboxedChildConnectionAllocator = connectionAllocator;
-            sSandboxedChildConnectionRanking = new ChildProcessRanking(
-                    sSandboxedChildConnectionAllocator.getNumberOfServices());
+            if (ChildProcessConnection.supportVariableConnections()) {
+                sSandboxedChildConnectionRanking = new ChildProcessRanking();
+            } else {
+                sSandboxedChildConnectionRanking = new ChildProcessRanking(
+                        sSandboxedChildConnectionAllocator.getNumberOfServices());
+            }
         }
         return sSandboxedChildConnectionAllocator;
     }

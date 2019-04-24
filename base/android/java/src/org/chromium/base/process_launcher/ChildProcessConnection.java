@@ -75,6 +75,13 @@ public class ChildProcessConnection {
     }
 
     /**
+     * Run time check if variable number of connections is supported.
+     */
+    public static boolean supportVariableConnections() {
+        return BindService.supportVariableConnections();
+    }
+
+    /**
      * Delegate that ChildServiceConnection should call when the service connects/disconnects.
      * These callbacks are expected to happen on a background thread.
      */

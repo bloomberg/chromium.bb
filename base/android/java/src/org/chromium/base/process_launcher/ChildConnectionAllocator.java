@@ -127,6 +127,14 @@ public abstract class ChildConnectionAllocator {
                 serviceCount);
     }
 
+    @VisibleForTesting
+    public static VariableSizeAllocatorImpl createVariableSizeForTesting(Handler launcherHandler,
+            String packageName, String serviceClassName, boolean bindToCaller,
+            boolean bindAsExternalService, boolean useStrongBinding) {
+        return new VariableSizeAllocatorImpl(launcherHandler, packageName, serviceClassName + "0",
+                bindToCaller, bindAsExternalService, useStrongBinding);
+    }
+
     private ChildConnectionAllocator(Handler launcherHandler, String packageName,
             String serviceClassName, boolean bindToCaller, boolean bindAsExternalService,
             boolean useStrongBinding) {
@@ -253,6 +261,7 @@ public abstract class ChildConnectionAllocator {
     /* package */ abstract void doFree(ChildProcessConnection connection);
     /* package */ abstract void doQueueAllocation(Runnable runnable);
 
+    /** Implementation class accessed directly by tests. */
     @VisibleForTesting
     public static class FixedSizeAllocatorImpl extends ChildConnectionAllocator {
         // Runnable which will be called when allocator wants to allocate a new connection, but does
@@ -359,7 +368,8 @@ public abstract class ChildConnectionAllocator {
         }
     }
 
-    private static class VariableSizeAllocatorImpl extends ChildConnectionAllocator {
+    @VisibleForTesting
+    /* package */ static class VariableSizeAllocatorImpl extends ChildConnectionAllocator {
         private final ArraySet<ChildProcessConnection> mAllocatedConnections = new ArraySet<>();
         private int mNextInstance;
 
