@@ -68,6 +68,7 @@ void ScopedVirtualFidoDevice::SetSupportedProtocol(
 
 void ScopedVirtualFidoDevice::SetTransport(FidoTransportProtocol transport) {
   transport_ = transport;
+  state_->transport = transport;
 }
 
 void ScopedVirtualFidoDevice::SetCtap2Config(
