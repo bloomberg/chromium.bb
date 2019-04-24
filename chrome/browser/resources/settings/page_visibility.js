@@ -124,7 +124,7 @@ cr.define('settings', function() {
       onStartup: true,
       reset: true,
       appearance: {
-        setWallpaper: true,
+        setWallpaper: showOSSettings,
         setTheme: true,
         homeButton: true,
         bookmarksBar: true,
