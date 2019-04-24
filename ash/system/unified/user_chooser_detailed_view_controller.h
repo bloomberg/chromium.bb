@@ -20,6 +20,18 @@ class UserChooserDetailedViewController : public DetailedViewController {
       UnifiedSystemTrayController* tray_controller);
   ~UserChooserDetailedViewController() override;
 
+  // Return true if user chooser is enabled. Called from the view.
+  static bool IsUserChooserEnabled();
+
+  // Transitions back from the detailed view to the main view.
+  void TransitionToMainView();
+
+  // Switch the active user to |user_index|. Called from the view.
+  void HandleUserSwitch(int user_index);
+
+  // Show multi profile login UI. Called from the view.
+  void HandleAddUserAction();
+
   // DetailedViewController:
   views::View* CreateView() override;
 

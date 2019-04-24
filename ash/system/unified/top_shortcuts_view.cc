@@ -19,6 +19,7 @@
 #include "ash/system/unified/sign_out_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/unified/user_chooser_detailed_view_controller.h"
 #include "ash/system/unified/user_chooser_view.h"
 #include "base/numerics/ranges.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -163,7 +164,8 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
   if (Shell::Get()->session_controller()->login_status() !=
       LoginStatus::NOT_LOGGED_IN) {
     user_avatar_button_ = new UserAvatarButton(this);
-    user_avatar_button_->SetEnabled(controller->IsUserChooserEnabled());
+    user_avatar_button_->SetEnabled(
+        UserChooserDetailedViewController::IsUserChooserEnabled());
     container_->AddUserAvatarButton(user_avatar_button_);
   }
 

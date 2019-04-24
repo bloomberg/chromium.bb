@@ -19,7 +19,7 @@
 #include "ash/system/tray/tri_view.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "ash/system/unified/top_shortcuts_view.h"
-#include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/unified/user_chooser_detailed_view_controller.h"
 #include "ash/system/user/rounded_image_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -39,41 +39,41 @@ namespace {
 
 class CloseButton : public TopShortcutButton, public views::ButtonListener {
  public:
-  explicit CloseButton(UnifiedSystemTrayController* controller);
+  explicit CloseButton(UserChooserDetailedViewController* controller);
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
-  UnifiedSystemTrayController* const controller_;
+  UserChooserDetailedViewController* const controller_;
 
   DISALLOW_COPY_AND_ASSIGN(CloseButton);
 };
 
-CloseButton::CloseButton(UnifiedSystemTrayController* controller)
+CloseButton::CloseButton(UserChooserDetailedViewController* controller)
     : TopShortcutButton(this, views::kIcCloseIcon, IDS_APP_ACCNAME_CLOSE),
       controller_(controller) {}
 
 void CloseButton::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  controller_->TransitionToMainView(true /* restore_focus */);
+  controller_->TransitionToMainView();
 }
 
 // A button that will transition to multi profile login UI.
 class AddUserButton : public views::Button, public views::ButtonListener {
  public:
-  explicit AddUserButton(UnifiedSystemTrayController* controller);
+  explicit AddUserButton(UserChooserDetailedViewController* controller);
   ~AddUserButton() override = default;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
-  UnifiedSystemTrayController* const controller_;
+  UserChooserDetailedViewController* const controller_;
 
   DISALLOW_COPY_AND_ASSIGN(AddUserButton);
 };
 
-AddUserButton::AddUserButton(UnifiedSystemTrayController* controller)
+AddUserButton::AddUserButton(UserChooserDetailedViewController* controller)
     : Button(this), controller_(controller) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(kUnifiedTopShortcutSpacing),
@@ -186,7 +186,7 @@ base::string16 GetUserItemAccessibleString(int user_index) {
 }
 
 UserItemButton::UserItemButton(int user_index,
-                               UnifiedSystemTrayController* controller,
+                               UserChooserDetailedViewController* controller,
                                bool has_close_button)
     : Button(this),
       user_index_(user_index),
@@ -283,7 +283,8 @@ void UserItemButton::ButtonPressed(views::Button* sender,
     controller_->HandleUserSwitch(user_index_);
 }
 
-UserChooserView::UserChooserView(UnifiedSystemTrayController* controller) {
+UserChooserView::UserChooserView(
+    UserChooserDetailedViewController* controller) {
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   const int num_users =

@@ -6,7 +6,6 @@
 
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
-#include "ash/multi_profile_uma.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/accessibility/accessibility_feature_pod_controller.h"
@@ -90,31 +89,6 @@ UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
   unified_view_->AddSliderView(brightness_slider_controller_->CreateView());
 
   return unified_view_;
-}
-
-void UnifiedSystemTrayController::HandleUserSwitch(int user_index) {
-  // Do not switch users when the log screen is presented.
-  SessionController* controller = Shell::Get()->session_controller();
-  if (controller->IsUserSessionBlocked())
-    return;
-
-  // |user_index| must be in range (0, number_of_user). Note 0 is excluded
-  // because it represents the active user and SwitchUser should not be called
-  // for such case.
-  DCHECK_GT(user_index, 0);
-  DCHECK_LT(user_index, controller->NumberOfLoggedInUsers());
-
-  MultiProfileUMA::RecordSwitchActiveUser(
-      MultiProfileUMA::SWITCH_ACTIVE_USER_BY_TRAY);
-  controller->SwitchActiveUser(
-      controller->GetUserSession(user_index)->user_info->account_id);
-  CloseBubble();
-}
-
-void UnifiedSystemTrayController::HandleAddUserAction() {
-  MultiProfileUMA::RecordSigninUser(MultiProfileUMA::SIGNIN_USER_BY_TRAY);
-  Shell::Get()->session_controller()->ShowMultiProfileLogin();
-  CloseBubble();
 }
 
 void UnifiedSystemTrayController::HandleSignOutAction() {
@@ -231,7 +205,7 @@ void UnifiedSystemTrayController::Fling(int velocity) {
 }
 
 void UnifiedSystemTrayController::ShowUserChooserView() {
-  if (!IsUserChooserEnabled())
+  if (!UserChooserDetailedViewController::IsUserChooserEnabled())
     return;
   animation_->Reset(1.0);
   UpdateExpandedAmount();
@@ -313,24 +287,6 @@ void UnifiedSystemTrayController::EnsureExpanded() {
     unified_view_->ResetDetailedView();
   }
   animation_->Show();
-}
-
-bool UnifiedSystemTrayController::IsUserChooserEnabled() const {
-  // Don't allow user add or switch when CancelCastingDialog is open.
-  // See http://crrev.com/291276 and http://crbug.com/353170.
-  if (Shell::IsSystemModalWindowOpen())
-    return false;
-
-  // Don't allow at login, lock or when adding a multi-profile user.
-  SessionController* session = Shell::Get()->session_controller();
-  if (session->IsUserSessionBlocked())
-    return false;
-
-  // Don't show if we cannot add or switch users.
-  if (session->GetAddUserPolicy() != AddUserSessionPolicy::ALLOWED &&
-      session->NumberOfLoggedInUsers() <= 1)
-    return false;
-  return true;
 }
 
 void UnifiedSystemTrayController::AnimationEnded(
