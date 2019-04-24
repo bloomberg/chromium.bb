@@ -288,6 +288,10 @@
       'linux-rel',
       'mac-dbg',
       'mac-rel',
+      'linux-archive-dbg',
+      'linux-archive-rel',
+      'mac-archive-dbg',
+      'mac-archive-rel',
     ],
   },
   # Note: keep experiment percentages the same as

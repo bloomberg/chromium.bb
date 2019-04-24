@@ -959,11 +959,22 @@ class BBJSONGenerator(object):
       # chromium, due to https://crbug.com/878915
       'win-dbg',
       'win32-dbg',
+      'win-archive-dbg',
+      'win32-archive-dbg',
       # chromium.mac, see https://crbug.com/943804
       'mac-dummy-rel',
       # Defined in internal configs.
       'chromeos-amd64-generic-google-rel',
       'chromeos-betty-google-rel',
+      # chromium, https://crbug.com/888810
+      'android-archive-dbg',
+      'android-archive-rel',
+      'linux-archive-dbg',
+      'linux-archive-rel',
+      'mac-archive-dbg',
+      'mac-archive-rel',
+      'win-archive-rel',
+      'win32-archive-rel',
     ]
 
   def check_input_file_consistency(self, verbose=False):

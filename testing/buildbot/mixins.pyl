@@ -39,7 +39,7 @@
 #
 # == Regular ==
 # Mixin:
-#   'mac-rel-args': {
+#   'mac-archive-rel-args': {
 #     'args': [
 #       'mac-release/sizes',
 #     ],
@@ -49,11 +49,11 @@
 #   {
 #     'name': 'chromium'
 #     'machines': {
-#       'mac-rel': {
+#       'mac-archive-rel': {
 #         'test_suites': {
 #           'scripts': 'public_build_scripts',
 #         },
-#         'mixins': ['mac-rel-args'],
+#         'mixins': ['mac-archive-rel-args'],
 #       },
 #     },
 #   },
@@ -62,7 +62,7 @@
 #   {
 #     'name': 'chromium'
 #     'machines': {
-#       'mac-rel': {
+#       'mac-archive-rel': {
 #         "scripts": [
 #           {
 #             "args": [
@@ -226,7 +226,7 @@
       'expiration': 21600,
     },
   },
-  'linux-rel-args': {
+  'linux-archive-rel-args': {
     'args': [
       'linux-release-64/sizes',
     ],
@@ -302,7 +302,7 @@
       },
     },
   },
-  'mac-rel-args': {
+  'mac-archive-rel-args': {
     'args': [
       'mac-release/sizes',
     ],

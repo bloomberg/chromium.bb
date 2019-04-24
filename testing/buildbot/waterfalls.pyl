@@ -12,6 +12,16 @@
   {
     'name': 'chromium',
     'machines': {
+      'android-archive-dbg': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'android-archive-rel': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
       'android-dbg': {
         'additional_compile_targets': [
           'all',
@@ -22,6 +32,23 @@
           'all',
         ],
       },
+      'linux-archive-dbg': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'linux-archive-rel': {
+        'mixins': [
+          'linux-archive-rel-args',
+          'linux-trusty',
+        ],
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'scripts': 'public_build_scripts',
+        },
+      },
       'linux-dbg': {
         'additional_compile_targets': [
           'all',
@@ -29,9 +56,23 @@
       },
       'linux-rel': {
         'mixins': [
-          'linux-rel-args',
+          'linux-archive-rel-args',
           'linux-trusty',
         ],
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'scripts': 'public_build_scripts',
+        },
+      },
+      'mac-archive-dbg': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'mac-archive-rel': {
+        'mixins': ['mac-archive-rel-args'],
         'additional_compile_targets': [
           'all',
         ],
@@ -45,7 +86,20 @@
         ],
       },
       'mac-rel': {
-        'mixins': ['mac-rel-args'],
+        'mixins': ['mac-archive-rel-args'],
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'scripts': 'public_build_scripts',
+        },
+      },
+      'win-archive-dbg': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'win-archive-rel': {
         'additional_compile_targets': [
           'all',
         ],
@@ -59,6 +113,19 @@
         ],
       },
       'win-rel': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'scripts': 'public_build_scripts',
+        },
+      },
+      'win32-archive-dbg': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'win32-archive-rel': {
         'additional_compile_targets': [
           'all',
         ],
