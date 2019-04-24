@@ -52,10 +52,6 @@ void ChromeDevToolsSession::sendProtocolResponse(
   client_->DispatchProtocolMessage(agent_host_, message->serialize(binary));
 }
 
-static bool EnableInternalDevToolsBinaryProtocol() {
-  return true;
-}
-
 void ChromeDevToolsSession::HandleCommand(
     const std::string& method,
     const std::string& message,
@@ -67,14 +63,9 @@ void ChromeDevToolsSession::HandleCommand(
 
   int call_id;
   std::string unused;
-  // We also check for --enable-internal-dev-tools-binary-protocol here,
-  // because if this flag is set, then content::DevToolsSession will
-  // send us binary even if the |client_| did not ask for it.
-  bool binary =
-      client_->UsesBinaryProtocol() || EnableInternalDevToolsBinaryProtocol();
   std::unique_ptr<protocol::DictionaryValue> value =
       protocol::DictionaryValue::cast(
-          protocol::StringUtil::parseMessage(message, binary));
+          protocol::StringUtil::parseMessage(message, /*binary=*/true));
   if (!dispatcher_->parseCommand(value.get(), &call_id, &unused))
     return;
   pending_commands_[call_id] = std::move(callback);

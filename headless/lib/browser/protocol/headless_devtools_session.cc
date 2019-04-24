@@ -14,10 +14,6 @@
 
 namespace headless {
 namespace protocol {
-static bool EnableInternalDevToolsBinaryProtocol() {
-  return true;
-}
-
 HeadlessDevToolsSession::HeadlessDevToolsSession(
     base::WeakPtr<HeadlessBrowserImpl> browser,
     content::DevToolsAgentHost* agent_host,
@@ -56,9 +52,8 @@ void HeadlessDevToolsSession::HandleCommand(
   int call_id;
   std::string unused;
   std::unique_ptr<protocol::DictionaryValue> value =
-      protocol::DictionaryValue::cast(protocol::StringUtil::parseMessage(
-          message, client_->UsesBinaryProtocol() ||
-                       EnableInternalDevToolsBinaryProtocol()));
+      protocol::DictionaryValue::cast(
+          protocol::StringUtil::parseMessage(message, /*binary=*/true));
   if (!dispatcher_->parseCommand(value.get(), &call_id, &unused))
     return;
   pending_commands_[call_id] = std::move(callback);

@@ -29,6 +29,7 @@
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_io_context.h"
+#include "content/browser/devtools/devtools_protocol_encoding.h"
 #include "content/browser/devtools/devtools_stream_file.h"
 #include "content/browser/devtools/devtools_traceable_screenshot.h"
 #include "content/browser/devtools/devtools_video_consumer.h"
@@ -46,6 +47,7 @@
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
+#include "third_party/inspector_protocol/encoding/encoding.h"
 
 #ifdef OS_ANDROID
 #include "content/browser/renderer_host/compositor_impl_android.h"
@@ -477,10 +479,8 @@ class TracingHandler::PerfettoTracingSession
 };
 
 TracingHandler::TracingHandler(FrameTreeNode* frame_tree_node_,
-                               DevToolsIOContext* io_context,
-                               bool use_binary_protocol)
+                               DevToolsIOContext* io_context)
     : DevToolsDomainHandler(Tracing::Metainfo::domainName),
-      use_binary_protocol_(use_binary_protocol),
       io_context_(io_context),
       frame_tree_node_(frame_tree_node_),
       did_initiate_recording_(false),
@@ -559,12 +559,11 @@ void TracingHandler::OnTraceDataCollected(
   message.append(valid_trace_fragment.c_str() +
                  trace_data_buffer_state_.offset);
   message += "] } }";
-  if (use_binary_protocol_) {
-    auto parsed = protocol::StringUtil::parseMessage(message, false);
-    frontend_->sendRawCBORNotification(parsed->serializeToBinary());
-  } else {
-    frontend_->sendRawJSONNotification(std::move(message));
-  }
+  std::vector<uint8_t> cbor;
+  ::inspector_protocol_encoding::Status status = ConvertJSONToCBOR(
+      ::inspector_protocol_encoding::SpanFrom(message), &cbor);
+  LOG_IF(ERROR, !status.ok()) << status.ToASCIIString();
+  frontend_->sendRawCBORNotification(std::move(cbor));
 }
 
 void TracingHandler::OnTraceComplete() {
