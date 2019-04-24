@@ -26,6 +26,10 @@ feature. The following files are part of the new implementation:
     writable_stream_default_writer.idl
     writable_stream_native.cc
     writable_stream_native.h
+    transform_stream_default_controller.cc
+    transform_stream_default_controller.h
+    transform_stream_native.cc
+    transform_stream_native.h
 
 See also [Streams C++ port design doc][3].
 
