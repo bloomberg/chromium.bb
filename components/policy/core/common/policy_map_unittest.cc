@@ -314,13 +314,14 @@ TEST_F(PolicyMapTest, MergeValues) {
   std::vector<base::Value> cd = GetListStorage({"c", "d"});
   std::vector<base::Value> ef = GetListStorage({"e", "f"});
 
-  // Case 1 - kPolicyName1
+  // Case 1 - kTestPolicyName1
+  // Enterprise default policies should not be merged with other sources.
   PolicyMap::Entry platform_user_mandatory(
       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_PLATFORM,
       std::make_unique<base::Value>(abc), nullptr);
 
   platform_user_mandatory.AddConflictingPolicy(PolicyMap::Entry(
-      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_ACTIVE_DIRECTORY,
       std::make_unique<base::Value>(cd), nullptr));
 
   platform_user_mandatory.AddConflictingPolicy(
@@ -338,7 +339,9 @@ TEST_F(PolicyMapTest, MergeValues) {
       std::make_unique<base::Value>(abcd), nullptr);
   merged_user_mandatory.AddConflictingPolicy(platform_user_mandatory);
 
-  // Case 2 - kPolicyName2
+  // Case 2 - kTestPolicyName2
+  // Policies should only be merged with other policies with the same target,
+  // level and scope.
   PolicyMap::Entry cloud_machine_recommended(
       POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_MACHINE,
       POLICY_SOURCE_PRIORITY_CLOUD, std::make_unique<base::Value>(ab), nullptr);
@@ -356,7 +359,8 @@ TEST_F(PolicyMapTest, MergeValues) {
       std::make_unique<base::Value>(abcd), nullptr);
   merged_machine_recommended.AddConflictingPolicy(cloud_machine_recommended);
 
-  // Case 3 - ExtensionsInstallBlacklist
+  // Case 3 - kTestPolicyName3
+  // Trivial case with 2 sources.
   PolicyMap::Entry cloud_machine_mandatory(
       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
       POLICY_SOURCE_PRIORITY_CLOUD, std::make_unique<base::Value>(ab), nullptr);
@@ -370,13 +374,17 @@ TEST_F(PolicyMapTest, MergeValues) {
       std::make_unique<base::Value>(abcd), nullptr);
   merged_cloud_machine_mandatory.AddConflictingPolicy(cloud_machine_mandatory);
 
-  // Case 4 - ExtensionsInstallWhitelist
+  // Case 4 - kTestPolicyName4
+  // Policies with a single source should stay the same.
   PolicyMap::Entry ad_machine_mandatory(
       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
       POLICY_SOURCE_ACTIVE_DIRECTORY, std::make_unique<base::Value>(ef),
       nullptr);
 
-  // Case 4 - Non-list policy
+  // Case 5 - kTestPolicyName5
+  // Policies that are not lists should not be merged.
+  // If such a policy is explicitly in the list of policies to merge, an error
+  // is added to the entry and the policy stays intact.
   PolicyMap::Entry bad_stuff(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                              POLICY_SOURCE_ACTIVE_DIRECTORY,
                              std::make_unique<base::Value>("bad stuff"),
@@ -389,24 +397,35 @@ TEST_F(PolicyMapTest, MergeValues) {
   expected_bad_stuff.AddError(
       IDS_POLICY_LIST_MERGING_WRONG_POLICY_TYPE_SPECIFIED);
 
+  // Case 6 - kTestPolicyName6
+  // User cloud policies should not be merged with other sources.
+  PolicyMap::Entry user_not_merged(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                                   POLICY_SOURCE_PLATFORM,
+                                   std::make_unique<base::Value>(ab), nullptr);
+  user_not_merged.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+      std::make_unique<base::Value>(cd), nullptr));
+  user_not_merged.AddConflictingPolicy(PolicyMap::Entry(
+      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_PRIORITY_CLOUD,
+      std::make_unique<base::Value>(ef), nullptr));
+
   PolicyMap policy_not_merged;
   policy_not_merged.Set(kTestPolicyName1, platform_user_mandatory.DeepCopy());
   policy_not_merged.Set(kTestPolicyName2, cloud_machine_recommended.DeepCopy());
-  policy_not_merged.Set(policy::key::kExtensionInstallBlacklist,
-                        cloud_machine_mandatory.DeepCopy());
-  policy_not_merged.Set(policy::key::kExtensionInstallWhitelist,
-                        ad_machine_mandatory.DeepCopy());
-  policy_not_merged.Set(kTestPolicyName3, bad_stuff.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName3, cloud_machine_mandatory.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName4, ad_machine_mandatory.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName5, bad_stuff.DeepCopy());
+  policy_not_merged.Set(kTestPolicyName6, user_not_merged.DeepCopy());
 
   PolicyMap expected_list_merged;
   expected_list_merged.Set(kTestPolicyName1, merged_user_mandatory.DeepCopy());
   expected_list_merged.Set(kTestPolicyName2,
                            merged_machine_recommended.DeepCopy());
-  expected_list_merged.Set(policy::key::kExtensionInstallBlacklist,
+  expected_list_merged.Set(kTestPolicyName3,
                            merged_cloud_machine_mandatory.DeepCopy());
-  expected_list_merged.Set(policy::key::kExtensionInstallWhitelist,
-                           ad_machine_mandatory.DeepCopy());
-  expected_list_merged.Set(kTestPolicyName3, expected_bad_stuff.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName4, ad_machine_mandatory.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName5, expected_bad_stuff.DeepCopy());
+  expected_list_merged.Set(kTestPolicyName6, user_not_merged.DeepCopy());
 
   PolicyMap list_merged;
   list_merged.CopyFrom(policy_not_merged);
@@ -426,16 +445,15 @@ TEST_F(PolicyMapTest, MergeValues) {
 
   // Merging lists restrictions specified
   PolicyListMerger good_policy_list({kTestPolicyName1, kTestPolicyName2,
-                                     kTestPolicyName3,
-                                     policy::key::kExtensionInstallBlacklist,
-                                     policy::key::kExtensionInstallWhitelist});
+                                     kTestPolicyName3, kTestPolicyName4,
+                                     kTestPolicyName5, kTestPolicyName6});
   PolicyListMerger wildcard_policy_list({"*"});
   list_merged.MergeValues({&good_policy_list});
   EXPECT_TRUE(list_merged.Equals(expected_list_merged));
 
   PolicyMap expected_list_merged_wildcard;
   expected_list_merged_wildcard.CopyFrom(expected_list_merged);
-  expected_list_merged_wildcard.Set(kTestPolicyName3, bad_stuff.DeepCopy());
+  expected_list_merged_wildcard.Set(kTestPolicyName5, bad_stuff.DeepCopy());
   list_merged_wildcard.MergeValues({&wildcard_policy_list});
   EXPECT_TRUE(list_merged_wildcard.Equals(expected_list_merged_wildcard));
 }
