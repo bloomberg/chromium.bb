@@ -62,8 +62,6 @@ void SVGLineElement::Trace(blink::Visitor* visitor) {
   SVGGeometryElement::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGLineElement)
-
 Path SVGLineElement::AsPath() const {
   Path path;
 

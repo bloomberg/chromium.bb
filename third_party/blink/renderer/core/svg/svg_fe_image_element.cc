@@ -45,8 +45,6 @@ SVGFEImageElement::SVGFEImageElement(Document& document)
   AddToPropertyMap(preserve_aspect_ratio_);
 }
 
-DEFINE_NODE_FACTORY(SVGFEImageElement)
-
 SVGFEImageElement::~SVGFEImageElement() {
   ClearImageResource();
 }

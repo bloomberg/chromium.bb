@@ -32,8 +32,6 @@ namespace blink {
 SVGFEFloodElement::SVGFEFloodElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEFloodTag, document) {}
 
-DEFINE_NODE_FACTORY(SVGFEFloodElement)
-
 bool SVGFEFloodElement::SetFilterEffectAttribute(
     FilterEffect* effect,
     const QualifiedName& attr_name) {

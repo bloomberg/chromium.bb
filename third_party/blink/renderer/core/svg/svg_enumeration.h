@@ -104,10 +104,6 @@ const SVGEnumerationMap& GetEnumerationMap();
 template <typename Enum>
 class SVGEnumeration : public SVGEnumerationBase {
  public:
-  static SVGEnumeration<Enum>* Create(Enum new_value) {
-    return MakeGarbageCollected<SVGEnumeration<Enum>>(new_value);
-  }
-
   explicit SVGEnumeration(Enum new_value)
       : SVGEnumerationBase(new_value, GetEnumerationMap<Enum>()) {}
   ~SVGEnumeration() override = default;

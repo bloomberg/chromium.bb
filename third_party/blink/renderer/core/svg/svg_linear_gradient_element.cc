@@ -70,8 +70,6 @@ void SVGLinearGradientElement::Trace(blink::Visitor* visitor) {
   SVGGradientElement::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGLinearGradientElement)
-
 void SVGLinearGradientElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {
   if (attr_name == svg_names::kX1Attr || attr_name == svg_names::kX2Attr ||

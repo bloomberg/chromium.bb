@@ -48,8 +48,6 @@ void SVGFEOffsetElement::Trace(blink::Visitor* visitor) {
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGFEOffsetElement)
-
 void SVGFEOffsetElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == svg_names::kInAttr || attr_name == svg_names::kDxAttr ||
       attr_name == svg_names::kDyAttr) {

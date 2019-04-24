@@ -71,8 +71,6 @@ void SVGForeignObjectElement::Trace(blink::Visitor* visitor) {
   SVGGraphicsElement::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGForeignObjectElement)
-
 void SVGForeignObjectElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,

@@ -69,8 +69,6 @@ void SVGFEDisplacementMapElement::Trace(blink::Visitor* visitor) {
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGFEDisplacementMapElement)
-
 bool SVGFEDisplacementMapElement::SetFilterEffectAttribute(
     FilterEffect* effect,
     const QualifiedName& attr_name) {

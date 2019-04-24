@@ -38,8 +38,6 @@ void SVGFETileElement::Trace(blink::Visitor* visitor) {
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGFETileElement)
-
 void SVGFETileElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   if (attr_name == svg_names::kInAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);

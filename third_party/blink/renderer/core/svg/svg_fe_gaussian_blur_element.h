@@ -32,8 +32,6 @@ class SVGFEGaussianBlurElement final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGFEGaussianBlurElement);
-
   explicit SVGFEGaussianBlurElement(Document&);
 
   void setStdDeviation(float std_deviation_x, float std_deviation_y);

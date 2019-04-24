@@ -36,8 +36,6 @@ class SVGFEColorMatrixElement final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGFEColorMatrixElement);
-
   explicit SVGFEColorMatrixElement(Document&);
 
   SVGAnimatedNumberList* values() { return values_.Get(); }

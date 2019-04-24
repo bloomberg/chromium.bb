@@ -31,8 +31,6 @@ namespace blink {
 SVGFEMergeElement::SVGFEMergeElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEMergeTag, document) {}
 
-DEFINE_NODE_FACTORY(SVGFEMergeElement)
-
 FilterEffect* SVGFEMergeElement::Build(SVGFilterBuilder* filter_builder,
                                        Filter* filter) {
   FilterEffect* effect = MakeGarbageCollected<FEMerge>(filter);

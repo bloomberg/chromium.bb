@@ -61,8 +61,6 @@ void SVGFEMorphologyElement::Trace(blink::Visitor* visitor) {
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGFEMorphologyElement)
-
 bool SVGFEMorphologyElement::SetFilterEffectAttribute(
     FilterEffect* effect,
     const QualifiedName& attr_name) {

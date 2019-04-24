@@ -44,8 +44,6 @@ void SVGFEComponentTransferElement::Trace(blink::Visitor* visitor) {
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGFEComponentTransferElement)
-
 void SVGFEComponentTransferElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {
   if (attr_name == svg_names::kInAttr) {

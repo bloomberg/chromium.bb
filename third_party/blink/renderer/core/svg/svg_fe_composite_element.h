@@ -36,8 +36,6 @@ class SVGFECompositeElement final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGFECompositeElement);
-
   explicit SVGFECompositeElement(Document&);
 
   SVGAnimatedNumber* k1() { return k1_.Get(); }

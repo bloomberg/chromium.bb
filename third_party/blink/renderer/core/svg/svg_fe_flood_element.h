@@ -29,8 +29,6 @@ class SVGFEFloodElement final : public SVGFilterPrimitiveStandardAttributes {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGFEFloodElement);
-
   explicit SVGFEFloodElement(Document&);
 
  private:

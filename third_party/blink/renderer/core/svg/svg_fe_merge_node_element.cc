@@ -36,8 +36,6 @@ void SVGFEMergeNodeElement::Trace(blink::Visitor* visitor) {
   SVGElement::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGFEMergeNodeElement)
-
 void SVGFEMergeNodeElement::SvgAttributeChanged(
     const QualifiedName& attr_name) {
   if (attr_name == svg_names::kInAttr) {

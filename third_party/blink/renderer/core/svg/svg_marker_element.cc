@@ -90,8 +90,6 @@ void SVGMarkerElement::Trace(blink::Visitor* visitor) {
   SVGFitToViewBox::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGMarkerElement)
-
 AffineTransform SVGMarkerElement::ViewBoxToViewTransform(
     float view_width,
     float view_height) const {

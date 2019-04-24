@@ -85,8 +85,6 @@ void SVGFECompositeElement::Trace(blink::Visitor* visitor) {
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGFECompositeElement)
-
 bool SVGFECompositeElement::SetFilterEffectAttribute(
     FilterEffect* effect,
     const QualifiedName& attr_name) {

@@ -36,8 +36,6 @@ void SVGMPathElement::Trace(blink::Visitor* visitor) {
   SVGURIReference::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGMPathElement)
-
 SVGMPathElement::~SVGMPathElement() = default;
 
 void SVGMPathElement::BuildPendingResource() {

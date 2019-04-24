@@ -45,8 +45,6 @@ class SVGFETurbulenceElement final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGFETurbulenceElement);
-
   explicit SVGFETurbulenceElement(Document&);
 
   SVGAnimatedNumber* baseFrequencyX() { return base_frequency_->FirstNumber(); }

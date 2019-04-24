@@ -38,8 +38,6 @@ class SVGFEImageElement final : public SVGFilterPrimitiveStandardAttributes,
   USING_GARBAGE_COLLECTED_MIXIN(SVGFEImageElement);
 
  public:
-  DECLARE_NODE_FACTORY(SVGFEImageElement);
-
   bool CurrentFrameHasSingleSecurityOrigin() const;
 
   explicit SVGFEImageElement(Document&);

@@ -62,8 +62,6 @@ void SVGFEColorMatrixElement::Trace(blink::Visitor* visitor) {
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGFEColorMatrixElement)
-
 bool SVGFEColorMatrixElement::SetFilterEffectAttribute(
     FilterEffect* effect,
     const QualifiedName& attr_name) {

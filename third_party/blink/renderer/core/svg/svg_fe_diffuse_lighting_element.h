@@ -34,8 +34,6 @@ class SVGFEDiffuseLightingElement final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGFEDiffuseLightingElement);
-
   explicit SVGFEDiffuseLightingElement(Document&);
 
   void LightElementAttributeChanged(const SVGFELightElement*,

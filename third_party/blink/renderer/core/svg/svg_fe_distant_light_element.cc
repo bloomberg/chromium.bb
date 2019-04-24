@@ -27,8 +27,6 @@ namespace blink {
 SVGFEDistantLightElement::SVGFEDistantLightElement(Document& document)
     : SVGFELightElement(svg_names::kFEDistantLightTag, document) {}
 
-DEFINE_NODE_FACTORY(SVGFEDistantLightElement)
-
 scoped_refptr<LightSource> SVGFEDistantLightElement::GetLightSource(
     Filter* filter) const {
   return DistantLightSource::Create(azimuth()->CurrentValue()->Value(),

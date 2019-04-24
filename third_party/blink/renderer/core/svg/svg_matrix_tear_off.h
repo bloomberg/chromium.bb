@@ -49,14 +49,6 @@ class CORE_EXPORT SVGMatrixTearOff final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGMatrixTearOff* Create(const AffineTransform& value) {
-    return MakeGarbageCollected<SVGMatrixTearOff>(value);
-  }
-
-  static SVGMatrixTearOff* Create(SVGTransformTearOff* target) {
-    return MakeGarbageCollected<SVGMatrixTearOff>(target);
-  }
-
   explicit SVGMatrixTearOff(const AffineTransform&);
   explicit SVGMatrixTearOff(SVGTransformTearOff*);
 

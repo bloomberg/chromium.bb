@@ -56,8 +56,6 @@ class SVGMarkerElement final : public SVGElement, public SVGFitToViewBox {
     kSvgMarkerOrientAngle = kSVGMarkerOrientAngle
   };
 
-  DECLARE_NODE_FACTORY(SVGMarkerElement);
-
   explicit SVGMarkerElement(Document&);
 
   AffineTransform ViewBoxToViewTransform(float view_width,

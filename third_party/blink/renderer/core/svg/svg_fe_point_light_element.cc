@@ -28,8 +28,6 @@ namespace blink {
 SVGFEPointLightElement::SVGFEPointLightElement(Document& document)
     : SVGFELightElement(svg_names::kFEPointLightTag, document) {}
 
-DEFINE_NODE_FACTORY(SVGFEPointLightElement)
-
 scoped_refptr<LightSource> SVGFEPointLightElement::GetLightSource(
     Filter* filter) const {
   return PointLightSource::Create(filter->Resolve3dPoint(GetPosition()));

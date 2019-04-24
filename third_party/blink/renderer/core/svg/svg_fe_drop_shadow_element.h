@@ -32,8 +32,6 @@ class SVGFEDropShadowElement final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGFEDropShadowElement);
-
   explicit SVGFEDropShadowElement(Document&);
 
   void setStdDeviation(float std_deviation_x, float std_deviation_y);

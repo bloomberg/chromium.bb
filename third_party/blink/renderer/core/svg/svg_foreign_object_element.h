@@ -30,8 +30,6 @@ class SVGForeignObjectElement final : public SVGGraphicsElement {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGForeignObjectElement);
-
   explicit SVGForeignObjectElement(Document&);
 
   SVGAnimatedLength* x() const { return x_.Get(); }

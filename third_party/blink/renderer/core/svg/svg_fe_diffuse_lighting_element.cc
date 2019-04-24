@@ -58,8 +58,6 @@ void SVGFEDiffuseLightingElement::Trace(blink::Visitor* visitor) {
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGFEDiffuseLightingElement)
-
 bool SVGFEDiffuseLightingElement::SetFilterEffectAttribute(
     FilterEffect* effect,
     const QualifiedName& attr_name) {

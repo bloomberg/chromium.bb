@@ -29,8 +29,6 @@ class SVGFEMergeElement final : public SVGFilterPrimitiveStandardAttributes {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_NODE_FACTORY(SVGFEMergeElement);
-
   explicit SVGFEMergeElement(Document&);
 
  private:

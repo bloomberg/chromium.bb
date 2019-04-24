@@ -37,10 +37,6 @@ class SVGLength final : public SVGPropertyBase {
  public:
   typedef SVGLengthTearOff TearOffType;
 
-  static SVGLength* Create(SVGLengthMode mode = SVGLengthMode::kOther) {
-    return MakeGarbageCollected<SVGLength>(mode);
-  }
-
   // Initial values for SVGLength properties. If adding a new initial value,
   // keep the list sorted within the same unit. The table containing the actual
   // values are in the .cc file.
@@ -55,7 +51,6 @@ class SVGLength final : public SVGPropertyBase {
     kNumValues
   };
   static constexpr int kInitialValueBits = 3;
-  static SVGLength* Create(Initial, SVGLengthMode);
 
   explicit SVGLength(SVGLengthMode = SVGLengthMode::kOther);
   SVGLength(Initial, SVGLengthMode);

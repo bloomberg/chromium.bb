@@ -89,8 +89,6 @@ void SVGMaskElement::Trace(blink::Visitor* visitor) {
   SVGTests::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGMaskElement)
-
 void SVGMaskElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,

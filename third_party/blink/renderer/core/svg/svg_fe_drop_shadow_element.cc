@@ -53,8 +53,6 @@ void SVGFEDropShadowElement::Trace(blink::Visitor* visitor) {
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGFEDropShadowElement)
-
 void SVGFEDropShadowElement::setStdDeviation(float x, float y) {
   stdDeviationX()->BaseValue()->SetValue(x);
   stdDeviationY()->BaseValue()->SetValue(y);

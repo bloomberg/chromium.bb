@@ -45,8 +45,6 @@ void SVGFEGaussianBlurElement::Trace(blink::Visitor* visitor) {
   SVGFilterPrimitiveStandardAttributes::Trace(visitor);
 }
 
-DEFINE_NODE_FACTORY(SVGFEGaussianBlurElement)
-
 void SVGFEGaussianBlurElement::setStdDeviation(float x, float y) {
   stdDeviationX()->BaseValue()->SetValue(x);
   stdDeviationY()->BaseValue()->SetValue(y);
