@@ -17,24 +17,24 @@
 #include "utils/DawnHelpers.h"
 #include "utils/SystemUtils.h"
 
-DawnDevice device;
-DawnQueue queue;
-DawnSwapChain swapchain;
-DawnRenderPipeline pipeline;
+dawnDevice device;
+dawnQueue queue;
+dawnSwapChain swapchain;
+dawnRenderPipeline pipeline;
 
-DawnTextureFormat swapChainFormat;
+dawnTextureFormat swapChainFormat;
 
 void init() {
     device = CreateCppDawnDevice().Release();
     queue = dawnDeviceCreateQueue(device);
 
     {
-        DawnSwapChainDescriptor descriptor;
+        dawnSwapChainDescriptor descriptor;
         descriptor.nextInChain = nullptr;
         descriptor.implementation = GetSwapChainImplementation();
         swapchain = dawnDeviceCreateSwapChain(device, &descriptor);
     }
-    swapChainFormat = static_cast<DawnTextureFormat>(GetPreferredSwapChainTextureFormat());
+    swapChainFormat = static_cast<dawnTextureFormat>(GetPreferredSwapChainTextureFormat());
     dawnSwapChainConfigure(swapchain, swapChainFormat, DAWN_TEXTURE_USAGE_BIT_OUTPUT_ATTACHMENT, 640,
                           480);
 
@@ -44,7 +44,7 @@ void init() {
         "void main() {\n"
         "   gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);\n"
         "}\n";
-    DawnShaderModule vsModule = utils::CreateShaderModule(dawn::Device(device), dawn::ShaderStage::Vertex, vs).Release();
+    dawnShaderModule vsModule = utils::CreateShaderModule(dawn::Device(device), dawn::ShaderStage::Vertex, vs).Release();
 
     const char* fs =
         "#version 450\n"
@@ -52,19 +52,19 @@ void init() {
         "void main() {\n"
         "   fragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
         "}\n";
-    DawnShaderModule fsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, fs).Release();
+    dawnShaderModule fsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Fragment, fs).Release();
 
     {
-        DawnRenderPipelineDescriptor descriptor;
+        dawnRenderPipelineDescriptor descriptor;
         descriptor.nextInChain = nullptr;
 
-        DawnPipelineStageDescriptor vertexStage;
+        dawnPipelineStageDescriptor vertexStage;
         vertexStage.nextInChain = nullptr;
         vertexStage.module = vsModule;
         vertexStage.entryPoint = "main";
         descriptor.vertexStage = &vertexStage;
 
-        DawnPipelineStageDescriptor fragmentStage;
+        dawnPipelineStageDescriptor fragmentStage;
         fragmentStage.nextInChain = nullptr;
         fragmentStage.module = fsModule;
         fragmentStage.entryPoint = "main";
@@ -72,50 +72,39 @@ void init() {
 
         descriptor.sampleCount = 1;
 
-        DawnBlendDescriptor blendDescriptor;
+        dawnBlendDescriptor blendDescriptor;
         blendDescriptor.operation = DAWN_BLEND_OPERATION_ADD;
         blendDescriptor.srcFactor = DAWN_BLEND_FACTOR_ONE;
         blendDescriptor.dstFactor = DAWN_BLEND_FACTOR_ONE;
-        DawnColorStateDescriptor colorStateDescriptor;
+        dawnColorStateDescriptor colorStateDescriptor;
         colorStateDescriptor.nextInChain = nullptr;
         colorStateDescriptor.format = swapChainFormat;
         colorStateDescriptor.alphaBlend = blendDescriptor;
         colorStateDescriptor.colorBlend = blendDescriptor;
-        colorStateDescriptor.writeMask = DAWN_COLOR_WRITE_MASK_ALL;
+        colorStateDescriptor.colorWriteMask = DAWN_COLOR_WRITE_MASK_ALL;
 
         descriptor.colorStateCount = 1;
-        DawnColorStateDescriptor* colorStatesPtr[] = {&colorStateDescriptor};
+        dawnColorStateDescriptor* colorStatesPtr[] = {&colorStateDescriptor};
         descriptor.colorStates = colorStatesPtr;
 
-        DawnPipelineLayoutDescriptor pl;
+        dawnPipelineLayoutDescriptor pl;
         pl.nextInChain = nullptr;
         pl.bindGroupLayoutCount = 0;
         pl.bindGroupLayouts = nullptr;
         descriptor.layout = dawnDeviceCreatePipelineLayout(device, &pl);
 
-        DawnInputStateDescriptor inputState;
-        inputState.nextInChain = nullptr;
-        inputState.indexFormat = DAWN_INDEX_FORMAT_UINT32;
-        inputState.numInputs = 0;
-        inputState.inputs = nullptr;
-        inputState.numAttributes = 0;
-        inputState.attributes = nullptr;
-        descriptor.inputState = &inputState;
+        dawnInputStateBuilder inputStateBuilder = dawnDeviceCreateInputStateBuilder(device);
+        descriptor.inputState = dawnInputStateBuilderGetResult(inputStateBuilder);
+        dawnInputStateBuilderRelease(inputStateBuilder);
 
-        DawnRasterizationStateDescriptor rasterizationState;
-        rasterizationState.nextInChain = nullptr;
-        rasterizationState.frontFace = DAWN_FRONT_FACE_CCW;
-        rasterizationState.cullMode = DAWN_CULL_MODE_NONE;
-        rasterizationState.depthBias = 0;
-        rasterizationState.depthBiasSlopeScale = 0.0;
-        rasterizationState.depthBiasClamp = 0.0;
-        descriptor.rasterizationState = &rasterizationState;
-
+        descriptor.indexFormat = DAWN_INDEX_FORMAT_UINT32;
         descriptor.primitiveTopology = DAWN_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
         descriptor.depthStencilState = nullptr;
 
         pipeline = dawnDeviceCreateRenderPipeline(device, &descriptor);
+
+        dawnInputStateRelease(descriptor.inputState);
     }
 
     dawnShaderModuleRelease(vsModule);
@@ -123,14 +112,14 @@ void init() {
 }
 
 void frame() {
-    DawnTexture backbuffer = dawnSwapChainGetNextTexture(swapchain);
-    DawnTextureView backbufferView;
+    dawnTexture backbuffer = dawnSwapChainGetNextTexture(swapchain);
+    dawnTextureView backbufferView;
     {
-        backbufferView = dawnTextureCreateDefaultView(backbuffer);
+        backbufferView = dawnTextureCreateDefaultTextureView(backbuffer);
     }
-    DawnRenderPassDescriptor renderpassInfo;
-    DawnRenderPassColorAttachmentDescriptor colorAttachment;
-    DawnRenderPassColorAttachmentDescriptor* colorAttachments = {&colorAttachment};
+    dawnRenderPassDescriptor renderpassInfo;
+    dawnRenderPassColorAttachmentDescriptor colorAttachment;
+    dawnRenderPassColorAttachmentDescriptor* colorAttachments = {&colorAttachment};
     {
         colorAttachment.attachment = backbufferView;
         colorAttachment.resolveTarget = nullptr;
@@ -141,11 +130,11 @@ void frame() {
         renderpassInfo.colorAttachments = &colorAttachments;
         renderpassInfo.depthStencilAttachment = nullptr;
     }
-    DawnCommandBuffer commands;
+    dawnCommandBuffer commands;
     {
-        DawnCommandEncoder encoder = dawnDeviceCreateCommandEncoder(device);
+        dawnCommandEncoder encoder = dawnDeviceCreateCommandEncoder(device);
 
-        DawnRenderPassEncoder pass = dawnCommandEncoderBeginRenderPass(encoder, &renderpassInfo);
+        dawnRenderPassEncoder pass = dawnCommandEncoderBeginRenderPass(encoder, &renderpassInfo);
         dawnRenderPassEncoderSetPipeline(pass, pipeline);
         dawnRenderPassEncoderDraw(pass, 3, 1, 0, 0);
         dawnRenderPassEncoderEndPass(pass);

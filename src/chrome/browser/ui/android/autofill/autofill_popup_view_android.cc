@@ -10,7 +10,6 @@
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/autofill/autofill_keyboard_accessory_adapter.h"
 #include "chrome/browser/ui/android/autofill/autofill_keyboard_accessory_view.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
@@ -179,12 +178,9 @@ bool AutofillPopupViewAndroid::WasSuppressed() {
 AutofillPopupView* AutofillPopupView::Create(
     AutofillPopupController* controller) {
   if (IsKeyboardAccessoryEnabled()) {
-    auto adapter = std::make_unique<AutofillKeyboardAccessoryAdapter>(
+    return new AutofillKeyboardAccessoryView(
         controller, GetKeyboardAccessoryAnimationDuration(),
         ShouldLimitKeyboardAccessorySuggestionLabelWidth());
-    adapter->SetAccessoryView(
-        std::make_unique<AutofillKeyboardAccessoryView>(adapter.get()));
-    return adapter.release();
   }
 
   auto popup_view = std::make_unique<AutofillPopupViewAndroid>(controller);

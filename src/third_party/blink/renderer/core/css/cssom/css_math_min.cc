@@ -32,8 +32,7 @@ CSSMathMin* CSSMathMin::Create(CSSNumericValueVector values) {
       CSSMathVariadic::TypeCheck(values, CSSNumericValueType::Add, error);
   return error ? nullptr
                : MakeGarbageCollected<CSSMathMin>(
-                     MakeGarbageCollected<CSSNumericArray>(std::move(values)),
-                     final_type);
+                     CSSNumericArray::Create(std::move(values)), final_type);
 }
 
 base::Optional<CSSNumericSumValue> CSSMathMin::SumValue() const {

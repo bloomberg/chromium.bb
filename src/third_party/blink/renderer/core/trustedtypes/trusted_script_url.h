@@ -15,7 +15,11 @@ class CORE_EXPORT TrustedScriptURL final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit TrustedScriptURL(const String& url);
+  static TrustedScriptURL* Create(const String& url) {
+    return MakeGarbageCollected<TrustedScriptURL>(url);
+  }
+
+  TrustedScriptURL(const String& url);
 
   // TrustedScriptURL.idl
   String toString() const;

@@ -100,7 +100,6 @@ function make_array() {
   return eval(make_array_string());
 }
 
-%EnsureFeedbackVectorForFunction(construct_smis);
 function construct_smis() {
   var a = make_array();
   a[0] = 0;  // Send the COW array map to the steak house.
@@ -109,7 +108,6 @@ function construct_smis() {
 }
 
 %NeverOptimizeFunction(construct_doubles);
-%EnsureFeedbackVectorForFunction(construct_doubles);
 function construct_doubles() {
   var a = construct_smis();
   a[0] = 1.5;
@@ -118,14 +116,12 @@ function construct_doubles() {
 }
 
 %NeverOptimizeFunction(convert_mixed);
-%EnsureFeedbackVectorForFunction(convert_mixed);
 function convert_mixed(array, value, kind) {
   array[1] = value;
   assertKind(kind, array);
   assertEquals(value, array[1]);
 }
 
-%PrepareFunctionForOptimization(test1);
 function test1() {
   // Test transition chain SMI->DOUBLE->FAST (crankshafted function will
   // transition to FAST directly).

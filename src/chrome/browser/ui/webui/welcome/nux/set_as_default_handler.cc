@@ -12,7 +12,7 @@ SetAsDefaultHandler::SetAsDefaultHandler()
 SetAsDefaultHandler::~SetAsDefaultHandler() {}
 
 void SetAsDefaultHandler::RecordSetAsDefaultUMA() {
-  // TODO(hcarmona): Add UMA tracking.
+  // TODO(scottchen): Add UMA tracking.
 }
 
 }  // namespace nux

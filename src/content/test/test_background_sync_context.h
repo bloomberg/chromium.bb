@@ -5,6 +5,8 @@
 #ifndef CONTENT_TEST_TEST_BACKGROUND_SYNC_CONTEXT_H_
 #define CONTENT_TEST_TEST_BACKGROUND_SYNC_CONTEXT_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
 
@@ -21,9 +23,7 @@ class TestBackgroundSyncContext : public BackgroundSyncContextImpl {
 
   // BackgroundSyncContextImpl:
   void CreateBackgroundSyncManager(
-      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
-      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context)
-      override;
+      scoped_refptr<ServiceWorkerContextWrapper> context) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestBackgroundSyncContext);

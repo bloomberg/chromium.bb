@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container">
     <ul id="list1" role="listbox" aria-owns="item3">
@@ -14,7 +15,7 @@
 </div>
 
 <script>
-test(function(t)
+test_after_layout_and_paint(function(t)
 {
     var axList1 = accessibilityController.accessibleElementById("list1");
     console.log('axList1: ' + axList1);
@@ -42,7 +43,7 @@ test(function(t)
 </div>
 
 <script>
-test(function(t)
+test_after_layout_and_paint(function(t)
 {
     var axParent1 = accessibilityController.accessibleElementById("parent1");
     var axParent2 = accessibilityController.accessibleElementById("parent2");
@@ -74,7 +75,7 @@ test(function(t)
 </div>
 
 <script>
-test(function(t)
+test_after_layout_and_paint(function(t)
 {
     // Make sure we can walk the whole tree.
     accessibilityController.accessibleElementById("dummy");
@@ -102,7 +103,7 @@ test(function(t)
 </div>
 
 <script>
-test(function(t)
+test_after_layout_and_paint(function(t)
 {
     var axRealParent = accessibilityController.accessibleElementById("real-parent");
     var axOwnsSelf  = accessibilityController.accessibleElementById("owns-self");
@@ -119,7 +120,7 @@ test(function(t)
 </div>
 
 <script>
-test(function(t)
+test_after_layout_and_paint(function(t)
 {
     var axYancy = accessibilityController.accessibleElementById("yancy");
     var axFry = accessibilityController.accessibleElementById("fry");
@@ -140,7 +141,7 @@ test(function(t)
 </div>
 
 <script>
-test(function(t)
+test_after_layout_and_paint(function(t)
 {
     var axLogicalParent = accessibilityController.accessibleElementById("logical_parent");
 
@@ -158,7 +159,7 @@ test(function(t)
 </div>
 
 <script>
-test(function(t)
+test_after_layout_and_paint(function(t)
 {
     var axDeadParent = accessibilityController.accessibleElementById(
         "dead_parent");

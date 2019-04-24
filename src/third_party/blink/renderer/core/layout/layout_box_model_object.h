@@ -175,6 +175,9 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   virtual LayoutRect VisualOverflowRect() const = 0;
 
+  // Checks if this box, or any of it's descendants, or any of it's
+  // continuations, will take up space in the layout of the page.
+  bool HasNonEmptyLayoutSize() const;
   bool UsesCompositedScrolling() const;
 
   // Returns which layers backgrounds should be painted into for overflow
@@ -277,6 +280,10 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
                              -BorderLeft());
   }
 
+  bool HasBorderOrPadding() const {
+    return StyleRef().HasBorder() || StyleRef().HasPadding();
+  }
+
   LayoutUnit BorderAndPaddingStart() const {
     return BorderStart() + PaddingStart();
   }
@@ -300,7 +307,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
     return BorderLeft() + BorderRight() + PaddingLeft() + PaddingRight();
   }
   DISABLE_CFI_PERF LayoutUnit BorderAndPaddingLogicalHeight() const {
-    return (StyleRef().HasBorder() || StyleRef().MayHavePadding())
+    return HasBorderOrPadding()
                ? BorderAndPaddingBefore() + BorderAndPaddingAfter()
                : LayoutUnit();
   }

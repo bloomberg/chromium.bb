@@ -13,6 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "content/public/renderer/worker_thread.h"
+#include "extensions/renderer/event_bookkeeper.h"
 #include "ipc/ipc_sync_message_filter.h"
 
 namespace base {
@@ -23,13 +24,12 @@ namespace content {
 class RenderThread;
 }
 
-class GURL;
 struct ExtensionMsg_DispatchEvent_Params;
 struct ExtensionMsg_TabConnectionInfo;
 struct ExtensionMsg_ExternalConnectionInfo;
 
 namespace extensions {
-class NativeExtensionBindingsSystem;
+class ExtensionBindingsSystem;
 class ScriptContext;
 class V8SchemaRegistry;
 struct Message;
@@ -49,7 +49,7 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
 
   // Thread safe.
   static WorkerThreadDispatcher* Get();
-  static NativeExtensionBindingsSystem* GetBindingsSystem();
+  static ExtensionBindingsSystem* GetBindingsSystem();
   static V8SchemaRegistry* GetV8SchemaRegistry();
   static ScriptContext* GetScriptContext();
 
@@ -58,11 +58,12 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   // IPC::Sender:
   bool Send(IPC::Message* message) override;
 
-  void AddWorkerData(
-      int64_t service_worker_version_id,
-      ScriptContext* context,
-      std::unique_ptr<NativeExtensionBindingsSystem> bindings_system);
+  void AddWorkerData(int64_t service_worker_version_id,
+                     ScriptContext* context,
+                     std::unique_ptr<ExtensionBindingsSystem> bindings_system);
   void RemoveWorkerData(int64_t service_worker_version_id);
+
+  EventBookkeeper* event_bookkeeper() { return &event_bookkeeper_; }
 
   // Called when a service worker context was initialized.
   void DidInitializeContext(int64_t service_worker_version_id);
@@ -113,6 +114,8 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   using IDToTaskRunnerMap = std::map<base::PlatformThreadId, base::TaskRunner*>;
   IDToTaskRunnerMap task_runner_map_;
   base::Lock task_runner_map_lock_;
+
+  EventBookkeeper event_bookkeeper_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThreadDispatcher);
 };

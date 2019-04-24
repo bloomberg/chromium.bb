@@ -15,15 +15,9 @@
 #ifndef sw_Sampler_hpp
 #define sw_Sampler_hpp
 
-#include "Device/Color.hpp"
 #include "Device/Config.hpp"
+#include "Device/Surface.hpp"
 #include "System/Types.hpp"
-#include "Vulkan/VkFormat.h"
-
-namespace vk
-{
-	class Image;
-}
 
 namespace sw
 {
@@ -56,13 +50,13 @@ namespace sw
 		float4 heightLOD;
 		float4 depthLOD;
 
-		word4 borderColor4[4];   // FIXME(b/129523279): Part of Vulkan sampler.
-		float4 borderColorF[4];  // FIXME(b/129523279): Part of Vulkan sampler.
-		float maxAnisotropy;     // FIXME(b/129523279): Part of Vulkan sampler.
+		word4 borderColor4[4];
+		float4 borderColorF[4];
+		float maxAnisotropy;
 		int baseLevel;
 		int maxLevel;
-		float minLod;  // FIXME(b/129523279): Part of Vulkan sampler.
-		float maxLod;  // FIXME(b/129523279): Part of Vulkan sampler.
+		float minLod;
+		float maxLod;
 	};
 
 	enum SamplerType
@@ -153,7 +147,7 @@ namespace sw
 			State();
 
 			TextureType textureType;
-			vk::Format textureFormat;
+			VkFormat textureFormat;
 			FilterType textureFilter;
 			AddressingMode addressingModeU;
 			AddressingMode addressingModeV;
@@ -178,7 +172,7 @@ namespace sw
 
 		State samplerState() const;
 
-		void setTextureLevel(int face, int level, vk::Image *image, TextureType type);
+		void setTextureLevel(int face, int level, Surface *surface, TextureType type);
 
 		void setTextureFilter(FilterType textureFilter);
 		void setMipmapFilter(MipmapType mipmapFilter);
@@ -220,7 +214,8 @@ namespace sw
 		AddressingMode getAddressingModeW() const;
 		CompareFunc getCompareFunc() const;
 
-		vk::Format textureFormat;
+		VkFormat externalTextureFormat;
+		VkFormat internalTextureFormat;
 		TextureType textureType;
 
 		FilterType textureFilter;

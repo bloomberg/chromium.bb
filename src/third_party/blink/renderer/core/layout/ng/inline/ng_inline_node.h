@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -30,7 +29,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   NGInlineNode(LayoutBlockFlow*);
 
   LayoutBlockFlow* GetLayoutBlockFlow() const {
-    return To<LayoutBlockFlow>(box_);
+    return ToLayoutBlockFlow(box_);
   }
   NGLayoutInputNode NextSibling() { return nullptr; }
 
@@ -99,19 +98,6 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 
   String ToString() const;
 
-  // A helper function for NGInlineItemsBuilder.
-  static void ClearInlineFragment(LayoutObject* object) {
-    object->SetIsInLayoutNGInlineFormattingContext(true);
-    object->SetFirstInlineFragment(nullptr);
-  }
-
-  // A helper function for NGInlineItemsBuilder.
-  static void ClearNeedsLayout(LayoutObject* object) {
-    object->ClearNeedsLayout();
-    object->ClearNeedsCollectInlines();
-    ClearInlineFragment(object);
-  }
-
  protected:
   bool IsPrepareLayoutFinished() const;
 
@@ -133,17 +119,17 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   bool MarkLineBoxesDirty(LayoutBlockFlow*);
 
   NGInlineNodeData* MutableData() {
-    return To<LayoutBlockFlow>(box_)->GetNGInlineNodeData();
+    return ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
   }
   const NGInlineNodeData& Data() const {
     DCHECK(IsPrepareLayoutFinished() &&
            !GetLayoutBlockFlow()->NeedsCollectInlines());
-    return *To<LayoutBlockFlow>(box_)->GetNGInlineNodeData();
+    return *ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
   }
   // Same as |Data()| but can access even when |NeedsCollectInlines()| is set.
   const NGInlineNodeData& MaybeDirtyData() const {
     DCHECK(IsPrepareLayoutFinished());
-    return *To<LayoutBlockFlow>(box_)->GetNGInlineNodeData();
+    return *ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
   }
   const NGInlineNodeData& EnsureData();
 
@@ -154,12 +140,11 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   friend class NGInlineNodeLegacy;
 };
 
-template <>
-struct DowncastTraits<NGInlineNode> {
-  static bool AllowFrom(const NGLayoutInputNode& node) {
-    return node.IsInline();
-  }
-};
+DEFINE_TYPE_CASTS(NGInlineNode,
+                  NGLayoutInputNode,
+                  node,
+                  node->IsInline(),
+                  node.IsInline());
 
 }  // namespace blink
 

@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/hash/hash.h"
+#include "base/hash.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -102,6 +102,27 @@ DevToolsChannelData::CreateForChannel(GpuChannel* channel) {
 
 }  // namespace
 
+// FastSetActiveURL will shortcut the expensive call to SetActiveURL when the
+// url_hash matches.
+//
+// static
+void CommandBufferStub::FastSetActiveURL(const GURL& url,
+                                         size_t url_hash,
+                                         GpuChannel* channel) {
+  // Leave the previously set URL in the empty case -- empty URLs are given by
+  // BlinkPlatformImpl::createOffscreenGraphicsContext3DProvider. Hopefully the
+  // onscreen context URL was set previously and will show up even when a crash
+  // occurs during offscreen command processing.
+  if (url.is_empty())
+    return;
+  static size_t g_last_url_hash = 0;
+  if (url_hash != g_last_url_hash) {
+    g_last_url_hash = url_hash;
+    DCHECK(channel && channel->gpu_channel_manager() &&
+           channel->gpu_channel_manager()->delegate());
+    channel->gpu_channel_manager()->delegate()->SetActiveURL(url);
+  }
+}
 
 CommandBufferStub::CommandBufferStub(
     GpuChannel* channel,
@@ -113,6 +134,7 @@ CommandBufferStub::CommandBufferStub(
     : channel_(channel),
       context_type_(init_params.attribs.context_type),
       active_url_(init_params.active_url),
+      active_url_hash_(base::Hash(active_url_.possibly_invalid_spec())),
       initialized_(false),
       surface_handle_(init_params.surface_handle),
       use_virtualized_gl_context_(false),
@@ -131,7 +153,7 @@ CommandBufferStub::~CommandBufferStub() {
 bool CommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "GPUTask",
                "data", DevToolsChannelData::CreateForChannel(channel()));
-  UpdateActiveUrl();
+  FastSetActiveURL(active_url_, active_url_hash_, channel_);
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
                                                                         : "0");
@@ -219,7 +241,7 @@ void CommandBufferStub::PollWork() {
 
 void CommandBufferStub::PerformWork() {
   TRACE_EVENT0("gpu", "CommandBufferStub::PerformWork");
-  UpdateActiveUrl();
+  FastSetActiveURL(active_url_, active_url_hash_, channel_);
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
                                                                         : "0");
@@ -322,7 +344,7 @@ gles2::ProgramCache::ScopedCacheUse CommandBufferStub::CreateCacheUse() {
 }
 
 void CommandBufferStub::Destroy() {
-  UpdateActiveUrl();
+  FastSetActiveURL(active_url_, active_url_hash_, channel_);
   // TODO(sunnyps): Should this use ScopedCrashKey instead?
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
                                                                         : "0");
@@ -344,8 +366,7 @@ void CommandBufferStub::Destroy() {
     if ((surface_handle_ == gpu::kNullSurfaceHandle) &&
         !active_url_.is_empty() &&
         !gpu_channel_manager->delegate()->IsExiting()) {
-      gpu_channel_manager->delegate()->DidDestroyOffscreenContext(
-          active_url_.url());
+      gpu_channel_manager->delegate()->DidDestroyOffscreenContext(active_url_);
     }
   }
 
@@ -394,7 +415,7 @@ CommandBufferServiceClient::CommandBatchProcessedResult
 CommandBufferStub::OnCommandBatchProcessed() {
   GpuWatchdogThread* watchdog = channel_->gpu_channel_manager()->watchdog();
   if (watchdog)
-    watchdog->ReportProgress();
+    watchdog->CheckArmed();
   bool pause = channel_->scheduler()->ShouldYield(sequence_id_);
   return pause ? kPauseExecution : kContinueExecution;
 }
@@ -414,7 +435,7 @@ void CommandBufferStub::OnParseError() {
   GpuChannelManager* gpu_channel_manager = channel_->gpu_channel_manager();
   gpu_channel_manager->delegate()->DidLoseContext(
       (surface_handle_ == kNullSurfaceHandle), state.context_lost_reason,
-      active_url_.url());
+      active_url_);
 
   CheckContextLost();
 }
@@ -505,7 +526,7 @@ void CommandBufferStub::OnAsyncFlush(
 
   last_flush_id_ = flush_id;
   CommandBuffer::State pre_state = command_buffer_->GetState();
-  UpdateActiveUrl();
+  FastSetActiveURL(active_url_, active_url_hash_, channel_);
 
   MailboxManager* mailbox_manager =
       channel_->gpu_channel_manager()->mailbox_manager();
@@ -682,15 +703,12 @@ void CommandBufferStub::RegisterTransferBufferForTest(
   command_buffer_->RegisterTransferBuffer(id, std::move(buffer));
 }
 
-void CommandBufferStub::CheckContextLost() {
+bool CommandBufferStub::CheckContextLost() {
   DCHECK(command_buffer_);
   CommandBuffer::State state = command_buffer_->GetState();
+  bool was_lost = state.error == error::kLostContext;
 
-  // Check the error reason and robustness extension to get a better idea if the
-  // GL context was lost. We might try restarting the GPU process to recover
-  // from actual GL context loss but it's unnecessary for other types of parse
-  // errors.
-  if (state.error == error::kLostContext) {
+  if (was_lost) {
     bool was_lost_by_robustness =
         decoder_context_ &&
         decoder_context_->WasContextLostByRobustnessExtension();
@@ -698,15 +716,7 @@ void CommandBufferStub::CheckContextLost() {
   }
 
   CheckCompleteWaits();
-}
-
-void CommandBufferStub::UpdateActiveUrl() {
-  // Leave the previously set URL in the empty case -- empty URLs are given by
-  // BlinkPlatformImpl::createOffscreenGraphicsContext3DProvider. Hopefully the
-  // onscreen context URL was set previously and will show up even when a crash
-  // occurs during offscreen command processing.
-  if (!active_url_.is_empty())
-    ContextUrl::SetActiveUrl(active_url_);
+  return was_lost;
 }
 
 void CommandBufferStub::MarkContextLost() {

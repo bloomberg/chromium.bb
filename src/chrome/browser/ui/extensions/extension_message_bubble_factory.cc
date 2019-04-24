@@ -6,6 +6,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
@@ -31,12 +32,31 @@ namespace {
 ExtensionMessageBubbleFactory::OverrideForTesting g_override_for_testing =
     ExtensionMessageBubbleFactory::NO_OVERRIDE;
 
+const char kEnableDevModeWarningExperimentName[] =
+    "ExtensionDeveloperModeWarning";
+
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
+const char kEnableProxyWarningExperimentName[] = "ExtensionProxyWarning";
+#endif
+
 // A set of all profiles evaluated, so we can tell if it's the initial check.
 // TODO(devlin): It would be nice to coalesce all the "profiles evaluated" maps
 // that are in the different bubble controllers.
 std::set<Profile*>& GetEvaluatedProfiles() {
   static base::NoDestructor<std::set<Profile*>> s;
   return *s;
+}
+
+bool IsExperimentEnabled(const char* experiment_name) {
+  // Don't allow turning it off via command line.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kForceFieldTrials)) {
+    std::string forced_trials =
+        command_line->GetSwitchValueASCII(switches::kForceFieldTrials);
+    if (forced_trials.find(experiment_name))
+      return true;
+  }
+  return base::FieldTrialList::FindFullName(experiment_name) == "Enabled";
 }
 
 bool EnableSuspiciousExtensionsBubble() {
@@ -59,7 +79,8 @@ bool EnableProxyOverrideBubble() {
   return true;
 #else
   return g_override_for_testing ==
-         ExtensionMessageBubbleFactory::OVERRIDE_ENABLED;
+             ExtensionMessageBubbleFactory::OVERRIDE_ENABLED ||
+         IsExperimentEnabled(kEnableProxyWarningExperimentName);
 #endif
 }
 
@@ -81,7 +102,8 @@ bool EnableDevModeBubble() {
 #endif
 
   return g_override_for_testing ==
-         ExtensionMessageBubbleFactory::OVERRIDE_ENABLED;
+             ExtensionMessageBubbleFactory::OVERRIDE_ENABLED ||
+         IsExperimentEnabled(kEnableDevModeWarningExperimentName);
 }
 
 }  // namespace

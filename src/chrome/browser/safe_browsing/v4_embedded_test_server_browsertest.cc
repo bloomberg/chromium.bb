@@ -5,7 +5,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -15,31 +14,12 @@
 #include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/db/v4_embedded_test_server_util.h"
 #include "components/safe_browsing/db/v4_test_util.h"
-#include "components/safe_browsing/features.h"
-#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/dns/mock_host_resolver.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
-
-bool IsShowingInterstitial(content::WebContents* contents) {
-  if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials)) {
-    security_interstitials::SecurityInterstitialTabHelper* helper =
-        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-            contents);
-    return helper &&
-           (helper
-                ->GetBlockingPageForCurrentlyCommittedNavigationForTesting() !=
-            nullptr);
-  }
-  return contents->GetInterstitialPage() != nullptr;
-}
-
-}  // namespace
 
 namespace safe_browsing {
 
@@ -106,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerBrowserTest, SimpleTest) {
   ui_test_utils::NavigateToURL(browser(), bad_url);
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(IsShowingInterstitial(contents));
+  EXPECT_TRUE(contents->GetInterstitialPage());
 }
 
 IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerBrowserTest,
@@ -132,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(V4EmbeddedTestServerBrowserTest,
   ui_test_utils::NavigateToURL(browser(), bad_url);
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_FALSE(IsShowingInterstitial(contents));
+  EXPECT_FALSE(contents->GetInterstitialPage());
 }
 
 }  // namespace safe_browsing

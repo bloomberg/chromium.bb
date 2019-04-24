@@ -11,7 +11,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 
 import java.util.List;
@@ -28,8 +27,7 @@ public class PhotoPickerToolbar extends SelectableListToolbar<PickerBitmap> {
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        setNavigationIcon(TintedDrawable.constructTintedDrawable(
-                getContext(), R.drawable.btn_close, R.color.default_icon_color));
+        setNavigationIcon(R.drawable.btn_close);
         setNavigationContentDescription(R.string.close);
 
         TextView up = (TextView) mNumberRollView.findViewById(R.id.up);

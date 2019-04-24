@@ -517,7 +517,7 @@ class OfflinePageRequestHandlerTestBase : public testing::Test {
 
  private:
   static std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
-      SimpleFactoryKey* key);
+      content::BrowserContext* context);
 
   // TODO(https://crbug.com/809610): The static members below will be removed
   // once the reference to BuildTestOfflinePageModel in SetUp is converted to a
@@ -602,7 +602,7 @@ void OfflinePageRequestHandlerTestBase::SetUp() {
   public_archives_dir_ = public_archives_temp_base_dir_.GetPath().AppendASCII(
       kPublicOfflineFileDir);
   OfflinePageModelFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile()->GetProfileKey(),
+      profile(),
       base::BindRepeating(
           &OfflinePageRequestHandlerTestBase::BuildTestOfflinePageModel));
 
@@ -956,12 +956,12 @@ int64_t OfflinePageRequestHandlerTestBase::SavePage(
 // static
 std::unique_ptr<KeyedService>
 OfflinePageRequestHandlerTestBase::BuildTestOfflinePageModel(
-    SimpleFactoryKey* key) {
+    content::BrowserContext* context) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
 
   base::FilePath store_path =
-      key->GetPath().Append(chrome::kOfflinePageMetadataDirname);
+      context->GetPath().Append(chrome::kOfflinePageMetadataDirname);
   std::unique_ptr<OfflinePageMetadataStore> metadata_store(
       new OfflinePageMetadataStore(task_runner, store_path));
   std::unique_ptr<SystemDownloadManager> download_manager(

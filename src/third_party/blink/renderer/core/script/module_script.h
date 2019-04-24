@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MODULE_SCRIPT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MODULE_SCRIPT_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
@@ -38,25 +38,25 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
       const ScriptFetchOptions&,
       const TextPosition& start_position = TextPosition::MinimumPosition());
 
-  // Mostly corresponds to Create() but accepts ModuleRecord as the argument
-  // and allows null ModuleRecord.
+  // Mostly corresponds to Create() but accepts ScriptModule as the argument
+  // and allows null ScriptModule.
   static ModuleScript* CreateForTest(
       Modulator*,
-      ModuleRecord,
+      ScriptModule,
       const KURL& base_url,
       const ScriptFetchOptions& = ScriptFetchOptions());
 
   ModuleScript(Modulator* settings_object,
-               ModuleRecord record,
+               ScriptModule record,
                const KURL& source_url,
                const KURL& base_url,
                const ScriptFetchOptions&,
                const ParkableString& source_text,
                const TextPosition& start_position,
-               ModuleRecordProduceCacheData*);
+               ScriptModuleProduceCacheData*);
   ~ModuleScript() override = default;
 
-  ModuleRecord Record() const;
+  ScriptModule Record() const;
   bool HasEmptyRecord() const;
 
   // Note: ParseError-related methods should only be used from ModuleTreeLinker
@@ -87,12 +87,12 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
  private:
   static ModuleScript* CreateInternal(const ParkableString& source_text,
                                       Modulator*,
-                                      ModuleRecord,
+                                      ScriptModule,
                                       const KURL& source_url,
                                       const KURL& base_url,
                                       const ScriptFetchOptions&,
                                       const TextPosition&,
-                                      ModuleRecordProduceCacheData*);
+                                      ScriptModuleProduceCacheData*);
 
   mojom::ScriptType GetScriptType() const override {
     return mojom::ScriptType::kModule;
@@ -135,7 +135,7 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   //   Document -> ScriptRunner -> ScriptLoader -> ModulePendingScript
   //   -> ModulePendingScriptTreeClient -> ModuleScript.
   // All the classes/references on the graphs above should be
-  // Member<>/etc.,
+  // TraceWrapperMember<>/etc.,
   //
   // A parse error and an error to rethrow belong to a script, not to a
   // |parse_error_| and |error_to_rethrow_| should belong to a script (i.e.
@@ -164,13 +164,13 @@ class CORE_EXPORT ModuleScript final : public Script, public NameClient {
   // - CompileModule() and ProduceCache() should be called at different
   //   timings, and
   // - There are no persistent object that can hold this in
-  //   bindings/core/v8 side. ModuleRecord should be short-lived and is
+  //   bindings/core/v8 side. ScriptModule should be short-lived and is
   //   constructed every time in ModuleScript::Record().
   //
   // Cleared once ProduceCache() is called, to avoid
   // calling V8CodeCache::ProduceCache() multiple times, as a ModuleScript
   // can appear multiple times in multiple module graphs.
-  Member<ModuleRecordProduceCacheData> produce_cache_data_;
+  Member<ScriptModuleProduceCacheData> produce_cache_data_;
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const ModuleScript&);

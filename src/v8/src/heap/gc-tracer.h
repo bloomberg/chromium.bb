@@ -17,7 +17,7 @@
 namespace v8 {
 namespace internal {
 
-using BytesAndDuration = std::pair<uint64_t, double>;
+typedef std::pair<uint64_t, double> BytesAndDuration;
 
 inline BytesAndDuration MakeBytesAndDuration(uint64_t bytes, double duration) {
   return std::make_pair(bytes, duration);

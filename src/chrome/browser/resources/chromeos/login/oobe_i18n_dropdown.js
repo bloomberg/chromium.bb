@@ -5,9 +5,12 @@
 /**
  * Polymer class definition for 'oobe-i18n-dropdown'.
  */
+(function() {
+
+
 /**
  * Languages/keyboard descriptor to display
- * @typedef {!OobeTypes.LanguageDsc|!OobeTypes.IMEDsc|!OobeTypes.DemoCountryDsc}
+ * @type {!OobeTypes.LanguageDsc|!OobeTypes.IMEDsc|!OobeTypes.DemoCountryDsc}
  */
 var I18nMenuItem;
 
@@ -36,7 +39,7 @@ Polymer({
 
   /**
    * Mapping from item id to item.
-   * @type {Map<string,I18nMenuItem>}
+   * @type {!Map<string,I18nMenuItem>}
    */
   idToItem_: null,
 
@@ -67,3 +70,4 @@ Polymer({
     setupSelect(this.$.select, items, selectionCallback);
   },
 });
+})();

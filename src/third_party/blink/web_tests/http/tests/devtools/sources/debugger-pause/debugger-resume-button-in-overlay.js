@@ -40,9 +40,6 @@
 
   function step3(val) {
     TestRunner.addResult('Make a click');
-    // TODO(pfeldman): resolve this.
-    SourcesTestRunner.completeDebuggerTest();
-    return;
     var resumeButtonCenter = JSON.parse(val);
     SourcesTestRunner.waitUntilResumed(step4);
     ConsoleTestRunner.evaluateInConsole(

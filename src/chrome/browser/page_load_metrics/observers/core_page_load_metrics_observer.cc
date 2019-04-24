@@ -87,8 +87,12 @@ const char kHistogramFirstMeaningfulPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToFirstMeaningfulPaint";
 const char kHistogramLargestImagePaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLargestImagePaint";
+const char kHistogramLastImagePaint[] =
+    "PageLoad.Experimental.PaintTiming.NavigationToLastImagePaint";
 const char kHistogramLargestTextPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLargestTextPaint";
+const char kHistogramLastTextPaint[] =
+    "PageLoad.Experimental.PaintTiming.NavigationToLastTextPaint";
 const char kHistogramLargestContentPaint[] =
     "PageLoad.Experimental.PaintTiming.NavigationToLargestContentPaint";
 const char kHistogramLargestContentPaintContentType[] =
@@ -216,8 +220,6 @@ const char kHistogramPageLoadNetworkBytes[] =
 const char kHistogramPageLoadCacheBytes[] = "PageLoad.Experimental.Bytes.Cache";
 const char kHistogramPageLoadNetworkBytesIncludingHeaders[] =
     "PageLoad.Experimental.Bytes.NetworkIncludingHeaders";
-const char kHistogramPageLoadUnfinishedBytes[] =
-    "PageLoad.Experimental.Bytes.Unfinished";
 
 const char kHistogramLoadTypeTotalBytesForwardBack[] =
     "PageLoad.Experimental.Bytes.Total.LoadType.ForwardBackNavigation";
@@ -725,7 +727,7 @@ void CorePageLoadMetricsObserver::OnUserInput(
 }
 
 void CorePageLoadMetricsObserver::OnResourceDataUseObserved(
-    content::RenderFrameHost* rfh,
+    FrameTreeNodeId frame_tree_node_id,
     const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
         resources) {
   for (auto const& resource : resources) {
@@ -762,9 +764,19 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
                         timing.paint_timing->largest_image_paint.value());
   }
   if (WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->last_image_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLastImagePaint,
+                        timing.paint_timing->last_image_paint.value());
+  }
+  if (WasStartedInForegroundOptionalEventInForeground(
           timing.paint_timing->largest_text_paint, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramLargestTextPaint,
                         timing.paint_timing->largest_text_paint.value());
+  }
+  if (WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->last_text_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramLastTextPaint,
+                        timing.paint_timing->last_text_paint.value());
   }
   base::Optional<base::TimeDelta> largest_content_paint_time;
   uint64_t largest_content_paint_size;
@@ -877,13 +889,6 @@ void CorePageLoadMetricsObserver::RecordByteAndResourceHistograms(
   PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadTotalBytes, total_bytes);
   PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadNetworkBytesIncludingHeaders,
                        network_bytes_including_headers_);
-
-  size_t unfinished_bytes = 0;
-  for (auto const& kv :
-       GetDelegate()->GetResourceTracker().unfinished_resources())
-    unfinished_bytes += kv.second->received_data_length;
-  PAGE_BYTES_HISTOGRAM(internal::kHistogramPageLoadUnfinishedBytes,
-                       unfinished_bytes);
 
   switch (GetPageLoadType(transition_)) {
     case LOAD_TYPE_RELOAD:

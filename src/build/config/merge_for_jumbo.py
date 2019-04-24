@@ -10,11 +10,10 @@ for compiling.
 """
 
 from __future__ import print_function
-from __future__ import unicode_literals
 
 import argparse
 import hashlib
-import io
+import cStringIO
 import os
 
 def cut_ranges(boundaries):
@@ -59,7 +58,7 @@ def generate_chunk_stops(inputs, output_count, smart_merge=True):
   if smart_merge:
     # Starting with the simple chunks, every file is assigned a rank.
     # This requires a hash function that is stable across runs.
-    hasher = lambda n: hashlib.md5(inputs[n].encode()).hexdigest()
+    hasher = lambda n: hashlib.md5(inputs[n]).hexdigest()
     # In each chunk there is a key file with lowest rank; mark them.
     # Note that they will not easily change.
     centers = [min(indices, key=hasher) for indices in cut_ranges([0] + stops)]
@@ -84,7 +83,7 @@ def write_jumbo_files(inputs, outputs, written_input_set, written_output_set):
     else:
       current_jumbo_file = None
 
-    out = io.StringIO()
+    out = cStringIO.StringIO()
     out.write("/* This is a Jumbo file. Don't edit. */\n\n")
     out.write("/* Generated with merge_for_jumbo.py. */\n\n")
     input_limit = chunk_stops[output_index]

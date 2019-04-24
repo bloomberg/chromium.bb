@@ -12,10 +12,9 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
 #include "fuchsia/base/fit_adapter.h"
-#include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/result_receiver.h"
-#include "fuchsia/base/test_navigation_listener.h"
+#include "fuchsia/engine/test/test_common.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -23,43 +22,48 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_constants.h"
 
-class NamedMessagePortConnectorTest : public cr_fuchsia::WebEngineBrowserTest {
+// Use a shorter name for NavigationEvent, because it is
+// referenced frequently in this file.
+using NavigationDetails = chromium::web::NavigationEvent;
+
+class NamedMessagePortConnectorTest
+    : public cr_fuchsia::WebEngineBrowserTest,
+      public chromium::web::NavigationEventObserver {
  public:
   NamedMessagePortConnectorTest()
       : run_timeout_(TestTimeouts::action_timeout(),
                      base::MakeExpectedNotRunClosure(FROM_HERE)) {
     set_test_server_root(base::FilePath("fuchsia/runners/cast/testdata"));
-    navigation_listener_.SetBeforeAckHook(
-        base::BindRepeating(&NamedMessagePortConnectorTest::OnBeforeAckHook,
-                            base::Unretained(this)));
   }
 
   ~NamedMessagePortConnectorTest() override = default;
 
  protected:
-  // BrowserTestBase implementation.
   void SetUpOnMainThread() override {
     cr_fuchsia::WebEngineBrowserTest::SetUpOnMainThread();
-    frame_ = WebEngineBrowserTest::CreateFrame(&navigation_listener_);
+    frame_ = WebEngineBrowserTest::CreateFrame(this);
   }
 
-  // Intercepts the page load event to trigger the injection of |connector_|'s
-  // services.
-  void OnBeforeAckHook(
-      const fuchsia::web::NavigationState& change,
-      fuchsia::web::NavigationEventListener::OnNavigationStateChangedCallback
-          callback) {
+  void OnNavigationStateChanged(
+      chromium::web::NavigationEvent change,
+      OnNavigationStateChangedCallback callback) override {
     connector_.NotifyPageLoad(frame_.get());
-
-    // Allow the TestNavigationListener's usual navigation event processing flow
-    // to continue.
+    if (navigate_run_loop_)
+      navigate_run_loop_->Quit();
     callback();
   }
 
+  void CheckLoadUrl(const std::string& url,
+                    chromium::web::NavigationController* controller) {
+    navigate_run_loop_ = std::make_unique<base::RunLoop>();
+    controller->LoadUrl(url, nullptr);
+    navigate_run_loop_->Run();
+    navigate_run_loop_.reset();
+  }
+
   std::unique_ptr<base::RunLoop> navigate_run_loop_;
-  fuchsia::web::FramePtr frame_;
+  chromium::web::FramePtr frame_;
   NamedMessagePortConnector connector_;
-  cr_fuchsia::TestNavigationListener navigation_listener_;
 
  private:
   const base::RunLoop::ScopedRunTimeoutForTest run_timeout_;
@@ -72,28 +76,25 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL test_url(embedded_test_server()->GetURL("/connector.html"));
 
-  fuchsia::web::NavigationControllerPtr controller;
+  chromium::web::NavigationControllerPtr controller;
   frame_->GetNavigationController(controller.NewRequest());
 
   base::RunLoop receive_port_run_loop;
-  cr_fuchsia::ResultReceiver<fuchsia::web::MessagePortPtr> message_port(
+  cr_fuchsia::ResultReceiver<chromium::web::MessagePortPtr> message_port(
       receive_port_run_loop.QuitClosure());
   connector_.Register(
       "hello",
       base::BindRepeating(&cr_fuchsia::ResultReceiver<
-                              fuchsia::web::MessagePortPtr>::ReceiveResult,
+                              chromium::web::MessagePortPtr>::ReceiveResult,
                           base::Unretained(&message_port)),
       frame_.get());
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      &controller, fuchsia::web::LoadUrlParams(), test_url.spec()));
-  navigation_listener_.RunUntilNavigationEquals(test_url, {});
+  CheckLoadUrl(test_url.spec(), controller.get());
 
   receive_port_run_loop.Run();
 
-  fuchsia::web::WebMessage msg;
-  msg.set_data(cr_fuchsia::MemBufferFromString("ping"));
-  cr_fuchsia::ResultReceiver<fuchsia::web::MessagePort_PostMessage_Result>
-      post_result;
+  chromium::web::WebMessage msg;
+  msg.data = cr_fuchsia::MemBufferFromString("ping");
+  cr_fuchsia::ResultReceiver<bool> post_result;
   (*message_port)
       ->PostMessage(std::move(msg), cr_fuchsia::CallbackToFitFunction(
                                         post_result.GetReceiveCallback()));
@@ -101,18 +102,14 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
   std::vector<std::string> test_messages = {"early 1", "early 2", "ack ping"};
   for (std::string expected_msg : test_messages) {
     base::RunLoop run_loop;
-    cr_fuchsia::ResultReceiver<fuchsia::web::WebMessage> message_receiver(
+    cr_fuchsia::ResultReceiver<chromium::web::WebMessage> message_receiver(
         run_loop.QuitClosure());
     (*message_port)
         ->ReceiveMessage(cr_fuchsia::CallbackToFitFunction(
             message_receiver.GetReceiveCallback()));
     run_loop.Run();
-
-    std::string data;
-    ASSERT_TRUE(message_receiver->has_data());
-    ASSERT_TRUE(
-        cr_fuchsia::StringFromMemBuffer(message_receiver->data(), &data));
-    EXPECT_EQ(data, expected_msg);
+    EXPECT_EQ(cr_fuchsia::StringFromMemBufferOrDie(message_receiver->data),
+              expected_msg);
   }
 
   // Ensure that the MessagePort is dropped when navigating away.
@@ -121,8 +118,7 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
     (*message_port).set_error_handler([&run_loop](zx_status_t) {
       run_loop.Quit();
     });
-    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        &controller, fuchsia::web::LoadUrlParams(), "about:blank"));
+    controller->LoadUrl("about:blank", nullptr);
     run_loop.Run();
   }
 

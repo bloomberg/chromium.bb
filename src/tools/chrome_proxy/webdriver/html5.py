@@ -22,7 +22,7 @@ class HTML5(IntegrationTest):
         # Site has a lot on it, just check the main page.
         if (response.url == 'http://html5test.com/'
             or response.url == 'http://html5test.com/index.html'):
-          self.assertHasProxyHeaders(response)
+          self.assertHasChromeProxyViaHeader(response)
           checked_main_page = True
       if not checked_main_page:
         self.fail("Did not check any page!")

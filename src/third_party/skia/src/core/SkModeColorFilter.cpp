@@ -11,6 +11,7 @@
 #include "SkColorFilter.h"
 #include "SkColorData.h"
 #include "SkColorSpacePriv.h"
+#include "SkColorSpaceXformer.h"
 #include "SkColorSpaceXformSteps.h"
 #include "SkModeColorFilter.h"
 #include "SkRandom.h"
@@ -58,24 +59,34 @@ void SkModeColorFilter::flatten(SkWriteBuffer& buffer) const {
 sk_sp<SkFlattenable> SkModeColorFilter::CreateProc(SkReadBuffer& buffer) {
     SkColor color = buffer.readColor();
     SkBlendMode mode = (SkBlendMode)buffer.readUInt();
-    return SkColorFilters::Blend(color, mode);
+    return SkColorFilter::MakeModeFilter(color, mode);
 }
 
-bool SkModeColorFilter::onAppendStages(const SkStageRec& rec, bool shaderIsOpaque) const {
-    rec.fPipeline->append(SkRasterPipeline::move_src_dst);
+void SkModeColorFilter::onAppendStages(SkRasterPipeline* p,
+                                       SkColorSpace* dst,
+                                       SkArenaAlloc* scratch,
+                                       bool shaderIsOpaque) const {
+    p->append(SkRasterPipeline::move_src_dst);
     SkColor4f color = SkColor4f::FromColor(fColor);
     SkColorSpaceXformSteps(sk_srgb_singleton(), kUnpremul_SkAlphaType,
-                           rec.fDstCS,          kUnpremul_SkAlphaType).apply(color.vec());
-    rec.fPipeline->append_constant_color(rec.fAlloc, color.premul().vec());
-    SkBlendMode_AppendStages(fMode, rec.fPipeline);
-    return true;
+                           dst,                 kUnpremul_SkAlphaType).apply(color.vec());
+    p->append_constant_color(scratch, color.premul().vec());
+    SkBlendMode_AppendStages(fMode, p);
+}
+
+sk_sp<SkColorFilter> SkModeColorFilter::onMakeColorSpace(SkColorSpaceXformer* xformer) const {
+    SkColor color = xformer->apply(fColor);
+    if (color != fColor) {
+        return SkColorFilter::MakeModeFilter(color, fMode);
+    }
+    return this->INHERITED::onMakeColorSpace(xformer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 #if SK_SUPPORT_GPU
 #include "GrBlend.h"
 #include "effects/GrXfermodeFragmentProcessor.h"
-#include "effects/generated/GrConstColorProcessor.h"
+#include "effects/GrConstColorProcessor.h"
 #include "SkGr.h"
 
 std::unique_ptr<GrFragmentProcessor> SkModeColorFilter::asFragmentProcessor(
@@ -104,7 +115,7 @@ std::unique_ptr<GrFragmentProcessor> SkModeColorFilter::asFragmentProcessor(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-sk_sp<SkColorFilter> SkColorFilters::Blend(SkColor color, SkBlendMode mode) {
+sk_sp<SkColorFilter> SkColorFilter::MakeModeFilter(SkColor color, SkBlendMode mode) {
     if (!SkIsValidMode(mode)) {
         return nullptr;
     }

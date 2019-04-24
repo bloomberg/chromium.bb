@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL cors-cookies-redirect Uncaught ReferenceError: window is not defined
-Harness: the test ran to completion.
-

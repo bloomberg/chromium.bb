@@ -11,19 +11,19 @@ namespace blink {
 InterpolationValue CSSResolutionInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(std::make_unique<InterpolableNumber>(0));
+  return InterpolationValue(InterpolableNumber::Create(0));
 }
 
 InterpolationValue CSSResolutionInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value);
-  if (!primitive_value ||
-      !CSSPrimitiveValue::IsResolution(primitive_value->TypeWithCalcResolved()))
+  if (!value.IsPrimitiveValue() ||
+      !CSSPrimitiveValue::IsResolution(
+          ToCSSPrimitiveValue(value).TypeWithCalcResolved()))
     return nullptr;
-  return InterpolationValue(std::make_unique<InterpolableNumber>(
-      primitive_value->ComputeDotsPerPixel()));
+  return InterpolationValue(InterpolableNumber::Create(
+      ToCSSPrimitiveValue(value).ComputeDotsPerPixel()));
 }
 
 const CSSValue* CSSResolutionInterpolationType::CreateCSSValue(

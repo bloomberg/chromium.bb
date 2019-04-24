@@ -17,7 +17,7 @@ class VIEWS_MUS_EXPORT MusClientObserver {
   virtual void OnWindowManagerFrameValuesChanged() = 0;
 
  protected:
-  virtual ~MusClientObserver() = default;
+  virtual ~MusClientObserver() {}
 };
 
 }  // namespace views

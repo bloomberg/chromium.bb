@@ -29,8 +29,7 @@ class OffscreenBrowserCompositorOutputSurface
  public:
   OffscreenBrowserCompositorOutputSurface(
       scoped_refptr<ws::ContextProviderCommandBuffer> context,
-      const viz::UpdateVSyncParametersCallback&
-          update_vsync_parameters_callback,
+      const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       std::unique_ptr<viz::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 

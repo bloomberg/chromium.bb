@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "v8/include/v8.h"
 
@@ -92,6 +91,13 @@ class WorkerOrWorkletScriptController::ExecutionState final {
   Member<WorkerOrWorkletScriptController> controller_;
   ExecutionState* outer_state_;
 };
+
+WorkerOrWorkletScriptController* WorkerOrWorkletScriptController::Create(
+    WorkerOrWorkletGlobalScope* global_scope,
+    v8::Isolate* isolate) {
+  return MakeGarbageCollected<WorkerOrWorkletScriptController>(global_scope,
+                                                               isolate);
+}
 
 WorkerOrWorkletScriptController::WorkerOrWorkletScriptController(
     WorkerOrWorkletGlobalScope* global_scope,
@@ -134,7 +140,9 @@ void WorkerOrWorkletScriptController::DisposeContextIfNeeded() {
   script_state_->DissociateContext();
 }
 
-bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
+bool WorkerOrWorkletScriptController::InitializeContext(
+    const String& human_readable_name,
+    const KURL& url_for_debugger) {
   v8::HandleScope handle_scope(isolate_);
 
   DCHECK(!IsContextInitialized());
@@ -164,7 +172,7 @@ bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
   if (context.IsEmpty())
     return false;
 
-  script_state_ = MakeGarbageCollected<ScriptState>(context, world_);
+  script_state_ = ScriptState::Create(context, world_);
 
   ScriptState::Scope scope(script_state_);
 
@@ -211,10 +219,12 @@ bool WorkerOrWorkletScriptController::Initialize(const KURL& url_for_debugger) {
   V8PerContextData::From(context)->ConstructorForType(wrapper_type_info);
 
   if (global_scope_->IsMainThreadWorkletGlobalScope()) {
-    // Set the human readable name for the world.
-    DCHECK(!global_scope_->Name().IsEmpty());
-    world_->SetNonMainWorldHumanReadableName(world_->GetWorldId(),
-                                             global_scope_->Name());
+    // Set the human readable name for the world if the call passes an actual
+    // |human_readable name|.
+    if (!human_readable_name.IsEmpty()) {
+      world_->SetNonMainWorldHumanReadableName(world_->GetWorldId(),
+                                               human_readable_name);
+    }
   } else {
     // Name new context for debugging. For main thread worklet global scopes
     // this is done once the context is initialized.

@@ -83,14 +83,14 @@ class ExtensionInstallForcelistPolicyHandler
 };
 
 // Parses the extension force install list for the login profile.
-class ExtensionInstallLoginScreenExtensionsPolicyHandler
+class ExtensionInstallLoginScreenAppListPolicyHandler
     : public ExtensionInstallListPolicyHandler {
  public:
-  ExtensionInstallLoginScreenExtensionsPolicyHandler();
-  ~ExtensionInstallLoginScreenExtensionsPolicyHandler() override = default;
+  ExtensionInstallLoginScreenAppListPolicyHandler();
+  ~ExtensionInstallLoginScreenAppListPolicyHandler() override = default;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallLoginScreenExtensionsPolicyHandler);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallLoginScreenAppListPolicyHandler);
 };
 
 // Implements additional checks for policies that are lists of extension

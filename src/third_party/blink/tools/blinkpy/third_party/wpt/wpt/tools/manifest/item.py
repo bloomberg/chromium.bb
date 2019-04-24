@@ -1,7 +1,23 @@
-from copy import copy
-from six import iteritems
 from six.moves.urllib.parse import urljoin, urlparse
 from abc import ABCMeta, abstractproperty
+
+
+class SourceFileCache(object):
+    def __init__(self):
+        self.source_files = {}
+
+    def make_new(self, tests_root, path, url_base):
+        from .sourcefile import SourceFile
+
+        return SourceFile(tests_root, path, url_base)
+
+    def get(self, tests_root, manifest, path):
+
+        if path not in self.source_files:
+            self.source_files[path] = self.make_new(tests_root, path, manifest.url_base)
+
+        return self.source_files[path]
+
 
 item_types = {}
 
@@ -22,22 +38,40 @@ class ManifestItemMeta(ABCMeta):
 class ManifestItem(object):
     __metaclass__ = ManifestItemMeta
 
-    __slots__ = ("_tests_root", "path")
-
     item_type = None
 
-    def __init__(self, tests_root=None, path=None):
-        self._tests_root = tests_root
-        self.path = path
+    source_file_cache = SourceFileCache()
+
+    def __init__(self, source_file, manifest=None):
+        self.source_file = source_file
 
     @abstractproperty
     def id(self):
         """The test's id (usually its url)"""
         pass
 
+    @property
+    def meta_flags(self):
+        return set(self.source_file.meta_flags)
+
+    @property
+    def path(self):
+        """The test path relative to the test_root"""
+        return self.source_file.rel_path
+
+    @property
+    def https(self):
+        flags = self.meta_flags
+        return ("https" in flags or "serviceworker" in flags)
+
     def key(self):
         """A unique identifier for the test"""
         return (self.item_type, self.id)
+
+    def meta_key(self):
+        """Extra metadata that doesn't form part of the test identity, but for
+        which changes mean regenerating the manifest (e.g. the test timeout."""
+        return ()
 
     def __eq__(self, other):
         if not hasattr(other, "key"):
@@ -45,7 +79,7 @@ class ManifestItem(object):
         return self.key() == other.key()
 
     def __hash__(self):
-        return hash(self.key())
+        return hash(self.key() + self.meta_key())
 
     def __repr__(self):
         return "<%s.%s id=%s, path=%s>" % (self.__module__, self.__class__.__name__, self.id, self.path)
@@ -54,117 +88,99 @@ class ManifestItem(object):
         return [{}]
 
     @classmethod
-    def from_json(cls, manifest, path, obj):
-        return cls(manifest.tests_root, path)
+    def from_json(cls, manifest, tests_root, path, obj):
+        source_file = cls.source_file_cache.get(tests_root, manifest, path)
+        return cls(source_file,
+                   manifest=manifest)
 
 
 class URLManifestItem(ManifestItem):
-    __slots__ = ("url_base", "_url", "_extras")
-
-    def __init__(self, tests_root, path, url_base, url, **extras):
-        super(URLManifestItem, self).__init__(tests_root, path)
-        assert url_base[0] == "/"
-        self.url_base = url_base
-        assert url[0] != "/"
+    def __init__(self, source_file, url, url_base="/", manifest=None):
+        ManifestItem.__init__(self, source_file, manifest=manifest)
         self._url = url
-        self._extras = extras
+        self.url_base = url_base
 
     @property
     def id(self):
         return self.url
 
     @property
-    def url(self):
-        # we can outperform urljoin, because we know we just have path relative URLs
-        if self.url_base == "/":
-            return "/" + self._url
-        return urljoin(self.url_base, self._url)
+    def meta_flags(self):
+        return set(urlparse(self.url).path.rsplit("/", 1)[1].split(".")[1:-1])
 
     @property
-    def https(self):
-        flags = set(urlparse(self.url).path.rsplit("/", 1)[1].split(".")[1:-1])
-        return ("https" in flags or "serviceworker" in flags)
+    def url(self):
+        return urljoin(self.url_base, self._url)
 
     def to_json(self):
         rv = [self._url, {}]
         return rv
 
     @classmethod
-    def from_json(cls, manifest, path, obj):
+    def from_json(cls, manifest, tests_root, path, obj):
+        source_file = cls.source_file_cache.get(tests_root, manifest, path)
         url, extras = obj
-        return cls(manifest.tests_root,
-                   path,
-                   manifest.url_base,
+        return cls(source_file,
                    url,
-                   **extras)
+                   url_base=manifest.url_base,
+                   manifest=manifest)
 
 
 class TestharnessTest(URLManifestItem):
     item_type = "testharness"
 
-    @property
-    def timeout(self):
-        return self._extras.get("timeout")
+    def __init__(self, source_file, url, url_base="/", timeout=None, testdriver=False, jsshell=False, manifest=None):
+        URLManifestItem.__init__(self, source_file, url, url_base=url_base, manifest=manifest)
+        self.timeout = timeout
+        self.testdriver = testdriver
+        self.jsshell = jsshell
 
-    @property
-    def testdriver(self):
-        return self._extras.get("testdriver")
-
-    @property
-    def jsshell(self):
-        return self._extras.get("jsshell")
-
-    @property
-    def script_metadata(self):
-        return self._extras.get("script_metadata")
+    def meta_key(self):
+        return (self.timeout, self.testdriver)
 
     def to_json(self):
-        rv = super(TestharnessTest, self).to_json()
+        rv = URLManifestItem.to_json(self)
         if self.timeout is not None:
             rv[-1]["timeout"] = self.timeout
         if self.testdriver:
             rv[-1]["testdriver"] = self.testdriver
         if self.jsshell:
             rv[-1]["jsshell"] = True
-        if self.script_metadata:
-            rv[-1]["script_metadata"] = self.script_metadata
         return rv
 
+    @classmethod
+    def from_json(cls, manifest, tests_root, path, obj):
+        source_file = cls.source_file_cache.get(tests_root, manifest, path)
 
-class RefTestBase(URLManifestItem):
-    __slots__ = ("references",)
+        url, extras = obj
+        return cls(source_file,
+                   url,
+                   url_base=manifest.url_base,
+                   timeout=extras.get("timeout"),
+                   testdriver=bool(extras.get("testdriver")),
+                   jsshell=bool(extras.get("jsshell")),
+                   manifest=manifest)
 
-    item_type = "reftest_base"
 
-    def __init__(self, tests_root, path, url_base, url, references=None, **extras):
-        super(RefTestBase, self).__init__(tests_root, path, url_base, url, **extras)
-        if references is None:
-            self.references = []
-        else:
-            self.references = references
+class RefTestNode(URLManifestItem):
+    item_type = "reftest_node"
 
-    @property
-    def timeout(self):
-        return self._extras.get("timeout")
+    def __init__(self, source_file, url, references, url_base="/", timeout=None,
+                 viewport_size=None, dpi=None, manifest=None):
+        URLManifestItem.__init__(self, source_file, url, url_base=url_base, manifest=manifest)
+        for _, ref_type in references:
+            if ref_type not in ["==", "!="]:
+                raise ValueError("Unrecognised ref_type %s" % ref_type)
+        self.references = tuple(references)
+        self.timeout = timeout
+        self.viewport_size = viewport_size
+        self.dpi = dpi
 
-    @property
-    def viewport_size(self):
-        return self._extras.get("viewport_size")
-
-    @property
-    def dpi(self):
-        return self._extras.get("dpi")
-
-    @property
-    def fuzzy(self):
-        rv = self._extras.get("fuzzy", [])
-        if isinstance(rv, list):
-            return {tuple(item[0]): item[1]
-                    for item in self._extras.get("fuzzy", [])}
-        return rv
+    def meta_key(self):
+        return (self.timeout, self.viewport_size, self.dpi)
 
     def to_json(self):
-        rv = [self._url, self.references, {}]
+        rv = [self.url, self.references, {}]
         extras = rv[-1]
         if self.timeout is not None:
             extras["timeout"] = self.timeout
@@ -172,40 +188,37 @@ class RefTestBase(URLManifestItem):
             extras["viewport_size"] = self.viewport_size
         if self.dpi is not None:
             extras["dpi"] = self.dpi
-        if self.fuzzy:
-            extras["fuzzy"] = list(iteritems(self.fuzzy))
         return rv
 
     @classmethod
-    def from_json(cls, manifest, path, obj):
+    def from_json(cls, manifest, tests_root, path, obj):
+        source_file = cls.source_file_cache.get(tests_root, manifest, path)
         url, references, extras = obj
-        return cls(manifest.tests_root,
-                   path,
-                   manifest.url_base,
+        return cls(source_file,
                    url,
                    references,
-                   **extras)
+                   url_base=manifest.url_base,
+                   timeout=extras.get("timeout"),
+                   viewport_size=extras.get("viewport_size"),
+                   dpi=extras.get("dpi"),
+                   manifest=manifest)
 
     def to_RefTest(self):
         if type(self) == RefTest:
             return self
-        rv = copy(self)
-        rv.__class__ = RefTest
+        rv = RefTest.__new__(RefTest)
+        rv.__dict__.update(self.__dict__)
         return rv
 
     def to_RefTestNode(self):
         if type(self) == RefTestNode:
             return self
-        rv = copy(self)
-        rv.__class__ = RefTestNode
+        rv = RefTestNode.__new__(RefTestNode)
+        rv.__dict__.update(self.__dict__)
         return rv
 
 
-class RefTestNode(RefTestBase):
-    item_type = "reftest_node"
-
-
-class RefTest(RefTestBase):
+class RefTest(RefTestNode):
     item_type = "reftest"
 
 
@@ -228,15 +241,26 @@ class Stub(URLManifestItem):
 class WebDriverSpecTest(URLManifestItem):
     item_type = "wdspec"
 
-    @property
-    def timeout(self):
-        return self._extras.get("timeout")
+    def __init__(self, source_file, url, url_base="/", timeout=None, manifest=None):
+        URLManifestItem.__init__(self, source_file, url, url_base=url_base, manifest=manifest)
+        self.timeout = timeout
 
     def to_json(self):
-        rv = super(WebDriverSpecTest, self).to_json()
+        rv = URLManifestItem.to_json(self)
         if self.timeout is not None:
             rv[-1]["timeout"] = self.timeout
         return rv
+
+    @classmethod
+    def from_json(cls, manifest, tests_root, path, obj):
+        source_file = cls.source_file_cache.get(tests_root, manifest, path)
+
+        url, extras = obj
+        return cls(source_file,
+                   url,
+                   url_base=manifest.url_base,
+                   timeout=extras.get("timeout"),
+                   manifest=manifest)
 
 
 class SupportFile(ManifestItem):
@@ -244,4 +268,4 @@ class SupportFile(ManifestItem):
 
     @property
     def id(self):
-        return self.path
+        return self.source_file.rel_path

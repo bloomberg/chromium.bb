@@ -5,7 +5,6 @@ kinuko@chromium.org
 mmenke@chromium.org
 morlovich@chromium.org
 reillyg@chromium.org
-rmcelrath@chromium.org
 tsepez@chromium.org
 yhirano@chromium.org
 
@@ -29,5 +28,3 @@ per-file network_sandbox_hook_linux.*.cc=file://sandbox/OWNERS
 per-file network_sandbox_win.*=file://sandbox/win/OWNERS
 
 per-file resource_scheduler*=tbansal@chromium.org
-
-# COMPONENT: Internals>Services>Network

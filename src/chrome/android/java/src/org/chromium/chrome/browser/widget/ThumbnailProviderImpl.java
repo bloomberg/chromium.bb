@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.widget;
 
 import android.graphics.Bitmap;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
@@ -19,8 +18,6 @@ import org.chromium.chrome.browser.BitmapCache;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Locale;
@@ -37,12 +34,7 @@ import java.util.Locale;
  *                    duplicating work to decode the same image for two different requests.
  */
 public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorageDelegate {
-    @IntDef({ClientType.DOWNLOAD_HOME, ClientType.NTP_SUGGESTIONS})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ClientType {
-        int DOWNLOAD_HOME = 0;
-        int NTP_SUGGESTIONS = 1;
-    }
+    public enum ClientType { DOWNLOAD_HOME, NTP_SUGGESTIONS }
 
     /** Default in-memory thumbnail cache size. */
     private static final int DEFAULT_MAX_CACHE_BYTES = 5 * ConversionUtils.BYTES_PER_MEGABYTE;
@@ -59,7 +51,7 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
     private BitmapCache mBitmapCache;
 
     /** The client type of the client using this provider. */
-    private final @ClientType int mClient;
+    private final ClientType mClient;
 
     /**
      * Tracks a set of Content Ids where thumbnail generation or retrieval failed.  This should
@@ -84,7 +76,7 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
      * @param referencePool The application's reference pool.
      * @param client The associated client type.
      */
-    public ThumbnailProviderImpl(DiscardableReferencePool referencePool, @ClientType int client) {
+    public ThumbnailProviderImpl(DiscardableReferencePool referencePool, ClientType client) {
         this(referencePool, DEFAULT_MAX_CACHE_BYTES, client);
     }
 
@@ -94,8 +86,8 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
      * @param bitmapCacheSizeByte The size in bytes of the in-memory LRU bitmap cache.
      * @param client The associated client type.
      */
-    public ThumbnailProviderImpl(DiscardableReferencePool referencePool, int bitmapCacheSizeByte,
-            @ClientType int client) {
+    public ThumbnailProviderImpl(
+            DiscardableReferencePool referencePool, int bitmapCacheSizeByte, ClientType client) {
         ThreadUtils.assertOnUiThread();
         mBitmapCache = new BitmapCache(referencePool, bitmapCacheSizeByte);
         mStorage = ThumbnailDiskStorage.create(this);
@@ -259,11 +251,11 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
                 mCacheSizeMaxBytesUma / ConversionUtils.BYTES_PER_KILOBYTE);
     }
 
-    private static String getClientTypeUmaSuffix(@ClientType int clientType) {
+    private static String getClientTypeUmaSuffix(ClientType clientType) {
         switch (clientType) {
-            case ClientType.DOWNLOAD_HOME:
+            case DOWNLOAD_HOME:
                 return "DownloadHome";
-            case ClientType.NTP_SUGGESTIONS:
+            case NTP_SUGGESTIONS:
                 return "NTPSnippets";
             default:
                 assert false;

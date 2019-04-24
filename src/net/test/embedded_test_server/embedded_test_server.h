@@ -161,7 +161,9 @@ class EmbeddedTestServer {
   bool ShutdownAndWaitUntilComplete() WARN_UNUSED_RESULT;
 
   // Checks if the server has started listening for incoming connections.
-  bool Started() const { return listen_socket_.get() != nullptr; }
+  bool Started() const {
+    return listen_socket_.get() != NULL;
+  }
 
   static base::FilePath GetRootCertPemPath();
 

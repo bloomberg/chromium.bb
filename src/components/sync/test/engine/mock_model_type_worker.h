@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include <map>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -44,9 +43,9 @@ class MockModelTypeWorker : public CommitQueue {
 
   // Getters to inspect the requests sent to this object.
   size_t GetNumPendingCommits() const;
-  std::vector<const CommitRequestData*> GetNthPendingCommit(size_t n) const;
+  CommitRequestDataList GetNthPendingCommit(size_t n) const;
   bool HasPendingCommitForHash(const std::string& tag_hash) const;
-  const CommitRequestData* GetLatestPendingCommitForHash(
+  CommitRequestData GetLatestPendingCommitForHash(
       const std::string& tag_hash) const;
 
   // Verify that the |n|th commit request list has the corresponding commit
@@ -77,7 +76,7 @@ class MockModelTypeWorker : public CommitQueue {
                         const sync_pb::EntitySpecifics& specifics,
                         int64_t version_offset,
                         const std::string& ekn);
-  void UpdateFromServer(UpdateResponseDataList updates);
+  void UpdateFromServer(const UpdateResponseDataList& updates);
 
   // Returns an UpdateResponseData representing an update received from
   // the server. Updates server state accordingly.
@@ -87,7 +86,7 @@ class MockModelTypeWorker : public CommitQueue {
   // the same version) or new updates.
   //
   // |ekn| is the encryption key name this item will fake having.
-  std::unique_ptr<syncer::UpdateResponseData> GenerateUpdateData(
+  UpdateResponseData GenerateUpdateData(
       const std::string& tag_hash,
       const sync_pb::EntitySpecifics& specifics,
       int64_t version_offset,
@@ -95,14 +94,13 @@ class MockModelTypeWorker : public CommitQueue {
 
   // Mostly same as GenerateUpdateData above, but set 1 as |version_offset|, and
   // use model_type_state_.encryption_key_name() as |ekn|.
-  std::unique_ptr<syncer::UpdateResponseData> GenerateUpdateData(
+  UpdateResponseData GenerateUpdateData(
       const std::string& tag_hash,
       const sync_pb::EntitySpecifics& specifics);
 
   // Returns an UpdateResponseData representing an update received from
   // the server for a type root node.
-  std::unique_ptr<syncer::UpdateResponseData> GenerateTypeRootUpdateData(
-      const ModelType& model_type);
+  UpdateResponseData GenerateTypeRootUpdateData(const ModelType& model_type);
 
   // Triggers a server-side deletion of the entity with |tag_hash|; updates
   // server state accordingly.
@@ -121,10 +119,10 @@ class MockModelTypeWorker : public CommitQueue {
   // containing the data in |update|, which defaults to an empty list.
   void UpdateWithEncryptionKey(const std::string& ekn);
   void UpdateWithEncryptionKey(const std::string& ekn,
-                               UpdateResponseDataList update);
+                               const UpdateResponseDataList& update);
 
   void UpdateWithGarbageCollection(
-      UpdateResponseDataList updates,
+      const UpdateResponseDataList& updates,
       const sync_pb::GarbageCollectionDirective& gcd);
 
   void UpdateWithGarbageCollection(

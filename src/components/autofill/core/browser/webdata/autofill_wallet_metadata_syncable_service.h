@@ -64,7 +64,6 @@ class AutofillWalletMetadataSyncableService
   }
 
   // syncer::SyncableService implementation.
-  void WaitUntilReadyToSync(base::OnceClosure done) override;
   syncer::SyncMergeResult MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
@@ -79,7 +78,7 @@ class AutofillWalletMetadataSyncableService
   // AutofillWebDataServiceObserverOnDBSequence implementation.
   void AutofillProfileChanged(const AutofillProfileChange& change) override;
   void CreditCardChanged(const CreditCardChange& change) override;
-  void AutofillMultipleChangedBySync() override;
+  void AutofillMultipleChanged() override;
 
   // Creates a new AutofillWalletMetadataSyncableService and hangs it off of
   // |web_data_service|, which takes ownership. This method should only be

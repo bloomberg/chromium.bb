@@ -140,6 +140,14 @@ class AvailableOfflineContentTest : public testing::Test {
     return std::make_tuple(list_visible_by_prefs, std::move(suggestions));
   }
 
+  chrome::mojom::AvailableOfflineContentSummaryPtr SummarizeAndWait() {
+    chrome::mojom::AvailableOfflineContentSummaryPtr summary;
+    chrome::mojom::AvailableOfflineContentProviderAsyncWaiter waiter(
+        &provider_);
+    waiter.Summarize(&summary);
+    return summary;
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_ =
@@ -153,7 +161,13 @@ TEST_F(AvailableOfflineContentTest, NoContent) {
   bool list_visible_by_prefs;
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
   std::tie(list_visible_by_prefs, suggestions) = ListAndWait();
+  chrome::mojom::AvailableOfflineContentSummaryPtr summary = SummarizeAndWait();
 
+  EXPECT_EQ(0u, summary->total_items);
+  EXPECT_FALSE(summary->has_prefetched_page);
+  EXPECT_FALSE(summary->has_offline_page);
+  EXPECT_FALSE(summary->has_video);
+  EXPECT_FALSE(summary->has_audio);
   EXPECT_TRUE(suggestions.empty());
   EXPECT_TRUE(list_visible_by_prefs);
 }
@@ -166,13 +180,20 @@ TEST_F(AvailableOfflineContentTest, TooFewInterestingItems) {
                               TransientItem(), OffTheRecordItem(),
                               IncompleteItem(), DangerousItem()});
 
-  // Call List().
+  // Call List() and Summary().
   bool list_visible_by_prefs;
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
   std::tie(list_visible_by_prefs, suggestions) = ListAndWait();
+  chrome::mojom::AvailableOfflineContentSummaryPtr summary = SummarizeAndWait();
 
   // As interesting items are below the minimum to show, nothing should be
   // reported.
+  EXPECT_EQ(0u, summary->total_items);
+  EXPECT_FALSE(summary->has_prefetched_page);
+  EXPECT_FALSE(summary->has_offline_page);
+  EXPECT_FALSE(summary->has_video);
+  EXPECT_FALSE(summary->has_audio);
+
   EXPECT_TRUE(suggestions.empty());
   EXPECT_TRUE(list_visible_by_prefs);
 }
@@ -186,10 +207,18 @@ TEST_F(AvailableOfflineContentTest, FourInterestingItems) {
   content_provider_.SetVisuals(
       {{SuggestedOfflinePageItem().id, TestThumbnail()}});
 
-  // Call List().
+  // Call List() and Summary().
   bool list_visible_by_prefs;
   std::vector<chrome::mojom::AvailableOfflineContentPtr> suggestions;
   std::tie(list_visible_by_prefs, suggestions) = ListAndWait();
+  chrome::mojom::AvailableOfflineContentSummaryPtr summary = SummarizeAndWait();
+
+  // Check summary.
+  EXPECT_EQ(5u, summary->total_items);
+  EXPECT_TRUE(summary->has_prefetched_page);
+  EXPECT_TRUE(summary->has_offline_page);
+  EXPECT_TRUE(summary->has_video);
+  EXPECT_TRUE(summary->has_audio);
 
   // Check that the right suggestions have been received in order.
   EXPECT_EQ(3ul, suggestions.size());

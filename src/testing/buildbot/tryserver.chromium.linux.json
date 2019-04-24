@@ -98,18 +98,6 @@
       },
       {
         "args": [
-          "--disable-blink-features=HTMLImports,ShadowDOMV0,CustomElementsV0",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_html_imports_polyfill_browser_tests.filter"
-        ],
-        "isolate_coverage_data": true,
-        "name": "webui_html_imports_polyfill_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
           "--disable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
         ],
@@ -197,11 +185,11 @@
       },
       {
         "args": [
-          "--disable-perfetto",
-          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*"
+          "--enable-perfetto",
+          "--gtest_filter=TracingControllerTest.*"
         ],
         "isolate_coverage_data": true,
-        "name": "nonperfetto_content_browsertests",
+        "name": "perfetto_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -477,13 +465,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "perfetto_unittests"
-      },
-      {
-        "isolate_coverage_data": true,
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "ppapi_unittests"
       },
       {
@@ -644,18 +625,12 @@
     "isolated_scripts": [
       {
         "args": [
-          "--num-retries=3",
           "--additional-driver-flag=--no-sandbox",
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw"
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%8m.profraw",
+          "--num-retries=3"
         ],
         "isolate_coverage_data": true,
         "isolate_name": "blink_web_tests_exparchive",
-        "merge": {
-          "args": [
-            "--verbose"
-          ],
-          "script": "//third_party/blink/tools/merge_web_test_results.py"
-        },
         "name": "webkit_layout_tests",
         "results_handler": "layout tests",
         "swarming": {

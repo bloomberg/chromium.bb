@@ -362,7 +362,7 @@ void TranslateBubbleView::ShowOptionsMenu(views::Button* source) {
       options_menu_model_.get(), views::MenuRunner::COMBOBOX));
   gfx::Rect screen_bounds = source->GetBoundsInScreen();
   options_menu_runner_->RunMenuAt(source->GetWidget(), nullptr, screen_bounds,
-                                  views::MenuAnchorPosition::kTopRight,
+                                  views::MENU_ANCHOR_TOPRIGHT,
                                   ui::MENU_SOURCE_MOUSE);
 }
 

@@ -22,7 +22,6 @@
 #include "third_party/webrtc/media/base/rtp_utils.h"
 #include "third_party/webrtc/rtc_base/async_packet_socket.h"
 #include "third_party/webrtc/rtc_base/socket.h"
-#include "third_party/webrtc/rtc_base/time_utils.h"
 
 namespace remoting {
 
@@ -125,7 +124,10 @@ int FakeUdpSocket::SendTo(const void* data, size_t data_size,
   cricket::ApplyPacketOptions(reinterpret_cast<uint8_t*>(buffer->data()),
                               data_size, options.packet_time_params,
                               (now - base::TimeTicks()).InMicroseconds());
-  SignalSentPacket(this, rtc::SentPacket(options.packet_id, rtc::TimeMillis()));
+  SignalSentPacket(
+      this,
+      rtc::SentPacket(options.packet_id,
+                      (now - base::TimeTicks::UnixEpoch()).InMilliseconds()));
   dispatcher_->DeliverPacket(local_address_, address, buffer, data_size);
   return data_size;
 }

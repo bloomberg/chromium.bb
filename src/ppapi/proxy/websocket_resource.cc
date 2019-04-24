@@ -375,9 +375,9 @@ void WebSocketResource::OnPluginMsgConnectReply(
 
 void WebSocketResource::OnPluginMsgCloseReply(
     const ResourceMessageReplyParams& params,
-    uint64_t buffered_amount,
+    unsigned long buffered_amount,
     bool was_clean,
-    uint16_t code,
+    unsigned short code,
     const std::string& reason) {
   // Set close related properties.
   state_ = PP_WEBSOCKETREADYSTATE_CLOSED;
@@ -457,7 +457,7 @@ void WebSocketResource::OnPluginMsgErrorReply(
 
 void WebSocketResource::OnPluginMsgBufferedAmountReply(
     const ResourceMessageReplyParams& params,
-    uint64_t buffered_amount) {
+    unsigned long buffered_amount) {
   buffered_amount_ = buffered_amount;
 }
 
@@ -469,9 +469,9 @@ void WebSocketResource::OnPluginMsgStateReply(
 
 void WebSocketResource::OnPluginMsgClosedReply(
     const ResourceMessageReplyParams& params,
-    uint64_t buffered_amount,
+    unsigned long buffered_amount,
     bool was_clean,
-    uint16_t code,
+    unsigned short code,
     const std::string& reason) {
   OnPluginMsgCloseReply(params, buffered_amount, was_clean, code, reason);
 }

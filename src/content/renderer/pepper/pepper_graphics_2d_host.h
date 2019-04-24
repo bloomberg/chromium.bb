@@ -16,7 +16,6 @@
 #include "cc/resources/shared_bitmap_id_registrar.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "gpu/command_buffer/common/sync_token.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
@@ -30,6 +29,10 @@ class CrossThreadSharedBitmap;
 
 namespace gfx {
 class Rect;
+}
+
+namespace gpu {
+struct SyncToken;
 }
 
 namespace viz {
@@ -186,8 +189,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
   static void ReleaseTextureCallback(
       base::WeakPtr<PepperGraphics2DHost> host,
       scoped_refptr<viz::ContextProvider> context,
-      const gfx::Size& size,
-      const gpu::Mailbox& mailbox,
+      uint32_t id,
       const gpu::SyncToken& sync_token,
       bool lost);
 
@@ -235,17 +237,19 @@ class CONTENT_EXPORT PepperGraphics2DHost
   // The shared main thread context provider, used to upload 2d pepper frames
   // if the compositor is expecting gpu content.
   scoped_refptr<viz::ContextProvider> main_thread_context_;
-  struct SharedImageInfo {
-    SharedImageInfo(gpu::SyncToken sync_token,
-                    gpu::Mailbox mailbox,
-                    gfx::Size size)
-        : sync_token(sync_token), mailbox(mailbox), size(size) {}
-    gpu::SyncToken sync_token;
+  struct TextureInfo {
+    uint32_t id;
     gpu::Mailbox mailbox;
     gfx::Size size;
   };
-  // Shared images that are available for recycling.
-  std::vector<SharedImageInfo> recycled_shared_images_;
+  // The ids of textures holding the copied contents of software frames to
+  // give to the compositor via GL. Textures in this list are in use by the
+  // compositor and are treated as owned by the compositor until the
+  // ReleaseTextureCallback() informs otherwise.
+  std::vector<TextureInfo> texture_copies_;
+  // Texture ids move from |texture_copies_| to here once they are available for
+  // reuse.
+  std::vector<TextureInfo> recycled_texture_copies_;
 
   // This is a bitmap that was recently released by the compositor and may be
   // used to transfer bytes to the compositor again, along with the registration

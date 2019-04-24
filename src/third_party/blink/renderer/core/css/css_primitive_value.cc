@@ -21,8 +21,6 @@
 
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 
-#include <cmath>
-
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/css/css_calculation_value.h"
 #include "third_party/blink/renderer/core/css/css_markup.h"
@@ -32,7 +30,6 @@
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -600,7 +597,7 @@ const char* CSSPrimitiveValue::UnitTypeToString(UnitType type) {
     case UnitType::kCalcLengthWithNumber:
     case UnitType::kCalcPercentageWithLengthAndNumber:
       break;
-  }
+  };
   NOTREACHED();
   return "";
 }
@@ -612,7 +609,7 @@ String CSSPrimitiveValue::CustomCSSText() const {
       // FIXME
       break;
     case UnitType::kInteger:
-      text = String::Number(GetIntValue());
+      text = String::Format("%d", GetIntValue());
       break;
     case UnitType::kNumber:
     case UnitType::kPercentage:
@@ -644,24 +641,9 @@ String CSSPrimitiveValue::CustomCSSText() const {
     case UnitType::kViewportWidth:
     case UnitType::kViewportHeight:
     case UnitType::kViewportMin:
-    case UnitType::kViewportMax: {
-      // The following integers are minimal and maximum integers which can
-      // be represented in non-exponential format with 6 digit precision.
-      constexpr int kMinInteger = -999999;
-      constexpr int kMaxInteger = 999999;
-      // If the value_.num is small integer, go the fast path.
-      if (value_.num < kMinInteger || value_.num > kMaxInteger ||
-          std::trunc(value_.num) != value_.num) {
-        text = FormatNumber(value_.num, UnitTypeToString(GetType()));
-      } else {
-        StringBuilder builder;
-        int value = value_.num;
-        const char* unit_type = UnitTypeToString(GetType());
-        builder.AppendNumber(value);
-        builder.Append(unit_type, strlen(unit_type));
-        text = builder.ToString();
-      }
-    } break;
+    case UnitType::kViewportMax:
+      text = FormatNumber(value_.num, UnitTypeToString(GetType()));
+      break;
     case UnitType::kCalc:
       text = value_.calc->CustomCSSText();
       break;

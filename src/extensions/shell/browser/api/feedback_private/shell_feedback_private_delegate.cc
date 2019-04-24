@@ -41,16 +41,12 @@ ShellFeedbackPrivateDelegate::CreateSingleLogSource(
   return nullptr;
 }
 
-void ShellFeedbackPrivateDelegate::FetchExtraLogs(
-    scoped_refptr<feedback::FeedbackData> feedback_data,
-    FetchExtraLogsCallback callback) const {
+void ShellFeedbackPrivateDelegate::FetchAndMergeIwlwifiDumpLogsIfPresent(
+    std::unique_ptr<FeedbackCommon::SystemLogsMap> original_sys_logs,
+    content::BrowserContext* context,
+    system_logs::SysLogsFetcherCallback callback) const {
   NOTIMPLEMENTED();
-  std::move(callback).Run(feedback_data);
-}
-
-void ShellFeedbackPrivateDelegate::UnloadFeedbackExtension(
-    content::BrowserContext* context) const {
-  NOTIMPLEMENTED();
+  std::move(callback).Run(std::move(original_sys_logs));
 }
 #endif
 

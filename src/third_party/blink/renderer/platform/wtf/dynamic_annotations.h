@@ -48,7 +48,6 @@
  * See http://code.google.com/p/data-race-test/wiki/DynamicAnnotations for more
  * information.
  */
-#include <cstddef>
 
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
@@ -90,7 +89,7 @@ extern "C" {
 WTF_EXPORT void WTFAnnotateBenignRaceSized(const char* file,
                                            int line,
                                            const volatile void* memory,
-                                           size_t size,
+                                           long size,
                                            const char* description);
 WTF_EXPORT void WTFAnnotateHappensBefore(const char* file,
                                          int line,

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace policy {
 
@@ -16,7 +17,7 @@ class Schema;
 class SchemaRegistry;
 
 // A KeyedService associated with a Profile that contains a SchemaRegistry.
-class SchemaRegistryService {
+class SchemaRegistryService : public KeyedService {
  public:
   // This |registry| will initially contain only the |chrome_schema|, if
   // it's valid. The optional |global_registry| must outlive this, and will
@@ -24,7 +25,7 @@ class SchemaRegistryService {
   SchemaRegistryService(std::unique_ptr<SchemaRegistry> registry,
                         const Schema& chrome_schema,
                         CombinedSchemaRegistry* global_registry);
-  ~SchemaRegistryService();
+  ~SchemaRegistryService() override;
 
   SchemaRegistry* registry() const { return registry_.get(); }
 

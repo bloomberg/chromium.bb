@@ -4,13 +4,10 @@
 
 #include "ui/ozone/platform/cast/client_native_pixmap_factory_cast.h"
 
-#include <memory>
-
 #include "base/logging.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/client_native_pixmap.h"
 #include "ui/gfx/client_native_pixmap_factory.h"
-#include "ui/gfx/native_pixmap_handle.h"
 
 namespace ui {
 namespace {
@@ -40,7 +37,7 @@ class ClientNativePixmapFactoryCast : public gfx::ClientNativePixmapFactory {
  public:
   // ClientNativePixmapFactoryCast implementation:
   std::unique_ptr<gfx::ClientNativePixmap> ImportFromHandle(
-      gfx::NativePixmapHandle handle,
+      const gfx::NativePixmapHandle& handle,
       const gfx::Size& size,
       gfx::BufferUsage usage) override {
     return std::make_unique<ClientNativePixmapCast>();

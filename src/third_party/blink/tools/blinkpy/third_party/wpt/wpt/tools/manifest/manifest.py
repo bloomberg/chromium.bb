@@ -1,5 +1,4 @@
 import itertools
-import json
 import os
 from collections import defaultdict
 from six import iteritems, iterkeys, itervalues, string_types
@@ -11,11 +10,13 @@ from .log import get_logger
 from .utils import from_os_path, to_os_path
 
 try:
-    import ujson as fast_json
+    import ujson as json
+    JSON_LIBRARY = 'ujson'
 except ImportError:
-    fast_json = json
+    import json
+    JSON_LIBRARY = 'json'
 
-CURRENT_VERSION = 6
+CURRENT_VERSION = 5
 
 
 class ManifestError(Exception):
@@ -68,8 +69,8 @@ class TypeData(object):
             self.load(key)
         return self.data[key]
 
-    def __nonzero__(self):
-        return bool(self.data) or bool(self.json_data)
+    def __bool__(self):
+        return bool(self.data)
 
     def __len__(self):
         rv = len(self.data)
@@ -86,10 +87,6 @@ class TypeData(object):
             raise KeyError
 
     def __setitem__(self, key, value):
-        if self.json_data is not None:
-            path = from_os_path(key)
-            if path in self.json_data:
-                del self.json_data[path]
         self.data[key] = value
 
     def __contains__(self, key):
@@ -135,7 +132,10 @@ class TypeData(object):
             data = set()
             path = from_os_path(key)
             for test in iterfilter(self.meta_filters, self.json_data.get(path, [])):
-                manifest_item = self.type_cls.from_json(self.manifest, path, test)
+                manifest_item = self.type_cls.from_json(self.manifest,
+                                                        self.tests_root,
+                                                        path,
+                                                        test)
                 data.add(manifest_item)
             try:
                 del self.json_data[path]
@@ -154,7 +154,10 @@ class TypeData(object):
                     continue
                 data = set()
                 for test in iterfilter(self.meta_filters, self.json_data.get(path, [])):
-                    manifest_item = self.type_cls.from_json(self.manifest, path, test)
+                    manifest_item = self.type_cls.from_json(self.manifest,
+                                                            self.tests_root,
+                                                            path,
+                                                            test)
                     data.add(manifest_item)
                 self.data[key] = data
             self.json_data = None
@@ -164,21 +167,6 @@ class TypeData(object):
             raise ValueError("Got a %s expected a dict" % (type(data)))
         self.tests_root = tests_root
         self.json_data = data
-
-    def to_json(self):
-        data = {
-            from_os_path(path):
-            [t for t in sorted(test.to_json() for test in tests)]
-            for path, tests in iteritems(self.data)
-        }
-
-        if self.json_data is not None:
-            if not data:
-                # avoid copying if there's nothing here yet
-                return self.json_data
-            data.update(self.json_data)
-
-        return data
 
     def paths(self):
         """Get a list of all paths containing items of this type,
@@ -214,12 +202,11 @@ class ManifestData(dict):
 
 
 class Manifest(object):
-    def __init__(self, tests_root=None, url_base="/", meta_filters=None):
+    def __init__(self, url_base="/", meta_filters=None):
         assert url_base is not None
         self._path_hash = {}
         self._data = ManifestData(self, meta_filters)
         self._reftest_nodes_by_url = None
-        self.tests_root = tests_root
         self.url_base = url_base
 
     def __iter__(self):
@@ -275,12 +262,7 @@ class Manifest(object):
         changed = False
         reftest_changes = False
 
-        # Create local variable references to these dicts so we avoid the
-        # attribute access in the hot loop below
-        path_hash = self._path_hash
-        data = self._data
-
-        prev_files = data.paths()
+        prev_files = self._data.paths()
 
         reftest_types = ("reftest", "reftest_node")
 
@@ -288,77 +270,74 @@ class Manifest(object):
             if not update:
                 rel_path = source_file
                 seen_files.add(rel_path)
-                assert rel_path in path_hash
-                old_hash, old_type = path_hash[rel_path]
-                if old_type in reftest_types:
-                    manifest_items = data[old_type][rel_path]
-                    reftest_nodes.extend((item, old_hash) for item in manifest_items)
             else:
                 rel_path = source_file.rel_path
                 seen_files.add(rel_path)
 
                 file_hash = source_file.hash
 
-                is_new = rel_path not in path_hash
+                is_new = rel_path not in self._path_hash
                 hash_changed = False
 
                 if not is_new:
-                    old_hash, old_type = path_hash[rel_path]
+                    old_hash, old_type = self._path_hash[rel_path]
                     if old_hash != file_hash:
                         new_type, manifest_items = source_file.manifest_items()
                         hash_changed = True
                         if new_type != old_type:
-                            del data[old_type][rel_path]
-                            if old_type in reftest_types:
-                                reftest_changes = True
+                            try:
+                                del self._data[old_type][rel_path]
+                            except KeyError:
+                                pass
                     else:
-                        new_type = old_type
-                        if old_type in reftest_types:
-                            manifest_items = data[old_type][rel_path]
+                        new_type, manifest_items = old_type, self._data[old_type][rel_path]
+                    if old_type in reftest_types and new_type != old_type:
+                        reftest_changes = True
                 else:
                     new_type, manifest_items = source_file.manifest_items()
 
-                if new_type in reftest_types:
-                    reftest_nodes.extend((item, file_hash) for item in manifest_items)
+                if new_type in ("reftest", "reftest_node"):
+                    reftest_nodes.extend(manifest_items)
                     if is_new or hash_changed:
                         reftest_changes = True
-                elif is_new or hash_changed:
-                    data[new_type][rel_path] = set(manifest_items)
+                elif new_type:
+                    self._data[new_type][rel_path] = set(manifest_items)
+
+                self._path_hash[rel_path] = (file_hash, new_type)
 
                 if is_new or hash_changed:
-                    path_hash[rel_path] = (file_hash, new_type)
                     changed = True
 
         deleted = prev_files - seen_files
         if deleted:
             changed = True
             for rel_path in deleted:
-                if rel_path in path_hash:
-                    _, old_type = path_hash[rel_path]
+                if rel_path in self._path_hash:
+                    _, old_type = self._path_hash[rel_path]
                     if old_type in reftest_types:
                         reftest_changes = True
-                    del path_hash[rel_path]
+                    del self._path_hash[rel_path]
                     try:
-                        del data[old_type][rel_path]
+                        del self._data[old_type][rel_path]
                     except KeyError:
                         pass
                 else:
-                    for test_data in itervalues(data):
+                    for test_data in itervalues(self._data):
                         if rel_path in test_data:
                             del test_data[rel_path]
 
         if reftest_changes:
             reftests, reftest_nodes, changed_hashes = self._compute_reftests(reftest_nodes)
-            data["reftest"].data = reftests
-            data["reftest_node"].data = reftest_nodes
-            path_hash.update(changed_hashes)
+            self._data["reftest"].data = reftests
+            self._data["reftest_node"].data = reftest_nodes
+            self._path_hash.update(changed_hashes)
 
         return changed
 
     def _compute_reftests(self, reftest_nodes):
         self._reftest_nodes_by_url = {}
         has_inbound = set()
-        for item, _ in reftest_nodes:
+        for item in reftest_nodes:
             for ref_url, ref_type in item.references:
                 has_inbound.add(ref_url)
 
@@ -366,27 +345,31 @@ class Manifest(object):
         references = defaultdict(set)
         changed_hashes = {}
 
-        for item, file_hash in reftest_nodes:
+        for item in reftest_nodes:
             if item.url in has_inbound:
                 # This is a reference
                 if isinstance(item, RefTest):
                     item = item.to_RefTestNode()
-                    changed_hashes[item.path] = (file_hash,
-                                                 item.item_type)
-                references[item.path].add(item)
+                    changed_hashes[item.source_file.rel_path] = (item.source_file.hash,
+                                                                 item.item_type)
+                references[item.source_file.rel_path].add(item)
             else:
                 if isinstance(item, RefTestNode):
                     item = item.to_RefTest()
-                    changed_hashes[item.path] = (file_hash,
-                                                 item.item_type)
-                reftests[item.path].add(item)
+                    changed_hashes[item.source_file.rel_path] = (item.source_file.hash,
+                                                                 item.item_type)
+                reftests[item.source_file.rel_path].add(item)
             self._reftest_nodes_by_url[item.url] = item
 
         return reftests, references, changed_hashes
 
     def to_json(self):
         out_items = {
-            test_type: type_paths.to_json()
+            test_type: {
+                from_os_path(path):
+                [t for t in sorted(test.to_json() for test in tests)]
+                for path, tests in iteritems(type_paths)
+            }
             for test_type, type_paths in iteritems(self._data) if type_paths
         }
         rv = {"url_base": self.url_base,
@@ -401,7 +384,7 @@ class Manifest(object):
         if version != CURRENT_VERSION:
             raise ManifestVersionMismatch
 
-        self = cls(tests_root, url_base=obj.get("url_base", "/"), meta_filters=meta_filters)
+        self = cls(url_base=obj.get("url_base", "/"), meta_filters=meta_filters)
         if not hasattr(obj, "items") and hasattr(obj, "paths"):
             raise ManifestError
 
@@ -429,11 +412,11 @@ def load(tests_root, manifest, types=None, meta_filters=None):
 __load_cache = {}
 
 
-def _load(logger, tests_root, manifest, types=None, meta_filters=None, allow_cached=True):
+def _load(logger, tests_root, manifest, types=None, meta_filters=None):
     # "manifest" is a path or file-like object.
     manifest_path = (manifest if isinstance(manifest, string_types)
                      else manifest.name)
-    if allow_cached and manifest_path in __load_cache:
+    if manifest_path in __load_cache:
         return __load_cache[manifest_path]
 
     if isinstance(manifest, string_types):
@@ -444,7 +427,7 @@ def _load(logger, tests_root, manifest, types=None, meta_filters=None, allow_cac
         try:
             with open(manifest) as f:
                 rv = Manifest.from_json(tests_root,
-                                        fast_json.load(f),
+                                        json.load(f),
                                         types=types,
                                         meta_filters=meta_filters)
         except IOError:
@@ -454,12 +437,11 @@ def _load(logger, tests_root, manifest, types=None, meta_filters=None, allow_cac
             return None
     else:
         rv = Manifest.from_json(tests_root,
-                                fast_json.load(manifest),
+                                json.load(manifest),
                                 types=types,
                                 meta_filters=meta_filters)
 
-    if allow_cached:
-        __load_cache[manifest_path] = rv
+    __load_cache[manifest_path] = rv
     return rv
 
 
@@ -473,8 +455,7 @@ def load_and_update(tests_root,
                     working_copy=False,
                     types=None,
                     meta_filters=None,
-                    write_manifest=True,
-                    allow_cached=True):
+                    write_manifest=True):
     logger = get_logger()
 
     manifest = None
@@ -484,8 +465,7 @@ def load_and_update(tests_root,
                              tests_root,
                              manifest_path,
                              types=types,
-                             meta_filters=meta_filters,
-                             allow_cached=allow_cached)
+                             meta_filters=meta_filters)
         except ManifestVersionMismatch:
             logger.info("Manifest version changed, rebuilding")
 
@@ -493,7 +473,7 @@ def load_and_update(tests_root,
             logger.info("Manifest url base did not match, rebuilding")
 
     if manifest is None:
-        manifest = Manifest(tests_root, url_base, meta_filters=meta_filters)
+        manifest = Manifest(url_base, meta_filters=meta_filters)
         update = True
 
     if update:
@@ -512,8 +492,12 @@ def write(manifest, manifest_path):
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
     with open(manifest_path, "wb") as f:
-        # Use ',' instead of the default ', ' separator to prevent trailing
-        # spaces: https://docs.python.org/2/library/json.html#json.dump
-        json.dump(manifest.to_json(), f,
-                  sort_keys=True, indent=1, separators=(',', ': '))
+        if JSON_LIBRARY == 'ujson':
+            # ujson does not support the separators flag.
+            json.dump(manifest.to_json(), f, sort_keys=True, indent=1)
+        else:
+            # Use ',' instead of the default ', ' separator to prevent trailing
+            # spaces: https://docs.python.org/2/library/json.html#json.dump
+            json.dump(manifest.to_json(), f,
+                      sort_keys=True, indent=1, separators=(',', ': '))
         f.write("\n")

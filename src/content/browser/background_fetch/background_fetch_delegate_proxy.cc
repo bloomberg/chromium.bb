@@ -17,8 +17,9 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/download_manager.h"
 #include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
+
+class SkBitmap;
 
 namespace content {
 
@@ -106,6 +107,9 @@ class BackgroundFetchDelegateProxy::Core
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(request);
 
+    // TODO(crbug/757760): This can be nullptr, if the delegate has shut down,
+    // in which case we need to make sure this is retried when the browser
+    // restarts.
     auto* delegate = browser_context_->GetBackgroundFetchDelegate();
     if (!delegate)
       return;
@@ -388,8 +392,7 @@ void BackgroundFetchDelegateProxy::UpdateUI(
     const std::string& job_unique_id,
     const base::Optional<std::string>& title,
     const base::Optional<SkBitmap>& icon,
-    blink::mojom::BackgroundFetchRegistrationService::UpdateUICallback
-        update_ui_callback) {
+    blink::mojom::BackgroundFetchService::UpdateUICallback update_ui_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(!update_ui_callback_map_.count(job_unique_id));

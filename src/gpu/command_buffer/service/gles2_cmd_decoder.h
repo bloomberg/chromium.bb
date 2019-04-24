@@ -195,8 +195,7 @@ class GPU_GLES2_EXPORT GLES2Decoder : public CommonDecoder,
       CopyTexImageResourceManager* copy_tex_image_blit) = 0;
 
  protected:
-  GLES2Decoder(DecoderClient* client,
-               CommandBufferServiceBase* command_buffer_service,
+  GLES2Decoder(CommandBufferServiceBase* command_buffer_service,
                Outputter* outputter);
 
  private:

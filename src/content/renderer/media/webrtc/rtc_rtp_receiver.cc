@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "content/renderer/media/webrtc/rtc_rtp_source.h"
 #include "content/renderer/media/webrtc/rtc_stats.h"
-#include "content/renderer/media/webrtc/webrtc_util.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
 namespace content {
@@ -168,23 +167,17 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
     return sources;
   }
 
-  void GetStats(
-      blink::WebRTCStatsReportCallback callback,
-      const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
+                blink::RTCStatsFilter filter) {
     signaling_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&RTCRtpReceiverInternal::GetStatsOnSignalingThread, this,
-                       std::move(callback), exposed_group_ids));
+                       std::move(callback), filter));
   }
 
   std::unique_ptr<webrtc::RtpParameters> GetParameters() {
     return std::make_unique<webrtc::RtpParameters>(
         webrtc_receiver_->GetParameters());
-  }
-
-  void SetJitterBufferMinimumDelay(base::Optional<double> delay_seconds) {
-    webrtc_receiver_->SetJitterBufferMinimumDelay(
-        ToAbslOptional(delay_seconds));
   }
 
  private:
@@ -195,12 +188,12 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
   }
 
   void GetStatsOnSignalingThread(
-      blink::WebRTCStatsReportCallback callback,
-      const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
+      std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
+      blink::RTCStatsFilter filter) {
     native_peer_connection_->GetStats(
         webrtc_receiver_.get(),
-        RTCStatsCollectorCallbackImpl::Create(
-            main_task_runner_, std::move(callback), exposed_group_ids));
+        RTCStatsCollectorCallbackImpl::Create(main_task_runner_,
+                                              std::move(callback), filter));
   }
 
   const scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
@@ -297,18 +290,13 @@ RTCRtpReceiver::GetSources() {
 }
 
 void RTCRtpReceiver::GetStats(
-    blink::WebRTCStatsReportCallback callback,
-    const std::vector<webrtc::NonStandardGroupId>& exposed_group_ids) {
-  internal_->GetStats(std::move(callback), exposed_group_ids);
+    std::unique_ptr<blink::WebRTCStatsReportCallback> callback,
+    blink::RTCStatsFilter filter) {
+  internal_->GetStats(std::move(callback), filter);
 }
 
 std::unique_ptr<webrtc::RtpParameters> RTCRtpReceiver::GetParameters() const {
   return internal_->GetParameters();
-}
-
-void RTCRtpReceiver::SetJitterBufferMinimumDelay(
-    base::Optional<double> delay_seconds) {
-  internal_->SetJitterBufferMinimumDelay(delay_seconds);
 }
 
 RTCRtpReceiverOnlyTransceiver::RTCRtpReceiverOnlyTransceiver(

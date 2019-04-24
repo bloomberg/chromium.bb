@@ -27,6 +27,8 @@ function finishTest() {
     document.getElementById("horizontal").contentDocument.body.classList.remove("wide"); // middle iframe loses a horizontal scrollbar
     document.getElementById("both").contentDocument.body.classList.remove("wide"); // bottom iframe loses both
     document.getElementById("both").contentDocument.body.classList.remove("tall"); // bottom iframe loses both
+    if (window.testRunner)
+        testRunner.notifyDone();
 }
 
 function test() {
@@ -34,6 +36,10 @@ function test() {
     document.getElementById("horizontal").contentDocument.body.classList.add("wide"); // middle iframe starts with a horizontal scrollbar
     document.getElementById("both").contentDocument.body.classList.add("wide"); // bottom iframe starts with both
     document.getElementById("both").contentDocument.body.classList.add("tall"); // vertical and horizontal scrollbars
-    runAfterLayoutAndPaint(finishTest, true);
+    if (window.testRunner) {
+        testRunner.dumpAsTextWithPixelResults();
+        testRunner.waitUntilDone();
+    }
+    runAfterLayoutAndPaint(finishTest);
 }
 </script>

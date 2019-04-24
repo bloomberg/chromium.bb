@@ -40,7 +40,6 @@ struct PaymentCurrencyAmount {
 // the browser process when calling retry() method in JavaScript. It contains
 // merchant-defined error message strings.
 struct PaymentValidationErrors {
-  string error;
   PayerErrors payer;
   AddressErrors shipping_address;
 };

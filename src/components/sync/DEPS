@@ -1,11 +1,15 @@
 include_rules = [
-  # Run
+  # Repeat these from the top-level DEPS file so one can just run
   #
-  #   buildtools/checkdeps/checkdeps.py components/sync
+  #   checkdeps.py sync
   #
   # to test.
+  "+base",
+  "+build",
   "+components/version_info",
   "+google_apis",
+  "+testing",
+  "+ui/base",
 
   # Force subdirectories to explicitly define DEPS.
   "-components/sync",

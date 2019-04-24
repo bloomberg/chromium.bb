@@ -656,16 +656,14 @@ void ComponentLoader::AddChromeOsSpeechSynthesisExtensions() {
   AddComponentFromDir(
       base::FilePath(extension_misc::kGoogleSpeechSynthesisExtensionPath),
       extension_misc::kGoogleSpeechSynthesisExtensionId,
-      base::BindRepeating(&ComponentLoader::FinishLoadSpeechSynthesisExtension,
+      base::BindRepeating(&ComponentLoader::EnableFileSystemInGuestMode,
                           weak_factory_.GetWeakPtr(),
                           extension_misc::kGoogleSpeechSynthesisExtensionId));
 
   AddComponentFromDir(
       base::FilePath(extension_misc::kEspeakSpeechSynthesisExtensionPath),
       extension_misc::kEspeakSpeechSynthesisExtensionId,
-      base::BindRepeating(&ComponentLoader::FinishLoadSpeechSynthesisExtension,
-                          weak_factory_.GetWeakPtr(),
-                          extension_misc::kEspeakSpeechSynthesisExtensionId));
+      base::RepeatingClosure());
 }
 
 void ComponentLoader::EnableFileSystemInGuestMode(const std::string& id) {
@@ -710,16 +708,6 @@ void ComponentLoader::FinishAddComponentFromDir(
   CHECK_EQ(extension_id, actual_extension_id);
   if (!done_cb.is_null())
     done_cb.Run();
-}
-
-void ComponentLoader::FinishLoadSpeechSynthesisExtension(
-    const char* extension_id) {
-  EnableFileSystemInGuestMode(extension_id);
-
-  // TODO(https://crbug.com/947305): mitigation for extension not awake after
-  // load.
-  extensions::ProcessManager::Get(profile_)->WakeEventPage(extension_id,
-                                                           base::DoNothing());
 }
 #endif
 

@@ -25,7 +25,7 @@ void LayoutNGTableCaption::CalculateAndSetMargins(
 
   NGBoxFragment box_fragment(containing_block_style.GetWritingMode(),
                              containing_block_style.Direction(),
-                             To<NGPhysicalBoxFragment>(physical_fragment));
+                             ToNGPhysicalBoxFragment(physical_fragment));
 
   NGPhysicalBoxStrut physical_margins =
       ComputePhysicalMargins(constraint_space, StyleRef());

@@ -71,8 +71,7 @@ class SessionStorageAreaImplTest : public testing::Test {
     auto file_runner =
         base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
     CreateStrongBindingOnTaskRunner(
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
-        &leveldb_service_,
+        base::CreateSequencedTaskRunnerWithTraits({}), &leveldb_service_,
         std::make_unique<leveldb::LevelDBServiceImpl>(std::move(file_runner)));
 
     leveldb_service_->OpenInMemory(
@@ -108,7 +107,7 @@ class SessionStorageAreaImplTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle test_browser_thread_bundle_;
+  base::test::ScopedTaskEnvironment environment_;
   const std::string test_namespace_id1_;
   const std::string test_namespace_id2_;
   const url::Origin test_origin1_;

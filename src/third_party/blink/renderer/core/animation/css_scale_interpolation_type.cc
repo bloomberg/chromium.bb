@@ -59,18 +59,22 @@ struct Scale {
 };
 
 std::unique_ptr<InterpolableValue> CreateScaleIdentity() {
-  auto list = std::make_unique<InterpolableList>(3);
+  std::unique_ptr<InterpolableList> list = InterpolableList::Create(3);
   for (wtf_size_t i = 0; i < 3; i++)
-    list->Set(i, std::make_unique<InterpolableNumber>(1));
+    list->Set(i, InterpolableNumber::Create(1));
   return std::move(list);
 }
 
 class InheritedScaleChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  explicit InheritedScaleChecker(const Scale& scale) : scale_(scale) {}
+  static std::unique_ptr<InheritedScaleChecker> Create(const Scale& scale) {
+    return base::WrapUnique(new InheritedScaleChecker(scale));
+  }
 
  private:
+  InheritedScaleChecker(const Scale& scale) : scale_(scale) {}
+
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
     return scale_ == Scale(state.ParentStyle()->Scale());
@@ -132,13 +136,13 @@ DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSScaleNonInterpolableValue);
 
 InterpolationValue Scale::CreateInterpolationValue() const {
   if (is_none) {
-    return InterpolationValue(std::make_unique<InterpolableList>(0),
+    return InterpolationValue(InterpolableList::Create(0),
                               CSSScaleNonInterpolableValue::Create(*this));
   }
 
-  auto list = std::make_unique<InterpolableList>(3);
+  std::unique_ptr<InterpolableList> list = InterpolableList::Create(3);
   for (wtf_size_t i = 0; i < 3; i++)
-    list->Set(i, std::make_unique<InterpolableNumber>(array[i]));
+    list->Set(i, InterpolableNumber::Create(array[i]));
   return InterpolationValue(std::move(list),
                             CSSScaleNonInterpolableValue::Create(*this));
 }
@@ -159,8 +163,7 @@ InterpolationValue CSSScaleInterpolationType::MaybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversion_checkers) const {
   Scale inherited_scale(state.ParentStyle()->Scale());
-  conversion_checkers.push_back(
-      std::make_unique<InheritedScaleChecker>(inherited_scale));
+  conversion_checkers.push_back(InheritedScaleChecker::Create(inherited_scale));
   return inherited_scale.CreateInterpolationValue();
 }
 
@@ -171,13 +174,13 @@ InterpolationValue CSSScaleInterpolationType::MaybeConvertValue(
   if (!value.IsBaseValueList())
     return Scale().CreateInterpolationValue();
 
-  const auto& list = To<CSSValueList>(value);
+  const CSSValueList& list = ToCSSValueList(value);
   DCHECK(list.length() >= 1 && list.length() <= 3);
 
   Scale scale(1, 1, 1);
   for (wtf_size_t i = 0; i < list.length(); i++) {
     const CSSValue& item = list.Item(i);
-    scale.array[i] = To<CSSPrimitiveValue>(item).GetDoubleValue();
+    scale.array[i] = ToCSSPrimitiveValue(item).GetDoubleValue();
   }
 
   return scale.CreateInterpolationValue();

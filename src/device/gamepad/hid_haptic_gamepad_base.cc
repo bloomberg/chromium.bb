@@ -42,8 +42,6 @@ HidHapticGamepadBase::HapticReportData kHapticReportData[] = {
     {0x0b43, 0x0005, 0x00, 4, 3, 3, 1 * kBitsPerByte, 0, 1},
     // Analog game controller
     {0x6666, 0x9401, 0x05, 5, 1, 3, 2 * kBitsPerByte, 0, 0xffff},
-    // Stadia controller
-    {0x18d1, 0x9400, 0x05, 5, 1, 3, 2 * kBitsPerByte, 0, 0xffff},
 };
 size_t kHapticReportDataLength = base::size(kHapticReportData);
 

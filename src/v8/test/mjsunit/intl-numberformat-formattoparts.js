@@ -204,15 +204,13 @@ if (this.Intl) {
     new Intl.NumberFormat("ar-IQ", arPercentOptions);
 
   assertParts(arPercentFormatter, -135.32,
-              [Literal("\u{061C}"),
-               MinusSign("-"),
+              [MinusSign("\u{061C}-"),
                Integer("١٣"),
                Group("٬"),
                Integer("٥٣٢"),
                Decimal("٫"),
                Fraction("٠٠"),
-               PercentSign("٪"),
-               Literal("\u{061C}")]);
+               PercentSign("٪\u{061C}")]);
 
   // Decimals.
 

@@ -39,7 +39,7 @@ enum WeaknessType {
 
 // Global handles hold handles that are independent of stack-state and can have
 // callbacks and finalizers attached to them.
-class V8_EXPORT_PRIVATE GlobalHandles final {
+class GlobalHandles final {
  public:
   template <class NodeType>
   class NodeBlock;
@@ -72,6 +72,9 @@ class V8_EXPORT_PRIVATE GlobalHandles final {
 
   // Clear the weakness of a global handle.
   static void* ClearWeakness(Address* location);
+
+  // Tells whether global handle is near death.
+  static bool IsNearDeath(Address* location);
 
   // Tells whether global handle is weak.
   static bool IsWeak(Address* location);
@@ -269,7 +272,7 @@ class EternalHandles final {
   ~EternalHandles();
 
   // Create an EternalHandle, overwriting the index.
-  V8_EXPORT_PRIVATE void Create(Isolate* isolate, Object object, int* index);
+  void Create(Isolate* isolate, Object object, int* index);
 
   // Grab the handle for an existing EternalHandle.
   inline Handle<Object> Get(int index) {

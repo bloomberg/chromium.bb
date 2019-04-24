@@ -33,7 +33,7 @@ struct MemoryChunkData {
 using MemoryChunkDataMap =
     std::unordered_map<MemoryChunk*, MemoryChunkData, MemoryChunk::Hasher>;
 
-class V8_EXPORT_PRIVATE ConcurrentMarking {
+class ConcurrentMarking {
  public:
   // When the scope is entered, the concurrent marking tasks
   // are preempted and are not looking at the heap objects, concurrent marking

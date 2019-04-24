@@ -61,8 +61,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // Need to fuzz the HostResolver to select between IPv4 and IPv6.
   net::FuzzedContextHostResolver host_resolver(net::HostResolver::Options(),
-                                               nullptr, &data_provider,
-                                               true /* enable_caching */);
+                                               nullptr, &data_provider);
   url_request_context.set_host_resolver(&host_resolver);
 
   net::URLRequestJobFactoryImpl job_factory;

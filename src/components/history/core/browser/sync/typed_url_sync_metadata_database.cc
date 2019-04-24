@@ -4,8 +4,6 @@
 
 #include "components/history/core/browser/sync/typed_url_sync_metadata_database.h"
 
-#include <memory>
-
 #include "base/big_endian.h"
 #include "base/logging.h"
 #include "sql/meta_table.h"
@@ -172,9 +170,9 @@ bool TypedURLSyncMetadataDatabase::GetAllSyncEntityMetadata(
     std::string storage_key(sizeof(URLID), 0);
     base::WriteBigEndian<URLID>(&storage_key[0], s.ColumnInt64(0));
     std::string serialized_metadata = s.ColumnString(1);
-    auto entity_metadata = std::make_unique<sync_pb::EntityMetadata>();
-    if (entity_metadata->ParseFromString(serialized_metadata)) {
-      metadata_batch->AddMetadata(storage_key, std::move(entity_metadata));
+    sync_pb::EntityMetadata entity_metadata;
+    if (entity_metadata.ParseFromString(serialized_metadata)) {
+      metadata_batch->AddMetadata(storage_key, entity_metadata);
     } else {
       DLOG(WARNING) << "Failed to deserialize TYPED_URLS model type "
                        "sync_pb::EntityMetadata.";

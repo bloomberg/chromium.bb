@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.payments;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -26,9 +26,7 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -40,10 +38,6 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestTabTest implements MainActivityStartCallback {
-    // Disable animations to reduce flakiness.
-    @ClassRule
-    public static DisableAnimationsTestRule sNoAnimationsRule = new DisableAnimationsTestRule();
-
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
             new PaymentRequestTestRule("payment_request_dynamic_shipping_test.html", this);
@@ -68,10 +62,10 @@ public class PaymentRequestTabTest implements MainActivityStartCallback {
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(0, mPaymentRequestTestRule.getDismissed().getCallCount());
-        TestThreadUtils.runOnUiThreadBlocking(
-                (Runnable) () -> mPaymentRequestTestRule.getActivity().getTabCreator(false).createNewTab(
-                                new LoadUrlParams("about:blank"), TabLaunchType.FROM_CHROME_UI,
-                                null));
+        ThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> mPaymentRequestTestRule.getActivity().getTabCreator(
+                        false).createNewTab(
+                        new LoadUrlParams("about:blank"), TabLaunchType.FROM_CHROME_UI, null));
         mPaymentRequestTestRule.getDismissed().waitForCallback(0);
     }
 
@@ -85,7 +79,7 @@ public class PaymentRequestTabTest implements MainActivityStartCallback {
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(0, mPaymentRequestTestRule.getDismissed().getCallCount());
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             TabModel currentModel = mPaymentRequestTestRule.getActivity().getCurrentTabModel();
             TabModelUtils.closeCurrentTab(currentModel);
         });
@@ -100,7 +94,7 @@ public class PaymentRequestTabTest implements MainActivityStartCallback {
             throws InterruptedException, ExecutionException, TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         Assert.assertEquals(0, mPaymentRequestTestRule.getDismissed().getCallCount());
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             TabModel currentModel = mPaymentRequestTestRule.getActivity().getCurrentTabModel();
             TabModelUtils.getCurrentTab(currentModel).loadUrl(new LoadUrlParams("about:blank"));
         });

@@ -8,11 +8,11 @@ so{
         }
         AFN{
             "AFN",
-            "Afgan Afgani",
+            "Afgan Afgan",
         }
         ALL{
             "ALL",
-            "Lekta Albaniya",
+            "Lek Albaniya",
         }
         AMD{
             "AMD",
@@ -20,7 +20,7 @@ so{
         }
         ANG{
             "ANG",
-            "Galdarka Nadarlaan Antiliyaan",
+            "Galdar Nadarland Antilean",
         }
         AOA{
             "AOA",
@@ -28,27 +28,27 @@ so{
         }
         ARS{
             "ARS",
-            "Beesada Arjentiin",
+            "Beeso Arjentina",
         }
         AUD{
             "A$",
-            "Doolarka Astaraaliya",
+            "Doolarka Awstaraaliya",
         }
         AWG{
             "AWG",
-            "Foloorinta Aruban",
+            "Foloorin Aruban",
         }
         AZN{
             "AZN",
-            "Manaata Asarbeyjan",
+            "Manaatada Asarbeyjan",
         }
         BAM{
             "BAM",
-            "Konfatibal Maakta Bosnia-Hersogofina",
+            "Konfatibal Maak Bosnia-Hersogofina",
         }
         BBD{
             "DBB",
-            "Doolarka Barbaadiyaan",
+            "Doolarka Barbaadiyaanka",
         }
         BDT{
             "BDT",
@@ -56,7 +56,7 @@ so{
         }
         BGN{
             "BGN",
-            "Lefta Bulgariya",
+            "Lef Bulgariya",
         }
         BHD{
             "BHD",
@@ -64,7 +64,7 @@ so{
         }
         BIF{
             "BIF",
-            "Faranka Burundi",
+            "Farank Burundi",
         }
         BMD{
             "BMD",
@@ -72,23 +72,23 @@ so{
         }
         BND{
             "BND",
-            "Doolarka Buruney",
+            "Doollarka Burunel",
         }
         BOB{
             "BOB",
-            "Bolifiyanada Bolifiya",
+            "Bolifiano Bolifiya",
         }
         BRL{
             "R$",
-            "Realka Barasil",
+            "Real Barasil",
         }
         BSD{
-            "BSD",
+            "DBS",
             "Doolarka Bahamaas",
         }
         BTN{
             "BTN",
-            "Nugultaramta Butan",
+            "Ngultaram Butan",
         }
         BWP{
             "BWP",
@@ -108,39 +108,39 @@ so{
         }
         CDF{
             "CDF",
-            "Faranka Kongo",
+            "Farank Kongo",
         }
         CHF{
             "CHF",
-            "Faranka Iswiska",
+            "Farank Iswis",
         }
         CLP{
             "CLP",
-            "Beesada Jili",
+            "Beeso Jili",
         }
         CNH{
             "CNH",
-            "Yuwanta Shiinaha (Ofshoor)",
+            "Yuanta Shiinaha (Offshore)",
         }
         CNY{
             "CN¥",
-            "Yuwanta Shiinaha",
+            "Yuanta Shiinaha",
         }
         COP{
             "COP",
-            "Beesada Kolombiya",
+            "Beeso Kolombiya",
         }
         CRC{
-            "CRC",
-            "Kolonka Kosta Riika",
+            "KKR",
+            "Kolon Kosta Rika",
         }
         CUC{
             "CUC",
-            "Beesada Konfatibal ee Kuuba",
+            "Beeso Kuuba Konfatibal",
         }
         CUP{
             "CUP",
-            "Beesada Kuuba",
+            "Beeso Kuuba",
         }
         CVE{
             "CVE",
@@ -152,15 +152,15 @@ so{
         }
         DJF{
             "DJF",
-            "Faran Jabuuti",
+            "Faran Jabbuuti",
         }
         DKK{
             "DKK",
-            "Koronka Danishka",
+            "Koranka Danishka",
         }
         DOP{
             "DOP",
-            "Beesada Dominiika",
+            "Beeso Dominika",
         }
         DZD{
             "DZD",
@@ -172,7 +172,7 @@ so{
         }
         ERN{
             "ERN",
-            "Nakfada Eritriya",
+            "Nafkada Eritriya",
         }
         ETB{
             "ETB",
@@ -188,7 +188,7 @@ so{
         }
         FKP{
             "FKP",
-            "Bowndka Faalklaan Aylaanis",
+            "Bowndka Faalkland Island",
         }
         GBP{
             "£",
@@ -200,7 +200,7 @@ so{
         }
         GHS{
             "GHS",
-            "Sedida Gana",
+            "Sedi Gana",
         }
         GIP{
             "GIP",
@@ -208,7 +208,7 @@ so{
         }
         GMD{
             "GMD",
-            "Dalasida Gambiya",
+            "Dalasi Gambiya",
         }
         GNF{
             "GNF",
@@ -216,7 +216,7 @@ so{
         }
         GTQ{
             "GTQ",
-            "Kuwestalka Guwatemala",
+            "Quetsal Guatemala",
         }
         GYD{
             "GYD",
@@ -224,19 +224,19 @@ so{
         }
         HKD{
             "HK$",
-            "Doolarka Hoon Koon",
+            "Doollarka Hong Kong",
         }
         HNL{
-            "HNL",
-            "Lembirada Honduras",
+            "LHN",
+            "Lembira Hondura",
         }
         HRK{
             "HRK",
-            "Kunada Korooshiya",
+            "Kuna Korooshiya",
         }
         HTG{
             "HTG",
-            "Goordada Hiyati",
+            "Goorde Haiti",
         }
         HUF{
             "HUF",
@@ -264,19 +264,19 @@ so{
         }
         ISK{
             "ISK",
-            "Koronada Eysland",
+            "Korona Eysland",
         }
         JMD{
             "JMD",
-            "Doolarka Jamayka",
+            "Doolarka Jamaaika",
         }
         JOD{
             "JOD",
-            "Dinaarka Urdun",
+            "Dinaarka Joordan",
         }
         JPY{
             "JP¥",
-            "Yenta Jabaan",
+            "Yenta Jaban",
         }
         KES{
             "KES",
@@ -284,19 +284,19 @@ so{
         }
         KGS{
             "KGS",
-            "Somta Kiyrgiystan",
+            "Soom Kiyrgiystan",
         }
         KHR{
             "KHR",
-            "Riyf kambodiya",
+            "Riyf Cambodiya",
         }
         KMF{
             "KMF",
-            "Faranka Komoros",
+            "Farank Komora",
         }
         KPW{
             "KPW",
-            "Wonka Waqooyiga Kuuriya",
+            "Wonka Waqooyi Kuuriya",
         }
         KRW{
             "₩",
@@ -308,11 +308,11 @@ so{
         }
         KYD{
             "KYD",
-            "Doolarka Kayman Aylaanis",
+            "Doolarka jasiiradaha Kayman",
         }
         KZT{
             "KZT",
-            "Tengeda Kasakhstan",
+            "Tenge Kasakhstan",
         }
         LAK{
             "LAK",
@@ -320,7 +320,7 @@ so{
         }
         LBP{
             "LBP",
-            "Bowndka Lubnaan",
+            "Bowndka Lebanon",
         }
         LKR{
             "LKR",
@@ -328,7 +328,7 @@ so{
         }
         LRD{
             "LRD",
-            "Doolarka Liberiya",
+            "Doollarka Liberiya",
         }
         LYD{
             "LYD",
@@ -340,11 +340,11 @@ so{
         }
         MDL{
             "MDL",
-            "Leeyuuda Moldofa",
+            "Leeyuu Moldofa",
         }
         MGA{
             "MGA",
-            "Arayrida Madagaskar",
+            "Ariari Malagasy",
         }
         MKD{
             "MKD",
@@ -352,11 +352,11 @@ so{
         }
         MMK{
             "MMK",
-            "Kayatda Mayanmaar",
+            "Kayat Mayanmaar",
         }
         MNT{
             "MNT",
-            "Tugrikta Mongoliya",
+            "Tugrik Mongoliya",
         }
         MOP{
             "MOP",
@@ -368,7 +368,7 @@ so{
         }
         MRU{
             "MRU",
-            "Oogiyada Mawritaaniya",
+            "MRU",
         }
         MUR{
             "MUR",
@@ -376,7 +376,7 @@ so{
         }
         MVR{
             "MVR",
-            "Rufiyada Maldifiya",
+            "Rufiya Maldifiya",
         }
         MWK{
             "MWK",
@@ -384,11 +384,11 @@ so{
         }
         MXN{
             "MX$",
-            "Beesada Meksiko",
+            "Beeso Meksikaan",
         }
         MYR{
             "MYR",
-            "Ringitda Malayshiya",
+            "Ringit Malayshiya",
         }
         MZN{
             "MZN",
@@ -396,7 +396,7 @@ so{
         }
         NAD{
             "NAD",
-            "Doolarka Namibiya",
+            "Doollarka Namibiya",
         }
         NGN{
             "NGN",
@@ -404,7 +404,7 @@ so{
         }
         NIO{
             "NIO",
-            "Kordobada Nikargow",
+            "Nikaragua Kordoba",
         }
         NOK{
             "NOK",
@@ -420,15 +420,15 @@ so{
         }
         OMR{
             "OMR",
-            "Riyaalka Cumaan",
+            "Riyaalka Comaan",
         }
         PAB{
             "PAB",
-            "Balbow Banama",
+            "Balboa Panama",
         }
         PEN{
             "PEN",
-            "Solsha Beeru",
+            "Sol Beeru",
         }
         PGK{
             "PGK",
@@ -444,11 +444,11 @@ so{
         }
         PLN{
             "PLN",
-            "Solotida Bolaan",
+            "Solotida Boland",
         }
         PYG{
             "PYG",
-            "Guranida Baraguway",
+            "Guarani Baraguay",
         }
         QAR{
             "QAR",
@@ -456,7 +456,7 @@ so{
         }
         RON{
             "RON",
-            "Liyuuda Romaniya",
+            "Liyuu ROmaniya",
         }
         RSD{
             "RSD",
@@ -464,11 +464,11 @@ so{
         }
         RUB{
             "RUB",
-            "Rubalka Ruushka",
+            "Rubalka Ruush",
         }
         RWF{
             "RWF",
-            "Faranka Ruwanda",
+            "Farank Ruwanda",
         }
         SAR{
             "SAR",
@@ -476,7 +476,7 @@ so{
         }
         SBD{
             "SBD",
-            "Doolarka Solomon Aylaanis",
+            "Doolarka Jasiiradaha Solomon",
         }
         SCR{
             "SCR",
@@ -492,7 +492,7 @@ so{
         }
         SGD{
             "SGD",
-            "Doolarka Singabuur",
+            "Doollarka Singabuur",
         }
         SHP{
             "SHP",
@@ -512,11 +512,11 @@ so{
         }
         SSP{
             "SSP",
-            "Bowndka Koonfurta Suudaan",
+            "Boownka Koonfurta Suudaan",
         }
         STN{
             "STN",
-            "Dobra Sao Tome & Birinsibi",
+            "Dobra Sao Tome & Birinsibal",
         }
         SYP{
             "SYP",
@@ -524,19 +524,19 @@ so{
         }
         SZL{
             "SZL",
-            "Lilangeenida iswaasi",
+            "Lilangeenida iswasi",
         }
         THB{
             "THB",
-            "Baatka Taylaan",
+            "Baatka Tayland",
         }
         TJS{
             "TJS",
-            "Somoonida Tajikistan",
+            "Somoon Tajikistan",
         }
         TMT{
             "TMT",
-            "Manaata Turkmenistan",
+            "Manaat Turkmenistan",
         }
         TND{
             "TND",
@@ -544,7 +544,7 @@ so{
         }
         TOP{
             "TOP",
-            "Ba’angada Tonga",
+            "Ba’anga Tonga",
         }
         TRY{
             "TRY",
@@ -552,11 +552,11 @@ so{
         }
         TTD{
             "TTD",
-            "Doolarka Tirinidad iyo Tobago",
+            "Doolarka Tirinad iyo Tobago",
         }
         TWD{
             "NT$",
-            "Doolarka Taywaanta Cusub",
+            "Doollarka Taywaanta Cusubta",
         }
         TZS{
             "TZS",
@@ -568,19 +568,19 @@ so{
         }
         UGX{
             "UGX",
-            "Shilingka Yugandha",
+            "Shilingka Uganda",
         }
         USD{
             "US$",
-            "Doolarka Mareeykanka",
+            "USD",
         }
         UYU{
             "UYU",
-            "Beesada Urugway",
+            "Beeso Uruguay",
         }
         UZS{
             "UZS",
-            "Somta Usbekistan",
+            "Soom Usbekistan",
         }
         VEF{
             "VEF",
@@ -588,11 +588,11 @@ so{
         }
         VES{
             "VES",
-            "Bolifarada Fenesuwela",
+            "Bolifar Fenezuela",
         }
         VND{
             "₫",
-            "Dongta Fitnaam",
+            "Dong Fitnaam",
         }
         VUV{
             "VUV",
@@ -604,11 +604,11 @@ so{
         }
         XAF{
             "FCFA",
-            "Faranka CFA ee Bartamaha Afrika",
+            "Farank CFA ee Bartamaha Afrika",
         }
         XCD{
             "EC$",
-            "Doolarka Iist Kaaribyan",
+            "Doolaraka Bariga Kaaribyan",
         }
         XOF{
             "CFA",
@@ -616,11 +616,11 @@ so{
         }
         XPF{
             "CFPF",
-            "Faranka CFP",
+            "Farank CFP",
         }
         XXX{
             "¤",
-            "Lacag aan la aqoon",
+            "Lacag aan la qoon ama aan saxnayn",
         }
         YER{
             "YER",
@@ -637,10 +637,10 @@ so{
     }
     Currencies%narrow{
         AOA{"Kz"}
-        ARS{"$"}
+        ARS{"SAR$"}
         AUD{"$"}
         BAM{"KM"}
-        BBD{"$"}
+        BBD{"DBB$"}
         BDT{"৳"}
         BMD{"$"}
         BND{"$"}
@@ -736,628 +736,624 @@ so{
     }
     CurrencyPlurals{
         AED{
-            one{"dirhamka Isutaga Imaaraatka Carabta"}
-            other{"dirhamka Isutaga Imaaraatka Carabta"}
+            one{"Dirham Isutaga Imaaraatka Carabta"}
+            other{"Dirhamka Isutaga Imaaraatka Carabta"}
         }
         AFN{
-            one{"Afgan Afgani"}
-            other{"Afgan Afgani"}
+            one{"Afgan Afgan"}
+            other{"Afgan Afgan"}
         }
         ALL{
-            one{"lekta Abaniya"}
-            other{"lekta Albaniya"}
+            one{"Lek Abaniya"}
+            other{"ALL"}
         }
         AMD{
-            one{"daraamka Armeniya"}
-            other{"daraamka Armeniya"}
+            one{"Daraam Armeniya"}
+            other{"Daraamka Armeniya"}
         }
         ANG{
-            one{"galdarka Nadarlaan Antiliyaan"}
-            other{"galdarada Nadarlaan Antiliyaan"}
+            one{"Galdar Nadarland Antilaan"}
+            other{"Galdar Nadarland Antilean"}
         }
         AOA{
-            one{"kawansada Angola"}
-            other{"kawansada Angola"}
+            one{"Kawansa Angola"}
+            other{"Kawansada Angola"}
         }
         ARS{
-            one{"Beesada Arjentiin"}
-            other{"Beesada Arjentiin"}
+            one{"Beeso Arjentiina"}
+            other{"Beeso Arjentina"}
         }
         AUD{
-            one{"doolarka Astaraaliya"}
-            other{"doolarada Astaraaliya"}
+            one{"Doolarka Awstaraaliya"}
+            other{"Doolarada Awstaraaliya"}
         }
         AWG{
-            one{"foloorinta Aruban"}
-            other{"foloorinta Aruban"}
+            one{"Foloorin Aruban"}
+            other{"Foloorin Aruban"}
         }
         AZN{
-            one{"manaata Asarbeyjan"}
-            other{"manaata Asarbeyjan"}
+            one{"Manaata Asarbeyjan"}
+            other{"Manaatada Asarbeyjan"}
         }
         BAM{
-            one{"konfatibal maakta Bosnia-Hersogofina"}
-            other{"konfatibal maakta Bosnia-Hersogofina"}
+            one{"Konfatibal Maak Bosni-Harsegofina"}
+            other{"Konfatibal Maak Bosnia-Hersogofina"}
         }
         BBD{
-            one{"doolarka Barbaadiyaan"}
-            other{"doolarada Barbaadiyaan"}
+            one{"Doolarka Barbaadiyaanka"}
+            other{"Doolarada Barbaadiyaanka"}
         }
         BDT{
-            one{"taka Bangledesh"}
-            other{"taka Bangledesh"}
+            one{"Taka Bangledesh"}
+            other{"Taka Bangledesh"}
         }
         BGN{
-            one{"lefta Bulgariya"}
-            other{"lefta Bulgariya"}
+            one{"Lef Bulgariya"}
+            other{"BGN"}
         }
         BHD{
-            one{"dinaarka Baxreyn"}
-            other{"dinaarka Baxreyn"}
+            one{"Dinaar Baxreyn"}
+            other{"Dinaarka Baxreyn"}
         }
         BIF{
-            one{"faranka Burundi"}
-            other{"faranka Burundi"}
+            one{"Farank Burundi"}
+            other{"Farank Burundi"}
         }
         BMD{
-            one{"doolarka Barmuuda"}
-            other{"doolarada Barmuuda"}
+            one{"Doolaraka Barmuuda"}
+            other{"Doolarada Barmuuda"}
         }
         BND{
-            one{"doolarka Buruney"}
-            other{"doolarada Buruney"}
+            one{"Doollar Burunel"}
+            other{"Doollarka Burunel"}
         }
         BOB{
-            one{"Bolifiyanada Bolifiya"}
-            other{"Bolifiyanada Bolifiya"}
+            one{"Bolifaano Bolifiya"}
+            other{"BOB"}
         }
         BRL{
-            one{"Realka Barasil"}
-            other{"Realada Barasil"}
+            one{"Real Barasil"}
+            other{"Real Barasil"}
         }
         BSD{
-            one{"doolarka Bahamaas"}
-            other{"doolarada Bahamaas"}
+            one{"Doolarka Bahamaas"}
+            other{"Doolarada Bahamaas"}
         }
         BTN{
-            one{"nugultaramta Butan"}
-            other{"nugultaramta Butan"}
+            one{"Ngultaram Butan"}
+            other{"Ngultaram Butan"}
         }
         BWP{
-            one{"buulada Botswana"}
-            other{"buulada Botswana"}
+            one{"Buulo Botswana"}
+            other{"Buulada Botswana"}
         }
         BYN{
-            one{"rubalka Belarus"}
-            other{"rubalka Belarus"}
+            one{"Rubal Belarus"}
+            other{"Rubalka Belarus"}
         }
         BZD{
-            one{"doolarka Beelisa"}
-            other{"doolarada Beelisa"}
+            one{"Doolarka Beelisa"}
+            other{"Doolarada Beelisa"}
         }
         CAD{
-            one{"doolarka Kanada"}
-            other{"doolarada Kanada"}
+            one{"Doolarka Kanada"}
+            other{"Doolarada Kanada"}
         }
         CDF{
-            one{"faranka Kongo"}
-            other{"faranka Kongo"}
+            one{"Farank Kongo"}
+            other{"Farank Kongo"}
         }
         CHF{
-            one{"Faranka Iswiska"}
-            other{"Faranka Iswiska"}
+            one{"Farank Iswis"}
+            other{"Farank Iswis"}
         }
         CLP{
-            one{"Beesada Jili"}
-            other{"Beesada Jili"}
+            one{"Beeso Jili"}
+            other{"Beeso Jili"}
         }
         CNH{
-            one{"yuwanta Shiinaha (Ofshoor)"}
-            other{"yuwanta Shiinaha (Ofshoor)"}
+            one{"Yuan Shiinaha (offshore)"}
+            other{"Yuanta Shiinaha (Offshore)"}
         }
         CNY{
-            one{"yuwanta Shiinaha"}
-            other{"yuwanta Shiinaha"}
+            one{"Yuanta Shiinaha"}
+            other{"CNY"}
         }
         COP{
-            one{"Beesada Kolombiya"}
-            other{"Beesada Kolombiya"}
+            one{"Beeso Kolombiya"}
+            other{"COP"}
         }
         CRC{
-            one{"kolonka Kosta Riika"}
-            other{"kolonka Kosta Riika"}
+            one{"Kolon Kosta Rika"}
+            other{"Kolon Kosta Rika"}
         }
         CUC{
-            one{"beesada konfatibal ee Kuuba"}
-            other{"beesada konfatibal ee Kuuba"}
+            one{"Beeso Kuuba Konfatibal"}
+            other{"Beeso Kuuba Konfatibal"}
         }
         CUP{
-            one{"Beesada Kuuba"}
-            other{"Beesada Kuuba"}
+            one{"Beeso Kuuba"}
+            other{"Beeso Kuuba"}
         }
         CVE{
-            one{"eskudo Keyb Farde"}
-            other{"eskudo Keyb Farde"}
+            one{"Eskudo Keyb Farde"}
+            other{"Eskudo Keyb Farde"}
         }
         CZK{
-            one{"korunada Jeek"}
-            other{"korunada Jeek"}
+            one{"Koruna Jeek"}
+            other{"Korunada Jeek"}
         }
         DJF{
-            one{"faranka Jabuuti"}
-            other{"faranka Jabuuti"}
+            one{"Farank Jabuuti"}
+            other{"Farank Jabuuti"}
         }
         DKK{
-            one{"Koronka Danishka"}
-            other{"Koronka Danishka"}
+            one{"Koran Danish"}
+            other{"Koranka Danishka"}
         }
         DOP{
-            one{"beesada Dominiika"}
-            other{"beesada Dominiika"}
+            one{"Beeso Dominika"}
+            other{"Beeso Dominika"}
         }
         DZD{
-            one{"dinaarka Aljeriya"}
-            other{"dinaarka Aljeriya"}
+            one{"Dinaar Aljeriya"}
+            other{"Dinaarka Aljeriya"}
         }
         EGP{
-            one{"bowndka Masar"}
-            other{"bowndka Masar"}
+            one{"Bownd Masar"}
+            other{"Bowndka Masar"}
         }
         ERN{
-            one{"nakfada Eritriya"}
-            other{"nafkada Eritriya"}
-        }
-        ETB{
-            one{"birta Itoobbiya"}
-            other{"birta Itoobbiya"}
+            one{"Nakfa Eritriya"}
+            other{"Nafkada Eritriya"}
         }
         EUR{
-            one{"yuuroo"}
-            other{"yuuroo"}
+            one{"Yuuroo"}
+            other{"Yuuroo"}
         }
         FJD{
-            one{"doolarka Fiji"}
-            other{"doolarada Fiji"}
+            one{"Doolarka Fiji"}
+            other{"Doolarada Fiji"}
         }
         FKP{
-            one{"Bowndka Faalklaan Aylaanis"}
-            other{"Bowndka Faalklaan Aylaanis"}
+            one{"Bowndka Faalkland Island"}
+            other{"Bowndka Faalkland Island"}
         }
         GBP{
-            one{"Bowndka Biritishka"}
+            one{"Bownd Biritish"}
             other{"Bowndka Biritishka"}
         }
         GEL{
-            one{"laariga Joorjiya"}
-            other{"laariga Joorjiya"}
+            one{"Laari Joorjiya"}
+            other{"Laariga Joorjiya"}
         }
         GHS{
-            one{"sedida Gana"}
-            other{"sedida Gana"}
+            one{"Sedi Gana"}
+            other{"Sedi Gana"}
         }
         GIP{
-            one{"bowndka Gibraltar"}
-            other{"bowndka Gibraltar"}
+            one{"Bownd Gibraltar"}
+            other{"Bowndka Gibraltar"}
         }
         GMD{
-            one{"Dalasida Gambiya"}
-            other{"Dalasida Gambiya"}
+            one{"Dalasi Gambiya"}
+            other{"Dalasi Gambiya"}
         }
         GNF{
-            one{"faranka Gini"}
-            other{"faranka Gini"}
+            one{"Farank Gini"}
+            other{"GNF"}
         }
         GTQ{
-            one{"kuwestalka Guwatemala"}
-            other{"kuwestalka Guwatemala"}
+            one{"Quetsal Guatemala"}
+            other{"Quetsal Guatemala"}
         }
         GYD{
             one{"Doolarka Guyanes"}
-            other{"Doolarada Guyanes"}
+            other{"GYD"}
         }
         HKD{
-            one{"Doolarada Hoon Koon"}
-            other{"Doolarada Hoon Koon"}
+            one{"Doollar Hong Kong"}
+            other{"Doollarka Hong Kong"}
         }
         HNL{
-            one{"lembirada Honduras"}
-            other{"lembirada Honduras"}
+            one{"Lembira Hondura"}
+            other{"Lembira Hondura"}
         }
         HRK{
-            one{"kunada Korooshiya"}
-            other{"kunada Korooshiya"}
+            one{"Kuna Korooshiya"}
+            other{"HRK"}
         }
         HTG{
-            one{"goordada Hiyati"}
-            other{"goordada Hiyati"}
+            one{"Goorde Haiti"}
+            other{"Goorde Haiti"}
         }
         HUF{
-            one{"forintiska Hangari"}
-            other{"forintiska Hangari"}
+            one{"Forintis Hangari"}
+            other{"Forintiska Hangari"}
         }
         IDR{
-            one{"rubiah Indonesiya"}
-            other{"rubiah Indonesiya"}
+            one{"Rubiah Indonesiya"}
+            other{"Rubiah Indonesiya"}
         }
         ILS{
-            one{"niyuu shekelka Israaiil"}
-            other{"niyuu shekelka Israaiil"}
+            one{"Niyuu Shekel Israaiil"}
+            other{"Niyuu Shekelka Israaiil"}
         }
         INR{
-            one{"rubiga Hindiya"}
-            other{"rubiga Hindiya"}
+            one{"Rubi Hindiya"}
+            other{"INR"}
         }
         IQD{
-            one{"dinaarka Ciraaq"}
-            other{"dinaarka Ciraaq"}
+            one{"Dinaar Ciraaq"}
+            other{"Dinaarka Ciraaq"}
         }
         IRR{
-            one{"riyaalka Iran"}
-            other{"riyaalka Iran"}
+            one{"Riyaal Iran"}
+            other{"Riyaalka Iran"}
         }
         ISK{
-            one{"Koronada Eysland"}
+            one{"Korona Eysland"}
             other{"Koronada Eysland"}
         }
         JMD{
-            one{"doolarka Jamayka"}
-            other{"doolarada Jamayka"}
+            one{"Doolarka Jamaaika"}
+            other{"Doolarada Jamaaika"}
         }
         JOD{
-            one{"dinaarka Urdun"}
-            other{"dinaarka Urdun"}
+            one{"Dinaar Joordan"}
+            other{"Dinaarka Joordan"}
         }
         JPY{
-            one{"yenta Jabaan"}
-            other{"yenta Jabaan"}
+            one{"Yen Jaban"}
+            other{"Yenta Jaban"}
         }
         KES{
-            one{"shilingka Kenya"}
-            other{"shilingka Kenya"}
+            one{"Shiling Kenya"}
+            other{"Shilingka Kenya"}
         }
         KGS{
-            one{"somta Kiyriygstan"}
-            other{"somta Kiyrgiystan"}
+            one{"Soom Kiyriygstan"}
+            other{"KGS"}
         }
         KHR{
-            one{"Riyf Kambodiya"}
-            other{"Riyf kambodiya"}
+            one{"Riyf Combodiya"}
+            other{"Riyf Cambodiya"}
         }
         KMF{
-            one{"faranka Komoros"}
-            other{"faranka Komoros"}
+            one{"Farank Komora"}
+            other{"Farank Komora"}
         }
         KPW{
-            one{"wonka Waqooyiga Kuuriya"}
-            other{"wonka Waqooyiga Kuuriya"}
+            one{"Won Waqooyi Kuuriya"}
+            other{"Wonka Waqooyi Kuuriya"}
         }
         KRW{
-            one{"wonka Koonfur Kuuriya"}
-            other{"wonka Koonfur Kuuriya"}
+            one{"Won Koonfur Kuuriya"}
+            other{"Wonka Koonfur Kuuriya"}
         }
         KWD{
-            one{"dinaarka Kuweyt"}
-            other{"dinaarka Kuweyt"}
+            one{"Dinaar Kuweyt"}
+            other{"Dinaarka Kuweyt"}
         }
         KYD{
-            one{"doolarka Kayman Aylaanis"}
-            other{"Doolarada Kayman Aylaanis"}
+            one{"Doolarka jasiiradaha Kayman"}
+            other{"Doolarka Jasiiradaha Kayman"}
         }
         KZT{
-            one{"tengeda Kasakhstan"}
-            other{"tengeda Kasakhstan"}
+            one{"Tenge Kasakhstan"}
+            other{"Tenge Kasakhstan"}
         }
         LAK{
-            one{"kib Laoti"}
-            other{"kib Laoti"}
+            one{"Kib Laoti"}
+            other{"LAK"}
         }
         LBP{
-            one{"bowndka Lubnaan"}
-            other{"Bowndka Lubnaan"}
+            one{"Bownd Lebanon"}
+            other{"Bowndka Lebanon"}
         }
         LKR{
-            one{"rubiga Siri Lanka"}
-            other{"rubiga Siri lanka"}
+            one{"Rubiga Siri Lanka"}
+            other{"Rubiga Siri lanka"}
         }
         LRD{
-            one{"doolarka Liberiya"}
-            other{"doolarka Liberiya"}
+            one{"Doollar Liberiya"}
+            other{"Doollarka Liberiya"}
         }
         LYD{
-            one{"dinaarka Libya"}
-            other{"dinaarka Libya"}
+            one{"Dinaar Libya"}
+            other{"Dinaarka Libya"}
         }
         MAD{
-            one{"dirhamka Moroko"}
-            other{"dirhamka Moroko"}
+            one{"Dirham Moroko"}
+            other{"Dirhamka Moroko"}
         }
         MDL{
-            one{"leeyuuda Moldofa"}
-            other{"leeyuuda Moldofa"}
+            one{"Leeyuu Moldofa"}
+            other{"Leeyuu Moldofa"}
         }
         MGA{
-            one{"arayrida Madagaskar"}
-            other{"arayrida Madagaskar"}
+            one{"Ariari Malagasi"}
+            other{"Ariari Malagasy"}
         }
         MKD{
-            one{"denaarka Masedoniya"}
-            other{"denaarka Masedoniya"}
+            one{"Denaar Masedoniya"}
+            other{"MKD"}
         }
         MMK{
-            one{"kayatda Mayanmaar"}
-            other{"kayatda Mayanmaar"}
+            one{"Kayat Mayanmaar"}
+            other{"Kayat Mayanmaar"}
         }
         MNT{
-            one{"tugrikta Mongoliya"}
-            other{"tugrikta Mongoliya"}
+            one{"Tugrik Mongoliya"}
+            other{"Tugrik Mongoliya"}
         }
         MOP{
-            one{"bataka Makana"}
-            other{"bataka Makana"}
+            one{"Bataka Makana"}
+            other{"Bataka Makana"}
         }
         MRO{
             one{"Oogiya Mawritaniya (1973–2017)"}
             other{"Oogiya Mawritaniya (1973–2017)"}
         }
         MRU{
-            one{"oogiyada Mawritaniya"}
-            other{"oogiyada Mawritaniya"}
+            one{"Oogiya Mawritaniya"}
+            other{"Oogiya Mawritaniya"}
         }
         MUR{
-            one{"rubiga Mowrishiya"}
-            other{"rubiga Mowrishiya"}
+            one{"Rubi Mowrishiya"}
+            other{"Rubiga Mowrishiya"}
         }
         MVR{
-            one{"rufiyada Maldifiya"}
-            other{"rufiyada Maldifiya"}
+            one{"Rufiya Maldifiya"}
+            other{"Rufiya Maldifiya"}
         }
         MWK{
-            one{"kawajada Malawi"}
-            other{"kawajada Malawi"}
+            one{"Kawaja Malawi"}
+            other{"Kawajada Malawi"}
         }
         MXN{
-            one{"Beesada Meksiko"}
-            other{"beesada Meksiko"}
+            one{"Beeso Meksikaan"}
+            other{"BMX"}
         }
         MYR{
-            one{"ringitda Malayshiya"}
-            other{"ringitda Malayshiya"}
+            one{"Ringit Malayshiya"}
+            other{"Ringit Malayshiya"}
         }
         MZN{
-            one{"metikalka Mosambik"}
+            one{"Metikal Mosambik"}
             other{"Metikalka Mosambik"}
         }
         NAD{
-            one{"doolarka Namibiya"}
-            other{"doolarka Namibiya"}
+            one{"Doollar Namibiya"}
+            other{"Doollarka Namibiya"}
         }
         NGN{
-            one{"nairada Neyjeeriya"}
-            other{"nairada Neyjeeriya"}
+            one{"Naira Neyjeeriya"}
+            other{"Nairada Neyjeeriya"}
         }
         NIO{
-            one{"Kordobada Nikargow"}
-            other{"Kordobada Nikargow"}
+            one{"Nakaragua Kordoba"}
+            other{"NIkaragua Kordoba"}
         }
         NOK{
             one{"Koronka Norway"}
             other{"Koronka Norway"}
         }
         NPR{
-            one{"rubiga Nebal"}
-            other{"rubiga Nebal"}
+            one{"Rubiga Nebal"}
+            other{"Rubiga Nebal"}
         }
         NZD{
-            one{"doolarka Niyuu siyalaan"}
-            other{"doolarada Niyuu Siyalaan"}
+            one{"Doolarka Niyuu siyalaan"}
+            other{"Doolarada Niyuu Siya laan"}
         }
         OMR{
-            one{"riyaalka Cumaan"}
-            other{"riyaalka Cumaan"}
+            one{"Riyaal Comaan"}
+            other{"Riyaalka Comaan"}
         }
         PAB{
-            one{"balbaw Banama"}
-            other{"balbow Banama"}
+            one{"Balbao Banaama"}
+            other{"Balboa Panama"}
         }
         PEN{
-            one{"Solsha Beeru"}
-            other{"Solsha Beeru"}
+            one{"Sol Beero"}
+            other{"PEN"}
         }
         PGK{
-            one{"kinada Babua Niyuu Gini"}
-            other{"kinada Babua Niyuu Gini"}
+            one{"Kina Babua Niyuu Gini"}
+            other{"Kinada Babua Niyuu Gini"}
         }
         PHP{
-            one{"biso Filibin"}
-            other{"biso Filibin"}
+            one{"Biso Filibin"}
+            other{"Biso Filibin"}
         }
         PKR{
-            one{"rubiga Bakistan"}
-            other{"rubiga Bakistan"}
+            one{"Rubi Bakistan"}
+            other{"Rubiga Bakistan"}
         }
         PLN{
-            one{"solotida Bolaan"}
-            other{"solotida Bolaan"}
+            one{"Sooti Boland"}
+            other{"Solotida Boland"}
         }
         PYG{
-            one{"Guranida Baraguway"}
-            other{"Guranida Baraguway"}
+            one{"Guarani Baraguay"}
+            other{"Guarani Baraguay"}
         }
         QAR{
-            one{"riyaalka Qatar"}
-            other{"riyaalka Qatar"}
+            one{"Riyaal Qatar"}
+            other{"Riyaalka Qatar"}
         }
         RON{
-            one{"liyuuda Romaniya"}
-            other{"liyuuda Romaniya"}
+            one{"Liyuu Romaniya"}
+            other{"Liyuu ROmaniya"}
         }
         RSD{
-            one{"dinaarka Serbiya"}
-            other{"dinaarka Serbiya"}
+            one{"Dinaar Serbiya"}
+            other{"RSD"}
         }
         RUB{
-            one{"rubalka Ruushka"}
-            other{"rubalka Ruushka"}
+            one{"Rubal Ruush"}
+            other{"Rubalka Ruush"}
         }
         RWF{
-            one{"Faranka Ruwanda"}
-            other{"Faranka Ruwanda"}
+            one{"Farank Ruwanda"}
+            other{"Farank Ruwanda"}
         }
         SAR{
-            one{"Riyaalka Sacuudiga"}
-            other{"riyaalka Sacuudiga"}
+            one{"Riyaal Sacuudi"}
+            other{"Riyaalka Sacuudiga"}
         }
         SBD{
-            one{"doolarka Solomon Aylaanis"}
-            other{"doolarada Solomon Aylaanis"}
+            one{"Doolarka Jasiiradaha Solomon"}
+            other{"Doolarada Jasiiradaha Solomon"}
         }
         SCR{
-            one{"rubiga Siisalis"}
-            other{"rubiga Siisalis"}
+            one{"Rubi Siisalis"}
+            other{"SCR"}
         }
         SDG{
-            one{"bowndka Suudaan"}
-            other{"bowndka Suudaan"}
+            one{"SDG"}
+            other{"SDG"}
         }
         SEK{
             one{"Koronka Isweden"}
             other{"Koronka Isweden"}
         }
         SGD{
-            one{"doolarka Singabuur"}
-            other{"doolarka Singabuur"}
+            one{"Doollar Singabuur"}
+            other{"Doollarka Singabuur"}
         }
         SHP{
-            one{"bowndka St Helen"}
-            other{"Bowndka St Helen"}
+            one{"Bownd St Helen"}
+            other{"SHP"}
         }
         SLL{
-            one{"leonka Sira Leon"}
-            other{"leonka Sira Leon"}
+            one{"Leon Sira Leo"}
+            other{"Leonka Sira Leon"}
         }
         SRD{
             one{"Doolarka Surinamees"}
             other{"Doolarada Surinamees"}
         }
         SSP{
-            one{"Bowndka Koonfurta Suudaan"}
-            other{"Bowndka Koonfurta Suudaan"}
+            one{"Boownka Koonfurta Suudaan"}
+            other{"Boownanka Koonfurta Suudaan"}
         }
         STN{
-            one{"dobrada Sao Tome Birinsibi"}
-            other{"dobrada Sao Tome & Birinsibi"}
+            one{"Dobra Sao Tome Birinsibal"}
+            other{"STN"}
         }
         SYP{
-            one{"bowndka Suuriya"}
-            other{"bowndka Suuriya"}
+            one{"Bownd Suuriya"}
+            other{"Bowndka Suuriya"}
         }
         SZL{
-            one{"lilengeenida Iswaasi"}
-            other{"lilangeenida iswaasi"}
+            one{"Lilengeeni Iswasi"}
+            other{"Lilangeenida iswasi"}
         }
         THB{
-            one{"Baatda Taylaan"}
-            other{"baatda Taylaan"}
+            one{"Baat Tayland"}
+            other{"Baatka Tayland"}
         }
         TJS{
-            one{"soomonida Tajikistan"}
-            other{"somoonida Tajikistan"}
+            one{"Soomon Tajikistan"}
+            other{"Somoon Tajikistan"}
         }
         TMT{
-            one{"manaata Turkmenistan"}
-            other{"manaata Turkmenistan"}
+            one{"Manat Turkmenistan"}
+            other{"Manaat Turkmenistan"}
         }
         TND{
-            one{"dinaarka Tunisiya"}
-            other{"dinaarka Tunisiya"}
+            one{"Dinaarka Tunisiya"}
+            other{"Dinaarka Tunisiya"}
         }
         TOP{
-            one{"ba’angada Tonga"}
-            other{"ba’angada Tonga"}
+            one{"Ba’anga Tonga"}
+            other{"Ba’anga Tonga"}
         }
         TRY{
-            one{"liirada Turkiga"}
-            other{"liirada Turkiga"}
+            one{"Liira Turki"}
+            other{"Liirada Turkiga"}
         }
         TTD{
-            one{"doolarka Tirinidad iyo Tobago"}
-            other{"doolarada Tirinidad iyo Tobago"}
+            one{"Doolarka Tirinad iyo Tobago"}
+            other{"Doolarada Tirinad iyo Tobago"}
         }
         TWD{
-            one{"doolarka Taywaanta Cusub"}
-            other{"doolarada Taywaanta Cusub"}
+            one{"Doollar Taywaanta Cusub"}
+            other{"Doollarka Taywaanta Cusubta"}
         }
         TZS{
-            one{"Shilingka Tansaaniya"}
+            one{"Shilin Tansaaniya"}
             other{"Shilingka Tansaaniya"}
         }
         UAH{
-            one{"hirfiniyada Yukreeyn"}
-            other{"hirfiniyada Yukreeyn"}
+            one{"Hirfiniya Yukreeyn"}
+            other{"Hirfiniyada Yukreeyn"}
         }
         UGX{
-            one{"shilingka Yugandha"}
-            other{"shilingka Yugandha"}
+            one{"Shiling Uganda"}
+            other{"Shilingka Uganda"}
         }
         USD{
-            one{"doolarka Mareeykanka"}
-            other{"doolarada Mareeykanka"}
+            one{"Doolarka Mareeykanka"}
+            other{"Doolarada Mareeykanka"}
         }
         UYU{
-            one{"Beesada Urugway"}
-            other{"Beesada Urugway"}
+            one{"Beeso Uruguay"}
+            other{"Beeso Uruguay"}
         }
         UZS{
-            one{"somta Usbekistan"}
-            other{"somta Usbekistan"}
+            one{"Soom Usbekistan"}
+            other{"Soom Usbekistan"}
         }
         VEF{
             one{"Bolifar Fenesuala (2008–2018)"}
             other{"Bolifar Fenesuala (2008–2018)"}
         }
         VES{
-            one{"Bolifarada Fenesuwela"}
-            other{"Bolifarada Fenesuwela"}
+            one{"Bolifar Fenesuala"}
+            other{"Bolifar Fenezuela"}
         }
         VND{
-            one{"dongta Fitnaam"}
-            other{"dongta Fitnaam"}
+            one{"Dong Fitnaam"}
+            other{"Dong Fitnaam"}
         }
         VUV{
-            one{"fatu Fanuatu"}
-            other{"fatu Fanuatu"}
+            one{"Fatu Fanuatu"}
+            other{"Fatu Fanuatu"}
         }
         WST{
-            one{"tala Samao"}
-            other{"tala Samao"}
+            one{"Tala Samao"}
+            other{"Tala Samao"}
         }
         XAF{
-            one{"faranka CFA ee Bartamaha Afrika"}
-            other{"faranka CFA ee Bartamaha Afrika"}
+            one{"Faranka CFA ee Bartamaha Afrika"}
+            other{"Farank CFA ee Bartamaha Afrika"}
         }
         XCD{
-            one{"doolarka Iist Kaaribyan"}
-            other{"doolarada Iist Kaaribyan"}
+            one{"Doolarka Bariga Kaaribyan"}
+            other{"Doolarada Bariga Kaaribyan"}
         }
         XOF{
-            one{"faranka CFA Galbeedka Afrika"}
-            other{"faranka CFA Galbeedka Afrika"}
+            one{"Farank CFA Galbeedka Afrika"}
+            other{"XOF"}
         }
         XPF{
-            one{"Faranka CFP"}
-            other{"Faranka CFP"}
+            one{"Farank CFP"}
+            other{"Farank CFP"}
         }
         XXX{
-            one{"(halbeeg lacag aan la aqoon)"}
-            other{"(Lacag aan la aqoon)"}
+            one{"Lacag aan la aqoon"}
+            other{"Lacag aan la aqoon"}
         }
         YER{
-            one{"riyaalka Yemen"}
-            other{"riyaalka Yemen"}
+            one{"Riyaal Yemen"}
+            other{"Riyaalka Yemen"}
         }
         ZAR{
-            one{"randka Koonfur Afrika"}
-            other{"randka Koonfur Afrika"}
+            one{"Rand Koonfur Afrika"}
+            other{"Randka Koonfur Afrika"}
         }
         ZMW{
             one{"Kawaja Sambiya"}
@@ -1368,5 +1364,5 @@ so{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.49.82"}
+    Version{"2.1.43.94"}
 }

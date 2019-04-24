@@ -44,7 +44,7 @@ namespace {
 
 int runTestSuite(base::TestSuite* testSuite) {
   int result = testSuite->Run();
-  blink::ThreadState::Current()->CollectAllGarbageForTesting();
+  blink::ThreadState::Current()->CollectAllGarbage();
   return result;
 }
 

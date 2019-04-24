@@ -8,7 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -18,7 +19,6 @@
 #include "content/public/common/url_utils.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
-#include "net/base/completion_repeating_callback.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
@@ -230,6 +230,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveResponse(
     const network::ResourceResponseHead& head) {
+  on_receive_response_received_ = true;
   if (current_request_uses_header_client_) {
     // Use the headers we got from OnHeadersReceived as that'll contain
     // Set-Cookie if it existed.
@@ -240,8 +241,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveResponse(
   } else {
     current_response_ = head;
     HandleResponseOrRedirectHeaders(
-        base::BindOnce(&InProgressRequest::ContinueToResponseStarted,
-                       weak_factory_.GetWeakPtr()));
+        base::BindRepeating(&InProgressRequest::ContinueToResponseStarted,
+                            weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -265,8 +266,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
   } else {
     current_response_ = head;
     HandleResponseOrRedirectHeaders(
-        base::BindOnce(&InProgressRequest::ContinueToBeforeRedirect,
-                       weak_factory_.GetWeakPtr(), redirect_info));
+        base::BindRepeating(&InProgressRequest::ContinueToBeforeRedirect,
+                            weak_factory_.GetWeakPtr(), redirect_info));
   }
 }
 
@@ -290,6 +291,13 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     OnStartLoadingResponseBody(mojo::ScopedDataPipeConsumerHandle body) {
+  // TODO(https://crbug.com/882661): Remove this once the bug is fixed.
+  if (!on_receive_response_sent_) {
+    bool on_receive_response_received = on_receive_response_received_;
+    base::debug::Alias(&on_receive_response_received);
+    DEBUG_ALIAS_FOR_GURL(request_url, request_.url)
+    base::debug::DumpWithoutCrashing();
+  }
   target_client_->OnStartLoadingResponseBody(std::move(body));
 }
 
@@ -310,7 +318,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnComplete(
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::HandleAuthRequest(
-    const net::AuthChallengeInfo& auth_info,
+    net::AuthChallengeInfo* auth_info,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     WebRequestAPI::AuthRequestCallback callback) {
   DCHECK(!auth_credentials_);
@@ -326,9 +334,9 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::HandleAuthRequest(
   }
   // We first need to simulate |onHeadersReceived| for the response headers
   // which indicated a need to authenticate.
-  HandleResponseOrRedirectHeaders(base::BindOnce(
+  HandleResponseOrRedirectHeaders(base::BindRepeating(base::BindRepeating(
       &InProgressRequest::ContinueAuthRequest, weak_factory_.GetWeakPtr(),
-      auth_info, std::move(callback)));
+      base::RetainedRef(auth_info), base::Passed(&callback))));
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnLoaderCreated(
@@ -361,8 +369,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnHeadersReceived(
   current_response_.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>(headers);
   HandleResponseOrRedirectHeaders(
-      base::BindOnce(&InProgressRequest::ContinueToHandleOverrideHeaders,
-                     weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&InProgressRequest::ContinueToHandleOverrideHeaders,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
@@ -395,7 +403,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
       "Non-Authoritative-Reason: WebRequest API\n\n",
       kInternalRedirectStatusCode, redirect_url_.spec().c_str());
 
-  if (network::features::ShouldEnableOutOfBlinkCors()) {
+  if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors)) {
     // Cross-origin requests need to modify the Origin header to 'null'. Since
     // CorsURLLoader sets |request_initiator| to the Origin request header in
     // NetworkService, we need to modify |request_initiator| here to craft the
@@ -579,7 +587,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::ContinueAuthRequest(
-    const net::AuthChallengeInfo& auth_info,
+    net::AuthChallengeInfo* auth_info,
     WebRequestAPI::AuthRequestCallback callback,
     int error_code) {
   if (error_code != net::OK) {
@@ -598,7 +606,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::ContinueAuthRequest(
   net::NetworkDelegate::AuthRequiredResponse response =
       ExtensionWebRequestEventRouter::GetInstance()->OnAuthRequired(
           factory_->browser_context_, factory_->info_map_, &info_.value(),
-          auth_info, continuation, &auth_credentials_.value());
+          *auth_info, continuation, &auth_credentials_.value());
 
   // At least one extension has a blocking handler for this request, so we'll
   // just wait for them to finish. |OnAuthRequestHandled()| will be invoked
@@ -704,6 +712,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     proxied_client_binding_.Close();
     header_client_binding_.Close();
     target_loader_.reset();
+    on_receive_response_received_ = false;
 
     ContinueToBeforeRedirect(redirect_info, net::OK);
     return;
@@ -715,6 +724,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
       factory_->browser_context_, factory_->info_map_, &info_.value(), net::OK);
+  on_receive_response_sent_ = true;
   target_client_->OnReceiveResponse(current_response_);
 }
 
@@ -750,18 +760,16 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
-    HandleResponseOrRedirectHeaders(net::CompletionOnceCallback continuation) {
+    HandleResponseOrRedirectHeaders(
+        const net::CompletionCallback& continuation) {
   override_headers_ = nullptr;
   redirect_url_ = GURL();
-
-  net::CompletionRepeatingCallback copyable_callback =
-      base::AdaptCallbackForRepeating(std::move(continuation));
   if (request_.url.SchemeIsHTTPOrHTTPS()) {
     int result =
         ExtensionWebRequestEventRouter::GetInstance()->OnHeadersReceived(
             factory_->browser_context_, factory_->info_map_, &info_.value(),
-            copyable_callback, current_response_.headers.get(),
-            &override_headers_, &redirect_url_);
+            continuation, current_response_.headers.get(), &override_headers_,
+            &redirect_url_);
     if (result == net::ERR_BLOCKED_BY_CLIENT) {
       OnRequestError(network::URLLoaderCompletionStatus(result));
       return;
@@ -780,7 +788,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     DCHECK_EQ(net::OK, result);
   }
 
-  copyable_callback.Run(net::OK);
+  continuation.Run(net::OK);
 }
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError(
     const network::URLLoaderCompletionStatus& status) {
@@ -926,7 +934,7 @@ void WebRequestProxyingURLLoaderFactory::OnLoaderCreated(
 }
 
 void WebRequestProxyingURLLoaderFactory::HandleAuthRequest(
-    const net::AuthChallengeInfo& auth_info,
+    net::AuthChallengeInfo* auth_info,
     scoped_refptr<net::HttpResponseHeaders> response_headers,
     int32_t request_id,
     WebRequestAPI::AuthRequestCallback callback) {

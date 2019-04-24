@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "content/public/common/console_message_level.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -34,13 +34,11 @@ class CONTENT_EXPORT ClearSiteDataHandler {
     struct Message {
       GURL url;
       std::string text;
-      blink::mojom::ConsoleMessageLevel level;
+      ConsoleMessageLevel level;
     };
 
-    using OutputFormattedMessageFunction =
-        base::RepeatingCallback<void(WebContents*,
-                                     blink::mojom::ConsoleMessageLevel,
-                                     const std::string&)>;
+    using OutputFormattedMessageFunction = base::RepeatingCallback<
+        void(WebContents*, ConsoleMessageLevel, const std::string&)>;
 
     ConsoleMessagesDelegate();
     virtual ~ConsoleMessagesDelegate();
@@ -48,7 +46,7 @@ class CONTENT_EXPORT ClearSiteDataHandler {
     // Logs a |text| message from |url| with |level|.
     virtual void AddMessage(const GURL& url,
                             const std::string& text,
-                            blink::mojom::ConsoleMessageLevel level);
+                            ConsoleMessageLevel level);
 
     // Outputs stored messages to the console of WebContents identified by
     // |web_contents_getter|.

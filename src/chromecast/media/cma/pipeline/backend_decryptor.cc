@@ -14,7 +14,7 @@
 namespace chromecast {
 namespace media {
 
-BackendDecryptor::BackendDecryptor(EncryptionScheme scheme)
+BackendDecryptor::BackendDecryptor(const EncryptionScheme& scheme)
     : decrypt_success_(true),
       wait_eos_(false),
       task_runner_(new TaskRunnerImpl) {

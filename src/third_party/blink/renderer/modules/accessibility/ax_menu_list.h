@@ -36,6 +36,8 @@ class LayoutMenuList;
 
 class AXMenuList final : public AXLayoutObject {
  public:
+  static AXMenuList* Create(LayoutMenuList* layout_object, AXObjectCacheImpl&);
+
   AXMenuList(LayoutMenuList*, AXObjectCacheImpl&);
 
   AccessibilityExpanded IsExpanded() const final;

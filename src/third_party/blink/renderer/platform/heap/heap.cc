@@ -177,8 +177,12 @@ void ThreadHeap::DecommitCallbackStacks() {
     NotFullyConstructedItem item;
     while (not_fully_constructed_worklist_->Pop(WorklistTaskId::MainThread,
                                                 &item)) {
-      HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(
-          reinterpret_cast<Address>(const_cast<void*>(item)));
+      BasePage* const page = PageFromObject(item);
+      HeapObjectHeader* const header =
+          page->IsLargeObjectPage()
+              ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
+              : static_cast<NormalPage*>(page)->FindHeaderFromAddress(
+                    reinterpret_cast<Address>(const_cast<void*>(item)));
       DCHECK(header->IsMarked());
     }
 #else
@@ -190,7 +194,7 @@ void ThreadHeap::DecommitCallbackStacks() {
 
 HeapCompact* ThreadHeap::Compaction() {
   if (!compaction_)
-    compaction_ = std::make_unique<HeapCompact>(this);
+    compaction_ = HeapCompact::Create(this);
   return compaction_.get();
 }
 
@@ -513,7 +517,8 @@ void ThreadHeap::TakeSnapshot(SnapshotType type) {
   // gcInfoIndex.
   ThreadState::GCSnapshotInfo info(GCInfoTable::Get().GcInfoIndex() + 1);
   String thread_dump_name =
-      String("blink_gc/thread_") + String::Number(thread_state_->ThreadId());
+      String::Format("blink_gc/thread_%lu",
+                     static_cast<unsigned long>(thread_state_->ThreadId()));
   const String heaps_dump_name = thread_dump_name + "/heaps";
   const String classes_dump_name = thread_dump_name + "/classes";
 
@@ -607,8 +612,12 @@ void ThreadHeap::WriteBarrier(void* value) {
   // '-1' is used to indicate deleted values.
   DCHECK_NE(value, reinterpret_cast<void*>(-1));
 
-  HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress(
-      reinterpret_cast<Address>(const_cast<void*>(value)));
+  BasePage* const page = PageFromObject(value);
+  HeapObjectHeader* const header =
+      page->IsLargeObjectPage()
+          ? static_cast<LargeObjectPage*>(page)->ObjectHeader()
+          : static_cast<NormalPage*>(page)->FindHeaderFromAddress(
+                reinterpret_cast<Address>(const_cast<void*>(value)));
   if (header->IsMarked())
     return;
 

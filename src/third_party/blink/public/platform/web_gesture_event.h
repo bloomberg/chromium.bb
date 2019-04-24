@@ -38,11 +38,11 @@ class WebGestureEvent : public WebInputEvent {
   WebPointerProperties::PointerType primary_pointer_type =
       WebPointerProperties::PointerType::kUnknown;
 
-  // If the WebGestureEvent has source_device == WebGestureDevice::kTouchscreen,
+  // If the WebGestureEvent has source_device == kWebGestureDeviceTouchscreen,
   // this field contains the unique identifier for the touch event that released
   // this event at TouchDispositionGestureFilter. If the WebGestureEvents was
   // not released through a touch event (e.g. timer-released gesture events or
-  // gesture events with source_device != WebGestureDevice::kTouchscreen), the
+  // gesture events with source_device != kWebGestureDeviceTouchscreen), the
   // field contains 0. See crbug.com/618738.
   uint32_t unique_touch_event_id;
 
@@ -112,6 +112,12 @@ class WebGestureEvent : public WebInputEvent {
       float delta_y;
       float velocity_x;
       float velocity_y;
+      // Whether any previous GestureScrollUpdate in the current scroll
+      // sequence was suppressed (e.g., the causal touchmove was
+      // preventDefault'ed). This bit is particularly useful for
+      // determining whether the observed scroll update sequence captures
+      // the entirety of the generative motion.
+      bool previous_update_in_sequence_prevented;
       InertialPhaseState inertial_phase;
       // Default initialized to ScrollUnits::PrecisePixels.
       ScrollUnits delta_units;
@@ -194,7 +200,7 @@ class WebGestureEvent : public WebInputEvent {
   WebGestureEvent(Type type,
                   int modifiers,
                   base::TimeTicks time_stamp,
-                  WebGestureDevice device = WebGestureDevice::kUninitialized)
+                  WebGestureDevice device = kWebGestureDeviceUninitialized)
       : WebInputEvent(sizeof(WebGestureEvent), type, modifiers, time_stamp),
         resending_plugin_id(-1),
         source_device_(device) {}
@@ -202,7 +208,7 @@ class WebGestureEvent : public WebInputEvent {
   WebGestureEvent()
       : WebInputEvent(sizeof(WebGestureEvent)),
         resending_plugin_id(-1),
-        source_device_(WebGestureDevice::kUninitialized) {}
+        source_device_(kWebGestureDeviceUninitialized) {}
 
   const WebFloatPoint& PositionInWidget() const { return position_in_widget_; }
   const WebFloatPoint& PositionInScreen() const { return position_in_screen_; }
@@ -282,7 +288,7 @@ class WebGestureEvent : public WebInputEvent {
   bool IsTouchpadZoomEvent() const {
     // Touchpad GestureDoubleTap also causes a page scale change like a touchpad
     // pinch gesture.
-    return source_device_ == WebGestureDevice::kTouchpad &&
+    return source_device_ == WebGestureDevice::kWebGestureDeviceTouchpad &&
            (WebInputEvent::IsPinchGestureEventType(type_) ||
             type_ == kGestureDoubleTap);
   }

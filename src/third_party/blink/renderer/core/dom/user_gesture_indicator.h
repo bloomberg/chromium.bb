@@ -17,8 +17,6 @@ namespace blink {
 // which propagates user gestures to the timer fire in certain situations).
 // Passing it to a UserGestureIndicator later on will cause it to be considered
 // as currently being processed.
-//
-// DEPRECATED: Use |UserActivationState| accessors in |Frame|.
 class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   friend class UserGestureIndicator;
 
@@ -50,7 +48,6 @@ class CORE_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
   DISALLOW_COPY_AND_ASSIGN(UserGestureToken);
 };
 
-// DEPRECATED: Use |UserActivationState| accessors in |Frame|.
 class CORE_EXPORT UserGestureIndicator final {
   USING_FAST_MALLOC(UserGestureIndicator);
 

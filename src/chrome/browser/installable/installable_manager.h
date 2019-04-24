@@ -7,9 +7,9 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -40,23 +40,18 @@ class InstallableManager
   static int GetMinimumIconSizeInPx();
 
   // Get the installable data, fetching the resources specified in |params|.
-  // |callback| is invoked synchronously (i.e. not via PostTask on the UI thread
+  // |callback| is invoked synchronously (i.e. no via PostTask on the UI thread
   // when the data is ready; the synchronous execution ensures that the
   // references |callback| receives in its InstallableData argument are valid.
   //
-  // |callback| may never be invoked if |params.wait_for_worker| is true, or if
-  // the user navigates the page before fetching is complete.
+  // Clients must be prepared for |callback| to not ever be invoked. For
+  // instance, if installability checking is requested, this method will wait
+  // until the site registers a service worker (and hence not invoke |callback|
+  // at all if a service worker is never registered).
   //
-  // Calls requesting data that has already been fetched will return the cached
-  // data.
+  // Calls requesting data that is already fetched will return the cached data.
   virtual void GetData(const InstallableParams& params,
-                       InstallableCallback callback);
-
-  // Runs the full installability check, and when finished, runs |callback|
-  // passing a list of human-readable strings describing the errors encountered
-  // during the run. The list is empty if no errors were encountered.
-  void GetAllErrors(
-      base::OnceCallback<void(std::vector<std::string> errors)> callback);
+                       const InstallableCallback& callback);
 
   // Called via AppBannerManagerAndroid to record metrics on how often the
   // installable check is completed when the menu or add to homescreen menu item
@@ -98,10 +93,7 @@ class InstallableManager
   using IconPurpose = blink::Manifest::ImageResource::Purpose;
 
   struct EligiblityProperty {
-    EligiblityProperty();
-    ~EligiblityProperty();
-
-    std::vector<InstallableStatusCode> errors;
+    InstallableStatusCode error = NO_ERROR_DETECTED;
     bool fetched = false;
   };
 
@@ -113,10 +105,7 @@ class InstallableManager
   };
 
   struct ValidManifestProperty {
-    ValidManifestProperty();
-    ~ValidManifestProperty();
-
-    std::vector<InstallableStatusCode> errors;
+    InstallableStatusCode error = NO_ERROR_DETECTED;
     bool is_valid = false;
     bool fetched = false;
   };
@@ -155,9 +144,9 @@ class InstallableManager
   // Gets the purpose of the icon to use as a primary icon.
   IconPurpose GetPrimaryIconPurpose(const InstallableParams& params) const;
 
-  // Returns a vector with all errors encountered for the resources requested in
-  // |params|, or an empty vector if there is no error.
-  std::vector<InstallableStatusCode> GetErrors(const InstallableParams& params);
+  // Returns the error code associated with the resources requested in |params|,
+  // or NO_ERROR_DETECTED if there is no error.
+  InstallableStatusCode GetErrorCode(const InstallableParams& params);
 
   // Gets/sets parts of particular properties. Exposed for testing.
   InstallableStatusCode eligibility_error() const;
@@ -188,8 +177,7 @@ class InstallableManager
   void SetManifestDependentTasksComplete();
 
   // Methods coordinating and dispatching work for the current task.
-  void RunCallback(InstallableTask task,
-                   std::vector<InstallableStatusCode> errors);
+  void RunCallback(const InstallableTask& task, InstallableStatusCode error);
   void WorkOnTask();
 
   // Data retrieval methods.

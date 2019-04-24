@@ -11,6 +11,7 @@
 #include <set>
 #include <vector>
 
+#include "base/macros.h"
 #include "cc/base/region.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "ui/gfx/geometry/size.h"
@@ -47,10 +48,7 @@ class CC_EXPORT PictureLayerTilingSet {
       int skewport_extrapolation_limit_in_screen_pixels,
       float max_preraster_distance);
 
-  PictureLayerTilingSet(const PictureLayerTilingSet&) = delete;
   ~PictureLayerTilingSet();
-
-  PictureLayerTilingSet& operator=(const PictureLayerTilingSet&) = delete;
 
   const PictureLayerTilingClient* client() const { return client_; }
 
@@ -264,6 +262,9 @@ class CC_EXPORT PictureLayerTilingSet {
   gfx::Rect eventually_rect_in_layer_space_;
 
   friend class Iterator;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PictureLayerTilingSet);
 };
 
 }  // namespace cc

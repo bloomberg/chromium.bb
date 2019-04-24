@@ -9,10 +9,10 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
-#include "content/browser/service_worker/service_worker_request_handler.h"
 #include "content/public/browser/resource_context.h"
 #include "net/url_request/redirect_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 
 namespace content {
 
@@ -40,10 +40,12 @@ WorkerScriptLoader::WorkerScriptLoader(
       traffic_annotation_(traffic_annotation),
       url_loader_client_binding_(this),
       weak_factory_(this) {
+  DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
+
   if (service_worker_provider_host_) {
     std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
-        ServiceWorkerRequestHandler::CreateForWorker(
-            resource_request_, service_worker_provider_host_.get());
+        ServiceWorkerRequestHandler::InitializeForWorker(
+            resource_request_, service_worker_provider_host_);
     if (service_worker_interceptor)
       interceptors_.push_back(std::move(service_worker_interceptor));
   }

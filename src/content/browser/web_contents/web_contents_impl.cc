@@ -562,6 +562,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       is_resume_pending_(false),
       interstitial_page_(nullptr),
       has_accessed_initial_document_(false),
+      theme_color_(SK_ColorTRANSPARENT),
+      last_sent_theme_color_(SK_ColorTRANSPARENT),
       did_first_visually_non_empty_paint_(false),
       capturer_count_(0),
       is_being_destroyed_(false),
@@ -583,6 +585,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
           GetContentClient()->browser()->GetAXModeForBrowserContext(
               browser_context)),
       audio_stream_monitor_(this),
+      bluetooth_connected_device_count_(0),
       media_web_contents_observer_(
           std::make_unique<MediaWebContentsObserver>(this)),
       media_device_group_id_salt_base_(
@@ -855,6 +858,7 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_view_host)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageScaleFactorChanged,
                         OnPageScaleFactorChanged)
@@ -905,7 +909,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                         OnDidDisplayContentWithCertificateErrors)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunContentWithCertificateErrors,
                         OnDidRunContentWithCertificateErrors)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UnregisterProtocolHandler,
@@ -1087,7 +1090,7 @@ void WebContentsImpl::OnScreenOrientationChange() {
   screen_orientation_provider_->OnOrientationChange();
 }
 
-base::Optional<SkColor> WebContentsImpl::GetThemeColor() {
+SkColor WebContentsImpl::GetThemeColor() {
   return theme_color_;
 }
 
@@ -1541,10 +1544,6 @@ bool WebContentsImpl::IsConnectedToBluetoothDevice() {
   return bluetooth_connected_device_count_ > 0;
 }
 
-bool WebContentsImpl::IsConnectedToSerialPort() const {
-  return serial_active_frame_count_ > 0;
-}
-
 bool WebContentsImpl::HasPictureInPictureVideo() {
   return has_picture_in_picture_video_;
 }
@@ -1791,11 +1790,13 @@ bool WebContentsImpl::NeedToFireBeforeUnload() {
   if (GetRenderViewHost()->SuddenTerminationAllowed())
     return false;
 
-  // Check whether the main frame needs to run beforeunload or unload handlers.
-  if (GetMainFrame()->GetSuddenTerminationDisablerState(
-          blink::kBeforeUnloadHandler | blink::kUnloadHandler)) {
+  // TODO(alexmos): This checks for both beforeunload and unload handlers from
+  // the whole main frame process.  Remove this and explicitly check whether
+  // the main frame has each of these handlers. This can be done for
+  // beforeunload via RenderFrameHostImpl::ShouldDispatchBeforeUnload(), and
+  // something similar is needed for unload.
+  if (!GetMainFrame()->GetProcess()->SuddenTerminationAllowed())
     return true;
-  }
 
   // Check whether any subframes need to run beforeunload handlers.
   //
@@ -2827,6 +2828,10 @@ void WebContentsImpl::CreateNewWindow(
     AddDestructionObserver(new_contents_impl);
   }
 
+  // Track the delegate on which WebContentsCreated may be called.
+  // TODO(ericrk): Remove this once debugging complete. https://crbug.com/758186
+  web_contents_created_delegate_ = delegate_;
+  web_contents_added_to_delegate_ = false;
   if (delegate_) {
     delegate_->WebContentsCreated(this, render_process_id,
                                   opener->GetRoutingID(), params.frame_name,
@@ -2958,6 +2963,18 @@ void WebContentsImpl::ShowCreatedWindow(int process_id,
 
   // The delegate can be null in tests, so we must check for it :(.
   if (delegate) {
+    // TODO(ericrk): Remove this once debugging complete.
+    // https://crbug.com/758186
+    if (web_contents_created_delegate_ != delegate_) {
+      LOG(ERROR) << "AddNewContents called on different delegate from "
+                    "WebContentsCreated. "
+                 << delegate_ << " vs " << web_contents_created_delegate_;
+    }
+    if (web_contents_added_to_delegate_) {
+      LOG(ERROR) << "WebContents added to delegate twice";
+    }
+    web_contents_added_to_delegate_ = true;
+
     // Mark the web contents as pending resume, then immediately do
     // the resume if the delegate wants it.
     created->is_resume_pending_ = true;
@@ -4287,13 +4304,7 @@ void WebContentsImpl::ReadyToCommitNavigation(
   // SSLInfo is not needed on subframe navigations since the main-frame
   // certificate is the only one that can be inspected (using the info
   // bubble) without refreshing the page with DevTools open.
-  // We don't call DidStartResourceResponse on net errors, since that results on
-  // existing cert exceptions being revoked, which leads to weird behavior with
-  // committed interstitials or while offline. We only need the error check for
-  // the main frame case because unlike this method, SubresourceResponseStarted
-  // does not get called on network errors.
-  if (navigation_handle->IsInMainFrame() &&
-      navigation_handle->GetNetErrorCode() == net::OK) {
+  if (navigation_handle->IsInMainFrame()) {
     controller_.ssl_manager()->DidStartResourceResponse(
         navigation_handle->GetURL(),
         navigation_handle->GetSSLInfo().has_value()
@@ -4417,7 +4428,7 @@ void WebContentsImpl::DidNavigateMainFramePostCommit(
     did_first_visually_non_empty_paint_ = false;
 
     // Reset theme color on navigation to new page.
-    theme_color_.reset();
+    theme_color_ = SK_ColorTRANSPARENT;
   }
 
   if (delegate_)
@@ -4460,7 +4471,7 @@ bool WebContentsImpl::CanOverscrollContent() const {
 }
 
 void WebContentsImpl::OnThemeColorChanged(RenderFrameHostImpl* source,
-                                          base::Optional<SkColor> theme_color) {
+                                          SkColor theme_color) {
   if (source != GetMainFrame()) {
     // Only the main frame may control the theme.
     return;
@@ -4717,7 +4728,7 @@ void WebContentsImpl::OnDidFinishLoad(RenderFrameHostImpl* source,
     observer.DidFinishLoad(source, validated_url);
 }
 
-void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
+void WebContentsImpl::OnGoToEntryAtOffset(RenderViewHostImpl* source,
                                           int offset,
                                           bool has_user_gesture) {
   // Non-user initiated navigations coming from the renderer should be ignored
@@ -4736,16 +4747,8 @@ void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
   }
 
   // All frames are allowed to navigate the global history.
-  if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
-    if (source->IsSandboxed(blink::WebSandboxFlags::kTopNavigation)) {
-      // Keep track of whether this is a session history from a sandboxed iframe
-      // with top level navigation disallowed.
-      controller_.GoToOffsetInSandboxedFrame(offset,
-                                             source->GetFrameTreeNodeId());
-    } else {
-      controller_.GoToOffset(offset);
-    }
-  }
+  if (!delegate_ || delegate_->OnGoToEntryOffset(offset))
+    controller_.GoToOffset(offset);
 }
 
 void WebContentsImpl::OnUpdateZoomLimits(RenderViewHostImpl* source,
@@ -4932,7 +4935,7 @@ void WebContentsImpl::OnRequestPpapiBrokerPermission(
     int ppb_broker_route_id,
     const GURL& url,
     const base::FilePath& plugin_path) {
-  base::OnceCallback<void(bool)> permission_result_callback = base::BindOnce(
+  base::Callback<void(bool)> permission_result_callback = base::Bind(
       &WebContentsImpl::SendPpapiBrokerPermissionResult, base::Unretained(this),
       source->GetProcess()->GetID(), ppb_broker_route_id);
   if (!delegate_) {
@@ -4940,8 +4943,11 @@ void WebContentsImpl::OnRequestPpapiBrokerPermission(
     return;
   }
 
-  delegate_->RequestPpapiBrokerPermission(
-      this, url, plugin_path, std::move(permission_result_callback));
+  if (!delegate_->RequestPpapiBrokerPermission(this, url, plugin_path,
+                                               permission_result_callback)) {
+    NOTIMPLEMENTED();
+    std::move(permission_result_callback).Run(false);
+  }
 }
 
 void WebContentsImpl::SendPpapiBrokerPermissionResult(int process_id,
@@ -6420,7 +6426,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
 
 bool WebContentsImpl::CreateRenderFrameForRenderManager(
     RenderFrameHost* render_frame_host,
-    int previous_routing_id,
+    int proxy_routing_id,
     int opener_routing_id,
     int parent_routing_id,
     int previous_sibling_routing_id) {
@@ -6429,7 +6435,7 @@ bool WebContentsImpl::CreateRenderFrameForRenderManager(
 
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(render_frame_host);
-  if (!rfh->CreateRenderFrame(previous_routing_id, opener_routing_id,
+  if (!rfh->CreateRenderFrame(proxy_routing_id, opener_routing_id,
                               parent_routing_id, previous_sibling_routing_id))
     return false;
 
@@ -6716,31 +6722,6 @@ void WebContentsImpl::DecrementBluetoothConnectedDeviceCount() {
   }
 }
 
-void WebContentsImpl::IncrementSerialActiveFrameCount() {
-  // Trying to invalidate the tab state while being destroyed could result in a
-  // use after free.
-  if (IsBeingDestroyed())
-    return;
-
-  // Notify for UI updates if the state changes.
-  serial_active_frame_count_++;
-  if (serial_active_frame_count_ == 1)
-    NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
-}
-
-void WebContentsImpl::DecrementSerialActiveFrameCount() {
-  // Trying to invalidate the tab state while being destroyed could result in a
-  // use after free.
-  if (IsBeingDestroyed())
-    return;
-
-  // Notify for UI updates if the state changes.
-  DCHECK_NE(0u, serial_active_frame_count_);
-  serial_active_frame_count_--;
-  if (serial_active_frame_count_ == 0)
-    NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
-}
-
 void WebContentsImpl::SetHasPersistentVideo(bool has_persistent_video) {
   if (has_persistent_video_ == has_persistent_video)
     return;
@@ -6834,7 +6815,7 @@ ForwardingAudioStreamFactory* WebContentsImpl::GetAudioStreamFactory() {
 
 void WebContentsImpl::MediaStartedPlaying(
     const WebContentsObserver::MediaPlayerInfo& media_info,
-    const MediaPlayerId& id) {
+    const WebContentsObserver::MediaPlayerId& id) {
   if (media_info.has_video)
     currently_playing_video_count_++;
 
@@ -6844,7 +6825,7 @@ void WebContentsImpl::MediaStartedPlaying(
 
 void WebContentsImpl::MediaStoppedPlaying(
     const WebContentsObserver::MediaPlayerInfo& media_info,
-    const MediaPlayerId& id,
+    const WebContentsObserver::MediaPlayerId& id,
     WebContentsObserver::MediaStoppedReason reason) {
   if (media_info.has_video)
     currently_playing_video_count_--;
@@ -6853,8 +6834,9 @@ void WebContentsImpl::MediaStoppedPlaying(
     observer.MediaStoppedPlaying(media_info, id, reason);
 }
 
-void WebContentsImpl::MediaResized(const gfx::Size& size,
-                                   const MediaPlayerId& id) {
+void WebContentsImpl::MediaResized(
+    const gfx::Size& size,
+    const WebContentsObserver::MediaPlayerId& id) {
   cached_video_sizes_[id] = size;
 
   for (auto& observer : observers_)
@@ -6867,7 +6849,7 @@ void WebContentsImpl::MediaEffectivelyFullscreenChanged(bool is_fullscreen) {
 }
 
 base::Optional<gfx::Size> WebContentsImpl::GetFullscreenVideoSize() {
-  base::Optional<MediaPlayerId> id =
+  base::Optional<WebContentsObserver::MediaPlayerId> id =
       media_web_contents_observer_->GetFullscreenVideoMediaPlayerId();
   if (id && base::ContainsKey(cached_video_sizes_, id.value()))
     return base::Optional<gfx::Size>(cached_video_sizes_[id.value()]);
@@ -6983,7 +6965,7 @@ void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {
     return;
 
   GetMainFrame()->AddMessageToConsole(
-      blink::mojom::ConsoleMessageLevel::kWarning,
+      content::CONSOLE_MESSAGE_LEVEL_WARNING,
       base::StringPrintf("This site does not have a valid SSL "
                          "certificate! Without SSL, your site's and "
                          "visitors' data is vulnerable to theft and "
@@ -7026,8 +7008,9 @@ void WebContentsImpl::SetOpenerForNewContents(FrameTreeNode* opener,
   }
 }
 
-void WebContentsImpl::MediaMutedStatusChanged(const MediaPlayerId& id,
-                                              bool muted) {
+void WebContentsImpl::MediaMutedStatusChanged(
+    const WebContentsObserver::MediaPlayerId& id,
+    bool muted) {
   for (auto& observer : observers_)
     observer.MediaMutedStatusChanged(id, muted);
 }

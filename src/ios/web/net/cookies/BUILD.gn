@@ -6,10 +6,9 @@ import("//ios/build/config.gni")
 
 source_set("cookies") {
   deps = [
-    "//base",
+    "//base:base",
     "//ios/net",
-    "//ios/web/common",
-    "//ios/web/public",
+    "//ios/web/public:public",
     "//ios/web/web_state/ui:wk_web_view_configuration_provider",
   ]
 

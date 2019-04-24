@@ -200,6 +200,14 @@ AvailableOfflineContentProvider::AvailableOfflineContentProvider(
 
 AvailableOfflineContentProvider::~AvailableOfflineContentProvider() = default;
 
+void AvailableOfflineContentProvider::Summarize(SummarizeCallback callback) {
+  offline_items_collection::OfflineContentAggregator* aggregator =
+      OfflineContentAggregatorFactory::GetForBrowserContext(profile_);
+  aggregator->GetAllItems(
+      base::BindOnce(&AvailableOfflineContentProvider::SummarizeFinalize,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void AvailableOfflineContentProvider::List(ListCallback callback) {
   if (!base::FeatureList::IsEnabled(features::kNewNetErrorPageUI)) {
     std::move(callback).Run(true, {});
@@ -246,6 +254,40 @@ void AvailableOfflineContentProvider::Create(
   mojo::MakeStrongBinding(
       std::make_unique<AvailableOfflineContentProvider>(profile),
       std::move(request));
+}
+
+void AvailableOfflineContentProvider::SummarizeFinalize(
+    AvailableOfflineContentProvider::SummarizeCallback callback,
+    const std::vector<OfflineItem>& all_items) {
+  auto summary = chrome::mojom::AvailableOfflineContentSummary::New();
+  summary->total_items = base::saturated_cast<uint32_t>(all_items.size());
+  // Decrement the total item count to find the interesting item count.
+  size_t interesting_items = all_items.size();
+  for (const OfflineItem& item : all_items) {
+    switch (ContentType(item)) {
+      case AvailableContentType::kPrefetchedPage:
+        summary->has_prefetched_page = true;
+        break;
+      case AvailableContentType::kVideo:
+        summary->has_video = true;
+        break;
+      case AvailableContentType::kAudio:
+        summary->has_audio = true;
+        break;
+      case AvailableContentType::kOtherPage:
+        summary->has_offline_page = true;
+        break;
+      case AvailableContentType::kUninteresting:
+        interesting_items--;
+        break;
+    }
+  }
+
+  // If the number of interesting items is lower then the minimum required then
+  // reset all summary data so avoid presenting the card.
+  if (interesting_items < kMinInterestingItemCount)
+    summary = chrome::mojom::AvailableOfflineContentSummary::New();
+  std::move(callback).Run(std::move(summary));
 }
 
 // Picks the best available offline content items, and passes them to callback.

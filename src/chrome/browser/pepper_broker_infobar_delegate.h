@@ -27,15 +27,15 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
                      const base::string16& plugin_name,
                      HostContentSettingsMap* content_settings,
                      TabSpecificContentSettings* tab_content_settings,
-                     base::OnceCallback<void(bool)> callback);
-  ~PepperBrokerInfoBarDelegate() override;
+                     const base::Callback<void(bool)>& callback);
 
  private:
   PepperBrokerInfoBarDelegate(const GURL& url,
                               const base::string16& plugin_name,
                               HostContentSettingsMap* content_settings,
                               TabSpecificContentSettings* tab_content_settings,
-                              base::OnceCallback<void(bool)> callback);
+                              const base::Callback<void(bool)>& callback);
+  ~PepperBrokerInfoBarDelegate() override;
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
@@ -53,7 +53,7 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
   const base::string16 plugin_name_;
   HostContentSettingsMap* content_settings_;
   TabSpecificContentSettings* tab_content_settings_;
-  base::OnceCallback<void(bool)> callback_;
+  base::Callback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperBrokerInfoBarDelegate);
 };

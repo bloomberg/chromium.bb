@@ -18,6 +18,10 @@ class WorkerInternals final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static WorkerInternals* Create() {
+    return MakeGarbageCollected<WorkerInternals>();
+  }
+
   explicit WorkerInternals();
   ~WorkerInternals() override;
 

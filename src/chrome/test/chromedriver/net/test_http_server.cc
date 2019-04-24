@@ -115,7 +115,8 @@ void TestHttpServer::OnWebSocketRequest(
   }
 }
 
-void TestHttpServer::OnWebSocketMessage(int connection_id, std::string data) {
+void TestHttpServer::OnWebSocketMessage(int connection_id,
+                                        const std::string& data) {
   WebSocketMessageAction action;
   base::Closure callback;
   {

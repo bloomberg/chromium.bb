@@ -20,7 +20,6 @@
 #include "media/webrtc/webrtc_switches.h"
 #include "third_party/webrtc/api/audio/echo_canceller3_factory.h"
 #include "third_party/webrtc/modules/audio_processing/aec_dump/aec_dump_factory.h"
-#include "third_party/webrtc_overrides/task_queue_factory.h"
 
 namespace media {
 
@@ -164,7 +163,7 @@ void AudioProcessor::StartEchoCancellationDump(base::File file) {
   base::PlatformFile stream = file.TakePlatformFile();
   if (!worker_queue_) {
     worker_queue_ = std::make_unique<rtc::TaskQueue>(
-        CreateWebRtcTaskQueue(rtc::TaskQueue::Priority::LOW));
+        "aecdump-worker-queue", rtc::TaskQueue::Priority::LOW);
   }
   auto aec_dump = webrtc::AecDumpFactory::Create(
       stream, -1 /* max_log_size_bytes */, worker_queue_.get());

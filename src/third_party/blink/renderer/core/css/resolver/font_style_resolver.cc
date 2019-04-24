@@ -24,42 +24,42 @@ FontDescription FontStyleResolver::ComputeFont(
   CSSToLengthConversionData::ViewportSize viewportSize(0, 0);
   CSSToLengthConversionData conversionData(nullptr, fontSizes, viewportSize, 1);
 
-  // CSSPropertyID::kFontSize
-  if (property_set.HasProperty(CSSPropertyID::kFontSize)) {
+  // CSSPropertyFontSize
+  if (property_set.HasProperty(CSSPropertyFontSize)) {
     builder.SetSize(StyleBuilderConverterBase::ConvertFontSize(
-        *property_set.GetPropertyCSSValue(CSSPropertyID::kFontSize),
-        conversionData, FontDescription::Size(0, 0.0f, false)));
+        *property_set.GetPropertyCSSValue(CSSPropertyFontSize), conversionData,
+        FontDescription::Size(0, 0.0f, false)));
   }
 
-  // CSSPropertyID::kFontFamily
-  if (property_set.HasProperty(CSSPropertyID::kFontFamily)) {
+  // CSSPropertyFontFamily
+  if (property_set.HasProperty(CSSPropertyFontFamily)) {
     builder.SetFamilyDescription(StyleBuilderConverterBase::ConvertFontFamily(
-        *property_set.GetPropertyCSSValue(CSSPropertyID::kFontFamily), &builder,
+        *property_set.GetPropertyCSSValue(CSSPropertyFontFamily), &builder,
         nullptr));
   }
 
-  // CSSPropertyID::kFontStretch
-  if (property_set.HasProperty(CSSPropertyID::kFontStretch)) {
+  // CSSPropertyFontStretch
+  if (property_set.HasProperty(CSSPropertyFontStretch)) {
     builder.SetStretch(StyleBuilderConverterBase::ConvertFontStretch(
-        *property_set.GetPropertyCSSValue(CSSPropertyID::kFontStretch)));
+        *property_set.GetPropertyCSSValue(CSSPropertyFontStretch)));
   }
 
-  // CSSPropertyID::kFontStyle
-  if (property_set.HasProperty(CSSPropertyID::kFontStyle)) {
+  // CSSPropertyFontStyle
+  if (property_set.HasProperty(CSSPropertyFontStyle)) {
     builder.SetStyle(StyleBuilderConverterBase::ConvertFontStyle(
-        *property_set.GetPropertyCSSValue(CSSPropertyID::kFontStyle)));
+        *property_set.GetPropertyCSSValue(CSSPropertyFontStyle)));
   }
 
-  // CSSPropertyID::kFontVariantCaps
-  if (property_set.HasProperty(CSSPropertyID::kFontVariantCaps)) {
+  // CSSPropertyFontVariantCaps
+  if (property_set.HasProperty(CSSPropertyFontVariantCaps)) {
     builder.SetVariantCaps(StyleBuilderConverterBase::ConvertFontVariantCaps(
-        *property_set.GetPropertyCSSValue(CSSPropertyID::kFontVariantCaps)));
+        *property_set.GetPropertyCSSValue(CSSPropertyFontVariantCaps)));
   }
 
-  // CSSPropertyID::kFontWeight
-  if (property_set.HasProperty(CSSPropertyID::kFontWeight)) {
+  // CSSPropertyFontWeight
+  if (property_set.HasProperty(CSSPropertyFontWeight)) {
     builder.SetWeight(StyleBuilderConverterBase::ConvertFontWeight(
-        *property_set.GetPropertyCSSValue(CSSPropertyID::kFontWeight),
+        *property_set.GetPropertyCSSValue(CSSPropertyFontWeight),
         FontBuilder::InitialWeight()));
   }
 

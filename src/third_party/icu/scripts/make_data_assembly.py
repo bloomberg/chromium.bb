@@ -12,10 +12,7 @@ parser = optparse.OptionParser()
 parser.add_option("--mac",
                   help="generate assembly file for Mac/iOS (default: False)",
                   action="store_true", default=False)
-parser.add_option("--win",
-                  help="generate assembly file for Windows (default: False)",
-                  action="store_true", default=False)
-parser.set_usage("""make_data_assembly  icu_data [assembly_file] [--mac] [--win]
+parser.set_usage("""make_data_assembly  icu_data [assembly_file] [--mac]
     icu_data: ICU data file to generate assembly from.
     assembly_file: Output file converted from icu_data file.""")
 (options, args) = parser.parse_args()
@@ -59,11 +56,6 @@ if options.mac:
                "\t.const\n"
                "\t.align 4\n"
                "_icudt%s_dat:\n" %tuple([version_number] * 3))
-elif options.win:
-  output.write(".globl icudt%s_dat\n"
-               "\t.section .rdata\n"
-               "\t.balign 16\n"
-               "icudt%s_dat:\n" % tuple([version_number] * 2))
 else:
   output.write(".globl icudt%s_dat\n"
                "\t.section .note.GNU-stack,\"\",%%progbits\n"

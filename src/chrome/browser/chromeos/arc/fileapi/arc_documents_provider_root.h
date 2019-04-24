@@ -43,22 +43,18 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
 
   // TODO(crbug.com/755451): Use OnceCallback/RepeatingCallback.
   using GetFileInfoCallback = storage::AsyncFileUtil::GetFileInfoCallback;
-  using StatusCallback = storage::AsyncFileUtil::StatusCallback;
   using ReadDirectoryCallback =
       base::OnceCallback<void(base::File::Error error,
                               std::vector<ThinFileInfo> files)>;
   using ChangeType = storage::WatcherManager::ChangeType;
-  using WatcherNotificationCallback =
-      storage::WatcherManager::NotificationCallback;
-  using WatcherStatusCallback = storage::WatcherManager::StatusCallback;
+  using WatcherCallback = base::Callback<void(ChangeType type)>;
+  using StatusCallback = base::Callback<void(base::File::Error error)>;
   using ResolveToContentUrlCallback =
-      base::OnceCallback<void(const GURL& content_url)>;
+      base::Callback<void(const GURL& content_url)>;
 
   ArcDocumentsProviderRoot(ArcFileSystemOperationRunner* runner,
                            const std::string& authority,
-                           const std::string& root_document_id,
-                           const std::string& root_id,
-                           const std::vector<std::string>& mime_types);
+                           const std::string& root_document_id);
   ~ArcDocumentsProviderRoot() override;
 
   // Queries information of a file just like AsyncFileUtil.GetFileInfo().
@@ -68,41 +64,6 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   // AsyncFileUtil.ReadDirectory().
   void ReadDirectory(const base::FilePath& path,
                      ReadDirectoryCallback callback);
-
-  // Deletes a file/directory at the given path.
-  void DeleteFile(const base::FilePath& path, StatusCallback callback);
-
-  // Creates a file at the given path.
-  //
-  // This reports following error code via |callback|:
-  // - File::FILE_ERROR_NOT_FOUND if |path|'s parent directory does not exist.
-  // - File::FILE_ERROR_EXISTS if a file already exists at |path|.
-  void CreateFile(const base::FilePath& path, StatusCallback callback);
-
-  // Creates a directory at the given path.
-  //
-  // This reports following error code via |callback|:
-  // - File::FILE_ERROR_NOT_FOUND if |path|'s parent directory does not exist.
-  // - File::FILE_ERROR_EXISTS if a file already exists at |path|.
-  void CreateDirectory(const base::FilePath& path, StatusCallback callback);
-
-  // Copies a file from |src_path| to |dest_path| inside this root.
-  //
-  // This reports following error code via |callback|:
-  // - File::FILE_ERROR_NOT_FOUND if |src_path| or the parent directory of
-  //   |dest_path| does not exist.
-  void CopyFileLocal(const base::FilePath& src_path,
-                     const base::FilePath& dest_path,
-                     StatusCallback callback);
-
-  // Moves a file from |src_path| to |dest_path| inside this root.
-  //
-  // This reports following error code via |callback|:
-  // - File::FILE_ERROR_NOT_FOUND if |src_path| or the parent directory of
-  //   |dest_path| does not exist.
-  void MoveFileLocal(const base::FilePath& src_path,
-                     const base::FilePath& dest_path,
-                     StatusCallback callback);
 
   // Installs a document watcher.
   //
@@ -119,9 +80,8 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   // even notify incorrect update events for several reasons, such as:
   //
   //   - Directory moves: Currently a watcher will misbehave if the watched
-  //     directory is moved to another location.
-  //     TODO(fukino): Handle the case when a watched directory is moved or
-  //     renamed.
+  //     directory is moved to another location. This is acceptable for now
+  //     since we whitelist MediaDocumentsProvider only.
   //   - Duplicated file name handling in this class: The same reason as
   //     directory moves. This may happen even with MediaDocumentsProvider,
   //     but the chance will not be very high.
@@ -147,20 +107,20 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   //   2. Keep consistency of installed watchers so that the caller can avoid
   //      dangling watchers.
   void AddWatcher(const base::FilePath& path,
-                  const WatcherNotificationCallback& watcher_callback,
-                  const WatcherStatusCallback& callback);
+                  const WatcherCallback& watcher_callback,
+                  const StatusCallback& callback);
 
   // Uninstalls a document watcher.
   // See the documentation of AddWatcher() above.
   void RemoveWatcher(const base::FilePath& path,
-                     const WatcherStatusCallback& callback);
+                     const StatusCallback& callback);
 
   // Resolves a file path into a content:// URL pointing to the file
   // on DocumentsProvider. Returns URL that can be passed to
   // ArcContentFileSystemFileSystemReader to read the content.
   // On errors, an invalid GURL is returned.
   void ResolveToContentUrl(const base::FilePath& path,
-                           ResolveToContentUrlCallback callback);
+                           const ResolveToContentUrlCallback& callback);
 
   // Instructs to make directory caches expire "soon" after callbacks are
   // called, that is, when the message loop gets idle.
@@ -181,11 +141,12 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   using NameToDocumentMap =
       std::map<base::FilePath::StringType, mojom::DocumentPtr>;
 
+  // TODO(nya): Use OnceCallback.
   using ResolveToDocumentIdCallback =
-      base::OnceCallback<void(const std::string& document_id)>;
+      base::Callback<void(const std::string& document_id)>;
   using ReadDirectoryInternalCallback =
-      base::OnceCallback<void(base::File::Error error,
-                              const NameToDocumentMap& mapping)>;
+      base::Callback<void(base::File::Error error,
+                          const NameToDocumentMap& mapping)>;
 
   void GetFileInfoWithParentDocumentId(GetFileInfoCallback callback,
                                        const base::FilePath& basename,
@@ -201,104 +162,37 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
                                           base::File::Error error,
                                           const NameToDocumentMap& mapping);
 
-  void DeleteFileWithDocumentId(StatusCallback callback,
+  void AddWatcherWithDocumentId(const base::FilePath& path,
+                                uint64_t watcher_request_id,
+                                const WatcherCallback& watcher_callback,
                                 const std::string& document_id);
-  void OnFileDeleted(StatusCallback callback, bool success);
-
-  void CreateFileAfterConflictCheck(StatusCallback callback,
-                                    const base::FilePath& path,
-                                    const std::string& document_id);
-  void CreateFileWithParentDocumentId(StatusCallback callback,
-                                      const base::FilePath& basename,
-                                      const std::string& parent_document_id);
-
-  void CreateDirectoryAfterConflictCheck(StatusCallback callback,
-                                         const base::FilePath& path,
-                                         const std::string& document_id);
-  void CreateDirectoryWithParentDocumentId(
-      StatusCallback callback,
-      const base::FilePath& basename,
-      const std::string& parent_document_id);
-  void OnFileCreated(StatusCallback callback,
-                     const std::string& parent_document_id,
-                     mojom::DocumentPtr maybe_document);
-
-  void RenameFileInternal(const base::FilePath& path,
-                          const std::string& display_name,
-                          StatusCallback callback);
-  void RenameFileWithDocumentId(StatusCallback callback,
-                                const std::string& display_name,
-                                const std::string& documentId);
-  void OnFileRenamed(StatusCallback callback, mojom::DocumentPtr document);
-
-  void CopyFileWithSourceDocumentId(StatusCallback callback,
-                                    const base::FilePath& target_path,
-                                    const std::string& source_display_name,
-                                    const std::string& source_document_id);
-  void CopyFileWithTargetParentDocumentId(
-      StatusCallback callback,
-      const std::string& source_document_id,
-      const std::string& target_display_name_to_rename,
-      const std::string& target_parent_document_id);
-  void OnFileCopied(StatusCallback callback,
-                    const std::string& target_display_name_to_rename,
-                    mojom::DocumentPtr document);
-
-  void MoveFileInternal(const base::FilePath& source_path,
-                        const base::FilePath& target_path,
-                        StatusCallback callback);
-  void MoveFileWithSourceDocumentId(StatusCallback callback,
-                                    const base::FilePath& source_parent_path,
-                                    const base::FilePath& target_path,
-                                    const std::string& source_display_name,
-                                    const std::string& source_document_id);
-  void MoveFileWithSourceParentDocumentId(
-      StatusCallback callback,
-      const std::string& source_document_id,
-      const base::FilePath& target_path,
-      const std::string& source_display_name,
-      const std::string& source_parent_document_id);
-  void MoveFileWithTargetParentDocumentId(
-      StatusCallback callback,
-      const std::string& source_document_id,
-      const std::string& source_parent_document_id,
-      const std::string& target_display_name_to_rename,
-      const std::string& target_parent_document_id);
-  void OnFileMoved(StatusCallback callback,
-                   const std::string& target_display_name_to_rename,
-                   mojom::DocumentPtr document);
-
-  void AddWatcherWithDocumentId(
-      const base::FilePath& path,
-      uint64_t watcher_request_id,
-      const WatcherNotificationCallback& watcher_callback,
-      const std::string& document_id);
   void OnWatcherAdded(const base::FilePath& path,
                       uint64_t watcher_request_id,
                       int64_t watcher_id);
   void OnWatcherAddedButRemoved(bool success);
 
-  void OnWatcherRemoved(const WatcherStatusCallback& callback, bool success);
+  void OnWatcherRemoved(const StatusCallback& callback, bool success);
 
   // Returns true if the specified watcher request has been canceled.
   // This function should be called only while the request is in-flight.
   bool IsWatcherInflightRequestCanceled(const base::FilePath& path,
                                         uint64_t watcher_request_id) const;
 
-  void ResolveToContentUrlWithDocumentId(ResolveToContentUrlCallback callback,
-                                         const std::string& document_id);
+  void ResolveToContentUrlWithDocumentId(
+      const ResolveToContentUrlCallback& callback,
+      const std::string& document_id);
 
   // Resolves |path| to a document ID. Failures are indicated by an empty
   // document ID.
   void ResolveToDocumentId(const base::FilePath& path,
-                           ResolveToDocumentIdCallback callback);
+                           const ResolveToDocumentIdCallback& callback);
   void ResolveToDocumentIdRecursively(
       const std::string& document_id,
       const std::vector<base::FilePath::StringType>& components,
-      ResolveToDocumentIdCallback callback);
+      const ResolveToDocumentIdCallback& callback);
   void ResolveToDocumentIdRecursivelyWithNameToDocumentMap(
       const std::vector<base::FilePath::StringType>& components,
-      ResolveToDocumentIdCallback callback,
+      const ResolveToDocumentIdCallback& callback,
       base::File::Error error,
       const NameToDocumentMap& mapping);
 
@@ -310,7 +204,7 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   // returns.
   void ReadDirectoryInternal(const std::string& document_id,
                              bool force_refresh,
-                             ReadDirectoryInternalCallback callback);
+                             const ReadDirectoryInternalCallback& callback);
   void ReadDirectoryInternalWithChildDocuments(
       const std::string& document_id,
       base::Optional<std::vector<mojom::DocumentPtr>> maybe_children);
@@ -325,8 +219,6 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
 
   const std::string authority_;
   const std::string root_document_id_;
-  const std::string root_id_;
-  const std::vector<std::string> mime_types_;
 
   bool directory_cache_expire_soon_ = false;
 

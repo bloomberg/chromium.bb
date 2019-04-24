@@ -6,7 +6,6 @@
 
 #include "xfa/fxfa/cxfa_ffdocview.h"
 
-#include <set>
 #include <utility>
 
 #include "core/fxcrt/fx_extension.h"
@@ -172,11 +171,14 @@ void CXFA_FFDocView::UpdateDocView() {
 
   LockUpdate();
   while (!m_NewAddedNodes.empty()) {
-    CXFA_Node* pNode = m_NewAddedNodes.front();
-    m_NewAddedNodes.pop_front();
-    InitCalculate(pNode);
-    InitValidate(pNode);
-    ExecEventActivityByDeepFirst(pNode, XFA_EVENT_Ready, true, true);
+    std::vector<CXFA_Node*> nodes = std::move(m_NewAddedNodes);
+    m_NewAddedNodes.clear();
+    for (CXFA_Node* pNode : nodes) {
+      InitCalculate(pNode);
+      InitValidate(pNode);
+      ExecEventActivityByDeepFirst(pNode, XFA_EVENT_Ready, true, true);
+    }
+    // May have created more newly added nodes, try again.
   }
 
   RunSubformIndexChange();
@@ -250,7 +252,7 @@ void CXFA_FFDocView::ResetNode(CXFA_Node* pNode) {
 }
 
 CXFA_FFWidget* CXFA_FFDocView::GetWidgetForNode(CXFA_Node* node) {
-  return GetFFWidget(ToContentLayoutItem(GetXFALayout()->GetLayoutItem(node)));
+  return ToFFWidget(ToContentLayoutItem(GetXFALayout()->GetLayoutItem(node)));
 }
 
 CXFA_FFWidgetHandler* CXFA_FFDocView::GetWidgetHandler() {
@@ -273,22 +275,25 @@ bool CXFA_FFDocView::SetFocus(CXFA_FFWidget* pNewFocus) {
     return false;
 
   if (pOldFocus) {
-    CXFA_ContentLayoutItem* pItem = pOldFocus->GetLayoutItem();
-    if (pItem->TestStatusBits(XFA_WidgetStatus_Visible) &&
-        !pItem->TestStatusBits(XFA_WidgetStatus_Focused)) {
+    if (!(pOldFocus->GetStatus() & XFA_WidgetStatus_Focused) &&
+        (pOldFocus->GetStatus() & XFA_WidgetStatus_Visible)) {
       if (!pOldFocus->IsLoaded())
         pOldFocus->LoadWidget();
+
       pOldFocus->OnSetFocus(pOldFocus);
     }
+
     pOldFocus->OnKillFocus(pNewFocus);
   }
 
   if (pNewFocus) {
-    if (pNewFocus->GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_Visible)) {
+    if (pNewFocus->GetStatus() & XFA_WidgetStatus_Visible) {
       if (!pNewFocus->IsLoaded())
         pNewFocus->LoadWidget();
+
       pNewFocus->OnSetFocus(pOldFocus);
     }
+
     CXFA_Node* node = pNewFocus->GetNode();
     m_pFocusNode = node->IsWidgetReady() ? node : nullptr;
     m_pFocusWidget = pNewFocus;
@@ -429,7 +434,7 @@ CXFA_FFWidget* CXFA_FFDocView::GetWidgetByName(const WideString& wsName,
   return nullptr;
 }
 
-void CXFA_FFDocView::OnPageEvent(CXFA_ViewLayoutItem* pSender,
+void CXFA_FFDocView::OnPageEvent(CXFA_ContainerLayoutItem* pSender,
                                  uint32_t dwEvent) {
   CXFA_FFPageView* pFFPageView = static_cast<CXFA_FFPageView*>(pSender);
   m_pDoc->GetDocEnvironment()->PageViewEvent(pFFPageView, dwEvent);
@@ -461,12 +466,8 @@ bool CXFA_FFDocView::RunLayout() {
 }
 
 void CXFA_FFDocView::RunSubformIndexChange() {
-  std::set<CXFA_Node*> seen;
-  while (!m_IndexChangedSubforms.empty()) {
-    CXFA_Node* pSubformNode = m_IndexChangedSubforms.front();
-    m_IndexChangedSubforms.pop_front();
-    bool bInserted = seen.insert(pSubformNode).second;
-    if (!bInserted || !pSubformNode->IsWidgetReady())
+  for (CXFA_Node* pSubformNode : m_IndexChangedSubforms) {
+    if (!pSubformNode->IsWidgetReady())
       continue;
 
     CXFA_EventParam eParam;
@@ -474,6 +475,7 @@ void CXFA_FFDocView::RunSubformIndexChange() {
     eParam.m_pTarget = pSubformNode;
     pSubformNode->ProcessEvent(this, XFA_AttributeValue::IndexChange, &eParam);
   }
+  m_IndexChangedSubforms.clear();
 }
 
 void CXFA_FFDocView::AddNewFormNode(CXFA_Node* pNode) {
@@ -483,8 +485,7 @@ void CXFA_FFDocView::AddNewFormNode(CXFA_Node* pNode) {
 
 void CXFA_FFDocView::AddIndexChangedSubform(CXFA_Node* pNode) {
   ASSERT(pNode->GetElementType() == XFA_Element::Subform);
-  if (!pdfium::ContainsValue(m_IndexChangedSubforms, pNode))
-    m_IndexChangedSubforms.push_back(pNode);
+  m_IndexChangedSubforms.push_back(pNode);
 }
 
 void CXFA_FFDocView::RunDocClose() {
@@ -575,12 +576,11 @@ bool CXFA_FFDocView::RunValidate() {
   if (!m_pDoc->GetDocEnvironment()->IsValidationsEnabled(m_pDoc.Get()))
     return false;
 
-  while (!m_ValidateNodes.empty()) {
-    CXFA_Node* node = m_ValidateNodes.front();
-    m_ValidateNodes.pop_front();
+  for (CXFA_Node* node : m_ValidateNodes) {
     if (!node->HasRemovedChildren())
       node->ProcessValidate(this, 0);
   }
+  m_ValidateNodes.clear();
   return true;
 }
 
@@ -601,7 +601,7 @@ void CXFA_FFDocView::RunBindItems() {
       continue;
 
     CXFA_Node* pWidgetNode = item->GetParent();
-    if (!pWidgetNode || !pWidgetNode->IsWidgetReady())
+    if (!pWidgetNode->IsWidgetReady())
       continue;
 
     CFXJSE_Engine* pScriptContext =

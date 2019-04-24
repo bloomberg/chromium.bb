@@ -4,6 +4,7 @@
 
 #include "google_apis/drive/request_sender.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -100,7 +101,11 @@ void RequestSender::CancelRequest(
 }
 
 void RequestSender::RequestFinished(AuthenticatedRequestInterface* request) {
-  auto it = in_flight_requests_.find(request);
+  auto it = std::find_if(
+      in_flight_requests_.begin(), in_flight_requests_.end(),
+      [request](const std::unique_ptr<AuthenticatedRequestInterface>& ptr) {
+        return ptr.get() == request;
+      });
   if (it == in_flight_requests_.end()) {
     // Various BatchUpload tests in DriveApiRequestsTest will commit requests
     // using this RequestSender without actually starting them on it. In that

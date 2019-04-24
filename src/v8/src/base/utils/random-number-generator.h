@@ -39,7 +39,7 @@ class V8_BASE_EXPORT RandomNumberGenerator final {
  public:
   // EntropySource is used as a callback function when V8 needs a source of
   // entropy.
-  using EntropySource = bool (*)(unsigned char* buffer, size_t buflen);
+  typedef bool (*EntropySource)(unsigned char* buffer, size_t buflen);
   static void SetEntropySource(EntropySource entropy_source);
 
   RandomNumberGenerator();

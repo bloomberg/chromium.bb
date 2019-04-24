@@ -31,7 +31,6 @@ NavigationManager::WebLoadParams::~WebLoadParams() {}
 
 NavigationManager::WebLoadParams::WebLoadParams(const WebLoadParams& other)
     : url(other.url),
-      virtual_url(other.virtual_url),
       referrer(other.referrer),
       transition_type(other.transition_type),
       user_agent_override_option(other.user_agent_override_option),
@@ -42,7 +41,6 @@ NavigationManager::WebLoadParams::WebLoadParams(const WebLoadParams& other)
 NavigationManager::WebLoadParams& NavigationManager::WebLoadParams::operator=(
     const WebLoadParams& other) {
   url = other.url;
-  virtual_url = other.virtual_url;
   referrer = other.referrer;
   is_renderer_initiated = other.is_renderer_initiated;
   transition_type = other.transition_type;

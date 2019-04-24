@@ -4,7 +4,6 @@
 
 #include "ui/ozone/public/ozone_platform.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/logging.h"
@@ -142,14 +141,6 @@ OzonePlatform::GetPlatformProperties() {
   return *properties;
 }
 
-const OzonePlatform::InitializedHostProperties&
-OzonePlatform::GetInitializedHostProperties() {
-  DCHECK(g_platform_initialized_ui);
-
-  static InitializedHostProperties host_properties;
-  return host_properties;
-}
-
 base::MessageLoop::Type OzonePlatform::GetMessageLoopTypeForGpu() {
   return base::MessageLoop::TYPE_DEFAULT;
 }
@@ -157,10 +148,5 @@ base::MessageLoop::Type OzonePlatform::GetMessageLoopTypeForGpu() {
 void OzonePlatform::AddInterfaces(service_manager::BinderRegistry* registry) {}
 
 void OzonePlatform::AfterSandboxEntry() {}
-
-// static
-bool OzonePlatform::has_initialized_ui() {
-  return g_platform_initialized_ui;
-}
 
 }  // namespace ui

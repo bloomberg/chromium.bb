@@ -11,6 +11,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 
 namespace content {
+
 namespace background_fetch {
 
 StartNextPendingRequestTask::StartNextPendingRequestTask(
@@ -136,4 +137,5 @@ std::string StartNextPendingRequestTask::HistogramName() const {
 }
 
 }  // namespace background_fetch
+
 }  // namespace content

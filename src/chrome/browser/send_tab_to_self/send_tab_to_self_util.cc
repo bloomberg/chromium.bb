@@ -4,11 +4,14 @@
 
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 
+#include <string>
+
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
-#include "components/send_tab_to_self/features.h"
+#include "chrome/browser/ui/browser.h"
 #include "components/send_tab_to_self/send_tab_to_self_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/device_info/device_info.h"
@@ -17,26 +20,21 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 
 namespace send_tab_to_self {
 
-bool IsReceivingEnabled() {
+bool IsFlagEnabled() {
   return base::FeatureList::IsEnabled(switches::kSyncSendTabToSelf);
 }
 
-bool IsSendingEnabled() {
-  return IsReceivingEnabled() &&
-         base::FeatureList::IsEnabled(kSendTabToSelfShowSendingUI);
-}
-
-bool IsUserSyncTypeActive(Profile* profile) {
-  return SendTabToSelfSyncServiceFactory::GetForProfile(profile)
-      ->GetSendTabToSelfModel()
-      ->IsReady();
+bool IsUserSyncTypeEnabled(Profile* profile) {
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  return sync_service &&
+         sync_service->GetPreferredDataTypes().Has(syncer::SEND_TAB_TO_SELF);
 }
 
 bool IsSyncingOnMultipleDevices(Profile* profile) {
@@ -46,7 +44,7 @@ bool IsSyncingOnMultipleDevices(Profile* profile) {
          device_sync_service->GetDeviceInfoTracker()->CountActiveDevices() > 1;
 }
 
-bool IsContentRequirementsMet(const GURL& url, Profile* profile) {
+bool IsContentRequirementsMet(GURL& url, Profile* profile) {
   bool is_http_or_https = url.SchemeIsHTTPOrHTTPS();
   bool is_native_page = url.SchemeIs(content::kChromeUIScheme);
   bool is_incognito_mode =
@@ -54,28 +52,29 @@ bool IsContentRequirementsMet(const GURL& url, Profile* profile) {
   return is_http_or_https && !is_native_page && !is_incognito_mode;
 }
 
-bool ShouldOfferFeature(content::WebContents* web_contents) {
-  if (!web_contents)
+bool ShouldOfferFeature(Browser* browser) {
+  if (!browser) {
     return false;
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  }
+  Profile* profile = browser->profile();
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (!profile || !web_contents) {
+    return false;
+  }
 
-  // If sending is enabled, then so is receiving.
-  return IsSendingEnabled() && IsUserSyncTypeActive(profile) &&
+  GURL url = web_contents->GetURL();
+  return IsFlagEnabled() && IsUserSyncTypeEnabled(profile) &&
          IsSyncingOnMultipleDevices(profile) &&
-         IsContentRequirementsMet(web_contents->GetURL(), profile);
+         IsContentRequirementsMet(url, profile);
 }
 
-bool ShouldOfferFeatureForLink(content::WebContents* web_contents,
-                               const GURL& link_url) {
-  if (!web_contents)
-    return false;
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  return IsSendingEnabled() && IsUserSyncTypeActive(profile) &&
-         IsSyncingOnMultipleDevices(profile) &&
-         (IsContentRequirementsMet(web_contents->GetURL(), profile) ||
-          IsContentRequirementsMet(link_url, profile));
+void CreateNewEntry(content::WebContents* tab, Profile* profile) {
+  GURL url = tab->GetURL();
+  std::string title = base::UTF16ToUTF8(tab->GetTitle());
+  SendTabToSelfSyncServiceFactory::GetForProfile(profile)
+      ->GetSendTabToSelfModel()
+      ->AddEntry(url, title);
 }
 
 }  // namespace send_tab_to_self

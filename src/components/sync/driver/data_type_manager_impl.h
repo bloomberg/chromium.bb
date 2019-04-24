@@ -48,6 +48,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // DataTypeManager interface.
   void Configure(ModelTypeSet desired_types,
                  const ConfigureContext& context) override;
+  void ReenableType(ModelType type) override;
   void ReadyForStartChanged(ModelType type) override;
   void ResetDataTypeErrors() override;
 

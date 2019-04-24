@@ -27,7 +27,7 @@ az_Cyrl{
             }
         }
     }
-    Version{"2.1.47.82"}
+    Version{"2.1.44.53"}
     calendar{
         generic{
             DateTimePatterns{
@@ -145,8 +145,8 @@ az_Cyrl{
                 MMM{"LLL"}
                 MMMEd{"d MMM, E"}
                 MMMMW{
-                    one{"MMMM, W 'һәфтә'"}
-                    other{"MMMM, W 'һәфтә'"}
+                    one{"MMM, W 'һәфтә'"}
+                    other{"MMM, W 'һәфтә'"}
                 }
                 MMMd{"d MMM"}
                 Md{"dd.MM"}

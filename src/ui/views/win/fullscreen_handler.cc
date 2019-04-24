@@ -17,9 +17,10 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // FullscreenHandler, public:
 
-FullscreenHandler::FullscreenHandler() = default;
+FullscreenHandler::FullscreenHandler() : hwnd_(NULL), fullscreen_(false) {}
 
-FullscreenHandler::~FullscreenHandler() = default;
+FullscreenHandler::~FullscreenHandler() {
+}
 
 void FullscreenHandler::SetFullscreen(bool fullscreen) {
   if (fullscreen_ == fullscreen)
@@ -31,7 +32,7 @@ void FullscreenHandler::SetFullscreen(bool fullscreen) {
 void FullscreenHandler::MarkFullscreen(bool fullscreen) {
   if (!task_bar_list_) {
     HRESULT hr =
-        ::CoCreateInstance(CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER,
+        ::CoCreateInstance(CLSID_TaskbarList, NULL, CLSCTX_INPROC_SERVER,
                            IID_PPV_ARGS(&task_bar_list_));
     if (SUCCEEDED(hr) && FAILED(task_bar_list_->HrInit()))
       task_bar_list_ = nullptr;
@@ -60,7 +61,7 @@ void FullscreenHandler::SetFullscreenImpl(bool fullscreen) {
   // for several frames, which looks worse than doing other updates
   // non-atomically.
   if (!ui::win::IsAeroGlassEnabled())
-    visibility = std::make_unique<ScopedFullscreenVisibility>(hwnd_);
+    visibility.reset(new ScopedFullscreenVisibility(hwnd_));
 
   // Save current window state if not already fullscreen.
   if (!fullscreen_) {
@@ -86,7 +87,7 @@ void FullscreenHandler::SetFullscreenImpl(bool fullscreen) {
     GetMonitorInfo(MonitorFromWindow(hwnd_, MONITOR_DEFAULTTONEAREST),
                    &monitor_info);
     gfx::Rect window_rect(monitor_info.rcMonitor);
-    SetWindowPos(hwnd_, nullptr, window_rect.x(), window_rect.y(),
+    SetWindowPos(hwnd_, NULL, window_rect.x(), window_rect.y(),
                  window_rect.width(), window_rect.height(),
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
   } else {
@@ -98,7 +99,7 @@ void FullscreenHandler::SetFullscreenImpl(bool fullscreen) {
 
     // On restore, resize to the previous saved rect size.
     gfx::Rect new_rect(saved_window_info_.window_rect);
-    SetWindowPos(hwnd_, nullptr, new_rect.x(), new_rect.y(), new_rect.width(),
+    SetWindowPos(hwnd_, NULL, new_rect.x(), new_rect.y(), new_rect.width(),
                  new_rect.height(),
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
   }

@@ -3,11 +3,6 @@
 yue_Hans{
     %%Parent{"root"}
     RBNFRules{
-        OrdinalRules{
-            "%digits-ordinal:",
-            "-x: \u7B2C\u2212>#,##0>;",
-            "0: \u7B2C=#,##0=;",
-        }
         SpelloutRules{
             "%spellout-numbering-year:",
             "x.x: =0.0=;",
@@ -175,5 +170,5 @@ yue_Hans{
             "0: \u7B2C=%spellout-numbering=;",
         }
     }
-    Version{"2.1.48.77"}
+    Version{"2.1.44.50"}
 }

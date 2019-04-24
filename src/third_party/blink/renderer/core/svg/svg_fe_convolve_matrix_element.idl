@@ -48,4 +48,4 @@
     [Measure] readonly attribute SVGAnimatedBoolean preserveAlpha;
 };
 
-SVGFEConvolveMatrixElement includes SVGFilterPrimitiveStandardAttributes;
+SVGFEConvolveMatrixElement implements SVGFilterPrimitiveStandardAttributes;

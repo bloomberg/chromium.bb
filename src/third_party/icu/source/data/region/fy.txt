@@ -181,7 +181,7 @@ fy{
         MF{"Saint-Martin"}
         MG{"Madeiaskar"}
         MH{"Marshalleilannen"}
-        MK{"Macedonië"}
+        MK{"Macedonië (FYROM)"}
         ML{"Mali"}
         MM{"Myanmar (Birma)"}
         MN{"Mongolië"}
@@ -299,7 +299,6 @@ fy{
     Countries%variant{
         CD{"Congo (DRC)"}
         CG{"Congo (Republyk)"}
-        MK{"Macedonië (FYROM)"}
     }
-    Version{"2.1.47.82"}
+    Version{"2.1.41.34"}
 }

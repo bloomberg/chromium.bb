@@ -17,8 +17,6 @@
         cursor: pointer;
         display: block;
         outline: none;
-        position: relative;
-        width: 34px;
       }
 
       :host-context([dark]) {
@@ -35,6 +33,18 @@
         cursor: initial;
         opacity: var(--cr-disabled-opacity);
         pointer-events: none;
+      }
+
+      button {
+        background: none;
+        border: none;
+        cursor: inherit;
+        display: block;
+        outline: inherit;
+        padding: 0;
+        position: relative;
+        width: 34px;
+        z-index: 0;
       }
 
       #bar {
@@ -99,8 +109,16 @@
         --paper-ripple-opacity: 0.2;
       }
     </style>
-    <span id="bar"></span>
-    <span id="knob"></span>
+    <!-- A <button> is used (instead of a plain <div>) to avoid a corner case
+         when pointerdown is initiated in cr-toggle, but pointerup happens
+         outside the bounds of cr-toggle, which would end up firing a 'click'
+         event on the parent and unexpectedly modify the toggle's state (see
+         context at crbug.com/689158 and crbug.com/768555). The 'click'
+         event is not fired when the <button> wrapper is used. -->
+    <button tabindex="-1" on-focus="onButtonFocus_">
+      <span id="bar"></span>
+      <span id="knob"></span>
+    </button>
   </template>
   <script src="cr_toggle.js"></script>
 </dom-module>

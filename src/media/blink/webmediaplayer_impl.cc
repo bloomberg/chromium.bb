@@ -383,7 +383,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   media_log_->SetStringProperty("surface_layer_mode", surface_layer_mode_name);
 
   if (params->initial_cdm())
-    SetCdmInternal(params->initial_cdm());
+    SetCdm(params->initial_cdm());
 
   // Report a false "EncrytpedEvent" here as a baseline.
   RecordEncryptedEvent(false);
@@ -408,8 +408,7 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   if (set_cdm_result_) {
-    DVLOG(2)
-        << "Resolve pending SetCdmInternal() when media player is destroyed.";
+    DVLOG(2) << "Resolve pending SetCdm() when media player is destroyed.";
     set_cdm_result_->Complete();
     set_cdm_result_.reset();
   }
@@ -658,18 +657,6 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   TRACE_EVENT1("media", "WebMediaPlayerImpl::DoLoad", "id", media_log_->id());
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-#if defined(OS_ANDROID)
-  // Only allow credentials if the crossorigin attribute is unspecified
-  // (kCorsModeUnspecified) or "use-credentials" (kCorsModeUseCredentials).
-  // This value is only used by the MediaPlayerRenderer.
-  // See https://crbug.com/936566.
-  //
-  // The credentials mode also has repercussions in WouldTaintOrigin(), but we
-  // access what we need from |mb_data_source_|->cors_mode() directly, instead
-  // of storing it here.
-  allow_media_player_renderer_credentials_ = cors_mode != kCorsModeAnonymous;
-#endif  // defined(OS_ANDROID)
 
   // Note: |url| may be very large, take care when making copies.
   loaded_url_ = GURL(url);
@@ -924,12 +911,12 @@ void WebMediaPlayerImpl::OnRequestPictureInPicture() {
 
 void WebMediaPlayerImpl::SetSinkId(
     const blink::WebString& sink_id,
-    blink::WebSetSinkIdCompleteCallback completion_callback) {
+    std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callback) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __func__;
 
   OutputDeviceStatusCB callback =
-      ConvertToOutputDeviceStatusCB(std::move(completion_callback));
+      ConvertToOutputDeviceStatusCB(std::move(web_callback));
   media_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SetSinkIdOnMediaThread, audio_source_provider_,
                                 sink_id.Utf8(), std::move(callback)));
@@ -1316,40 +1303,6 @@ bool WebMediaPlayerImpl::CopyVideoTextureToPlatformTexture(
       internal_format, format, type, level, premultiply_alpha, flip_y);
 }
 
-bool WebMediaPlayerImpl::PrepareVideoFrameForWebGL(
-    gpu::gles2::GLES2Interface* gl,
-    unsigned target,
-    unsigned texture,
-    int already_uploaded_id,
-    WebMediaPlayer::VideoFrameUploadMetadata* out_metadata) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  TRACE_EVENT0("media", "WebMediaPlayerImpl::PrepareVideoFrameForWebGL");
-
-  // TODO(crbug.com/776222): How to deal with protected frames.
-  scoped_refptr<VideoFrame> video_frame = GetCurrentFrameFromCompositor();
-  if (!video_frame.get() || !video_frame->HasTextures()) {
-    return false;
-  }
-  if (out_metadata) {
-    // WebGL last-uploaded-frame-metadata API is enabled.
-    ComputeFrameUploadMetadata(video_frame.get(), already_uploaded_id,
-                               out_metadata);
-    if (out_metadata->skipped) {
-      // Skip uploading this frame.
-      return true;
-    }
-  }
-
-  Context3D context_3d;
-  if (context_provider_) {
-    context_3d = Context3D(context_provider_->ContextGL(),
-                           context_provider_->GrContext());
-  }
-
-  return video_renderer_.PrepareVideoFrameForWebGL(
-      context_3d, gl, video_frame.get(), target, texture);
-}
-
 // static
 void WebMediaPlayerImpl::ComputeFrameUploadMetadata(
     VideoFrame* frame,
@@ -1389,7 +1342,19 @@ void WebMediaPlayerImpl::SetContentDecryptionModule(
   DCHECK(!set_cdm_result_);
   set_cdm_result_.reset(new blink::WebContentDecryptionModuleResult(result));
 
-  SetCdmInternal(cdm);
+  // Recreate the watch time reporter if necessary.
+  const bool was_encrypted = is_encrypted_;
+  is_encrypted_ = true;
+  if (!was_encrypted) {
+    media_metrics_provider_->SetIsEME();
+    if (watch_time_reporter_)
+      CreateWatchTimeReporter();
+  }
+
+  // For now MediaCapabilities only handles clear content.
+  video_decode_stats_reporter_.reset();
+
+  SetCdm(cdm);
 }
 
 void WebMediaPlayerImpl::OnEncryptedMediaInitData(
@@ -1406,13 +1371,10 @@ void WebMediaPlayerImpl::OnEncryptedMediaInitData(
     media_metrics_provider_->SetIsEME();
     if (watch_time_reporter_)
       CreateWatchTimeReporter();
-
-    // |was_encrypted| = false means we didn't have a CDM prior to observing
-    // encrypted media init data. Reset the reporter until the CDM arrives. See
-    // SetCdmInternal().
-    DCHECK(!cdm_config_);
-    video_decode_stats_reporter_.reset();
   }
+
+  // For now MediaCapabilities only handles clear content.
+  video_decode_stats_reporter_.reset();
 
   encrypted_client_->Encrypted(
       ConvertToWebInitDataType(init_data_type), init_data.data(),
@@ -1452,38 +1414,17 @@ void WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated(
   }
 }
 
-void WebMediaPlayerImpl::SetCdmInternal(
-    blink::WebContentDecryptionModule* cdm) {
+void WebMediaPlayerImpl::SetCdm(blink::WebContentDecryptionModule* cdm) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(cdm);
 
-  const bool was_encrypted = is_encrypted_;
-  is_encrypted_ = true;
-
-  // Recreate the watch time reporter if necessary.
-  if (!was_encrypted) {
-    media_metrics_provider_->SetIsEME();
-    if (watch_time_reporter_)
-      CreateWatchTimeReporter();
-  }
-
-  WebContentDecryptionModuleImpl* web_cdm =
-      ToWebContentDecryptionModuleImpl(cdm);
-  auto cdm_context_ref = web_cdm->GetCdmContextRef();
+  auto cdm_context_ref =
+      ToWebContentDecryptionModuleImpl(cdm)->GetCdmContextRef();
   if (!cdm_context_ref) {
     NOTREACHED();
     OnCdmAttached(false);
     return;
   }
-
-  // Arrival of |cdm_config_| and |key_system_| unblocks recording of encrypted
-  // stats. Attempt to create the stats reporter. Note, we do NOT guard this
-  // within !was_encypted above because often the CDM arrives after the call to
-  // OnEncryptedMediaInitData().
-  cdm_config_ = web_cdm->GetCdmConfig();
-  key_system_ = web_cdm->GetKeySystem();
-  DCHECK(!key_system_.empty());
-  CreateVideoDecodeStatsReporter();
 
   CdmContext* cdm_context = cdm_context_ref->GetCdmContext();
   DCHECK(cdm_context);
@@ -1896,27 +1837,15 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
   if (!HasVideo())
     return;
 
-  // Only record stats from the local pipeline.
-  if (is_flinging_ || is_remote_rendering_ || using_media_player_renderer_)
-    return;
-
   // Stats reporter requires a valid config. We may not have one for HLS cases
   // where URL demuxer doesn't know details of the stream.
   if (!pipeline_metadata_.video_decoder_config.IsValidConfig())
     return;
 
-  // Profile must be known for use as index to save the reported stats.
-  if (pipeline_metadata_.video_decoder_config.profile() ==
-      VIDEO_CODEC_PROFILE_UNKNOWN) {
+  // For now MediaCapabilities only handles clear content.
+  // TODO(chcunningham): Report encrypted stats.
+  if (is_encrypted_)
     return;
-  }
-
-  // CdmConfig must be provided for use as index to save encrypted stats.
-  if (is_encrypted_ && !cdm_config_) {
-    return;
-  } else if (cdm_config_) {
-    DCHECK(!key_system_.empty());
-  }
 
   mojom::VideoDecodeStatsRecorderPtr recorder;
   media_metrics_provider_->AcquireVideoDecodeStatsRecorder(
@@ -1927,8 +1856,7 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
       std::move(recorder),
       base::Bind(&WebMediaPlayerImpl::GetPipelineStatistics,
                  base::Unretained(this)),
-      pipeline_metadata_.video_decoder_config.profile(),
-      pipeline_metadata_.natural_size, key_system_, cdm_config_,
+      pipeline_metadata_.video_decoder_config,
       frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
 
   if (delegate_->IsFrameHidden())
@@ -2138,11 +2066,8 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
   pipeline_metadata_.natural_size = rotated_size;
   UpdateSecondaryProperties();
 
-  if (video_decode_stats_reporter_ &&
-      !video_decode_stats_reporter_->MatchesBucketedNaturalSize(
-          pipeline_metadata_.natural_size)) {
-    CreateVideoDecodeStatsReporter();
-  }
+  if (video_decode_stats_reporter_)
+    video_decode_stats_reporter_->OnNaturalSizeChanged(rotated_size);
 
   client_->SizeChanged();
 
@@ -2184,19 +2109,19 @@ void WebMediaPlayerImpl::OnVideoConfigChange(const VideoDecoderConfig& config) {
 
   const bool codec_change =
       pipeline_metadata_.video_decoder_config.codec() != config.codec();
-  const bool codec_profile_change =
-      pipeline_metadata_.video_decoder_config.profile() != config.profile();
 
+  // TODO(chcunningham): Observe changes to video codec profile to signal
+  // beginning of a new Media Capabilities playback report.
   pipeline_metadata_.video_decoder_config = config;
 
   if (observer_)
     observer_->OnMetadataChanged(pipeline_metadata_);
 
+  if (video_decode_stats_reporter_)
+    video_decode_stats_reporter_->OnVideoConfigChanged(config);
+
   if (codec_change)
     UpdateSecondaryProperties();
-
-  if (video_decode_stats_reporter_ && codec_profile_change)
-    CreateVideoDecodeStatsReporter();
 }
 
 void WebMediaPlayerImpl::OnVideoAverageKeyframeDistanceUpdate() {
@@ -2595,7 +2520,6 @@ void WebMediaPlayerImpl::StartPipeline() {
                      BindToCurrentLoop(base::BindOnce(
                          &WebMediaPlayerImpl::OnFirstFrame, AsWeakPtr()))));
 
-#if defined(OS_ANDROID)
   if (demuxer_found_hls_ ||
       renderer_factory_selector_->GetCurrentFactory()
               ->GetRequiredMediaResourceType() == MediaResource::Type::URL) {
@@ -2607,14 +2531,12 @@ void WebMediaPlayerImpl::StartPipeline() {
     // reporter.
     video_decode_stats_reporter_.reset();
 
-    demuxer_.reset(new MediaUrlDemuxer(
-        media_task_runner_, loaded_url_, frame_->GetDocument().SiteForCookies(),
-        allow_media_player_renderer_credentials_));
+    demuxer_.reset(new MediaUrlDemuxer(media_task_runner_, loaded_url_,
+                                       frame_->GetDocument().SiteForCookies()));
     pipeline_controller_.Start(Pipeline::StartType::kNormal, demuxer_.get(),
                                this, false, false);
     return;
   }
-#endif  // defined(OS_ANDROID)
 
   // Figure out which demuxer to use.
   if (load_type_ != kLoadTypeMediaSource) {
@@ -3184,19 +3106,16 @@ base::Optional<viz::SurfaceId> WebMediaPlayerImpl::GetSurfaceId() {
   return bridge_->GetSurfaceId();
 }
 
-bool WebMediaPlayerImpl::ShouldPausePlaybackWhenHidden() const {
-  // Audio only stream is allowed to play when in background.
-  // TODO: We should check IsBackgroundOptimizationCandidate here. But we need
-  // to move the logic of checking video frames out of that function.
-  if (!HasVideo())
-    return false;
-
+bool WebMediaPlayerImpl::ShouldPauseVideoWhenHidden() const {
   if (!is_background_video_playback_enabled_)
     return true;
 
   // If suspending background video, pause any video that's not remoted or
   // not unlocked to play in the background.
   if (IsBackgroundSuspendEnabled(this)) {
+    if (!HasVideo())
+      return false;
+
 #if defined(OS_ANDROID)
     if (is_flinging_)
       return false;
@@ -3265,7 +3184,7 @@ bool WebMediaPlayerImpl::IsBackgroundOptimizationCandidate() const {
 
 void WebMediaPlayerImpl::UpdateBackgroundVideoOptimizationState() {
   if (IsHidden()) {
-    if (ShouldPausePlaybackWhenHidden()) {
+    if (ShouldPauseVideoWhenHidden()) {
       PauseVideoIfNeeded();
     } else if (update_background_status_cb_.IsCancelled()) {
       // Only trigger updates when we don't have one already scheduled.
@@ -3372,10 +3291,6 @@ void WebMediaPlayerImpl::ReportTimeFromForegroundToFirstFrame(
 void WebMediaPlayerImpl::SwitchToRemoteRenderer(
     const std::string& remote_device_friendly_name) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  DCHECK(!is_remote_rendering_);
-  is_remote_rendering_ = true;
-
   DCHECK(!disable_pipeline_auto_suspend_);
   disable_pipeline_auto_suspend_ = true;
 
@@ -3394,11 +3309,8 @@ void WebMediaPlayerImpl::SwitchToRemoteRenderer(
 void WebMediaPlayerImpl::SwitchToLocalRenderer(
     MediaObserverClient::ReasonToSwitchToLocal reason) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (!is_remote_rendering_)
+  if (!disable_pipeline_auto_suspend_)
     return;  // Is currently with local renderer.
-  is_remote_rendering_ = false;
-
-  DCHECK(disable_pipeline_auto_suspend_);
   disable_pipeline_auto_suspend_ = false;
 
   // Capabilities reporting may resume now that playback is local.

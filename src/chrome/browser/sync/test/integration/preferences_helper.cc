@@ -74,12 +74,6 @@ void ChangeStringPref(int index,
     GetVerifierPrefs()->SetString(pref_name, new_value);
 }
 
-void ClearPref(int index, const char* pref_name) {
-  GetPrefs(index)->ClearPref(pref_name);
-  if (test()->use_verifier())
-    GetVerifierPrefs()->ClearPref(pref_name);
-}
-
 void ChangeFilePathPref(int index,
                         const char* pref_name,
                         const base::FilePath& new_value) {
@@ -213,23 +207,6 @@ bool StringPrefMatches(const char* pref_name) {
   return true;
 }
 
-bool ClearedPrefMatches(const char* pref_name) {
-  if (test()->use_verifier()) {
-    if (GetVerifierPrefs()->GetUserPrefValue(pref_name)) {
-      return false;
-    }
-  }
-
-  for (int i = 0; i < test()->num_clients(); ++i) {
-    if (GetPrefs(i)->GetUserPrefValue(pref_name)) {
-      DVLOG(1) << "Preference " << pref_name << " isn't cleared in"
-               << " profile " << i << ".";
-      return false;
-    }
-  }
-  return true;
-}
-
 bool FilePathPrefMatches(const char* pref_name) {
   base::FilePath reference_value;
   if (test()->use_verifier()) {
@@ -320,11 +297,4 @@ StringPrefMatchChecker::StringPrefMatchChecker(const char* path)
 
 bool StringPrefMatchChecker::IsExitConditionSatisfied() {
   return preferences_helper::StringPrefMatches(GetPath());
-}
-
-ClearedPrefMatchChecker::ClearedPrefMatchChecker(const char* path)
-    : PrefMatchChecker(path) {}
-
-bool ClearedPrefMatchChecker::IsExitConditionSatisfied() {
-  return preferences_helper::ClearedPrefMatches(GetPath());
 }

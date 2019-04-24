@@ -17,14 +17,13 @@
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 #include "content/browser/background_fetch/background_fetch_event_dispatcher.h"
 #include "content/browser/background_fetch/storage/get_initialization_data_task.h"
-#include "content/browser/devtools/devtools_background_services_context.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 namespace storage {
 class QuotaManagerProxy;
-}  // namespace storage
+}
 
 namespace content {
 
@@ -50,9 +49,9 @@ class CONTENT_EXPORT BackgroundFetchContext
   BackgroundFetchContext(
       BrowserContext* browser_context,
       const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
-      const scoped_refptr<CacheStorageContextImpl>& cache_storage_context,
-      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
-      scoped_refptr<DevToolsBackgroundServicesContext> devtools_context);
+      const scoped_refptr<content::CacheStorageContextImpl>&
+          cache_storage_context,
+      scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy);
 
   void InitializeOnIOThread();
 
@@ -96,15 +95,13 @@ class CONTENT_EXPORT BackgroundFetchContext
   void MatchRequests(
       const BackgroundFetchRegistrationId& registration_id,
       std::unique_ptr<BackgroundFetchRequestMatchParams> match_params,
-      blink::mojom::BackgroundFetchRegistrationService::MatchRequestsCallback
-          callback);
+      blink::mojom::BackgroundFetchService::MatchRequestsCallback callback);
 
   // Aborts the Background Fetch for the |registration_id|. The callback will be
   // invoked with INVALID_ID if the registration has already completed or
   // aborted, STORAGE_ERROR if an I/O error occurs, or NONE for success.
-  void Abort(
-      const BackgroundFetchRegistrationId& registration_id,
-      blink::mojom::BackgroundFetchRegistrationService::AbortCallback callback);
+  void Abort(const BackgroundFetchRegistrationId& registration_id,
+             blink::mojom::BackgroundFetchService::AbortCallback callback);
 
   // Registers the |observer| to be notified of progress events for the
   // registration identified by |unique_id| whenever they happen. The observer
@@ -122,8 +119,7 @@ class CONTENT_EXPORT BackgroundFetchContext
       const BackgroundFetchRegistrationId& registration_id,
       const base::Optional<std::string>& title,
       const base::Optional<SkBitmap>& icon,
-      blink::mojom::BackgroundFetchRegistrationService::UpdateUICallback
-          callback);
+      blink::mojom::BackgroundFetchService::UpdateUICallback callback);
 
   BackgroundFetchRegistrationNotifier* registration_notifier() const {
     return registration_notifier_.get();
@@ -151,22 +147,20 @@ class CONTENT_EXPORT BackgroundFetchContext
   void DidGetRegistration(
       blink::mojom::BackgroundFetchService::GetRegistrationCallback callback,
       blink::mojom::BackgroundFetchError error,
-      BackgroundFetchRegistrationId registration_id,
-      blink::mojom::BackgroundFetchRegistrationDataPtr registration_data);
+      blink::mojom::BackgroundFetchRegistrationPtr registration);
 
   // Called when a new registration has been created by the data manager.
   void DidCreateRegistration(
       const BackgroundFetchRegistrationId& registration_id,
       blink::mojom::BackgroundFetchError error,
-      blink::mojom::BackgroundFetchRegistrationDataPtr registration_data);
+      blink::mojom::BackgroundFetchRegistrationPtr registration);
 
   // Called when the sequence of matching settled fetches have been received
   // from storage, and |callback| can be invoked to pass these on to the
   // renderer.
   void DidGetMatchingRequests(
       const std::string& unique_id,
-      blink::mojom::BackgroundFetchRegistrationService::MatchRequestsCallback
-          callback,
+      blink::mojom::BackgroundFetchService::MatchRequestsCallback callback,
       blink::mojom::BackgroundFetchError error,
       std::vector<blink::mojom::BackgroundFetchSettledFetchPtr>
           settled_fetches);
@@ -196,7 +190,6 @@ class CONTENT_EXPORT BackgroundFetchContext
 
   std::unique_ptr<BackgroundFetchDataManager> data_manager_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-  scoped_refptr<DevToolsBackgroundServicesContext> devtools_context_;
   std::unique_ptr<BackgroundFetchRegistrationNotifier> registration_notifier_;
   BackgroundFetchDelegateProxy delegate_proxy_;
   std::unique_ptr<BackgroundFetchScheduler> scheduler_;

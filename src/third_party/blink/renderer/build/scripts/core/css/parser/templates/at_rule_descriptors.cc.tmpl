@@ -85,18 +85,18 @@ CSSPropertyID AtRuleDescriptorIDAsCSSPropertyID(AtRuleDescriptorID id) {
   switch (id) {
 {% for descriptor in descriptors %}
   case AtRuleDescriptorID::{{descriptor.name.to_upper_camel_case()}}:
-    return CSSPropertyID::{{descriptor.name.to_enum_value()}};
+    return CSSProperty{{descriptor.name.to_upper_camel_case()}};
 {% endfor %}
   default:
     NOTREACHED();
-    return CSSPropertyID::kInvalid;
+    return CSSPropertyInvalid;
   }
 }
 
 AtRuleDescriptorID CSSPropertyIDAsAtRuleDescriptor(CSSPropertyID id) {
   switch (id) {
 {% for descriptor in descriptors %}
-  case CSSPropertyID::{{descriptor.name.to_enum_value()}}:
+  case CSSProperty{{descriptor.name.to_upper_camel_case()}}:
     return AtRuleDescriptorID::{{descriptor.name.to_upper_camel_case()}};
 {% endfor %}
   default:

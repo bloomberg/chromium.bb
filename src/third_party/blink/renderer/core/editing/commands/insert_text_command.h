@@ -37,9 +37,17 @@ class CORE_EXPORT InsertTextCommand : public CompositeEditCommand {
     kRebalanceAllWhitespaces
   };
 
+  static InsertTextCommand* Create(
+      Document& document,
+      const String& text,
+      RebalanceType rebalance_type = kRebalanceLeadingAndTrailingWhitespaces) {
+    return MakeGarbageCollected<InsertTextCommand>(document, text,
+                                                   rebalance_type);
+  }
+
   InsertTextCommand(Document&,
                     const String& text,
-                    RebalanceType = kRebalanceLeadingAndTrailingWhitespaces);
+                    RebalanceType);
 
   String TextDataForInputEvent() const final;
 

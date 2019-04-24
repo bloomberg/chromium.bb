@@ -41,6 +41,6 @@ source_set("unit_tests") {
   ]
 
   if (is_chromeos) {
-    deps += [ "//chromeos/system" ]
+    deps += [ "//chromeos:test_support" ]
   }
 }

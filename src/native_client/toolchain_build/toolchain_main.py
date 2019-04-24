@@ -5,8 +5,6 @@
 
 """Build NativeClient toolchain packages."""
 
-from __future__ import print_function
-
 import logging
 import optparse
 import os
@@ -54,8 +52,7 @@ def PrintAnnotatorURL(cloud_item):
 
 
 class BuildError(Exception):
-  pass
-
+    pass
 
 class PackageBuilder(object):
   """Module to build a setup of packages."""
@@ -170,7 +167,7 @@ class PackageBuilder(object):
       self.BuildAll()
       self.OutputPackagesInformation()
     except BuildError as e:
-      print(e)
+      print e
       return 1
     return 0
 
@@ -490,9 +487,8 @@ class PackageBuilder(object):
                       help='Log all logging into a log file.')
     options, targets = parser.parse_args(args)
     if options.trybot and options.buildbot:
-      print(
-          'ERROR: Tried to run with both --trybot and --buildbot.',
-          file=sys.stderr)
+      print >>sys.stderr, (
+          'ERROR: Tried to run with both --trybot and --buildbot.')
       sys.exit(1)
     if options.trybot or options.buildbot:
       options.bot = True
@@ -506,9 +502,8 @@ class PackageBuilder(object):
     self._options = options
     if not targets:
       if self._options.ignore_dependencies:
-        print(
-            'ERROR: A target must be specified if ignoring target dependencies',
-            file=sys.stderr)
+        print >>sys.stderr, (
+            'ERROR: A target must be specified if ignoring target dependencies')
         sys.exit(1)
       targets = sorted(packages.keys())
     targets = self.BuildOrder(targets)

@@ -29,6 +29,14 @@ void ThrottlingController::SetConditions(
 }
 
 // static
+base::Optional<base::UnguessableToken>
+ThrottlingController::GetProfileIDForNetLogSource(uint32_t net_log_source_id) {
+  if (!instance_)
+    return base::nullopt;
+  return instance_->GetProfileID(net_log_source_id);
+}
+
+// static
 ThrottlingNetworkInterceptor* ThrottlingController::GetInterceptor(
     uint32_t net_log_source_id) {
   if (!instance_)

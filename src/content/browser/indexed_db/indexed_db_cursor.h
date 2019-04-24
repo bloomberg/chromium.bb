@@ -36,9 +36,8 @@ class CONTENT_EXPORT IndexedDBCursor {
                 std::unique_ptr<blink::IndexedDBKey> key,
                 std::unique_ptr<blink::IndexedDBKey> primary_key,
                 blink::mojom::IDBCursor::CursorContinueCallback callback);
-  void PrefetchContinue(base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
-                        int number_to_fetch,
-                        blink::mojom::IDBCursor::PrefetchCallback callback);
+  void PrefetchContinue(int number_to_fetch,
+                        scoped_refptr<IndexedDBCallbacks> callbacks);
   leveldb::Status PrefetchReset(int used_prefetches, int unused_prefetches);
 
   void OnRemoveBinding(base::OnceClosure remove_binding_cb);
@@ -71,10 +70,8 @@ class CONTENT_EXPORT IndexedDBCursor {
       blink::mojom::IDBCursor::AdvanceCallback callback,
       IndexedDBTransaction* transaction);
   leveldb::Status CursorPrefetchIterationOperation(
-      base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
-      scoped_refptr<base::SequencedTaskRunner> idb_runner,
       int number_to_fetch,
-      blink::mojom::IDBCursor::PrefetchCallback callback,
+      scoped_refptr<IndexedDBCallbacks> callbacks,
       IndexedDBTransaction* transaction);
 
  private:

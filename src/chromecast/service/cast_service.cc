@@ -49,8 +49,4 @@ void CastService::Stop() {
   stopped_ = true;
 }
 
-void CastService::AccessibilityStateChanged(bool enabled) {
-  NOTIMPLEMENTED();
-}
-
 }  // namespace chromecast

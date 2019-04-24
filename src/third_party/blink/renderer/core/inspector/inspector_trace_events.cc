@@ -51,14 +51,14 @@ namespace blink {
 
 namespace {
 
-void* AsyncId(uint64_t identifier) {
+void* AsyncId(unsigned long identifier) {
   // This value should be odd to avoid collisions with regular pointers.
   return reinterpret_cast<void*>((identifier << 1) | 1);
 }
 
 std::unique_ptr<TracedValue> InspectorParseHtmlBeginData(Document* document,
                                                          unsigned start_line) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetInteger("startLine", start_line);
   value->SetString("frame", IdentifiersFactory::FrameId(document->GetFrame()));
   value->SetString("url", document->Url().GetString());
@@ -67,13 +67,13 @@ std::unique_ptr<TracedValue> InspectorParseHtmlBeginData(Document* document,
 }
 
 std::unique_ptr<TracedValue> InspectorParseHtmlEndData(unsigned end_line) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetInteger("endLine", end_line);
   return value;
 }
 
 std::unique_ptr<TracedValue> GetNavigationTracingData(Document* document) {
-  auto data = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> data = TracedValue::Create();
 
   data->SetString("navigationId",
                   IdentifiersFactory::LoaderId(document->Loader()));
@@ -102,7 +102,7 @@ void SetCallStack(TracedValue* value) {
 }
 
 void InspectorTraceEvents::WillSendRequest(
-    uint64_t identifier,
+    unsigned long identifier,
     DocumentLoader* loader,
     const KURL& fetch_context_url,
     const ResourceRequest& request,
@@ -117,7 +117,7 @@ void InspectorTraceEvents::WillSendRequest(
 }
 
 void InspectorTraceEvents::WillSendNavigationRequest(
-    uint64_t identifier,
+    unsigned long identifier,
     DocumentLoader* loader,
     const KURL& url,
     const AtomicString& http_method,
@@ -130,10 +130,10 @@ void InspectorTraceEvents::WillSendNavigationRequest(
 }
 
 void InspectorTraceEvents::DidReceiveResourceResponse(
-    uint64_t identifier,
+    unsigned long identifier,
     DocumentLoader* loader,
     const ResourceResponse& response,
-    const Resource*) {
+    Resource*) {
   LocalFrame* frame = loader ? loader->GetFrame() : nullptr;
   TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceReceiveResponse",
                        TRACE_EVENT_SCOPE_THREAD, "data",
@@ -141,7 +141,7 @@ void InspectorTraceEvents::DidReceiveResourceResponse(
                            loader, identifier, frame, response));
 }
 
-void InspectorTraceEvents::DidReceiveData(uint64_t identifier,
+void InspectorTraceEvents::DidReceiveData(unsigned long identifier,
                                           DocumentLoader* loader,
                                           const char* data,
                                           uint64_t encoded_data_length) {
@@ -154,7 +154,7 @@ void InspectorTraceEvents::DidReceiveData(uint64_t identifier,
                               AsyncId(identifier), "data");
 }
 
-void InspectorTraceEvents::DidFinishLoading(uint64_t identifier,
+void InspectorTraceEvents::DidFinishLoading(unsigned long identifier,
                                             DocumentLoader* loader,
                                             TimeTicks finish_time,
                                             int64_t encoded_data_length,
@@ -170,7 +170,7 @@ void InspectorTraceEvents::DidFinishLoading(uint64_t identifier,
                               AsyncId(identifier));
 }
 
-void InspectorTraceEvents::DidFailLoading(uint64_t identifier,
+void InspectorTraceEvents::DidFailLoading(unsigned long identifier,
                                           DocumentLoader* loader,
                                           const ResourceError&) {
   TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceFinish",
@@ -324,7 +324,6 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoFullScreen)
     DEFINE_STRING_MAPPING(PseudoFullScreenAncestor)
     DEFINE_STRING_MAPPING(PseudoFullscreen)
-    DEFINE_STRING_MAPPING(PseudoPictureInPicture)
     DEFINE_STRING_MAPPING(PseudoInRange)
     DEFINE_STRING_MAPPING(PseudoOutOfRange)
     DEFINE_STRING_MAPPING(PseudoWebKitCustomElement)
@@ -424,7 +423,7 @@ std::unique_ptr<TracedValue> FillCommonPart(
     ContainerNode& node,
     const InvalidationSet& invalidation_set,
     const char* invalidated_selector) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame",
                    IdentifiersFactory::FrameId(node.GetDocument().GetFrame()));
   SetNodeInfo(value.get(), &node, "nodeId", "nodeName");
@@ -548,7 +547,7 @@ const char inspector_style_invalidator_invalidate_event::
 namespace inspector_style_invalidator_invalidate_event {
 std::unique_ptr<TracedValue> FillCommonPart(ContainerNode& node,
                                             const char* reason) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame",
                    IdentifiersFactory::FrameId(node.GetDocument().GetFrame()));
   SetNodeInfo(value.get(), &node, "nodeId", "nodeName");
@@ -596,7 +595,7 @@ inspector_style_recalc_invalidation_tracking_event::Data(
     const StyleChangeReasonForTracing& reason) {
   DCHECK(node);
 
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame",
                    IdentifiersFactory::FrameId(node->GetDocument().GetFrame()));
   SetNodeInfo(value.get(), node, "nodeId", "nodeName");
@@ -615,7 +614,7 @@ std::unique_ptr<TracedValue> inspector_layout_event::BeginData(
   frame.View()->CountObjectsNeedingLayout(needs_layout_objects, total_objects,
                                           is_partial);
 
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetInteger("dirtyObjects", needs_layout_objects);
   value->SetInteger("totalObjects", total_objects);
   value->SetBoolean("partialLayout", is_partial);
@@ -657,7 +656,7 @@ std::unique_ptr<TracedValue> inspector_layout_event::EndData(
   Vector<FloatQuad> quads;
   root_for_this_layout->AbsoluteQuads(quads);
 
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   if (quads.size() >= 1) {
     CreateQuad(value.get(), "root", quads[0]);
     SetGeneratingNodeInfo(value.get(), root_for_this_layout, "rootNode");
@@ -700,14 +699,14 @@ const char kPaddingChanged[] = "Padding changed";
 const char kTextControlChanged[] = "Text control changed";
 const char kSvgChanged[] = "SVG changed";
 const char kScrollbarChanged[] = "Scrollbar changed";
-const char kDisplayLock[] = "Display lock";
+const char kDisplayLockCommitting[] = "Display lock committing";
 }  // namespace layout_invalidation_reason
 
 std::unique_ptr<TracedValue> inspector_layout_invalidation_tracking_event::Data(
     const LayoutObject* layout_object,
     LayoutInvalidationReasonForTracing reason) {
   DCHECK(layout_object);
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame",
                    IdentifiersFactory::FrameId(layout_object->GetFrame()));
   SetGeneratingNodeInfo(value.get(), layout_object, "nodeId", "nodeName");
@@ -718,7 +717,7 @@ std::unique_ptr<TracedValue> inspector_layout_invalidation_tracking_event::Data(
 
 std::unique_ptr<TracedValue> inspector_paint_invalidation_tracking_event::Data(
     const LayoutObject& layout_object) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame",
                    IdentifiersFactory::FrameId(layout_object.GetFrame()));
   const auto* paint_container =
@@ -731,11 +730,11 @@ std::unique_ptr<TracedValue> inspector_paint_invalidation_tracking_event::Data(
 
 std::unique_ptr<TracedValue> inspector_change_resource_priority_event::Data(
     DocumentLoader* loader,
-    uint64_t identifier,
+    unsigned long identifier,
     const ResourceLoadPriority& load_priority) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
 
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("requestId", request_id);
   value->SetString("priority", ResourcePriorityString(load_priority));
   return value;
@@ -743,12 +742,15 @@ std::unique_ptr<TracedValue> inspector_change_resource_priority_event::Data(
 
 std::unique_ptr<TracedValue> inspector_send_request_event::Data(
     DocumentLoader* loader,
-    uint64_t identifier,
+    unsigned long identifier,
     LocalFrame* frame,
     const ResourceRequest& request) {
-  auto value = std::make_unique<TracedValue>();
-  value->SetString("requestId",
-                   IdentifiersFactory::RequestId(loader, identifier));
+  String request_id = IdentifiersFactory::RequestId(loader, identifier);
+  if (request.GetFrameType() != network::mojom::RequestContextFrameType::kNone)
+    request_id = IdentifiersFactory::LoaderId(loader);
+
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
+  value->SetString("requestId", request_id);
   value->SetString("frame", IdentifiersFactory::FrameId(frame));
   value->SetString("url", request.Url().GetString());
   value->SetString("requestMethod", request.HttpMethod());
@@ -761,11 +763,11 @@ std::unique_ptr<TracedValue> inspector_send_request_event::Data(
 
 std::unique_ptr<TracedValue> inspector_send_navigation_request_event::Data(
     DocumentLoader* loader,
-    uint64_t identifier,
+    unsigned long identifier,
     LocalFrame* frame,
     const KURL& url,
     const AtomicString& http_method) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("requestId", IdentifiersFactory::LoaderId(loader));
   value->SetString("frame", IdentifiersFactory::FrameId(frame));
   value->SetString("url", url.GetString());
@@ -813,12 +815,12 @@ void RecordTiming(const ResourceLoadTiming& timing, TracedValue* value) {
 
 std::unique_ptr<TracedValue> inspector_receive_response_event::Data(
     DocumentLoader* loader,
-    uint64_t identifier,
+    unsigned long identifier,
     LocalFrame* frame,
     const ResourceResponse& response) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
 
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("requestId", request_id);
   value->SetString("frame", IdentifiersFactory::FrameId(frame));
   value->SetInteger("statusCode", response.HttpStatusCode());
@@ -838,12 +840,12 @@ std::unique_ptr<TracedValue> inspector_receive_response_event::Data(
 
 std::unique_ptr<TracedValue> inspector_receive_data_event::Data(
     DocumentLoader* loader,
-    uint64_t identifier,
+    unsigned long identifier,
     LocalFrame* frame,
     uint64_t encoded_data_length) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
 
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("requestId", request_id);
   value->SetString("frame", IdentifiersFactory::FrameId(frame));
   value->SetDouble("encodedDataLength", encoded_data_length);
@@ -852,14 +854,14 @@ std::unique_ptr<TracedValue> inspector_receive_data_event::Data(
 
 std::unique_ptr<TracedValue> inspector_resource_finish_event::Data(
     DocumentLoader* loader,
-    uint64_t identifier,
+    unsigned long identifier,
     TimeTicks finish_time,
     bool did_fail,
     int64_t encoded_data_length,
     int64_t decoded_body_length) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
 
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("requestId", request_id);
   value->SetBoolean("didFail", did_fail);
   value->SetDouble("encodedDataLength", encoded_data_length);
@@ -877,7 +879,7 @@ static LocalFrame* FrameForExecutionContext(ExecutionContext* context) {
 
 static std::unique_ptr<TracedValue> GenericTimerData(ExecutionContext* context,
                                                      int timer_id) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetInteger("timerId", timer_id);
   if (LocalFrame* frame = FrameForExecutionContext(context))
     value->SetString("frame", IdentifiersFactory::FrameId(frame));
@@ -913,7 +915,7 @@ std::unique_ptr<TracedValue> inspector_timer_fire_event::Data(
 std::unique_ptr<TracedValue> inspector_animation_frame_event::Data(
     ExecutionContext* context,
     int callback_id) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetInteger("id", callback_id);
   if (auto* document = DynamicTo<Document>(context)) {
     value->SetString("frame",
@@ -927,7 +929,7 @@ std::unique_ptr<TracedValue> inspector_animation_frame_event::Data(
 
 std::unique_ptr<TracedValue> GenericIdleCallbackEvent(ExecutionContext* context,
                                                       int id) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetInteger("id", id);
   if (LocalFrame* frame = FrameForExecutionContext(context))
     value->SetString("frame", IdentifiersFactory::FrameId(frame));
@@ -963,7 +965,7 @@ std::unique_ptr<TracedValue> inspector_idle_callback_fire_event::Data(
 
 std::unique_ptr<TracedValue> inspector_parse_author_style_sheet_event::Data(
     const CSSStyleSheetResource* cached_style_sheet) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("styleSheetUrl", cached_style_sheet->Url().GetString());
   return value;
 }
@@ -971,7 +973,7 @@ std::unique_ptr<TracedValue> inspector_parse_author_style_sheet_event::Data(
 std::unique_ptr<TracedValue> inspector_xhr_ready_state_change_event::Data(
     ExecutionContext* context,
     XMLHttpRequest* request) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("url", request->Url().GetString());
   value->SetInteger("readyState", request->readyState());
   if (LocalFrame* frame = FrameForExecutionContext(context))
@@ -983,7 +985,7 @@ std::unique_ptr<TracedValue> inspector_xhr_ready_state_change_event::Data(
 std::unique_ptr<TracedValue> inspector_xhr_load_event::Data(
     ExecutionContext* context,
     XMLHttpRequest* request) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("url", request->Url().GetString());
   if (LocalFrame* frame = FrameForExecutionContext(context))
     value->SetString("frame", IdentifiersFactory::FrameId(frame));
@@ -1030,7 +1032,7 @@ std::unique_ptr<TracedValue> inspector_layer_invalidation_tracking_event::Data(
   const LayoutObject& paint_invalidation_container =
       layer->GetLayoutObject().ContainerForPaintInvalidation();
 
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame", IdentifiersFactory::FrameId(
                                 paint_invalidation_container.GetFrame()));
   SetGeneratingNodeInfo(value.get(), &paint_invalidation_container, "paintId");
@@ -1042,7 +1044,7 @@ std::unique_ptr<TracedValue> inspector_paint_event::Data(
     LayoutObject* layout_object,
     const LayoutRect& clip_rect,
     const GraphicsLayer* graphics_layer) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame",
                    IdentifiersFactory::FrameId(layout_object->GetFrame()));
   FloatQuad quad;
@@ -1056,7 +1058,7 @@ std::unique_ptr<TracedValue> inspector_paint_event::Data(
 }
 
 std::unique_ptr<TracedValue> FrameEventData(LocalFrame* frame) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   bool is_main_frame = frame && frame->IsMainFrame();
   value->SetBoolean("isMainFrame", is_main_frame);
   // TODO(dgozman): this does not work with OOPIF, so everyone who
@@ -1097,7 +1099,7 @@ std::unique_ptr<TracedValue> inspector_mark_load_event::Data(
 
 std::unique_ptr<TracedValue> inspector_scroll_layer_event::Data(
     LayoutObject* layout_object) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame",
                    IdentifiersFactory::FrameId(layout_object->GetFrame()));
   SetGeneratingNodeInfo(value.get(), layout_object, "nodeId");
@@ -1106,7 +1108,7 @@ std::unique_ptr<TracedValue> inspector_scroll_layer_event::Data(
 
 std::unique_ptr<TracedValue> inspector_update_layer_tree_event::Data(
     LocalFrame* frame) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame", IdentifiersFactory::FrameId(frame));
   return value;
 }
@@ -1114,7 +1116,7 @@ std::unique_ptr<TracedValue> inspector_update_layer_tree_event::Data(
 namespace {
 std::unique_ptr<TracedValue> FillLocation(const String& url,
                                           const TextPosition& text_position) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("url", url);
   value->SetInteger("lineNumber", text_position.line_.OneBasedInt());
   value->SetInteger("columnNumber", text_position.column_.OneBasedInt());
@@ -1133,10 +1135,10 @@ std::unique_ptr<TracedValue> inspector_evaluate_script_event::Data(
 }
 
 std::unique_ptr<TracedValue> inspector_parse_script_event::Data(
-    uint64_t identifier,
+    unsigned long identifier,
     const String& url) {
   String request_id = IdentifiersFactory::RequestId(nullptr, identifier);
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("requestId", request_id);
   value->SetString("url", url);
   return value;
@@ -1194,7 +1196,7 @@ std::unique_ptr<TracedValue> inspector_compile_script_event::Data(
 std::unique_ptr<TracedValue> inspector_function_call_event::Data(
     ExecutionContext* context,
     const v8::Local<v8::Function>& function) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   if (LocalFrame* frame = FrameForExecutionContext(context))
     value->SetString("frame", IdentifiersFactory::FrameId(frame));
 
@@ -1220,7 +1222,7 @@ std::unique_ptr<TracedValue> inspector_paint_image_event::Data(
     const LayoutImage& layout_image,
     const FloatRect& src_rect,
     const FloatRect& dest_rect) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   SetGeneratingNodeInfo(value.get(), &layout_image, "nodeId");
   if (const ImageResourceContent* resource = layout_image.CachedImage())
     value->SetString("url", resource->Url().GetString());
@@ -1238,7 +1240,7 @@ std::unique_ptr<TracedValue> inspector_paint_image_event::Data(
 std::unique_ptr<TracedValue> inspector_paint_image_event::Data(
     const LayoutObject& owning_layout_object,
     const StyleImage& style_image) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   SetGeneratingNodeInfo(value.get(), &owning_layout_object, "nodeId");
   if (const ImageResourceContent* resource = style_image.CachedImage())
     value->SetString("url", resource->Url().GetString());
@@ -1250,7 +1252,7 @@ std::unique_ptr<TracedValue> inspector_paint_image_event::Data(
     const StyleImage& style_image,
     const FloatRect& src_rect,
     const FloatRect& dest_rect) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   if (node)
     SetNodeInfo(value.get(), node, "nodeId", nullptr);
   if (const ImageResourceContent* resource = style_image.CachedImage())
@@ -1269,7 +1271,7 @@ std::unique_ptr<TracedValue> inspector_paint_image_event::Data(
 std::unique_ptr<TracedValue> inspector_paint_image_event::Data(
     const LayoutObject* owning_layout_object,
     const ImageResourceContent& image_resource) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   SetGeneratingNodeInfo(value.get(), owning_layout_object, "nodeId");
   value->SetString("url", image_resource.Url().GetString());
   return value;
@@ -1282,7 +1284,7 @@ static size_t UsedHeapSize() {
 }
 
 std::unique_ptr<TracedValue> inspector_update_counters_event::Data() {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   if (IsMainThread()) {
     value->SetInteger("documents", InstanceCounters::CounterValue(
                                        InstanceCounters::kDocumentCounter));
@@ -1298,7 +1300,7 @@ std::unique_ptr<TracedValue> inspector_update_counters_event::Data() {
 
 std::unique_ptr<TracedValue> inspector_invalidate_layout_event::Data(
     LocalFrame* frame) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame", IdentifiersFactory::FrameId(frame));
   SetCallStack(value.get());
   return value;
@@ -1306,7 +1308,7 @@ std::unique_ptr<TracedValue> inspector_invalidate_layout_event::Data(
 
 std::unique_ptr<TracedValue> inspector_recalculate_styles_event::Data(
     LocalFrame* frame) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame", IdentifiersFactory::FrameId(frame));
   SetCallStack(value.get());
   return value;
@@ -1314,7 +1316,7 @@ std::unique_ptr<TracedValue> inspector_recalculate_styles_event::Data(
 
 std::unique_ptr<TracedValue> inspector_event_dispatch_event::Data(
     const Event& event) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("type", event.type());
   SetCallStack(value.get());
   return value;
@@ -1323,7 +1325,7 @@ std::unique_ptr<TracedValue> inspector_event_dispatch_event::Data(
 std::unique_ptr<TracedValue> inspector_time_stamp_event::Data(
     ExecutionContext* context,
     const String& message) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("message", message);
   if (LocalFrame* frame = FrameForExecutionContext(context))
     value->SetString("frame", IdentifiersFactory::FrameId(frame));
@@ -1336,7 +1338,7 @@ inspector_tracing_session_id_for_worker_event::Data(
     const base::UnguessableToken& parent_devtools_token,
     const KURL& url,
     PlatformThreadId worker_thread_id) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame",
                    IdentifiersFactory::IdFromToken(parent_devtools_token));
   value->SetString("url", url.GetString());
@@ -1349,7 +1351,7 @@ inspector_tracing_session_id_for_worker_event::Data(
 std::unique_ptr<TracedValue> inspector_tracing_started_in_frame::Data(
     const String& session_id,
     LocalFrame* frame) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("sessionId", session_id);
   value->SetString("page",
                    IdentifiersFactory::FrameId(&frame->LocalFrameRoot()));
@@ -1369,7 +1371,7 @@ std::unique_ptr<TracedValue> inspector_tracing_started_in_frame::Data(
 
 std::unique_ptr<TracedValue> inspector_set_layer_tree_id::Data(
     LocalFrame* frame) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("frame", IdentifiersFactory::FrameId(frame));
   WebLayerTreeView* layerTreeView =
       frame->GetPage()->GetChromeClient().GetWebLayerTreeView(frame);
@@ -1380,7 +1382,7 @@ std::unique_ptr<TracedValue> inspector_set_layer_tree_id::Data(
 
 std::unique_ptr<TracedValue> inspector_animation_event::Data(
     const Animation& animation) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("id", String::Number(animation.SequenceNumber()));
   value->SetString("state", animation.playState());
   if (const AnimationEffect* effect = animation.effect()) {
@@ -1395,7 +1397,7 @@ std::unique_ptr<TracedValue> inspector_animation_event::Data(
 
 std::unique_ptr<TracedValue> inspector_animation_state_event::Data(
     const Animation& animation) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("state", animation.playState());
   return value;
 }
@@ -1404,7 +1406,7 @@ std::unique_ptr<TracedValue> inspector_hit_test_event::EndData(
     const HitTestRequest& request,
     const HitTestLocation& location,
     const HitTestResult& result) {
-  auto value(std::make_unique<TracedValue>());
+  std::unique_ptr<TracedValue> value(TracedValue::Create());
   value->SetInteger("x", location.RoundedPoint().X());
   value->SetInteger("y", location.RoundedPoint().Y());
   if (location.IsRectBasedTest())
@@ -1424,7 +1426,7 @@ std::unique_ptr<TracedValue> inspector_hit_test_event::EndData(
 
 std::unique_ptr<TracedValue> inspector_async_task::Data(
     const StringView& name) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("name", name.ToString());
   return value;
 }

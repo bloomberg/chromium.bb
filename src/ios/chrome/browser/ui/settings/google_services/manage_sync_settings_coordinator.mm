@@ -7,16 +7,15 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/common/google_util.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_user_settings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#include "ios/chrome/browser/sync/sync_observer_bridge.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -30,6 +29,7 @@
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_browser_opener.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "net/base/mac/url_conversions.h"
+#import "services/identity/public/objc/identity_manager_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -37,11 +37,12 @@
 
 @interface ManageSyncSettingsCoordinator () <
     ChromeIdentityBrowserOpener,
+    IdentityManagerObserverBridgeDelegate,
     ManageSyncSettingsCommandHandler,
-    ManageSyncSettingsTableViewControllerPresentationDelegate,
-    SyncObserverModelBridge> {
-  // Sync observer.
-  std::unique_ptr<SyncObserverBridge> _syncObserver;
+    ManageSyncSettingsTableViewControllerPresentationDelegate> {
+  // Identity manager observer.
+  std::unique_ptr<identity::IdentityManagerObserverBridge>
+      _identityManagerObserverBridge;
 }
 
 // View controller.
@@ -52,18 +53,16 @@
 // Web and app activity view controller.
 @property(nonatomic, weak)
     UINavigationController* webAndAppSettingDetailsController;
-// Sync service.
-@property(nonatomic, assign, readonly) syncer::SyncService* syncService;
 
 @end
 
 @implementation ManageSyncSettingsCoordinator
 
 - (void)start {
-  DCHECK(self.dispatcher);
-  DCHECK(self.navigationController);
+  syncer::SyncService* syncService =
+      ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
   self.mediator = [[ManageSyncSettingsMediator alloc]
-      initWithSyncService:self.syncService
+      initWithSyncService:syncService
           userPrefService:self.browserState->GetPrefs()];
   self.mediator.syncSetupService =
       SyncSetupServiceFactory::GetForBrowserState(self.browserState);
@@ -75,15 +74,13 @@
   self.viewController.presentationDelegate = self;
   self.viewController.modelDelegate = self.mediator;
   self.mediator.consumer = self.viewController;
+  DCHECK(self.navigationController);
   [self.navigationController pushViewController:self.viewController
                                        animated:YES];
-  _syncObserver.reset(new SyncObserverBridge(self, self.syncService));
-}
-
-#pragma mark - Properties
-
-- (syncer::SyncService*)syncService {
-  return ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
+  identity::IdentityManager* identityManager =
+      IdentityManagerFactory::GetForBrowserState(self.browserState);
+  _identityManagerObserverBridge.reset(
+      new identity::IdentityManagerObserverBridge(identityManager, self));
 }
 
 #pragma mark - Private
@@ -95,8 +92,18 @@
   self.webAndAppSettingDetailsController = nil;
 }
 
-// Closes the Manage sync settings view controller.
-- (void)closeManageSyncSettings {
+#pragma mark - ManageSyncSettingsTableViewControllerPresentationDelegate
+
+- (void)manageSyncSettingsTableViewControllerWasPopped:
+    (ManageSyncSettingsTableViewController*)controller {
+  DCHECK_EQ(self.viewController, controller);
+  [self.delegate manageSyncSettingsCoordinatorWasPopped:self];
+}
+
+#pragma mark - IdentityManagerObserverBridgeDelegate
+
+- (void)onPrimaryAccountCleared:
+    (const CoreAccountInfo&)previousPrimaryAccountInfo {
   if (self.viewController.navigationController) {
     if (self.webAndAppSettingDetailsController) {
       [self.navigationController dismissViewControllerAnimated:NO
@@ -107,14 +114,6 @@
                                           animated:NO];
     [self.navigationController popViewControllerAnimated:YES];
   }
-}
-
-#pragma mark - ManageSyncSettingsTableViewControllerPresentationDelegate
-
-- (void)manageSyncSettingsTableViewControllerWasPopped:
-    (ManageSyncSettingsTableViewController*)controller {
-  DCHECK_EQ(self.viewController, controller);
-  [self.delegate manageSyncSettingsCoordinatorWasPopped:self];
 }
 
 #pragma mark - ChromeIdentityBrowserOpener
@@ -131,10 +130,12 @@
 
 - (void)openPassphraseDialog {
   DCHECK(self.mediator.shouldEncryptionItemBeEnabled);
+  syncer::SyncService* syncService =
+      ProfileSyncServiceFactory::GetForBrowserState(self.browserState);
   UIViewController<SettingsRootViewControlling>* controllerToPush;
   // If there was a sync error, prompt the user to enter the passphrase.
   // Otherwise, show the full encryption options.
-  if (self.syncService->GetUserSettings()->IsPassphraseRequired()) {
+  if (syncService->GetUserSettings()->IsPassphraseRequired()) {
     controllerToPush = [[SyncEncryptionPassphraseTableViewController alloc]
         initWithBrowserState:self.browserState];
   } else {
@@ -174,15 +175,6 @@
       GetApplicationContext()->GetApplicationLocale());
   OpenNewTabCommand* command = [OpenNewTabCommand commandWithURLFromChrome:url];
   [self.dispatcher closeSettingsUIAndOpenURL:command];
-}
-
-#pragma mark - SyncObserverModelBridge
-
-- (void)onSyncStateChanged {
-  if (self.syncService->GetDisableReasons() !=
-      syncer::SyncService::DISABLE_REASON_NONE) {
-    [self closeManageSyncSettings];
-  }
 }
 
 @end

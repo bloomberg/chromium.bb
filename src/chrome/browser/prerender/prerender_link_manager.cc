@@ -25,7 +25,6 @@
 #include "content/public/common/referrer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
-#include "third_party/blink/public/common/prerender/prerender_rel_type.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -42,8 +41,12 @@ namespace prerender {
 
 namespace {
 
+static_assert(PrerenderRelTypePrerender == 0x1,
+              "RelTypeHistogrameEnum must match PrerenderRelType");
+static_assert(PrerenderRelTypeNext == 0x2,
+              "RelTypeHistogramEnum must match PrerenderRelType");
 constexpr int kRelTypeHistogramEnumMax =
-    (blink::kPrerenderRelTypePrerender | blink::kPrerenderRelTypeNext) + 1;
+    (PrerenderRelTypePrerender | PrerenderRelTypeNext) + 1;
 
 void RecordLinkManagerAdded(const uint32_t rel_types) {
   UMA_HISTOGRAM_ENUMERATION("Prerender.RelTypesLinkAdded",
@@ -85,7 +88,7 @@ class PrerenderLinkManager::PendingPrerenderManager
   ~PendingPrerenderManager() override { CHECK(observed_launchers_.empty()); }
 
   void ObserveLauncher(PrerenderContents* launcher) {
-    DCHECK_EQ(FINAL_STATUS_UNKNOWN, launcher->final_status());
+    DCHECK_EQ(FINAL_STATUS_MAX, launcher->final_status());
     bool inserted = observed_launchers_.insert(launcher).second;
     if (inserted)
       launcher->AddObserver(this);
@@ -157,7 +160,7 @@ void PrerenderLinkManager::OnAddPrerender(int launcher_child_id,
       manager_->GetPrerenderContentsForRoute(launcher_child_id,
                                              render_view_route_id);
   if (prerender_contents &&
-      prerender_contents->final_status() != FINAL_STATUS_UNKNOWN) {
+      prerender_contents->final_status() != FINAL_STATUS_MAX) {
     // The launcher is a prerender about to be destroyed asynchronously, but
     // its AddLinkRelPrerender message raced with shutdown. Ignore it.
     DCHECK_NE(FINAL_STATUS_USED, prerender_contents->final_status());
@@ -347,7 +350,7 @@ void PrerenderLinkManager::StartPrerenders() {
       abandoned_prerenders.pop_front();
     }
 
-    if (!(blink::kPrerenderRelTypePrerender & it->rel_types)) {
+    if (!(PrerenderRelTypePrerender & it->rel_types)) {
       prerenders_.erase(it);
       continue;
     }

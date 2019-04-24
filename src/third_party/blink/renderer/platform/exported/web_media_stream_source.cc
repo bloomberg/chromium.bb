@@ -38,7 +38,6 @@
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -70,7 +69,7 @@ void WebMediaStreamSource::Initialize(const WebString& id,
                                       Type type,
                                       const WebString& name,
                                       bool remote) {
-  private_ = MakeGarbageCollected<MediaStreamSource>(
+  private_ = MediaStreamSource::Create(
       id, static_cast<MediaStreamSource::StreamType>(type), name, remote);
 }
 

@@ -6,11 +6,10 @@ package org.chromium.chrome.browser.crash;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Handler;
 
 import org.chromium.base.NonThreadSafe;
-import org.chromium.base.task.PostTask;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -56,7 +55,7 @@ class MinidumpUploadRetry implements NetworkChangeNotifier.ConnectionTypeObserve
     static void scheduleRetry(Context context, CrashReportingPermissionManager permissionManager) {
         // NetworkChangeNotifier is not thread safe. We will post to UI thread
         // instead since that's where it fires off notification changes.
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Scheduler(context, permissionManager));
+        new Handler(context.getMainLooper()).post(new Scheduler(context, permissionManager));
     }
 
     private MinidumpUploadRetry(

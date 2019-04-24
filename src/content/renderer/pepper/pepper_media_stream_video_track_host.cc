@@ -13,6 +13,8 @@
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/renderer/media/stream/media_stream_video_source.h"
+#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_util.h"
 #include "ppapi/c/pp_errors.h"
@@ -22,8 +24,6 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/media_stream_buffer.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 using media::VideoFrame;
@@ -177,7 +177,7 @@ void ConvertFromMediaVideoFrame(const scoped_refptr<media::VideoFrame>& src,
 namespace content {
 
 // Internal class used for delivering video frames on the IO-thread to
-// the blink::MediaStreamVideoSource implementation.
+// the MediaStreamVideoSource implementation.
 class PepperMediaStreamVideoTrackHost::FrameDeliverer
     : public base::RefCountedThreadSafe<FrameDeliverer> {
  public:
@@ -303,7 +303,7 @@ void PepperMediaStreamVideoTrackHost::InitBuffers() {
 }
 
 void PepperMediaStreamVideoTrackHost::OnClose() {
-  blink::MediaStreamVideoSink::DisconnectFromTrack();
+  MediaStreamVideoSink::DisconnectFromTrack();
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -409,7 +409,7 @@ void PepperMediaStreamVideoTrackHost::OnVideoFrame(
 }
 
 class PepperMediaStreamVideoTrackHost::VideoSource final
-    : public blink::MediaStreamVideoSource {
+    : public MediaStreamVideoSource {
  public:
   explicit VideoSource(base::WeakPtr<PepperMediaStreamVideoTrackHost> host)
       : host_(std::move(host)) {}
@@ -446,13 +446,12 @@ class PepperMediaStreamVideoTrackHost::VideoSource final
 };
 
 void PepperMediaStreamVideoTrackHost::DidConnectPendingHostToResource() {
-  if (!blink::MediaStreamVideoSink::connected_track().IsNull())
+  if (!MediaStreamVideoSink::connected_track().IsNull())
     return;
-  blink::MediaStreamVideoSink::ConnectToTrack(
-      track_,
-      media::BindToCurrentLoop(
-          base::Bind(&PepperMediaStreamVideoTrackHost::OnVideoFrame,
-                     weak_factory_.GetWeakPtr())),
+  MediaStreamVideoSink::ConnectToTrack(
+      track_, media::BindToCurrentLoop(
+                  base::Bind(&PepperMediaStreamVideoTrackHost::OnVideoFrame,
+                             weak_factory_.GetWeakPtr())),
       false);
 }
 
@@ -515,13 +514,13 @@ void PepperMediaStreamVideoTrackHost::InitBlinkTrack() {
                            blink::WebMediaStreamSource::kTypeVideo,
                            blink::WebString::FromASCII(kPepperVideoSourceName),
                            false /* remote */);
-  blink::MediaStreamVideoSource* const source =
+  MediaStreamVideoSource* const source =
       new VideoSource(weak_factory_.GetWeakPtr());
   webkit_source.SetPlatformSource(
       base::WrapUnique(source));  // Takes ownership of |source|.
 
   const bool enabled = true;
-  track_ = blink::MediaStreamVideoTrack::CreateVideoTrack(
+  track_ = MediaStreamVideoTrack::CreateVideoTrack(
       source,
       base::Bind(&PepperMediaStreamVideoTrackHost::OnTrackStarted,
                  base::Unretained(this)),

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
-
 #include "components/safe_browsing/base_ui_manager.h"
 
 #include "base/bind.h"
@@ -63,7 +61,7 @@ class WhitelistUrlSet : public base::SupportsUserData::Data {
       *threat_type = found->second.first;
     return true;
   }
-  void InsertPending(const GURL url, SBThreatType threat_type) {
+  void InsertPending(const GURL& url, SBThreatType threat_type) {
     if (pending_.find(url) != pending_.end()) {
       pending_[url].first = threat_type;
       pending_[url].second++;
@@ -202,6 +200,7 @@ void BaseUIManager::DisplayBlockingPage(
         resource.callback_thread->PostTask(
             FROM_HERE, base::BindOnce(resource.callback, true));
       }
+
       return;
     }
   }
@@ -225,7 +224,6 @@ void BaseUIManager::DisplayBlockingPage(
       resource.callback_thread->PostTask(
           FROM_HERE, base::BindOnce(resource.callback, true));
     }
-
     return;
   }
 
@@ -240,16 +238,6 @@ void BaseUIManager::DisplayBlockingPage(
                        resource.web_contents_getter.Run(),
                        true /* A decision is now pending */,
                        resource.threat_type);
-  if (SafeBrowsingInterstitialsAreCommittedNavigations() &&
-      resource.IsMainPageLoadBlocked()) {
-    AddUnsafeResource(resource.url, resource);
-    // With committed interstitials we just cancel the load from here, the
-    // actual interstitial will be shown from the
-    // SafeBrowsingNavigationThrottle.
-    resource.callback_thread->PostTask(
-        FROM_HERE, base::BindOnce(resource.callback, false));
-    return;
-  }
   ShowBlockingPageForResource(resource);
 }
 
@@ -263,10 +251,6 @@ void BaseUIManager::CreateAndSendHitReport(const UnsafeResource& resource) {}
 void BaseUIManager::ShowBlockingPageForResource(
     const UnsafeResource& resource) {
   BaseBlockingPage::ShowBlockingPage(this, resource);
-}
-
-bool BaseUIManager::SafeBrowsingInterstitialsAreCommittedNavigations() {
-  return false;
 }
 
 // A SafeBrowsing hit is sent after a blocking page for malware/phishing
@@ -328,26 +312,6 @@ const GURL BaseUIManager::default_safe_page() const {
   return GURL(url::kAboutBlankURL);
 }
 
-void BaseUIManager::AddUnsafeResource(
-    GURL url,
-    security_interstitials::UnsafeResource resource) {
-  unsafe_resources_.push_back(std::make_pair(url, resource));
-}
-
-bool BaseUIManager::PopUnsafeResourceForURL(
-    GURL url,
-    security_interstitials::UnsafeResource* resource) {
-  for (auto it = unsafe_resources_.begin(); it != unsafe_resources_.end();
-       it++) {
-    if (it->first == url) {
-      *resource = it->second;
-      unsafe_resources_.erase(it);
-      return true;
-    }
-  }
-  return false;
-}
-
 void BaseUIManager::RemoveWhitelistUrlSet(const GURL& whitelist_url,
                                           WebContents* web_contents,
                                           bool from_pending_only) {
@@ -378,9 +342,8 @@ void BaseUIManager::RemoveWhitelistUrlSet(const GURL& whitelist_url,
   // remove the main-frame URL from the pending whitelist, so the
   // main-frame URL will have already been removed when the subsequent
   // blocking pages are dismissed.
-  if (site_list && site_list->ContainsPending(whitelist_url, nullptr)) {
+  if (site_list && site_list->ContainsPending(whitelist_url, nullptr))
     site_list->RemovePending(whitelist_url);
-  }
 
   if (!from_pending_only && site_list &&
       site_list->Contains(whitelist_url, nullptr)) {

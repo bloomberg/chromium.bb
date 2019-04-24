@@ -9,9 +9,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -90,8 +90,6 @@ class EmbedderRootNode : public EmbedderNode {
 };
 
 class NodeBuilder final {
-  USING_FAST_MALLOC(NodeBuilder);
-
  public:
   explicit NodeBuilder(Graph* graph) : graph_(graph) {}
 
@@ -175,6 +173,7 @@ class GC_PLUGIN_IGNORE(
                                  TraceDescriptor desc) final;
 
   // Unused Visitor overrides.
+  void VisitWithWrappers(void* object, TraceDescriptor desc) final {}
   void VisitWeak(void* object,
                  void** object_slot,
                  TraceDescriptor desc,
@@ -205,8 +204,6 @@ class GC_PLUGIN_IGNORE(
   };
 
   class State final {
-    USING_FAST_MALLOC(State);
-
    public:
     State(Traceable traceable, const char* name, DomTreeState dom_tree_state)
         : traceable_(traceable), name_(name), dom_tree_state_(dom_tree_state) {}
@@ -253,8 +250,6 @@ class GC_PLUGIN_IGNORE(
   // WorklistItemBase is used for different kinds of items that require
   // processing the regular worklist.
   class WorklistItemBase {
-    USING_FAST_MALLOC(WorklistItemBase);
-
    public:
     explicit WorklistItemBase(State* parent, State* to_process)
         : parent_(parent), to_process_(to_process) {}
@@ -444,7 +439,8 @@ void V8EmbedderGraphBuilder::BuildEmbedderGraph() {
   // Stage 3: find transitive closure of the unknown nodes.
   // Nodes reachable only via pending activities are treated as unknown.
   VisitPendingActivities();
-  VisitBlinkRoots();
+  if (RuntimeEnabledFeatures::HeapUnifiedGarbageCollectionEnabled())
+    VisitBlinkRoots();
   while (!unknown_worklist_.empty()) {
     auto item = std::move(unknown_worklist_.back());
     unknown_worklist_.pop_back();

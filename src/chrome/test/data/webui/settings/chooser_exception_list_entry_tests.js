@@ -68,12 +68,12 @@ suite('ChooserExceptionListEntry', function() {
         assertTrue(!!siteListEntry);
 
         // Ensure that the action menu button container is hidden.
-        const dotsMenu = siteListEntry.$$('#actionMenuButton');
+        const dotsMenu = siteListEntry.$$('#actionMenuButtonContainer');
         assertTrue(!!dotsMenu);
         assertTrue(dotsMenu.hidden);
 
         // Ensure that the reset button is not hidden.
-        const resetButton = siteListEntry.$$('#resetSite');
+        const resetButton = siteListEntry.$$('#resetSiteContainer');
         assertTrue(!!resetButton);
         assertFalse(resetButton.hidden);
 
@@ -101,12 +101,12 @@ suite('ChooserExceptionListEntry', function() {
         assertTrue(!!siteListEntry);
 
         // Ensure that the action menu button container is hidden.
-        const dotsMenu = siteListEntry.$$('#actionMenuButton');
+        const dotsMenu = siteListEntry.$$('#actionMenuButtonContainer');
         assertTrue(!!dotsMenu);
         assertTrue(dotsMenu.hidden);
 
         // Ensure that the reset button is hidden.
-        const resetButton = siteListEntry.$$('#resetSite');
+        const resetButton = siteListEntry.$$('#resetSiteContainer');
         assertTrue(!!resetButton);
         assertTrue(resetButton.hidden);
 
@@ -138,11 +138,12 @@ suite('ChooserExceptionListEntry', function() {
         assertEquals(siteListEntries.length, 2);
 
         // The first entry should be policy enforced.
-        const firstDotsMenu = siteListEntries[0].$$('#actionMenuButton');
+        const firstDotsMenu =
+            siteListEntries[0].$$('#actionMenuButtonContainer');
         assertTrue(!!firstDotsMenu);
         assertTrue(firstDotsMenu.hidden);
 
-        const firstResetButton = siteListEntries[0].$$('#resetSite');
+        const firstResetButton = siteListEntries[0].$$('#resetSiteContainer');
         assertTrue(!!firstResetButton);
         assertTrue(firstResetButton.hidden);
 
@@ -151,11 +152,12 @@ suite('ChooserExceptionListEntry', function() {
         assertTrue(!!firstPolicyIndicator);
 
         // The second entry should be user granted.
-        const secondDotsMenu = siteListEntries[1].$$('#actionMenuButton');
+        const secondDotsMenu =
+            siteListEntries[1].$$('#actionMenuButtonContainer');
         assertTrue(!!secondDotsMenu);
         assertTrue(secondDotsMenu.hidden);
 
-        const secondResetButton = siteListEntries[1].$$('#resetSite');
+        const secondResetButton = siteListEntries[1].$$('#resetSiteContainer');
         assertTrue(!!secondResetButton);
         assertFalse(secondResetButton.hidden);
 
@@ -220,16 +222,16 @@ suite('ChooserExceptionListEntry', function() {
         assertTrue(!!siteListEntry);
 
         // Ensure that the action menu button is hidden.
-        const dotsMenu = siteListEntry.$$('#actionMenuButton');
+        const dotsMenu = siteListEntry.$$('#actionMenuButtonContainer');
         assertTrue(!!dotsMenu);
         assertTrue(dotsMenu.hidden);
 
         // Ensure that the reset button is not hidden.
-        const resetButton = siteListEntry.$$('#resetSite');
+        const resetButton = siteListEntry.$$('#resetSiteContainer');
         assertTrue(!!resetButton);
         assertFalse(resetButton.hidden);
 
-        resetButton.click();
+        resetButton.querySelector('button').click();
         return browserProxy.whenCalled('resetChooserExceptionForSite')
             .then(function(args) {
               // The args should be the chooserType, origin, embeddingOrigin,

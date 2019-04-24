@@ -26,6 +26,8 @@
 
 // https://svgwg.org/svg2-draft/types.html#InterfaceSVGURIReference
 
-interface mixin SVGURIReference {
+[
+    NoInterfaceObject // Always used on target of 'implements'
+] interface SVGURIReference {
     [MeasureAs=SVG1DOMUriReference] readonly attribute SVGAnimatedString href;
 };

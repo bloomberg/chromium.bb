@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
@@ -50,10 +51,7 @@ class CC_EXPORT PageScaleAnimation {
       const gfx::SizeF& viewport_size,
       const gfx::SizeF& root_layer_size);
 
-  PageScaleAnimation(const PageScaleAnimation&) = delete;
   ~PageScaleAnimation();
-
-  PageScaleAnimation& operator=(const PageScaleAnimation&) = delete;
 
   // The following methods initialize the animation. Call one of them
   // immediately after construction to set the final scroll and page scale.
@@ -125,6 +123,8 @@ class CC_EXPORT PageScaleAnimation {
   base::TimeDelta duration_;
 
   const gfx::CubicBezier timing_function_;
+
+  DISALLOW_COPY_AND_ASSIGN(PageScaleAnimation);
 };
 
 }  // namespace cc

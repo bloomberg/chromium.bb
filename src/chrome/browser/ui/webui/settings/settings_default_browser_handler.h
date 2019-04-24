@@ -40,8 +40,6 @@ class DefaultBrowserHandler : public SettingsPageUIHandler {
   virtual void RecordSetAsDefaultUMA();
 
  private:
-  std::string check_default_callback_id_;
-
   // Called from WebUI to request the current state.
   void RequestDefaultBrowserState(const base::ListValue* args);
 

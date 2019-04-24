@@ -11,7 +11,6 @@
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -48,7 +47,6 @@ VoiceInteractionControllerClient::VoiceInteractionControllerClient() {
   notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::NotificationService::AllSources());
 
-  arc::ArcSessionManager::Get()->AddObserver(this);
   g_voice_interaction_controller_client_instance = this;
 
   if (chromeos::switches::IsAssistantEnabled()) {
@@ -59,7 +57,6 @@ VoiceInteractionControllerClient::VoiceInteractionControllerClient() {
 VoiceInteractionControllerClient::~VoiceInteractionControllerClient() {
   DCHECK_EQ(g_voice_interaction_controller_client_instance, this);
   g_voice_interaction_controller_client_instance = nullptr;
-  arc::ArcSessionManager::Get()->RemoveObserver(this);
 }
 
 void VoiceInteractionControllerClient::AddObserver(Observer* observer) {
@@ -233,7 +230,6 @@ void VoiceInteractionControllerClient::SetProfile(Profile* profile) {
   NotifyLaunchWithMicOpen();
   NotifyHotwordEnabled();
   NotifyHotwordAlwaysOn();
-  OnArcPlayStoreEnabledChanged(IsArcPlayStoreEnabledForProfile(profile_));
 }
 
 void VoiceInteractionControllerClient::Observe(
@@ -268,11 +264,6 @@ void VoiceInteractionControllerClient::ConnectToVoiceInteractionController() {
   if (connection)
     connection->GetConnector()->BindInterface(ash::mojom::kServiceName,
                                               &voice_interaction_controller_);
-}
-
-void VoiceInteractionControllerClient::OnArcPlayStoreEnabledChanged(
-    bool enabled) {
-  voice_interaction_controller_->NotifyArcPlayStoreEnabledChanged(enabled);
 }
 
 }  // namespace arc

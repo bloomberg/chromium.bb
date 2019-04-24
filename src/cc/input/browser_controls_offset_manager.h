@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/time/time.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/layers/layer_impl.h"
@@ -26,11 +27,7 @@ class CC_EXPORT BrowserControlsOffsetManager {
       BrowserControlsOffsetManagerClient* client,
       float controls_show_threshold,
       float controls_hide_threshold);
-  BrowserControlsOffsetManager(const BrowserControlsOffsetManager&) = delete;
   virtual ~BrowserControlsOffsetManager();
-
-  BrowserControlsOffsetManager& operator=(const BrowserControlsOffsetManager&) =
-      delete;
 
   // The offset from the window top to the top edge of the controls. Runs from 0
   // (controls fully shown) to negative values (down is positive).
@@ -118,6 +115,8 @@ class CC_EXPORT BrowserControlsOffsetManager {
   // Used to track whether the constraint has changed and we need up reflect
   // the changes to Blink.
   bool constraint_changed_since_commit_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserControlsOffsetManager);
 };
 
 }  // namespace cc

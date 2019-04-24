@@ -41,6 +41,7 @@ using net::test_server::HttpResponse;
 
 enum class CorsTestMode {
   kInBlink,
+  kInBrowserProcess,
   kInNetworkService,
 };
 
@@ -59,6 +60,11 @@ class CorsFileOriginBrowserTest
             {} /* enabled */,
             {network::features::kOutOfBlinkCors,
              network::features::kNetworkService} /* disabled */);
+        break;
+      case CorsTestMode::kInBrowserProcess:
+        scoped_feature_list_.InitWithFeatures(
+            {network::features::kOutOfBlinkCors} /* enabled */,
+            {network::features::kNetworkService} /* disabled */);
         break;
       case CorsTestMode::kInNetworkService:
         scoped_feature_list_.InitWithFeatures(
@@ -364,18 +370,21 @@ INSTANTIATE_TEST_SUITE_P(
     /* No test prefix */,
     CorsFileOriginBrowserTest,
     ::testing::Values(CorsTestMode::kInBlink,
+                      CorsTestMode::kInBrowserProcess,
                       CorsTestMode::kInNetworkService));
 
 INSTANTIATE_TEST_SUITE_P(
     /* No test prefix */,
     CorsFileOriginBrowserTestWithAllowFileAccessFromFiles,
     ::testing::Values(CorsTestMode::kInBlink,
+                      CorsTestMode::kInBrowserProcess,
                       CorsTestMode::kInNetworkService));
 
 INSTANTIATE_TEST_SUITE_P(
     /* No test prefix */,
     CorsFileOriginBrowserTestWithDisableWebSecurity,
     ::testing::Values(CorsTestMode::kInBlink,
+                      CorsTestMode::kInBrowserProcess,
                       CorsTestMode::kInNetworkService));
 
 }  // namespace

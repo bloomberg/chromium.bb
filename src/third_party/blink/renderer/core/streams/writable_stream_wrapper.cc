@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_writable_stream.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
+#include "third_party/blink/renderer/core/streams/retain_wrapper_during_construction.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -85,7 +86,7 @@ bool WritableStreamWrapper::InitInternal(
     return false;
   }
 
-  return true;
+  return RetainWrapperDuringConstruction(this, script_state);
 }
 
 v8::MaybeLocal<v8::Object> WritableStreamWrapper::CreateInternalStream(

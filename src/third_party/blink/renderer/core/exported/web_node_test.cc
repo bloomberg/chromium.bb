@@ -80,6 +80,7 @@ TEST_F(WebNodeSimTest, IsFocused) {
 
   WebNode input_node(GetDocument().getElementById("focusable"));
   EXPECT_FALSE(input_node.IsFocusable());
+  EXPECT_FALSE(GetDocument().HasNodesWithPlaceholderStyle());
 
   main_resource.Finish();
   css_resource.Complete("dummy {}");

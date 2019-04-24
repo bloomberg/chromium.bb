@@ -140,7 +140,7 @@ void TriView::SetContainerLayout(
 }
 
 void TriView::ViewHierarchyChanged(
-    const views::ViewHierarchyChangedDetails& details) {
+    const views::View::ViewHierarchyChangedDetails& details) {
   views::View::ViewHierarchyChanged(details);
   if (!enable_hierarchy_changed_dcheck_)
     return;

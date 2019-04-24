@@ -23,7 +23,6 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ReactorUnitTests</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
-    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -106,7 +105,6 @@
       <ForcedIncludeFiles>gtest/gtest.h</ForcedIncludeFiles>
       <TreatSpecificWarningsAsErrors>5038;4838</TreatSpecificWarningsAsErrors>
       <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -125,7 +123,6 @@
       <ForcedIncludeFiles>gtest/gtest.h</ForcedIncludeFiles>
       <TreatSpecificWarningsAsErrors>5038;4838</TreatSpecificWarningsAsErrors>
       <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,7 +143,6 @@
       <ForcedIncludeFiles>gtest/gtest.h</ForcedIncludeFiles>
       <TreatSpecificWarningsAsErrors>5038;4838</TreatSpecificWarningsAsErrors>
       <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -169,7 +165,6 @@
       <ForcedIncludeFiles>gtest/gtest.h</ForcedIncludeFiles>
       <TreatSpecificWarningsAsErrors>5038;4838</TreatSpecificWarningsAsErrors>
       <AdditionalOptions>/permissive- %(AdditionalOptions)</AdditionalOptions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

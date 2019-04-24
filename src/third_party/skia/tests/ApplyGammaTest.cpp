@@ -136,8 +136,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ApplyGamma, reporter, ctxInfo) {
 
         SkPaint gammaPaint;
         gammaPaint.setBlendMode(SkBlendMode::kSrc);
-        gammaPaint.setColorFilter(toSRGB ? SkColorFilters::LinearToSRGBGamma()
-                                         : SkColorFilters::SRGBToLinearGamma());
+        gammaPaint.setColorFilter(toSRGB ? SkColorFilter::MakeLinearToSRGBGamma()
+                                         : SkColorFilter::MakeSRGBToLinearGamma());
 
         dstCanvas->drawBitmap(bm, 0, 0, &gammaPaint);
         dst->flush();

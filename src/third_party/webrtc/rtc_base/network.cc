@@ -31,11 +31,9 @@
 
 #include <stdio.h>
 
+#include <algorithm>
 #include <memory>
 
-#include "absl/algorithm/container.h"
-#include "absl/strings/match.h"
-#include "absl/strings/string_view.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/network_monitor.h"
@@ -189,13 +187,14 @@ std::string MakeNetworkKey(const std::string& name,
 }
 // Test if the network name matches the type<number> pattern, e.g. eth0. The
 // matching is case-sensitive.
-bool MatchTypeNameWithIndexPattern(absl::string_view network_name,
-                                   absl::string_view type_name) {
-  if (!absl::StartsWith(network_name, type_name)) {
+bool MatchTypeNameWithIndexPattern(const std::string& network_name,
+                                   const std::string& type_name) {
+  if (network_name.find(type_name) != 0) {
     return false;
   }
-  return absl::c_none_of(network_name.substr(type_name.size()),
-                         [](char c) { return !isdigit(c); });
+  return std::find_if(network_name.begin() + type_name.size(),
+                      network_name.end(),
+                      [](char c) { return !isdigit(c); }) == network_name.end();
 }
 
 // A cautious note that this method may not provide an accurate adapter type
@@ -320,7 +319,7 @@ void NetworkManagerBase::MergeNetworkList(const NetworkList& new_networks,
   // with the same key.
   std::map<std::string, AddressList> consolidated_address_list;
   NetworkList list(new_networks);
-  absl::c_sort(list, CompareNetworks);
+  std::sort(list.begin(), list.end(), CompareNetworks);
   // First, build a set of network-keys to the ipaddresses.
   for (Network* network : list) {
     bool might_add_to_merged_list = false;
@@ -401,10 +400,11 @@ void NetworkManagerBase::MergeNetworkList(const NetworkList& new_networks,
     for (const auto& kv : networks_map_) {
       Network* network = kv.second;
       // If |network| is in the newly generated |networks_|, it is active.
-      bool found = absl::c_linear_search(networks_, network);
+      bool found = std::find(networks_.begin(), networks_.end(), network) !=
+                   networks_.end();
       network->set_active(found);
     }
-    absl::c_sort(networks_, SortNetworks);
+    std::sort(networks_.begin(), networks_.end(), SortNetworks);
     // Now network interfaces are sorted, we should set the preference value
     // for each of the interfaces we are planning to use.
     // Preference order of network interfaces might have changed from previous
@@ -459,9 +459,10 @@ Network* NetworkManagerBase::GetNetworkFromAddress(
     const rtc::IPAddress& ip) const {
   for (Network* network : networks_) {
     const auto& ips = network->GetIPs();
-    if (absl::c_any_of(ips, [&](const InterfaceAddress& existing_ip) {
-          return ip == static_cast<rtc::IPAddress>(existing_ip);
-        })) {
+    if (std::find_if(ips.begin(), ips.end(),
+                     [ip](const InterfaceAddress& existing_ip) {
+                       return ip == static_cast<rtc::IPAddress>(existing_ip);
+                     }) != ips.end()) {
       return network;
     }
   }
@@ -1003,7 +1004,7 @@ bool Network::SetIPs(const std::vector<InterfaceAddress>& ips, bool changed) {
   changed = changed || ips.size() != ips_.size();
   if (!changed) {
     for (const InterfaceAddress& ip : ips) {
-      if (!absl::c_linear_search(ips_, ip)) {
+      if (std::find(ips_.begin(), ips_.end(), ip) == ips_.end()) {
         changed = true;
         break;
       }

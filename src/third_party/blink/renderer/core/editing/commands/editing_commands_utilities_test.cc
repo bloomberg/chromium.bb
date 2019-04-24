@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -55,7 +54,7 @@ TEST_F(EditingCommandsUtilitiesTest, AreaIdenticalElements) {
 }
 
 TEST_F(EditingCommandsUtilitiesTest, TidyUpHTMLStructureFromBody) {
-  auto* body = MakeGarbageCollected<HTMLBodyElement>(GetDocument());
+  Element* body = HTMLBodyElement::Create(GetDocument());
   MakeDocumentEmpty();
   GetDocument().setDesignMode("on");
   GetDocument().AppendChild(body);
@@ -79,7 +78,7 @@ TEST_F(EditingCommandsUtilitiesTest, TidyUpHTMLStructureFromDiv) {
 }
 
 TEST_F(EditingCommandsUtilitiesTest, TidyUpHTMLStructureFromHead) {
-  auto* head = MakeGarbageCollected<HTMLHeadElement>(GetDocument());
+  Element* head = HTMLHeadElement::Create(GetDocument());
   MakeDocumentEmpty();
   GetDocument().setDesignMode("on");
   GetDocument().AppendChild(head);

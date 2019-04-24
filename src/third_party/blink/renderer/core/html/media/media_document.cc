@@ -69,10 +69,6 @@ class MediaDocumentParser : public RawDataDocumentParser {
 };
 
 void MediaDocumentParser::CreateDocumentStructure() {
-  // TODO(dgozman): DocumentLoader might call Finish on a stopped parser.
-  // See also comments for DocumentParser::{Detach,StopParsing}.
-  if (IsStopped())
-    return;
   if (did_build_document_structure_)
     return;
   did_build_document_structure_ = true;

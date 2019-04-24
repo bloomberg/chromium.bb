@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "api/array_view.h"
+#include "common_types.h"  // NOLINT(build/include)
 #include "modules/include/module_common_types.h"
 #include "modules/rtp_rtcp/source/rtp_video_header.h"
 
@@ -38,7 +39,7 @@ class RtpPacketizer {
       PayloadSizeLimits limits,
       // Codec-specific details.
       const RTPVideoHeader& rtp_video_header,
-      VideoFrameType frame_type,
+      FrameType frame_type,
       const RTPFragmentationHeader* fragmentation);
 
   virtual ~RtpPacketizer() = default;
@@ -70,7 +71,7 @@ class RtpDepacketizer {
 
     const uint8_t* payload;
     size_t payload_length;
-    VideoFrameType frame_type;
+    FrameType frame_type;
   };
 
   static RtpDepacketizer* Create(VideoCodecType type);

@@ -65,7 +65,7 @@ bool ShouldCheckComputedStyles(const ComputedStyle& base_computed_style,
   // Images use instance equality rather than value equality (see
   // crbug.com/781461).
   for (CSSPropertyID id :
-       {CSSPropertyID::kBackgroundImage, CSSPropertyID::kWebkitMaskImage}) {
+       {CSSPropertyBackgroundImage, CSSPropertyWebkitMaskImage}) {
     if (!CSSPropertyEquality::PropertiesEqual(
             PropertyHandle(CSSProperty::Get(id)), base_computed_style,
             computed_style)) {

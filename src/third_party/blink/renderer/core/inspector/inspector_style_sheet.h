@@ -54,6 +54,9 @@ typedef Vector<unsigned> LineEndings;
 
 class InspectorStyle final : public GarbageCollectedFinalized<InspectorStyle> {
  public:
+  static InspectorStyle* Create(CSSStyleDeclaration*,
+                                CSSRuleSourceData*,
+                                InspectorStyleSheetBase* parent_style_sheet);
   InspectorStyle(CSSStyleDeclaration*,
                  CSSRuleSourceData*,
                  InspectorStyleSheetBase* parent_style_sheet);

@@ -134,7 +134,7 @@ void HTMLFormControlsCollection::UpdateIdNameCache() const {
   if (HasValidIdNameCache())
     return;
 
-  auto* cache = MakeGarbageCollected<NamedItemCache>();
+  NamedItemCache* cache = NamedItemCache::Create();
   HashSet<StringImpl*> found_input_elements;
 
   for (const auto& listed_element : ListedElements()) {

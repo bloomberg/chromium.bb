@@ -111,22 +111,6 @@ void glClearColorFn(GLclampf red,
 void glClearDepthFn(GLclampd depth) override;
 void glClearDepthfFn(GLclampf depth) override;
 void glClearStencilFn(GLint s) override;
-void glClearTexImageFn(GLuint texture,
-                       GLint level,
-                       GLenum format,
-                       GLenum type,
-                       const GLvoid* data) override;
-void glClearTexSubImageFn(GLuint texture,
-                          GLint level,
-                          GLint xoffset,
-                          GLint yoffset,
-                          GLint zoffset,
-                          GLint width,
-                          GLint height,
-                          GLint depth,
-                          GLenum format,
-                          GLenum type,
-                          const GLvoid* data) override;
 GLenum glClientWaitSyncFn(GLsync sync,
                           GLbitfield flags,
                           GLuint64 timeout) override;
@@ -401,12 +385,12 @@ void glFramebufferTextureLayerFn(GLenum target,
                                  GLuint texture,
                                  GLint level,
                                  GLint layer) override;
-void glFramebufferTextureMultiviewOVRFn(GLenum target,
-                                        GLenum attachment,
-                                        GLuint texture,
-                                        GLint level,
-                                        GLint baseViewIndex,
-                                        GLsizei numViews) override;
+void glFramebufferTextureMultiviewLayeredANGLEFn(GLenum target,
+                                                 GLenum attachment,
+                                                 GLuint texture,
+                                                 GLint level,
+                                                 GLint baseViewIndex,
+                                                 GLsizei numViews) override;
 void glFrontFaceFn(GLenum mode) override;
 void glGenBuffersARBFn(GLsizei n, GLuint* buffers) override;
 void glGenerateMipmapEXTFn(GLenum target) override;

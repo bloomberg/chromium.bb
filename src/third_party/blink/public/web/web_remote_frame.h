@@ -52,18 +52,20 @@ class WebRemoteFrame : public WebFrame {
   // beginning.
   virtual WebLocalFrame* CreateLocalChild(WebTreeScopeType,
                                           const WebString& name,
-                                          const FramePolicy&,
+                                          WebSandboxFlags,
                                           WebLocalFrameClient*,
                                           blink::InterfaceRegistry*,
                                           mojo::ScopedMessagePipeHandle,
                                           WebFrame* previous_sibling,
+                                          const ParsedFeaturePolicy&,
                                           const WebFrameOwnerProperties&,
                                           FrameOwnerElementType,
                                           WebFrame* opener) = 0;
 
   virtual WebRemoteFrame* CreateRemoteChild(WebTreeScopeType,
                                             const WebString& name,
-                                            const FramePolicy&,
+                                            WebSandboxFlags,
+                                            const ParsedFeaturePolicy&,
                                             FrameOwnerElementType,
                                             WebRemoteFrameClient*,
                                             WebFrame* opener) = 0;

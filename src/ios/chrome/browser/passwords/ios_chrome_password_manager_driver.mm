@@ -7,7 +7,6 @@
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
-#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,6 +14,7 @@
 #endif
 
 using password_manager::PasswordAutofillManager;
+using password_manager::PasswordGenerationManager;
 using password_manager::PasswordManager;
 
 IOSChromePasswordManagerDriver::IOSChromePasswordManagerDriver(
@@ -37,11 +37,7 @@ void IOSChromePasswordManagerDriver::FormsEligibleForGenerationFound(
 
 void IOSChromePasswordManagerDriver::FormEligibleForGenerationFound(
     const autofill::NewPasswordFormGenerationData& form) {
-  if (GetPasswordGenerationHelper() &&
-      GetPasswordGenerationHelper()->IsGenerationEnabled(
-          /*log_debug_data*/ true)) {
-    [delegate_ formEligibleForGenerationFound:form];
-  }
+  [delegate_ formEligibleForGenerationFound:form];
 }
 
 void IOSChromePasswordManagerDriver::GeneratedPasswordAccepted(
@@ -71,9 +67,9 @@ void IOSChromePasswordManagerDriver::ClearPreviewedForm() {
   NOTIMPLEMENTED();
 }
 
-password_manager::PasswordGenerationFrameHelper*
-IOSChromePasswordManagerDriver::GetPasswordGenerationHelper() {
-  return [delegate_ passwordGenerationHelper];
+PasswordGenerationManager*
+IOSChromePasswordManagerDriver::GetPasswordGenerationManager() {
+  return [delegate_ passwordGenerationManager];
 }
 
 PasswordManager* IOSChromePasswordManagerDriver::GetPasswordManager() {

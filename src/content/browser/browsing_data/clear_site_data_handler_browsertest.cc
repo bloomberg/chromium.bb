@@ -223,13 +223,12 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
     network::mojom::CookieManager* cookie_manager =
         storage_partition()->GetCookieManagerForBrowserProcess();
 
-    net::CookieOptions options;
-    std::unique_ptr<net::CanonicalCookie> cookie(
-        net::CanonicalCookie::Create(url, "A=1", base::Time::Now(), options));
+    std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+        url, "A=1", base::Time::Now(), net::CookieOptions()));
 
     base::RunLoop run_loop;
     cookie_manager->SetCanonicalCookie(
-        *cookie, url.scheme(), options,
+        *cookie, url.scheme(), false /* modify_http_only */,
         base::BindOnce(&ClearSiteDataHandlerBrowserTest::AddCookieCallback,
                        run_loop.QuitClosure()));
     run_loop.Run();
@@ -457,21 +456,19 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   }
 
   // Callback handler for AddCookie().
-  static void AddCookieCallback(
-      base::OnceClosure callback,
-      net::CanonicalCookie::CookieInclusionStatus success) {
+  static void AddCookieCallback(const base::Closure& callback, bool success) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    ASSERT_EQ(net::CanonicalCookie::CookieInclusionStatus::INCLUDE, success);
-    std::move(callback).Run();
+    ASSERT_TRUE(success);
+    callback.Run();
   }
 
   // Callback handler for GetCookies().
-  static void GetCookiesCallback(base::OnceClosure callback,
+  static void GetCookiesCallback(const base::Closure& callback,
                                  net::CookieList* out_cookie_list,
                                  const net::CookieList& cookie_list) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     *out_cookie_list = cookie_list;
-    std::move(callback).Run();
+    callback.Run();
   }
 
   // Callback handler for AddServiceWorker().
@@ -479,11 +476,11 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
   // Callback handler for GetServiceWorkers().
   void GetServiceWorkersCallback(
-      base::OnceClosure callback,
+      const base::Closure& callback,
       std::vector<StorageUsageInfo>* out_service_workers,
       const std::vector<StorageUsageInfo>& service_workers) {
     *out_service_workers = service_workers;
-    std::move(callback).Run();
+    callback.Run();
   }
 
   // We can only use |MockCertVerifier| when Network Service was enabled.

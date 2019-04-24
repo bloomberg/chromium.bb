@@ -5,7 +5,7 @@
 #include "components/download/content/factory/navigation_monitor_factory.h"
 
 #include "components/download/internal/background_service/navigation_monitor_impl.h"
-#include "components/keyed_service/core/simple_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace download {
 
@@ -14,27 +14,27 @@ NavigationMonitorFactory* NavigationMonitorFactory::GetInstance() {
   return base::Singleton<NavigationMonitorFactory>::get();
 }
 
-// static
-download::NavigationMonitor* NavigationMonitorFactory::GetForKey(
-    SimpleFactoryKey* key) {
+download::NavigationMonitor* NavigationMonitorFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   return static_cast<download::NavigationMonitor*>(
-      GetInstance()->GetServiceForKey(key, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 NavigationMonitorFactory::NavigationMonitorFactory()
-    : SimpleKeyedServiceFactory("download::NavigationMonitor",
-                                SimpleDependencyManager::GetInstance()) {}
+    : BrowserContextKeyedServiceFactory(
+          "download::NavigationMonitor",
+          BrowserContextDependencyManager::GetInstance()) {}
 
 NavigationMonitorFactory::~NavigationMonitorFactory() = default;
 
-std::unique_ptr<KeyedService> NavigationMonitorFactory::BuildServiceInstanceFor(
-    SimpleFactoryKey* key) const {
-  return std::make_unique<NavigationMonitorImpl>();
+KeyedService* NavigationMonitorFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  return new NavigationMonitorImpl();
 }
 
-SimpleFactoryKey* NavigationMonitorFactory::GetKeyToUse(
-    SimpleFactoryKey* key) const {
-  return key;
+content::BrowserContext* NavigationMonitorFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return context;
 }
 
 }  // namespace download

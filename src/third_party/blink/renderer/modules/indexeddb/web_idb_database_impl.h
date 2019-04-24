@@ -26,20 +26,25 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
   ~WebIDBDatabaseImpl() override;
 
   // WebIDBDatabase
-  void RenameObjectStore(int64_t transaction_id,
-                         int64_t object_store_id,
+  void CreateObjectStore(long long transaction_id,
+                         long long objectstore_id,
+                         const String& name,
+                         const IDBKeyPath&,
+                         bool auto_increment) override;
+  void DeleteObjectStore(long long transaction_id,
+                         long long object_store_id) override;
+  void RenameObjectStore(long long transaction_id,
+                         long long object_store_id,
                          const String& new_name) override;
-  void CreateTransaction(
-      mojom::blink::IDBTransactionAssociatedRequest transaction_request,
-      int64_t transaction_id,
-      const Vector<int64_t>& scope,
-      mojom::IDBTransactionMode mode) override;
+  void CreateTransaction(long long transaction_id,
+                         const Vector<int64_t>& scope,
+                         mojom::IDBTransactionMode mode) override;
 
   void Close() override;
   void VersionChangeIgnored() override;
 
   void AddObserver(
-      int64_t transaction_id,
+      long long transaction_id,
       int32_t observer_id,
       bool include_transaction,
       bool no_records,
@@ -47,72 +52,90 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
       std::bitset<kIDBOperationTypeCount> operation_types) override;
   void RemoveObservers(const Vector<int32_t>& observer_ids) override;
 
-  void Get(int64_t transaction_id,
-           int64_t object_store_id,
-           int64_t index_id,
+  void Get(long long transaction_id,
+           long long object_store_id,
+           long long index_id,
            const IDBKeyRange*,
            bool key_only,
            WebIDBCallbacks*) override;
-  void GetAll(int64_t transaction_id,
-              int64_t object_store_id,
-              int64_t index_id,
+  void GetAll(long long transaction_id,
+              long long object_store_id,
+              long long index_id,
               const IDBKeyRange*,
-              int64_t max_count,
+              long long max_count,
               bool key_only,
               WebIDBCallbacks*) override;
-  void SetIndexKeys(int64_t transaction_id,
-                    int64_t object_store_id,
+  void Put(long long transaction_id,
+           long long object_store_id,
+           std::unique_ptr<IDBValue> value,
+           std::unique_ptr<IDBKey> primary_key,
+           mojom::IDBPutMode,
+           WebIDBCallbacks*,
+           Vector<IDBIndexKeys>) override;
+  void SetIndexKeys(long long transaction_id,
+                    long long object_store_id,
                     std::unique_ptr<IDBKey> primary_key,
                     Vector<IDBIndexKeys>) override;
-  void SetIndexesReady(int64_t transaction_id,
-                       int64_t object_store_id,
+  void SetIndexesReady(long long transaction_id,
+                       long long object_store_id,
                        const Vector<int64_t>& index_ids) override;
-  void OpenCursor(int64_t transaction_id,
-                  int64_t object_store_id,
-                  int64_t index_id,
+  void OpenCursor(long long transaction_id,
+                  long long object_store_id,
+                  long long index_id,
                   const IDBKeyRange*,
                   mojom::IDBCursorDirection direction,
                   bool key_only,
                   mojom::IDBTaskType,
                   WebIDBCallbacks*) override;
-  void Count(int64_t transaction_id,
-             int64_t object_store_id,
-             int64_t index_id,
+  void Count(long long transaction_id,
+             long long object_store_id,
+             long long index_id,
              const IDBKeyRange*,
              WebIDBCallbacks*) override;
-  void Delete(int64_t transaction_id,
-              int64_t object_store_id,
+  void Delete(long long transaction_id,
+              long long object_store_id,
               const IDBKey* primary_key,
               WebIDBCallbacks*) override;
-  void DeleteRange(int64_t transaction_id,
-                   int64_t object_store_id,
+  void DeleteRange(long long transaction_id,
+                   long long object_store_id,
                    const IDBKeyRange*,
                    WebIDBCallbacks*) override;
-  void GetKeyGeneratorCurrentNumber(int64_t transaction_id,
-                                    int64_t object_store_id,
+  void GetKeyGeneratorCurrentNumber(long long transaction_id,
+                                    long long object_store_id,
                                     WebIDBCallbacks*) override;
-  void Clear(int64_t transaction_id,
-             int64_t object_store_id,
+  void Clear(long long transaction_id,
+             long long object_store_id,
              WebIDBCallbacks*) override;
-  void CreateIndex(int64_t transaction_id,
-                   int64_t object_store_id,
-                   int64_t index_id,
+  void CreateIndex(long long transaction_id,
+                   long long object_store_id,
+                   long long index_id,
                    const String& name,
                    const IDBKeyPath&,
                    bool unique,
                    bool multi_entry) override;
-  void DeleteIndex(int64_t transaction_id,
-                   int64_t object_store_id,
-                   int64_t index_id) override;
-  void RenameIndex(int64_t transaction_id,
-                   int64_t object_store_id,
-                   int64_t index_id,
+  void DeleteIndex(long long transaction_id,
+                   long long object_store_id,
+                   long long index_id) override;
+  void RenameIndex(long long transaction_id,
+                   long long object_store_id,
+                   long long index_id,
                    const String& new_name) override;
-  void Abort(int64_t transaction_id) override;
+  void Abort(long long transaction_id) override;
+  void Commit(long long transaction_id, long long num_errors_handled) override;
 
  private:
   mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
       std::unique_ptr<WebIDBCallbacks> callbacks);
+
+  FRIEND_TEST_ALL_PREFIXES(WebIDBDatabaseImplTest, ValueSizeTest);
+  FRIEND_TEST_ALL_PREFIXES(WebIDBDatabaseImplTest, KeyAndValueSizeTest);
+
+  // Maximum size (in bytes) of value/key pair allowed for put requests. Any
+  // requests larger than this size will be rejected.
+  // Used by unit tests to exercise behavior without allocating huge chunks
+  // of memory.
+  size_t max_put_value_size_ =
+      mojom::blink::kIDBMaxMessageSize - mojom::blink::kIDBMaxMessageOverhead;
 
   std::set<int32_t> observer_ids_;
   mojom::blink::IDBDatabaseAssociatedPtr database_;

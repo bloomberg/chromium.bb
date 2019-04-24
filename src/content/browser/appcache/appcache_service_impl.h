@@ -56,7 +56,7 @@ class CONTENT_EXPORT AppCacheStorageReference
  private:
   friend class AppCacheServiceImpl;
   friend class base::RefCounted<AppCacheStorageReference>;
-  explicit AppCacheStorageReference(std::unique_ptr<AppCacheStorage> storage);
+  AppCacheStorageReference(std::unique_ptr<AppCacheStorage> storage);
   ~AppCacheStorageReference();
 
   std::unique_ptr<AppCacheStorage> storage_;
@@ -109,8 +109,9 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
 
   // Deletes all appcaches for the origin, 'callback' is invoked upon
   // completion. This method always completes asynchronously.
-  void DeleteAppCachesForOrigin(const url::Origin& origin,
-                                net::CompletionOnceCallback callback) override;
+  // (virtual for unit testing)
+  virtual void DeleteAppCachesForOrigin(const url::Origin& origin,
+                                        net::CompletionOnceCallback callback);
 
   // Checks the integrity of 'response_id' by reading the headers and data.
   // If it cannot be read, the cache group for 'manifest_url' is deleted.

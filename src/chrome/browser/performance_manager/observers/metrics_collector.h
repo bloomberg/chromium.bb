@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/observers/background_metrics_reporter.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
+#include "chrome/browser/performance_manager/observers/coordination_unit_graph_observer.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
@@ -36,22 +36,27 @@ class MetricsCollector : public GraphObserver {
   ~MetricsCollector() override;
 
   // GraphObserver implementation.
-  bool ShouldObserve(const NodeBase* node) override;
-  void OnNodeAdded(NodeBase* node) override;
-  void OnBeforeNodeRemoved(NodeBase* node) override;
-  void OnNonPersistentNotificationCreated(FrameNodeImpl* frame_node) override;
-  void OnIsVisibleChanged(PageNodeImpl* page_node) override;
-  void OnUkmSourceIdChanged(PageNodeImpl* page_node) override;
-  void OnFaviconUpdated(PageNodeImpl* page_node) override;
-  void OnTitleUpdated(PageNodeImpl* page_node) override;
-  void OnExpectedTaskQueueingDurationSample(
-      ProcessNodeImpl* process_node) override;
+  bool ShouldObserve(const NodeBase* coordination_unit) override;
+  void OnNodeCreated(NodeBase* coordination_unit) override;
+  void OnBeforeNodeDestroyed(NodeBase* coordination_unit) override;
+  void OnPagePropertyChanged(
+      PageNodeImpl* page_cu,
+      resource_coordinator::mojom::PropertyType property_type,
+      int64_t value) override;
+  void OnProcessPropertyChanged(
+      ProcessNodeImpl* process_cu,
+      resource_coordinator::mojom::PropertyType property_type,
+      int64_t value) override;
+  void OnFrameEventReceived(FrameNodeImpl* frame_cu,
+                            resource_coordinator::mojom::Event event) override;
+  void OnPageEventReceived(PageNodeImpl* page_cu,
+                           resource_coordinator::mojom::Event event) override;
 
  private:
   struct MetricsReportRecord {
     MetricsReportRecord();
     MetricsReportRecord(const MetricsReportRecord& other);
-    void UpdateUkmSourceID(ukm::SourceId ukm_source_id);
+    void UpdateUKMSourceID(int64_t ukm_source_id);
     void Reset();
     BackgroundMetricsReporter<
         ukm::builders::TabManager_Background_FirstFaviconUpdated,
@@ -76,14 +81,14 @@ class MetricsCollector : public GraphObserver {
     ukm::SourceId ukm_source_id = ukm::kInvalidSourceId;
   };
 
-  bool ShouldReportMetrics(const PageNodeImpl* page_node);
+  bool ShouldReportMetrics(const PageNodeImpl* page_cu);
   bool IsCollectingExpectedQueueingTimeForUkm(
-      const resource_coordinator::CoordinationUnitID& page_node_id);
+      const resource_coordinator::CoordinationUnitID& page_cu_id);
   void RecordExpectedQueueingTimeForUkm(
-      const resource_coordinator::CoordinationUnitID& page_node_id,
-      const base::TimeDelta& expected_queueing_time);
+      const resource_coordinator::CoordinationUnitID& page_cu_id,
+      int64_t expected_queueing_time);
   void UpdateUkmSourceIdForPage(
-      const resource_coordinator::CoordinationUnitID& page_node_id,
+      const resource_coordinator::CoordinationUnitID& page_cu_id,
       ukm::SourceId ukm_source_id);
   void UpdateWithFieldTrialParams();
   void ResetMetricsReportRecord(resource_coordinator::CoordinationUnitID cu_id);

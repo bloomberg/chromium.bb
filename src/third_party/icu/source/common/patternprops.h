@@ -17,7 +17,6 @@
 #ifndef __PATTERNPROPS_H__
 #define __PATTERNPROPS_H__
 
-#include "unicode/unistr.h"
 #include "unicode/utypes.h"
 
 U_NAMESPACE_BEGIN
@@ -63,12 +62,6 @@ public:
      * @return The smallest pointer at or after s with a non-white space character.
      */
     static const UChar *skipWhiteSpace(const UChar *s, int32_t length);
-
-    /**
-     * Skips over Pattern_White_Space starting at index start in s.
-     * @return The smallest index at or after start with a non-white space character.
-     */
-    static int32_t skipWhiteSpace(const UnicodeString &s, int32_t start);
 
     /**
      * @return s except with leading and trailing Pattern_White_Space removed and length adjusted.

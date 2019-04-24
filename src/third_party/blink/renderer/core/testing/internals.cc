@@ -58,7 +58,6 @@
 #include "third_party/blink/renderer/core/dom/shadow_root_v0.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
-#include "third_party/blink/renderer/core/editing/drag_caret.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -74,7 +73,6 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_controller.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_check_requester.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
-#include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -174,14 +172,14 @@
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/text/layout_locale.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
-#include "third_party/blink/renderer/platform/wtf/dtoa/dtoa.h"
+#include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
-using ui::mojom::ImeTextSpanThickness;
+using ws::mojom::ImeTextSpanThickness;
 
 namespace {
 
@@ -270,8 +268,6 @@ void Internals::ResetToConsistentState(Page* page) {
   // call.
   page->SetDefaultPageScaleLimits(1, 4);
   page->SetPageScaleFactor(1);
-  page->GetChromeClient().GetWebView()->SetDeviceEmulationTransform(
-      TransformationMatrix());
 
   // Ensure timers are reset so timers such as EventHandler's |hover_timer_| do
   // not cause additional lifecycle updates.
@@ -337,7 +333,7 @@ GCObservation* Internals::observeGC(ScriptValue script_value) {
     return nullptr;
   }
 
-  return MakeGarbageCollected<GCObservation>(observed_value);
+  return GCObservation::Create(observed_value);
 }
 
 unsigned Internals::updateStyleAndReturnAffectedElementCount(
@@ -736,8 +732,7 @@ CSSStyleDeclaration* Internals::computedStyleIncludingVisitedInfo(
     Node* node) const {
   DCHECK(node);
   bool allow_visited_style = true;
-  return MakeGarbageCollected<CSSComputedStyleDeclaration>(node,
-                                                           allow_visited_style);
+  return CSSComputedStyleDeclaration::Create(node, allow_visited_style);
 }
 
 ShadowRoot* Internals::createUserAgentShadowRoot(Element* host) {
@@ -896,7 +891,7 @@ DOMRectReadOnly* Internals::absoluteCaretBounds(
     return nullptr;
   }
 
-  document_->UpdateStyleAndLayout();
+  document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
   return DOMRectReadOnly::FromIntRect(
       GetFrame()->Selection().AbsoluteCaretBounds());
 }
@@ -917,7 +912,7 @@ String Internals::textAffinity() {
 DOMRectReadOnly* Internals::boundingBox(Element* element) {
   DCHECK(element);
 
-  element->GetDocument().UpdateStyleAndLayout();
+  element->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   LayoutObject* layout_object = element->GetLayoutObject();
   if (!layout_object)
     return DOMRectReadOnly::Create(0, 0, 0, 0);
@@ -952,7 +947,7 @@ void Internals::setMarker(Document* document,
     return;
   }
 
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (type == DocumentMarker::kSpelling)
     document->Markers().AddSpellingMarker(EphemeralRange(range));
   else
@@ -987,7 +982,7 @@ unsigned Internals::activeMarkerCountForNode(Node* node) {
 
   unsigned active_marker_count = 0;
   for (const auto& marker : markers) {
-    if (To<TextMatchMarker>(marker.Get())->IsActiveMatch())
+    if (ToTextMatchMarker(marker)->IsActiveMatch())
       active_marker_count++;
   }
 
@@ -1034,7 +1029,7 @@ String Internals::markerDescriptionForNode(Node* node,
   DocumentMarker* marker = MarkerAt(node, marker_type, index, exception_state);
   if (!marker || !IsSpellCheckMarker(*marker))
     return String();
-  return To<SpellCheckMarker>(marker)->Description();
+  return ToSpellCheckMarker(marker)->Description();
 }
 
 unsigned Internals::markerBackgroundColorForNode(
@@ -1043,10 +1038,9 @@ unsigned Internals::markerBackgroundColorForNode(
     unsigned index,
     ExceptionState& exception_state) {
   DocumentMarker* marker = MarkerAt(node, marker_type, index, exception_state);
-  auto* style_marker = DynamicTo<StyleableMarker>(marker);
-  if (!style_marker)
+  if (!marker || !IsStyleableMarker(*marker))
     return 0;
-  return style_marker->BackgroundColor().Rgb();
+  return ToStyleableMarker(marker)->BackgroundColor().Rgb();
 }
 
 unsigned Internals::markerUnderlineColorForNode(
@@ -1055,10 +1049,9 @@ unsigned Internals::markerUnderlineColorForNode(
     unsigned index,
     ExceptionState& exception_state) {
   DocumentMarker* marker = MarkerAt(node, marker_type, index, exception_state);
-  auto* style_marker = DynamicTo<StyleableMarker>(marker);
-  if (!style_marker)
+  if (!marker || !IsStyleableMarker(*marker))
     return 0;
-  return style_marker->UnderlineColor().Rgb();
+  return ToStyleableMarker(marker)->UnderlineColor().Rgb();
 }
 
 static base::Optional<TextMatchMarker::MatchStatus> MatchStatusFrom(
@@ -1086,7 +1079,7 @@ void Internals::addTextMatchMarker(const Range* range,
     return;
   }
 
-  range->OwnerDocument().UpdateStyleAndLayout();
+  range->OwnerDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   range->OwnerDocument().Markers().AddTextMatchMarker(
       EphemeralRange(range), match_status_enum.value());
 
@@ -1130,7 +1123,7 @@ void addStyleableMarkerHelper(
         void(const EphemeralRange&, Color, ImeTextSpanThickness, Color)>
         create_marker) {
   DCHECK(range);
-  range->OwnerDocument().UpdateStyleAndLayout();
+  range->OwnerDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   base::Optional<ImeTextSpanThickness> thickness =
       ThicknessFrom(thickness_value);
@@ -1254,7 +1247,7 @@ String Internals::viewportAsText(Document* document,
     return String();
   }
 
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   Page* page = document->GetPage();
 
@@ -1417,7 +1410,7 @@ Range* Internals::rangeFromLocationAndLength(Element* scope,
   DCHECK(scope);
 
   // TextIterator depends on Layout information, make sure layout it up to date.
-  scope->GetDocument().UpdateStyleAndLayout();
+  scope->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   return CreateRange(
       PlainTextRange(range_location, range_location + range_length)
@@ -1428,7 +1421,7 @@ unsigned Internals::locationFromRange(Element* scope, const Range* range) {
   DCHECK(scope && range);
   // PlainTextRange depends on Layout information, make sure layout it up to
   // date.
-  scope->GetDocument().UpdateStyleAndLayout();
+  scope->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   return PlainTextRange::Create(*scope, *range).Start();
 }
@@ -1437,7 +1430,7 @@ unsigned Internals::lengthFromRange(Element* scope, const Range* range) {
   DCHECK(scope && range);
   // PlainTextRange depends on Layout information, make sure layout it up to
   // date.
-  scope->GetDocument().UpdateStyleAndLayout();
+  scope->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   return PlainTextRange::Create(*scope, *range).length();
 }
@@ -1445,7 +1438,7 @@ unsigned Internals::lengthFromRange(Element* scope, const Range* range) {
 String Internals::rangeAsText(const Range* range) {
   DCHECK(range);
   // Clean layout is required by plain text extraction.
-  range->OwnerDocument().UpdateStyleAndLayout();
+  range->OwnerDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   return range->GetText();
 }
@@ -1947,7 +1940,7 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
 
     const auto& content_layers = pac->GetExtraDataForTesting()->content_layers;
 
-    auto* hit_test_rects = MakeGarbageCollected<HitTestLayerRectList>();
+    HitTestLayerRectList* hit_test_rects = HitTestLayerRectList::Create();
     for (const auto& layer : content_layers) {
       const cc::TouchActionRegion& touch_action_region =
           layer->touch_action_region();
@@ -1989,7 +1982,7 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
       // on layers outside the document hierarchy (e.g. when we replace the
       // document with a video layer).
       if (GraphicsLayer* root_layer = compositor->PaintRootGraphicsLayer()) {
-        auto* hit_test_rects = MakeGarbageCollected<HitTestLayerRectList>();
+        HitTestLayerRectList* hit_test_rects = HitTestLayerRectList::Create();
         AccumulateTouchActionRectList(compositor, root_layer, hit_test_rects);
         return hit_test_rects;
       }
@@ -2092,7 +2085,7 @@ bool Internals::hasSpellingMarker(Document* document,
     return false;
   }
 
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
   return document->GetFrame()->GetSpellChecker().SelectionStartHasMarkerFor(
       DocumentMarker::kSpelling, from, length);
 }
@@ -2107,7 +2100,7 @@ void Internals::replaceMisspelled(Document* document,
     return;
   }
 
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
   document->GetFrame()->GetSpellChecker().ReplaceMisspelledRange(replacement);
 }
 
@@ -2156,7 +2149,7 @@ bool Internals::hasGrammarMarker(Document* document,
     return false;
   }
 
-  document->UpdateStyleAndLayout();
+  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
   return document->GetFrame()->GetSpellChecker().SelectionStartHasMarkerFor(
       DocumentMarker::kGrammar, from, length);
 }
@@ -2479,6 +2472,14 @@ void Internals::setPageScaleFactorLimits(float min_scale_factor,
   page->SetDefaultPageScaleLimits(min_scale_factor, max_scale_factor);
 }
 
+bool Internals::magnifyScaleAroundAnchor(float scale_factor, float x, float y) {
+  if (!GetFrame())
+    return false;
+
+  return GetFrame()->GetPage()->GetVisualViewport().MagnifyScaleAroundAnchor(
+      scale_factor, FloatPoint(x, y));
+}
+
 void Internals::setIsCursorVisible(Document* document,
                                    bool is_visible,
                                    ExceptionState& exception_state) {
@@ -2578,31 +2579,31 @@ void Internals::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
 }
 
 TypeConversions* Internals::typeConversions() const {
-  return MakeGarbageCollected<TypeConversions>();
+  return TypeConversions::Create();
 }
 
 DictionaryTest* Internals::dictionaryTest() const {
-  return MakeGarbageCollected<DictionaryTest>();
+  return DictionaryTest::Create();
 }
 
 RecordTest* Internals::recordTest() const {
-  return MakeGarbageCollected<RecordTest>();
+  return RecordTest::Create();
 }
 
 SequenceTest* Internals::sequenceTest() const {
-  return MakeGarbageCollected<SequenceTest>();
+  return SequenceTest::create();
 }
 
 UnionTypesTest* Internals::unionTypesTest() const {
-  return MakeGarbageCollected<UnionTypesTest>();
+  return UnionTypesTest::Create();
 }
 
 OriginTrialsTest* Internals::originTrialsTest() const {
-  return MakeGarbageCollected<OriginTrialsTest>();
+  return OriginTrialsTest::Create();
 }
 
 CallbackFunctionTest* Internals::callbackFunctionTest() const {
-  return MakeGarbageCollected<CallbackFunctionTest>();
+  return CallbackFunctionTest::Create();
 }
 
 Vector<String> Internals::getReferencedFilePaths() const {
@@ -2646,7 +2647,7 @@ void Internals::stopTrackingRepaints(Document* document,
   frame_view->SetTracksPaintInvalidations(false);
 }
 
-void Internals::updateLayoutAndRunPostLayoutTasks(
+void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(
     Node* node,
     ExceptionState& exception_state) {
   Document* document = nullptr;
@@ -2663,9 +2664,8 @@ void Internals::updateLayoutAndRunPostLayoutTasks(
         "The node provided is neither a document nor an IFrame.");
     return;
   }
-  document->UpdateStyleAndLayout();
-  if (auto* view = document->View())
-    view->FlushAnyPendingPostLayoutTasks();
+  document->UpdateStyleAndLayoutIgnorePendingStylesheets();
+  document->View()->FlushAnyPendingPostLayoutTasks();
 }
 
 void Internals::forceFullRepaint(Document* document,
@@ -2898,18 +2898,8 @@ void Internals::forceReload(bool bypass_cache) {
     return;
 
   GetFrame()->Reload(bypass_cache ? WebFrameLoadType::kReloadBypassingCache
-                                  : WebFrameLoadType::kReload);
-}
-
-StaticSelection* Internals::getDragCaret() {
-  SelectionInDOMTree::Builder builder;
-  if (GetFrame()) {
-    const DragCaret& caret = GetFrame()->GetPage()->GetDragCaret();
-    const PositionWithAffinity& position = caret.CaretPosition();
-    if (position.GetDocument() == GetFrame()->GetDocument())
-      builder.Collapse(caret.CaretPosition());
-  }
-  return StaticSelection::FromSelectionInDOMTree(builder.Build());
+                                  : WebFrameLoadType::kReload,
+                     ClientRedirectPolicy::kNotClientRedirect);
 }
 
 StaticSelection* Internals::getSelectionInFlatTree(
@@ -3129,7 +3119,7 @@ class AddOneFunction : public ScriptFunction {
 
 ScriptPromise Internals::createResolvedPromise(ScriptState* script_state,
                                                ScriptValue value) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   resolver->Resolve(value);
   return promise;
@@ -3137,7 +3127,7 @@ ScriptPromise Internals::createResolvedPromise(ScriptState* script_state,
 
 ScriptPromise Internals::createRejectedPromise(ScriptState* script_state,
                                                ScriptValue value) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   resolver->Reject(value);
   return promise;
@@ -3149,7 +3139,7 @@ ScriptPromise Internals::addOneToPromise(ScriptState* script_state,
 }
 
 ScriptPromise Internals::promiseCheck(ScriptState* script_state,
-                                      int32_t arg1,
+                                      long arg1,
                                       bool arg2,
                                       const ScriptValue& arg3,
                                       const String& arg4,
@@ -3173,7 +3163,7 @@ ScriptPromise Internals::promiseCheckWithoutExceptionState(
 }
 
 ScriptPromise Internals::promiseCheckRange(ScriptState* script_state,
-                                           int32_t arg1) {
+                                           long arg1) {
   return ScriptPromise::Cast(script_state,
                              V8String(script_state->GetIsolate(), "done"));
 }
@@ -3192,8 +3182,8 @@ ScriptPromise Internals::promiseCheckOverload(ScriptState* script_state,
 
 ScriptPromise Internals::promiseCheckOverload(ScriptState* script_state,
                                               Location*,
-                                              int32_t,
-                                              int32_t) {
+                                              long,
+                                              long) {
   return ScriptPromise::Cast(script_state,
                              V8String(script_state->GetIsolate(), "done"));
 }
@@ -3223,6 +3213,11 @@ void Internals::setInitialFocus(bool reverse) {
   GetFrame()->GetDocument()->ClearFocusedElement();
   GetFrame()->GetPage()->GetFocusController().SetInitialFocus(
       reverse ? kWebFocusTypeBackward : kWebFocusTypeForward);
+}
+
+bool Internals::ignoreLayoutWithPendingStylesheets(Document* document) {
+  DCHECK(document);
+  return document->IgnoreLayoutWithPendingStylesheets();
 }
 
 Element* Internals::interestedElement() {
@@ -3264,8 +3259,8 @@ void Internals::setScrollChain(ScrollState* scroll_state,
   scroll_state->SetScrollChain(scroll_chain);
 }
 
-void Internals::scheduleBlinkGC() {
-  ThreadState::Current()->ScheduleForcedGCForTesting();
+void Internals::forceBlinkGCWithoutV8GC() {
+  ThreadState::Current()->ScheduleFullGC();
 }
 
 String Internals::selectedHTMLForClipboard() {
@@ -3273,7 +3268,7 @@ String Internals::selectedHTMLForClipboard() {
     return String();
 
   // Selection normalization and markup generation require clean layout.
-  GetFrame()->GetDocument()->UpdateStyleAndLayout();
+  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   return GetFrame()->Selection().SelectedHTMLForClipboard();
 }
@@ -3283,7 +3278,7 @@ String Internals::selectedTextForClipboard() {
     return String();
 
   // Clean layout is required for extracting plain text from selection.
-  GetFrame()->GetDocument()->UpdateStyleAndLayout();
+  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   return GetFrame()->Selection().SelectedTextForClipboard();
 }
@@ -3319,7 +3314,8 @@ void Internals::clearUseCounter(Document* document, uint32_t feature) {
 
 Vector<String> Internals::getCSSPropertyLonghands() const {
   Vector<String> result;
-  for (CSSPropertyID property : CSSPropertyIDList()) {
+  for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
+    CSSPropertyID property = static_cast<CSSPropertyID>(id);
     const CSSProperty& property_class = CSSProperty::Get(property);
     if (property_class.IsLonghand()) {
       result.push_back(property_class.GetPropertyNameString());
@@ -3330,7 +3326,8 @@ Vector<String> Internals::getCSSPropertyLonghands() const {
 
 Vector<String> Internals::getCSSPropertyShorthands() const {
   Vector<String> result;
-  for (CSSPropertyID property : CSSPropertyIDList()) {
+  for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
+    CSSPropertyID property = static_cast<CSSPropertyID>(id);
     const CSSProperty& property_class = CSSProperty::Get(property);
     if (property_class.IsShorthand()) {
       result.push_back(property_class.GetPropertyNameString());
@@ -3352,7 +3349,7 @@ Vector<String> Internals::getCSSPropertyAliases() const {
 ScriptPromise Internals::observeUseCounter(ScriptState* script_state,
                                            Document* document,
                                            uint32_t feature) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
   if (feature >= static_cast<int32_t>(WebFeature::kNumberOfFeatures)) {
     resolver->Reject();
@@ -3530,21 +3527,6 @@ String Internals::resolveModuleSpecifier(const String& specifier,
   }
 
   return result.GetString();
-}
-
-void Internals::setDeviceEmulationScale(float scale,
-                                        ExceptionState& exception_state) {
-  if (scale <= 0)
-    return;
-  auto* page = document_->GetPage();
-  if (!page) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        "The document's page cannot be retrieved.");
-    return;
-  }
-  page->GetChromeClient().GetWebView()->SetDeviceEmulationTransform(
-      TransformationMatrix().Scale(scale));
 }
 
 }  // namespace blink

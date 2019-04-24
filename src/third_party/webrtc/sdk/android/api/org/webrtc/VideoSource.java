@@ -59,20 +59,28 @@ public class VideoSource extends MediaSource {
 
     @Override
     public void onFrameCaptured(VideoFrame frame) {
-      final VideoProcessor.FrameAdaptationParameters parameters =
+      final NativeAndroidVideoTrackSource.FrameAdaptationParameters parameters =
           nativeAndroidVideoTrackSource.adaptFrame(frame);
+      if (parameters == null) {
+        // Drop frame.
+        return;
+      }
+
+      final VideoFrame.Buffer adaptedBuffer =
+          frame.getBuffer().cropAndScale(parameters.cropX, parameters.cropY, parameters.cropWidth,
+              parameters.cropHeight, parameters.scaleWidth, parameters.scaleHeight);
+      final VideoFrame adaptedFrame =
+          new VideoFrame(adaptedBuffer, frame.getRotation(), parameters.timestampNs);
+
       synchronized (videoProcessorLock) {
         if (videoProcessor != null) {
-          videoProcessor.onFrameCaptured(frame, parameters);
+          videoProcessor.onFrameCaptured(adaptedFrame);
+          adaptedBuffer.release();
           return;
         }
       }
-
-      VideoFrame adaptedFrame = VideoProcessor.applyFrameAdaptationParameters(frame, parameters);
-      if (adaptedFrame != null) {
-        nativeAndroidVideoTrackSource.onFrameCaptured(adaptedFrame);
-        adaptedFrame.release();
-      }
+      nativeAndroidVideoTrackSource.onFrameCaptured(adaptedFrame);
+      adaptedBuffer.release();
     }
   };
 

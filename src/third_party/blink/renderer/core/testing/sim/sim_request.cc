@@ -13,17 +13,16 @@
 namespace blink {
 
 SimRequestBase::SimRequestBase(String url,
+                               String redirect_url,
                                String mime_type,
-                               bool start_immediately,
-                               Params params)
+                               bool start_immediately)
     : url_(url),
-      redirect_url_(params.redirect_url),
+      redirect_url_(redirect_url),
       mime_type_(mime_type),
       start_immediately_(start_immediately),
       started_(false),
       client_(nullptr),
-      total_encoded_data_length_(0),
-      response_http_headers_(params.response_http_headers) {
+      total_encoded_data_length_(0) {
   SimNetwork::Current().AddRequest(*this);
 }
 
@@ -139,15 +138,21 @@ void SimRequestBase::ServePending() {
   SimNetwork::Current().ServePendingRequests();
 }
 
-SimRequest::SimRequest(String url, String mime_type, Params params)
-    : SimRequestBase(url, mime_type, true /* start_immediately */, params) {}
+SimRequest::SimRequest(String url, String mime_type)
+    : SimRequestBase(url, "", mime_type, true /* start_immediately */) {}
 
 SimRequest::~SimRequest() = default;
 
+SimSubresourceRequest::SimSubresourceRequest(String url, String mime_type)
+    : SimRequestBase(url, "", mime_type, false /* start_immediately */) {}
+
 SimSubresourceRequest::SimSubresourceRequest(String url,
-                                             String mime_type,
-                                             Params params)
-    : SimRequestBase(url, mime_type, false /* start_immediately */, params) {}
+                                             String redirect_url,
+                                             String mime_type)
+    : SimRequestBase(url,
+                     redirect_url,
+                     mime_type,
+                     false /* start_immediately */) {}
 
 SimSubresourceRequest::~SimSubresourceRequest() = default;
 

@@ -37,7 +37,7 @@ $(EXAMPLES_G): %$(PROGSSUF)_g$(EXESUF): %.o
 examples: $(EXAMPLES)
 
 $(EXAMPLES:%$(PROGSSUF)$(EXESUF)=%.o): | doc/examples
-OUTDIRS += doc/examples
+OBJDIRS += doc/examples
 
 DOXY_INPUT += $(EXAMPLES:%$(PROGSSUF)$(EXESUF)=%.c)
 

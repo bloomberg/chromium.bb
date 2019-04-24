@@ -148,7 +148,7 @@ class CompressionRegression(IntegrationTest):
       compression = {}
       for response in t.GetHTTPResponses():
         # Check that the response was proxied.
-        self.assertHasProxyHeaders(response)
+        self.assertHasChromeProxyViaHeader(response)
         # Compute compression metrics.
         cl = response.response_headers['content-length']
         ofcl = getChromeProxyOFCL(response)

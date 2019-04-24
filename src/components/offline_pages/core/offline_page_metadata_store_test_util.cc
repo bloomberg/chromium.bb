@@ -4,8 +4,6 @@
 
 #include "components/offline_pages/core/offline_page_metadata_store_test_util.h"
 
-#include <utility>
-
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
@@ -90,18 +88,16 @@ int64_t OfflinePageMetadataStoreTestUtil::GetPageCount() {
 
 std::unique_ptr<OfflinePageItem>
 OfflinePageMetadataStoreTestUtil::GetPageByOfflineId(int64_t offline_id) {
-  PageCriteria criteria;
-  criteria.offline_id = offline_id;
   OfflinePageItem* page = nullptr;
-  auto task = std::make_unique<GetPagesTask>(
-      store(), nullptr, criteria,
+  auto task = GetPagesTask::CreateTaskMatchingOfflineId(
+      store(),
       base::BindOnce(
-          [](OfflinePageItem** out_page,
-             const std::vector<OfflinePageItem>& cb_pages) {
-            if (!cb_pages.empty())
-              *out_page = new OfflinePageItem(cb_pages[0]);
+          [](OfflinePageItem** out_page, const OfflinePageItem* cb_page) {
+            if (cb_page)
+              *out_page = new OfflinePageItem(*cb_page);
           },
-          &page));
+          &page),
+      offline_id);
   task->Run();
   task_runner_->RunUntilIdle();
   return base::WrapUnique<OfflinePageItem>(page);

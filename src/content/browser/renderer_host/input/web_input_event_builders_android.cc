@@ -173,7 +173,7 @@ WebGestureEvent WebGestureEventBuilder::Build(WebInputEvent::Type type,
                                               float y) {
   DCHECK(WebInputEvent::IsGestureEventType(type));
   WebGestureEvent result(type, WebInputEvent::kNoModifiers, time,
-                         blink::WebGestureDevice::kTouchscreen);
+                         blink::kWebGestureDeviceTouchscreen);
   result.SetPositionInWidget(gfx::PointF(x, y));
 
   return result;

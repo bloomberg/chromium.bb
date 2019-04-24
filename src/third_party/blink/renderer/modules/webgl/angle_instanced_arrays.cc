@@ -72,7 +72,7 @@ void ANGLEInstancedArrays::drawArraysInstancedANGLE(GLenum mode,
 void ANGLEInstancedArrays::drawElementsInstancedANGLE(GLenum mode,
                                                       GLsizei count,
                                                       GLenum type,
-                                                      int64_t offset,
+                                                      long long offset,
                                                       GLsizei primcount) {
   WebGLExtensionScopedContext scoped(this);
   if (scoped.IsLost())

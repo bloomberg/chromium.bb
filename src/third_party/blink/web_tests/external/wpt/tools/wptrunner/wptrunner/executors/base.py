@@ -1,18 +1,18 @@
 import base64
 import hashlib
-from six.moves.http_client import HTTPConnection
+import httplib
 import io
 import os
 import threading
 import traceback
 import socket
-from six.moves.urllib.parse import urljoin, urlsplit, urlunsplit
+import urlparse
 from abc import ABCMeta, abstractmethod
 
 from PIL import Image, ImageChops, ImageStat
 
 from ..testrunner import Stop
-from .protocol import Protocol, BaseProtocolPart
+from protocol import Protocol, BaseProtocolPart
 
 here = os.path.split(__file__)[0]
 
@@ -50,10 +50,10 @@ def strip_server(url):
 
     e.g. http://example.org:8000/tests?id=1#2 becomes /tests?id=1#2"""
 
-    url_parts = list(urlsplit(url))
+    url_parts = list(urlparse.urlsplit(url))
     url_parts[0] = ""
     url_parts[1] = ""
-    return urlunsplit(url_parts)
+    return urlparse.urlunsplit(url_parts)
 
 
 class TestharnessResultConverter(object):
@@ -213,7 +213,7 @@ class TestExecutor(object):
                                self.server_config["ports"][protocol][0])
 
     def test_url(self, test):
-        return urljoin(self.server_url(test.environment["protocol"]), test.url)
+        return urlparse.urljoin(self.server_url(test.environment["protocol"]), test.url)
 
     @abstractmethod
     def do_test(self, test):
@@ -563,7 +563,7 @@ class WebDriverProtocol(Protocol):
         An HTTP request to an invalid path that results in a 404 is
         proof enough to us that the server is alive and kicking.
         """
-        conn = HTTPConnection(self.server.host, self.server.port)
+        conn = httplib.HTTPConnection(self.server.host, self.server.port)
         conn.request("HEAD", self.server.base_path + "invalid")
         res = conn.getresponse()
         return res.status == 404

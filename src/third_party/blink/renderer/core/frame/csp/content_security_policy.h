@@ -73,7 +73,7 @@ class SecurityPolicyViolationEventInit;
 class SourceLocation;
 enum class ResourceType : uint8_t;
 
-using SandboxFlags = WebSandboxFlags;
+typedef int SandboxFlags;
 typedef HeapVector<Member<CSPDirectiveList>> CSPDirectiveListVector;
 typedef HeapVector<Member<ConsoleMessage>> ConsoleMessageVector;
 typedef std::pair<String, ContentSecurityPolicyHeaderType> CSPHeaderAndType;
@@ -145,16 +145,12 @@ class CORE_EXPORT ContentSecurityPolicy
     kTrustedTypesViolation
   };
 
-  // The |type| argument given to inline checks, e.g.:
-  // https://w3c.github.io/webappsec-csp/#should-block-inline
-  // Its possible values are listed in:
-  // https://w3c.github.io/webappsec-csp/#effective-directive-for-inline-check
   enum class InlineType {
-    kNavigation,
-    kScript,
-    kScriptAttribute,
-    kStyle,
-    kStyleAttribute
+    kJavaScriptURL,
+    kInlineEventHandler,
+    kInlineScriptElement,
+    kInlineStyleAttribute,
+    kInlineStyleElement
   };
 
   enum class DirectiveType {
@@ -206,6 +202,10 @@ class CORE_EXPORT ContentSecurityPolicy
   };
 
   static const size_t kMaxSampleLength = 40;
+
+  static ContentSecurityPolicy* Create() {
+    return MakeGarbageCollected<ContentSecurityPolicy>();
+  }
 
   ContentSecurityPolicy();
   ~ContentSecurityPolicy();

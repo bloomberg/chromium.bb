@@ -171,9 +171,14 @@ void NetworkPortalNotificationControllerDelegate::Click(
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
 
+  const bool disable_bypass_proxy_switch_present =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableCaptivePortalBypassProxy);
   const bool use_incognito_profile =
-      profile && profile->GetPrefs()->GetBoolean(
-                     prefs::kCaptivePortalAuthenticationIgnoresProxy);
+      disable_bypass_proxy_switch_present
+          ? false
+          : (profile && profile->GetPrefs()->GetBoolean(
+                            prefs::kCaptivePortalAuthenticationIgnoresProxy));
 
   if (use_incognito_profile) {
     if (controller_)

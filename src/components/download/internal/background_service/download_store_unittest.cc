@@ -33,7 +33,8 @@ class DownloadStoreTest : public testing::Test {
     auto db = std::make_unique<leveldb_proto::test::FakeDB<protodb::Entry>>(
         &db_entries_);
     db_ = db.get();
-    store_.reset(new DownloadStore(std::move(db)));
+    store_.reset(new DownloadStore(
+        base::FilePath(FILE_PATH_LITERAL("/test/db/fakepath")), std::move(db)));
   }
 
   void InitCallback(std::vector<Entry>* loaded_entries,
@@ -79,7 +80,7 @@ TEST_F(DownloadStoreTest, Initialize) {
   store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
                                     base::Unretained(this),
                                     &preloaded_entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(true);
 
   ASSERT_TRUE(store_->IsInitialized());
@@ -95,7 +96,7 @@ TEST_F(DownloadStoreTest, HardRecover) {
   store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
                                     base::Unretained(this),
                                     &preloaded_entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(true);
 
   ASSERT_TRUE(store_->IsInitialized());
@@ -107,7 +108,7 @@ TEST_F(DownloadStoreTest, HardRecover) {
   ASSERT_FALSE(store_->IsInitialized());
 
   db_->DestroyCallback(true);
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
 
   ASSERT_TRUE(store_->IsInitialized());
   ASSERT_TRUE(hard_recover_result_.has_value());
@@ -123,7 +124,7 @@ TEST_F(DownloadStoreTest, HardRecoverDestroyFails) {
   store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
                                     base::Unretained(this),
                                     &preloaded_entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(true);
 
   ASSERT_TRUE(store_->IsInitialized());
@@ -150,7 +151,7 @@ TEST_F(DownloadStoreTest, HardRecoverInitFails) {
   store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
                                     base::Unretained(this),
                                     &preloaded_entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(true);
 
   ASSERT_TRUE(store_->IsInitialized());
@@ -162,7 +163,7 @@ TEST_F(DownloadStoreTest, HardRecoverInitFails) {
   ASSERT_FALSE(store_->IsInitialized());
 
   db_->DestroyCallback(true);
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kError);
+  db_->InitCallback(false);
 
   ASSERT_FALSE(store_->IsInitialized());
   ASSERT_TRUE(hard_recover_result_.has_value());
@@ -177,7 +178,7 @@ TEST_F(DownloadStoreTest, Update) {
   store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
                                     base::Unretained(this),
                                     &preloaded_entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_TRUE(store_->IsInitialized());
   ASSERT_EQ(2u, preloaded_entries.size());
@@ -211,7 +212,7 @@ TEST_F(DownloadStoreTest, Remove) {
   store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
                                     base::Unretained(this),
                                     &preloaded_entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_EQ(2u, preloaded_entries.size());
 
@@ -241,7 +242,7 @@ TEST_F(DownloadStoreTest, InitializeFailed) {
   store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
                                     base::Unretained(this),
                                     &preloaded_entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kError);
+  db_->InitCallback(false);
   ASSERT_FALSE(store_->IsInitialized());
   ASSERT_TRUE(preloaded_entries.empty());
 }
@@ -254,7 +255,7 @@ TEST_F(DownloadStoreTest, InitialLoadFailed) {
   store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
                                     base::Unretained(this),
                                     &preloaded_entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(false);
   ASSERT_FALSE(store_->IsInitialized());
   ASSERT_TRUE(preloaded_entries.empty());
@@ -267,7 +268,7 @@ TEST_F(DownloadStoreTest, UnsuccessfulUpdateOrRemove) {
   std::vector<Entry> entries;
   store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
                                     base::Unretained(this), &entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_TRUE(store_->IsInitialized());
   ASSERT_TRUE(entries.empty());
@@ -291,7 +292,7 @@ TEST_F(DownloadStoreTest, AddThenRemove) {
   std::vector<Entry> entries;
   store_->Initialize(base::BindOnce(&DownloadStoreTest::InitCallback,
                                     base::Unretained(this), &entries));
-  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->InitCallback(true);
   db_->LoadCallback(true);
   ASSERT_TRUE(entries.empty());
 

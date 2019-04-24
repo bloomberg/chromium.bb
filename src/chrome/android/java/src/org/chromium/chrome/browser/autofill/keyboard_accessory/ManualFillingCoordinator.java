@@ -4,20 +4,16 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.data.KeyboardAccessoryData;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.data.PropertyProvider;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.sheet_component.AccessorySheetCoordinator;
-import org.chromium.chrome.browser.compositor.CompositorViewResizer;
-import org.chromium.components.autofill.AutofillDelegate;
-import org.chromium.components.autofill.AutofillSuggestion;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
+import org.chromium.ui.DeferredViewStubInflationProvider;
 import org.chromium.ui.DropdownPopupWindow;
+import org.chromium.ui.ViewProvider;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -28,29 +24,35 @@ import org.chromium.ui.base.WindowAndroid;
  * {@link AccessorySheetCoordinator} to add and trigger surfaces that may assist users while filling
  * fields.
  */
-class ManualFillingCoordinator implements ManualFillingComponent {
+public class ManualFillingCoordinator {
     private final ManualFillingMediator mMediator = new ManualFillingMediator();
 
-    @Override
+    /**
+     * Initializes the manual filling component. Calls to this class are NoOps until this method is
+     * called.
+     * @param windowAndroid The window needed to listen to the keyboard and to connect to activity.
+     * @param barStub The {@link ViewStub} used to inflate the keyboard accessory bar.
+     * @param sheetStub The {@link ViewStub} used to inflate the keyboard accessory bottom sheet.
+     */
     public void initialize(WindowAndroid windowAndroid, ViewStub barStub, ViewStub sheetStub) {
         if (barStub == null || sheetStub == null) return; // The manual filling isn't needed.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY)) {
-            barStub.setLayoutResource(R.layout.keyboard_accessory_modern);
-        } else {
-            barStub.setLayoutResource(R.layout.keyboard_accessory);
+            barStub.setLayoutResource(org.chromium.chrome.R.layout.keyboard_accessory_modern);
         }
-        sheetStub.setLayoutResource(R.layout.keyboard_accessory_sheet);
-        initialize(windowAndroid, new KeyboardAccessoryCoordinator(mMediator, barStub),
-                new AccessorySheetCoordinator(sheetStub));
+        initialize(windowAndroid, new DeferredViewStubInflationProvider<>(barStub),
+                new DeferredViewStubInflationProvider<>(sheetStub));
     }
 
     @VisibleForTesting
-    void initialize(WindowAndroid windowAndroid, KeyboardAccessoryCoordinator accessoryBar,
-            AccessorySheetCoordinator accessorySheet) {
-        mMediator.initialize(accessoryBar, accessorySheet, windowAndroid);
+    void initialize(WindowAndroid windowAndroid, ViewProvider<KeyboardAccessoryView> barProvider,
+            ViewProvider<AccessorySheetView> sheetProvider) {
+        mMediator.initialize(new KeyboardAccessoryCoordinator(mMediator, barProvider),
+                new AccessorySheetCoordinator(sheetProvider), windowAndroid);
     }
 
-    @Override
+    /**
+     * Cleans up the manual UI by destroying the accessory bar and its bottom sheet.
+     */
     public void destroy() {
         mMediator.destroy();
     }
@@ -59,7 +61,6 @@ class ManualFillingCoordinator implements ManualFillingComponent {
      * Handles tapping on the Android back button.
      * @return Whether tapping the back button dismissed the accessory sheet or not.
      */
-    @Override
     public boolean handleBackPress() {
         return mMediator.handleBackPress();
     }
@@ -67,7 +68,6 @@ class ManualFillingCoordinator implements ManualFillingComponent {
     /**
      * Ensures that keyboard accessory and keyboard are hidden and reset.
      */
-    @Override
     public void dismiss() {
         mMediator.dismiss();
     }
@@ -76,76 +76,86 @@ class ManualFillingCoordinator implements ManualFillingComponent {
      * Notifies the component that a popup window exists so it can be dismissed if necessary.
      * @param popup A {@link DropdownPopupWindow} that might be dismissed later.
      */
-    @Override
     public void notifyPopupAvailable(DropdownPopupWindow popup) {
         mMediator.notifyPopupOpened(popup);
     }
 
-    @Override
+    /**
+     * Requests to close the active tab in the keyboard accessory. If there is no active tab, this
+     * is a NoOp.
+     */
     public void closeAccessorySheet() {
         mMediator.onCloseAccessorySheet();
     }
 
-    @Override
+    /**
+     * Opens the keyboard which implicitly dismisses the sheet. Without open sheet, this is a NoOp.
+     */
     public void swapSheetWithKeyboard() {
         mMediator.swapSheetWithKeyboard();
     }
 
-    @Override
-    public void registerActionProvider(
-            PropertyProvider<KeyboardAccessoryData.Action[]> actionProvider) {
+    void registerActionProvider(
+            KeyboardAccessoryData.PropertyProvider<KeyboardAccessoryData.Action[]> actionProvider) {
         mMediator.registerActionProvider(actionProvider);
     }
 
-    @Override
-    public void registerPasswordProvider(
-            PropertyProvider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider) {
+    void registerPasswordProvider(
+            Provider<KeyboardAccessoryData.AccessorySheetData> sheetDataProvider) {
         mMediator.registerPasswordProvider(sheetDataProvider);
     }
 
-    @Override
-    public void registerCreditCardProvider() {
+    void registerCreditCardProvider() {
         mMediator.registerCreditCardProvider();
     }
 
-    @Override
-    public void registerAutofillProvider(
-            PropertyProvider<AutofillSuggestion[]> autofillProvider, AutofillDelegate delegate) {
-        mMediator.registerAutofillProvider(autofillProvider, delegate);
-    }
-
-    @Override
     public void showWhenKeyboardIsVisible() {
         mMediator.showWhenKeyboardIsVisible();
     }
 
-    @Override
     public void hide() {
         mMediator.hide();
     }
 
-    @Override
     public void onResume() {
         mMediator.resume();
     }
 
-    @Override
     public void onPause() {
         mMediator.pause();
     }
 
-    @Override
-    public CompositorViewResizer getKeyboardExtensionViewResizer() {
-        return mMediator.getKeyboardExtensionViewResizer();
+    /**
+     * Returns a size manager that allows to access the combined height of
+     * {@link KeyboardAccessoryCoordinator} and {@link AccessorySheetCoordinator}, and to be
+     * notified when it changes.
+     * @return A {@link KeyboardExtensionSizeManager}.
+     */
+    public KeyboardExtensionSizeManager getKeyboardExtensionSizeManager() {
+        return mMediator.getKeyboardExtensionSizeManager();
     }
 
-    @Override
-    public boolean isFillingViewShown(View view) {
-        return mMediator.isFillingViewShown(view);
+    // TODO(fhorschig): Should be @VisibleForTesting.
+    /**
+     * Allows access to the keyboard accessory. This can be used to explicitly modify the the bar of
+     * the keyboard accessory (e.g. by providing suggestions or actions).
+     * @return The coordinator of the Keyboard accessory component.
+     */
+    public @Nullable KeyboardAccessoryCoordinator getKeyboardAccessory() {
+        return mMediator.getKeyboardAccessory();
     }
 
     @VisibleForTesting
     ManualFillingMediator getMediatorForTesting() {
         return mMediator;
+    }
+
+    /**
+     * Returns whether the Keyboard is replaced by an accessory sheet or is about to do so.
+     * @return True if an accessory sheet is (being) opened and replacing the keyboard.
+     * @param view A {@link View} that is used to find the window root.
+     */
+    public boolean isFillingViewShown(View view) {
+        return mMediator.isFillingViewShown(view);
     }
 }

@@ -35,8 +35,8 @@
 
 namespace {
 
-CXFA_FFField* ToField(CXFA_ContentLayoutItem* pItem) {
-  return pItem ? static_cast<CXFA_FFField*>(pItem->GetFFWidget()) : nullptr;
+CXFA_FFField* ToField(CXFA_LayoutItem* widget) {
+  return static_cast<CXFA_FFField*>(widget);
 }
 
 }  // namespace
@@ -45,9 +45,9 @@ CXFA_FFField::CXFA_FFField(CXFA_Node* pNode) : CXFA_FFWidget(pNode) {}
 
 CXFA_FFField::~CXFA_FFField() = default;
 
-CFX_RectF CXFA_FFField::GetBBox(FocusOption focus) {
+CFX_RectF CXFA_FFField::GetBBox(uint32_t dwStatus, FocusOption focus) {
   if (focus == kDoNotDrawFocus)
-    return CXFA_FFWidget::GetBBox(kDoNotDrawFocus);
+    return CXFA_FFWidget::GetBBox(dwStatus, kDoNotDrawFocus);
 
   switch (m_pNode->GetFFWidgetType()) {
     case XFA_FFWidgetType::kButton:
@@ -63,17 +63,17 @@ CFX_RectF CXFA_FFField::GetBBox(FocusOption focus) {
 
 void CXFA_FFField::RenderWidget(CXFA_Graphics* pGS,
                                 const CFX_Matrix& matrix,
-                                HighlightOption highlight) {
-  if (!HasVisibleStatus())
+                                uint32_t dwStatus) {
+  if (!IsMatchVisibleStatus(dwStatus))
     return;
 
   CFX_Matrix mtRotate = GetRotateMatrix();
   mtRotate.Concat(matrix);
 
-  CXFA_FFWidget::RenderWidget(pGS, mtRotate, highlight);
+  CXFA_FFWidget::RenderWidget(pGS, mtRotate, dwStatus);
   DrawBorder(pGS, m_pNode->GetUIBorder(), m_rtUI, mtRotate);
   RenderCaption(pGS, &mtRotate);
-  DrawHighlight(pGS, &mtRotate, highlight, kSquareShape);
+  DrawHighlight(pGS, &mtRotate, dwStatus, false);
 
   CFX_RectF rtWidget = m_pNormalWidget->GetWidgetRect();
   CFX_Matrix mt(1, 0, 0, 1, rtWidget.left, rtWidget.top);
@@ -83,20 +83,18 @@ void CXFA_FFField::RenderWidget(CXFA_Graphics* pGS,
 
 void CXFA_FFField::DrawHighlight(CXFA_Graphics* pGS,
                                  CFX_Matrix* pMatrix,
-                                 HighlightOption highlight,
-                                 ShapeOption shape) {
-  if (highlight == kNoHighlight)
+                                 uint32_t dwStatus,
+                                 bool bEllipse) {
+  if (m_rtUI.IsEmpty() || !GetDoc()->GetXFADoc()->IsInteractive())
+    return;
+  if (!(dwStatus & XFA_WidgetStatus_Highlight) || !m_pNode->IsOpenAccess())
     return;
 
-  if (m_rtUI.IsEmpty() || !GetDoc()->GetXFADoc()->IsInteractive() ||
-      !m_pNode->IsOpenAccess()) {
-    return;
-  }
   CXFA_FFDoc* pDoc = GetDoc();
   pGS->SetFillColor(
       CXFA_GEColor(pDoc->GetDocEnvironment()->GetHighlightColor(pDoc)));
   CXFA_GEPath path;
-  if (shape == kRoundShape)
+  if (bEllipse)
     path.AddEllipse(m_rtUI);
   else
     path.AddRectangle(m_rtUI.left, m_rtUI.top, m_rtUI.width, m_rtUI.height);
@@ -105,7 +103,7 @@ void CXFA_FFField::DrawHighlight(CXFA_Graphics* pGS,
 }
 
 void CXFA_FFField::DrawFocus(CXFA_Graphics* pGS, CFX_Matrix* pMatrix) {
-  if (!GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_Focused))
+  if (!(m_dwStatus & XFA_WidgetStatus_Focused))
     return;
 
   pGS->SetStrokeColor(CXFA_GEColor(0xFF000000));
@@ -144,13 +142,13 @@ void CXFA_FFField::SetEditScrollOffset() {
   }
 
   float fScrollOffset = 0;
-  CXFA_FFField* pPrev = ToField(GetLayoutItem()->GetPrev());
+  CXFA_FFField* pPrev = ToField(GetPrev());
   if (pPrev)
     fScrollOffset = -(m_pNode->GetUIMargin().top);
 
   while (pPrev) {
     fScrollOffset += pPrev->m_rtUI.height;
-    pPrev = ToField(pPrev->GetLayoutItem()->GetPrev());
+    pPrev = ToField(pPrev->GetPrev());
   }
   static_cast<CFWL_Edit*>(m_pNormalWidget.get())
       ->SetScrollOffset(fScrollOffset);
@@ -171,7 +169,7 @@ void CXFA_FFField::CapPlacement() {
   CFX_RectF rtWidget = GetRectWithoutRotate();
   CXFA_Margin* margin = m_pNode->GetMarginIfExists();
   if (margin) {
-    CXFA_ContentLayoutItem* pItem = GetLayoutItem();
+    CXFA_ContentLayoutItem* pItem = this;
     float fLeftInset = margin->GetLeftInset();
     float fRightInset = margin->GetRightInset();
     float fTopInset = margin->GetTopInset();
@@ -193,10 +191,8 @@ void CXFA_FFField::CapPlacement() {
   CXFA_Caption* caption = m_pNode->GetCaptionIfExists();
   if (caption && !caption->IsHidden()) {
     iCapPlacement = caption->GetPlacementType();
-    if ((iCapPlacement == XFA_AttributeValue::Top &&
-         GetLayoutItem()->GetPrev()) ||
-        (iCapPlacement == XFA_AttributeValue::Bottom &&
-         GetLayoutItem()->GetNext())) {
+    if ((iCapPlacement == XFA_AttributeValue::Top && GetPrev()) ||
+        (iCapPlacement == XFA_AttributeValue::Bottom && GetNext())) {
       m_rtCaption = CFX_RectF();
     } else {
       fCapReserve = caption->GetReserve();
@@ -206,7 +202,7 @@ void CXFA_FFField::CapPlacement() {
       } else {
         fCapReserve = std::min(fCapReserve, rtWidget.width);
       }
-      CXFA_ContentLayoutItem* pItem = GetLayoutItem();
+      CXFA_ContentLayoutItem* pItem = this;
       if (!pItem->GetPrev() && !pItem->GetNext()) {
         m_rtCaption = rtWidget;
       } else {
@@ -503,7 +499,7 @@ bool CXFA_FFField::OnSetFocus(CXFA_FFWidget* pOldWidget) {
 
   CFWL_MessageSetFocus ms(nullptr, m_pNormalWidget.get());
   TranslateFWLMessage(&ms);
-  GetLayoutItem()->SetStatusBits(XFA_WidgetStatus_Focused);
+  m_dwStatus |= XFA_WidgetStatus_Focused;
   InvalidateRect();
   return true;
 }
@@ -514,7 +510,7 @@ bool CXFA_FFField::OnKillFocus(CXFA_FFWidget* pNewWidget) {
 
   CFWL_MessageKillFocus ms(nullptr, m_pNormalWidget.get());
   TranslateFWLMessage(&ms);
-  GetLayoutItem()->ClearStatusBits(XFA_WidgetStatus_Focused);
+  m_dwStatus &= ~XFA_WidgetStatus_Focused;
   InvalidateRect();
   CXFA_FFWidget::OnKillFocus(pNewWidget);
   return true;

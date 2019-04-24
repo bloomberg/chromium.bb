@@ -173,9 +173,9 @@ static int GetHeightForLineCount(const LayoutBlockFlow* block_flow,
   LayoutBox* normal_flow_child_without_lines = nullptr;
   for (LayoutBox* obj = block_flow->FirstChildBox(); obj;
        obj = obj->NextSiblingBox()) {
-    auto* block_flow = DynamicTo<LayoutBlockFlow>(obj);
-    if (block_flow && ShouldCheckLines(block_flow)) {
-      int result = GetHeightForLineCount(block_flow, line_count, false, count);
+    if (obj->IsLayoutBlockFlow() && ShouldCheckLines(ToLayoutBlockFlow(obj))) {
+      int result = GetHeightForLineCount(ToLayoutBlockFlow(obj), line_count,
+                                         false, count);
       if (result != -1)
         return (result + obj->Location().Y() +
                 (include_bottom ? (block_flow->BorderBottom() +
@@ -210,9 +210,9 @@ static RootInlineBox* LineAtIndex(const LayoutBlockFlow* block_flow, int i) {
   }
   for (LayoutObject* child = block_flow->FirstChild(); child;
        child = child->NextSibling()) {
-    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
-    if (!child_block_flow)
+    if (!child->IsLayoutBlockFlow())
       continue;
+    LayoutBlockFlow* child_block_flow = ToLayoutBlockFlow(child);
     if (!ShouldCheckLines(child_block_flow))
       continue;
     if (RootInlineBox* box = LineAtIndex(child_block_flow, i))
@@ -242,9 +242,9 @@ static int LineCount(const LayoutBlockFlow* block_flow,
   }
   for (LayoutObject* obj = block_flow->FirstChild(); obj;
        obj = obj->NextSibling()) {
-    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(obj);
-    if (!child_block_flow)
+    if (!obj->IsLayoutBlockFlow())
       continue;
+    LayoutBlockFlow* child_block_flow = ToLayoutBlockFlow(obj);
     if (!ShouldCheckLines(child_block_flow))
       continue;
     bool recursive_found = false;
@@ -271,9 +271,9 @@ static void ClearTruncation(LayoutBlockFlow* block_flow) {
   }
   for (LayoutObject* obj = block_flow->FirstChild(); obj;
        obj = obj->NextSibling()) {
-    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(obj);
-    if (!child_block_flow)
+    if (!obj->IsLayoutBlockFlow())
       continue;
+    LayoutBlockFlow* child_block_flow = ToLayoutBlockFlow(obj);
     if (ShouldCheckLines(child_block_flow))
       ClearTruncation(child_block_flow);
   }
@@ -408,8 +408,8 @@ void LayoutDeprecatedFlexibleBox::UpdateBlockLayout(bool relayout_children) {
   } else if (!FirstChildBox()->NextSiblingBox()) {
     UseCounter::Count(GetDocument(), WebFeature::kWebkitBoxOneChild);
 
-    auto* first_child_block_flow = DynamicTo<LayoutBlockFlow>(FirstChildBox());
-    if (first_child_block_flow && first_child_block_flow->ChildrenInline()) {
+    if (FirstChildBox()->IsLayoutBlockFlow() &&
+        ToLayoutBlockFlow(FirstChildBox())->ChildrenInline()) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kWebkitBoxOneChildIsLayoutBlockFlowInline);
     }
@@ -1117,8 +1117,8 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
   } else if (!child->NextSiblingBox()) {
     UseCounter::Count(GetDocument(), WebFeature::kWebkitBoxLineClampOneChild);
 
-    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
-    if (child_block_flow && child_block_flow->ChildrenInline()) {
+    if (child->IsLayoutBlockFlow() &&
+        ToLayoutBlockFlow(child)->ChildrenInline()) {
       UseCounter::Count(
           GetDocument(),
           WebFeature::kWebkitBoxLineClampOneChildIsLayoutBlockFlowInline);
@@ -1142,17 +1142,15 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
       child->SetChildNeedsLayout(kMarkOnlyThis);
 
       // Dirty all the positioned objects.
-      auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
-      if (child_block_flow) {
-        child_block_flow->MarkPositionedObjectsForLayout();
-        ClearTruncation(child_block_flow);
+      if (child->IsLayoutBlockFlow()) {
+        ToLayoutBlockFlow(child)->MarkPositionedObjectsForLayout();
+        ClearTruncation(ToLayoutBlockFlow(child));
       }
     }
     child->LayoutIfNeeded();
-    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
-    if (child->StyleRef().Height().IsAuto() && child_block_flow) {
-      max_line_count = std::max(max_line_count, LineCount(child_block_flow));
-    }
+    if (child->StyleRef().Height().IsAuto() && child->IsLayoutBlockFlow())
+      max_line_count =
+          std::max(max_line_count, LineCount(ToLayoutBlockFlow(child)));
   }
 
   // Get the number of lines and then alter all block flow children with auto
@@ -1165,11 +1163,11 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
     return;
 
   for (LayoutBox* child = iterator.First(); child; child = iterator.Next()) {
-    auto* block_child = DynamicTo<LayoutBlockFlow>(child);
     if (ChildDoesNotAffectWidthOrFlexing(child) ||
-        !child->StyleRef().Height().IsAuto() || !block_child)
+        !child->StyleRef().Height().IsAuto() || !child->IsLayoutBlockFlow())
       continue;
 
+    LayoutBlockFlow* block_child = ToLayoutBlockFlow(child);
     int line_count = blink::LineCount(block_child);
     if (line_count <= num_visible_lines)
       continue;
@@ -1181,7 +1179,7 @@ void LayoutDeprecatedFlexibleBox::ApplyLineClamp(FlexBoxIterator& iterator,
       continue;
 
     child->SetOverrideLogicalHeight(new_height);
-    child->ForceLayout();
+    child->ForceChildLayout();
 
     // FIXME: For now don't support RTL.
     if (StyleRef().Direction() != TextDirection::kLtr)
@@ -1255,10 +1253,9 @@ void LayoutDeprecatedFlexibleBox::ClearLineClamp() {
         (child->StyleRef().Height().IsAuto() && child->IsLayoutBlock())) {
       child->SetChildNeedsLayout();
 
-      auto* child_block_flow = DynamicTo<LayoutBlockFlow>(child);
-      if (child_block_flow) {
-        child_block_flow->MarkPositionedObjectsForLayout();
-        ClearTruncation(child_block_flow);
+      if (child->IsLayoutBlockFlow()) {
+        ToLayoutBlockFlow(child)->MarkPositionedObjectsForLayout();
+        ClearTruncation(ToLayoutBlockFlow(child));
       }
     }
   }

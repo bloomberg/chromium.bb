@@ -18,8 +18,8 @@
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/system/factory_ping_embargo_check.h"
@@ -361,14 +361,8 @@ AutoEnrollmentController::GetFRERequirement() {
     if (check_enrollment_value == "1")
       return FRERequirement::kExplicitlyRequired;
   }
-  // Assume that the presence of the machine serial number means that VPD has
-  // been read successfully. Don't trust a missing ActivateDate if VPD could not
-  // be read successfully.
-  bool vpd_read_successfully = !provider->GetEnterpriseMachineID().empty();
-  if (vpd_read_successfully &&
-      !provider->GetMachineStatistic(system::kActivateDateKey, nullptr)) {
-    // The device has never been activated (enterprise enrolled or
-    // consumer-owned) so doing a FRE check is not necessary.
+  if (!provider->GetMachineStatistic(system::kActivateDateKey, nullptr) &&
+      !provider->GetEnterpriseMachineID().empty()) {
     return FRERequirement::kNotRequired;
   }
   return FRERequirement::kRequired;
@@ -758,9 +752,10 @@ void AutoEnrollmentController::UpdateState(
 void AutoEnrollmentController::StartCleanupForcedReEnrollment() {
   // D-Bus services may not be available yet, so we call
   // WaitForServiceToBeAvailable. See https://crbug.com/841627.
-  CryptohomeClient::Get()->WaitForServiceToBeAvailable(base::BindOnce(
-      &AutoEnrollmentController::StartRemoveFirmwareManagementParameters,
-      weak_ptr_factory_.GetWeakPtr()));
+  DBusThreadManager::Get()->GetCryptohomeClient()->WaitForServiceToBeAvailable(
+      base::BindOnce(
+          &AutoEnrollmentController::StartRemoveFirmwareManagementParameters,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutoEnrollmentController::StartRemoveFirmwareManagementParameters(
@@ -773,11 +768,13 @@ void AutoEnrollmentController::StartRemoveFirmwareManagementParameters(
   }
 
   cryptohome::RemoveFirmwareManagementParametersRequest request;
-  CryptohomeClient::Get()->RemoveFirmwareManagementParametersFromTpm(
-      request,
-      base::BindOnce(
-          &AutoEnrollmentController::OnFirmwareManagementParametersRemoved,
-          weak_ptr_factory_.GetWeakPtr()));
+  DBusThreadManager::Get()
+      ->GetCryptohomeClient()
+      ->RemoveFirmwareManagementParametersFromTpm(
+          request,
+          base::BindOnce(
+              &AutoEnrollmentController::OnFirmwareManagementParametersRemoved,
+              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutoEnrollmentController::OnFirmwareManagementParametersRemoved(
@@ -787,9 +784,11 @@ void AutoEnrollmentController::OnFirmwareManagementParametersRemoved(
 
   // D-Bus services may not be available yet, so we call
   // WaitForServiceToBeAvailable. See https://crbug.com/841627.
-  SessionManagerClient::Get()->WaitForServiceToBeAvailable(
-      base::BindOnce(&AutoEnrollmentController::StartClearForcedReEnrollmentVpd,
-                     weak_ptr_factory_.GetWeakPtr()));
+  DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->WaitForServiceToBeAvailable(base::BindOnce(
+          &AutoEnrollmentController::StartClearForcedReEnrollmentVpd,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutoEnrollmentController::StartClearForcedReEnrollmentVpd(
@@ -802,9 +801,11 @@ void AutoEnrollmentController::StartClearForcedReEnrollmentVpd(
     return;
   }
 
-  SessionManagerClient::Get()->ClearForcedReEnrollmentVpd(
-      base::BindOnce(&AutoEnrollmentController::OnForcedReEnrollmentVpdCleared,
-                     weak_ptr_factory_.GetWeakPtr()));
+  DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->ClearForcedReEnrollmentVpd(base::BindOnce(
+          &AutoEnrollmentController::OnForcedReEnrollmentVpdCleared,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutoEnrollmentController::OnForcedReEnrollmentVpdCleared(bool reply) {

@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container">
     <!-- Note: border=1 overrides layout table heuristics -->
@@ -11,7 +12,7 @@
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axTable1 = accessibilityController.accessibleElementById("table1");
     assert_equals(axTable1.name, "Caption");
     assert_equals(axTable1.nameFrom, "caption");
@@ -29,7 +30,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axTable2 = accessibilityController.accessibleElementById("table2");
     assert_equals(axTable2.name, "Label");
     assert_equals(axTable2.nameFrom, "attribute");

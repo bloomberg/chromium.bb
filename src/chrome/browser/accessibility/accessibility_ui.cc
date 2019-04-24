@@ -132,15 +132,12 @@ std::unique_ptr<base::DictionaryValue> BuildTargetDescriptor(Browser* browser) {
 }
 #endif  // !defined(OS_ANDROID)
 
-bool ShouldHandleAccessibilityRequestCallback(const std::string& path) {
-  return path == kTargetsDataFile;
-}
-
-void HandleAccessibilityRequestCallback(
+bool HandleAccessibilityRequestCallback(
     content::BrowserContext* current_context,
     const std::string& path,
     const content::WebUIDataSource::GotDataCallback& callback) {
-  DCHECK(ShouldHandleAccessibilityRequestCallback(path));
+  if (path != kTargetsDataFile)
+    return false;
 
   base::DictionaryValue data;
   PrefService* pref = Profile::FromBrowserContext(current_context)->GetPrefs();
@@ -227,6 +224,7 @@ void HandleAccessibilityRequestCallback(
   base::JSONWriter::Write(data, &json_string);
 
   callback.Run(base::RefCountedString::TakeString(&json_string));
+  return true;
 }
 
 std::string RecursiveDumpAXPlatformNodeAsString(ui::AXPlatformNode* node,
@@ -258,7 +256,6 @@ AccessibilityUI::AccessibilityUI(content::WebUI* web_ui)
   html_source->AddResourcePath("accessibility.js", IDR_ACCESSIBILITY_JS);
   html_source->SetDefaultResource(IDR_ACCESSIBILITY_HTML);
   html_source->SetRequestFilter(
-      base::BindRepeating(&ShouldHandleAccessibilityRequestCallback),
       base::Bind(&HandleAccessibilityRequestCallback,
                  web_ui->GetWebContents()->GetBrowserContext()));
 

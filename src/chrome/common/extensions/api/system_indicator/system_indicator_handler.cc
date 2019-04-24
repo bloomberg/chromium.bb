@@ -35,7 +35,7 @@ bool SystemIndicatorHandler::Parse(Extension* extension,
   if (!action_info.get())
     return false;
 
-  ActionInfo::SetSystemIndicatorInfo(extension, std::move(action_info));
+  ActionInfo::SetSystemIndicatorInfo(extension, action_info.release());
   return true;
 }
 

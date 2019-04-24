@@ -53,20 +53,21 @@ void AutomationManagerAura::Enable() {
   // GetTopLevelWindows() returns the correct values when automation is enabled
   // with multiple displays connected.
   for (aura::Window* root : ash::Shell::GetAllRootWindows())
-    cache_->OnRootWindowObjCreated(root);
+    views::AXAuraObjCache::GetInstance()->OnRootWindowObjCreated(root);
 #endif
 
   SendEvent(current_tree_->GetRoot(), ax::mojom::Event::kLoadComplete);
   // Intentionally not reset at shutdown since we cannot rely on the shutdown
   // ordering of two base::Singletons.
-  cache_->SetDelegate(this);
+  views::AXAuraObjCache::GetInstance()->SetDelegate(this);
 
 #if defined(OS_CHROMEOS)
   // TODO(crbug.com/756054): Support MultiProcessMash.
   if (!features::IsMultiProcessMash()) {
     aura::Window* active_window = ash::wm::GetActiveWindow();
     if (active_window) {
-      views::AXAuraObjWrapper* focus = cache_->GetOrCreate(active_window);
+      views::AXAuraObjWrapper* focus =
+          views::AXAuraObjCache::GetInstance()->GetOrCreate(active_window);
       if (focus)
         SendEvent(focus, ax::mojom::Event::kChildrenChanged);
     }
@@ -92,7 +93,8 @@ void AutomationManagerAura::OnViewEvent(views::View* view,
   if (!enabled_)
     return;
 
-  views::AXAuraObjWrapper* obj = cache_->GetOrCreate(view);
+  views::AXAuraObjWrapper* obj =
+      views::AXAuraObjCache::GetInstance()->GetOrCreate(view);
   if (!obj)
     return;
 
@@ -126,7 +128,7 @@ void AutomationManagerAura::HandleEvent(ax::mojom::Event event_type) {
 
 void AutomationManagerAura::SendEventOnObjectById(int32_t id,
                                                   ax::mojom::Event event_type) {
-  views::AXAuraObjWrapper* obj = cache_->Get(id);
+  views::AXAuraObjWrapper* obj = views::AXAuraObjCache::GetInstance()->Get(id);
   if (obj)
     SendEvent(obj, event_type);
 }
@@ -166,9 +168,7 @@ void AutomationManagerAura::OnEvent(views::AXAuraObjWrapper* aura_obj,
 }
 
 AutomationManagerAura::AutomationManagerAura()
-    : enabled_(false),
-      processing_events_(false),
-      cache_(std::make_unique<views::AXAuraObjCache>()) {
+    : enabled_(false), processing_events_(false) {
   views::AXEventManager::Get()->AddObserver(this);
 }
 
@@ -177,9 +177,9 @@ AutomationManagerAura::~AutomationManagerAura() = default;
 
 void AutomationManagerAura::Reset(bool reset_serializer) {
   if (!current_tree_) {
-    desktop_root_ = std::make_unique<AXRootObjWrapper>(this, cache_.get());
+    desktop_root_ = std::make_unique<AXRootObjWrapper>(this);
     current_tree_ = std::make_unique<views::AXTreeSourceViews>(
-        desktop_root_.get(), ax_tree_id(), cache_.get());
+        desktop_root_.get(), ax_tree_id());
   }
   if (reset_serializer) {
     current_tree_serializer_.reset();
@@ -194,7 +194,7 @@ void AutomationManagerAura::Reset(bool reset_serializer) {
     alert_window_ = std::make_unique<views::AccessibilityAlertWindow>(
         shell->GetContainer(shell->GetPrimaryRootWindow(),
                             ash::kShellWindowId_OverlayContainer),
-        cache_.get());
+        views::AXAuraObjCache::GetInstance());
 #endif  // defined(OS_CHROMEOS)
   }
 }
@@ -222,7 +222,8 @@ void AutomationManagerAura::SendEvent(views::AXAuraObjWrapper* aura_obj,
   tree_updates.push_back(update);
 
   // Make sure the focused node is serialized.
-  views::AXAuraObjWrapper* focus = cache_->GetFocus();
+  views::AXAuraObjWrapper* focus =
+      views::AXAuraObjCache::GetInstance()->GetFocus();
   if (focus) {
     ui::AXTreeUpdate focused_node_update;
     current_tree_serializer_->SerializeChanges(focus, &focused_node_update);
@@ -309,7 +310,8 @@ void AutomationManagerAura::PerformHitTest(
   }
 
   // Otherwise, fire the event directly on the Window.
-  views::AXAuraObjWrapper* window_wrapper = cache_->GetOrCreate(window);
+  views::AXAuraObjWrapper* window_wrapper =
+      views::AXAuraObjCache::GetInstance()->GetOrCreate(window);
   if (window_wrapper)
     SendEvent(window_wrapper, action.hit_test_event_to_fire);
 #endif

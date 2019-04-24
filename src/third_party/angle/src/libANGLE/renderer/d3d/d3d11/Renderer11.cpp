@@ -68,6 +68,13 @@
 #    include "libANGLE/renderer/d3d/d3d11/win32/NativeWindow11Win32.h"
 #endif
 
+// Include the D3D9 debug annotator header for use by the desktop D3D11 renderer
+// because the D3D11 interface method ID3DUserDefinedAnnotation::GetStatus
+// doesn't work with the Graphics Diagnostics tools in Visual Studio 2013.
+#ifdef ANGLE_ENABLE_D3D9
+#    include "libANGLE/renderer/d3d/d3d9/DebugAnnotator9.h"
+#endif
+
 // Enable ANGLE_SKIP_DXGI_1_2_CHECK if there is not a possibility of using cross-process
 // HWNDs or the Windows 7 Platform Update (KB2670838) is expected to be installed.
 #ifndef ANGLE_SKIP_DXGI_1_2_CHECK
@@ -413,7 +420,8 @@ Renderer11::Renderer11(egl::Display *display)
       mLastHistogramUpdateTime(
           ANGLEPlatformCurrent()->monotonicallyIncreasingTime(ANGLEPlatformCurrent())),
       mDebug(nullptr),
-      mScratchMemoryBuffer(ScratchMemoryBufferLifetime)
+      mScratchMemoryBuffer(ScratchMemoryBufferLifetime),
+      mAnnotator(nullptr)
 {
     mLineLoopIB    = nullptr;
     mTriangleFanIB = nullptr;
@@ -528,6 +536,19 @@ Renderer11::Renderer11(egl::Display *display)
     const EGLenum presentPath = static_cast<EGLenum>(attributes.get(
         EGL_EXPERIMENTAL_PRESENT_PATH_ANGLE, EGL_EXPERIMENTAL_PRESENT_PATH_COPY_ANGLE));
     mPresentPathFastEnabled   = (presentPath == EGL_EXPERIMENTAL_PRESENT_PATH_FAST_ANGLE);
+
+// The D3D11 renderer must choose the D3D9 debug annotator because the D3D11 interface
+// method ID3DUserDefinedAnnotation::GetStatus on desktop builds doesn't work with the Graphics
+// Diagnostics tools in Visual Studio 2013.
+// The D3D9 annotator works properly for both D3D11 and D3D9.
+// Incorrect status reporting can cause ANGLE to log unnecessary debug events.
+#ifdef ANGLE_ENABLE_D3D9
+    mAnnotator = new DebugAnnotator9();
+#else
+    mAnnotator = new DebugAnnotator11();
+#endif
+    ASSERT(mAnnotator);
+    gl::InitializeDebugAnnotations(mAnnotator);
 }
 
 Renderer11::~Renderer11()
@@ -813,9 +834,6 @@ egl::Error Renderer11::initializeD3DDevice()
     mResourceManager11.setAllocationsInitialized(mCreateDebugDevice);
 
     d3d11::SetDebugName(mDeviceContext, "DeviceContext");
-
-    mAnnotator.initialize(mDeviceContext);
-    gl::InitializeDebugAnnotations(&mAnnotator);
 
     return egl::NoError();
 }
@@ -1326,7 +1344,6 @@ egl::Error Renderer11::getD3DTextureInfo(const egl::Config *configuration,
         case DXGI_FORMAT_B8G8R8A8_TYPELESS:
         case DXGI_FORMAT_R16G16B16A16_FLOAT:
         case DXGI_FORMAT_R32G32B32A32_FLOAT:
-        case DXGI_FORMAT_R10G10B10A2_UNORM:
             break;
 
         default:
@@ -1913,8 +1930,11 @@ void Renderer11::release()
 {
     mScratchMemoryBuffer.clear();
 
-    mAnnotator.release();
-    gl::UninitializeDebugAnnotations();
+    if (mAnnotator != nullptr)
+    {
+        gl::UninitializeDebugAnnotations();
+        SafeDelete(mAnnotator);
+    }
 
     releaseDeviceResources();
 
@@ -3727,7 +3747,7 @@ gl::Version Renderer11::getMaxSupportedESVersion() const
 
 gl::DebugAnnotator *Renderer11::getAnnotator()
 {
-    return &mAnnotator;
+    return mAnnotator;
 }
 
 angle::Result Renderer11::dispatchCompute(const gl::Context *context,
@@ -3735,14 +3755,6 @@ angle::Result Renderer11::dispatchCompute(const gl::Context *context,
                                           GLuint numGroupsY,
                                           GLuint numGroupsZ)
 {
-    const gl::State &glState   = context->getState();
-    const gl::Program *program = glState.getProgram();
-    if (program->getActiveShaderStorageBlockCount() > 0 ||
-        program->getActiveAtomicCounterBufferCount() > 0)
-    {
-        ANGLE_TRY(markRawBufferUsage(context));
-    }
-
     ANGLE_TRY(mStateManager.updateStateForCompute(context, numGroupsX, numGroupsY, numGroupsZ));
     mDeviceContext->Dispatch(numGroupsX, numGroupsY, numGroupsZ);
 
@@ -3751,13 +3763,6 @@ angle::Result Renderer11::dispatchCompute(const gl::Context *context,
 angle::Result Renderer11::dispatchComputeIndirect(const gl::Context *context, GLintptr indirect)
 {
     const auto &glState          = context->getState();
-    const gl::Program *program   = glState.getProgram();
-    if (program->getActiveShaderStorageBlockCount() > 0 ||
-        program->getActiveAtomicCounterBufferCount() > 0)
-    {
-        ANGLE_TRY(markRawBufferUsage(context));
-    }
-
     auto *dispatchIndirectBuffer = glState.getTargetBuffer(gl::BufferBinding::DispatchIndirect);
     ASSERT(dispatchIndirectBuffer);
 
@@ -3938,36 +3943,6 @@ angle::Result Renderer11::mapResource(const gl::Context *context,
 {
     HRESULT hr = mDeviceContext->Map(resource, subResource, mapType, mapFlags, mappedResource);
     ANGLE_TRY_HR(GetImplAs<Context11>(context), hr, "Failed to map D3D11 resource.");
-    return angle::Result::Continue;
-}
-
-angle::Result Renderer11::markRawBufferUsage(const gl::Context *context)
-{
-    const gl::State &glState   = context->getState();
-    const gl::Program *program = glState.getProgram();
-    for (size_t blockIndex = 0; blockIndex < program->getActiveShaderStorageBlockCount();
-         blockIndex++)
-    {
-        GLuint binding = program->getShaderStorageBlockBinding(static_cast<GLuint>(blockIndex));
-        const auto &shaderStorageBuffer = glState.getIndexedShaderStorageBuffer(binding);
-        if (shaderStorageBuffer.get() != nullptr)
-        {
-            Buffer11 *bufferStorage = GetImplAs<Buffer11>(shaderStorageBuffer.get());
-            ANGLE_TRY(bufferStorage->markRawBufferUsage(context));
-        }
-    }
-
-    for (const auto &atomicCounterBuffer : program->getState().getAtomicCounterBuffers())
-    {
-        GLuint binding     = atomicCounterBuffer.binding;
-        const auto &buffer = glState.getIndexedAtomicCounterBuffer(binding);
-
-        if (buffer.get() != nullptr)
-        {
-            Buffer11 *bufferStorage = GetImplAs<Buffer11>(buffer.get());
-            ANGLE_TRY(bufferStorage->markRawBufferUsage(context));
-        }
-    }
     return angle::Result::Continue;
 }
 

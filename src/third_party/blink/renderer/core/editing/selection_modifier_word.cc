@@ -146,8 +146,8 @@ const InlineTextBox* LogicallyPreviousBox(
     if (!start_node)
       break;
 
-    Position position =
-        PreviousRootInlineBoxCandidatePosition(start_node, visible_position);
+    Position position = PreviousRootInlineBoxCandidatePosition(
+        start_node, visible_position, kContentIsEditable);
     if (position.IsNull())
       break;
 
@@ -194,8 +194,8 @@ const InlineTextBox* LogicallyNextBox(
     if (!start_node)
       break;
 
-    Position position =
-        NextRootInlineBoxCandidatePosition(start_node, visible_position);
+    Position position = NextRootInlineBoxCandidatePosition(
+        start_node, visible_position, kContentIsEditable);
     if (position.IsNull())
       break;
 

@@ -736,7 +736,7 @@ class CSSCalcExpressionNodeParser {
       return false;
 
     if (tokens.Peek().GetType() == kLeftParenthesisToken ||
-        tokens.Peek().FunctionId() == CSSValueID::kCalc) {
+        tokens.Peek().FunctionId() == CSSValueCalc) {
       CSSParserTokenRange inner_range = tokens.ConsumeBlock();
       tokens.ConsumeWhitespace();
       inner_range.ConsumeWhitespace();

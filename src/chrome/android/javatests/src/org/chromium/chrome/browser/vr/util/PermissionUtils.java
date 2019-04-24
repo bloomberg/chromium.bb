@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser.vr.util;
 
+import android.content.DialogInterface;
+
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.permissions.PermissionDialogController;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 /**
  * Utility class for interacting with permission prompts outside of the VR Browser. For interaction
@@ -19,7 +20,7 @@ public class PermissionUtils {
      */
     public static void waitForPermissionPrompt() {
         CriteriaHelper.pollUiThread(() -> {
-            return PermissionDialogController.getInstance().isDialogShownForTest();
+            return PermissionDialogController.getInstance().getCurrentDialogForTesting() != null;
         }, "Permission prompt did not appear in allotted time");
     }
 
@@ -27,9 +28,11 @@ public class PermissionUtils {
      * Accepts the currently displayed permission prompt.
      */
     public static void acceptPermissionPrompt() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PermissionDialogController.getInstance().clickButtonForTest(
-                    ModalDialogProperties.ButtonType.POSITIVE);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            PermissionDialogController.getInstance()
+                    .getCurrentDialogForTesting()
+                    .getButton(DialogInterface.BUTTON_POSITIVE)
+                    .performClick();
         });
     }
 
@@ -37,9 +40,11 @@ public class PermissionUtils {
      * Denies the currently displayed permission prompt.
      */
     public static void denyPermissionPrompt() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PermissionDialogController.getInstance().clickButtonForTest(
-                    ModalDialogProperties.ButtonType.NEGATIVE);
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            PermissionDialogController.getInstance()
+                    .getCurrentDialogForTesting()
+                    .getButton(DialogInterface.BUTTON_NEGATIVE)
+                    .performClick();
         });
     }
 }

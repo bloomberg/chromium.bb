@@ -11,7 +11,9 @@ def main(request, response):
             if token is not None:
                 request.server.stash.put(token, "1")
             status = (401, 'Unauthorized')
-            headers = [('WWW-Authenticate', 'Basic realm="test"')]
+            headers = [('WWW-Authenticate', 'Basic realm="test"'),
+                       ('XHR-USER', expected_user_name),
+                       ('SES-USER', session_user)]
             return status, headers, 'FAIL (should be transparent)'
     else:
         if request.server.stash.take(token) == "1":

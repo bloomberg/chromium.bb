@@ -24,10 +24,10 @@ class BackgroundFetchRequestInfo;
 // will be invoked on the IO thread.
 class BackgroundFetchDataManagerObserver {
  public:
-  // Called when the Background Fetch registration has been created.
+  // Called when the Background Fetch |registration| has been created.
   virtual void OnRegistrationCreated(
       const BackgroundFetchRegistrationId& registration_id,
-      const blink::mojom::BackgroundFetchRegistrationData& registration_data,
+      const blink::mojom::BackgroundFetchRegistration& registration,
       blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       int num_requests,
@@ -36,7 +36,7 @@ class BackgroundFetchDataManagerObserver {
   // Called on start-up when an incomplete registration has been found.
   virtual void OnRegistrationLoadedAtStartup(
       const BackgroundFetchRegistrationId& registration_id,
-      const blink::mojom::BackgroundFetchRegistrationData& registration_data,
+      const blink::mojom::BackgroundFetchRegistration& registration,
       blink::mojom::BackgroundFetchOptionsPtr options,
       const SkBitmap& icon,
       int num_completed_requests,
@@ -45,10 +45,9 @@ class BackgroundFetchDataManagerObserver {
           active_fetch_requests) = 0;
 
   // Called when a registration is being queried. Implementations should update
-  // |registration_data| with in-progress information.
+  // |registration| with in-progress information.
   virtual void OnRegistrationQueried(
-      const BackgroundFetchRegistrationId& registration_id,
-      blink::mojom::BackgroundFetchRegistrationData* registration_data) = 0;
+      blink::mojom::BackgroundFetchRegistration* registration) = 0;
 
   // Called if corrupted data is found in the Service Worker database.
   virtual void OnServiceWorkerDatabaseCorrupted(

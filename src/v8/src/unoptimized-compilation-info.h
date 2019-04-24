@@ -40,6 +40,9 @@ class V8_EXPORT_PRIVATE UnoptimizedCompilationInfo final {
   void MarkAsEval() { SetFlag(kIsEval); }
   bool is_eval() const { return GetFlag(kIsEval); }
 
+  void MarkAsNative() { SetFlag(kIsNative); }
+  bool is_native() const { return GetFlag(kIsNative); }
+
   void MarkAsCollectTypeProfile() { SetFlag(kCollectTypeProfile); }
   bool collect_type_profile() const { return GetFlag(kCollectTypeProfile); }
 
@@ -101,9 +104,10 @@ class V8_EXPORT_PRIVATE UnoptimizedCompilationInfo final {
   // of the compiled code produced by a compilation.
   enum Flag {
     kIsEval = 1 << 0,
-    kCollectTypeProfile = 1 << 1,
-    kMightAlwaysOpt = 1 << 2,
-    kCollectSourcePositions = 1 << 3,
+    kIsNative = 1 << 1,
+    kCollectTypeProfile = 1 << 2,
+    kMightAlwaysOpt = 1 << 3,
+    kCollectSourcePositions = 1 << 4,
   };
 
   void SetFlag(Flag flag) { flags_ |= flag; }

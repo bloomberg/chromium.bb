@@ -39,7 +39,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
-import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
@@ -103,8 +102,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
     private boolean mBlockListExpanded;
     // Whether the Allowed list should be shown expanded.
     private boolean mAllowListExpanded = true;
-    // Whether the Managed list should be shown expanded.
-    private boolean mManagedListExpanded;
     // Whether this is the first time this screen is shown.
     private boolean mIsInitialRun = true;
     // The number of sites that are on the Allowed list.
@@ -131,7 +128,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
     // Keys for Allowed/Blocked preference groups/headers.
     private static final String ALLOWED_GROUP = "allowed_group";
     private static final String BLOCKED_GROUP = "blocked_group";
-    private static final String MANAGED_GROUP = "managed_group";
 
     private void getInfoForOrigins() {
         if (!mCategory.enabledInAndroid(getActivity())) {
@@ -155,9 +151,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
             resetList();
 
-            int chooserDataType = mCategory.getObjectChooserDataType();
-            boolean hasEntries =
-                    chooserDataType == -1 ? addWebsites(sites) : addChosenObjects(sites);
+            boolean hasEntries = mCategory.showSites(SiteSettingsCategory.Type.USB)
+                    ? addChosenObjects(sites)
+                    : addWebsites(sites);
 
             if (!hasEntries && mEmptyView != null)
                 mEmptyView.setText(R.string.no_saved_website_settings);
@@ -199,8 +195,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
     private void updateAllowedHeader(int numAllowed, boolean toggleValue) {
         ExpandablePreferenceGroup allowedGroup =
                 (ExpandablePreferenceGroup) getPreferenceScreen().findPreference(ALLOWED_GROUP);
-        if (allowedGroup == null) return;
-
         if (numAllowed == 0) {
             if (allowedGroup != null) getPreferenceScreen().removePreference(allowedGroup);
             return;
@@ -231,21 +225,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 : R.string.website_settings_blocked_group_heading;
         blockedGroup.setTitle(getHeaderTitle(resourceId, numBlocked));
         blockedGroup.setExpanded(mBlockListExpanded);
-    }
-
-    private void updateManagedHeader(int numManaged) {
-        ExpandablePreferenceGroup managedGroup =
-                (ExpandablePreferenceGroup) getPreferenceScreen().findPreference(MANAGED_GROUP);
-        if (numManaged == 0) {
-            if (managedGroup != null) getPreferenceScreen().removePreference(managedGroup);
-            return;
-        }
-        if (!mGroupByAllowBlock) return;
-
-        // Set the title and arrow icons for the header.
-        int resourceId = R.string.website_settings_managed_group_heading;
-        managedGroup.setTitle(getHeaderTitle(resourceId, numManaged));
-        managedGroup.setExpanded(mManagedListExpanded);
     }
 
     private CharSequence getHeaderTitle(int resourceId, int count) {
@@ -541,10 +520,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
     public boolean onPreferenceClick(Preference preference) {
         if (ALLOWED_GROUP.equals(preference.getKey())) {
             mAllowListExpanded = !mAllowListExpanded;
-        } else if (BLOCKED_GROUP.equals(preference.getKey())) {
-            mBlockListExpanded = !mBlockListExpanded;
         } else {
-            mManagedListExpanded = !mManagedListExpanded;
+            mBlockListExpanded = !mBlockListExpanded;
         }
         getInfoForOrigins();
         return true;
@@ -648,13 +625,11 @@ public class SingleCategoryPreferences extends PreferenceFragment
         if (websites.size() == 0) {
             updateBlockedHeader(0);
             updateAllowedHeader(0, true);
-            updateManagedHeader(0);
             return false;
         }
 
         Collections.sort(websites);
         int blocked = 0;
-        int managed = 0;
 
         if (!mGroupByAllowBlock) {
             // We're not grouping sites into Allowed/Blocked lists, so show all in order
@@ -668,19 +643,9 @@ public class SingleCategoryPreferences extends PreferenceFragment
                     (PreferenceGroup) getPreferenceScreen().findPreference(ALLOWED_GROUP);
             PreferenceGroup blockedGroup =
                     (PreferenceGroup) getPreferenceScreen().findPreference(BLOCKED_GROUP);
-            PreferenceGroup managedGroup =
-                    (PreferenceGroup) getPreferenceScreen().findPreference(MANAGED_GROUP);
-
-            Set<String> delegatedOrigins =
-                    mCategory.showSites(SiteSettingsCategory.Type.NOTIFICATIONS)
-                    ? TrustedWebActivityPermissionManager.get().getAllDelegatedOrigins()
-                    : Collections.emptySet();
 
             for (WebsitePreference website : websites) {
-                if (delegatedOrigins.contains(website.site().getAddress().getOrigin())) {
-                    managedGroup.addPreference(website);
-                    managed += 1;
-                } else if (isOnBlockList(website)) {
+                if (isOnBlockList(website)) {
                     blockedGroup.addPreference(website);
                     blocked += 1;
                 } else {
@@ -695,35 +660,27 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 blockedGroup.setOrder(allowedGroup.getOrder() + 1);
             }
 
-            // The default, when the lists are shown for the first time, is for the
-            // Blocked and Managed list to be collapsed and Allowed expanded -- because
-            // the data in the Allowed list is normally more useful than the data in
-            // the Blocked/Managed lists. A collapsed initial Blocked/Managed list works
-            // well *except* when there's nothing in the Allowed list because then
-            // there's only Blocked/Managed items to show and it doesn't make sense for
-            // those items to be hidden. So, in those cases (and only when the lists are
-            // shown for the first time) do we ignore the collapsed directive. The user
-            // can still collapse and expand the Blocked/Managed list at will.
+            // The default, when the two lists are shown for the first time, is for the
+            // Blocked list to be collapsed and Allowed expanded -- because the data in
+            // the Allowed list is normally more useful than the data in the Blocked
+            // list. A collapsed initial Blocked list works well *except* when there's
+            // nothing in the Allowed list because then there's only Blocked items to
+            // show and it doesn't make sense for those items to be hidden. So, in that
+            // case (and only when the list is shown for the first time) do we ignore
+            // the collapsed directive. The user can still collapse and expand the
+            // Blocked list at will.
             if (mIsInitialRun) {
-                if (mAllowedSiteCount == 0) {
-                    if (blocked == 0 && managed > 0) {
-                        mManagedListExpanded = true;
-                    } else {
-                        mBlockListExpanded = true;
-                    }
-                }
+                if (allowedGroup.getPreferenceCount() == 0) mBlockListExpanded = true;
                 mIsInitialRun = false;
             }
 
             if (!mBlockListExpanded) blockedGroup.removeAll();
             if (!mAllowListExpanded) allowedGroup.removeAll();
-            if (!mManagedListExpanded) managedGroup.removeAll();
         }
 
         mWebsites = websites;
         updateBlockedHeader(blocked);
         updateAllowedHeader(mAllowedSiteCount, !isBlocked());
-        updateManagedHeader(managed);
 
         return websites.size() != 0;
     }
@@ -766,7 +723,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
         updateBlockedHeader(0);
         updateAllowedHeader(0, true);
-        updateManagedHeader(0);
 
         for (Pair<ArrayList<ChosenObjectInfo>, ArrayList<Website>> entry : objects.values()) {
             Preference preference = new Preference(getActivity());
@@ -817,7 +773,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
         Preference explainProtectedMediaKey = screen.findPreference(EXPLAIN_PROTECTED_MEDIA_KEY);
         PreferenceGroup allowedGroup = (PreferenceGroup) screen.findPreference(ALLOWED_GROUP);
         PreferenceGroup blockedGroup = (PreferenceGroup) screen.findPreference(BLOCKED_GROUP);
-        PreferenceGroup managedGroup = (PreferenceGroup) screen.findPreference(MANAGED_GROUP);
         boolean permissionBlockedByOs = mCategory.showPermissionBlockedMessage(getActivity());
         // For these categories, no binary, tri-state or custom toggles should be shown.
         boolean hideMainToggles = mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)
@@ -879,13 +834,11 @@ public class SingleCategoryPreferences extends PreferenceFragment
         if (!mGroupByAllowBlock) {
             mBlockListExpanded = false;
             mAllowListExpanded = true;
-            mManagedListExpanded = false;
         }
         mGroupByAllowBlock = true;
 
         allowedGroup.setOnPreferenceClickListener(this);
         blockedGroup.setOnPreferenceClickListener(this);
-        managedGroup.setOnPreferenceClickListener(this);
     }
 
     private void maybeShowOsWarning(PreferenceScreen screen) {

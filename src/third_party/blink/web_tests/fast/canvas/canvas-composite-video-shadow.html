@@ -47,7 +47,9 @@
 
       function playVideo() {
         video.removeEventListener("playing", playVideo, true);
-        runTest();
+        // We cannot read pixel after drawing a video because of SecurityError:
+        // The canvas has been tainted by cross-origin data.
+        runTest("dumpAsTextWithPixelResults")
       }
     </script>
   </body>

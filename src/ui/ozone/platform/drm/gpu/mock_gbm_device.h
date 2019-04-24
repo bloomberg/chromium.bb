@@ -26,10 +26,11 @@ class MockGbmDevice : public GbmDevice {
       const gfx::Size& size,
       uint32_t flags,
       const std::vector<uint64_t>& modifiers) override;
-  std::unique_ptr<GbmBuffer> CreateBufferFromHandle(
+  std::unique_ptr<GbmBuffer> CreateBufferFromFds(
       uint32_t format,
       const gfx::Size& size,
-      gfx::NativePixmapHandle handle) override;
+      std::vector<base::ScopedFD> fds,
+      const std::vector<gfx::NativePixmapPlane>& planes) override;
 
  private:
   uint32_t next_handle_ = 0;

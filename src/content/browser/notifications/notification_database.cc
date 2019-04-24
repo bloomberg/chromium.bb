@@ -468,7 +468,6 @@ NotificationDatabase::DeleteAllNotificationDataInternal(
 
   leveldb::Slice prefix_slice(prefix);
   leveldb::WriteBatch batch;
-  bool did_delete = false;
 
   NotificationDatabaseData notification_database_data;
   std::unique_ptr<leveldb::Iterator> iter(
@@ -506,12 +505,11 @@ NotificationDatabase::DeleteAllNotificationDataInternal(
 
     batch.Delete(iter->key());
     batch.Delete(CreateResourcesKey(origin, notification_id));
-    did_delete = true;
 
     deleted_notification_ids->insert(notification_id);
   }
 
-  if (!did_delete)
+  if (deleted_notification_ids->empty())
     return STATUS_OK;
 
   return LevelDBStatusToNotificationDatabaseStatus(

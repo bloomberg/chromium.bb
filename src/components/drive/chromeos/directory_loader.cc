@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -610,7 +611,11 @@ void DirectoryLoader::LoadDirectoryFromServerAfterLoad(
   DCHECK(!directory_fetch_info.empty());
 
   // Delete the fetcher.
-  auto it = fast_fetch_feed_fetcher_set_.find(fetcher);
+  auto it = std::find_if(fast_fetch_feed_fetcher_set_.begin(),
+                         fast_fetch_feed_fetcher_set_.end(),
+                         [fetcher](const std::unique_ptr<FeedFetcher>& ptr) {
+                           return ptr.get() == fetcher;
+                         });
   fast_fetch_feed_fetcher_set_.erase(it);
 
   logger_->Log(logging::LOG_INFO,

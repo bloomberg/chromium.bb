@@ -13,7 +13,6 @@
 #include "ash/system/message_center/arc/mock_arc_notification_item.h"
 #include "ash/system/message_center/arc/mock_arc_notification_surface.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/desks/desks_util.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -91,7 +90,7 @@ class ArcNotificationViewTest : public AshTestBase {
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     init_params.context = CurrentContext();
     init_params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
-        desks_util::GetActiveDeskContainerId());
+        kShellWindowId_DefaultContainer);
     init_params.ownership =
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     views::Widget* widget = new views::Widget();

@@ -40,8 +40,8 @@ class CONTENT_EXPORT RtcDtmfSenderHandler
   blink::WebString CurrentToneBuffer() override;
   bool CanInsertDTMF() override;
   bool InsertDTMF(const blink::WebString& tones,
-                  int duration,
-                  int interToneGap) override;
+                  long duration,
+                  long interToneGap) override;
 
   void OnToneChange(const std::string& tone);
 

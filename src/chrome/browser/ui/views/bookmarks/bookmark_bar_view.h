@@ -151,6 +151,9 @@ class BookmarkBarView : public views::AccessiblePaneView,
       const GURL& url,
       const base::string16& title);
 
+  // Returns true if Bookmarks Bar is currently detached from the Toolbar.
+  bool IsDetached() const;
+
   // Returns the current amount of overlap atop the browser toolbar.
   int GetToolbarOverlap() const;
 
@@ -159,7 +162,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   gfx::Size GetMinimumSize() const override;
   void Layout() override;
   void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override;
+      const ViewHierarchyChangedDetails& details) override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
   bool GetDropFormats(int* formats,
                       std::set<ui::ClipboardFormatType>* format_types) override;
@@ -226,7 +229,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
                            const gfx::Point& p) override;
 
   // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::Button* source,
+  void OnMenuButtonClicked(views::MenuButton* source,
                            const gfx::Point& point,
                            const ui::Event* event) override;
 
@@ -440,6 +443,9 @@ class BookmarkBarView : public views::AccessiblePaneView,
   views::Button* throbbing_view_;
 
   BookmarkBar::State bookmark_bar_state_;
+
+  // Are we animating to or from the detached state?
+  bool animating_detached_;
 
   base::ObserverList<BookmarkBarViewObserver>::Unchecked observers_;
 

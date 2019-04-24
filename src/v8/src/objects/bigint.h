@@ -70,7 +70,7 @@ class BigIntBase : public HeapObject {
   friend class ::v8::internal::BigInt;  // MSVC wants full namespace.
   friend class MutableBigInt;
 
-  using digit_t = uintptr_t;
+  typedef uintptr_t digit_t;
   static const int kDigitSize = sizeof(digit_t);
   // kMaxLength definition assumes this:
   STATIC_ASSERT(kDigitSize == kSystemPointerSize);
@@ -87,7 +87,8 @@ class BigIntBase : public HeapObject {
 
   inline digit_t digit(int n) const {
     SLOW_DCHECK(0 <= n && n < length());
-    return READ_UINTPTR_FIELD(*this, kDigitsOffset + n * kDigitSize);
+    Address address = FIELD_ADDR(*this, kDigitsOffset + n * kDigitSize);
+    return *reinterpret_cast<digit_t*>(address);
   }
 
   bool is_zero() const { return length() == 0; }
@@ -133,7 +134,7 @@ class FreshlyAllocatedBigInt : public BigIntBase {
 };
 
 // Arbitrary precision integers in JavaScript.
-class BigInt : public BigIntBase {
+class V8_EXPORT_PRIVATE BigInt : public BigIntBase {
  public:
   // Implementation of the Spec methods, see:
   // https://tc39.github.io/proposal-bigint/#sec-numeric-types
@@ -189,8 +190,7 @@ class BigInt : public BigIntBase {
                                           Handle<String> y);
   static ComparisonResult CompareToNumber(Handle<BigInt> x, Handle<Object> y);
   // Exposed for tests, do not call directly. Use CompareToNumber() instead.
-  V8_EXPORT_PRIVATE static ComparisonResult CompareToDouble(Handle<BigInt> x,
-                                                            double y);
+  static ComparisonResult CompareToDouble(Handle<BigInt> x, double y);
 
   static Handle<BigInt> AsIntN(Isolate* isolate, uint64_t n, Handle<BigInt> x);
   static MaybeHandle<BigInt> AsUintN(Isolate* isolate, uint64_t n,
@@ -224,8 +224,8 @@ class BigInt : public BigIntBase {
   static Handle<Object> ToNumber(Isolate* isolate, Handle<BigInt> x);
 
   // ECMAScript's NumberToBigInt
-  V8_EXPORT_PRIVATE static MaybeHandle<BigInt> FromNumber(
-      Isolate* isolate, Handle<Object> number);
+  static MaybeHandle<BigInt> FromNumber(Isolate* isolate,
+                                        Handle<Object> number);
 
   // ECMAScript's ToBigInt (throws for Number input)
   static MaybeHandle<BigInt> FromObject(Isolate* isolate, Handle<Object> obj);
@@ -241,7 +241,7 @@ class BigInt : public BigIntBase {
   static Handle<BigInt> Zero(Isolate* isolate);
   static MaybeHandle<FreshlyAllocatedBigInt> AllocateFor(
       Isolate* isolate, int radix, int charcount, ShouldThrow should_throw,
-      AllocationType allocation);
+      PretenureFlag pretenure);
   static void InplaceMultiplyAdd(Handle<FreshlyAllocatedBigInt> x,
                                  uintptr_t factor, uintptr_t summand);
   static Handle<BigInt> Finalize(Handle<FreshlyAllocatedBigInt> x, bool sign);
@@ -254,7 +254,7 @@ class BigInt : public BigIntBase {
   void SerializeDigits(uint8_t* storage);
   V8_WARN_UNUSED_RESULT static MaybeHandle<BigInt> FromSerializedDigits(
       Isolate* isolate, uint32_t bitfield, Vector<const uint8_t> digits_storage,
-      AllocationType allocation);
+      PretenureFlag pretenure);
 
   OBJECT_CONSTRUCTORS(BigInt, BigIntBase);
 };

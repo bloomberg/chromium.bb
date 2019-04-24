@@ -3,13 +3,9 @@
 # found in the LICENSE file.
 
 # To create CIPD package run the following command.
-# cipd create --pkg-def cipd_sources.yaml
-package: chromium/third_party/android_sdk/public/sources
+# cipd create --pkg-def cipd_sources.yaml -tag version:$version
+package: chromium/third_party/android_sdk/sources
 description: sources Android SDK Sources library
-root: public/
+root: sources/
 data:
   - dir: sources
-# Some tools inspect their argv0 and don't handle CIPD's symlink structure
-# correctly. Install in copy mode so that they can find the other directories
-# relative to themselves.
-install_mode: copy

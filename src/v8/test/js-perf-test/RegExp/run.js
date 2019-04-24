@@ -9,7 +9,6 @@ load('ctor.js');
 load('exec.js');
 load('flags.js');
 load('inline_test.js')
-load('case_test.js');
 load('match.js');
 load('replace.js');
 load('search.js');

@@ -38,6 +38,7 @@ import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -49,7 +50,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.HistoryUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -1503,8 +1503,8 @@ public class AwSettingsTest {
 
             final WebContents webContents = mAwContents.getWebContents();
             final CallbackHelper onTitleUpdatedHelper = new CallbackHelper();
-            final WebContentsObserver observer = TestThreadUtils.runOnUiThreadBlocking(
-                    () -> new WebContentsObserver(webContents) {
+            final WebContentsObserver observer =
+                    ThreadUtils.runOnUiThreadBlocking(() -> new WebContentsObserver(webContents) {
                         @Override
                         public void titleWasSet(String title) {
                             onTitleUpdatedHelper.notifyCalled();
@@ -1540,7 +1540,7 @@ public class AwSettingsTest {
                         PREV_TITLE, getTitleOnUiThread());
             }
 
-            TestThreadUtils.runOnUiThreadBlocking(() -> webContents.removeObserver(observer));
+            ThreadUtils.runOnUiThreadBlocking(() -> webContents.removeObserver(observer));
         }
 
         private String getData() {
@@ -1550,7 +1550,7 @@ public class AwSettingsTest {
     }
 
     public static int calcDisplayWidthDp(Context context) {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+        return ThreadUtils.runOnUiThreadBlockingNoException(() -> {
             DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(context);
             return DisplayUtil.pxToDp(displayAndroid, displayAndroid.getDisplayWidth());
         });
@@ -3365,7 +3365,8 @@ public class AwSettingsTest {
         final int y = (webView.getBottom() - webView.getTop()) / 2;
         final AwContents awContents = webView.getAwContents();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
-                () -> awContents.getWebContents().getEventForwarder().doubleTapForTest(
+                ()
+                        -> awContents.getWebContents().getEventForwarder().doubleTapForTest(
                                 SystemClock.uptimeMillis(), x, y));
     }
 }

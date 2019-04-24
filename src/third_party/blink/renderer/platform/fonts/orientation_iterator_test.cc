@@ -6,8 +6,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-
 namespace blink {
 
 struct OrientationTestRun {
@@ -28,11 +26,10 @@ struct OrientationExpectedRun {
 class OrientationIteratorTest : public testing::Test {
  protected:
   void CheckRuns(const Vector<OrientationTestRun>& runs) {
-    StringBuilder text;
-    text.Ensure16Bit();
+    String text(g_empty_string16_bit);
     Vector<OrientationExpectedRun> expect;
     for (auto& run : runs) {
-      text.Append(String::FromUTF8(run.text));
+      text.append(String::FromUTF8(run.text));
       expect.push_back(OrientationExpectedRun(text.length(), run.code));
     }
     OrientationIterator orientation_iterator(text.Characters16(), text.length(),
@@ -44,7 +41,7 @@ class OrientationIteratorTest : public testing::Test {
                   const Vector<OrientationExpectedRun>& expect) {
     unsigned limit;
     OrientationIterator::RenderOrientation render_orientation;
-    size_t run_count = 0;
+    unsigned long run_count = 0;
     while (orientation_iterator->Consume(&limit, &render_orientation)) {
       ASSERT_LT(run_count, expect.size());
       ASSERT_EQ(expect[run_count].limit, limit);

@@ -12,8 +12,8 @@ CFX_XMLText::CFX_XMLText(const WideString& wsText) : text_(wsText) {}
 
 CFX_XMLText::~CFX_XMLText() = default;
 
-CFX_XMLNode::Type CFX_XMLText::GetType() const {
-  return Type::kText;
+FX_XMLNODETYPE CFX_XMLText::GetType() const {
+  return FX_XMLNODE_Text;
 }
 
 CFX_XMLNode* CFX_XMLText::Clone(CFX_XMLDocument* doc) {

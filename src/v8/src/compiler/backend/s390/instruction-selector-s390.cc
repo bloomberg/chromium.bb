@@ -36,7 +36,7 @@ enum class OperandMode : uint32_t {
   kArithmeticCommonMode = kAllowRM | kAllowRI
 };
 
-using OperandModes = base::Flags<OperandMode, uint32_t>;
+typedef base::Flags<OperandMode, uint32_t> OperandModes;
 DEFINE_OPERATORS_FOR_FLAGS(OperandModes)
 OperandModes immediateModeMask =
     OperandMode::kShift32Imm | OperandMode::kShift64Imm |
@@ -315,9 +315,6 @@ ArchOpcode SelectLoadOpcode(Node* node) {
 #else
     case MachineRepresentation::kWord64:  // Fall through.
 #endif
-    case MachineRepresentation::kCompressedSigned:   // Fall through.
-    case MachineRepresentation::kCompressedPointer:  // Fall through.
-    case MachineRepresentation::kCompressed:         // Fall through.
     case MachineRepresentation::kSimd128:  // Fall through.
     case MachineRepresentation::kNone:
     default:
@@ -739,8 +736,21 @@ static void VisitGeneralStore(
       addressing_mode = kMode_MRR;
     }
     inputs[input_count++] = g.UseUniqueRegister(value);
-    RecordWriteMode record_write_mode =
-        WriteBarrierKindToRecordWriteMode(write_barrier_kind);
+    RecordWriteMode record_write_mode = RecordWriteMode::kValueIsAny;
+    switch (write_barrier_kind) {
+      case kNoWriteBarrier:
+        UNREACHABLE();
+        break;
+      case kMapWriteBarrier:
+        record_write_mode = RecordWriteMode::kValueIsMap;
+        break;
+      case kPointerWriteBarrier:
+        record_write_mode = RecordWriteMode::kValueIsPointer;
+        break;
+      case kFullWriteBarrier:
+        record_write_mode = RecordWriteMode::kValueIsAny;
+        break;
+    }
     InstructionOperand temps[] = {g.TempRegister(), g.TempRegister()};
     size_t const temp_count = arraysize(temps);
     InstructionCode code = kArchStoreWithWriteBarrier;
@@ -765,12 +775,9 @@ static void VisitGeneralStore(
         opcode = kS390_StoreWord16;
         break;
 #if !V8_TARGET_ARCH_S390X
-      case MachineRepresentation::kTaggedSigned:       // Fall through.
-      case MachineRepresentation::kTaggedPointer:      // Fall through.
-      case MachineRepresentation::kTagged:             // Fall through.
-      case MachineRepresentation::kCompressedSigned:   // Fall through.
-      case MachineRepresentation::kCompressedPointer:  // Fall through.
-      case MachineRepresentation::kCompressed:         // Fall through.
+      case MachineRepresentation::kTaggedSigned:   // Fall through.
+      case MachineRepresentation::kTaggedPointer:  // Fall through.
+      case MachineRepresentation::kTagged:         // Fall through.
 #endif
       case MachineRepresentation::kWord32:
         opcode = kS390_StoreWord32;
@@ -780,12 +787,9 @@ static void VisitGeneralStore(
         }
         break;
 #if V8_TARGET_ARCH_S390X
-      case MachineRepresentation::kTaggedSigned:       // Fall through.
-      case MachineRepresentation::kTaggedPointer:      // Fall through.
-      case MachineRepresentation::kTagged:             // Fall through.
-      case MachineRepresentation::kCompressedSigned:   // Fall through.
-      case MachineRepresentation::kCompressedPointer:  // Fall through.
-      case MachineRepresentation::kCompressed:         // Fall through.
+      case MachineRepresentation::kTaggedSigned:   // Fall through.
+      case MachineRepresentation::kTaggedPointer:  // Fall through.
+      case MachineRepresentation::kTagged:         // Fall through.
       case MachineRepresentation::kWord64:
         opcode = kS390_StoreWord64;
         if (m.IsWord64ReverseBytes()) {
@@ -1138,6 +1142,8 @@ void InstructionSelector::VisitWord32ReverseBits(Node* node) { UNREACHABLE(); }
 #if V8_TARGET_ARCH_S390X
 void InstructionSelector::VisitWord64ReverseBits(Node* node) { UNREACHABLE(); }
 #endif
+
+void InstructionSelector::VisitSpeculationFence(Node* node) { UNREACHABLE(); }
 
 void InstructionSelector::VisitInt32AbsWithOverflow(Node* node) {
   VisitWord32UnaryOp(this, node, kS390_Abs32, OperandMode::kNone);
@@ -2197,34 +2203,6 @@ void InstructionSelector::EmitPrepareArguments(
 bool InstructionSelector::IsTailCallAddressImmediate() { return false; }
 
 int InstructionSelector::GetTempsCountForTailCallFromJSFunction() { return 3; }
-
-void InstructionSelector::VisitChangeTaggedToCompressed(Node* node) {
-  UNIMPLEMENTED();
-}
-
-void InstructionSelector::VisitChangeTaggedPointerToCompressedPointer(
-    Node* node) {
-  UNIMPLEMENTED();
-}
-
-void InstructionSelector::VisitChangeTaggedSignedToCompressedSigned(
-    Node* node) {
-  UNIMPLEMENTED();
-}
-
-void InstructionSelector::VisitChangeCompressedToTagged(Node* node) {
-  UNIMPLEMENTED();
-}
-
-void InstructionSelector::VisitChangeCompressedPointerToTaggedPointer(
-    Node* node) {
-  UNIMPLEMENTED();
-}
-
-void InstructionSelector::VisitChangeCompressedSignedToTaggedSigned(
-    Node* node) {
-  UNIMPLEMENTED();
-}
 
 void InstructionSelector::VisitWord32AtomicLoad(Node* node) {
   LoadRepresentation load_rep = LoadRepresentationOf(node->op());

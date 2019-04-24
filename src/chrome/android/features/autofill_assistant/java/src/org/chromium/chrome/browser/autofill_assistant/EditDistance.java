@@ -4,13 +4,9 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
-import android.support.annotation.IntDef;
-
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.ui.modelutil.ListModel;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -196,13 +192,13 @@ public final class EditDistance {
         for (int i = 0; i < operations.size(); i++) {
             Operation operation = operations.get(i);
             switch (operation.mType) {
-                case Operation.Type.INSERTION:
+                case INSERTION:
                     source.add(operation.mSourceIndex, target.get(operation.mTargetIndex));
                     break;
-                case Operation.Type.SUBSTITUTION:
+                case SUBSTITUTION:
                     source.update(operation.mSourceIndex, target.get(operation.mTargetIndex));
                     break;
-                case Operation.Type.DELETION:
+                case DELETION:
                     source.removeAt(operation.mSourceIndex);
                     break;
             }
@@ -211,16 +207,10 @@ public final class EditDistance {
 
     /** An operation that can be applied to a sequence. */
     private static class Operation {
-        @IntDef({Type.INSERTION, Type.SUBSTITUTION, Type.DELETION})
-        @Retention(RetentionPolicy.SOURCE)
-        @interface Type {
-            int INSERTION = 0;
-            int SUBSTITUTION = 1;
-            int DELETION = 2;
-        }
+        enum Type { INSERTION, SUBSTITUTION, DELETION }
 
         /** The type of this operation. */
-        final @Type int mType;
+        final Type mType;
 
         /**
          * An index from the source sequence that represents:
@@ -238,7 +228,7 @@ public final class EditDistance {
          */
         final int mTargetIndex;
 
-        Operation(@Type int type, int sourceIndex, int targetIndex) {
+        Operation(Type type, int sourceIndex, int targetIndex) {
             this.mType = type;
             this.mSourceIndex = sourceIndex;
             this.mTargetIndex = targetIndex;

@@ -28,18 +28,18 @@ namespace dawn_native { namespace d3d12 {
 
     class NativeSwapChainImpl {
       public:
-        using WSIContext = DawnWSIContextD3D12;
+        using WSIContext = dawnWSIContextD3D12;
 
         NativeSwapChainImpl(Device* device, HWND window);
         ~NativeSwapChainImpl();
 
-        void Init(DawnWSIContextD3D12* context);
-        DawnSwapChainError Configure(DawnTextureFormat format,
-                                     DawnTextureUsageBit,
+        void Init(dawnWSIContextD3D12* context);
+        dawnSwapChainError Configure(dawnTextureFormat format,
+                                     dawnTextureUsageBit,
                                      uint32_t width,
                                      uint32_t height);
-        DawnSwapChainError GetNextTexture(DawnSwapChainNextTexture* nextTexture);
-        DawnSwapChainError Present();
+        dawnSwapChainError GetNextTexture(dawnSwapChainNextTexture* nextTexture);
+        dawnSwapChainError Present();
 
         dawn::TextureFormat GetPreferredFormat() const;
 

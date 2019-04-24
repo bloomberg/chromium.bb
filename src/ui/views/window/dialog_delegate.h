@@ -145,18 +145,15 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   ~DialogDelegate() override;
 
   // Overridden from WidgetDelegate:
-  ax::mojom::Role GetAccessibleWindowRole() override;
+  ax::mojom::Role GetAccessibleWindowRole() const override;
 
  private:
   // A flag indicating whether this dialog is able to use the custom frame
   // style for dialogs.
-  bool supports_custom_frame_ = true;
+  bool supports_custom_frame_;
 
   // The margins between the content and the inside of the border.
-  // TODO(crbug.com/733040): Most subclasses assume they must set their own
-  // margins explicitly, so we set them to 0 here for now to avoid doubled
-  // margins.
-  gfx::Insets margins_{0};
+  gfx::Insets margins_;
 
   // The time the dialog is created.
   base::TimeTicks creation_time_;

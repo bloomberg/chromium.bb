@@ -18,7 +18,7 @@ fa_AF{
             }
         }
     }
-    Version{"2.1.47.86"}
+    Version{"2.1.43.65"}
     calendar{
         gregorian{
             appendItems{
@@ -47,37 +47,48 @@ fa_AF{
             dayPeriod{
                 format{
                     abbreviated{
-                        afternoon1{"ظهر"}
-                        afternoon2{"بعدازچاشت"}
-                        morning1{"بامداد"}
-                        morning2{"صبح"}
-                        night2{"نیمه‌شب"}
+                        afternoon1{"بعد از چاشت"}
+                        evening1{"شام"}
+                        midnight{"نیمه‌شب"}
+                        morning1{"صبح"}
+                        night1{"شب"}
+                        noon{"ظهر"}
+                    }
+                    narrow{
+                        afternoon1{"ب.ظ."}
+                        evening1{"ش"}
+                        midnight{"ن"}
+                        morning1{"ص"}
+                        night1{"ش"}
+                        noon{"ظ"}
                     }
                     wide{
-                        afternoon1{"ظهر"}
-                        afternoon2{"بعدازچاشت"}
-                        morning1{"بامداد"}
-                        morning2{"صبح"}
-                        night2{"نیمه‌شب"}
+                        afternoon1{"بعد از چاشت"}
+                        evening1{"شام"}
+                        midnight{"نیمه‌شب"}
+                        morning1{"صبح"}
+                        night1{"شب"}
+                        noon{"ظهر"}
                     }
                 }
                 stand-alone{
                     abbreviated{
-                        afternoon1{"ظهر"}
-                        afternoon2{"بعدازچاشت"}
-                        morning1{"بامداد"}
-                        morning2{"صبح"}
-                        night2{"نیمه‌شب"}
+                        afternoon1{"بعد از چاشت"}
+                        evening1{"شام"}
+                        morning1{"صبح"}
+                        night1{"شب"}
                     }
                     narrow{
                         afternoon1{"بعد از چاشت"}
+                        evening1{"شام"}
+                        morning1{"ص"}
+                        night1{"ش"}
                     }
                     wide{
-                        afternoon1{"ظهر"}
-                        afternoon2{"بعدازچاشت"}
-                        morning1{"بامداد"}
-                        morning2{"صبح"}
-                        night2{"نیمه‌شب"}
+                        afternoon1{"بعد از چاشت"}
+                        evening1{"شام"}
+                        morning1{"صبح"}
+                        night1{"شب"}
                     }
                 }
             }

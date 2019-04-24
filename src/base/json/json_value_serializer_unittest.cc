@@ -216,17 +216,26 @@ TEST(JSONValueSerializerTest, Roundtrip) {
   static const char kOriginalSerialization[] =
     "{\"bool\":true,\"double\":3.14,\"int\":42,\"list\":[1,2],\"null\":null}";
   JSONStringValueDeserializer deserializer(kOriginalSerialization);
-  std::unique_ptr<Value> root_dict = deserializer.Deserialize(nullptr, nullptr);
+  std::unique_ptr<DictionaryValue> root_dict =
+      DictionaryValue::From(deserializer.Deserialize(nullptr, nullptr));
   ASSERT_TRUE(root_dict);
-  ASSERT_TRUE(root_dict->is_dict());
 
-  Value* null_value = root_dict->FindKey("null");
+  Value* null_value = nullptr;
+  ASSERT_TRUE(root_dict->Get("null", &null_value));
   ASSERT_TRUE(null_value);
   ASSERT_TRUE(null_value->is_none());
 
-  ASSERT_TRUE(root_dict->FindBoolKey("bool").value());
-  ASSERT_EQ(42, root_dict->FindIntKey("int").value());
-  ASSERT_DOUBLE_EQ(3.14, root_dict->FindDoubleKey("double").value());
+  bool bool_value = false;
+  ASSERT_TRUE(root_dict->GetBoolean("bool", &bool_value));
+  ASSERT_TRUE(bool_value);
+
+  int int_value = 0;
+  ASSERT_TRUE(root_dict->GetInteger("int", &int_value));
+  ASSERT_EQ(42, int_value);
+
+  double double_value = 0.0;
+  ASSERT_TRUE(root_dict->GetDouble("double", &double_value));
+  ASSERT_DOUBLE_EQ(3.14, double_value);
 
   std::string test_serialization;
   JSONStringValueSerializer mutable_serializer(&test_serialization);
@@ -289,8 +298,8 @@ TEST(JSONValueSerializerTest, StringEscape) {
                                  "\"}";
   // Test JSONWriter interface
   std::string output_js;
-  Value valueRoot(Value::Type::DICTIONARY);
-  valueRoot.SetStringKey("all_chars", all_chars);
+  DictionaryValue valueRoot;
+  valueRoot.SetString("all_chars", all_chars);
   JSONWriter::Write(valueRoot, &output_js);
   ASSERT_EQ(expected_output, output_js);
 
@@ -302,9 +311,9 @@ TEST(JSONValueSerializerTest, StringEscape) {
 
 TEST(JSONValueSerializerTest, UnicodeStrings) {
   // unicode string json -> escaped ascii text
-  Value root(Value::Type::DICTIONARY);
+  DictionaryValue root;
   string16 test(WideToUTF16(L"\x7F51\x9875"));
-  root.SetStringKey("web", test);
+  root.SetString("web", test);
 
   static const char kExpected[] = "{\"web\":\"\xE7\xBD\x91\xE9\xA1\xB5\"}";
 
@@ -318,16 +327,18 @@ TEST(JSONValueSerializerTest, UnicodeStrings) {
   std::unique_ptr<Value> deserial_root =
       deserializer.Deserialize(nullptr, nullptr);
   ASSERT_TRUE(deserial_root);
-  const std::string* web_value = deserial_root->FindStringKey("web");
-  ASSERT_TRUE(web_value);
-  ASSERT_EQ("\xE7\xBD\x91\xE9\xA1\xB5", *web_value);
+  DictionaryValue* dict_root =
+      static_cast<DictionaryValue*>(deserial_root.get());
+  string16 web_value;
+  ASSERT_TRUE(dict_root->GetString("web", &web_value));
+  ASSERT_EQ(test, web_value);
 }
 
 TEST(JSONValueSerializerTest, HexStrings) {
   // hex string json -> escaped ascii text
-  Value root(Value::Type::DICTIONARY);
+  DictionaryValue root;
   string16 test(WideToUTF16(L"\x01\x02"));
-  root.SetStringKey("test", test);
+  root.SetString("test", test);
 
   static const char kExpected[] = "{\"test\":\"\\u0001\\u0002\"}";
 
@@ -341,18 +352,20 @@ TEST(JSONValueSerializerTest, HexStrings) {
   std::unique_ptr<Value> deserial_root =
       deserializer.Deserialize(nullptr, nullptr);
   ASSERT_TRUE(deserial_root);
-  const std::string* test_value = deserial_root->FindStringKey("test");
-  ASSERT_TRUE(test_value);
-  ASSERT_EQ("\u0001\u0002", *test_value);
+  DictionaryValue* dict_root =
+      static_cast<DictionaryValue*>(deserial_root.get());
+  string16 test_value;
+  ASSERT_TRUE(dict_root->GetString("test", &test_value));
+  ASSERT_EQ(test, test_value);
 
   // Test converting escaped regular chars
   static const char kEscapedChars[] = "{\"test\":\"\\u0067\\u006f\"}";
   JSONStringValueDeserializer deserializer2(kEscapedChars);
   deserial_root = deserializer2.Deserialize(nullptr, nullptr);
   ASSERT_TRUE(deserial_root);
-  test_value = deserial_root->FindStringKey("test");
-  ASSERT_TRUE(test_value);
-  ASSERT_EQ("go", *test_value);
+  dict_root = static_cast<DictionaryValue*>(deserial_root.get());
+  ASSERT_TRUE(dict_root->GetString("test", &test_value));
+  ASSERT_EQ(ASCIIToUTF16("go"), test_value);
 }
 
 TEST(JSONValueSerializerTest, JSONReaderComments) {
@@ -394,20 +407,26 @@ TEST_F(JSONFileValueSerializerTest, Roundtrip) {
   ASSERT_TRUE(PathExists(original_file_path));
 
   JSONFileValueDeserializer deserializer(original_file_path);
-  std::unique_ptr<Value> root_dict = deserializer.Deserialize(nullptr, nullptr);
+  std::unique_ptr<DictionaryValue> root_dict =
+      DictionaryValue::From(deserializer.Deserialize(nullptr, nullptr));
   ASSERT_TRUE(root_dict);
-  ASSERT_TRUE(root_dict->is_dict());
 
-  Value* null_value = root_dict->FindKey("null");
+  Value* null_value = nullptr;
+  ASSERT_TRUE(root_dict->Get("null", &null_value));
   ASSERT_TRUE(null_value);
   ASSERT_TRUE(null_value->is_none());
 
-  ASSERT_TRUE(root_dict->FindBoolKey("bool").value());
-  ASSERT_EQ(42, root_dict->FindIntKey("int").value());
+  bool bool_value = false;
+  ASSERT_TRUE(root_dict->GetBoolean("bool", &bool_value));
+  ASSERT_TRUE(bool_value);
 
-  const std::string* string_value = root_dict->FindStringKey("string");
-  ASSERT_TRUE(string_value);
-  ASSERT_EQ("hello", *string_value);
+  int int_value = 0;
+  ASSERT_TRUE(root_dict->GetInteger("int", &int_value));
+  ASSERT_EQ(42, int_value);
+
+  std::string string_value;
+  ASSERT_TRUE(root_dict->GetString("string", &string_value));
+  ASSERT_EQ("hello", string_value);
 
   // Now try writing.
   const FilePath written_file_path =

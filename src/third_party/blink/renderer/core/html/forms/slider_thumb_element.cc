@@ -78,9 +78,9 @@ void SliderThumbElement::SetPositionFromValue() {
   }
 }
 
-LayoutObject* SliderThumbElement::CreateLayoutObject(const ComputedStyle& style,
-                                                     LegacyLayout legacy) {
-  return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy);
+LayoutObject* SliderThumbElement::CreateLayoutObject(
+    const ComputedStyle& style) {
+  return LayoutObjectFactory::CreateBlockFlow(*this, style);
 }
 
 bool SliderThumbElement::IsDisabledFormControl() const {
@@ -361,8 +361,7 @@ HTMLInputElement* SliderContainerElement::HostInput() const {
   return ToHTMLInputElement(OwnerShadowHost());
 }
 
-LayoutObject* SliderContainerElement::CreateLayoutObject(const ComputedStyle&,
-                                                         LegacyLayout) {
+LayoutObject* SliderContainerElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSliderContainer(this);
 }
 

@@ -85,9 +85,7 @@ void NavigationThrottle::Resume() {
     resume_callback_.Run();
     return;
   }
-  static_cast<NavigationHandleImpl*>(navigation_handle_)
-      ->navigation_request()
-      ->Resume(this);
+  static_cast<NavigationHandleImpl*>(navigation_handle_)->Resume(this);
 }
 
 void NavigationThrottle::CancelDeferredNavigation(
@@ -97,7 +95,6 @@ void NavigationThrottle::CancelDeferredNavigation(
     return;
   }
   static_cast<NavigationHandleImpl*>(navigation_handle_)
-      ->navigation_request()
       ->CancelDeferredNavigation(this, result);
 }
 

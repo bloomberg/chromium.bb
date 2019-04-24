@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_WALLET_HELPER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_WALLET_HELPER_H_
 
-#include <map>
 #include <utility>
 #include <vector>
 
@@ -66,11 +65,13 @@ void UpdateServerAddressMetadata(
     int profile,
     const autofill::AutofillProfile& server_address);
 
-std::map<std::string, autofill::AutofillMetadata> GetServerCardsMetadata(
-    int profile);
+void GetServerCardsMetadata(
+    int profile,
+    std::map<std::string, autofill::AutofillMetadata>* cards_metadata);
 
-std::map<std::string, autofill::AutofillMetadata> GetServerAddressesMetadata(
-    int profile);
+void GetServerAddressesMetadata(
+    int profile,
+    std::map<std::string, autofill::AutofillMetadata>* addresses_metadata);
 
 sync_pb::ModelTypeState GetWalletDataModelTypeState(int profile);
 
@@ -115,7 +116,7 @@ std::vector<autofill::CreditCard*> GetServerCreditCards(int profile);
 }  // namespace wallet_helper
 
 // Checker to block until autofill wallet & server profiles match on both
-// profiles and until server profiles got converted to local profiles.
+// profiles.
 class AutofillWalletChecker : public StatusChangeChecker,
                               public autofill::PersonalDataManagerObserver {
  public:
@@ -135,27 +136,6 @@ class AutofillWalletChecker : public StatusChangeChecker,
   const int profile_b_;
 };
 
-// Checker to block until autofill server profiles got converted to local
-// profiles.
-class AutofillWalletConversionChecker
-    : public StatusChangeChecker,
-      public autofill::PersonalDataManagerObserver {
- public:
-  explicit AutofillWalletConversionChecker(int profile);
-  ~AutofillWalletConversionChecker() override;
-
-  // StatusChangeChecker implementation.
-  bool Wait() override;
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
-
-  // autofill::PersonalDataManager implementation.
-  void OnPersonalDataChanged() override;
-
- private:
-  const int profile_;
-};
-
 // Checker to block until autofill wallet metadata sizes match on both profiles.
 class AutofillWalletMetadataSizeChecker
     : public StatusChangeChecker,
@@ -172,12 +152,6 @@ class AutofillWalletMetadataSizeChecker
   void OnPersonalDataChanged() override;
 
  private:
-  // A state machine that makes sure we do not nest checking exit conditions.
-  enum State { IDLE, CHECKING, SHOULD_RECHECK };
-
-  bool IsExitConditionSatisfiedImpl();
-
-  State state_ = IDLE;
   const int profile_a_;
   const int profile_b_;
 };

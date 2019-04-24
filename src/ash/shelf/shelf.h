@@ -38,7 +38,6 @@ class ShelfWidget;
 class StatusAreaWidget;
 class ShelfObserver;
 class TrayBackgroundView;
-class WorkAreaInsets;
 
 // Controller for the shelf state. One per display, because each display might
 // have different shelf alignment, autohide, etc. Exists for the lifetime of the
@@ -89,7 +88,6 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   bool IsVisible() const;
 
   // Returns the window showing the shelf.
-  const aura::Window* GetWindow() const;
   aura::Window* GetWindow();
 
   void SetAlignment(ShelfAlignment alignment);
@@ -115,15 +113,20 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   void UpdateVisibilityState();
 
-  // Sets whether shelf's visibility state updates should be suspended.
-  void SetSuspendVisibilityUpdate(bool value);
-
   void MaybeUpdateShelfBackground();
 
   ShelfVisibilityState GetVisibilityState() const;
 
+  int GetAccessibilityPanelHeight() const;
+  void SetAccessibilityPanelHeight(int height);
+
+  // Returns the height of the Docked Magnifier viewport.
+  int GetDockedMagnifierHeight() const;
+
   // Returns the ideal bounds of the shelf assuming it is visible.
   gfx::Rect GetIdealBounds() const;
+
+  gfx::Rect GetUserWorkAreaBounds() const;
 
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
@@ -189,9 +192,6 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
  private:
   class AutoHideEventHandler;
   friend class ShelfLayoutManagerTest;
-
-  // Returns work area insets object for the window with this shelf.
-  WorkAreaInsets* GetWorkAreaInsets() const;
 
   // Layout manager for the shelf container window. Instances are constructed by
   // ShelfWidget and lifetimes are managed by the container windows themselves.

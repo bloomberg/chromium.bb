@@ -1,13 +1,9 @@
-#ifndef SPIRV_CROSS_CONSTANT_ID_10
-#define SPIRV_CROSS_CONSTANT_ID_10 2
-#endif
-static const int Value = SPIRV_CROSS_CONSTANT_ID_10;
+static const int Value = 2;
 
-cbuffer SpecConstArray : register(b0)
+cbuffer _15 : register(b0)
 {
     float4 _15_samples[Value] : packoffset(c0);
 };
-
 
 static float4 FragColor;
 static int Index;

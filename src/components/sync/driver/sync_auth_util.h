@@ -7,8 +7,6 @@
 
 #include "components/signin/core/browser/account_info.h"
 
-class GoogleServiceAuthError;
-
 namespace identity {
 class IdentityManager;
 }  // namespace identity
@@ -29,10 +27,6 @@ struct SyncAccountInfo {
 SyncAccountInfo DetermineAccountToUse(
     identity::IdentityManager* identity_manager,
     bool allow_secondary_accounts);
-
-// Returns whether |auth_error| indicates the user has locally signed out of
-// content area, rejecting credentials.
-bool IsWebSignout(const GoogleServiceAuthError& auth_error);
 
 }  // namespace syncer
 

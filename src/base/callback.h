@@ -117,15 +117,6 @@ class RepeatingCallback<R(Args...)> : public internal::CallbackBaseCopyable {
   RepeatingCallback(RepeatingCallback&&) noexcept = default;
   RepeatingCallback& operator=(RepeatingCallback&&) noexcept = default;
 
-  bool operator==(const RepeatingCallback& other) const {
-    return EqualsInternal(other);
-  }
-
-  bool operator!=(const RepeatingCallback& other) const {
-    return !operator==(other);
-  }
-
-  // TODO(http://crbug.com/937566): Deprecated, use == or != instead.
   bool Equals(const RepeatingCallback& other) const {
     return EqualsInternal(other);
   }

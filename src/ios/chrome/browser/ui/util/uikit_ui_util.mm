@@ -614,6 +614,8 @@ bool IsSplitToolbarMode(id<UITraitEnvironment> environment) {
   return IsCompactWidth(environment) && !IsCompactHeight(environment);
 }
 
+// Returns the first responder in the subviews of |view|, or nil if no view in
+// the subtree is the first responder.
 UIView* GetFirstResponderSubview(UIView* view) {
   if ([view isFirstResponder])
     return view;

@@ -6,7 +6,6 @@
 #define V8_OBJECTS_PROPERTY_CELL_H_
 
 #include "src/objects/heap-object.h"
-#include "torque-generated/class-definitions-from-dsl.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -19,7 +18,7 @@ class PropertyCell : public HeapObject {
   // [name]: the name of the global property.
   DECL_ACCESSORS(name, Name)
   // [property_details]: details of the global property.
-  DECL_ACCESSORS(property_details_raw, Smi)
+  DECL_ACCESSORS(property_details_raw, Object)
   // [value]: value of the global property.
   DECL_ACCESSORS(value, Object)
   // [dependent_code]: dependent code that depends on the type of the global
@@ -57,10 +56,19 @@ class PropertyCell : public HeapObject {
   DECL_PRINTER(PropertyCell)
   DECL_VERIFIER(PropertyCell)
 
-  DEFINE_FIELD_OFFSET_CONSTANTS(HeapObject::kHeaderSize,
-                                TORQUE_GENERATED_PROPERTY_CELL_FIELDS)
+// Layout description.
+#define PROPERTY_CELL_FIELDS(V)        \
+  V(kDetailsOffset, kTaggedSize)       \
+  V(kNameOffset, kTaggedSize)          \
+  V(kValueOffset, kTaggedSize)         \
+  V(kDependentCodeOffset, kTaggedSize) \
+  /* Total size. */                    \
+  V(kSize, 0)
 
-  using BodyDescriptor = FixedBodyDescriptor<kNameOffset, kSize, kSize>;
+  DEFINE_FIELD_OFFSET_CONSTANTS(HeapObject::kHeaderSize, PROPERTY_CELL_FIELDS)
+#undef PROPERTY_CELL_FIELDS
+
+  typedef FixedBodyDescriptor<kNameOffset, kSize, kSize> BodyDescriptor;
 
   OBJECT_CONSTRUCTORS(PropertyCell, HeapObject);
 };

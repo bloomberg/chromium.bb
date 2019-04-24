@@ -414,10 +414,8 @@ bool ExceptionHandlerServer::ReceiveClientMessage(Event* event) {
 
   switch (client_msg->type) {
     case ClientToServerMessage::kCrashDumpRequest:
-      return HandleCrashDumpRequest(msg,
-                                    client_msg->client_info,
-                                    client_msg->requesting_thread_stack_address,
-                                    event->fd.get());
+      return HandleCrashDumpRequest(
+          msg, client_msg->client_info, event->fd.get());
   }
 
   DCHECK(false);
@@ -428,7 +426,6 @@ bool ExceptionHandlerServer::ReceiveClientMessage(Event* event) {
 bool ExceptionHandlerServer::HandleCrashDumpRequest(
     const msghdr& msg,
     const ClientInformation& client_info,
-    VMAddress requesting_thread_stack_address,
     int client_sock) {
   cmsghdr* cmsg = CMSG_FIRSTHDR(&msg);
   if (cmsg == nullptr) {
@@ -463,8 +460,7 @@ bool ExceptionHandlerServer::HandleCrashDumpRequest(
                                  ServerToClientMessage::kTypeCrashDumpFailed);
 
     case PtraceStrategyDecider::Strategy::kDirectPtrace:
-      delegate_->HandleException(
-          client_process_id, client_info, requesting_thread_stack_address);
+      delegate_->HandleException(client_process_id, client_info);
       break;
 
     case PtraceStrategyDecider::Strategy::kUseBroker:

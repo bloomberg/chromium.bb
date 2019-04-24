@@ -26,23 +26,23 @@ extern "C" {
 
 extern const float16 kFP16PositiveInfinity;
 extern const float16 kFP16NegativeInfinity;
-V8_EXPORT_PRIVATE extern const float kFP32PositiveInfinity;
-V8_EXPORT_PRIVATE extern const float kFP32NegativeInfinity;
-V8_EXPORT_PRIVATE extern const double kFP64PositiveInfinity;
-V8_EXPORT_PRIVATE extern const double kFP64NegativeInfinity;
+extern const float kFP32PositiveInfinity;
+extern const float kFP32NegativeInfinity;
+extern const double kFP64PositiveInfinity;
+extern const double kFP64NegativeInfinity;
 
 // This value is a signalling NaN as both a double and as a float (taking the
 // least-significant word).
-V8_EXPORT_PRIVATE extern const double kFP64SignallingNaN;
-V8_EXPORT_PRIVATE extern const float kFP32SignallingNaN;
+extern const double kFP64SignallingNaN;
+extern const float kFP32SignallingNaN;
 
 // A similar value, but as a quiet NaN.
-V8_EXPORT_PRIVATE extern const double kFP64QuietNaN;
-V8_EXPORT_PRIVATE extern const float kFP32QuietNaN;
+extern const double kFP64QuietNaN;
+extern const float kFP32QuietNaN;
 
 // The default NaN values (for FPCR.DN=1).
-V8_EXPORT_PRIVATE extern const double kFP64DefaultNaN;
-V8_EXPORT_PRIVATE extern const float kFP32DefaultNaN;
+extern const double kFP64DefaultNaN;
+extern const float kFP32DefaultNaN;
 extern const float16 kFP16DefaultNaN;
 
 #if defined(V8_OS_WIN)
@@ -401,11 +401,11 @@ class Instruction {
   // Find the PC offset encoded in this instruction. 'this' may be a branch or
   // a PC-relative addressing instruction.
   // The offset returned is unscaled.
-  V8_EXPORT_PRIVATE int64_t ImmPCOffset();
+  int64_t ImmPCOffset();
 
   // Find the target of this instruction. 'this' may be a branch or a
   // PC-relative addressing instruction.
-  V8_EXPORT_PRIVATE Instruction* ImmPCOffsetTarget();
+  Instruction* ImmPCOffsetTarget();
 
   static bool IsValidImmPCOffset(ImmBranchType branch_type, ptrdiff_t offset);
   bool IsTargetInImmPCOffsetRange(Instruction* target);

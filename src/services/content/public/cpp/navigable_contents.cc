@@ -15,10 +15,11 @@ NavigableContents::NavigableContents(mojom::NavigableContentsFactory* factory)
 
 NavigableContents::NavigableContents(mojom::NavigableContentsFactory* factory,
                                      mojom::NavigableContentsParamsPtr params)
-    : client_receiver_(this), content_ax_tree_id_(ui::AXTreeIDUnknown()) {
-  factory->CreateContents(std::move(params),
-                          contents_.BindNewPipeAndPassReceiver(),
-                          client_receiver_.BindNewPipeAndPassRemote());
+    : client_binding_(this), content_ax_tree_id_(ui::AXTreeIDUnknown()) {
+  mojom::NavigableContentsClientPtr client;
+  client_binding_.Bind(mojo::MakeRequest(&client));
+  factory->CreateContents(std::move(params), mojo::MakeRequest(&contents_),
+                          std::move(client));
 }
 
 NavigableContents::~NavigableContents() = default;

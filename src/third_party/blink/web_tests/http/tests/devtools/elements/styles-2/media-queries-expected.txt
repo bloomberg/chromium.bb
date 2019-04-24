@@ -13,7 +13,7 @@ element.style { ()
     border: 1px solid black;
 
 [expanded] 
-#main { (<style>)
+#main { (<style>…</style>)
     background: blue;
 
 [expanded] 

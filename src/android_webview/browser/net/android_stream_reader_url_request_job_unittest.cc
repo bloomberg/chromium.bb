@@ -390,6 +390,7 @@ TEST_F(AndroidStreamReaderURLRequestJobTest, DeleteJobMidWayRead) {
   base::RunLoop loop;
   std::unique_ptr<StrictMock<MockInputStreamReader>> stream_reader(
       new StrictMock<MockInputStreamReader>());
+  net::CompletionCallback read_completion_callback;
   EXPECT_CALL(*stream_reader, Seek(_))
       .WillOnce(Return(bytes_available));
   EXPECT_CALL(*stream_reader, ReadRawData(_, _))

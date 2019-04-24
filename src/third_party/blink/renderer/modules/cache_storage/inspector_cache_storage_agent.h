@@ -23,6 +23,10 @@ class MODULES_EXPORT InspectorCacheStorageAgent final
  public:
   using CachesMap = HashMap<String, mojom::blink::CacheStoragePtr>;
 
+  static InspectorCacheStorageAgent* Create(InspectedFrames* frames) {
+    return MakeGarbageCollected<InspectorCacheStorageAgent>(frames);
+  }
+
   explicit InspectorCacheStorageAgent(InspectedFrames*);
   ~InspectorCacheStorageAgent() override;
   void Trace(blink::Visitor*) override;

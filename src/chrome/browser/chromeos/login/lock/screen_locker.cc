@@ -27,14 +27,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/authpolicy/authpolicy_helper.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/views_screen_locker.h"
 #include "chrome/browser/chromeos/login/login_auth_recorder.h"
-#include "chrome/browser/chromeos/login/quick_unlock/fingerprint_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_prefs.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -51,8 +48,10 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/dbus/biod/constants.pb.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/auth/authenticator.h"
+#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/session_manager/core/session_manager.h"
@@ -66,7 +65,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/service_manager_connection.h"
-#include "services/audio/public/cpp/sounds/sounds_manager.h"
+#include "media/audio/sounds/sounds_manager.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -97,13 +96,15 @@ class ScreenLockObserver : public SessionManagerClient::StubDelegate,
  public:
   ScreenLockObserver() : session_started_(false) {
     session_manager::SessionManager::Get()->AddObserver(this);
-    SessionManagerClient::Get()->SetStubDelegate(this);
+    DBusThreadManager::Get()->GetSessionManagerClient()->SetStubDelegate(this);
   }
 
   ~ScreenLockObserver() override {
     session_manager::SessionManager::Get()->RemoveObserver(this);
-    if (SessionManagerClient::Get())
-      SessionManagerClient::Get()->SetStubDelegate(nullptr);
+    if (DBusThreadManager::IsInitialized()) {
+      DBusThreadManager::Get()->GetSessionManagerClient()->SetStubDelegate(
+          nullptr);
+    }
   }
 
   bool session_started() const { return session_started_; }
@@ -172,7 +173,7 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
   screen_locker_ = this;
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  audio::SoundsManager* manager = audio::SoundsManager::Get();
+  media::SoundsManager* manager = media::SoundsManager::Get();
   manager->Initialize(SOUND_LOCK,
                       bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV));
   manager->Initialize(SOUND_UNLOCK,
@@ -316,23 +317,20 @@ void ScreenLocker::OnPasswordAuthSuccess(const UserContext& user_context) {
   SaveSyncPasswordHash(user_context);
 }
 
-void ScreenLocker::EnableAuthForUser(const AccountId& account_id) {
-  const user_manager::User* user = FindUnlockUser(account_id);
-  CHECK(user) << "Invalid user - cannot enable authentication.";
-
-  users_with_disabled_auth_.erase(account_id);
-  LoginScreenClient::Get()->login_screen()->EnableAuthForUser(account_id);
-}
-
-void ScreenLocker::DisableAuthForUser(
+void ScreenLocker::SetAuthEnabledForUser(
     const AccountId& account_id,
-    ash::mojom::AuthDisabledDataPtr auth_disabled_data) {
+    bool is_enabled,
+    base::Optional<base::Time> auth_reenabled_time) {
   const user_manager::User* user = FindUnlockUser(account_id);
   CHECK(user) << "Invalid user - cannot disable authentication.";
 
-  users_with_disabled_auth_.insert(account_id);
-  LoginScreenClient::Get()->login_screen()->DisableAuthForUser(
-      account_id, std::move(auth_disabled_data));
+  if (is_enabled) {
+    users_with_disabled_auth_.erase(account_id);
+  } else {
+    users_with_disabled_auth_.insert(account_id);
+  }
+  LoginScreenClient::Get()->login_screen()->SetAuthEnabledForUser(
+      account_id, is_enabled, auth_reenabled_time);
 }
 
 void ScreenLocker::Authenticate(const UserContext& user_context,
@@ -423,7 +421,7 @@ void ScreenLocker::ContinueAuthenticate(
     // screen. Failure to get TGT here is OK - that could mean e.g. Active
     // Directory server is not reachable. AuthPolicyCredentialsManager regularly
     // checks TGT status inside the user session.
-    AuthPolicyHelper::TryAuthenticateUser(
+    AuthPolicyLoginHelper::TryAuthenticateUser(
         user_context.GetAccountId().GetUserEmail(),
         user_context.GetAccountId().GetObjGuid(),
         user_context.GetKey()->GetSecret());
@@ -525,7 +523,7 @@ void ScreenLocker::HandleShowLockScreenRequest() {
     // screen while remaining secure in the case the user walks away during
     // the sign-in steps. See crbug.com/112225 and crbug.com/110933.
     VLOG(1) << "Calling session manager's StopSession D-Bus method";
-    SessionManagerClient::Get()->StopSession();
+    DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
   }
 }
 
@@ -551,7 +549,9 @@ void ScreenLocker::Show() {
   } else {
     VLOG(1) << "ScreenLocker " << screen_locker_ << " already exists; "
             << " calling session manager's HandleLockScreenShown D-Bus method";
-    SessionManagerClient::Get()->NotifyLockScreenShown();
+    DBusThreadManager::Get()
+        ->GetSessionManagerClient()
+        ->NotifyLockScreenShown();
   }
 }
 
@@ -638,7 +638,9 @@ ScreenLocker::~ScreenLocker() {
       content::Source<ScreenLocker>(this), content::Details<bool>(&state));
 
   VLOG(1) << "Calling session manager's HandleLockScreenDismissed D-Bus method";
-  SessionManagerClient::Get()->NotifyLockScreenDismissed();
+  DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->NotifyLockScreenDismissed();
 
   if (saved_ime_state_.get()) {
     input_method::InputMethodManager::Get()->SetState(saved_ime_state_);
@@ -658,7 +660,7 @@ void ScreenLocker::ScreenLockReady() {
       chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
       content::Source<ScreenLocker>(this), content::Details<bool>(&state));
   VLOG(1) << "Calling session manager's HandleLockScreenShown D-Bus method";
-  SessionManagerClient::Get()->NotifyLockScreenShown();
+  DBusThreadManager::Get()->GetSessionManagerClient()->NotifyLockScreenShown();
 
   session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SessionState::LOCKED);

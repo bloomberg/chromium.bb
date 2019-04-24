@@ -385,11 +385,8 @@ Response V8RuntimeAgentImpl::getProperties(
         result,
     Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>*
         internalProperties,
-    Maybe<protocol::Array<protocol::Runtime::PrivatePropertyDescriptor>>*
-        privateProperties,
     Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails) {
   using protocol::Runtime::InternalPropertyDescriptor;
-  using protocol::Runtime::PrivatePropertyDescriptor;
 
   InjectedScript::ObjectScope scope(m_session, objectId);
   Response response = scope.initialize();
@@ -412,17 +409,12 @@ Response V8RuntimeAgentImpl::getProperties(
   if (exceptionDetails->isJust() || accessorPropertiesOnly.fromMaybe(false))
     return Response::OK();
   std::unique_ptr<protocol::Array<InternalPropertyDescriptor>>
-      internalPropertiesProtocolArray;
-  std::unique_ptr<protocol::Array<PrivatePropertyDescriptor>>
-      privatePropertiesProtocolArray;
-  response = scope.injectedScript()->getInternalAndPrivateProperties(
-      object, scope.objectGroupName(), &internalPropertiesProtocolArray,
-      &privatePropertiesProtocolArray);
+      propertiesProtocolArray;
+  response = scope.injectedScript()->getInternalProperties(
+      object, scope.objectGroupName(), &propertiesProtocolArray);
   if (!response.isSuccess()) return response;
-  if (internalPropertiesProtocolArray->length())
-    *internalProperties = std::move(internalPropertiesProtocolArray);
-  if (privatePropertiesProtocolArray->length())
-    *privateProperties = std::move(privatePropertiesProtocolArray);
+  if (propertiesProtocolArray->length())
+    *internalProperties = std::move(propertiesProtocolArray);
   return Response::OK();
 }
 

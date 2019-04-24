@@ -21,13 +21,15 @@ enum ServiceWorkerEventStatus {
   // to network.
   REJECTED,
 
-  // The service worker execution context was destroyed while the event was alive.
+  // ABORTED happens in at least two cases:
+  // - The service worker execution context was destroyed while the event was
+  // alive.
+  // - The event timed out.
+  //
+  // TODO(falken): It seems useful to add a TIMEOUT status.
   ABORTED,
 
-  // The event failed to finish within the time limit.
-  TIMEOUT,
-
-  MAX=TIMEOUT
+  MAX=ABORTED
 };
 
 // The result of starting a service worker.

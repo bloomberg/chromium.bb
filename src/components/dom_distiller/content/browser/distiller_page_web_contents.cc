@@ -167,7 +167,8 @@ void DistillerPageWebContents::DidFailLoad(
     content::WebContentsObserver::Observe(nullptr);
     DCHECK(state_ == LOADING_PAGE || state_ == EXECUTING_JAVASCRIPT);
     state_ = PAGELOAD_FAILED;
-    OnWebContentsDistillationDone(GURL(), base::TimeTicks(), base::Value());
+    auto empty = std::make_unique<base::Value>();
+    OnWebContentsDistillationDone(GURL(), base::TimeTicks(), empty.get());
   }
 }
 
@@ -184,16 +185,16 @@ void DistillerPageWebContents::ExecuteJavaScript() {
   DVLOG(1) << "Beginning distillation";
   RunIsolatedJavaScript(
       frame, script_,
-      base::BindOnce(&DistillerPageWebContents::OnWebContentsDistillationDone,
-                     weak_factory_.GetWeakPtr(),
-                     source_page_handle_->web_contents()->GetLastCommittedURL(),
-                     base::TimeTicks::Now()));
+      base::Bind(&DistillerPageWebContents::OnWebContentsDistillationDone,
+                 weak_factory_.GetWeakPtr(),
+                 source_page_handle_->web_contents()->GetLastCommittedURL(),
+                 base::TimeTicks::Now()));
 }
 
 void DistillerPageWebContents::OnWebContentsDistillationDone(
     const GURL& page_url,
     const base::TimeTicks& javascript_start,
-    base::Value value) {
+    const base::Value* value) {
   DCHECK(state_ == IDLE || state_ == LOADING_PAGE ||  // TODO(nyquist): 493795.
          state_ == PAGELOAD_FAILED || state_ == EXECUTING_JAVASCRIPT);
   state_ = IDLE;
@@ -204,7 +205,7 @@ void DistillerPageWebContents::OnWebContentsDistillationDone(
     DVLOG(1) << "DomDistiller.Time.RunJavaScript = " << javascript_time;
   }
 
-  DistillerPage::OnDistillationDone(page_url, &value);
+  DistillerPage::OnDistillationDone(page_url, value);
 }
 
 }  // namespace dom_distiller

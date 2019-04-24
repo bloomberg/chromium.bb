@@ -21,7 +21,6 @@ class LanguageModelManager : public KeyedService {
  public:
   enum class ModelType {
     BASELINE,
-    FLUENT,
     GEO,
     HEURISTIC,
   };

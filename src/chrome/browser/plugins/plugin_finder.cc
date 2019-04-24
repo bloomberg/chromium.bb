@@ -100,12 +100,10 @@ std::unique_ptr<PluginMetadata> CreatePluginMetadata(
   DCHECK(success);
   std::string language_str;
   plugin_dict->GetString("lang", &language_str);
-  bool plugin_is_deprecated = false;
-  plugin_dict->GetBoolean("plugin_is_deprecated", &plugin_is_deprecated);
 
   std::unique_ptr<PluginMetadata> plugin = std::make_unique<PluginMetadata>(
       identifier, name, display_url, GURL(url), GURL(help_url),
-      group_name_matcher, language_str, plugin_is_deprecated);
+      group_name_matcher, language_str);
   const base::ListValue* versions = NULL;
   if (plugin_dict->GetList("versions", &versions)) {
     for (auto it = versions->begin(); it != versions->end(); ++it) {
@@ -285,11 +283,11 @@ std::unique_ptr<PluginMetadata> PluginFinder::GetPluginMetadata(
   }
 
   // The plugin metadata was not found, create a dummy one holding
-  // the name, identifier and group name only. Dummy plugin is not deprecated.
+  // the name, identifier and group name only.
   std::string identifier = GetIdentifier(plugin);
   std::unique_ptr<PluginMetadata> metadata = std::make_unique<PluginMetadata>(
       identifier, GetGroupName(plugin), false, GURL(), GURL(), plugin.name,
-      std::string(), false /* plugin_is_deprecated */);
+      std::string());
   for (size_t i = 0; i < plugin.mime_types.size(); ++i)
     metadata->AddMatchingMimeType(plugin.mime_types[i].mime_type);
 

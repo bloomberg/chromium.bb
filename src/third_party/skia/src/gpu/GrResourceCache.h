@@ -16,7 +16,6 @@
 #include "SkRefCnt.h"
 #include "SkTArray.h"
 #include "SkTDPQueue.h"
-#include "SkTHash.h"
 #include "SkTInternalLList.h"
 #include "SkTMultiMap.h"
 
@@ -193,10 +192,10 @@ public:
 
     /** Returns true if the cache would like a flush to occur in order to make more resources
         purgeable. */
-    bool requestsFlush() const;
+    bool requestsFlush() const { return this->overBudget() && !fPurgeableQueue.count(); }
 
     /** Maintain a ref to this resource until we receive a GrGpuResourceFreedMessage. */
-    void insertDelayedResourceUnref(GrGpuResource* resource);
+    void insertCrossContextGpuResource(GrGpuResource* resource);
 
 #if GR_CACHE_STATS
     struct Stats {
@@ -265,10 +264,9 @@ private:
     void removeUniqueKey(GrGpuResource*);
     void willRemoveScratchKey(const GrGpuResource*);
     void didChangeBudgetStatus(GrGpuResource*);
-    void refResource(GrGpuResource* resource);
+    void refAndMakeResourceMRU(GrGpuResource*);
     /// @}
 
-    void refAndMakeResourceMRU(GrGpuResource*);
     void processFreedGpuResources();
     void addToNonpurgeableArray(GrGpuResource*);
     void removeFromNonpurgeableArray(GrGpuResource*);
@@ -307,25 +305,6 @@ private:
     };
     typedef SkTDynamicHash<GrGpuResource, GrUniqueKey, UniqueHashTraits> UniqueHash;
 
-    class ResourceAwaitingUnref {
-    public:
-        ResourceAwaitingUnref();
-        ResourceAwaitingUnref(GrGpuResource* resource);
-        ResourceAwaitingUnref(const ResourceAwaitingUnref&) = delete;
-        ResourceAwaitingUnref& operator=(const ResourceAwaitingUnref&) = delete;
-        ResourceAwaitingUnref(ResourceAwaitingUnref&&);
-        ResourceAwaitingUnref& operator=(ResourceAwaitingUnref&&);
-        ~ResourceAwaitingUnref();
-        void addRef();
-        void unref();
-        bool finished();
-
-    private:
-        GrGpuResource* fResource = nullptr;
-        int fNumUnrefs = 0;
-    };
-    using ReourcesAwaitingUnref = SkTHashMap<uint32_t, ResourceAwaitingUnref>;
-
     static bool CompareTimestamp(GrGpuResource* const& a, GrGpuResource* const& b) {
         return a->cacheAccess().timestamp() < b->cacheAccess().timestamp();
     }
@@ -339,11 +318,11 @@ private:
     typedef SkTDPQueue<GrGpuResource*, CompareTimestamp, AccessResourceIndex> PurgeableQueue;
     typedef SkTDArray<GrGpuResource*> ResourceArray;
 
-    GrProxyProvider*                    fProxyProvider = nullptr;
+    GrProxyProvider*                    fProxyProvider;
     // Whenever a resource is added to the cache or the result of a cache lookup, fTimestamp is
     // assigned as the resource's timestamp and then incremented. fPurgeableQueue orders the
     // purgeable resources by this value, and thus is used to purge resources in LRU order.
-    uint32_t                            fTimestamp = 0;
+    uint32_t                            fTimestamp;
     PurgeableQueue                      fPurgeableQueue;
     ResourceArray                       fNonpurgeableResources;
 
@@ -353,38 +332,38 @@ private:
     UniqueHash                          fUniqueHash;
 
     // our budget, used in purgeAsNeeded()
-    int                                 fMaxCount = kDefaultMaxCount;
-    size_t                              fMaxBytes = kDefaultMaxSize;
+    int                                 fMaxCount;
+    size_t                              fMaxBytes;
 
 #if GR_CACHE_STATS
-    int                                 fHighWaterCount = 0;
-    size_t                              fHighWaterBytes = 0;
-    int                                 fBudgetedHighWaterCount = 0;
-    size_t                              fBudgetedHighWaterBytes = 0;
+    int                                 fHighWaterCount;
+    size_t                              fHighWaterBytes;
+    int                                 fBudgetedHighWaterCount;
+    size_t                              fBudgetedHighWaterBytes;
 #endif
 
     // our current stats for all resources
-    SkDEBUGCODE(int                     fCount = 0;)
-    size_t                              fBytes = 0;
+    SkDEBUGCODE(int                     fCount;)
+    size_t                              fBytes;
 
     // our current stats for resources that count against the budget
-    int                                 fBudgetedCount = 0;
-    size_t                              fBudgetedBytes = 0;
-    size_t                              fPurgeableBytes = 0;
-    int                                 fNumBudgetedResourcesFlushWillMakePurgeable = 0;
+    int                                 fBudgetedCount;
+    size_t                              fBudgetedBytes;
+    size_t                              fPurgeableBytes;
 
     InvalidUniqueKeyInbox               fInvalidUniqueKeyInbox;
     FreedGpuResourceInbox               fFreedGpuResourceInbox;
-    ReourcesAwaitingUnref               fResourcesAwaitingUnref;
 
-    uint32_t                            fContextUniqueID = SK_InvalidUniqueID;
-    GrSingleOwner*                      fSingleOwner = nullptr;
+    SkTDArray<GrGpuResource*>           fResourcesWaitingForFreeMsg;
+
+    uint32_t                            fContextUniqueID;
+    GrSingleOwner*                      fSingleOwner;
 
     // This resource is allowed to be in the nonpurgeable array for the sake of validate() because
     // we're in the midst of converting it to purgeable status.
-    SkDEBUGCODE(GrGpuResource*          fNewlyPurgeableResourceForValidation = nullptr;)
+    SkDEBUGCODE(GrGpuResource*          fNewlyPurgeableResourceForValidation;)
 
-    bool                                fPreferVRAMUseOverFlushes = false;
+    bool                                fPreferVRAMUseOverFlushes;
 };
 
 GR_MAKE_BITFIELD_CLASS_OPS(GrResourceCache::ScratchFlags);
@@ -404,12 +383,6 @@ private:
      * Removes a resource from the cache.
      */
     void removeResource(GrGpuResource* resource) { fCache->removeResource(resource); }
-
-    /**
-     * Adds a ref to a resource with proper tracking if the resource has 0 refs prior to
-     * adding the ref.
-     */
-    void refResource(GrGpuResource* resource) { fCache->refResource(resource); }
 
     /**
      * Notifications that should be sent to the cache when the ref/io cnt status of resources

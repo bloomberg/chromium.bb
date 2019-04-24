@@ -313,9 +313,8 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
     return input.software_rendering;
   }
 
-  static const std::string& direct_rendering_version(
-      const gpu::GPUInfo& input) {
-    return input.direct_rendering_version;
+  static bool direct_rendering(const gpu::GPUInfo& input) {
+    return input.direct_rendering;
   }
 
   static bool sandboxed(const gpu::GPUInfo& input) { return input.sandboxed; }

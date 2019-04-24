@@ -27,7 +27,7 @@ class EnableDebuggingScreenHandler : public EnableDebuggingScreenView,
   // EnableDebuggingScreenView implementation:
   void Show() override;
   void Hide() override;
-  void SetDelegate(EnableDebuggingScreen* screen) override;
+  void SetDelegate(Delegate* delegate) override;
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
@@ -76,7 +76,7 @@ class EnableDebuggingScreenHandler : public EnableDebuggingScreenView,
   // Updates UI state.
   void UpdateUIState(UIState state);
 
-  EnableDebuggingScreen* screen_ = nullptr;
+  Delegate* delegate_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;

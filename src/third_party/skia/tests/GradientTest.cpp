@@ -22,7 +22,8 @@ static void test_big_grad(skiatest::Reporter* reporter) {
     const SkColor colors[] = { SK_ColorRED, SK_ColorBLUE };
     const SkPoint pts[] = {{ 15, 14.7112684f }, { 0.709064007f, 12.6108112f }};
     SkPaint paint;
-    paint.setShader(SkGradientShader::MakeLinear(pts, colors, nullptr, 2, SkTileMode::kClamp));
+    paint.setShader(SkGradientShader::MakeLinear(pts, colors, nullptr, 2,
+                                                 SkShader::kClamp_TileMode));
 
     SkBitmap bm;
     bm.allocN32Pixels(2000, 1);
@@ -44,7 +45,7 @@ struct GradRec {
     const SkScalar* fPos;
     const SkPoint*  fPoint;   // 2
     const SkScalar* fRadius; // 2
-    SkTileMode      fTileMode;
+    SkShader::TileMode fTileMode;
 
     void gradCheck(skiatest::Reporter* reporter, const sk_sp<SkShader>& shader,
                    SkShader::GradientInfo* info,
@@ -62,13 +63,13 @@ struct GradRec {
                         !memcmp(info->fColors, fColors, fColorCount * sizeof(SkColor)));
         REPORTER_ASSERT(reporter,
                         !memcmp(info->fColorOffsets, fPos, fColorCount * sizeof(SkScalar)));
-        REPORTER_ASSERT(reporter, fTileMode == (SkTileMode)info->fTileMode);
+        REPORTER_ASSERT(reporter, fTileMode == info->fTileMode);
     }
 };
 
 
 static void none_gradproc(skiatest::Reporter* reporter, const GradRec&, const GradRec&) {
-    sk_sp<SkShader> s(SkShaders::Empty());
+    sk_sp<SkShader> s(SkShader::MakeEmptyShader());
     REPORTER_ASSERT(reporter, SkShader::kNone_GradientType == s->asAGradient(nullptr));
 }
 
@@ -142,7 +143,7 @@ static void TestConstantGradient(skiatest::Reporter*) {
     SkColor colors[] = { SK_ColorBLUE, SK_ColorBLUE };
     const SkScalar pos[] = { 0, SK_Scalar1 };
     SkPaint paint;
-    paint.setShader(SkGradientShader::MakeLinear(pts, colors, pos, 2, SkTileMode::kClamp));
+    paint.setShader(SkGradientShader::MakeLinear(pts, colors, pos, 2, SkShader::kClamp_TileMode));
     SkBitmap outBitmap;
     outBitmap.allocN32Pixels(10, 1);
     SkCanvas canvas(outBitmap);
@@ -172,7 +173,7 @@ static void TestGradientShaders(skiatest::Reporter* reporter) {
     rec.fPos = gPos;
     rec.fPoint = gPts;
     rec.fRadius = gRad;
-    rec.fTileMode = SkTileMode::kClamp;
+    rec.fTileMode = SkShader::kClamp_TileMode;
 
     static const GradProc gProcs[] = {
         none_gradproc,
@@ -238,13 +239,13 @@ static void TestGradientOptimization(skiatest::Reporter* reporter) {
         { gC_0011, gP_0011, 4, gC_0011, gP_0011, 4, false },
     };
 
-    const SkTileMode modes[] = {
-        SkTileMode::kClamp, SkTileMode::kRepeat, SkTileMode::kMirror,
+    const SkShader::TileMode modes[] = {
+        SkShader::kClamp_TileMode, SkShader::kRepeat_TileMode, SkShader::kMirror_TileMode,
         // TODO: add kDecal_TileMode when it is implemented
     };
     for (size_t i = 0; i < SK_ARRAY_COUNT(gProcInfo); ++i) {
         for (auto mode : modes) {
-            if (gProcInfo[i].fIsClampRestricted && mode != SkTileMode::kClamp) {
+            if (gProcInfo[i].fIsClampRestricted && mode != SkShader::kClamp_TileMode) {
                 continue;
             }
 
@@ -253,12 +254,12 @@ static void TestGradientOptimization(skiatest::Reporter* reporter) {
                 rec.fColorCount = gTests[t].fCount;
                 rec.fColors     = gTests[t].fCol;
                 rec.fPos        = gTests[t].fPos;
-                rec.fTileMode   = mode;
+                rec.fTileMode   = static_cast<SkShader::TileMode>(mode);
                 rec.fPoint      = gPts;
                 rec.fRadius     = gRadii;
 
                 GradRec expected = rec;
-                if (!gTests[t].fRequiresNonClamp || mode != SkTileMode::kClamp) {
+                if (!gTests[t].fRequiresNonClamp || mode != SkShader::kClamp_TileMode) {
                     expected.fColorCount = gTests[t].fExpectedCount;
                     expected.fColors     = gTests[t].fExpectedCol;
                     expected.fPos        = gTests[t].fExpectedPos;
@@ -277,7 +278,7 @@ static void test_nearly_vertical(skiatest::Reporter* reporter) {
     const SkColor colors[] = { SK_ColorBLACK, SK_ColorWHITE };
     const SkScalar pos[] = { 0, 1 };
     SkPaint paint;
-    paint.setShader(SkGradientShader::MakeLinear(pts, colors, pos, 2, SkTileMode::kClamp));
+    paint.setShader(SkGradientShader::MakeLinear(pts, colors, pos, 2, SkShader::kClamp_TileMode));
 
     surface->getCanvas()->drawPaint(paint);
 }
@@ -289,7 +290,7 @@ static void test_vertical(skiatest::Reporter* reporter) {
     const SkColor colors[] = { SK_ColorBLACK, SK_ColorWHITE };
     const SkScalar pos[] = { 0, 1 };
     SkPaint paint;
-    paint.setShader(SkGradientShader::MakeLinear(pts, colors, pos, 2, SkTileMode::kClamp));
+    paint.setShader(SkGradientShader::MakeLinear(pts, colors, pos, 2, SkShader::kClamp_TileMode));
 
     surface->getCanvas()->drawPaint(paint);
 }
@@ -306,7 +307,7 @@ static void test_linear_fuzz(skiatest::Reporter* reporter) {
     const SkScalar pos[] = {0, 0.200000003f, 0.800000012f, 1 };
 
     SkPaint paint;
-    paint.setShader(SkGradientShader::MakeLinear(pts, colors, pos, 4, SkTileMode::kClamp));
+    paint.setShader(SkGradientShader::MakeLinear(pts, colors, pos, 4, SkShader::kClamp_TileMode));
 
     SkRect r = {0, 83, 1254, 620};
     surface->getCanvas()->drawRect(r, paint);
@@ -323,7 +324,7 @@ static void test_two_point_conical_zero_radius(skiatest::Reporter* reporter) {
     p.setShader(SkGradientShader::MakeTwoPointConical(
         SkPoint::Make(2.5f, 2.5f), 0,
         SkPoint::Make(3.0f, 3.0f), 10,
-        colors, nullptr, SK_ARRAY_COUNT(colors), SkTileMode::kClamp));
+        colors, nullptr, SK_ARRAY_COUNT(colors), SkShader::kClamp_TileMode));
     surface->getCanvas()->drawPaint(p);
 
     // r == 0 for the center pixel.
@@ -339,14 +340,14 @@ static void test_clamping_overflow(skiatest::Reporter*) {
     const SkColor colors[] = { SK_ColorRED, SK_ColorGREEN };
     const SkPoint pts1[] = { SkPoint::Make(1001, 1000001), SkPoint::Make(1000.99f, 1000000) };
 
-    p.setShader(SkGradientShader::MakeLinear(pts1, colors, nullptr, 2, SkTileMode::kClamp));
+    p.setShader(SkGradientShader::MakeLinear(pts1, colors, nullptr, 2, SkShader::kClamp_TileMode));
 
     sk_sp<SkSurface> surface(SkSurface::MakeRasterN32Premul(50, 50));
     surface->getCanvas()->scale(100, 100);
     surface->getCanvas()->drawPaint(p);
 
     const SkPoint pts2[] = { SkPoint::Make(10000.99f, 1000000), SkPoint::Make(10001, 1000001) };
-    p.setShader(SkGradientShader::MakeLinear(pts2, colors, nullptr, 2, SkTileMode::kClamp));
+    p.setShader(SkGradientShader::MakeLinear(pts2, colors, nullptr, 2, SkShader::kClamp_TileMode));
     surface->getCanvas()->drawPaint(p);
 
     // Passes if we don't trigger asserts.
@@ -361,7 +362,7 @@ static void test_degenerate_linear(skiatest::Reporter*) {
         SkPoint::Make(SK_ScalarMax, 0)
     };
 
-    p.setShader(SkGradientShader::MakeLinear(pts, colors, nullptr, 2, SkTileMode::kClamp));
+    p.setShader(SkGradientShader::MakeLinear(pts, colors, nullptr, 2, SkShader::kClamp_TileMode));
     sk_sp<SkSurface> surface(SkSurface::MakeRasterN32Premul(50, 50));
     surface->getCanvas()->drawPaint(p);
 
@@ -401,7 +402,7 @@ static void test_linear_fuzzer(skiatest::Reporter*) {
         const SkColor*     fColors;
         const SkScalar*    fPos;
         int                fCount;
-        SkTileMode         fTileMode;
+        SkShader::TileMode fTileMode;
         uint32_t           fFlags;
         const SkScalar*    fLocalMatrix;
         const SkScalar*    fGlobalMatrix;
@@ -411,7 +412,7 @@ static void test_linear_fuzzer(skiatest::Reporter*) {
             gColors0,
             nullptr,
             SK_ARRAY_COUNT(gColors0),
-            SkTileMode::kClamp,
+            SkShader::kClamp_TileMode,
             0,
             gMatrix0,
             nullptr
@@ -421,7 +422,7 @@ static void test_linear_fuzzer(skiatest::Reporter*) {
             gColors1,
             gPos1,
             SK_ARRAY_COUNT(gColors1),
-            SkTileMode::kClamp,
+            SkShader::kClamp_TileMode,
             0,
             nullptr,
             gMatrix1
@@ -431,7 +432,7 @@ static void test_linear_fuzzer(skiatest::Reporter*) {
             gColors1,
             gPos1,
             SK_ARRAY_COUNT(gColors1),
-            SkTileMode::kClamp,
+            SkShader::kClamp_TileMode,
             0,
             nullptr,
             gMatrix2
@@ -441,7 +442,7 @@ static void test_linear_fuzzer(skiatest::Reporter*) {
             gColors0,
             nullptr,
             SK_ARRAY_COUNT(gColors0),
-            SkTileMode::kClamp,
+            SkShader::kClamp_TileMode,
             0,
             gMatrix3,
             nullptr

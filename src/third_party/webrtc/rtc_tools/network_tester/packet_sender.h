@@ -14,10 +14,9 @@
 #include <memory>
 #include <string>
 
-#include "api/task_queue/task_queue_factory.h"
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/ignore_wundef.h"
-#include "rtc_base/synchronization/sequence_checker.h"
+#include "rtc_base/sequenced_task_checker.h"
 #include "rtc_base/task_queue.h"
 
 #ifdef WEBRTC_NETWORK_TESTER_PROTO
@@ -49,14 +48,13 @@ class PacketSender {
   void UpdateTestSetting(size_t packet_size, int64_t send_interval_ms);
 
  private:
-  SequenceChecker worker_queue_checker_;
+  rtc::SequencedTaskChecker worker_queue_checker_;
   size_t packet_size_ RTC_GUARDED_BY(worker_queue_checker_);
   int64_t send_interval_ms_ RTC_GUARDED_BY(worker_queue_checker_);
   int64_t sequence_number_ RTC_GUARDED_BY(worker_queue_checker_);
   bool sending_ RTC_GUARDED_BY(worker_queue_checker_);
   const std::string config_file_path_;
   TestController* const test_controller_;
-  std::unique_ptr<TaskQueueFactory> task_queue_factory_;
   rtc::TaskQueue worker_queue_;
 
   RTC_DISALLOW_COPY_AND_ASSIGN(PacketSender);

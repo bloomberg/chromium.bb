@@ -633,10 +633,20 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
   controller_->RemoveObserver(&mock_observer_);
 }
 
-// Make all the test parameter types printable. Use short names because these
-// are used in tests with very many parameters.
+// Make all the test parameter types printable.
+
 std::ostream& operator<<(std::ostream& out, CleanerProcessStatus status) {
-  return out << "Proc" << static_cast<int>(status);
+  switch (status) {
+    case CleanerProcessStatus::kFetchFailure:
+      return out << "FetchFailure";
+    case CleanerProcessStatus::kFetchSuccessInvalidProcess:
+      return out << "FetchSuccessInvalidProcess";
+    case CleanerProcessStatus::kFetchSuccessValidProcess:
+      return out << "FetchSuccessValidProcess";
+    default:
+      NOTREACHED();
+      return out << "UnknownProcessStatus" << status;
+  }
 }
 
 // This includes all crash points after kOnStartup, except kAfterRequestSent.

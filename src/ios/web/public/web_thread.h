@@ -53,11 +53,11 @@ class WebThread {
     UI,
 
     // This is the thread that processes non-blocking IO, i.e. IPC and network.
-    // Blocking IO should happen in ThreadPool.
+    // Blocking IO should happen in TaskScheduler.
     IO,
 
     // NOTE: do not add new threads here. Instead you should just use
-    // base::Create*TaskRunnerWithTraits to run tasks on the ThreadPool.
+    // base::Create*TaskRunnerWithTraits to run tasks on the TaskScheduler.
 
     // This identifier does not represent a thread.  Instead it counts the
     // number of well-known threads.  Insert new well-known threads before this

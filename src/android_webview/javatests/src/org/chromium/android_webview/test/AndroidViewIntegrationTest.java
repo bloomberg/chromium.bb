@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.junit.Assert.assertNotEquals;
+
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.view.View;
@@ -20,13 +22,10 @@ import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwLayoutSizer;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
-import org.chromium.base.Log;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.annotation.concurrent.GuardedBy;
 
 /**
  * Tests for certain edge cases related to integrating with the Android view system.
@@ -47,37 +46,25 @@ public class AndroidViewIntegrationTest {
                 }
             };
 
-    private static final String TAG = "AndroidViewTest"; // 20 max characters
-    // TODO(crbug.com/949391): turn this off once we can get some details about flakes.
-    private static final boolean DEBUG = true;
     private static final int CONTENT_SIZE_CHANGE_STABILITY_TIMEOUT_MS = 1000;
 
     private static class OnContentSizeChangedHelper extends CallbackHelper {
-        final private Object mLock = new Object();
-        @GuardedBy("mLock")
         private int mWidth;
-        @GuardedBy("mLock")
         private int mHeight;
 
         public int getWidth() {
             assert getCallCount() > 0;
-            synchronized (mLock) {
-                return mWidth;
-            }
+            return mWidth;
         }
 
         public int getHeight() {
             assert getCallCount() > 0;
-            synchronized (mLock) {
-                return mHeight;
-            }
+            return mHeight;
         }
 
         public void onContentSizeChanged(int widthCss, int heightCss) {
-            synchronized (mLock) {
-                mWidth = widthCss;
-                mHeight = heightCss;
-            }
+            mWidth = widthCss;
+            mHeight = heightCss;
             notifyCalled();
         }
     }
@@ -236,19 +223,16 @@ public class AndroidViewIntegrationTest {
     private void waitForContentSizeToChangeTo(OnContentSizeChangedHelper helper, int callCount,
             int widthCss, int heightCss) throws Exception {
         final int maxSizeChangeNotificationsToWaitFor = 5;
-        for (int i = 0; i < maxSizeChangeNotificationsToWaitFor; i++) {
-            helper.waitForCallback(callCount + i);
-            if (DEBUG) {
-                Log.i(TAG,
-                        "i: " + i + ", height: " + helper.getHeight()
-                                + ", width: " + helper.getWidth());
-            }
+        for (int i = 1; i <= maxSizeChangeNotificationsToWaitFor; i++) {
+            helper.waitForCallback(callCount, i);
             if ((heightCss == -1 || helper.getHeight() == heightCss)
                     && (widthCss == -1 || helper.getWidth() == widthCss)) {
-                return;
+                break;
             }
+            // This means that we hit the max number of iterations but the expected contents size
+            // wasn't reached.
+            assertNotEquals(i, maxSizeChangeNotificationsToWaitFor);
         }
-        Assert.fail("The expected contents size was not reached in max # of trials.");
     }
 
     private void loadPageOfSizeAndWaitForSizeChange(AwContents awContents,
@@ -310,7 +294,6 @@ public class AndroidViewIntegrationTest {
                 + "</style>", "<div>a</div>");
 
         final int contentSizeChangeCallCount = mOnContentSizeChangedHelper.getCallCount();
-        Assert.assertEquals(0, contentSizeChangeCallCount);
         mActivityTestRule.loadDataAsync(
                 testContainerView.getAwContents(), htmlData, "text/html", false);
 

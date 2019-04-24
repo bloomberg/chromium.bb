@@ -5,11 +5,17 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_QUICK_UNLOCK_STORAGE_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_QUICK_UNLOCK_QUICK_UNLOCK_STORAGE_H_
 
-#include "base/time/time.h"
+#include "chrome/browser/chromeos/login/quick_unlock/auth_token.h"
+#include "chrome/browser/chromeos/login/quick_unlock/fingerprint_storage.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_prefs.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;
+
+namespace base {
+class Time;
+}
 
 namespace chromeos {
 
@@ -17,10 +23,6 @@ class QuickUnlockStorageTestApi;
 class QuickUnlockStorageUnitTest;
 
 namespace quick_unlock {
-
-class FingerprintStorage;
-class PinStoragePrefs;
-class AuthToken;
 
 // Helper class for managing state for quick unlock services (pin and
 // fingerprint), and general lock screen management (tokens for extension API
@@ -65,12 +67,12 @@ class QuickUnlockStorage : public KeyedService {
   // Returns true if the current authentication token has expired.
   bool GetAuthTokenExpired();
 
-  // Returns the auth token if it is valid or nullptr if it is expired or has
-  // not been created. May return nullptr.
-  AuthToken* GetAuthToken();
+  // Checks the token expiration time and returns the current authentication
+  // token if valid, or an empty string if it has expired.
+  std::string GetAuthToken();
 
   // Fetch the user context if |auth_token| is valid. May return null.
-  const UserContext* GetUserContext(const std::string& auth_token);
+  UserContext* GetUserContext(const std::string& auth_token);
 
   FingerprintStorage* fingerprint_storage() {
     return fingerprint_storage_.get();

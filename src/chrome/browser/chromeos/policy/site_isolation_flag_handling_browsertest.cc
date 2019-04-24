@@ -23,20 +23,20 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/common/content_switches.h"
@@ -56,8 +56,7 @@ struct Params {
          std::string user_policy_isolate_origins,
          bool ephemeral_users,
          bool expected_request_restart,
-         std::vector<std::string> expected_flags_for_user,
-         std::vector<std::string> expected_isolated_origins = {})
+         std::vector<std::string> expected_flags_for_user)
       : login_screen_site_per_process(login_screen_site_per_process),
         login_screen_isolate_origins(login_screen_isolate_origins),
         user_policy_site_per_process(user_policy_site_per_process),
@@ -81,8 +80,6 @@ struct Params {
        << std::endl
        << "  expected_flags_for_user: "
        << base::JoinString(p.expected_flags_for_user, ", ") << std::endl
-       << "  expected_isolated_origins: "
-       << base::JoinString(p.expected_isolated_origins, ", ") << std::endl
        << "}";
     return os;
   }
@@ -109,19 +106,15 @@ struct Params {
   // If true, the test case will expect that AttemptRestart has been called by
   // UserSessionManager.
   bool expected_request_restart;
-
   // When a restart was requested, the test case verifies that the flags passed
   // to |SessionManagerClient::SetFlagsForUser| match
   // |expected_flags_for_user|.
   std::vector<std::string> expected_flags_for_user;
-
-  // List of origins that should be isolated (via policy or via cmdline flag).
-  std::vector<std::string> expected_isolated_origins;
 };
 
 // Defines the test cases that will be executed.
 const Params kTestCases[] = {
-    // 0. No site isolation in device or user policy - no restart expected.
+    // No site isolation in device or user policy - no restart expected.
     Params(false /* login_screen_site_per_process */,
            std::string() /* login_screen_isolate_origins */,
            false /* user_policy_site_per_process */,
@@ -129,9 +122,8 @@ const Params kTestCases[] = {
            false /* ephemeral_users */,
            false /* expected_request_restart */,
            {} /* expected_flags_for_user */),
-
-    // 1. SitePerProcess in user policy only - restart expected with
-    //    additional --site-per-process flag.
+    // SitePerProcess in user policy only - restart expected with
+    // additional --site-per-process flag.
     Params(false /* login_screen_site_per_process */,
            std::string() /* login_screen_isolate_origins */,
            true /* user_policy_site_per_process */,
@@ -140,8 +132,7 @@ const Params kTestCases[] = {
            true /* expected_request_restart */,
            {"--policy-switches-begin", "--site-per-process",
             "--policy-switches-end"} /* expected_flags_for_user */),
-
-    // 2. SitePerProcess in device and user policy - no restart expected.
+    // SitePerProcess in device and user policy - no restart expected.
     Params(true /* login_screen_site_per_process */,
            std::string() /* login_screen_isolate_origins */,
            true /* user_policy_site_per_process */,
@@ -149,8 +140,7 @@ const Params kTestCases[] = {
            false /* ephemeral_users */,
            false /* expected_request_restart */,
            {} /* expected_flags_for_user */),
-
-    // 3. SitePerProcess only in device policy - restart expected.
+    // SitePerProcess only in device policy - restart expected.
     Params(true /* login_screen_site_per_process */,
            std::string() /* login_screen_isolate_origins */,
            false /* user_policy_site_per_process */,
@@ -158,72 +148,53 @@ const Params kTestCases[] = {
            false /* ephemeral_users */,
            true /* expected_request_restart */,
            {} /* expected_flags_for_user */),
-
-    // 4. IsolateOrigins in user policy only - no restart expected, because
-    //    IsolateOrigins from the user policy should be picked up by
-    //    SiteIsolationPrefsObserver (without requiring injection of the
-    //    --isolate-origins cmdline switch).
+    // IsolateOrigins in user policy only - restart expected with
+    // additional --isolate-origins flag.
     Params(false /* login_screen_site_per_process */,
            std::string() /* login_screen_isolate_origins */,
            false /* user_policy_site_per_process */,
            "https://example.com" /* user_policy_isolate_origins */,
            false /* ephemeral_users */,
-           false /* expected_request_restart */,
-           {} /* expected_flags_for_user */,
-           {"https://example.com"} /* expected_isolated_origins */),
-
-    // 5. Situation that should not be encountered in practice - the
-    //    --isolate-origins switch should not be injected
-    //    (login_screen_isolate_origins should always be empty) after we tweak
-    //    CrOS:login_manager/device_policy_service.cc to avoid injecting
-    //    --isolate-origins switch but instead rely on
-    //    SiteIsolationPrefsObserver.
+           true /* expected_request_restart */,
+           {"--policy-switches-begin", "--isolate-origins=https://example.com",
+            "--policy-switches-end"} /* expected_flags_for_user */),
+    // Equal IsolateOrigins in device and user policy - no restart expected.
     Params(false /* login_screen_site_per_process */,
            "https://example.com" /* login_screen_isolate_origins */,
            false /* user_policy_site_per_process */,
            "https://example.com" /* user_policy_isolate_origins */,
            false /* ephemeral_users */,
-           true /* expected_request_restart */,
-           {} /* expected_flags_for_user */,
-           {"https://example.com"} /* expected_isolated_origins */),
-
-    // 6. Similar to above - situation that should not be encountered in
-    // practice (login_screen_isolate_origins should always be empty).
+           false /* expected_request_restart */,
+           {} /* expected_flags_for_user */),
+    // Different IsolateOrigins in device and user policy - restart expected.
     Params(false /* login_screen_site_per_process */,
            "https://example.com" /* login_screen_isolate_origins */,
            false /* user_policy_site_per_process */,
            "https://example2.com" /* user_policy_isolate_origins */,
            false /* ephemeral_users */,
            true /* expected_request_restart */,
-           {} /* expected_flags_for_user */,
-           {"https://example.com",
-            "https://example2.com"} /* expected_isolated_origins */),
-
-    // 7. Similar to above - situation that should not be encountered in
-    // practice (login_screen_isolate_origins should always be empty).
+           {"--policy-switches-begin", "--isolate-origins=https://example2.com",
+            "--policy-switches-end"} /* expected_flags_for_user */),
+    // IsolateOrigins only in device policy - restart expected.
     Params(true /* login_screen_site_per_process */,
-           "https://foo.example.com" /* login_screen_isolate_origins */,
+           "https://example.com" /* login_screen_isolate_origins */,
            false /* user_policy_site_per_process */,
            std::string() /* user_policy_isolate_origins */,
            false /* ephemeral_users */,
            true /* expected_request_restart */,
-           {} /* expected_flags_for_user */,
-           {"https://foo.example.com"} /* expected_isolated_origins */),
-
-    // 8. SitePerProcess in device policy, IsolateOrigins in user policy -
-    //    restart expected, because site-per-process is present in device policy
-    //    but not in the user policy.
+           {} /* expected_flags_for_user */),
+    // SitePerProcess in device policy, IsolateOrigins in user policy - restart
+    // expected.
     Params(true /* login_screen_site_per_process */,
            std::string() /* login_screen_isolate_origins */,
            false /* user_policy_site_per_process */,
-           "https://foo.example.com" /* user_policy_isolate_origins */,
+           "https://example.com" /* user_policy_isolate_origins */,
            false /* ephemeral_users */,
            true /* expected_request_restart */,
-           {} /* expected_flags_for_user */,
-           {"https://foo.example.com"} /* expected_isolated_origins */),
-
-    // 9. With ephemeral users: No site isolation in device or user policy - no
-    //    restart expected.
+           {"--policy-switches-begin", "--isolate-origins=https://example.com",
+            "--policy-switches-end"} /* expected_flags_for_user */),
+    // With ephemeral users: No site isolation in device or user policy - no
+    // restart expected.
     Params(false /* login_screen_site_per_process */,
            std::string() /* login_screen_isolate_origins */,
            false /* user_policy_site_per_process */,
@@ -231,9 +202,8 @@ const Params kTestCases[] = {
            true /* ephemeral_users */,
            false /* expected_request_restart */,
            {} /* expected_flags_for_user */),
-
-    // 10. With ephemeral users: SitePerProcess in user policy only - restart
-    //     expected with additional --site-per-process flag.
+    // With ephemeral users: SitePerProcess in user policy only - restart
+    // expected with additional --site-per-process flag.
     Params(false /* login_screen_site_per_process */,
            std::string() /* login_screen_isolate_origins */,
            true /* user_policy_site_per_process */,
@@ -243,9 +213,8 @@ const Params kTestCases[] = {
            {"--profile-requires-policy=true", "--policy-switches-begin",
             "--site-per-process",
             "--policy-switches-end"} /* expected_flags_for_user */),
-
-    // 11. With ephemeral uses: SitePerProcess in device and user policy - no
-    //     restart expected.
+    // With ephemeral uses: SitePerProcess in device and user policy - no
+    // restart expected.
     Params(true /* login_screen_site_per_process */,
            std::string() /* login_screen_isolate_origins */,
            true /* user_policy_site_per_process */,
@@ -302,11 +271,19 @@ class SiteIsolationFlagHandlingTest
   void SetUpInProcessBrowserTestFixture() override {
     policy::LoginPolicyTestBase::SetUpInProcessBrowserTestFixture();
 
+    // Set up fake_session_manager_client_ so we can verify the flags for the
+    // user session.
+    auto fake_session_manager_client =
+        std::make_unique<FakeSessionManagerClient>(
+            FakeSessionManagerClient::PolicyStorageType::kOnDisk);
+    fake_session_manager_client_ = fake_session_manager_client.get();
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::move(fake_session_manager_client));
+
     // Mark that chrome restart can be requested.
     // Note that AttemptRestart() is mocked out in UserSessionManager through
     // |SetAttemptRestartClosureInTests| (set up in SetUpOnMainThread).
-    SessionManagerClient::InitializeFake();
-    FakeSessionManagerClient::Get()->set_supports_restart_to_apply_user_flags(
+    fake_session_manager_client_->set_supports_restart_to_apply_user_flags(
         true);
   }
 
@@ -346,6 +323,10 @@ class SiteIsolationFlagHandlingTest
 
   bool HasAttemptRestartBeenCalled() const { return attempt_restart_called_; }
 
+  FakeSessionManagerClient* fake_session_manager_client() {
+    return fake_session_manager_client_;
+  }
+
   // Called when log-in was successful.
   bool UserSessionStarted(const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
@@ -375,6 +356,8 @@ class SiteIsolationFlagHandlingTest
   // Observes for user session start.
   std::unique_ptr<content::WindowedNotificationObserver>
       user_session_started_observer_;
+  // Unowned pointer - owned by DBusThreadManager.
+  FakeSessionManagerClient* fake_session_manager_client_;
   policy::MockConfigurationPolicyProvider provider_;
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationFlagHandlingTest);
@@ -398,13 +381,6 @@ IN_PROC_BROWSER_TEST_P(SiteIsolationFlagHandlingTest, FlagHandlingTest) {
 
   EXPECT_EQ(GetParam().expected_request_restart, HasAttemptRestartBeenCalled());
 
-  // Verify that expected origins are isolated...
-  auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
-  for (const std::string& origin_str : GetParam().expected_isolated_origins) {
-    url::Origin origin = url::Origin::Create(GURL(origin_str));
-    EXPECT_TRUE(policy->IsGloballyIsolatedOriginForTesting(origin));
-  }
-
   if (!HasAttemptRestartBeenCalled())
     return;
 
@@ -412,7 +388,7 @@ IN_PROC_BROWSER_TEST_P(SiteIsolationFlagHandlingTest, FlagHandlingTest) {
   AccountId test_account_id =
       AccountId::FromUserEmailGaiaId(GetAccount(), kTestUserGaiaId);
   std::vector<std::string> flags_for_user;
-  bool has_flags_for_user = FakeSessionManagerClient::Get()->GetFlagsForUser(
+  bool has_flags_for_user = fake_session_manager_client()->GetFlagsForUser(
       cryptohome::CreateAccountIdentifierFromAccountId(test_account_id),
       &flags_for_user);
   EXPECT_TRUE(has_flags_for_user);

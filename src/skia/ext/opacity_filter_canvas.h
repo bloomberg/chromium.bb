@@ -20,7 +20,7 @@ class SK_API OpacityFilterCanvas : public SkPaintFilterCanvas {
                       bool disable_image_filtering);
 
  protected:
-  bool onFilter(SkPaint& paint) const override;
+  bool onFilter(SkTCopyOnFirstWrite<SkPaint>* paint, Type type) const override;
 
   void onDrawPicture(const SkPicture* picture,
                      const SkMatrix* matrix,

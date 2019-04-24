@@ -14,7 +14,6 @@
 #include "src/handles-inl.h"
 #include "src/isolate.h"
 #include "src/objects-inl.h"
-#include "src/objects/shared-function-info-inl.h"
 #include "src/utils.h"
 
 #include "test/cctest/cctest.h"

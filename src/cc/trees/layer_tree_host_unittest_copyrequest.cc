@@ -793,7 +793,7 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestAsyncTwoReadbacksWithoutDraw);
 
-class LayerTreeHostCopyRequestTestDeleteSharedImage
+class LayerTreeHostCopyRequestTestDeleteTexture
     : public LayerTreeHostCopyRequestTest {
  protected:
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
@@ -837,30 +837,27 @@ class LayerTreeHostCopyRequestTestDeleteSharedImage
   void InsertCopyRequest() {
     copy_layer_->RequestCopyOfOutput(std::make_unique<viz::CopyOutputRequest>(
         viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
-        base::BindOnce(&LayerTreeHostCopyRequestTestDeleteSharedImage::
+        base::BindOnce(&LayerTreeHostCopyRequestTestDeleteTexture::
                            ReceiveCopyRequestOutputAndCommit,
                        base::Unretained(this))));
   }
 
-  void DestroyCopyResultAndCheckNumSharedImages() {
+  void DestroyCopyResultAndCheckNumTextures() {
     EXPECT_TRUE(result_);
     result_ = nullptr;
 
     ImplThreadTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&LayerTreeHostCopyRequestTestDeleteSharedImage::
-                           CheckNumSharedImagesAfterReadbackDestroyed,
-                       base::Unretained(this)));
+        FROM_HERE, base::BindOnce(&LayerTreeHostCopyRequestTestDeleteTexture::
+                                      CheckNumTexturesAfterReadbackDestroyed,
+                                  base::Unretained(this)));
   }
 
-  void CheckNumSharedImagesAfterReadbackDestroyed() {
-    // After the copy we had |num_shared_images_after_readback_| many shared
-    // images, but releasing the copy output request should cause the shared
-    // image in the request to be destroyed by the compositor, so we should have
-    // 1 less by now.
-    EXPECT_EQ(num_shared_images_after_readback_ - 1,
-              display_context_provider_->SharedImageInterface()
-                  ->shared_image_count());
+  void CheckNumTexturesAfterReadbackDestroyed() {
+    // After the copy we had |num_textures_after_readback_| many textures, but
+    // releasing the copy output request should cause the texture in the request
+    // to be destroyed by the compositor, so we should have 1 less by now.
+    EXPECT_EQ(num_textures_after_readback_ - 1,
+              display_context_provider_->TestContextGL()->NumTextures());
 
     // Drop the reference to the context provider on the compositor thread.
     display_context_provider_ = nullptr;
@@ -868,20 +865,20 @@ class LayerTreeHostCopyRequestTestDeleteSharedImage
   }
 
   void DisplayDidDrawAndSwapOnThread() override {
-    auto* sii = display_context_provider_->SharedImageInterface();
     switch (num_swaps_++) {
       case 0:
         // The layers have been drawn, so any textures required for drawing have
         // been allocated.
         EXPECT_FALSE(result_);
-        num_shared_images_without_readback_ = sii->shared_image_count();
+        num_textures_without_readback_ =
+            display_context_provider_->TestContextGL()->NumTextures();
 
         // Request a copy of the layer. This will use another texture.
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
-            base::BindOnce(&LayerTreeHostCopyRequestTestDeleteSharedImage::
-                               InsertCopyRequest,
-                           base::Unretained(this)));
+            base::BindOnce(
+                &LayerTreeHostCopyRequestTestDeleteTexture::InsertCopyRequest,
+                base::Unretained(this)));
         break;
       case 1:
         // Copy requests cause a followup commit and draw without the separate
@@ -890,17 +887,17 @@ class LayerTreeHostCopyRequestTestDeleteSharedImage
         break;
       case 2:
         // We did a readback, so there will be a readback texture around now.
-        num_shared_images_after_readback_ = sii->shared_image_count();
-        EXPECT_LT(num_shared_images_without_readback_,
-                  num_shared_images_after_readback_);
+        num_textures_after_readback_ =
+            display_context_provider_->TestContextGL()->NumTextures();
+        EXPECT_LT(num_textures_without_readback_, num_textures_after_readback_);
 
         // Now destroy the CopyOutputResult, releasing the texture inside back
         // to the compositor. Then check the resulting number of allocated
         // textures.
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
-            base::BindOnce(&LayerTreeHostCopyRequestTestDeleteSharedImage::
-                               DestroyCopyResultAndCheckNumSharedImages,
+            base::BindOnce(&LayerTreeHostCopyRequestTestDeleteTexture::
+                               DestroyCopyResultAndCheckNumTextures,
                            base::Unretained(this)));
         break;
     }
@@ -910,22 +907,25 @@ class LayerTreeHostCopyRequestTestDeleteSharedImage
 
   scoped_refptr<viz::TestContextProvider> display_context_provider_;
   int num_swaps_ = 0;
-  size_t num_shared_images_without_readback_ = 0;
-  size_t num_shared_images_after_readback_ = 0;
+  size_t num_textures_without_readback_ = 0;
+  size_t num_textures_after_readback_ = 0;
   FakeContentLayerClient client_;
   scoped_refptr<FakePictureLayer> root_;
   scoped_refptr<FakePictureLayer> copy_layer_;
   std::unique_ptr<viz::CopyOutputResult> result_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestDeleteSharedImage);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestDeleteTexture);
 
-class LayerTreeHostCopyRequestTestCountSharedImages
+class LayerTreeHostCopyRequestTestCountTextures
     : public LayerTreeHostCopyRequestTest {
  protected:
   std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurfaceOnThread(
       scoped_refptr<viz::ContextProvider> compositor_context_provider)
       override {
+    // These tests expect the LayerTreeHostImpl to share a context with
+    // the Display so that sync points are not needed and the texture counts
+    // are visible together.
     // Since this test does not override CreateLayerTreeFrameSink, the
     // |compositor_context_provider| will be a viz::TestContextProvider.
     display_context_provider_ = static_cast<viz::TestContextProvider*>(
@@ -961,6 +961,7 @@ class LayerTreeHostCopyRequestTestCountSharedImages
   }
 
   void BeginTest() override {
+    waited_sync_token_after_readback_.Clear();
     PostSetNeedsCommitToMainThread();
   }
 
@@ -977,23 +978,27 @@ class LayerTreeHostCopyRequestTestCountSharedImages
   }
 
   void DisplayDidDrawAndSwapOnThread() override {
-    auto* sii = display_context_provider_->SharedImageInterface();
     switch (num_swaps_++) {
       case 0:
-        // The first frame has been drawn without readback, so result shared
-        // images not have been allocated.
-        num_shared_images_without_readback_ = sii->shared_image_count();
+        // The first frame has been drawn, so textures for drawing have been
+        // allocated.
+        num_textures_without_readback_ =
+            display_context_provider_->TestContextGL()->NumTextures();
         break;
       case 1:
-        // We did a readback, so there will be a result shared image around now.
-        num_shared_images_with_readback_ = sii->shared_image_count();
+        // We did a readback, so there will be a readback texture around now.
+        num_textures_with_readback_ =
+            display_context_provider_->TestContextGL()->NumTextures();
+        waited_sync_token_after_readback_ =
+            display_context_provider_->TestContextGL()
+                ->last_waited_sync_token();
 
         // End the test after main thread has a chance to hear about the
         // readback.
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
             base::BindOnce(
-                &LayerTreeHostCopyRequestTestCountSharedImages::DoEndTest,
+                &LayerTreeHostCopyRequestTestCountTextures::DoEndTest,
                 base::Unretained(this)));
         break;
     }
@@ -1003,23 +1008,24 @@ class LayerTreeHostCopyRequestTestCountSharedImages
 
   scoped_refptr<viz::TestContextProvider> display_context_provider_;
   int num_swaps_ = 0;
-  size_t num_shared_images_without_readback_ = 0;
-  size_t num_shared_images_with_readback_ = 0;
+  size_t num_textures_without_readback_ = 0;
+  size_t num_textures_with_readback_ = 0;
+  gpu::SyncToken waited_sync_token_after_readback_;
   FakeContentLayerClient root_client_;
   FakeContentLayerClient copy_client_;
   scoped_refptr<FakePictureLayer> root_;
   scoped_refptr<FakePictureLayer> copy_layer_;
 };
 
-class LayerTreeHostCopyRequestTestCreatesSharedImage
-    : public LayerTreeHostCopyRequestTestCountSharedImages {
+class LayerTreeHostCopyRequestTestCreatesTexture
+    : public LayerTreeHostCopyRequestTestCountTextures {
  protected:
   void RequestCopy(Layer* layer) override {
-    // Request a normal texture copy. This should create a new shared image.
+    // Request a normal texture copy. This should create a new texture.
     copy_layer_->RequestCopyOfOutput(std::make_unique<viz::CopyOutputRequest>(
         viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
         base::BindOnce(
-            &LayerTreeHostCopyRequestTestCreatesSharedImage::CopyOutputCallback,
+            &LayerTreeHostCopyRequestTestCreatesTexture::CopyOutputCallback,
             base::Unretained(this))));
   }
 
@@ -1034,15 +1040,16 @@ class LayerTreeHostCopyRequestTestCreatesSharedImage
   void AfterTest() override {
     release_->Run(gpu::SyncToken(), false);
 
-    // Except the copy to have made a new shared image.
-    EXPECT_EQ(num_shared_images_without_readback_ + 1,
-              num_shared_images_with_readback_);
+    // No sync point was needed.
+    EXPECT_FALSE(waited_sync_token_after_readback_.HasData());
+    // Except the copy to have made another texture.
+    EXPECT_EQ(num_textures_without_readback_ + 1, num_textures_with_readback_);
   }
 
   std::unique_ptr<viz::SingleReleaseCallback> release_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestCreatesSharedImage);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCopyRequestTestCreatesTexture);
 
 class LayerTreeHostCopyRequestTestDestroyBeforeCopy
     : public LayerTreeHostCopyRequestTest {

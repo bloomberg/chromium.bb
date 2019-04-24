@@ -7,6 +7,7 @@
 #include <fuchsia/sys/cpp/fidl.h>
 #include <lib/async/default.h>
 #include <lib/fdio/io.h>
+#include <lib/fdio/util.h>
 #include <lib/zx/job.h>
 #include <stdio.h>
 #include <zircon/processargs.h>
@@ -52,8 +53,25 @@ ContextProviderImpl::ContextProviderImpl() = default;
 ContextProviderImpl::~ContextProviderImpl() = default;
 
 void ContextProviderImpl::Create(
-    fuchsia::web::CreateContextParams params,
-    fidl::InterfaceRequest<fuchsia::web::Context> context_request) {
+    chromium::web::CreateContextParams params,
+    ::fidl::InterfaceRequest<chromium::web::Context> context_request) {
+  chromium::web::CreateContextParams2 converted_params;
+
+  converted_params.set_service_directory(
+      fidl::InterfaceHandle<fuchsia::io::Directory>(
+          std::move(params.service_directory)));
+
+  if (params.data_directory) {
+    converted_params.set_data_directory(
+        fidl::InterfaceHandle<fuchsia::io::Directory>(
+            std::move(params.data_directory)));
+  }
+  Create2(std::move(converted_params), std::move(context_request));
+}
+
+void ContextProviderImpl::Create2(
+    chromium::web::CreateContextParams2 params,
+    fidl::InterfaceRequest<chromium::web::Context> context_request) {
   if (!context_request.is_valid()) {
     // TODO(crbug.com/934539): Add type epitaph.
     DLOG(WARNING) << "Invalid |context_request|.";
@@ -62,7 +80,7 @@ void ContextProviderImpl::Create(
   if (!params.has_service_directory()) {
     // TODO(crbug.com/934539): Add type epitaph.
     DLOG(WARNING)
-        << "Missing argument |service_directory| in CreateContextParams.";
+        << "Missing argument |service_directory| in CreateContextParams2.";
     return;
   }
 
@@ -86,7 +104,7 @@ void ContextProviderImpl::Create(
     if (data_directory_channel.get() == ZX_HANDLE_INVALID) {
       // TODO(crbug.com/934539): Add type epitaph.
       DLOG(WARNING)
-          << "Invalid argument |data_directory| in CreateContextParams.";
+          << "Invalid argument |data_directory| in CreateContextParams2.";
       return;
     }
 
@@ -119,6 +137,11 @@ void ContextProviderImpl::Create(
 
   // |context_handle| was transferred (not copied) to the Context process.
   ignore_result(context_handle.release());
+}
+
+void ContextProviderImpl::Bind(
+    fidl::InterfaceRequest<chromium::web::ContextProvider> request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void ContextProviderImpl::SetLaunchCallbackForTest(

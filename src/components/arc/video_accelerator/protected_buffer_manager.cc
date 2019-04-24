@@ -427,10 +427,10 @@ scoped_refptr<gfx::NativePixmap>
 ProtectedBufferManager::GetProtectedNativePixmapFor(
     const gfx::NativePixmapHandle& handle) {
   // Only the first fd is used for lookup.
-  if (handle.planes.empty())
+  if (handle.fds.empty())
     return nullptr;
 
-  base::ScopedFD dummy_fd(HANDLE_EINTR(dup(handle.planes[0].fd.get())));
+  base::ScopedFD dummy_fd(HANDLE_EINTR(dup(handle.fds[0].fd)));
   uint32_t id = 0;
   auto pixmap = ImportDummyFd(std::move(dummy_fd), &id);
 
@@ -439,7 +439,13 @@ ProtectedBufferManager::GetProtectedNativePixmapFor(
   if (iter == buffer_map_.end())
     return nullptr;
 
-  return iter->second->GetNativePixmap();
+  auto native_pixmap = iter->second->GetNativePixmap();
+  if (native_pixmap) {
+    for (const auto& fd : handle.fds)
+      base::ScopedFD scoped_fd(fd.fd);
+  }
+
+  return native_pixmap;
 }
 
 scoped_refptr<gfx::NativePixmap> ProtectedBufferManager::ImportDummyFd(
@@ -452,14 +458,15 @@ scoped_refptr<gfx::NativePixmap> ProtectedBufferManager::ImportDummyFd(
   // CreateNativePixmapFromHandle() takes ownership and will close the handle
   // also on failure.
   gfx::NativePixmapHandle pixmap_handle;
-  pixmap_handle.planes.emplace_back(
-      gfx::NativePixmapPlane(0, 0, 0, std::move(dummy_fd)));
+  pixmap_handle.fds.emplace_back(
+      base::FileDescriptor(dummy_fd.release(), true));
+  pixmap_handle.planes.emplace_back(gfx::NativePixmapPlane());
   ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
   ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
   scoped_refptr<gfx::NativePixmap> pixmap =
       factory->CreateNativePixmapForProtectedBufferHandle(
           gfx::kNullAcceleratedWidget, kDummyBufferSize, gfx::BufferFormat::R_8,
-          std::move(pixmap_handle));
+          pixmap_handle);
   if (!pixmap) {
     VLOGF(1) << "Failed importing dummy handle";
     return nullptr;

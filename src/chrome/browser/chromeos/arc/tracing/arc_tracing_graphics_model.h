@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/arc/tracing/arc_system_model.h"
 
 namespace arc {
 
@@ -49,7 +48,6 @@ class ArcTracingGraphicsModel {
     kBufferQueueQueueDone,           // 103
     kBufferQueueAcquire,             // 104
     kBufferQueueReleased,            // 105
-    kBufferFillJank,                 // 106,
 
     // Wayland exo events
     kExoSurfaceAttach = 200,  // 200
@@ -57,7 +55,6 @@ class ArcTracingGraphicsModel {
     kExoBound,                // 202
     kExoPendingQuery,         // 203
     kExoReleased,             // 204
-    kExoJank,                 // 205
 
     // Chrome events
     kChromeBarrierOrder = 300,  // 300
@@ -65,19 +62,17 @@ class ArcTracingGraphicsModel {
 
     // Android Surface Flinger top level events.
     kVsync = 400,                      // 400
-    kSurfaceFlingerInvalidationStart,  // 401
-    kSurfaceFlingerInvalidationDone,   // 402
-    kSurfaceFlingerCompositionStart,   // 403
-    kSurfaceFlingerCompositionDone,    // 404
-    kSurfaceFlingerCompositionJank,    // 405,
+    kSurfaceFlingerInvalidationStart,  // 400
+    kSurfaceFlingerInvalidationDone,   // 401
+    kSurfaceFlingerCompositionStart,   // 402
+    kSurfaceFlingerCompositionDone,    // 403
 
     // Chrome OS top level events.
-    kChromeOSDraw = 500,        // 500
-    kChromeOSSwap,              // 501
-    kChromeOSWaitForAck,        // 502
-    kChromeOSPresentationDone,  // 503
-    kChromeOSSwapDone,          // 504
-    kChromeOSJank,              // 505,
+    kChromeOSDraw = 500,           // 500
+    kChromeOSSwap,                 // 501
+    kChromeOSWaitForAck,           // 502
+    kChromeOSWaitForPresentation,  // 503
+    kChromeOSDrawFinished,         // 504
   };
 
   struct BufferEvent {
@@ -100,33 +95,7 @@ class ArcTracingGraphicsModel {
   };
 
   using BufferEvents = std::vector<BufferEvent>;
-
-  class EventsContainer {
-   public:
-    EventsContainer();
-    ~EventsContainer();
-
-    void Reset();
-
-    bool operator==(const EventsContainer& other) const;
-
-    std::vector<BufferEvents>& buffer_events() { return buffer_events_; }
-    const std::vector<BufferEvents>& buffer_events() const {
-      return buffer_events_;
-    }
-    BufferEvents& global_events() { return global_events_; }
-    const BufferEvents& global_events() const { return global_events_; }
-
-   private:
-    // Events associated with particular graphics buffer.
-    std::vector<BufferEvents> buffer_events_;
-    // Global events that do not belong to any graphics buffer.
-    BufferEvents global_events_;
-
-    DISALLOW_COPY_AND_ASSIGN(EventsContainer);
-  };
-
-  using ViewMap = std::map<ViewId, EventsContainer>;
+  using ViewMap = std::map<ViewId, std::vector<BufferEvents>>;
 
   ArcTracingGraphicsModel();
   ~ArcTracingGraphicsModel();
@@ -141,21 +110,14 @@ class ArcTracingGraphicsModel {
   std::string SerializeToJson() const;
   // Loads the model from Json string.
   bool LoadFromJson(const std::string& json_data);
-  // Loads the model from |base::DictionaryValue|.
-  bool LoadFromValue(const base::DictionaryValue& root);
 
   uint64_t duration() const { return duration_; }
 
   const ViewMap& view_buffers() const { return view_buffers_; }
 
-  const EventsContainer& android_top_level() const {
-    return android_top_level_;
-  }
+  const BufferEvents& android_top_level() const { return android_top_level_; }
 
-  const EventsContainer& chrome_top_level() const { return chrome_top_level_; }
-
-  ArcSystemModel& system_model() { return system_model_; }
-  const ArcSystemModel& system_model() const { return system_model_; }
+  const BufferEvents& chrome_top_level() const { return chrome_top_level_; }
 
  private:
   // Normalizes timestamp for all events by subtracting the timestamp of the
@@ -170,21 +132,15 @@ class ArcTracingGraphicsModel {
   int GetTaskIdFromBufferName(const std::string& chrome_buffer_name) const;
 
   ViewMap view_buffers_;
-  // To avoid overlapping events are stored interlaced.
-  EventsContainer chrome_top_level_;
-  EventsContainer android_top_level_;
+  BufferEvents chrome_top_level_;
+  BufferEvents android_top_level_;
   // Total duration of this model.
   uint32_t duration_ = 0;
   // Map Chrome buffer id to task id.
   std::map<std::string, int> chrome_buffer_id_to_task_id_;
-  // CPU event model.
-  ArcSystemModel system_model_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcTracingGraphicsModel);
 };
-
-std::ostream& operator<<(std::ostream& os,
-                         ArcTracingGraphicsModel::BufferEventType);
 
 }  // namespace arc
 

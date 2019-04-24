@@ -36,7 +36,7 @@ class MODULES_EXPORT MediaControlSliderElement
  protected:
   class MediaControlSliderElementResizeObserverDelegate;
 
-  MediaControlSliderElement(MediaControlsImpl&);
+  MediaControlSliderElement(MediaControlsImpl&, MediaControlElementType);
 
   void SetupBarSegments();
   void SetBeforeSegmentPosition(Position);

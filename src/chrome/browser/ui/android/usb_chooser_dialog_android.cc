@@ -51,11 +51,13 @@ std::unique_ptr<UsbChooserDialogAndroid> UsbChooserDialogAndroid::Create(
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
 
   auto dialog = std::make_unique<UsbChooserDialogAndroid>(std::move(controller),
                                                           std::move(on_close));
   dialog->java_dialog_.Reset(Java_UsbChooserDialog_create(
-      env, window_android, origin_string, helper->GetSecurityLevel(),
+      env, window_android, origin_string, security_info.security_level,
       reinterpret_cast<intptr_t>(dialog.get())));
   if (dialog->java_dialog_.is_null())
     return nullptr;

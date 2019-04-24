@@ -58,6 +58,7 @@
 #if defined(USE_OZONE)
 #include "components/viz/service/display_embedder/gl_output_surface_ozone.h"
 #include "components/viz/service/display_embedder/software_output_device_ozone.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/platform_window_surface.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -69,7 +70,7 @@ namespace viz {
 GpuDisplayProvider::GpuDisplayProvider(
     uint32_t restart_id,
     GpuServiceImpl* gpu_service_impl,
-    gpu::CommandBufferTaskExecutor* task_executor,
+    scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
     gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
     std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
@@ -78,7 +79,7 @@ GpuDisplayProvider::GpuDisplayProvider(
     bool wait_for_all_pipeline_stages_before_draw)
     : restart_id_(restart_id),
       gpu_service_impl_(gpu_service_impl),
-      task_executor_(task_executor),
+      task_executor_(std::move(task_executor)),
       gpu_channel_manager_delegate_(gpu_channel_manager_delegate),
       gpu_memory_buffer_manager_(std::move(gpu_memory_buffer_manager)),
       image_factory_(image_factory),
@@ -110,10 +111,15 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     gpu::SurfaceHandle surface_handle,
     bool gpu_compositing,
     mojom::DisplayClient* display_client,
-    BeginFrameSource* begin_frame_source,
-    UpdateVSyncParametersCallback update_vsync_callback,
+    ExternalBeginFrameSource* external_begin_frame_source,
+    SyntheticBeginFrameSource* synthetic_begin_frame_source,
     const RendererSettings& renderer_settings,
     bool send_swap_size_notifications) {
+  BeginFrameSource* begin_frame_source =
+      synthetic_begin_frame_source
+          ? static_cast<BeginFrameSource*>(synthetic_begin_frame_source)
+          : static_cast<BeginFrameSource*>(external_begin_frame_source);
+
   // TODO(penghuang): Merge two output surfaces into one when GLRenderer and
   // software compositor is removed.
   std::unique_ptr<OutputSurface> output_surface;
@@ -122,7 +128,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
   if (!gpu_compositing) {
     output_surface = std::make_unique<SoftwareOutputSurface>(
         CreateSoftwareOutputDeviceForPlatform(surface_handle, display_client),
-        std::move(update_vsync_callback));
+        synthetic_begin_frame_source);
   } else if (renderer_settings.use_skia_renderer ||
              renderer_settings.use_skia_renderer_non_ddl) {
 #if defined(OS_MACOSX) || defined(OS_WIN)
@@ -158,8 +164,8 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
     } else {
       output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
-          gpu_service_impl_, surface_handle, std::move(update_vsync_callback),
-          renderer_settings);
+          gpu_service_impl_, surface_handle, synthetic_begin_frame_source,
+          renderer_settings.show_overdraw_feedback);
     }
     skia_output_surface = static_cast<SkiaOutputSurface*>(output_surface.get());
 #endif
@@ -202,17 +208,17 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 
     if (surface_handle == gpu::kNullSurfaceHandle) {
       output_surface = std::make_unique<GLOutputSurfaceOffscreen>(
-          std::move(context_provider), std::move(update_vsync_callback));
+          std::move(context_provider), synthetic_begin_frame_source);
     } else if (context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
       output_surface = std::make_unique<GLOutputSurfaceOzone>(
           std::move(context_provider), surface_handle,
-          std::move(update_vsync_callback), gpu_memory_buffer_manager_.get(),
-          renderer_settings.overlay_strategies);
+          synthetic_begin_frame_source, gpu_memory_buffer_manager_.get(),
+          GL_TEXTURE_2D, GL_BGRA_EXT);
 #elif defined(OS_MACOSX)
       output_surface = std::make_unique<GLOutputSurfaceMac>(
           std::move(context_provider), surface_handle,
-          std::move(update_vsync_callback), gpu_memory_buffer_manager_.get(),
+          synthetic_begin_frame_source, gpu_memory_buffer_manager_.get(),
           renderer_settings.allow_overlays);
 #elif defined(OS_ANDROID)
       auto buffer_format = context_provider->UseRGB565PixelFormat()
@@ -220,7 +226,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
                                : gfx::BufferFormat::RGBA_8888;
       output_surface = std::make_unique<GLOutputSurfaceBufferQueueAndroid>(
           std::move(context_provider), surface_handle,
-          std::move(update_vsync_callback), gpu_memory_buffer_manager_.get(),
+          synthetic_begin_frame_source, gpu_memory_buffer_manager_.get(),
           buffer_format);
 #else
       NOTREACHED();
@@ -235,14 +241,22 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
           capabilities.dc_layers && (capabilities.use_dc_overlays_for_video ||
                                      use_overlays_for_sw_protected_video);
       output_surface = std::make_unique<GLOutputSurfaceWin>(
-          std::move(context_provider), std::move(update_vsync_callback),
+          std::move(context_provider), synthetic_begin_frame_source,
           use_overlays);
 #elif defined(OS_ANDROID)
+      const bool surface_control_enabled =
+          task_executor_->gpu_feature_info()
+              .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
+          gpu::kGpuFeatureStatusEnabled;
+      DCHECK(!surface_control_enabled ||
+             renderer_settings.backed_by_surface_texture);
+
       output_surface = std::make_unique<GLOutputSurfaceAndroid>(
-          std::move(context_provider), std::move(update_vsync_callback));
+          std::move(context_provider), synthetic_begin_frame_source,
+          !surface_control_enabled /* allow_overlays */);
 #else
       output_surface = std::make_unique<GLOutputSurface>(
-          std::move(context_provider), std::move(update_vsync_callback));
+          std::move(context_provider), synthetic_begin_frame_source);
 #endif
     }
   }

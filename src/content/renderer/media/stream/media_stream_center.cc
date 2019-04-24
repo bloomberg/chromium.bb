@@ -13,6 +13,8 @@
 #include "base/logging.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/renderer/media/stream/media_stream_video_source.h"
+#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/stream/webaudio_media_stream_source.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
@@ -25,8 +27,6 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_frame.h"
 
 using blink::WebFrame;
@@ -37,8 +37,7 @@ namespace content {
 namespace {
 
 void CreateNativeAudioMediaStreamTrack(
-    const blink::WebMediaStreamTrack& track,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    const blink::WebMediaStreamTrack& track) {
   blink::WebMediaStreamSource source = track.Source();
   blink::MediaStreamAudioSource* media_stream_source =
       blink::MediaStreamAudioSource::From(source);
@@ -52,7 +51,7 @@ void CreateNativeAudioMediaStreamTrack(
   // special case code isn't needed here.
   if (!media_stream_source && source.RequiresAudioConsumer()) {
     DVLOG(1) << "Creating WebAudio media stream source.";
-    media_stream_source = new WebAudioMediaStreamSource(&source, task_runner);
+    media_stream_source = new WebAudioMediaStreamSource(&source);
     source.SetPlatformSource(
         base::WrapUnique(media_stream_source));  // Takes ownership.
 
@@ -65,14 +64,6 @@ void CreateNativeAudioMediaStreamTrack(
         media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
         media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max
     };
-    auto parameters = media_stream_source->GetAudioParameters();
-    if (parameters.IsValid()) {
-      capabilities.channel_count = {1, parameters.channels()};
-      capabilities.sample_rate = {parameters.sample_rate(),
-                                  parameters.sample_rate()};
-      capabilities.latency = {parameters.GetBufferDuration().InSecondsF(),
-                              parameters.GetBufferDuration().InSecondsF()};
-    }
     source.SetCapabilities(capabilities);
   }
 
@@ -86,11 +77,11 @@ void CreateNativeVideoMediaStreamTrack(blink::WebMediaStreamTrack track) {
   DCHECK(track.GetPlatformTrack() == nullptr);
   blink::WebMediaStreamSource source = track.Source();
   DCHECK_EQ(source.GetType(), blink::WebMediaStreamSource::kTypeVideo);
-  blink::MediaStreamVideoSource* native_source =
-      blink::MediaStreamVideoSource::GetVideoSource(source);
+  MediaStreamVideoSource* native_source =
+      MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
-  track.SetPlatformTrack(std::make_unique<blink::MediaStreamVideoTrack>(
-      native_source, blink::MediaStreamVideoSource::ConstraintsCallback(),
+  track.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
+      native_source, MediaStreamVideoSource::ConstraintsCallback(),
       track.IsEnabled()));
 }
 
@@ -100,24 +91,22 @@ void CloneNativeVideoMediaStreamTrack(
   DCHECK(!clone.GetPlatformTrack());
   blink::WebMediaStreamSource source = clone.Source();
   DCHECK_EQ(source.GetType(), blink::WebMediaStreamSource::kTypeVideo);
-  blink::MediaStreamVideoSource* native_source =
-      blink::MediaStreamVideoSource::GetVideoSource(source);
+  MediaStreamVideoSource* native_source =
+      MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
-  blink::MediaStreamVideoTrack* original_track =
-      blink::MediaStreamVideoTrack::GetVideoTrack(original);
+  MediaStreamVideoTrack* original_track =
+      MediaStreamVideoTrack::GetVideoTrack(original);
   DCHECK(original_track);
-  clone.SetPlatformTrack(std::make_unique<blink::MediaStreamVideoTrack>(
+  clone.SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
       native_source, original_track->adapter_settings(),
       original_track->noise_reduction(), original_track->is_screencast(),
       original_track->min_frame_rate(),
-      blink::MediaStreamVideoSource::ConstraintsCallback(), clone.IsEnabled()));
+      MediaStreamVideoSource::ConstraintsCallback(), clone.IsEnabled()));
 }
 
 }  // namespace
 
-MediaStreamCenter::MediaStreamCenter(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(task_runner) {}
+MediaStreamCenter::MediaStreamCenter() = default;
 
 MediaStreamCenter::~MediaStreamCenter() = default;
 
@@ -129,7 +118,7 @@ void MediaStreamCenter::DidCreateMediaStreamTrack(
 
   switch (track.Source().GetType()) {
     case blink::WebMediaStreamSource::kTypeAudio:
-      CreateNativeAudioMediaStreamTrack(track, task_runner_);
+      CreateNativeAudioMediaStreamTrack(track);
       break;
     case blink::WebMediaStreamSource::kTypeVideo:
       CreateNativeVideoMediaStreamTrack(track);
@@ -146,7 +135,7 @@ void MediaStreamCenter::DidCloneMediaStreamTrack(
 
   switch (clone.Source().GetType()) {
     case blink::WebMediaStreamSource::kTypeAudio:
-      CreateNativeAudioMediaStreamTrack(clone, task_runner_);
+      CreateNativeAudioMediaStreamTrack(clone);
       break;
     case blink::WebMediaStreamSource::kTypeVideo:
       CloneNativeVideoMediaStreamTrack(original, clone);
@@ -180,8 +169,7 @@ void MediaStreamCenter::DidDisableMediaStreamTrack(
 
 blink::WebAudioSourceProvider*
 MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
-    const blink::WebMediaStreamTrack& track,
-    int context_sample_rate) {
+    const blink::WebMediaStreamTrack& track) {
   DVLOG(1) << "MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack";
   blink::WebPlatformMediaStreamTrack* media_stream_track =
       track.GetPlatformTrack();
@@ -196,7 +184,7 @@ MediaStreamCenter::CreateWebAudioSourceFromMediaStreamTrack(
   // TODO(tommi): Rename WebRtcLocalAudioSourceProvider to
   // WebAudioMediaStreamSink since it's not specific to any particular source.
   // https://crbug.com/577874
-  return new WebRtcLocalAudioSourceProvider(track, context_sample_rate);
+  return new WebRtcLocalAudioSourceProvider(track);
 }
 
 void MediaStreamCenter::DidStopMediaStreamSource(

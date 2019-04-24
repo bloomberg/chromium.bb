@@ -85,9 +85,6 @@ class OmniboxResultView : public views::View,
   // Called to indicate tab switch button has been focused.
   void ProvideButtonFocusHint();
 
-  // Removes the shown |match_| from history, if possible.
-  void RemoveSuggestion() const;
-
   // views::View:
   void Layout() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;

@@ -1,5 +1,0 @@
-region
-++document
-++++group
-++++++document Name='Empty iframe'
-++++++++document

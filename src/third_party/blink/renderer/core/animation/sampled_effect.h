@@ -18,6 +18,11 @@ namespace blink {
 // effect ordering and managing composited animations.
 class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
  public:
+  static SampledEffect* Create(KeyframeEffect* effect,
+                               unsigned sequence_number) {
+    return MakeGarbageCollected<SampledEffect>(effect, sequence_number);
+  }
+
   SampledEffect(KeyframeEffect*, unsigned sequence_number);
 
   void Clear();

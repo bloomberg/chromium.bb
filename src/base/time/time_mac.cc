@@ -99,19 +99,17 @@ int64_t ComputeThreadTicks() {
   NOTREACHED();
   return 0;
 #else
-  // The pthreads library keeps a cached reference to the thread port, which
-  // does not have to be released like mach_thread_self() does.
-  mach_port_t thread_port = pthread_mach_thread_np(pthread_self());
-  if (thread_port == MACH_PORT_NULL) {
-    DLOG(ERROR) << "Failed to get pthread_mach_thread_np()";
-    return 0;
-  }
-
+  base::mac::ScopedMachSendRight thread(mach_thread_self());
   mach_msg_type_number_t thread_info_count = THREAD_BASIC_INFO_COUNT;
   thread_basic_info_data_t thread_info_data;
 
+  if (thread.get() == MACH_PORT_NULL) {
+    DLOG(ERROR) << "Failed to get mach_thread_self()";
+    return 0;
+  }
+
   kern_return_t kr = thread_info(
-      thread_port,
+      thread.get(),
       THREAD_BASIC_INFO,
       reinterpret_cast<thread_info_t>(&thread_info_data),
       &thread_info_count);

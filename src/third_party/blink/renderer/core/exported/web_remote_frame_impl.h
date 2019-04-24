@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace cc {
 class Layer;
@@ -47,17 +48,19 @@ class CORE_EXPORT WebRemoteFrameImpl final
   // WebRemoteFrame methods:
   WebLocalFrame* CreateLocalChild(WebTreeScopeType,
                                   const WebString& name,
-                                  const FramePolicy&,
+                                  WebSandboxFlags,
                                   WebLocalFrameClient*,
                                   blink::InterfaceRegistry*,
                                   mojo::ScopedMessagePipeHandle,
                                   WebFrame* previous_sibling,
+                                  const ParsedFeaturePolicy&,
                                   const WebFrameOwnerProperties&,
                                   FrameOwnerElementType,
                                   WebFrame* opener) override;
   WebRemoteFrame* CreateRemoteChild(WebTreeScopeType,
                                     const WebString& name,
-                                    const FramePolicy&,
+                                    WebSandboxFlags,
+                                    const ParsedFeaturePolicy&,
                                     FrameOwnerElementType,
                                     WebRemoteFrameClient*,
                                     WebFrame* opener) override;
@@ -103,6 +106,10 @@ class CORE_EXPORT WebRemoteFrameImpl final
 
   WebRemoteFrameClient* Client() const { return client_; }
 
+  const FeaturePolicy::FeatureState& OpenerFeatureState() const {
+    return opener_feature_state_;
+  }
+
   static WebRemoteFrameImpl* FromFrame(RemoteFrame&);
 
   void Trace(blink::Visitor*);
@@ -124,6 +131,10 @@ class CORE_EXPORT WebRemoteFrameImpl final
   // TODO(dcheng): Inline this field directly rather than going through Member.
   Member<RemoteFrameClientImpl> frame_client_;
   Member<RemoteFrame> frame_;
+
+  // Feature policy state inherited from an opener. It is always empty for child
+  // frames.
+  FeaturePolicy::FeatureState opener_feature_state_;
 
   ParsedFeaturePolicy feature_policy_header_;
 

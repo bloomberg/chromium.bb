@@ -18,6 +18,7 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/renderer/module_system.h"
+#include "extensions/renderer/request_sender.h"
 #include "extensions/renderer/safe_builtins.h"
 #include "extensions/renderer/script_injection_callback.h"
 #include "url/gurl.h"
@@ -42,7 +43,7 @@ class Extension;
 //
 // Note that ScriptContexts bound to worker threads will not have the full
 // functionality as those bound to the main RenderThread.
-class ScriptContext {
+class ScriptContext : public RequestSender::Source {
  public:
   using RunScriptExceptionHandler = base::Callback<void(const v8::TryCatch&)>;
 
@@ -52,7 +53,7 @@ class ScriptContext {
                 Feature::Context context_type,
                 const Extension* effective_extension,
                 Feature::Context effective_context_type);
-  ~ScriptContext();
+  ~ScriptContext() override;
 
   // Returns whether |url| from any Extension in |extension_set| is sandboxed,
   // as declared in each Extension's manifest.
@@ -192,6 +193,14 @@ class ScriptContext {
   static GURL GetEffectiveDocumentURL(blink::WebLocalFrame* frame,
                                       const GURL& document_url,
                                       bool match_about_blank);
+
+  // RequestSender::Source implementation.
+  ScriptContext* GetContext() override;
+  void OnResponseReceived(const std::string& name,
+                          int request_id,
+                          bool success,
+                          const base::ListValue& response,
+                          const std::string& error) override;
 
   // Grants a set of content capabilities to this context.
   void set_content_capabilities(APIPermissionSet capabilities) {

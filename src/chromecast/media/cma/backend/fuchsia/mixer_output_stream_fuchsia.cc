@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/fuchsia/service_directory_client.h"
-#include "base/memory/writable_shared_memory_region.h"
 #include "base/time/time.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "media/base/audio_sample_types.h"
@@ -105,7 +104,7 @@ bool MixerOutputStreamFuchsia::Write(const float* data,
   DCHECK_EQ(data_size % channels_, 0);
 
   // Allocate payload buffer if necessary.
-  if (!payload_buffer_.IsValid() && !InitializePayloadBuffer())
+  if (!payload_buffer_.mapped_size() && !InitializePayloadBuffer())
     return false;
 
   // If Write() was called for the current playback position then assume that
@@ -121,11 +120,11 @@ bool MixerOutputStreamFuchsia::Write(const float* data,
     reference_time_ = base::TimeTicks();
 
   size_t packet_size = data_size * sizeof(float);
-  if (payload_buffer_pos_ + packet_size > payload_buffer_.size()) {
+  if (payload_buffer_pos_ + packet_size > payload_buffer_.mapped_size()) {
     payload_buffer_pos_ = 0;
   }
 
-  DCHECK_LE(payload_buffer_pos_ + data_size, payload_buffer_.size());
+  DCHECK_LE(payload_buffer_pos_ + data_size, payload_buffer_.mapped_size());
   memcpy(reinterpret_cast<uint8_t*>(payload_buffer_.memory()) +
              payload_buffer_pos_,
          data, packet_size);
@@ -185,18 +184,14 @@ size_t MixerOutputStreamFuchsia::GetMinBufferSize() {
 
 bool MixerOutputStreamFuchsia::InitializePayloadBuffer() {
   size_t buffer_size = GetMinBufferSize();
-  auto region = base::WritableSharedMemoryRegion::Create(buffer_size);
-  payload_buffer_ = region.Map();
-  if (!payload_buffer_.IsValid()) {
+  if (!payload_buffer_.CreateAndMapAnonymous(buffer_size)) {
     LOG(WARNING) << "Failed to allocate VMO of size " << buffer_size;
     return false;
   }
 
   payload_buffer_pos_ = 0;
   audio_renderer_->AddPayloadBuffer(
-      kBufferId, base::WritableSharedMemoryRegion::TakeHandleForSerialization(
-                     std::move(region))
-                     .PassPlatformHandle());
+      kBufferId, zx::vmo(payload_buffer_.handle().Duplicate().GetHandle()));
 
   return true;
 }
@@ -220,9 +215,9 @@ void MixerOutputStreamFuchsia::OnMinLeadTimeChanged(int64_t min_lead_time) {
   // lated in PumpSamples(). This is necessary because VMO allocation may fail
   // and it's not possible to report that error here - OnMinLeadTimeChanged()
   // may be invoked before Start().
-  if (payload_buffer_.IsValid() &&
-      GetMinBufferSize() > payload_buffer_.size()) {
-    payload_buffer_ = {};
+  if (payload_buffer_.mapped_size() > 0 &&
+      GetMinBufferSize() > payload_buffer_.mapped_size()) {
+    payload_buffer_.Unmap();
   }
 }
 

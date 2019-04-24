@@ -6,8 +6,6 @@
 
 #include <vulkan/vulkan.h>
 
-#include <algorithm>
-
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -108,7 +106,8 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
       return false;
     }
   }
-  return CreateSwapChain(gfx::Size());
+  // Delay creating SwapChain to when the surface size is specified by Resize().
+  return true;
 }
 
 void VulkanSurface::Destroy() {
@@ -130,10 +129,6 @@ void VulkanSurface::Finish() {
 }
 
 bool VulkanSurface::SetSize(const gfx::Size& size) {
-  return CreateSwapChain(size);
-}
-
-bool VulkanSurface::CreateSwapChain(const gfx::Size& size) {
   // Get Surface Information.
   VkSurfaceCapabilitiesKHR surface_caps;
   VkResult result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
@@ -149,14 +144,16 @@ bool VulkanSurface::CreateSwapChain(const gfx::Size& size) {
   // In that case, we will use the |size| which is the window size for the
   // swapchain. Otherwise, we just use the current surface size for the
   // swapchian.
-  const uint32_t kUndefinedExtent = 0xFFFFFFFF;
-  if (surface_caps.currentExtent.width == kUndefinedExtent &&
-      surface_caps.currentExtent.height == kUndefinedExtent) {
-    surface_caps.currentExtent.width = std::max(
-        surface_caps.minImageExtent.width, static_cast<uint32_t>(size.width()));
-    surface_caps.currentExtent.height =
-        std::max(surface_caps.minImageExtent.height,
-                 static_cast<uint32_t>(size.height()));
+  if (surface_caps.currentExtent.width ==
+          std::numeric_limits<uint32_t>::max() ||
+      surface_caps.currentExtent.height ==
+          std::numeric_limits<uint32_t>::max()) {
+    DCHECK_EQ(surface_caps.currentExtent.width,
+              std::numeric_limits<uint32_t>::max());
+    DCHECK_EQ(surface_caps.currentExtent.height,
+              std::numeric_limits<uint32_t>::max());
+    surface_caps.currentExtent.width = size.width();
+    surface_caps.currentExtent.height = size.height();
   }
 
   DCHECK_GE(surface_caps.currentExtent.width,
@@ -170,9 +167,8 @@ bool VulkanSurface::CreateSwapChain(const gfx::Size& size) {
   DCHECK_GT(surface_caps.currentExtent.width, 0u);
   DCHECK_GT(surface_caps.currentExtent.height, 0u);
 
-  gfx::Size new_size(
-      base::checked_cast<int>(surface_caps.currentExtent.width),
-      base::checked_cast<int>(surface_caps.currentExtent.height));
+  gfx::Size new_size(surface_caps.currentExtent.width,
+                     surface_caps.currentExtent.height);
   if (size_ == new_size)
     return true;
 

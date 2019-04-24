@@ -43,6 +43,7 @@ LayoutMultiColumnFlowThread::LayoutMultiColumnFlowThread()
     : last_set_worked_on_(nullptr),
       column_count_(1),
       column_heights_changed_(false),
+      progression_is_inline_(true),
       is_being_evacuated_(false) {
   SetIsInsideFlowThread(true);
 }
@@ -79,10 +80,9 @@ LayoutMultiColumnSet* LayoutMultiColumnFlowThread::LastMultiColumnSet() const {
 }
 
 static inline bool IsMultiColumnContainer(const LayoutObject& object) {
-  auto* block_flow = DynamicTo<LayoutBlockFlow>(object);
-  if (!block_flow)
+  if (!object.IsLayoutBlockFlow())
     return false;
-  return block_flow->MultiColumnFlowThread();
+  return ToLayoutBlockFlow(object).MultiColumnFlowThread();
 }
 
 // Return true if there's nothing that prevents the specified object from being
@@ -102,13 +102,13 @@ static inline bool IsMultiColumnContainer(const LayoutObject& object) {
 // spanners inside objects that don't support fragmentation.
 static inline bool CanContainSpannerInParentFragmentationContext(
     const LayoutObject& object) {
-  const auto* block_flow = DynamicTo<LayoutBlockFlow>(object);
-  if (!block_flow)
+  if (!object.IsLayoutBlockFlow())
     return false;
-  return !block_flow->CreatesNewFormattingContext() &&
-         !block_flow->StyleRef().CanContainFixedPositionObjects(false) &&
-         block_flow->GetPaginationBreakability() != LayoutBox::kForbidBreaks &&
-         !IsMultiColumnContainer(*block_flow);
+  const LayoutBlockFlow& block_flow = ToLayoutBlockFlow(object);
+  return !block_flow.CreatesNewFormattingContext() &&
+         !block_flow.StyleRef().CanContainFixedPositionObjects(false) &&
+         block_flow.GetPaginationBreakability() != LayoutBox::kForbidBreaks &&
+         !IsMultiColumnContainer(block_flow);
 }
 
 static inline bool HasAnyColumnSpanners(
@@ -623,6 +623,11 @@ bool LayoutMultiColumnFlowThread::RemoveSpannerPlaceholderIfNoLongerValid(
 
 LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::EnclosingFlowThread(
     AncestorSearchConstraint constraint) const {
+  if (IsLayoutPagedFlowThread()) {
+    // Paged overflow containers should never be fragmented by enclosing
+    // fragmentation contexts. They are to be treated as unbreakable content.
+    return nullptr;
+  }
   if (!MultiColumnBlockFlow()->IsInsideFlowThread())
     return nullptr;
   return ToLayoutMultiColumnFlowThread(
@@ -657,6 +662,8 @@ void LayoutMultiColumnFlowThread::AppendNewFragmentainerGroupIfNeeded(
     // We should never create additional fragmentainer groups unless we're in a
     // nested fragmentation context.
     DCHECK(EnclosingFragmentationContext());
+
+    DCHECK(!IsLayoutPagedFlowThread());
 
     // We have run out of columns here, so we need to add at least one more row
     // to hold more columns.
@@ -1333,6 +1340,8 @@ void LayoutMultiColumnFlowThread::ToggleSpannersInSubtree(
 }
 
 void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
+  LayoutFlowThread::ComputePreferredLogicalWidths();
+
   // The min/max intrinsic widths calculated really tell how much space elements
   // need when laid out inside the columns. In order to eventually end up with
   // the desired column width, we need to convert them to values pertaining to
@@ -1340,19 +1349,9 @@ void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
   const ComputedStyle* multicol_style = MultiColumnBlockFlow()->Style();
   LayoutUnit column_count(
       multicol_style->HasAutoColumnCount() ? 1 : multicol_style->ColumnCount());
+  LayoutUnit column_width;
   LayoutUnit gap_extra((column_count - 1) *
                        ColumnGap(*multicol_style, LayoutUnit()));
-
-  if (MultiColumnBlockFlow()->ShouldApplySizeContainment()) {
-    min_preferred_logical_width_ = max_preferred_logical_width_ = LayoutUnit();
-    ClearPreferredLogicalWidthsDirty();
-  } else {
-    // Calculate and set new min_preferred_logical_width_ and
-    // max_preferred_logical_width_.
-    LayoutFlowThread::ComputePreferredLogicalWidths();
-  }
-
-  LayoutUnit column_width;
   if (multicol_style->HasAutoColumnWidth()) {
     min_preferred_logical_width_ =
         min_preferred_logical_width_ * column_count + gap_extra;

@@ -13,7 +13,6 @@ module.exports = function(config) {
       { pattern: 'npm-wasm/bin/pathkit.wasm', included:false, served:true},
       'perf/perfReporter.js',
       'npm-wasm/bin/pathkit.js',
-      'tests/pathkitinit.js',
       'perf/*.bench.js'
     ],
 
@@ -39,8 +38,8 @@ module.exports = function(config) {
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: true,
 
-    browserDisconnectTimeout: 20000,
-    browserNoActivityTimeout: 20000,
+    browserDisconnectTimeout: 10000,
+    browserNoActivityTimeout: 10000,
 
     // start these browsers
     browsers: ['Chrome'],
@@ -75,7 +74,6 @@ module.exports = function(config) {
       { pattern: 'npm-asmjs/bin/pathkit.js.mem', included:false, served:true},
       'perf/perfReporter.js',
       'npm-asmjs/bin/pathkit.js',
-      'tests/pathkitinit.js',
       'perf/*.bench.js'
     ];
 

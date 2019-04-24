@@ -80,6 +80,7 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
   // Overridden from ui::ContextFactoryObserver:
   void OnLostSharedContext() override;
+  void OnLostVizProcess() override;
 
  protected:
   // Call this to submit a compositor frame.

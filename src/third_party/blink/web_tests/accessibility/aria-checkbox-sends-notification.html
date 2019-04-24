@@ -3,6 +3,7 @@
 <head>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body>
 
@@ -11,7 +12,7 @@
 <p id="description"></p>
 <div id="console"></div>
 <script>
-async_test(function(t) {
+async_test_after_layout_and_paint(function(t) {
     console.log('t ' + t);
     var accessibleCheckbox = accessibilityController.accessibleElementById("checkbox1");
     var notificationCount = 0;

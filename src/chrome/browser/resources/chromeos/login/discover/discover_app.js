@@ -33,6 +33,7 @@ cr.define('cr.ui.Oobe', function() {
     setClientAreaSize: function(data) {},
     showAPIKeysNotice: function(data) {},
     showOobeUI: function(data) {},
+    showShutdown: function(data) {},
     showVersion: function(data) {},
     updateDeviceRequisition: function(data) {},
     updateOobeConfiguration: function(data) {},

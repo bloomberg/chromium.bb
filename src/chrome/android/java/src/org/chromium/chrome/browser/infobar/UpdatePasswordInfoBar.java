@@ -29,10 +29,9 @@ public class UpdatePasswordInfoBar extends ConfirmInfoBar {
                 message, titleLinkStart, titleLinkEnd, detailsMessage, primaryButtonText);
     }
 
-    private UpdatePasswordInfoBar(int iconDrawableId, String[] usernames, String message,
+    private UpdatePasswordInfoBar(int iconDrawbleId, String[] usernames, String message,
             int titleLinkStart, int titleLinkEnd, String detailsMessage, String primaryButtonText) {
-        super(iconDrawableId, R.color.infobar_icon_drawable_color, null, message, null,
-                primaryButtonText, null);
+        super(iconDrawbleId, null, message, null, primaryButtonText, null);
         mTitleLinkRangeStart = titleLinkStart;
         mTitleLinkRangeEnd = titleLinkEnd;
         mDetailsMessage = detailsMessage;

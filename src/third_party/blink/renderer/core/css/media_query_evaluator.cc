@@ -29,10 +29,10 @@
 
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 
-#include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
 #include "third_party/blink/public/platform/shape_properties.h"
+#include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
@@ -256,13 +256,13 @@ static bool DisplayModeMediaFeatureEval(const MediaQueryExpValue& value,
 
   WebDisplayMode mode = media_values.DisplayMode();
   switch (value.id) {
-    case CSSValueID::kFullscreen:
+    case CSSValueFullscreen:
       return mode == kWebDisplayModeFullscreen;
-    case CSSValueID::kStandalone:
+    case CSSValueStandalone:
       return mode == kWebDisplayModeStandalone;
-    case CSSValueID::kMinimalUi:
+    case CSSValueMinimalUi:
       return mode == kWebDisplayModeMinimalUi;
-    case CSSValueID::kBrowser:
+    case CSSValueBrowser:
       return mode == kWebDisplayModeBrowser;
     default:
       NOTREACHED();
@@ -278,8 +278,8 @@ static bool OrientationMediaFeatureEval(const MediaQueryExpValue& value,
 
   if (value.is_id) {
     if (width > height)  // Square viewport is portrait.
-      return CSSValueID::kLandscape == value.id;
-    return CSSValueID::kPortrait == value.id;
+      return CSSValueLandscape == value.id;
+    return CSSValuePortrait == value.id;
   }
 
   // Expression (orientation) evaluates to true if width and height >= 0.
@@ -660,8 +660,8 @@ static bool HoverMediaFeatureEval(const MediaQueryExpValue& value,
   if (!value.is_id)
     return false;
 
-  return (hover == kHoverTypeNone && value.id == CSSValueID::kNone) ||
-         (hover == kHoverTypeHover && value.id == CSSValueID::kHover);
+  return (hover == kHoverTypeNone && value.id == CSSValueNone) ||
+         (hover == kHoverTypeHover && value.id == CSSValueHover);
 }
 
 static bool AnyHoverMediaFeatureEval(const MediaQueryExpValue& value,
@@ -676,9 +676,9 @@ static bool AnyHoverMediaFeatureEval(const MediaQueryExpValue& value,
     return false;
 
   switch (value.id) {
-    case CSSValueID::kNone:
+    case CSSValueNone:
       return available_hover_types & kHoverTypeNone;
-    case CSSValueID::kHover:
+    case CSSValueHover:
       return available_hover_types & kHoverTypeHover;
     default:
       NOTREACHED();
@@ -697,9 +697,9 @@ static bool PointerMediaFeatureEval(const MediaQueryExpValue& value,
   if (!value.is_id)
     return false;
 
-  return (pointer == kPointerTypeNone && value.id == CSSValueID::kNone) ||
-         (pointer == kPointerTypeCoarse && value.id == CSSValueID::kCoarse) ||
-         (pointer == kPointerTypeFine && value.id == CSSValueID::kFine);
+  return (pointer == kPointerTypeNone && value.id == CSSValueNone) ||
+         (pointer == kPointerTypeCoarse && value.id == CSSValueCoarse) ||
+         (pointer == kPointerTypeFine && value.id == CSSValueFine);
 }
 
 static bool PrefersReducedMotionMediaFeatureEval(
@@ -714,7 +714,7 @@ static bool PrefersReducedMotionMediaFeatureEval(
   if (!value.is_id)
     return false;
 
-  return (value.id == CSSValueID::kNoPreference) ^
+  return (value.id == CSSValueNoPreference) ^
          media_values.PrefersReducedMotion();
 }
 
@@ -730,9 +730,9 @@ static bool ShapeMediaFeatureEval(const MediaQueryExpValue& value,
   DisplayShape shape = media_values.GetDisplayShape();
 
   switch (value.id) {
-    case CSSValueID::kRect:
+    case CSSValueRect:
       return shape == kDisplayShapeRect;
-    case CSSValueID::kRound:
+    case CSSValueRound:
       return shape == kDisplayShapeRound;
     default:
       NOTREACHED();
@@ -752,11 +752,11 @@ static bool AnyPointerMediaFeatureEval(const MediaQueryExpValue& value,
     return false;
 
   switch (value.id) {
-    case CSSValueID::kCoarse:
+    case CSSValueCoarse:
       return available_pointers & kPointerTypeCoarse;
-    case CSSValueID::kFine:
+    case CSSValueFine:
       return available_pointers & kPointerTypeFine;
-    case CSSValueID::kNone:
+    case CSSValueNone:
       return available_pointers & kPointerTypeNone;
     default:
       NOTREACHED();
@@ -781,7 +781,7 @@ static bool ScanMediaFeatureEval(const MediaQueryExpValue& value,
   // If a platform interface supplies progressive/interlace info for TVs in the
   // future, it needs to be handled here. For now, assume a modern TV with
   // progressive display.
-  return (value.id == CSSValueID::kProgressive);
+  return (value.id == CSSValueProgressive);
 }
 
 static bool ColorGamutMediaFeatureEval(const MediaQueryExpValue& value,
@@ -796,8 +796,8 @@ static bool ColorGamutMediaFeatureEval(const MediaQueryExpValue& value,
   if (!value.is_id)
     return false;
 
-  DCHECK(value.id == CSSValueID::kSRGB || value.id == CSSValueID::kP3 ||
-         value.id == CSSValueID::kRec2020);
+  DCHECK(value.id == CSSValueSRGB || value.id == CSSValueP3 ||
+         value.id == CSSValueRec2020);
 
   ColorSpaceGamut gamut = media_values.ColorGamut();
   switch (gamut) {
@@ -805,17 +805,17 @@ static bool ColorGamutMediaFeatureEval(const MediaQueryExpValue& value,
     case ColorSpaceGamut::kLessThanNTSC:
     case ColorSpaceGamut::NTSC:
     case ColorSpaceGamut::SRGB:
-      return value.id == CSSValueID::kSRGB;
+      return value.id == CSSValueSRGB;
     case ColorSpaceGamut::kAlmostP3:
     case ColorSpaceGamut::P3:
     case ColorSpaceGamut::kAdobeRGB:
     case ColorSpaceGamut::kWide:
-      return value.id == CSSValueID::kSRGB || value.id == CSSValueID::kP3;
+      return value.id == CSSValueSRGB || value.id == CSSValueP3;
     case ColorSpaceGamut::BT2020:
     case ColorSpaceGamut::kProPhoto:
     case ColorSpaceGamut::kUltraWide:
-      return value.id == CSSValueID::kSRGB || value.id == CSSValueID::kP3 ||
-             value.id == CSSValueID::kRec2020;
+      return value.id == CSSValueSRGB || value.id == CSSValueP3 ||
+             value.id == CSSValueRec2020;
     case ColorSpaceGamut::kEnd:
       NOTREACHED();
       return false;
@@ -830,21 +830,20 @@ static bool PrefersColorSchemeMediaFeatureEval(
     const MediaQueryExpValue& value,
     MediaFeaturePrefix,
     const MediaValues& media_values) {
-  PreferredColorScheme preferred_scheme =
-      media_values.GetPreferredColorScheme();
+  WebColorScheme preferred_scheme = media_values.PreferredColorScheme();
 
   if (!value.IsValid())
-    return preferred_scheme != PreferredColorScheme::kNoPreference;
+    return preferred_scheme != WebColorScheme::kNoPreference;
 
   if (!value.is_id)
     return false;
 
-  return (preferred_scheme == PreferredColorScheme::kNoPreference &&
-          value.id == CSSValueID::kNoPreference) ||
-         (preferred_scheme == PreferredColorScheme::kDark &&
-          value.id == CSSValueID::kDark) ||
-         (preferred_scheme == PreferredColorScheme::kLight &&
-          value.id == CSSValueID::kLight);
+  return (preferred_scheme == WebColorScheme::kNoPreference &&
+          value.id == CSSValueNoPreference) ||
+         (preferred_scheme == WebColorScheme::kDark &&
+          value.id == CSSValueDark) ||
+         (preferred_scheme == WebColorScheme::kLight &&
+          value.id == CSSValueLight);
 }
 
 void MediaQueryEvaluator::Init() {

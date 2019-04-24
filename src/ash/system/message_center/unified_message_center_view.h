@@ -32,9 +32,7 @@ class StackingNotificationCounterView : public views::View {
   explicit StackingNotificationCounterView(views::ButtonListener* listener);
   ~StackingNotificationCounterView() override;
 
-  // Sets the number of total notifications and hidden notifications. Returns
-  // true if the count was updated from the previous SetCount() call.
-  bool SetCount(int total_notification_count, int stacked_notification_count);
+  void SetCount(int total_notification_count, int stacked_notification_count);
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -65,14 +63,7 @@ class ASH_EXPORT UnifiedMessageCenterView
   ~UnifiedMessageCenterView() override;
 
   // Sets the maximum height that the view can take.
-  // TODO(tengs): The layout of this view is heavily dependant on this max
-  // height (equal to the height of the entire tray), but we should refactor and
-  // consolidate this function with SetAvailableHeight().
   void SetMaxHeight(int max_height);
-
-  // Sets the height available to the message center view. This is the remaining
-  // height after counting the system menu, which may be expanded or collapsed.
-  void SetAvailableHeight(int available_height);
 
   // Called from UnifiedMessageListView when the preferred size is changed.
   void ListPreferredSizeChanged();
@@ -126,11 +117,6 @@ class ASH_EXPORT UnifiedMessageCenterView
 
   // Position from the bottom of scroll contents in dip.
   int last_scroll_position_from_bottom_;
-
-  // The height available to the message center view. This is the remaining
-  // height of the system tray excluding the system menu (which can be expanded
-  // or collapsed).
-  int available_height_ = 0;
 
   views::FocusManager* focus_manager_ = nullptr;
 

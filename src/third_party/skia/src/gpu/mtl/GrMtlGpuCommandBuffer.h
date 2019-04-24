@@ -11,7 +11,6 @@
 #include "GrGpuCommandBuffer.h"
 #include "GrMtlGpu.h"
 #include "GrMesh.h"
-#include "GrOpFlushState.h"
 
 #import <metal/metal.h>
 
@@ -57,10 +56,7 @@ public:
 
     void insertEventMarker(const char* msg) override {}
 
-    void inlineUpload(GrOpFlushState* state, GrDeferredTextureUploadFn& upload) override {
-        // TODO: this could be more efficient
-        state->doUpload(upload);
-    }
+    void inlineUpload(GrOpFlushState* state, GrDeferredTextureUploadFn& upload) override {}
 
     void copy(GrSurface* src, GrSurfaceOrigin srcOrigin, const SkIRect& srcRect,
               const SkIPoint& dstPoint) override;
@@ -129,8 +125,8 @@ private:
     GrGpuRTCommandBuffer::LoadAndStoreInfo        fColorLoadAndStoreInfo;
     GrGpuRTCommandBuffer::StencilLoadAndStoreInfo fStencilLoadAndStoreInfo;
 
-    id<MTLRenderCommandEncoder> fActiveRenderCmdEncoder;
-    MTLRenderPassDescriptor*    fRenderPassDesc;
+    __strong id<MTLRenderCommandEncoder> fActiveRenderCmdEncoder;
+    MTLRenderPassDescriptor* fRenderPassDesc;
 
     struct CommandBufferInfo {
         SkRect fBounds;

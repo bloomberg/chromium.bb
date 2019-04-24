@@ -15,7 +15,6 @@ import android.os.Process;
 import android.os.UserHandle;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.Executor;
 
 /**
  * Class of static helper methods to call Context.bindService variants.
@@ -26,7 +25,7 @@ final class BindService {
     // Note that handler is not guaranteed to be used, and client still need to correctly handle
     // callbacks on the UI thread.
     static boolean doBindService(Context context, Intent intent, ServiceConnection connection,
-            int flags, Handler handler, Executor executor, String instanceName) {
+            int flags, Handler handler) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
             return bindServiceByCall(context, intent, connection, flags);
         }

@@ -45,6 +45,10 @@ class PagePopup;
 class CORE_EXPORT DateTimeChooserImpl final : public DateTimeChooser,
                                               public PagePopupClient {
  public:
+  static DateTimeChooserImpl* Create(ChromeClient*,
+                                     DateTimeChooserClient*,
+                                     const DateTimeChooserParameters&);
+
   DateTimeChooserImpl(ChromeClient*,
                       DateTimeChooserClient*,
                       const DateTimeChooserParameters&);

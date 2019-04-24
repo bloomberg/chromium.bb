@@ -36,7 +36,7 @@ gfx::Image TestToolbarActionViewController::GetIcon(
 }
 
 base::string16 TestToolbarActionViewController::GetActionName() const {
-  return action_name_;
+  return base::string16();
 }
 
 base::string16 TestToolbarActionViewController::GetAccessibleName(
@@ -97,12 +97,6 @@ bool TestToolbarActionViewController::DisabledClickOpensMenu() const {
 void TestToolbarActionViewController::ShowPopup(bool by_user) {
   popup_showing_ = true;
   delegate_->OnPopupShown(by_user);
-}
-
-void TestToolbarActionViewController::SetActionName(
-    const base::string16& name) {
-  action_name_ = name;
-  UpdateDelegate();
 }
 
 void TestToolbarActionViewController::SetAccessibleName(

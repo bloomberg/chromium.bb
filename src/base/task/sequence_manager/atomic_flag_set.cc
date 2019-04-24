@@ -42,16 +42,13 @@ AtomicFlagSet::AtomicFlag::AtomicFlag(AtomicFlag&& other)
 
 void AtomicFlagSet::AtomicFlag::SetActive(bool active) {
   DCHECK(group_);
+  // Release semantics are required to ensure that all memory accesses made on
+  // this thread happen-before any others done on the thread running the active
+  // callbacks.
   if (active) {
-    // Release semantics are required to ensure that all memory accesses made on
-    // this thread happen-before any others done on the thread running the
-    // active callbacks.
     group_->flags.fetch_or(flag_bit_, std::memory_order_release);
   } else {
-    // No operation is being performed based on the bit *not* being set (i.e.
-    // state of other memory is irrelevant); hence no memory order is required
-    // when unsetting it.
-    group_->flags.fetch_and(~flag_bit_, std::memory_order_relaxed);
+    group_->flags.fetch_and(~flag_bit_, std::memory_order_release);
   }
 }
 
@@ -107,7 +104,7 @@ AtomicFlagSet::AtomicFlag AtomicFlagSet::AddFlag(RepeatingClosure callback) {
 
 void AtomicFlagSet::RunActiveCallbacks() const {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  for (Group* iter = alloc_list_head_.get(); iter; iter = iter->next.get()) {
+  for (Group* iter = alloc_list_head_.get(); iter; iter = iter->next_.get()) {
     // Acquire semantics are required to guarantee that all memory side-effects
     // made by other threads that were allowed to perform operations are
     // synchronized with this thread before it returns from this method.
@@ -127,8 +124,8 @@ AtomicFlagSet::Group::Group() = default;
 
 AtomicFlagSet::Group::~Group() {
   DCHECK_EQ(allocated_flags, 0u);
-  DCHECK(!partially_free_list_prev);
-  DCHECK(!partially_free_list_next);
+  DCHECK(!partially_free_list_prev_);
+  DCHECK(!partially_free_list_next_);
 }
 
 bool AtomicFlagSet::Group::IsFull() const {
@@ -149,62 +146,62 @@ int AtomicFlagSet::Group::FindFirstUnallocatedFlag() const {
 
 // static
 int AtomicFlagSet::Group::IndexOfFirstFlagSet(size_t flag) {
-  DCHECK_NE(flag, 0u);
-  return bits::CountTrailingZeroBits(flag);
+  return kNumFlags - 1 - bits::CountLeadingZeroBits(flag);
 }
 
 void AtomicFlagSet::AddToAllocList(std::unique_ptr<Group> group) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   if (alloc_list_head_)
-    alloc_list_head_->prev = group.get();
+    alloc_list_head_->prev_ = group.get();
 
-  group->next = std::move(alloc_list_head_);
+  group->next_ = std::move(alloc_list_head_);
   alloc_list_head_ = std::move(group);
 }
 
 void AtomicFlagSet::RemoveFromAllocList(Group* group) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  if (group->next)
-    group->next->prev = group->prev;
+  if (group->next_)
+    group->next_->prev_ = group->prev_;
 
-  if (group->prev) {
-    group->prev->next = std::move(group->next);
+  if (group->prev_) {
+    group->prev_->next_ = std::move(group->next_);
   } else {
-    alloc_list_head_ = std::move(group->next);
+    alloc_list_head_ = std::move(group->next_);
   }
 }
 
-void AtomicFlagSet::AddToPartiallyFreeList(Group* group) {
+void AtomicFlagSet::AddToPartiallyFreeList(Group* element) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  DCHECK_NE(partially_free_list_head_, group);
-  DCHECK(!group->partially_free_list_prev);
-  DCHECK(!group->partially_free_list_next);
+  DCHECK_NE(partially_free_list_head_, element);
+  DCHECK(!element->partially_free_list_prev_);
+  DCHECK(!element->partially_free_list_next_);
   if (partially_free_list_head_)
-    partially_free_list_head_->partially_free_list_prev = group;
+    partially_free_list_head_->partially_free_list_prev_ = element;
 
-  group->partially_free_list_next = partially_free_list_head_;
-  partially_free_list_head_ = group;
+  element->partially_free_list_next_ = partially_free_list_head_;
+  partially_free_list_head_ = element;
 }
 
-void AtomicFlagSet::RemoveFromPartiallyFreeList(Group* group) {
+void AtomicFlagSet::RemoveFromPartiallyFreeList(Group* element) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   DCHECK(partially_free_list_head_);
-  // Check |group| is in the list.
-  DCHECK(partially_free_list_head_ == group || group->partially_free_list_prev);
-  if (group->partially_free_list_next) {
-    group->partially_free_list_next->partially_free_list_prev =
-        group->partially_free_list_prev;
+  // Check |element| is in the list.
+  DCHECK(partially_free_list_head_ == element ||
+         element->partially_free_list_prev_);
+  if (element->partially_free_list_next_) {
+    element->partially_free_list_next_->partially_free_list_prev_ =
+        element->partially_free_list_prev_;
   }
 
-  if (group->partially_free_list_prev) {
-    group->partially_free_list_prev->partially_free_list_next =
-        group->partially_free_list_next;
+  if (element->partially_free_list_prev_) {
+    element->partially_free_list_prev_->partially_free_list_next_ =
+        element->partially_free_list_next_;
   } else {
-    partially_free_list_head_ = group->partially_free_list_next;
+    partially_free_list_head_ = element->partially_free_list_next_;
   }
 
-  group->partially_free_list_prev = nullptr;
-  group->partially_free_list_next = nullptr;
+  element->partially_free_list_prev_ = nullptr;
+  element->partially_free_list_next_ = nullptr;
 }
 
 }  // namespace internal

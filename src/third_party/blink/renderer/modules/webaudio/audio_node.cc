@@ -191,13 +191,12 @@ void AudioHandler::SetNodeType(NodeType type) {
 }
 
 void AudioHandler::AddInput() {
-  inputs_.push_back(std::make_unique<AudioNodeInput>(*this));
+  inputs_.push_back(AudioNodeInput::Create(*this));
 }
 
 void AudioHandler::AddOutput(unsigned number_of_channels) {
   DCHECK(IsMainThread());
-  outputs_.push_back(
-      std::make_unique<AudioNodeOutput>(this, number_of_channels));
+  outputs_.push_back(AudioNodeOutput::Create(this, number_of_channels));
   GetNode()->DidAddOutput(NumberOfOutputs());
 }
 
@@ -239,7 +238,7 @@ void AudioHandler::SetChannelCount(unsigned channel_count,
   } else {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
-        ExceptionMessages::IndexOutsideRange<uint32_t>(
+        ExceptionMessages::IndexOutsideRange<unsigned long>(
             "channel count", channel_count, 1,
             ExceptionMessages::kInclusiveBound,
             BaseAudioContext::MaxNumberOfChannels(),

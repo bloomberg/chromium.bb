@@ -4,43 +4,27 @@
 
 #include "content/public/renderer/render_thread.h"
 
-#include "base/no_destructor.h"
-#include "base/threading/thread_checker_impl.h"
+#include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
 
 namespace content {
 
-namespace {
-
 // Keep the global RenderThread in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
-base::ThreadLocalPointer<RenderThread>& GetRenderThreadLocalPointer() {
-  static base::NoDestructor<base::ThreadLocalPointer<RenderThread>> tls;
-  return *tls;
-}
-
-static const base::ThreadCheckerImpl& GetThreadChecker() {
-  static base::NoDestructor<base::ThreadCheckerImpl> checker;
-  return *checker;
-}
-
-}  // namespace
+static base::LazyInstance<
+    base::ThreadLocalPointer<RenderThread>>::DestructorAtExit lazy_tls =
+    LAZY_INSTANCE_INITIALIZER;
 
 RenderThread* RenderThread::Get() {
-  return GetRenderThreadLocalPointer().Get();
-}
-
-bool RenderThread::IsMainThread() {
-  // TODO(avi): Eventually move to be based on WTF::IsMainThread().
-  return GetThreadChecker().CalledOnValidThread();
+  return lazy_tls.Pointer()->Get();
 }
 
 RenderThread::RenderThread() {
-  GetRenderThreadLocalPointer().Set(this);
+  lazy_tls.Pointer()->Set(this);
 }
 
 RenderThread::~RenderThread() {
-  GetRenderThreadLocalPointer().Set(nullptr);
+  lazy_tls.Pointer()->Set(nullptr);
 }
 
 }  // namespace content

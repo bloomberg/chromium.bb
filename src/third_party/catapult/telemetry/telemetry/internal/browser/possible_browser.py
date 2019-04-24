@@ -95,7 +95,6 @@ class PossibleBrowser(possible_app.PossibleApp):
     self._browser_options = browser_options
 
   def Create(self):
-    """Start the browser process."""
     raise NotImplementedError()
 
   def CleanUpEnvironment(self):

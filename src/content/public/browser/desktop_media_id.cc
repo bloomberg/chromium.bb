@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "build/build_config.h"
 #include "content/browser/media/desktop_media_window_registry.h"
 
 namespace content {
@@ -27,7 +26,7 @@ const DesktopMediaID::Id DesktopMediaID::kNullId = 0;
 // static
 const DesktopMediaID::Id DesktopMediaID::kFakeId = -3;
 
-#if defined(USE_AURA) || defined(OS_MACOSX)
+#if defined(USE_AURA)
 // static
 DesktopMediaID DesktopMediaID::RegisterNativeWindow(DesktopMediaID::Type type,
                                                     gfx::NativeWindow window) {

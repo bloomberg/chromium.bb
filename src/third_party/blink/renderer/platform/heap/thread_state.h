@@ -34,12 +34,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/atomic_entry_flag.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
 #include "third_party/blink/renderer/platform/heap/threading_traits.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/public/rail_mode_observer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -139,18 +139,20 @@ class PLATFORM_EXPORT BlinkGCObserver {
   ThreadState* thread_state_;
 };
 
-class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
+class PLATFORM_EXPORT ThreadState final
+    : private scheduler::WebRAILModeObserver {
   USING_FAST_MALLOC(ThreadState);
 
  public:
   // See setGCState() for possible state transitions.
   enum GCState {
     kNoGCScheduled,
+    kIdleGCScheduled,
     kIncrementalMarkingStepPaused,
     kIncrementalMarkingStepScheduled,
     kIncrementalMarkingFinalizeScheduled,
     kPreciseGCScheduled,
-    kForcedGCForTestingScheduled,
+    kFullGCScheduled,
     kPageNavigationGCScheduled,
     kIncrementalGCScheduled,
   };
@@ -182,6 +184,15 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // For an exact check, use ThreadState::IsIncrementalMarking.
   ALWAYS_INLINE static bool IsAnyIncrementalMarking() {
     return incremental_marking_flag_.MightBeEntered();
+  }
+
+  // Returns true if some thread (possibly the current thread) may be doing
+  // wrapper tracing. If false is returned, the *current* thread is definitely
+  // not doing wrapper tracing. See atomic_entry_flag.h for details.
+  //
+  // For an exact check, use ThreadState::IsWrapperTracing.
+  static bool IsAnyWrapperTracing() {
+    return wrapper_tracing_flag_.MightBeEntered();
   }
 
   static void AttachMainThread();
@@ -218,15 +229,17 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // in the dangling pointer situation.
   void RunTerminationGC();
 
+  void PerformIdleGC(TimeTicks deadline);
   void PerformIdleLazySweep(TimeTicks deadline);
 
+  void ScheduleIdleGC();
   void ScheduleIdleLazySweep();
   void SchedulePreciseGC();
   void ScheduleIncrementalGC(BlinkGC::GCReason);
   void ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType);
   void SchedulePageNavigationGCIfNeeded(float estimated_removal_ratio);
   void SchedulePageNavigationGC();
-  void ScheduleForcedGCForTesting();
+  void ScheduleFullGC();
   void ScheduleGCIfNeeded();
   void PostIdleGCTask();
   void WillStartV8GC(BlinkGC::V8GCType);
@@ -239,6 +252,9 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     return IsMarkingInProgress() &&
            current_gc_data_.reason == BlinkGC::GCReason::kUnifiedHeapGC;
   }
+
+  void EnableWrapperTracingBarrier();
+  void DisableWrapperTracingBarrier();
 
   // Incremental GC.
   void ScheduleIncrementalMarkingStep();
@@ -302,6 +318,9 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     return in_atomic_pause() && IsSweepingInProgress();
   }
 
+  bool IsWrapperTracing() const { return wrapper_tracing_; }
+  void SetWrapperTracing(bool value) { wrapper_tracing_ = value; }
+
   bool IsIncrementalMarking() const { return incremental_marking_; }
   void SetIncrementalMarking(bool value) { incremental_marking_ = value; }
 
@@ -353,12 +372,17 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
     Vector<size_t> dead_size;
   };
 
-  void RegisterTraceDOMWrappers(v8::Isolate* isolate,
-                                void (*trace_dom_wrappers)(v8::Isolate*,
-                                                           Visitor*)) {
+  void RegisterTraceDOMWrappers(
+      v8::Isolate* isolate,
+      void (*trace_dom_wrappers)(v8::Isolate*, Visitor*),
+      void (*invalidate_dead_objects_in_wrappers_marking_deque)(v8::Isolate*),
+      void (*perform_cleanup)(v8::Isolate*)) {
     isolate_ = isolate;
     DCHECK(!isolate_ || trace_dom_wrappers);
     trace_dom_wrappers_ = trace_dom_wrappers;
+    invalidate_dead_objects_in_wrappers_marking_deque_ =
+        invalidate_dead_objects_in_wrappers_marking_deque;
+    perform_cleanup_ = perform_cleanup;
   }
 
   void FreePersistentNode(PersistentRegion*, PersistentNode*);
@@ -375,16 +399,11 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   v8::Isolate* GetIsolate() const { return isolate_; }
 
-  // Use CollectAllGarbageForTesting below for testing!
   void CollectGarbage(BlinkGC::StackState,
                       BlinkGC::MarkingType,
                       BlinkGC::SweepingType,
                       BlinkGC::GCReason);
-
-  // Forced garbage collection for testing.
-  void CollectAllGarbageForTesting(
-      BlinkGC::StackState stack_state =
-          BlinkGC::StackState::kNoHeapPointersOnStack);
+  void CollectAllGarbage();
 
   // Register the pre-finalizer for the |self| object. The class T must have
   // USING_PRE_FINALIZER().
@@ -422,12 +441,15 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   MarkingVisitor* CurrentVisitor() { return current_gc_data_.visitor.get(); }
 
-  // Implementation for RAILModeObserver
-  void OnRAILModeChanged(RAILMode new_mode) override;
+  // Implementation for WebRAILModeObserver
+  void OnRAILModeChanged(v8::RAILMode new_mode) override;
 
  private:
   // Stores whether some ThreadState is currently in incremental marking.
   static AtomicEntryFlag incremental_marking_flag_;
+
+  // Same semantic as |incremental_marking_flag_|.
+  static AtomicEntryFlag wrapper_tracing_flag_;
 
   static WTF::ThreadSpecific<ThreadState*>* thread_specific_;
 
@@ -476,14 +498,15 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
 
   bool ShouldVerifyMarking() const;
 
-  // ShouldForceConservativeGC
-  // implements the heuristics that are used to determine when to collect
+  // shouldScheduleIdleGC and shouldForceConservativeGC
+  // implement the heuristics that are used to determine when to collect
   // garbage.
   // If shouldForceConservativeGC returns true, we force the garbage
   // collection immediately. Otherwise, if should*GC returns true, we
   // record that we should garbage collect the next time we return
   // to the event loop. If both return false, we don't need to
   // collect garbage at this point.
+  bool ShouldScheduleIdleGC();
   bool ShouldForceConservativeGC();
   bool ShouldScheduleIncrementalMarking();
   // V8 minor or major GC is likely to drop a lot of references to objects
@@ -494,6 +517,8 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // estimatedRemovalRatio is the estimated ratio of objects that will be no
   // longer necessary due to the navigation.
   bool ShouldSchedulePageNavigationGC(float estimated_removal_ratio);
+
+  void RescheduleIdleGC();
 
   // Internal helpers to handle memory pressure conditions.
 
@@ -543,6 +568,7 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   bool object_resurrection_forbidden_ = false;
   bool in_atomic_pause_ = false;
   bool sweep_forbidden_ = false;
+  bool wrapper_tracing_ = false;
   bool incremental_marking_ = false;
   bool should_optimize_for_load_time_ = false;
   size_t no_allocation_count_ = 0;
@@ -563,8 +589,10 @@ class PLATFORM_EXPORT ThreadState final : private RAILModeObserver {
   // for an object, by processing the ordered_pre_finalizers_ back-to-front.
   LinkedHashSet<PreFinalizer> ordered_pre_finalizers_;
 
-  v8::Isolate* isolate_ = nullptr;
-  void (*trace_dom_wrappers_)(v8::Isolate*, Visitor*) = nullptr;
+  v8::Isolate* isolate_;
+  void (*trace_dom_wrappers_)(v8::Isolate*, Visitor*);
+  void (*invalidate_dead_objects_in_wrappers_marking_deque_)(v8::Isolate*);
+  void (*perform_cleanup_)(v8::Isolate*);
 
 #if defined(ADDRESS_SANITIZER)
   void* asan_fake_stack_;

@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "source/reduce/reducer.h"
+#include "reduce_test_util.h"
 
 #include "source/reduce/operand_to_const_reduction_opportunity_finder.h"
+#include "source/reduce/reducer.h"
 #include "source/reduce/remove_opname_instruction_reduction_opportunity_finder.h"
 #include "source/reduce/remove_unreferenced_instruction_reduction_opportunity_finder.h"
-#include "test/reduce/reduce_test_util.h"
 
 namespace spvtools {
 namespace reduce {
@@ -229,13 +229,8 @@ TEST(ReducerTest, ExprToConstantAndRemoveUnreferenced) {
   std::vector<uint32_t> binary_out;
   spvtools::ReducerOptions reducer_options;
   reducer_options.set_step_limit(500);
-  reducer_options.set_fail_on_validation_error(true);
-  spvtools::ValidatorOptions validator_options;
 
-  Reducer::ReductionResultStatus status = reducer.Run(
-      std::move(binary_in), &binary_out, reducer_options, validator_options);
-
-  ASSERT_EQ(status, Reducer::ReductionResultStatus::kComplete);
+  reducer.Run(std::move(binary_in), &binary_out, reducer_options);
 
   CheckEqual(env, expected, binary_out);
 }
@@ -260,7 +255,7 @@ TEST(ReducerTest, RemoveOpnameAndRemoveUnreferenced) {
          %10 = OpLabel
           %3 = OpVariable %8 Function
           %4 = OpLoad %7 %3
-               OpStore %3 %9
+               OpStore %3 %7
                OpReturn
                OpFunctionEnd
   )";
@@ -285,7 +280,7 @@ TEST(ReducerTest, RemoveOpnameAndRemoveUnreferenced) {
 
   spv_target_env env = SPV_ENV_UNIVERSAL_1_3;
   Reducer reducer(env);
-  // Make ping-pong interesting very quickly, as there are not many
+  // Make ping-pong interesting very quickly, as there are not much
   // opportunities.
   PingPongInteresting ping_pong_interesting(1);
   reducer.SetMessageConsumer(NopDiagnostic);
@@ -305,13 +300,8 @@ TEST(ReducerTest, RemoveOpnameAndRemoveUnreferenced) {
   std::vector<uint32_t> binary_out;
   spvtools::ReducerOptions reducer_options;
   reducer_options.set_step_limit(500);
-  reducer_options.set_fail_on_validation_error(true);
-  spvtools::ValidatorOptions validator_options;
 
-  Reducer::ReductionResultStatus status = reducer.Run(
-      std::move(binary_in), &binary_out, reducer_options, validator_options);
-
-  ASSERT_EQ(status, Reducer::ReductionResultStatus::kComplete);
+  reducer.Run(std::move(binary_in), &binary_out, reducer_options);
 
   CheckEqual(env, expected, binary_out);
 }

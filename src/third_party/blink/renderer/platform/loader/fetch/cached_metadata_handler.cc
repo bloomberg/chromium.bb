@@ -33,12 +33,9 @@ CachedMetadataSenderImpl::CachedMetadataSenderImpl(
     : response_url_(response.CurrentRequestUrl()),
       response_time_(response.ResponseTime()),
       code_cache_type_(code_cache_type) {
-  // WebAssembly always uses the site isolated code cache.
-  DCHECK(response.CacheStorageCacheName().IsNull() ||
-         code_cache_type_ == blink::mojom::CodeCacheType::kWebAssembly);
+  DCHECK(response.CacheStorageCacheName().IsNull());
   DCHECK(!response.WasFetchedViaServiceWorker() ||
-         response.IsServiceWorkerPassThrough() ||
-         code_cache_type_ == blink::mojom::CodeCacheType::kWebAssembly);
+         response.IsServiceWorkerPassThrough());
 }
 
 void CachedMetadataSenderImpl::Send(const uint8_t* data, size_t size) {
@@ -95,9 +92,7 @@ std::unique_ptr<CachedMetadataSender> CachedMetadataSender::Create(
     const ResourceResponse& response,
     blink::mojom::CodeCacheType code_cache_type,
     scoped_refptr<const SecurityOrigin> requestor_origin) {
-  // Non-ServiceWorker scripts and WebAssembly use the site isolated code cache.
-  if (!response.WasFetchedViaServiceWorker() ||
-      code_cache_type == blink::mojom::CodeCacheType::kWebAssembly) {
+  if (!response.WasFetchedViaServiceWorker()) {
     return std::make_unique<CachedMetadataSenderImpl>(response,
                                                       code_cache_type);
   }
@@ -128,25 +123,17 @@ std::unique_ptr<CachedMetadataSender> CachedMetadataSender::Create(
 
 bool ShouldUseIsolatedCodeCache(mojom::RequestContextType request_context,
                                 const ResourceResponse& response) {
-  if (!RuntimeEnabledFeatures::IsolatedCodeCacheEnabled())
-    return false;
-
-  // WebAssembly always uses the site isolated code cache.
-  if (response.MimeType() == "application/wasm")
-    return true;
-
-  // Service worker script has its own code cache.
-  if (request_context == mojom::RequestContextType::SERVICE_WORKER)
-    return false;
-
-  // Also, we only support code cache for other service worker provided
-  // resources when a direct pass-through fetch handler is used. If the service
-  // worker synthesizes a new Response or provides a Response fetched from a
-  // different URL, then do not use the code cache.
-  // Also, responses coming from cache storage use a separate code cache
-  // mechanism.
-  return !response.WasFetchedViaServiceWorker() ||
-         response.IsServiceWorkerPassThrough();
+  return RuntimeEnabledFeatures::IsolatedCodeCacheEnabled() &&
+         // Service worker script has its own code cache.
+         request_context != mojom::RequestContextType::SERVICE_WORKER &&
+         // Also, we only support code cache for other service worker provided
+         // resources when a direct pass-through fetch handler is used.  If the
+         // service worker synthesizes a new Response or provides a Response
+         // fetched from a different URL, then do not use the code cache.
+         // Also, responses coming from cache storage use a separate code
+         // cache mechanism.
+         (!response.WasFetchedViaServiceWorker() ||
+          response.IsServiceWorkerPassThrough());
 }
 
 }  // namespace blink

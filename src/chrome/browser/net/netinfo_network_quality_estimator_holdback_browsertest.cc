@@ -64,7 +64,7 @@ class NetInfoNetworkQualityEstimatorHoldbackBrowserTest
   }
 
   void SetUp() override {
-    test_server_.ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+    test_server_.ServeFilesFromSourceDirectory("chrome/test/data");
     ASSERT_TRUE(test_server_.Start());
     InProcessBrowserTest::SetUp();
   }

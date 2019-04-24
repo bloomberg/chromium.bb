@@ -165,7 +165,7 @@ bool AutoplayPolicy::DocumentIsCapturingUserMedia(const Document& document) {
 AutoplayPolicy::AutoplayPolicy(HTMLMediaElement* element)
     : locked_pending_user_gesture_(false),
       element_(element),
-      autoplay_uma_helper_(MakeGarbageCollected<AutoplayUmaHelper>(element)) {
+      autoplay_uma_helper_(AutoplayUmaHelper::Create(element)) {
   locked_pending_user_gesture_ =
       ComputeLockPendingUserGestureRequired(element->GetDocument());
 }
@@ -188,15 +188,7 @@ void AutoplayPolicy::DidMoveToNewDocument(Document& old_document) {
 }
 
 bool AutoplayPolicy::IsEligibleForAutoplayMuted() const {
-  if (!element_->IsHTMLVideoElement())
-    return false;
-
-  if (RuntimeEnabledFeatures::VideoAutoFullscreenEnabled() &&
-      !element_->FastHasAttribute(html_names::kPlaysinlineAttr)) {
-    return false;
-  }
-
-  return element_->muted() &&
+  return element_->IsHTMLVideoElement() && element_->muted() &&
          DocumentShouldAutoplayMutedVideos(element_->GetDocument());
 }
 
@@ -232,8 +224,8 @@ bool AutoplayPolicy::RequestAutoplayUnmute() {
     if (IsGestureNeededForPlayback()) {
       if (IsUsingDocumentUserActivationRequiredPolicy()) {
         element_->GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning, kWarningUnmuteFailed));
+            kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+            kWarningUnmuteFailed));
       }
 
       autoplay_uma_helper_->RecordAutoplayUnmuteStatus(
@@ -320,9 +312,15 @@ bool AutoplayPolicy::IsGestureNeededForPlayback() const {
     return false;
 
   // We want to allow muted video to autoplay if:
-  // - The element is allowed to autoplay muted;
-  // - Autoplay is enabled in settings.
-  return !(IsEligibleForAutoplayMuted() && IsAutoplayAllowedPerSettings());
+  // - the flag is enabled;
+  // - Autoplay is enabled in settings;
+  if (element_->IsHTMLVideoElement() && element_->muted() &&
+      DocumentShouldAutoplayMutedVideos(element_->GetDocument()) &&
+      IsAutoplayAllowedPerSettings()) {
+    return false;
+  }
+
+  return true;
 }
 
 String AutoplayPolicy::GetPlayErrorMessage() const {
@@ -399,7 +397,7 @@ bool AutoplayPolicy::IsAutoplayAllowedPerSettings() const {
 }
 
 bool AutoplayPolicy::ShouldAutoplay() {
-  if (element_->GetDocument().IsSandboxed(WebSandboxFlags::kAutomaticFeatures))
+  if (element_->GetDocument().IsSandboxed(kSandboxAutomaticFeatures))
     return false;
   return element_->can_autoplay_ && element_->paused_ && element_->Autoplay();
 }

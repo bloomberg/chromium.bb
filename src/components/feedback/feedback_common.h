@@ -29,19 +29,20 @@ class FeedbackCommon : public base::RefCountedThreadSafe<FeedbackCommon> {
   using SystemLogsMap = std::map<std::string, std::string>;
 
   struct AttachedFile {
-    explicit AttachedFile(const std::string& filename, std::string data);
+    explicit AttachedFile(const std::string& filename,
+                          std::unique_ptr<std::string> data);
     ~AttachedFile();
 
     std::string name;
-    std::string data;
+    std::unique_ptr<std::string> data;
   };
 
   FeedbackCommon();
 
-  void AddFile(const std::string& filename, std::string data);
+  void AddFile(const std::string& filename, std::unique_ptr<std::string> data);
 
-  void AddLog(std::string name, std::string value);
-  void AddLogs(SystemLogsMap logs);
+  void AddLog(const std::string& name, const std::string& value);
+  void AddLogs(std::unique_ptr<SystemLogsMap> logs);
 
   // Fill in |feedback_data| with all the data that we have collected.
   // CompressLogs() must have already been called.
@@ -52,13 +53,15 @@ class FeedbackCommon : public base::RefCountedThreadSafe<FeedbackCommon> {
   const std::string& page_url() const { return page_url_; }
   const std::string& description() const { return description_; }
   const std::string& user_email() const { return user_email_; }
-  const std::string& image() const { return image_; }
-  const SystemLogsMap* sys_info() const { return &logs_; }
+  const std::string* image() const { return image_.get(); }
+  const SystemLogsMap* sys_info() const { return logs_.get(); }
   int32_t product_id() const { return product_id_; }
   std::string user_agent() const { return user_agent_; }
   std::string locale() const { return locale_; }
 
-  const AttachedFile* attachment(size_t i) const { return &attachments_[i]; }
+  const AttachedFile* attachment(size_t i) const {
+    return attachments_[i].get();
+  }
   size_t attachments() const { return attachments_.size(); }
 
   // Setters
@@ -72,7 +75,9 @@ class FeedbackCommon : public base::RefCountedThreadSafe<FeedbackCommon> {
   void set_user_email(const std::string& user_email) {
     user_email_ = user_email;
   }
-  void set_image(std::string image) { image_ = std::move(image); }
+  void set_image(std::unique_ptr<std::string> image) {
+    image_ = std::move(image);
+  }
   void set_product_id(int32_t product_id) { product_id_ = product_id; }
   void set_user_agent(const std::string& user_agent) {
     user_agent_ = user_agent;
@@ -87,7 +92,7 @@ class FeedbackCommon : public base::RefCountedThreadSafe<FeedbackCommon> {
   // will be used and appended a ".zip" extension.
   void CompressFile(const base::FilePath& filename,
                     const std::string& zipname,
-                    std::string data_to_be_compressed);
+                    std::unique_ptr<std::string> data_to_be_compressed);
 
   void CompressLogs();
 
@@ -109,14 +114,14 @@ class FeedbackCommon : public base::RefCountedThreadSafe<FeedbackCommon> {
   std::string user_agent_;
   std::string locale_;
 
-  std::string image_;
+  std::unique_ptr<std::string> image_;
 
   // It is possible that multiple attachment add calls are running in
   // parallel, so synchronize access.
   base::Lock attachments_lock_;
-  std::vector<AttachedFile> attachments_;
+  std::vector<std::unique_ptr<AttachedFile>> attachments_;
 
-  SystemLogsMap logs_;
+  std::unique_ptr<SystemLogsMap> logs_;
 };
 
 #endif  // COMPONENTS_FEEDBACK_FEEDBACK_COMMON_H_

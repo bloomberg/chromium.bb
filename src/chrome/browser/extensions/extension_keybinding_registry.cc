@@ -19,10 +19,6 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/media_client.h"
-#endif
-
 namespace {
 
 const char kOnCommandEventName[] = "commands.onCommand";
@@ -99,19 +95,14 @@ void ExtensionKeybindingRegistry::RemoveExtensionKeybinding(
 
   // If we're no longer listening to any media keys, tell the browser that
   // it can start handling media keys.
-  if (any_media_keys_removed && !IsListeningToAnyMediaKeys()) {
-    if (content::MediaKeysListenerManager::
-            IsMediaKeysListenerManagerEnabled()) {
-      content::MediaKeysListenerManager* media_keys_listener_manager =
-          content::MediaKeysListenerManager::GetInstance();
-      DCHECK(media_keys_listener_manager);
+  if (any_media_keys_removed &&
+      content::MediaKeysListenerManager::IsMediaKeysListenerManagerEnabled() &&
+      !IsListeningToAnyMediaKeys()) {
+    content::MediaKeysListenerManager* media_keys_listener_manager =
+        content::MediaKeysListenerManager::GetInstance();
+    DCHECK(media_keys_listener_manager);
 
-      media_keys_listener_manager->EnableInternalMediaKeyHandling();
-    } else {
-#if defined(OS_CHROMEOS)
-      MediaClient::Get()->DisableCustomMediaKeyHandler(browser_context_, this);
-#endif
-    }
+    media_keys_listener_manager->EnableInternalMediaKeyHandling();
   }
 }
 
@@ -193,10 +184,6 @@ void ExtensionKeybindingRegistry::AddEventTarget(
       DCHECK(media_keys_listener_manager);
 
       media_keys_listener_manager->DisableInternalMediaKeyHandling();
-    } else {
-#if defined(OS_CHROMEOS)
-      MediaClient::Get()->EnableCustomMediaKeyHandler(browser_context_, this);
-#endif
     }
   }
 }

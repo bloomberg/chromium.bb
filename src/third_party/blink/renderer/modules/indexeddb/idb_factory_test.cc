@@ -58,10 +58,10 @@ TEST_F(IDBFactoryTest, WebIDBGetDBInfoCallbacksResolvesPromise) {
   V8TestingScope scope;
   scope.GetDocument().SetSecurityOrigin(
       SecurityOrigin::Create(KURL("https://example.com")));
-  auto web_factory = std::make_unique<MockWebIDBFactory>();
+  std::unique_ptr<MockWebIDBFactory> web_factory = MockWebIDBFactory::Create();
   std::unique_ptr<WebIDBCallbacks> callbacks;
   web_factory->SetCallbacksPointer(&callbacks);
-  auto* factory = MakeGarbageCollected<IDBFactory>(std::move(web_factory));
+  IDBFactory* factory = IDBFactory::CreateForTest(std::move(web_factory));
 
   DummyExceptionStateForTesting exception_state;
   ScriptPromise promise =
@@ -91,10 +91,10 @@ TEST_F(IDBFactoryTest, WebIDBGetDBNamesCallbacksRejectsPromise) {
   V8TestingScope scope;
   scope.GetDocument().SetSecurityOrigin(
       SecurityOrigin::Create(KURL("https://example.com")));
-  auto web_factory = std::make_unique<MockWebIDBFactory>();
+  std::unique_ptr<MockWebIDBFactory> web_factory = MockWebIDBFactory::Create();
   std::unique_ptr<WebIDBCallbacks> callbacks;
   web_factory->SetCallbacksPointer(&callbacks);
-  auto* factory = MakeGarbageCollected<IDBFactory>(std::move(web_factory));
+  IDBFactory* factory = IDBFactory::CreateForTest(std::move(web_factory));
 
   DummyExceptionStateForTesting exception_state;
   ScriptPromise promise =

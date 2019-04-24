@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_RULE_CSS_STYLE_DECLARATION_H_
 
 #include "third_party/blink/renderer/core/css/property_set_css_style_declaration.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -35,6 +36,13 @@ class MutableCSSPropertyValueSet;
 
 class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
  public:
+  static StyleRuleCSSStyleDeclaration* Create(
+      MutableCSSPropertyValueSet& property_set,
+      CSSRule* parent_rule) {
+    return MakeGarbageCollected<StyleRuleCSSStyleDeclaration>(property_set,
+                                                              parent_rule);
+  }
+
   StyleRuleCSSStyleDeclaration(MutableCSSPropertyValueSet&, CSSRule*);
   ~StyleRuleCSSStyleDeclaration() override;
 
@@ -51,7 +59,7 @@ class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
   void DidMutate(MutationType) override;
   PropertyRegistry* GetPropertyRegistry() const final;
 
-  Member<CSSRule> parent_rule_;
+  TraceWrapperMember<CSSRule> parent_rule_;
 };
 
 }  // namespace blink

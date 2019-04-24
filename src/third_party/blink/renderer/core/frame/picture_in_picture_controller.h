@@ -34,11 +34,6 @@ class CORE_EXPORT PictureInPictureController
   // returns false if PictureInPictureController is not attached to a document.
   static bool IsElementInPictureInPicture(const Element*);
 
-  // Returns whether the given shadow host is currently in Picture-in-Picture.
-  // It returns false if PictureInPictureController is not attached to a
-  // document.
-  static bool IsShadowHostInPictureInPicture(const Element&);
-
   // List of Picture-in-Picture support statuses. If status is kEnabled,
   // Picture-in-Picture is enabled for a document or element, otherwise it is
   // not supported.
@@ -88,11 +83,6 @@ class CORE_EXPORT PictureInPictureController
   // It is protected so that clients use the static method
   // IsElementInPictureInPicture() that avoids creating the controller.
   virtual bool IsPictureInPictureElement(const Element*) const = 0;
-
-  // Returns whether the given shadow host is currently in Picture-in-Picture.
-  // It is protected so that clients use the static method
-  // IsShadowHostInPictureInPicture() that avoids creating the controller.
-  virtual bool IsPictureInPictureShadowHost(const Element&) const = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureController);
 };

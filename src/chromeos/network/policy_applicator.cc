@@ -12,7 +12,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_signature.h"
@@ -68,7 +69,7 @@ PolicyApplicator::~PolicyApplicator() {
 }
 
 void PolicyApplicator::Run() {
-  ShillProfileClient::Get()->GetProperties(
+  DBusThreadManager::Get()->GetShillProfileClient()->GetProperties(
       dbus::ObjectPath(profile_.path),
       base::Bind(&PolicyApplicator::GetProfilePropertiesCallback,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -109,12 +110,15 @@ void PolicyApplicator::GetProfilePropertiesCallback(
       continue;
 
     pending_get_entry_calls_.insert(entry);
-    ShillProfileClient::Get()->GetEntry(
-        dbus::ObjectPath(profile_.path), entry,
+    DBusThreadManager::Get()->GetShillProfileClient()->GetEntry(
+        dbus::ObjectPath(profile_.path),
+        entry,
         base::Bind(&PolicyApplicator::GetEntryCallback,
-                   weak_ptr_factory_.GetWeakPtr(), entry),
+                   weak_ptr_factory_.GetWeakPtr(),
+                   entry),
         base::Bind(&PolicyApplicator::GetEntryError,
-                   weak_ptr_factory_.GetWeakPtr(), entry));
+                   weak_ptr_factory_.GetWeakPtr(),
+                   entry));
   }
   if (pending_get_entry_calls_.empty()) {
     ApplyRemainingPolicies();
@@ -272,7 +276,7 @@ void PolicyApplicator::GetEntryError(const std::string& entry,
 }
 
 void PolicyApplicator::DeleteEntry(const std::string& entry) {
-  ShillProfileClient::Get()->DeleteEntry(
+  DBusThreadManager::Get()->GetShillProfileClient()->DeleteEntry(
       dbus::ObjectPath(profile_.path), entry, base::DoNothing(),
       base::Bind(&LogErrorMessage, FROM_HERE));
 }

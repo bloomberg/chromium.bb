@@ -17,11 +17,11 @@
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
-#include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
@@ -75,11 +75,6 @@ void DeviceCloudPolicyInitializer::SetSigningServiceForTesting(
 void DeviceCloudPolicyInitializer::SetSystemURLLoaderFactoryForTesting(
     scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory) {
   system_url_loader_factory_for_testing_ = system_url_loader_factory;
-}
-
-void DeviceCloudPolicyInitializer::SetAttestationFlowForTesting(
-    std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow) {
-  attestation_flow_ = std::move(attestation_flow);
 }
 
 DeviceCloudPolicyInitializer::~DeviceCloudPolicyInitializer() {
@@ -322,8 +317,10 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
 }
 
 void DeviceCloudPolicyInitializer::TryToCreateClient() {
-  if (!device_store_->is_initialized() || !device_store_->has_policy() ||
-      !state_keys_broker_->available() || enrollment_handler_ ||
+  if (!device_store_->is_initialized() ||
+      !device_store_->has_policy() ||
+      state_keys_broker_->pending() ||
+      enrollment_handler_ ||
       install_attributes_->IsActiveDirectoryManaged()) {
     return;
   }

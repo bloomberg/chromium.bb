@@ -16,7 +16,6 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
@@ -168,9 +167,9 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
           kPushMessagingForcedNotificationTag)
         continue;
 
-      PlatformNotificationServiceFactory::GetForProfile(profile_)
+      PlatformNotificationServiceImpl::GetInstance()
           ->ClosePersistentNotification(
-              notification_database_data.notification_id);
+              profile_, notification_database_data.notification_id);
       break;
     }
   }
@@ -263,24 +262,38 @@ void PushMessagingNotificationManager::ProcessSilentPush(
   scoped_refptr<PlatformNotificationContext> notification_context =
       GetStoragePartition(profile_, origin)->GetPlatformNotificationContext();
   int64_t next_persistent_notification_id =
-      PlatformNotificationServiceFactory::GetForProfile(profile_)
-          ->ReadNextPersistentNotificationId();
+      PlatformNotificationServiceImpl::GetInstance()
+          ->ReadNextPersistentNotificationId(profile_);
 
   notification_context->WriteNotificationData(
       next_persistent_notification_id, service_worker_registration_id, origin,
       database_data,
       base::BindOnce(
           &PushMessagingNotificationManager::DidWriteNotificationData,
-          weak_factory_.GetWeakPtr(), std::move(message_handled_closure)));
+          weak_factory_.GetWeakPtr(), origin, database_data.notification_data,
+          std::move(message_handled_closure)));
 }
 
 void PushMessagingNotificationManager::DidWriteNotificationData(
+    const GURL& origin,
+    const blink::PlatformNotificationData& notification_data,
     base::OnceClosure message_handled_closure,
     bool success,
     const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!success)
+  if (!success) {
     DLOG(ERROR) << "Writing forced notification to database should not fail";
+    std::move(message_handled_closure).Run();
+    return;
+  }
+
+  // Do not pass service worker scope. The origin will be used instead of the
+  // service worker scope to determine whether a notification should be
+  // attributed to a WebAPK on Android. This is OK because this code path is hit
+  // rarely.
+  PlatformNotificationServiceImpl::GetInstance()->DisplayPersistentNotification(
+      profile_, notification_id, GURL() /* service_worker_scope */, origin,
+      notification_data, blink::NotificationResources());
 
   std::move(message_handled_closure).Run();
 }

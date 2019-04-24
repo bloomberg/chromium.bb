@@ -8,10 +8,6 @@
 #include <sstream>
 #include <vector>
 
-#include "base/bind_helpers.h"
-#include "base/run_loop.h"
-#include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/web_applications/components/test_pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,22 +19,13 @@ class PendingAppManagerTest : public testing::Test {
   void Sync(std::vector<GURL> urls) {
     pending_app_manager_.ResetCounts();
 
-    std::vector<InstallOptions> install_options_list;
+    std::vector<PendingAppManager::AppInfo> app_infos;
     for (const auto& url : urls) {
-      install_options_list.emplace_back(url, LaunchContainer::kWindow,
-                                        InstallSource::kInternal);
+      app_infos.emplace_back(url, LaunchContainer::kWindow,
+                             InstallSource::kInternal);
     }
-
-    base::RunLoop run_loop;
-    pending_app_manager_.SynchronizeInstalledApps(
-        std::move(install_options_list), InstallSource::kInternal,
-        base::BindLambdaForTesting(
-            [&run_loop](PendingAppManager::SynchronizeResult result) {
-              ASSERT_EQ(PendingAppManager::SynchronizeResult::kSuccess, result);
-              run_loop.Quit();
-            }));
-    // Wait for SynchronizeInstalledApps to finish.
-    run_loop.Run();
+    pending_app_manager_.SynchronizeInstalledApps(std::move(app_infos),
+                                                  InstallSource::kInternal);
   }
 
   void Expect(int deduped_install_count,
@@ -55,7 +42,6 @@ class PendingAppManagerTest : public testing::Test {
     EXPECT_EQ(installed_app_urls, urls);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestPendingAppManager pending_app_manager_;
 };
 

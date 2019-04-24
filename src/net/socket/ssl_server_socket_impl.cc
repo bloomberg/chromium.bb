@@ -44,8 +44,7 @@ class SocketDataIndex {
  public:
   static SocketDataIndex* GetInstance();
   SocketDataIndex() {
-    ssl_socket_data_index_ =
-        SSL_get_ex_new_index(0, nullptr, nullptr, nullptr, nullptr);
+    ssl_socket_data_index_ = SSL_get_ex_new_index(0, 0, 0, 0, 0);
   }
 
   // This is the index used with SSL_get_ex_data to retrieve the owner
@@ -406,7 +405,7 @@ int SSLServerContextImpl::SocketImpl::Read(IOBuffer* buf,
   if (rv == ERR_IO_PENDING) {
     user_read_callback_ = std::move(callback);
   } else {
-    user_read_buf_ = nullptr;
+    user_read_buf_ = NULL;
     user_read_buf_len_ = 0;
   }
 
@@ -430,7 +429,7 @@ int SSLServerContextImpl::SocketImpl::Write(
   if (rv == ERR_IO_PENDING) {
     user_write_callback_ = std::move(callback);
   } else {
-    user_write_buf_ = nullptr;
+    user_write_buf_ = NULL;
     user_write_buf_len_ = 0;
   }
   return rv;
@@ -702,7 +701,7 @@ void SSLServerContextImpl::SocketImpl::DoReadCallback(int rv) {
   DCHECK(rv != ERR_IO_PENDING);
   DCHECK(!user_read_callback_.is_null());
 
-  user_read_buf_ = nullptr;
+  user_read_buf_ = NULL;
   user_read_buf_len_ = 0;
   std::move(user_read_callback_).Run(rv);
 }
@@ -711,7 +710,7 @@ void SSLServerContextImpl::SocketImpl::DoWriteCallback(int rv) {
   DCHECK(rv != ERR_IO_PENDING);
   DCHECK(!user_write_callback_.is_null());
 
-  user_write_buf_ = nullptr;
+  user_write_buf_ = NULL;
   user_write_buf_len_ = 0;
   std::move(user_write_callback_).Run(rv);
 }

@@ -14,10 +14,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Assert;
 
+import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -41,7 +43,7 @@ public final class SyncTestUtil {
      * Returns whether sync is requested.
      */
     public static boolean isSyncRequested() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return ProfileSyncService.get().isSyncRequested();
@@ -53,7 +55,7 @@ public final class SyncTestUtil {
      * Returns whether sync-the-feature can start.
      */
     public static boolean canSyncFeatureStart() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return ProfileSyncService.get().canSyncFeatureStart();
@@ -65,7 +67,7 @@ public final class SyncTestUtil {
      * Returns whether sync is active.
      */
     public static boolean isSyncActive() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
                 return ProfileSyncService.get().isSyncActive();
@@ -103,7 +105,13 @@ public final class SyncTestUtil {
      * Triggers a sync cycle.
      */
     public static void triggerSync() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> { ProfileSyncService.get().triggerSync(); });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                InvalidationServiceFactory.getForProfile(Profile.getLastUsedProfile())
+                        .requestSyncFromNativeChromeForAllTypes();
+            }
+        });
     }
 
     /**
@@ -126,7 +134,7 @@ public final class SyncTestUtil {
     }
 
     private static long getCurrentSyncTime() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
             @Override
             public Long call() {
                 return ProfileSyncService.get().getLastSyncedTimeForTest();
@@ -150,8 +158,12 @@ public final class SyncTestUtil {
                     }
         };
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { ProfileSyncService.get().getAllNodes(callback); });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ProfileSyncService.get().getAllNodes(callback);
+            }
+        });
 
         try {
             Assert.assertTrue("Semaphore should have been released.",
@@ -267,7 +279,7 @@ public final class SyncTestUtil {
      * is successfully using the passphrase.
      */
     public static void encryptWithPassphrase(final String passphrase) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> ProfileSyncService.get().setEncryptionPassphrase(passphrase));
         // Make sure the new encryption settings make it to the server.
         SyncTestUtil.triggerSyncAndWaitForCompletion();
@@ -277,7 +289,7 @@ public final class SyncTestUtil {
      * Decrypts the profile using the input |passphrase|.
      */
     public static void decryptWithPassphrase(final String passphrase) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> { ProfileSyncService.get().setDecryptionPassphrase(passphrase); });
     }
 }

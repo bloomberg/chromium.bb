@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/platform/graphics/filters/fe_specular_lighting.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -34,23 +33,17 @@ inline SVGFESpecularLightingElement::SVGFESpecularLightingElement(
     Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFESpecularLightingTag,
                                            document),
-      specular_constant_(MakeGarbageCollected<SVGAnimatedNumber>(
-          this,
-          svg_names::kSpecularConstantAttr,
-          1)),
-      specular_exponent_(MakeGarbageCollected<SVGAnimatedNumber>(
-          this,
-          svg_names::kSpecularExponentAttr,
-          1)),
+      specular_constant_(
+          SVGAnimatedNumber::Create(this, svg_names::kSpecularConstantAttr, 1)),
+      specular_exponent_(
+          SVGAnimatedNumber::Create(this, svg_names::kSpecularExponentAttr, 1)),
       surface_scale_(
-          MakeGarbageCollected<SVGAnimatedNumber>(this,
-                                                  svg_names::kSurfaceScaleAttr,
-                                                  1)),
-      kernel_unit_length_(MakeGarbageCollected<SVGAnimatedNumberOptionalNumber>(
+          SVGAnimatedNumber::Create(this, svg_names::kSurfaceScaleAttr, 1)),
+      kernel_unit_length_(SVGAnimatedNumberOptionalNumber::Create(
           this,
           svg_names::kKernelUnitLengthAttr,
           0.0f)),
-      in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)) {
+      in1_(SVGAnimatedString::Create(this, svg_names::kInAttr)) {
   AddToPropertyMap(specular_constant_);
   AddToPropertyMap(specular_exponent_);
   AddToPropertyMap(surface_scale_);
@@ -171,7 +164,7 @@ FilterEffect* SVGFESpecularLightingElement::Build(
   scoped_refptr<LightSource> light_source =
       light_node ? light_node->GetLightSource(filter) : nullptr;
 
-  auto* effect = MakeGarbageCollected<FESpecularLighting>(
+  FilterEffect* effect = FESpecularLighting::Create(
       filter, color, surface_scale_->CurrentValue()->Value(),
       specular_constant_->CurrentValue()->Value(),
       specular_exponent_->CurrentValue()->Value(), std::move(light_source));

@@ -24,10 +24,13 @@ namespace {
 
 class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
  public:
-  WorkerThreadSchedulerForTest(base::sequence_manager::SequenceManager* manager,
-                               WorkerSchedulerProxy* proxy,
-                               base::WaitableEvent* throtting_state_changed)
-      : WorkerThreadScheduler(WebThreadType::kTestThread, manager, proxy),
+  WorkerThreadSchedulerForTest(
+      std::unique_ptr<base::sequence_manager::SequenceManager> manager,
+      WorkerSchedulerProxy* proxy,
+      base::WaitableEvent* throtting_state_changed)
+      : WorkerThreadScheduler(WebThreadType::kTestThread,
+                              std::move(manager),
+                              proxy),
         throtting_state_changed_(throtting_state_changed) {}
 
   void OnLifecycleStateChanged(
@@ -55,7 +58,7 @@ class WorkerThreadForTest : public WorkerThread {
     base::WaitableEvent completion(
         base::WaitableEvent::ResetPolicy::AUTOMATIC,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
-    GetTaskRunner()->PostTask(
+    thread_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&WorkerThreadForTest::DisposeWorkerSchedulerOnThread,
                        base::Unretained(this), &completion));
@@ -63,6 +66,7 @@ class WorkerThreadForTest : public WorkerThread {
   }
 
   void DisposeWorkerSchedulerOnThread(base::WaitableEvent* completion) {
+    DCHECK(thread_task_runner_->BelongsToCurrentThread());
     if (worker_scheduler_) {
       worker_scheduler_->Dispose();
       worker_scheduler_ = nullptr;
@@ -70,10 +74,13 @@ class WorkerThreadForTest : public WorkerThread {
     completion->Signal();
   }
 
-  std::unique_ptr<NonMainThreadSchedulerImpl> CreateNonMainThreadScheduler(
-      base::sequence_manager::SequenceManager* manager) override {
+  std::unique_ptr<NonMainThreadSchedulerImpl> CreateNonMainThreadScheduler()
+      override {
     auto scheduler = std::make_unique<WorkerThreadSchedulerForTest>(
-        manager, worker_scheduler_proxy(), throtting_state_changed_);
+        base::sequence_manager::CreateSequenceManagerOnCurrentThread(
+            base::sequence_manager::SequenceManager::Settings{
+                .randomised_sampling_enabled = true}),
+        worker_scheduler_proxy(), throtting_state_changed_);
     scheduler_ = scheduler.get();
     worker_scheduler_ = std::make_unique<scheduler::WorkerScheduler>(
         scheduler_, worker_scheduler_proxy());

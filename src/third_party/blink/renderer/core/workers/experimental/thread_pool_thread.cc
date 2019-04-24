@@ -36,13 +36,7 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
   }
 
   // WorkerGlobalScope
-  void FetchAndRunClassicScript(
-      const KURL& script_url,
-      const FetchClientSettingsObjectSnapshot& outside_settings_object,
-      const v8_inspector::V8StackTraceId& stack_id) override {
-    NOTREACHED();
-  }
-  void FetchAndRunModuleScript(
+  void ImportModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode) override {
@@ -51,6 +45,11 @@ class ThreadPoolWorkerGlobalScope final : public WorkerGlobalScope {
   }
 
   void ExceptionThrown(ErrorEvent*) override {}
+
+  mojom::RequestContextType GetDestinationForMainScript() override {
+    // TODO(nhiroki): Return an appropriate destination.
+    return mojom::RequestContextType::WORKER;
+  }
 };
 
 }  // anonymous namespace
@@ -60,7 +59,7 @@ ThreadPoolThread::ThreadPoolThread(ExecutionContext* parent_execution_context,
                                    ThreadBackingPolicy backing_policy)
     : WorkerThread(object_proxy), backing_policy_(backing_policy) {
   DCHECK(parent_execution_context);
-  worker_backing_thread_ = std::make_unique<WorkerBackingThread>(
+  worker_backing_thread_ = WorkerBackingThread::Create(
       ThreadCreationParams(GetThreadType())
           .SetFrameOrWorkerScheduler(parent_execution_context->GetScheduler()));
 }

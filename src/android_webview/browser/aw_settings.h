@@ -35,7 +35,6 @@ class AwSettings : public content::WebContentsObserver {
   ~AwSettings() override;
 
   bool GetJavaScriptCanOpenWindowsAutomatically();
-  bool GetAllowThirdPartyCookies();
 
   // Called from Java. Methods with "Locked" suffix require that the settings
   // access lock is held during their execution.
@@ -66,15 +65,11 @@ class AwSettings : public content::WebContentsObserver {
   void UpdateRendererPreferencesLocked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  void UpdateCookiePolicyLocked(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
   void UpdateOffscreenPreRasterLocked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
   void PopulateWebPreferences(content::WebPreferences* web_prefs);
-  bool GetAllowFileAccess();
 
  private:
   AwRenderViewHostExt* GetAwRenderViewHostExt();
@@ -87,7 +82,6 @@ class AwSettings : public content::WebContentsObserver {
 
   bool renderer_prefs_initialized_;
   bool javascript_can_open_windows_automatically_;
-  bool allow_third_party_cookies_;
 
   JavaObjectWeakGlobalRef aw_settings_;
 };

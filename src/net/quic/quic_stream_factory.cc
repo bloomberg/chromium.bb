@@ -51,15 +51,14 @@
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_performance_watcher_factory.h"
 #include "net/socket/udp_client_socket.h"
-#include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_client_promised_info.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/tls_client_handshaker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_clock.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
+#include "net/third_party/quic/core/crypto/proof_verifier.h"
+#include "net/third_party/quic/core/crypto/quic_random.h"
+#include "net/third_party/quic/core/http/quic_client_promised_info.h"
+#include "net/third_party/quic/core/quic_connection.h"
+#include "net/third_party/quic/core/quic_utils.h"
+#include "net/third_party/quic/core/tls_client_handshaker.h"
+#include "net/third_party/quic/platform/api/quic_clock.h"
+#include "net/third_party/quic/platform/api/quic_flags.h"
 #include "third_party/boringssl/src/include/openssl/aead.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -576,7 +575,6 @@ void QuicStreamFactory::Job::OnResolveHostComplete(int rv) {
 
   if (fresh_resolve_host_request_) {
     DCHECK(race_stale_dns_on_connection_);
-    dns_resolution_end_time_ = base::TimeTicks::Now();
     if (rv != OK) {
       CloseStaleHostConnection();
       resolve_host_request_ = std::move(fresh_resolve_host_request_);
@@ -1722,7 +1720,7 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
   // Set a buffer large enough to contain the initial CWND's worth of packet
   // to work around the problem with CHLO packets being sent out with the
   // wrong encryption level, when the send buffer is full.
-  rv = socket->SetSendBufferSize(quic::kMaxOutgoingPacketSize * 20);
+  rv = socket->SetSendBufferSize(quic::kMaxPacketSize * 20);
   if (rv != OK) {
     HistogramCreateSessionFailure(CREATION_ERROR_SETTING_SEND_BUFFER);
     return rv;
@@ -1870,11 +1868,6 @@ int QuicStreamFactory::CreateSession(
     DLOG(DFATAL) << "Session closed during initialize";
     *session = nullptr;
     return ERR_CONNECTION_CLOSED;
-  }
-  if (connection->version().KnowsWhichDecrypterToUse()) {
-    connection->InstallDecrypter(quic::ENCRYPTION_FORWARD_SECURE,
-                                 quic::QuicMakeUnique<quic::NullDecrypter>(
-                                     quic::Perspective::IS_CLIENT));
   }
   return OK;
 }

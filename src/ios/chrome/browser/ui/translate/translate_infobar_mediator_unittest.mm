@@ -8,7 +8,6 @@
 
 #import "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/translate/core/browser/mock_translate_infobar_delegate.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
@@ -111,11 +110,6 @@ class TranslateInfobarMediatorTest : public PlatformTest {
     CRWTestJSInjectionReceiver* injectionReceiver =
         [[CRWTestJSInjectionReceiver alloc] init];
     web_state->SetJSInjectionReceiver(injectionReceiver);
-
-    // Create IOSLanguageDetectionTabHelper.
-    language::IOSLanguageDetectionTabHelper::CreateForWebState(
-        web_state.get(),
-        /*url_language_histogram=*/nullptr);
 
     // Create ChromeIOSTranslateClient.
     ChromeIOSTranslateClient::CreateForWebState(web_state.get());

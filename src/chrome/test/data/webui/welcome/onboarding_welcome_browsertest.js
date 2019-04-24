@@ -33,7 +33,7 @@ const OnboardingWelcomeBrowserTest = class extends PolymerTest {
   }
 };
 
-OnboardingWelcomeAppChooserTest = class extends OnboardingWelcomeBrowserTest {
+OnboardingWelcomeEmailChooserTest = class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://welcome/shared/app_chooser.html';
@@ -42,15 +42,37 @@ OnboardingWelcomeAppChooserTest = class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      'app_chooser_test.js',
-      'test_nux_app_proxy.js',
+      'email_chooser_test.js',
+      'test_nux_email_proxy.js',
       'test_metrics_proxy.js',
       'test_bookmark_proxy.js',
     ]);
   }
 };
 
-TEST_F('OnboardingWelcomeAppChooserTest', 'All', function() {
+TEST_F('OnboardingWelcomeEmailChooserTest', 'All', function() {
+  mocha.run();
+});
+
+OnboardingWelcomeEmailInterstitialTest =
+    class extends OnboardingWelcomeBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://welcome/email-interstitial?provider=0';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'email_interstitial_test.js',
+      'test_email_interstitial_proxy.js',
+      'test_nux_email_proxy.js',
+      'test_welcome_browser_proxy.js',
+    ]);
+  }
+};
+
+TEST_F('OnboardingWelcomeEmailInterstitialTest', 'All', function() {
   mocha.run();
 });
 
@@ -86,6 +108,7 @@ OnboardingWelcomeSigninViewTest = class extends OnboardingWelcomeBrowserTest {
   get extraLibraries() {
     return super.extraLibraries.concat([
       'signin_view_test.js',
+      'test_nux_email_proxy.js',
       'test_welcome_browser_proxy.js',
     ]);
   }
@@ -144,7 +167,6 @@ OnboardingWelcomeSetAsDefaultTest = class extends OnboardingWelcomeBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
-      '../settings/test_util.js',
       'nux_set_as_default_test.js',
       'test_nux_set_as_default_proxy.js',
     ]);

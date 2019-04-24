@@ -39,6 +39,8 @@ cr.define('settings', function() {
     'IMG',
     'IRON-ICON',
     'IRON-LIST',
+    'PAPER-ICON-BUTTON',
+    'PAPER-ICON-BUTTON-LIGHT',
     'PAPER-RIPPLE',
     'PAPER-SPINNER-LITE',
     'SLOT',

@@ -38,7 +38,7 @@ namespace internal {
 //
 class VIEWS_EXPORT NativeWidgetDelegate {
  public:
-  virtual ~NativeWidgetDelegate() = default;
+  virtual ~NativeWidgetDelegate() {}
 
   // Returns true if the window is modal.
   virtual bool IsModal() const = 0;
@@ -155,9 +155,6 @@ class VIEWS_EXPORT NativeWidgetDelegate {
       gfx::NativeView child,
       ui::Layer* child_layer,
       const gfx::Point& location) = 0;
-
-  // Called to process a previous call to ScheduleLayout().
-  virtual void LayoutRootViewIfNecessary() = 0;
 };
 
 }  // namespace internal

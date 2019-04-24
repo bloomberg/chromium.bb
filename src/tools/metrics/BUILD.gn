@@ -97,7 +97,6 @@ group("metrics_python_tests") {
     "//tools/metrics/common/path_util.py",
     "//tools/metrics/common/presubmit_util.py",
     "//tools/metrics/common/pretty_print_xml.py",
-    "//tools/metrics/common/etree_util.py",
 
     "//tools/metrics/histograms/extract_histograms.py",
     "//tools/metrics/histograms/generate_expired_histograms_array.py",
@@ -112,8 +111,6 @@ group("metrics_python_tests") {
 
     "//tools/metrics/ukm/ukm_model.py",
     "//tools/metrics/ukm/ukm_model_test.py",
-    "//tools/metrics/ukm/xml_validations.py",
-    "//tools/metrics/ukm/xml_validations_test.py",
 
     "//tools/python/google/path_utils.py",
 

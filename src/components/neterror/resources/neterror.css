@@ -600,6 +600,45 @@ div.offline-content-suggestion {
   transition: opacity 0.2s linear, visibility 0s 0.2s;
 }
 
+
+#offline-content-summary {
+  border: 1px solid var(--google-gray-300);
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+}
+
+.offline-content-summary-image-truncate {
+  width: 45px;
+}
+
+.offline-content-summary-images {
+  direction: ltr;
+  display: flex;
+  margin-top: 10px;
+  justify-content: center;
+  padding-bottom: 12px;
+}
+
+.offline-content-summary-images img {
+  background: rgb(241, 243, 244);
+  border-radius: 50%;
+  box-shadow:
+    0px 1px 2px 0px rgb(155, 155, 155),
+    0px 1px 3px 0px rgb(155, 155, 155);
+  padding: 12px;
+  width: 32px;
+}
+
+.offline-content-summary-description {
+  border-top: 1px solid var(--google-gray-300);
+  padding-top: 12px;
+}
+
+.offline-content-summary-action {
+  padding-top: 12px;
+}
+
 #cancel-save-page-button {
   border: 1px solid var(--google-gray-300);
   border-radius: 5px;
@@ -751,33 +790,18 @@ TODO(https://crbug.com/852872): UI for offline suggested content is incomplete.
 
 /* Offline page */
 .offline {
-  transition: filter 1.5s cubic-bezier(0.65, 0.05, 0.36, 1),
+  transition: -webkit-filter 1.5s cubic-bezier(0.65, 0.05, 0.36, 1),
               background-color 1.5s cubic-bezier(0.65, 0.05, 0.36, 1);
-  will-change: filter, background-color;
-}
-
-.offline body {
-  transition: background-color 1.5s cubic-bezier(0.65, 0.05, 0.36, 1);
+  will-change: -webkit-filter, background-color;
 }
 
 .offline #main-message > p {
   display: none;
 }
 
-/* iOS WKWebView inverts the background color set at the HTML level
-whereas Blink does not. */
 .offline.inverted {
-  filter: invert(1);
-<if expr="not is_ios">
+  -webkit-filter: invert(100%);
   background-color: #000;
-</if>
-<if expr="is_ios">
-  background-color: #fff;
-</if>
-}
-
-.offline.inverted body {
-  background-color: #fff;
 }
 
 .offline .interstitial-wrapper {

@@ -5,8 +5,6 @@
 #include "ui/ozone/platform/drm/gpu/gbm_overlay_surface.h"
 
 #include <unistd.h>
-#include <memory>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"

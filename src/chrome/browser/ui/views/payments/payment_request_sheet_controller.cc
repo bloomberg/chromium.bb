@@ -113,7 +113,7 @@ class SheetView : public views::View, public views::FocusTraversable {
   }
 
   void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override {
+      const ViewHierarchyChangedDetails& details) override {
     if (!details.is_add && details.child == first_focusable_)
       first_focusable_ = nullptr;
   }
@@ -250,10 +250,9 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   // |content_view| will go into a views::ScrollView so it needs to be sized now
   // otherwise it'll be sized to the ScrollView's viewport height, preventing
   // the scroll bar from ever being shown.
-  auto pane = std::make_unique<views::View>();
-  pane_ = pane.get();
+  pane_ = new views::View;
   views::GridLayout* pane_layout =
-      pane->SetLayoutManager(std::make_unique<views::GridLayout>(pane.get()));
+      pane_->SetLayoutManager(std::make_unique<views::GridLayout>(pane_));
   views::ColumnSet* pane_columns = pane_layout->AddColumnSet(0);
   pane_columns->AddColumn(
       views::GridLayout::Alignment::FILL, views::GridLayout::Alignment::LEADING,
@@ -268,14 +267,14 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
       content_view_, ui::NativeTheme::kColorId_DialogBackground));
   content_view_->set_id(static_cast<int>(DialogViewID::CONTENT_VIEW));
   pane_layout->AddView(content_view_);
-  pane->SizeToPreferredSize();
+  pane_->SizeToPreferredSize();
 
   scroll_ = DisplayDynamicBorderForHiddenContents()
                 ? std::make_unique<BorderedScrollView>()
                 : std::make_unique<views::ScrollView>();
   scroll_->set_owned_by_client();
   scroll_->set_hide_horizontal_scrollbar(true);
-  scroll_->SetContents(std::move(pane));
+  scroll_->SetContents(pane_);
   layout->AddView(scroll_.get());
 
   if (footer) {
@@ -356,14 +355,6 @@ PaymentRequestSheetController::CreatePrimaryButton() {
 
 base::string16 PaymentRequestSheetController::GetSecondaryButtonLabel() {
   return l10n_util::GetStringUTF16(IDS_PAYMENTS_CANCEL_PAYMENT);
-}
-
-int PaymentRequestSheetController::GetSecondaryButtonTag() {
-  return static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG);
-}
-
-int PaymentRequestSheetController::GetSecondaryButtonId() {
-  return static_cast<int>(DialogViewID::CANCEL_BUTTON);
 }
 
 bool PaymentRequestSheetController::ShouldShowSecondaryButton() {
@@ -520,8 +511,9 @@ void PaymentRequestSheetController::AddSecondaryButton(views::View* container) {
         views::MdTextButton::CreateSecondaryUiButton(
             this, GetSecondaryButtonLabel()));
     secondary_button_->set_owned_by_client();
-    secondary_button_->set_tag(GetSecondaryButtonTag());
-    secondary_button_->set_id(GetSecondaryButtonId());
+    secondary_button_->set_tag(
+        static_cast<int>(PaymentRequestCommonTags::CLOSE_BUTTON_TAG));
+    secondary_button_->set_id(static_cast<int>(DialogViewID::CANCEL_BUTTON));
     secondary_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     container->AddChildView(secondary_button_.get());
   }

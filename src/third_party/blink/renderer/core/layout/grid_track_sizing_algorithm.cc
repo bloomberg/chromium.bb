@@ -294,7 +294,8 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::LogicalHeightForChild(
           *GetLayoutGrid(), child, child_block_direction)) {
     SetOverrideContainingBlockContentSizeForChild(child, child_block_direction,
                                                   LayoutUnit(-1));
-    child.SetSelfNeedsLayoutForAvailableSpace(true);
+    child.SetNeedsLayout(layout_invalidation_reason::kGridChanged,
+                         kMarkOnlyThis);
   }
 
   child.LayoutIfNeeded();
@@ -324,7 +325,8 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinContentForChild(
 
   if (UpdateOverrideContainingBlockContentSizeForChild(
           child, child_inline_direction)) {
-    child.SetSelfNeedsLayoutForAvailableSpace(true);
+    child.SetNeedsLayout(layout_invalidation_reason::kGridChanged,
+                         kMarkOnlyThis);
   }
   return LogicalHeightForChild(child);
 }
@@ -348,7 +350,8 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MaxContentForChild(
 
   if (UpdateOverrideContainingBlockContentSizeForChild(
           child, child_inline_direction)) {
-    child.SetSelfNeedsLayoutForAvailableSpace(true);
+    child.SetNeedsLayout(layout_invalidation_reason::kGridChanged,
+                         kMarkOnlyThis);
   }
   return LogicalHeightForChild(child);
 }
@@ -361,7 +364,7 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinSizeForChild(
   bool is_row_axis = Direction() == child_inline_direction;
   const Length& child_size = is_row_axis ? child.StyleRef().LogicalWidth()
                                          : child.StyleRef().LogicalHeight();
-  if (!child_size.IsAuto() && !child_size.IsPercentOrCalc())
+  if (!child_size.IsAuto())
     return MinContentForChild(child);
 
   const Length& child_min_size = is_row_axis
@@ -537,7 +540,8 @@ void DefiniteSizeStrategy::LayoutGridItemForMinSizeComputation(
     LayoutBox& child,
     bool override_size_has_changed) const {
   if (override_size_has_changed) {
-    child.SetSelfNeedsLayoutForAvailableSpace(true);
+    child.SetNeedsLayout(layout_invalidation_reason::kGridChanged,
+                         kMarkOnlyThis);
     child.LayoutIfNeeded();
   }
 }
@@ -579,7 +583,8 @@ void IndefiniteSizeStrategy::LayoutGridItemForMinSizeComputation(
     LayoutBox& child,
     bool override_size_has_changed) const {
   if (override_size_has_changed && Direction() != kForColumns) {
-    child.SetSelfNeedsLayoutForAvailableSpace(true);
+    child.SetNeedsLayout(layout_invalidation_reason::kGridChanged,
+                         kMarkOnlyThis);
     child.LayoutIfNeeded();
   }
 }

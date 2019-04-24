@@ -21,7 +21,6 @@
 #include "third_party/blink/renderer/core/input/mouse_event_manager.h"
 #include "third_party/blink/renderer/core/input/touch_action_util.h"
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
@@ -746,20 +745,9 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
     // Send got/lostpointercapture rightaway if necessary.
     if (pointer_event->type() == event_type_names::kPointerup) {
       // If pointerup releases the capture we also send boundary events
-      // rightaway when the pointer that supports hover. Perform a hit
-      // test to find the new target.
-      if (RuntimeEnabledFeatures::UnifiedPointerCaptureInBlinkEnabled()) {
-        if (pointer_capture_target_.find(pointer_event->pointerId()) !=
-            pointer_capture_target_.end()) {
-          HitTestRequest::HitTestRequestType hit_type =
-              HitTestRequest::kRelease;
-          HitTestRequest request(hit_type);
-          MouseEventWithHitTestResults mev =
-              event_handling_util::PerformMouseEventHitTest(frame_, request,
-                                                            mouse_event);
-          target = mev.InnerElement();
-        }
-      }
+      // rightaway when the pointer that supports hover. The following function
+      // does nothing when there was no capture to begin with in the first
+      // place.
       ProcessCaptureAndPositionOfPointerEvent(pointer_event, target,
                                               canvas_region_id, &mouse_event);
     } else {
@@ -945,12 +933,6 @@ bool PointerEventManager::HasPointerCapture(PointerId pointer_id,
 
 void PointerEventManager::ReleasePointerCapture(PointerId pointer_id) {
   pending_pointer_capture_target_.erase(pointer_id);
-}
-
-Element* PointerEventManager::GetMouseCaptureTarget() {
-  if (pending_pointer_capture_target_.Contains(PointerEventFactory::kMouseId))
-    return pending_pointer_capture_target_.at(PointerEventFactory::kMouseId);
-  return nullptr;
 }
 
 bool PointerEventManager::IsActive(const PointerId pointer_id) const {

@@ -12,8 +12,8 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/fake/fake_display_snapshot.h"
 #include "ui/display/manager/display_layout_manager.h"
+#include "ui/display/manager/fake_display_snapshot.h"
 #include "ui/display/manager/test/action_logger_util.h"
 #include "ui/display/manager/test/test_display_layout_manager.h"
 #include "ui/display/manager/test/test_native_display_delegate.h"
@@ -37,23 +37,28 @@ std::unique_ptr<DisplaySnapshot> CreateDisplaySnapshot(
 
 class ApplyContentProtectionTaskTest : public testing::Test {
  public:
-  using Response = ApplyContentProtectionTask::Status;
+  enum Response {
+    ERROR,
+    SUCCESS,
+    NOT_CALLED,
+  };
 
-  ApplyContentProtectionTaskTest() = default;
-  ~ApplyContentProtectionTaskTest() override = default;
+  ApplyContentProtectionTaskTest()
+      : response_(NOT_CALLED), display_delegate_(&log_) {}
+  ~ApplyContentProtectionTaskTest() override {}
 
-  void ResponseCallback(Response response) { response_ = response; }
+  void ResponseCallback(bool success) { response_ = success ? SUCCESS : ERROR; }
 
  protected:
-  Response response_ = Response::KILLED;
+  Response response_;
   ActionLogger log_;
-  TestNativeDisplayDelegate display_delegate_{&log_};
+  TestNativeDisplayDelegate display_delegate_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ApplyContentProtectionTaskTest);
 };
 
-TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToInternalDisplay) {
+TEST_F(ApplyContentProtectionTaskTest, ApplyWithNoHDCPCapableDisplay) {
   std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(
       CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_INTERNAL));
@@ -68,11 +73,11 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToInternalDisplay) {
                  base::Unretained(this)));
   task.Run();
 
-  EXPECT_EQ(Response::SUCCESS, response_);
+  EXPECT_EQ(SUCCESS, response_);
   EXPECT_EQ(kNoActions, log_.GetActionsAndClear());
 }
 
-TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToExternalDisplay) {
+TEST_F(ApplyContentProtectionTaskTest, ApplyWithHDMIDisplay) {
   std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   TestDisplayLayoutManager layout_manager(std::move(displays),
@@ -86,7 +91,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToExternalDisplay) {
                  base::Unretained(this)));
   task.Run();
 
-  EXPECT_EQ(Response::SUCCESS, response_);
+  EXPECT_EQ(SUCCESS, response_);
   EXPECT_EQ(
       JoinActions(GetSetHDCPStateAction(*layout_manager.GetDisplayStates()[0],
                                         HDCP_STATE_DESIRED)
@@ -95,7 +100,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToExternalDisplay) {
       log_.GetActionsAndClear());
 }
 
-TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToUnknownDisplay) {
+TEST_F(ApplyContentProtectionTaskTest, ApplyWithUnknownDisplay) {
   std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_UNKNOWN));
   TestDisplayLayoutManager layout_manager(std::move(displays),
@@ -109,11 +114,11 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToUnknownDisplay) {
                  base::Unretained(this)));
   task.Run();
 
-  EXPECT_EQ(Response::FAILURE, response_);
+  EXPECT_EQ(ERROR, response_);
   EXPECT_EQ(kNoActions, log_.GetActionsAndClear());
 }
 
-TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToDisplayThatCannotGetHdcp) {
+TEST_F(ApplyContentProtectionTaskTest, FailGettingHDCPState) {
   std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   TestDisplayLayoutManager layout_manager(std::move(displays),
@@ -128,11 +133,11 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToDisplayThatCannotGetHdcp) {
                  base::Unretained(this)));
   task.Run();
 
-  EXPECT_EQ(Response::FAILURE, response_);
+  EXPECT_EQ(ERROR, response_);
   EXPECT_EQ(kNoActions, log_.GetActionsAndClear());
 }
 
-TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToDisplayThatCannotSetHdcp) {
+TEST_F(ApplyContentProtectionTaskTest, FailSettingHDCPState) {
   std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   TestDisplayLayoutManager layout_manager(std::move(displays),
@@ -147,7 +152,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToDisplayThatCannotSetHdcp) {
                  base::Unretained(this)));
   task.Run();
 
-  EXPECT_EQ(Response::FAILURE, response_);
+  EXPECT_EQ(ERROR, response_);
   EXPECT_EQ(
       JoinActions(GetSetHDCPStateAction(*layout_manager.GetDisplayStates()[0],
                                         HDCP_STATE_DESIRED)
@@ -156,7 +161,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyHdcpToDisplayThatCannotSetHdcp) {
       log_.GetActionsAndClear());
 }
 
-TEST_F(ApplyContentProtectionTaskTest, ApplyNoProtectionToExternalDisplay) {
+TEST_F(ApplyContentProtectionTaskTest, ApplyNoopProtection) {
   std::vector<std::unique_ptr<DisplaySnapshot>> displays;
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   TestDisplayLayoutManager layout_manager(std::move(displays),
@@ -171,7 +176,7 @@ TEST_F(ApplyContentProtectionTaskTest, ApplyNoProtectionToExternalDisplay) {
                  base::Unretained(this)));
   task.Run();
 
-  EXPECT_EQ(Response::SUCCESS, response_);
+  EXPECT_EQ(SUCCESS, response_);
   EXPECT_EQ(kNoActions, log_.GetActionsAndClear());
 }
 

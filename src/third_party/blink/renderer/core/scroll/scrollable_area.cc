@@ -33,7 +33,6 @@
 
 #include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
-#include "cc/input/scrollbar.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -48,6 +47,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 
+static const int kPixelsPerLineStep = 40;
 static const float kMinFractionToStepWhenPaging = 0.875f;
 
 namespace blink {
@@ -115,11 +115,9 @@ ScrollAnimatorBase& ScrollableArea::GetScrollAnimator() const {
 
 ProgrammaticScrollAnimator& ScrollableArea::GetProgrammaticScrollAnimator()
     const {
-  if (!programmatic_scroll_animator_) {
+  if (!programmatic_scroll_animator_)
     programmatic_scroll_animator_ =
-        MakeGarbageCollected<ProgrammaticScrollAnimator>(
-            const_cast<ScrollableArea*>(this));
-  }
+        ProgrammaticScrollAnimator::Create(const_cast<ScrollableArea*>(this));
 
   return *programmatic_scroll_animator_;
 }
@@ -191,22 +189,15 @@ ScrollResult ScrollableArea::UserScroll(ScrollGranularity granularity,
 
 void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
                                      ScrollType scroll_type,
-                                     ScrollBehavior behavior,
-                                     ScrollCallback on_finish) {
+                                     ScrollBehavior behavior) {
   if (SmoothScrollSequencer* sequencer = GetSmoothScrollSequencer()) {
-    if (sequencer->FilterNewScrollOrAbortCurrent(scroll_type)) {
-      if (on_finish)
-        std::move(on_finish).Run();
+    if (sequencer->FilterNewScrollOrAbortCurrent(scroll_type))
       return;
-    }
   }
 
   ScrollOffset clamped_offset = ClampScrollOffset(offset);
-  if (clamped_offset == GetScrollOffset()) {
-    if (on_finish)
-      std::move(on_finish).Run();
+  if (clamped_offset == GetScrollOffset())
     return;
-  }
 
   if (behavior == kScrollBehaviorAuto)
     behavior = ScrollBehaviorStyle();
@@ -221,12 +212,10 @@ void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
                                                             scroll_type);
       break;
     case kProgrammaticScroll:
-      ProgrammaticScrollHelper(clamped_offset, behavior, false,
-                               std::move(on_finish));
+      ProgrammaticScrollHelper(clamped_offset, behavior, false);
       break;
     case kSequencedScroll:
-      ProgrammaticScrollHelper(clamped_offset, behavior, true,
-                               std::move(on_finish));
+      ProgrammaticScrollHelper(clamped_offset, behavior, true);
       break;
     case kUserScroll:
       UserScrollHelper(clamped_offset, behavior);
@@ -234,14 +223,6 @@ void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
     default:
       NOTREACHED();
   }
-  if (on_finish)
-    std::move(on_finish).Run();
-}
-
-void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
-                                     ScrollType type,
-                                     ScrollBehavior behavior) {
-  SetScrollOffset(offset, type, behavior, ScrollCallback());
 }
 
 void ScrollableArea::ScrollBy(const ScrollOffset& delta,
@@ -271,18 +252,15 @@ void ScrollableArea::SetScrollOffsetSingleAxis(ScrollbarOrientation orientation,
 
 void ScrollableArea::ProgrammaticScrollHelper(const ScrollOffset& offset,
                                               ScrollBehavior scroll_behavior,
-                                              bool is_sequenced_scroll,
-                                              ScrollCallback on_finish) {
+                                              bool is_sequenced_scroll) {
   CancelScrollAnimation();
 
   if (scroll_behavior == kScrollBehaviorSmooth) {
-    GetProgrammaticScrollAnimator().AnimateToOffset(offset, is_sequenced_scroll,
-                                                    std::move(on_finish));
+    GetProgrammaticScrollAnimator().AnimateToOffset(offset,
+                                                    is_sequenced_scroll);
   } else {
     GetProgrammaticScrollAnimator().ScrollToOffsetWithoutAnimation(
         offset, is_sequenced_scroll);
-    if (on_finish)
-      std::move(on_finish).Run();
   }
 }
 

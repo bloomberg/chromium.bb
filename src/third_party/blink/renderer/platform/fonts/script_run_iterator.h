@@ -32,7 +32,7 @@ class PLATFORM_EXPORT ScriptRunIterator {
 
   bool Consume(unsigned* limit, UScriptCode*);
 
-  static constexpr int kMaxScriptCount = 32;
+  static constexpr int kMaxScriptCount = 20;
   using UScriptCodeList = Vector<UScriptCode, kMaxScriptCount>;
 
  private:

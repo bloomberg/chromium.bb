@@ -20,7 +20,8 @@ namespace chromeos {
 class WrongHWIDScreen : public BaseScreen,
                         public WrongHWIDScreenView::Delegate {
  public:
-  WrongHWIDScreen(WrongHWIDScreenView* view,
+  WrongHWIDScreen(BaseScreenDelegate* base_screen_delegate,
+                  WrongHWIDScreenView* view,
                   const base::RepeatingClosure& exit_callback);
   ~WrongHWIDScreen() override;
 

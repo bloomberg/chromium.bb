@@ -5,6 +5,7 @@
  * found in the LICENSE file.
  */
 
+#include "SkColorSpaceXformer.h"
 #include "SkFloatingPoint.h"
 #include "SkRasterPipeline.h"
 #include "SkReadBuffer.h"
@@ -59,6 +60,17 @@ void SkSweepGradient::flatten(SkWriteBuffer& buffer) const {
     buffer.writePoint(fCenter);
     buffer.writeScalar(fTBias);
     buffer.writeScalar(fTScale);
+}
+
+sk_sp<SkShader> SkSweepGradient::onMakeColorSpace(SkColorSpaceXformer* xformer) const {
+    const AutoXformColors xformedColors(*this, xformer);
+
+    SkScalar startAngle, endAngle;
+    std::tie(startAngle, endAngle) = angles_from_t_coeff(fTBias, fTScale);
+
+    return SkGradientShader::MakeSweep(fCenter.fX, fCenter.fY, xformedColors.fColors.get(),
+                                       fOrigPos, fColorCount, fTileMode, startAngle, endAngle,
+                                       fGradFlags, &this->getLocalMatrix());
 }
 
 void SkSweepGradient::appendGradientStages(SkArenaAlloc* alloc, SkRasterPipeline* p,

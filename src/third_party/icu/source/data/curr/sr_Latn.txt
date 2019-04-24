@@ -1216,6 +1216,7 @@ sr_Latn{
         SHP{"£"}
         SRD{"$"}
         SSP{"£"}
+        STN{"Db"}
         SYP{"£"}
         THB{"฿"}
         TOP{"T$"}
@@ -2657,5 +2658,5 @@ sr_Latn{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.49.82"}
+    Version{"2.1.44.50"}
 }

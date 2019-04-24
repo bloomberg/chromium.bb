@@ -11,7 +11,6 @@
 namespace v8 {
 namespace internal {
 
-class AccountingAllocator;
 class Counters;
 
 namespace wasm {
@@ -23,14 +22,16 @@ struct WasmFeatures;
 
 class LiftoffCompilationUnit final {
  public:
-  LiftoffCompilationUnit() = default;
+  explicit LiftoffCompilationUnit(WasmCompilationUnit* wasm_unit)
+      : wasm_unit_(wasm_unit) {}
 
-  WasmCompilationResult ExecuteCompilation(AccountingAllocator*,
-                                           CompilationEnv*, const FunctionBody&,
+  WasmCompilationResult ExecuteCompilation(CompilationEnv*, const FunctionBody&,
                                            Counters*,
                                            WasmFeatures* detected_features);
 
  private:
+  WasmCompilationUnit* const wasm_unit_;
+
   DISALLOW_COPY_AND_ASSIGN(LiftoffCompilationUnit);
 };
 

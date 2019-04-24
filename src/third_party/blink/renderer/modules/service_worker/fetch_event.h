@@ -92,7 +92,7 @@ class MODULES_EXPORT FetchEvent final
 
  private:
   Member<FetchRespondWithObserver> observer_;
-  Member<Request> request_;
+  TraceWrapperMember<Request> request_;
   Member<PreloadResponseProperty> preload_response_property_;
   std::unique_ptr<WebURLResponse> preload_response_;
   Member<DataPipeBytesConsumer::CompletionNotifier> body_completion_notifier_;

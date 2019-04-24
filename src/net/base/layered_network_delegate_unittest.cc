@@ -178,7 +178,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
   ~TestLayeredNetworkDelegate() override = default;
 
   void CallAndVerify() {
-    AuthChallengeInfo auth_challenge;
+    scoped_refptr<AuthChallengeInfo> auth_challenge(new AuthChallengeInfo());
     std::unique_ptr<URLRequest> request = context_.CreateRequest(
         GURL(), IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
     std::unique_ptr<HttpRequestHeaders> request_headers(
@@ -189,16 +189,15 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     ProxyRetryInfoMap proxy_retry_info;
 
     EXPECT_EQ(OK, OnBeforeURLRequest(request.get(),
-                                     completion_callback.callback(), nullptr));
-    EXPECT_EQ(OK,
-              OnBeforeStartTransaction(nullptr, completion_callback.callback(),
-                                       request_headers.get()));
-    OnBeforeSendHeaders(nullptr, ProxyInfo(), proxy_retry_info,
+                                     completion_callback.callback(), NULL));
+    EXPECT_EQ(OK, OnBeforeStartTransaction(NULL, completion_callback.callback(),
+                                           request_headers.get()));
+    OnBeforeSendHeaders(NULL, ProxyInfo(), proxy_retry_info,
                         request_headers.get());
-    OnStartTransaction(nullptr, *request_headers);
+    OnStartTransaction(NULL, *request_headers);
     OnNetworkBytesSent(request.get(), 42);
-    EXPECT_EQ(OK, OnHeadersReceived(nullptr, completion_callback.callback(),
-                                    response_headers.get(), nullptr, nullptr));
+    EXPECT_EQ(OK, OnHeadersReceived(NULL, completion_callback.callback(),
+                                    response_headers.get(), NULL, NULL));
     OnResponseStarted(request.get(), net::OK);
     OnNetworkBytesReceived(request.get(), 42);
     OnCompleted(request.get(), false, net::OK);
@@ -206,10 +205,9 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     OnPACScriptError(0, base::string16());
     EXPECT_EQ(
         NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION,
-        OnAuthRequired(request.get(), auth_challenge, AuthCallback(), nullptr));
+        OnAuthRequired(request.get(), *auth_challenge, AuthCallback(), NULL));
     EXPECT_FALSE(OnCanGetCookies(*request, CookieList(), true));
-    EXPECT_FALSE(
-        OnCanSetCookie(*request, net::CanonicalCookie(), nullptr, true));
+    EXPECT_FALSE(OnCanSetCookie(*request, net::CanonicalCookie(), NULL, true));
     EXPECT_FALSE(OnCanAccessFile(*request, base::FilePath(), base::FilePath()));
     EXPECT_FALSE(OnForcePrivacyMode(GURL(), GURL()));
     EXPECT_FALSE(OnCancelURLRequestWithPolicyViolatingReferrerHeader(

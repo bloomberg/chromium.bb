@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_RENDERER_HOST_DELEGATED_FRAME_HOST_CLIENT_ANDROID_H_
 
 #include "base/macros.h"
-#include "components/viz/common/presentation_feedback_map.h"
 #include "content/common/content_export.h"
 #include "ui/android/delegated_frame_host_android.h"
 
@@ -25,7 +24,8 @@ class CONTENT_EXPORT DelegatedFrameHostClientAndroid
   // DelegatedFrameHostAndroid::Client implementation.
   void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source) override;
   void DidPresentCompositorFrames(
-      const viz::PresentationFeedbackMap& feedbacks) override;
+      const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks)
+      override;
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void ReclaimResources(

@@ -21,6 +21,7 @@
 
 namespace {
 
+constexpr char kJsScreenPath[] = "login.SupervisionTransitionScreen";
 constexpr base::TimeDelta kWaitingTimeout = base::TimeDelta::FromMinutes(2);
 
 }  // namespace
@@ -30,6 +31,7 @@ namespace chromeos {
 SupervisionTransitionScreenHandler::SupervisionTransitionScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {
+  set_call_js_prefix(kJsScreenPath);
 }
 
 SupervisionTransitionScreenHandler::~SupervisionTransitionScreenHandler() {

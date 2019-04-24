@@ -59,9 +59,7 @@ struct TabFeatures {
   int32_t window_tab_count = 0;
   int32_t window_type = 0;
 
-  // Used only for inference.
-  int32_t discard_count = 0;
-  std::string host;
+  std::string host;  // Used only for inference.
 };
 
 // Populates |tab| features to ranker example for inference.

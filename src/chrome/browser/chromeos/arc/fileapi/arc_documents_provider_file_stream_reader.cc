@@ -26,35 +26,34 @@ namespace arc {
 namespace {
 
 void OnResolveToContentUrlOnUIThread(
-    ArcDocumentsProviderRoot::ResolveToContentUrlCallback callback,
+    const ArcDocumentsProviderRoot::ResolveToContentUrlCallback& callback,
     const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(std::move(callback), url));
+                           base::BindOnce(callback, url));
 }
 
 void ResolveToContentUrlOnUIThread(
     const storage::FileSystemURL& url,
-    ArcDocumentsProviderRoot::ResolveToContentUrlCallback callback) {
+    const ArcDocumentsProviderRoot::ResolveToContentUrlCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ArcDocumentsProviderRootMap* roots =
       ArcDocumentsProviderRootMap::GetForArcBrowserContext();
   if (!roots) {
-    OnResolveToContentUrlOnUIThread(std::move(callback), GURL());
+    OnResolveToContentUrlOnUIThread(callback, GURL());
     return;
   }
 
   base::FilePath path;
   ArcDocumentsProviderRoot* root = roots->ParseAndLookup(url, &path);
   if (!root) {
-    OnResolveToContentUrlOnUIThread(std::move(callback), GURL());
+    OnResolveToContentUrlOnUIThread(callback, GURL());
     return;
   }
 
   root->ResolveToContentUrl(
-      path,
-      base::BindOnce(&OnResolveToContentUrlOnUIThread, std::move(callback)));
+      path, base::Bind(&OnResolveToContentUrlOnUIThread, callback));
 }
 
 }  // namespace
@@ -69,7 +68,7 @@ ArcDocumentsProviderFileStreamReader::ArcDocumentsProviderFileStreamReader(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ResolveToContentUrlOnUIThread, url,
-          base::BindOnce(
+          base::Bind(
               &ArcDocumentsProviderFileStreamReader::OnResolveToContentUrl,
               weak_ptr_factory_.GetWeakPtr())));
 }
@@ -84,10 +83,10 @@ int ArcDocumentsProviderFileStreamReader::Read(
     net::CompletionOnceCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!content_url_resolved_) {
-    pending_operations_.emplace_back(
-        base::BindOnce(&ArcDocumentsProviderFileStreamReader::RunPendingRead,
-                       base::Unretained(this), base::WrapRefCounted(buffer),
-                       buffer_length, std::move(callback)));
+    pending_operations_.emplace_back(base::BindOnce(
+        &ArcDocumentsProviderFileStreamReader::RunPendingRead,
+        base::Unretained(this), base::Passed(base::WrapRefCounted(buffer)),
+        buffer_length, std::move(callback)));
     return net::ERR_IO_PENDING;
   }
   if (!underlying_reader_)

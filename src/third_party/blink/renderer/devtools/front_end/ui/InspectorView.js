@@ -57,8 +57,7 @@ UI.InspectorView = class extends UI.VBox {
     // Create drawer tabbed pane.
     this._drawerTabbedLocation =
         UI.viewManager.createTabbedLocation(this._showDrawer.bind(this, false), 'drawer-view', true, true);
-    const moreTabsButton = this._drawerTabbedLocation.enableMoreTabsButton();
-    moreTabsButton.setTitle(ls`More Tools`);
+    this._drawerTabbedLocation.enableMoreTabsButton();
     this._drawerTabbedPane = this._drawerTabbedLocation.tabbedPane();
     this._drawerTabbedPane.setMinimumSize(0, 27);
     const closeDrawerButton = new UI.ToolbarButton(Common.UIString('Close drawer'), 'largeicon-delete');
@@ -84,9 +83,6 @@ UI.InspectorView = class extends UI.VBox {
     this._tabbedPane.registerRequiredCSS('ui/inspectorViewTabbedPane.css');
     this._tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this._tabSelected, this);
     this._tabbedPane.setAccessibleName(Common.UIString('Panels'));
-
-    // Store the initial selected panel for use in launch histograms
-    Host.userMetrics.setLaunchPanel(this._tabbedPane.selectedTabId);
 
     if (Host.isUnderTest())
       this._tabbedPane.setAutoSelectFirstItemOnShow(false);

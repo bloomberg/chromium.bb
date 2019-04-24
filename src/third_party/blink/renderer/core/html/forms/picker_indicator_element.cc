@@ -65,8 +65,7 @@ PickerIndicatorElement::~PickerIndicatorElement() {
   DCHECK(!chooser_);
 }
 
-LayoutObject* PickerIndicatorElement::CreateLayoutObject(const ComputedStyle&,
-                                                         LegacyLayout) {
+LayoutObject* PickerIndicatorElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutDetailsMarker(this);
 }
 

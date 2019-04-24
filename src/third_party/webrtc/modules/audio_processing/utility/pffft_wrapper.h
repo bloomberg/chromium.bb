@@ -69,18 +69,9 @@ class Pffft {
 
   // TODO(https://crbug.com/webrtc/9577): Overload with rtc::ArrayView args.
   // Computes the forward fast Fourier transform.
-  void ForwardTransform(const FloatBuffer& in, FloatBuffer* out, bool ordered);
+  void ForwardTransform(const FloatBuffer& in, FloatBuffer* out);
   // Computes the backward fast Fourier transform.
-  void BackwardTransform(const FloatBuffer& in, FloatBuffer* out, bool ordered);
-
-  // Multiplies the frequency components of |fft_x| and |fft_y| and accumulates
-  // them into |out|. The arrays must have been obtained with
-  // ForwardTransform(..., /*ordered=*/false) - i.e., |fft_x| and |fft_y| must
-  // not be ordered.
-  void FrequencyDomainConvolve(const FloatBuffer& fft_x,
-                               const FloatBuffer& fft_y,
-                               FloatBuffer* out,
-                               float scaling = 1.f);
+  void BackwardTransform(const FloatBuffer& in, FloatBuffer* out);
 
  private:
   const size_t fft_size_;

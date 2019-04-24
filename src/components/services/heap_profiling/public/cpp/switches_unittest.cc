@@ -21,20 +21,20 @@ TEST(HeapProfilingSwitches, GetModeForStartup_Default) {
 TEST(HeapProfilingSwitches, GetModeForStartup_Commandline) {
   {
     base::test::ScopedCommandLine scoped_command_line;
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlogMode, "");
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlog, "");
     EXPECT_EQ(Mode::kNone, GetModeForStartup());
   }
 
   {
     base::test::ScopedCommandLine scoped_command_line;
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlogMode,
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlog,
                                                               "invalid");
     EXPECT_EQ(Mode::kNone, GetModeForStartup());
   }
 
   {
     base::test::ScopedCommandLine scoped_command_line;
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlogMode,
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlog,
                                                               kMemlogModeAll);
     EXPECT_EQ(Mode::kAll, GetModeForStartup());
   }
@@ -42,20 +42,20 @@ TEST(HeapProfilingSwitches, GetModeForStartup_Commandline) {
   {
     base::test::ScopedCommandLine scoped_command_line;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        kMemlogMode, kMemlogModeBrowser);
+        kMemlog, kMemlogModeBrowser);
     EXPECT_EQ(Mode::kBrowser, GetModeForStartup());
   }
 
   {
     base::test::ScopedCommandLine scoped_command_line;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        kMemlogMode, kMemlogModeMinimal);
+        kMemlog, kMemlogModeMinimal);
     EXPECT_EQ(Mode::kMinimal, GetModeForStartup());
   }
 
   {
     base::test::ScopedCommandLine scoped_command_line;
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlogMode,
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlog,
                                                               kMemlogModeGpu);
     EXPECT_EQ(Mode::kGpu, GetModeForStartup());
   }
@@ -63,7 +63,7 @@ TEST(HeapProfilingSwitches, GetModeForStartup_Commandline) {
   {
     base::test::ScopedCommandLine scoped_command_line;
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        kMemlogMode, kMemlogModeRendererSampling);
+        kMemlog, kMemlogModeRendererSampling);
     EXPECT_EQ(Mode::kRendererSampling, GetModeForStartup());
   }
 }
@@ -133,7 +133,7 @@ TEST(HeapProfilingSwitches, GetModeForStartup_Finch) {
 // Ensure the commandline overrides any given field trial.
 TEST(HeapProfilingSwitches, GetModeForStartup_CommandLinePrecedence) {
   base::test::ScopedCommandLine scoped_command_line;
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlogMode,
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlog,
                                                             kMemlogModeAll);
 
   base::test::ScopedFeatureList scoped_feature_list;
@@ -150,7 +150,7 @@ TEST(HeapProfilingSwitches, GetModeForStartup_CommandLinePrecedence) {
 TEST(HeapProfilingSwitches, GetModeForStartup_NoModeWithoutShim) {
   {
     base::test::ScopedCommandLine scoped_command_line;
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlogMode,
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(kMemlog,
                                                               kMemlogModeAll);
     EXPECT_EQ(Mode::kNone, GetModeForStartup());
   }

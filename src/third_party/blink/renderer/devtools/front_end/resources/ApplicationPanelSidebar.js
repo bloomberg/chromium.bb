@@ -29,6 +29,7 @@
  */
 /**
  * @implements {SDK.TargetManager.Observer}
+ * @implements {SDK.SDKModelObserver<!Resources.DOMStorageModel>}
  * @unrestricted
  */
 Resources.ApplicationPanelSidebar = class extends UI.VBox {
@@ -195,22 +196,18 @@ Resources.ApplicationPanelSidebar = class extends UI.VBox {
       this._addCookieDocument(frame);
     this._databaseModel.enable();
 
+    const indexedDBModel = this._target.model(Resources.IndexedDBModel);
+    if (indexedDBModel)
+      indexedDBModel.enable();
+
     const cacheStorageModel = this._target.model(SDK.ServiceWorkerCacheModel);
     if (cacheStorageModel)
       cacheStorageModel.enable();
     const resourceTreeModel = this._target.model(SDK.ResourceTreeModel);
     if (resourceTreeModel)
       this._populateApplicationCacheTree(resourceTreeModel);
-    SDK.targetManager.observeModels(Resources.DOMStorageModel, /** @type {!SDK.SDKModelObserver} */ ({
-                                      modelAdded: model => this._domStorageModelAdded(model),
-                                      modelRemoved: model => this._domStorageModelRemoved(model)
-                                    }));
+    SDK.targetManager.observeModels(Resources.DOMStorageModel, this);
     this.indexedDBListTreeElement._initialize();
-    SDK.targetManager.observeModels(
-        Resources.IndexedDBModel, /** @type {!SDK.SDKModelObserver} */ ({
-          modelAdded: model => model.enable(),
-          modelRemoved: model => this.indexedDBListTreeElement.removeIndexedDBForModel(model)
-        }));
     const serviceWorkerCacheModel = this._target.model(SDK.ServiceWorkerCacheModel);
     this.cacheStorageListTreeElement._initialize(serviceWorkerCacheModel);
     const backgroundServiceModel = this._target.model(Resources.BackgroundServiceModel);
@@ -221,22 +218,25 @@ Resources.ApplicationPanelSidebar = class extends UI.VBox {
   }
 
   /**
-   * @param {!Resources.DOMStorageModel} model
+   * @override
+   * @param {!Resources.DOMStorageModel} domStorageModel
    */
-  _domStorageModelAdded(model) {
-    model.enable();
-    model.storages().forEach(this._addDOMStorage.bind(this));
-    model.addEventListener(Resources.DOMStorageModel.Events.DOMStorageAdded, this._domStorageAdded, this);
-    model.addEventListener(Resources.DOMStorageModel.Events.DOMStorageRemoved, this._domStorageRemoved, this);
+  modelAdded(domStorageModel) {
+    domStorageModel.enable();
+    domStorageModel.storages().forEach(this._addDOMStorage.bind(this));
+    domStorageModel.addEventListener(Resources.DOMStorageModel.Events.DOMStorageAdded, this._domStorageAdded, this);
+    domStorageModel.addEventListener(Resources.DOMStorageModel.Events.DOMStorageRemoved, this._domStorageRemoved, this);
   }
 
   /**
-   * @param {!Resources.DOMStorageModel} model
+   * @override
+   * @param {!Resources.DOMStorageModel} domStorageModel
    */
-  _domStorageModelRemoved(model) {
-    model.storages().forEach(this._removeDOMStorage.bind(this));
-    model.removeEventListener(Resources.DOMStorageModel.Events.DOMStorageAdded, this._domStorageAdded, this);
-    model.removeEventListener(Resources.DOMStorageModel.Events.DOMStorageRemoved, this._domStorageRemoved, this);
+  modelRemoved(domStorageModel) {
+    domStorageModel.storages().forEach(this._removeDOMStorage.bind(this));
+    domStorageModel.removeEventListener(Resources.DOMStorageModel.Events.DOMStorageAdded, this._domStorageAdded, this);
+    domStorageModel.removeEventListener(
+        Resources.DOMStorageModel.Events.DOMStorageRemoved, this._domStorageRemoved, this);
   }
 
   _resetWithFrames() {
@@ -287,11 +287,8 @@ Resources.ApplicationPanelSidebar = class extends UI.VBox {
     this.cookieListTreeElement.removeChildren();
   }
 
-  /**
-   * @param {!Common.Event} event
-   */
   _frameNavigated(event) {
-    const frame = /** @type {!SDK.ResourceTreeFrame} */ (event.data);
+    const frame = event.data;
 
     if (frame.isTopFrame())
       this._reset();
@@ -1141,15 +1138,6 @@ Resources.IndexedDBTreeElement = class extends Resources.StorageCategoryTreeElem
   }
 
   /**
-   * @param {!Resources.IndexedDBModel} model
-   */
-  removeIndexedDBForModel(model) {
-    const idbDatabaseTreeElements = this._idbDatabaseTreeElements.filter(element => element._model === model);
-    for (const idbDatabaseTreeElement of idbDatabaseTreeElements)
-      this._removeIDBDatabaseTreeElement(idbDatabaseTreeElement);
-  }
-
-  /**
    * @override
    */
   onattach() {
@@ -1198,13 +1186,7 @@ Resources.IndexedDBTreeElement = class extends Resources.StorageCategoryTreeElem
     const idbDatabaseTreeElement = this._idbDatabaseTreeElement(model, databaseId);
     if (!idbDatabaseTreeElement)
       return;
-    this._removeIDBDatabaseTreeElement(idbDatabaseTreeElement);
-  }
 
-  /**
-   * @param {!Resources.IDBDatabaseTreeElement} idbDatabaseTreeElement
-   */
-  _removeIDBDatabaseTreeElement(idbDatabaseTreeElement) {
     idbDatabaseTreeElement.clear();
     this.removeChild(idbDatabaseTreeElement);
     this._idbDatabaseTreeElements.remove(idbDatabaseTreeElement);
@@ -1223,11 +1205,6 @@ Resources.IndexedDBTreeElement = class extends Resources.StorageCategoryTreeElem
     if (!idbDatabaseTreeElement)
       return;
     idbDatabaseTreeElement.update(database, entriesUpdated);
-    this._indexedDBLoadedForTest();
-  }
-
-  _indexedDBLoadedForTest() {
-    // For sniffing in tests.
   }
 
   /**
@@ -1245,12 +1222,23 @@ Resources.IndexedDBTreeElement = class extends Resources.StorageCategoryTreeElem
   }
 
   /**
-   * @param {!Resources.IndexedDBModel} model
    * @param {!Resources.IndexedDBModel.DatabaseId} databaseId
+   * @param {!Resources.IndexedDBModel} model
    * @return {?Resources.IDBDatabaseTreeElement}
    */
   _idbDatabaseTreeElement(model, databaseId) {
-    return this._idbDatabaseTreeElements.find(x => x._databaseId.equals(databaseId) && x._model === model) || null;
+    let index = -1;
+    let i;
+    for (i = 0; i < this._idbDatabaseTreeElements.length; ++i) {
+      if (this._idbDatabaseTreeElements[i]._databaseId.equals(databaseId) &&
+          this._idbDatabaseTreeElements[i]._model === model) {
+        index = i;
+        break;
+      }
+    }
+    if (index !== -1)
+      return this._idbDatabaseTreeElements[i];
+    return null;
   }
 };
 
@@ -1335,8 +1323,6 @@ Resources.IDBDatabaseTreeElement = class extends Resources.BaseStorageTreeElemen
 
   _updateTooltip() {
     this.tooltip = Common.UIString('Version') + ': ' + this._database.version;
-    if (Object.keys(this._idbObjectStoreTreeElements).length === 0)
-      this.tooltip += ls` (empty)`;
   }
 
   /**
@@ -1360,7 +1346,6 @@ Resources.IDBDatabaseTreeElement = class extends Resources.BaseStorageTreeElemen
     objectStoreTreeElement.clear();
     this.removeChild(objectStoreTreeElement);
     delete this._idbObjectStoreTreeElements[objectStoreName];
-    this._updateTooltip();
   }
 
   clear() {

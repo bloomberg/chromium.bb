@@ -46,7 +46,7 @@ suite('<app-management-pwa-permission-view>', function() {
   });
 
   test('toggle permissions', async function() {
-    const checkToggle = async (permissionType) => {
+    let checkToggle = async function(permissionType) {
       assertTrue(getPermissionBoolByType(permissionType));
       assertTrue(getPermissionToggleByType(permissionType).checked);
 

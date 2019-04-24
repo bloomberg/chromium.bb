@@ -36,11 +36,11 @@ v8_inspector::V8Inspector* GetInspector(Isolate* isolate);
 
 // Schedule a debugger break to happen when function is called inside given
 // isolate.
-V8_EXPORT_PRIVATE void SetBreakOnNextFunctionCall(Isolate* isolate);
+void SetBreakOnNextFunctionCall(Isolate* isolate);
 
 // Remove scheduled debugger break in given isolate if it has not
 // happened yet.
-V8_EXPORT_PRIVATE void ClearBreakOnNextFunctionCall(Isolate* isolate);
+void ClearBreakOnNextFunctionCall(Isolate* isolate);
 
 /**
  * Returns array of internal properties specific to the value type. Result has
@@ -54,8 +54,7 @@ MaybeLocal<Array> GetInternalProperties(Isolate* isolate, Local<Value> value);
  * the following format: [<name>, <value>,...,<name>, <value>]. Result array
  * will be allocated in the current context.
  */
-V8_EXPORT_PRIVATE MaybeLocal<Array> GetPrivateFields(Local<Context> context,
-                                                     Local<Object> value);
+MaybeLocal<Array> GetPrivateFields(Local<Context> context, Local<Object> value);
 
 enum ExceptionBreakState {
   NoBreakOnException = 0,
@@ -83,7 +82,7 @@ enum StepAction {
 
 void PrepareStep(Isolate* isolate, StepAction action);
 void ClearStepping(Isolate* isolate);
-V8_EXPORT_PRIVATE void BreakRightNow(Isolate* isolate);
+void BreakRightNow(Isolate* isolate);
 
 bool AllFramesOnStackAreBlackboxed(Isolate* isolate);
 
@@ -157,8 +156,7 @@ class WasmScript : public Script {
   uint32_t GetFunctionHash(int function_index);
 };
 
-V8_EXPORT_PRIVATE void GetLoadedScripts(Isolate* isolate,
-                                        PersistentValueVector<Script>& scripts);
+void GetLoadedScripts(Isolate* isolate, PersistentValueVector<Script>& scripts);
 
 MaybeLocal<UnboundScript> CompileInspectorScript(Isolate* isolate,
                                                  Local<String> source);
@@ -186,8 +184,7 @@ class DebugDelegate {
   }
 };
 
-V8_EXPORT_PRIVATE void SetDebugDelegate(Isolate* isolate,
-                                        DebugDelegate* listener);
+void SetDebugDelegate(Isolate* isolate, DebugDelegate* listener);
 
 class AsyncEventDelegate {
  public:
@@ -371,7 +368,7 @@ class V8_EXPORT_PRIVATE TypeProfile {
   std::shared_ptr<i::TypeProfile> type_profile_;
 };
 
-class V8_EXPORT_PRIVATE ScopeIterator {
+class ScopeIterator {
  public:
   static std::unique_ptr<ScopeIterator> CreateForFunction(
       v8::Isolate* isolate, v8::Local<v8::Function> func);
@@ -410,7 +407,7 @@ class V8_EXPORT_PRIVATE ScopeIterator {
   DISALLOW_COPY_AND_ASSIGN(ScopeIterator);
 };
 
-class V8_EXPORT_PRIVATE StackTraceIterator {
+class StackTraceIterator {
  public:
   static std::unique_ptr<StackTraceIterator> Create(Isolate* isolate,
                                                     int index = 0);
@@ -460,9 +457,9 @@ enum class NativeAccessorType {
 
 int64_t GetNextRandomInt64(v8::Isolate* isolate);
 
-V8_EXPORT_PRIVATE v8::MaybeLocal<v8::Value> EvaluateGlobal(
-    v8::Isolate* isolate, v8::Local<v8::String> source,
-    bool throw_on_side_effect);
+v8::MaybeLocal<v8::Value> EvaluateGlobal(v8::Isolate* isolate,
+                                         v8::Local<v8::String> source,
+                                         bool throw_on_side_effect);
 
 int GetDebuggingId(v8::Local<v8::Function> function);
 

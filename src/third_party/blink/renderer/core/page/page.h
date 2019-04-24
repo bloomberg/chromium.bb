@@ -105,8 +105,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
     DISALLOW_COPY_AND_ASSIGN(PageClients);
   };
 
-  // Any pages not owned by a web view should be created using this method.
-  static Page* CreateNonOrdinary(PageClients& pages_clients);
+  static Page* Create(PageClients& page_clients);
 
   // An "ordinary" page is a fully-featured page owned by a web view.
   static Page* CreateOrdinary(PageClients&, Page* opener);
@@ -304,11 +303,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   PageScheduler* GetPageScheduler() const;
 
   // PageScheduler::Delegate implementation.
-  bool IsOrdinary() const override;
   void ReportIntervention(const String& message) override;
   bool RequestBeginMainFrameNotExpected(bool new_state) override;
   void SetLifecycleState(PageLifecycleState) override;
-  bool LocalMainFrameNetworkIsAlmostIdle() const override;
 
   void AddAutoplayFlags(int32_t flags);
   void ClearAutoplayFlags();
@@ -386,8 +383,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   float device_scale_factor_;
 
   bool is_hidden_;
-
-  bool is_ordinary_;
 
   PageLifecycleState page_lifecycle_state_;
 

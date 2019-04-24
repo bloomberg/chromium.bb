@@ -21,8 +21,9 @@ DEF_SIMPLE_GM(bug6643, canvas, 200, 200) {
     SkPictureRecorder recorder;
     recorder.beginRecording(200, 200)->drawPaint(p);
 
-    p.setShader(recorder.finishRecordingAsPicture()->makeShader(
-                                            SkTileMode::kRepeat, SkTileMode::kRepeat));
+    p.setShader(SkShader::MakePictureShader(recorder.finishRecordingAsPicture(),
+                                            SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode,
+                                            nullptr, nullptr));
     canvas->drawColor(SK_ColorWHITE);
     canvas->drawPaint(p);
 }

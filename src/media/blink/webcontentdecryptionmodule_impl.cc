@@ -159,12 +159,4 @@ WebContentDecryptionModuleImpl::GetCdmContextRef() {
   return adapter_->GetCdmContextRef();
 }
 
-std::string WebContentDecryptionModuleImpl::GetKeySystem() const {
-  return adapter_->GetKeySystem();
-}
-
-CdmConfig WebContentDecryptionModuleImpl::GetCdmConfig() const {
-  return adapter_->GetCdmConfig();
-}
-
 }  // namespace media

@@ -18,7 +18,7 @@ namespace syncer {
 class ForwardingModelTypeControllerDelegate
     : public ModelTypeControllerDelegate {
  public:
-  // Except for tests, |other| must not be null and must outlive this object.
+  // |other| must not be null and must outlive this object.
   explicit ForwardingModelTypeControllerDelegate(
       ModelTypeControllerDelegate* other);
   ~ForwardingModelTypeControllerDelegate() override;

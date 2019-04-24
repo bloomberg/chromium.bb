@@ -16,8 +16,7 @@ class MODULES_EXPORT WorkletGroupEffectProxy : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit WorkletGroupEffectProxy(
-      const std::vector<base::Optional<TimeDelta>>& local_times);
+  explicit WorkletGroupEffectProxy(int num_effects);
   HeapVector<Member<EffectProxy>>& getChildren() { return effects_; }
   void Trace(blink::Visitor*) override;
 

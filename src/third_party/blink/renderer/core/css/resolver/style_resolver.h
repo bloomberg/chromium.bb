@@ -63,6 +63,10 @@ class CORE_EXPORT StyleResolver final
     : public GarbageCollectedFinalized<StyleResolver> {
 
  public:
+  static StyleResolver* Create(Document& document) {
+    return MakeGarbageCollected<StyleResolver>(document);
+  }
+
   explicit StyleResolver(Document&);
   ~StyleResolver();
   void Dispose();
@@ -219,27 +223,27 @@ class CORE_EXPORT StyleResolver final
     kUpdateNeedsApplyPass = true,
   };
 
+  void ApplyMatchedPropertiesAndCustomPropertyAnimations(
+      StyleResolverState&,
+      const MatchResult&,
+      const Element* animating_element);
   CacheSuccess ApplyMatchedCache(StyleResolverState&, const MatchResult&);
+  enum ApplyAnimations { kExcludeAnimations, kIncludeAnimations };
   void ApplyCustomProperties(StyleResolverState&,
                              const MatchResult&,
+                             ApplyAnimations,
                              const CacheSuccess&,
                              NeedsApplyPass&);
   void ApplyMatchedAnimationProperties(StyleResolverState&,
                                        const MatchResult&,
                                        const CacheSuccess&,
                                        NeedsApplyPass&);
-  void ApplyMatchedHighPriorityProperties(StyleResolverState&,
-                                          const MatchResult&,
-                                          const CacheSuccess&,
-                                          bool& apply_inherited_only,
-                                          NeedsApplyPass&);
-  void ApplyMatchedProperties(StyleResolverState&,
-                              const MatchResult&,
-                              const Element* animating_element);
-
+  void ApplyMatchedStandardProperties(StyleResolverState&,
+                                      const MatchResult&,
+                                      const CacheSuccess&,
+                                      NeedsApplyPass&);
   void CalculateAnimationUpdate(StyleResolverState&,
                                 const Element* animating_element);
-
   bool ApplyAnimatedStandardProperties(StyleResolverState&, const Element*);
 
   void ApplyCallbackSelectors(StyleResolverState&);
@@ -256,7 +260,7 @@ class CORE_EXPORT StyleResolver final
                        bool is_important,
                        bool inherited_only,
                        NeedsApplyPass&,
-                       ValidPropertyFilter = ValidPropertyFilter::kNoFilter);
+                       PropertyWhitelistType = kPropertyWhitelistNone);
   template <CSSPropertyPriority priority>
   void ApplyAnimatedStandardProperties(StyleResolverState&,
                                        const ActiveInterpolationsMap&);
@@ -264,7 +268,7 @@ class CORE_EXPORT StyleResolver final
   void ApplyAllProperty(StyleResolverState&,
                         const CSSValue&,
                         bool inherited_only,
-                        ValidPropertyFilter);
+                        PropertyWhitelistType);
 
   bool PseudoStyleForElementInternal(Element&,
                                      const PseudoStyleRequest&,

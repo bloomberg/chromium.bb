@@ -7,13 +7,12 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_animate_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_animator_constructor.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_state_callback.h"
 
 namespace blink {
 
 AnimatorDefinition::AnimatorDefinition(V8AnimatorConstructor* constructor,
                                        V8AnimateCallback* animate,
-                                       V8StateCallback* state)
+                                       V8Function* state)
     : constructor_(constructor), animate_(animate), state_(state) {
   DCHECK(constructor_);
   DCHECK(animate_);

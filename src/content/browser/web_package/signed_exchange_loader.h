@@ -36,9 +36,8 @@ class SignedExchangeHandler;
 class SignedExchangeHandlerFactory;
 class SignedExchangePrefetchMetricRecorder;
 class SignedExchangeReporter;
-class SignedExchangeValidityPinger;
-class SourceStreamToDataPipe;
 class URLLoaderThrottle;
+class SourceStreamToDataPipe;
 
 // SignedExchangeLoader handles an origin-signed HTTP exchange response. It is
 // created when a SignedExchangeRequestHandler recieves an origin-signed HTTP
@@ -110,7 +109,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
       SignedExchangeHandlerFactory* factory);
 
  private:
-  class OuterResponseInfo;
+  class ResponseTimingInfo;
 
   // Called from |signed_exchange_handler_| when it finds an origin-signed HTTP
   // exchange.
@@ -121,15 +120,14 @@ class CONTENT_EXPORT SignedExchangeLoader final
       const network::ResourceResponseHead& resource_response,
       std::unique_ptr<net::SourceStream> payload_stream);
 
-  void StartReadingBody();
   void FinishReadingBody(int result);
   void NotifyClientOnCompleteIfReady();
   void ReportLoadResult(SignedExchangeLoadResult result);
 
   const network::ResourceRequest outer_request_;
 
-  // This info is used to create a dummy redirect response.
-  std::unique_ptr<const OuterResponseInfo> outer_response_info_;
+  // This timing info is used to create a dummy redirect response.
+  std::unique_ptr<const ResponseTimingInfo> outer_response_timing_info_;
 
   // The outer response of signed HTTP exchange which was received from network.
   const network::ResourceResponseHead outer_response_;
@@ -181,8 +179,6 @@ class CONTENT_EXPORT SignedExchangeLoader final
   // Set when |body_data_pipe_adapter_| finishes loading the decoded body.
   base::Optional<int> decoded_body_read_result_;
   const std::string accept_langs_;
-
-  std::unique_ptr<SignedExchangeValidityPinger> validity_pinger_;
 
   base::WeakPtrFactory<SignedExchangeLoader> weak_factory_;
 

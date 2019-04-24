@@ -137,14 +137,13 @@ class FakeFrameScheduler : public FrameSchedulerImpl {
     return WebScopedVirtualTimePauser();
   }
   void DidStartProvisionalLoad(bool is_main_frame) override {}
-  void DidCommitProvisionalLoad(
-      bool is_web_history_inert_commit,
-      FrameScheduler::NavigationType navigation_type) override {}
+  void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
+                                bool is_reload,
+                                bool is_main_frame) override {}
   void OnFirstMeaningfulPaint() override {}
-  void OnStartedUsingFeature(SchedulingPolicy::Feature feature,
-                             const SchedulingPolicy& policy) override {}
-  void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
-                             const SchedulingPolicy& policy) override {}
+  std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override {
+    return nullptr;
+  }
   bool IsExemptFromBudgetBasedThrottling() const override {
     return is_exempt_from_throttling_;
   }

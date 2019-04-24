@@ -13,8 +13,8 @@ namespace features {
 const base::Feature kDockedMagnifier{"DockedMagnifier",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kDragToSnapInClamshellMode{
-    "DragToSnapInClamshellMode", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDragTabsInTabletMode{"DragTabsInTabletMode",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableOverviewRoundedCorners{
     "EnableOverviewRoundedCorners", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -28,9 +28,6 @@ const base::Feature kLockScreenInlineReply{"LockScreenInlineReply",
 const base::Feature kLockScreenHideSensitiveNotificationsSupport{
     "LockScreenHideSensitiveNotificationsSupport",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kHideArcMediaNotifications{
-    "HideArcMediaNotifications", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kMediaSessionNotification{
     "MediaSessionNotification", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -69,16 +66,8 @@ const base::Feature kUseBluetoothSystemInAsh{"UseBluetoothSystemInAsh",
 const base::Feature kSupervisedUserDeprecationNotice{
     "SupervisedUserDeprecationNotice", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kUseShaderRoundedCorner{"UseShaderRoundedCorner",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kNotificationStackingBarRedesign{
     "NotificationStackingBarRedesign", base::FEATURE_DISABLED_BY_DEFAULT};
-
-bool IsHideArcMediaNotificationsEnabled() {
-  return base::FeatureList::IsEnabled(kMediaSessionNotification) &&
-         base::FeatureList::IsEnabled(kHideArcMediaNotifications);
-}
 
 bool IsLockScreenNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kLockScreenNotifications);
@@ -130,10 +119,6 @@ bool IsViewsLoginEnabled() {
 
 bool IsSupervisedUserDeprecationNoticeEnabled() {
   return base::FeatureList::IsEnabled(kSupervisedUserDeprecationNotice);
-}
-
-bool ShouldUseShaderRoundedCorner() {
-  return base::FeatureList::IsEnabled(kUseShaderRoundedCorner);
 }
 
 bool IsNotificationStackingBarRedesignEnabled() {

@@ -41,6 +41,7 @@ GERRIT_APPROVAL_MAP = {
     'COMR': ['CQ', 'Commit Queue   ',],
     'CRVW': ['CR', 'Code Review    ',],
     'SUBM': ['S ', 'Submitted      ',],
+    'TRY':  ['T ', 'Trybot Ready   ',],
     'VRIF': ['V ', 'Verified       ',],
 }
 
@@ -89,12 +90,9 @@ def GetGerrit(opts, cl=None):
   """
   gob = opts.gob
   if cl is not None:
-    if cl.startswith('*') or cl.startswith('chrome-internal:'):
+    if cl.startswith('*'):
       gob = config_lib.GetSiteParams().INTERNAL_GOB_INSTANCE
-      if cl.startswith('*'):
-        cl = cl[1:]
-      else:
-        cl = cl[16:]
+      cl = cl[1:]
     elif ':' in cl:
       gob, cl = cl.split(':', 1)
 
@@ -364,14 +362,25 @@ UserActVerify.usage = '<CLs...> <-1|0|1>'
 
 
 def UserActReady(opts, *args):
-  """Mark CLs with CQ dryrun (1) or ready (2) status"""
+  """Mark CLs with a ready status"""
   num = args[-1]
   for arg in args[:-1]:
     helper, cl = GetGerrit(opts, arg)
     helper.SetReview(cl, labels={'Commit-Queue': num},
                      dryrun=opts.dryrun, notify=opts.notify)
 UserActReady.arg_min = 2
-UserActReady.usage = '<CLs...> <0|1|2>'
+UserActReady.usage = '<CLs...> <0|1>'
+
+
+def UserActTrybotready(opts, *args):
+  """Mark CLs with a trybot-ready status"""
+  num = args[-1]
+  for arg in args[:-1]:
+    helper, cl = GetGerrit(opts, arg)
+    helper.SetReview(cl, labels={'Trybot-Ready': num},
+                     dryrun=opts.dryrun, notify=opts.notify)
+UserActTrybotready.arg_min = 2
+UserActTrybotready.usage = '<CLs...> <0|1>'
 
 
 def UserActSubmit(opts, *args):

@@ -29,6 +29,12 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
   USING_GARBAGE_COLLECTED_MIXIN(ScrollableAreaStub);
 
  public:
+  static ScrollableAreaStub* Create(const IntSize& viewport_size,
+                                    const IntSize& contents_size) {
+    return MakeGarbageCollected<ScrollableAreaStub>(viewport_size,
+                                                    contents_size);
+  }
+
   ScrollableAreaStub(const IntSize& viewport_size, const IntSize& contents_size)
       : user_input_scrollable_x_(true),
         user_input_scrollable_y_(true),
@@ -115,7 +121,6 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
     return orientation == kHorizontalScrollbar ? user_input_scrollable_x_
                                                : user_input_scrollable_y_;
   }
-  bool ScheduleAnimation() override { return true; }
 
   ScrollOffset ClampedScrollOffset(const ScrollOffset& offset) {
     ScrollOffset min_offset = MinimumScrollOffset();
@@ -137,6 +142,12 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
 
 class RootLayoutViewportStub : public ScrollableAreaStub {
  public:
+  static RootLayoutViewportStub* Create(const IntSize& viewport_size,
+                                        const IntSize& contents_size) {
+    return MakeGarbageCollected<RootLayoutViewportStub>(viewport_size,
+                                                        contents_size);
+  }
+
   RootLayoutViewportStub(const IntSize& viewport_size,
                          const IntSize& contents_size)
       : ScrollableAreaStub(viewport_size, contents_size) {}
@@ -158,6 +169,12 @@ class RootLayoutViewportStub : public ScrollableAreaStub {
 
 class VisualViewportStub : public ScrollableAreaStub {
  public:
+  static VisualViewportStub* Create(const IntSize& viewport_size,
+                                    const IntSize& contents_size) {
+    return MakeGarbageCollected<VisualViewportStub>(viewport_size,
+                                                    contents_size);
+  }
+
   VisualViewportStub(const IntSize& viewport_size, const IntSize& contents_size)
       : ScrollableAreaStub(viewport_size, contents_size), scale_(1) {}
 
@@ -199,13 +216,13 @@ class RootFrameViewportTest : public testing::Test {
 // correctly, that is, the visual viewport can scroll, but not the layout.
 TEST_F(RootFrameViewportTest, UserInputScrollable) {
   IntSize viewport_size(100, 150);
-  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
-      viewport_size, IntSize(200, 300));
-  auto* visual_viewport =
-      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
+  RootLayoutViewportStub* layout_viewport =
+      RootLayoutViewportStub::Create(viewport_size, IntSize(200, 300));
+  VisualViewportStub* visual_viewport =
+      VisualViewportStub::Create(viewport_size, viewport_size);
 
-  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
-      *visual_viewport, *layout_viewport);
+  ScrollableArea* root_frame_viewport =
+      RootFrameViewport::Create(*visual_viewport, *layout_viewport);
 
   visual_viewport->SetScale(2);
 
@@ -233,9 +250,7 @@ TEST_F(RootFrameViewportTest, UserInputScrollable) {
   // Try the same checks as above but for the vertical direction.
   // ===============================================
 
-  root_frame_viewport->SetScrollOffset(ScrollOffset(), kProgrammaticScroll,
-                                       kScrollBehaviorInstant,
-                                       ScrollableArea::ScrollCallback());
+  root_frame_viewport->SetScrollOffset(ScrollOffset(), kProgrammaticScroll);
 
   // Disable just the layout viewport's vertical scrolling, the
   // RootFrameViewport should remain scrollable overall.
@@ -264,13 +279,13 @@ TEST_F(RootFrameViewportTest, UserInputScrollable) {
 // using the // RootFrameViewport interface.
 TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll) {
   IntSize viewport_size(100, 150);
-  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
-      viewport_size, IntSize(200, 300));
-  auto* visual_viewport =
-      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
+  RootLayoutViewportStub* layout_viewport =
+      RootLayoutViewportStub::Create(viewport_size, IntSize(200, 300));
+  VisualViewportStub* visual_viewport =
+      VisualViewportStub::Create(viewport_size, viewport_size);
 
-  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
-      *visual_viewport, *layout_viewport);
+  ScrollableArea* root_frame_viewport =
+      RootFrameViewport::Create(*visual_viewport, *layout_viewport);
 
   visual_viewport->SetScale(2);
 
@@ -279,9 +294,7 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll) {
 
   // If the scroll animator doesn't update, it will still think it's at (0, 0)
   // and so it may early exit.
-  root_frame_viewport->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll,
-                                       kScrollBehaviorInstant,
-                                       ScrollableArea::ScrollCallback());
+  root_frame_viewport->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll);
   EXPECT_EQ(ScrollOffset(0, 0), root_frame_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(0, 0), visual_viewport->GetScrollOffset());
 
@@ -294,9 +307,7 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll) {
   EXPECT_EQ(ScrollOffset(0, 75), visual_viewport->GetScrollOffset());
 
   // Make sure the layout viewport is also accounted for.
-  root_frame_viewport->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll,
-                                       kScrollBehaviorInstant,
-                                       ScrollableArea::ScrollCallback());
+  root_frame_viewport->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll);
   layout_viewport->SetScrollOffset(ScrollOffset(100, 150), kProgrammaticScroll);
   EXPECT_EQ(ScrollOffset(100, 150), root_frame_viewport->GetScrollOffset());
 
@@ -309,13 +320,13 @@ TEST_F(RootFrameViewportTest, TestScrollAnimatorUpdatedBeforeScroll) {
 // and visual viewport such that the given rect is centered in the viewport.
 TEST_F(RootFrameViewportTest, ScrollIntoView) {
   IntSize viewport_size(100, 150);
-  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
-      viewport_size, IntSize(200, 300));
-  auto* visual_viewport =
-      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
+  RootLayoutViewportStub* layout_viewport =
+      RootLayoutViewportStub::Create(viewport_size, IntSize(200, 300));
+  VisualViewportStub* visual_viewport =
+      VisualViewportStub::Create(viewport_size, viewport_size);
 
-  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
-      *visual_viewport, *layout_viewport);
+  ScrollableArea* root_frame_viewport =
+      RootFrameViewport::Create(*visual_viewport, *layout_viewport);
 
   // Test that the visual viewport is scrolled if the viewport has been
   // resized (as is the case when the ChromeOS keyboard comes up) but not
@@ -342,9 +353,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
   // Reset the visual viewport's size, scale the page, and repeat the test
   visual_viewport->SetViewportSize(IntSize(100, 150));
   visual_viewport->SetScale(2);
-  root_frame_viewport->SetScrollOffset(ScrollOffset(), kProgrammaticScroll,
-                                       kScrollBehaviorInstant,
-                                       ScrollableArea::ScrollCallback());
+  root_frame_viewport->SetScrollOffset(ScrollOffset(), kProgrammaticScroll);
 
   root_frame_viewport->ScrollIntoView(
       layout_viewport->DocumentToFrame(LayoutRect(50, 75, 50, 75)),
@@ -369,9 +378,8 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
   visual_viewport->SetScale(1.5f);
   visual_viewport->SetScrollOffset(ScrollOffset(0, 10), kProgrammaticScroll);
   layout_viewport->SetScrollOffset(ScrollOffset(50, 50), kProgrammaticScroll);
-  root_frame_viewport->SetScrollOffset(
-      root_frame_viewport->GetScrollOffset(), kProgrammaticScroll,
-      kScrollBehaviorInstant, ScrollableArea::ScrollCallback());
+  root_frame_viewport->SetScrollOffset(root_frame_viewport->GetScrollOffset(),
+                                       kProgrammaticScroll);
 
   root_frame_viewport->ScrollIntoView(
       layout_viewport->DocumentToFrame(LayoutRect(
@@ -406,43 +414,38 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
 // Tests that the setScrollOffset method works correctly with both viewports.
 TEST_F(RootFrameViewportTest, SetScrollOffset) {
   IntSize viewport_size(500, 500);
-  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
-      viewport_size, IntSize(1000, 2000));
-  auto* visual_viewport =
-      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
+  RootLayoutViewportStub* layout_viewport =
+      RootLayoutViewportStub::Create(viewport_size, IntSize(1000, 2000));
+  VisualViewportStub* visual_viewport =
+      VisualViewportStub::Create(viewport_size, viewport_size);
 
-  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
-      *visual_viewport, *layout_viewport);
+  ScrollableArea* root_frame_viewport =
+      RootFrameViewport::Create(*visual_viewport, *layout_viewport);
 
   visual_viewport->SetScale(2);
 
   // Ensure that the visual viewport scrolls first.
-  root_frame_viewport->SetScrollOffset(
-      ScrollOffset(100, 100), kProgrammaticScroll, kScrollBehaviorInstant,
-      ScrollableArea::ScrollCallback());
+  root_frame_viewport->SetScrollOffset(ScrollOffset(100, 100),
+                                       kProgrammaticScroll);
   EXPECT_EQ(ScrollOffset(100, 100), visual_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(0, 0), layout_viewport->GetScrollOffset());
 
   // Scroll to the visual viewport's extent, the layout viewport should scroll
   // the remainder.
-  root_frame_viewport->SetScrollOffset(
-      ScrollOffset(300, 400), kProgrammaticScroll, kScrollBehaviorInstant,
-      ScrollableArea::ScrollCallback());
+  root_frame_viewport->SetScrollOffset(ScrollOffset(300, 400),
+                                       kProgrammaticScroll);
   EXPECT_EQ(ScrollOffset(250, 250), visual_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(50, 150), layout_viewport->GetScrollOffset());
 
   // Only the layout viewport should scroll further. Make sure it doesn't scroll
   // out of bounds.
-  root_frame_viewport->SetScrollOffset(
-      ScrollOffset(780, 1780), kProgrammaticScroll, kScrollBehaviorInstant,
-      ScrollableArea::ScrollCallback());
+  root_frame_viewport->SetScrollOffset(ScrollOffset(780, 1780),
+                                       kProgrammaticScroll);
   EXPECT_EQ(ScrollOffset(250, 250), visual_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(500, 1500), layout_viewport->GetScrollOffset());
 
   // Scroll all the way back.
-  root_frame_viewport->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll,
-                                       kScrollBehaviorInstant,
-                                       ScrollableArea::ScrollCallback());
+  root_frame_viewport->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll);
   EXPECT_EQ(ScrollOffset(0, 0), visual_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(0, 0), layout_viewport->GetScrollOffset());
 }
@@ -451,17 +454,16 @@ TEST_F(RootFrameViewportTest, SetScrollOffset) {
 // calculated, taking into account both viewports and page scale.
 TEST_F(RootFrameViewportTest, VisibleContentRect) {
   IntSize viewport_size(500, 401);
-  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
-      viewport_size, IntSize(1000, 2000));
-  auto* visual_viewport =
-      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
+  RootLayoutViewportStub* layout_viewport =
+      RootLayoutViewportStub::Create(viewport_size, IntSize(1000, 2000));
+  VisualViewportStub* visual_viewport =
+      VisualViewportStub::Create(viewport_size, viewport_size);
 
-  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
-      *visual_viewport, *layout_viewport);
+  ScrollableArea* root_frame_viewport =
+      RootFrameViewport::Create(*visual_viewport, *layout_viewport);
 
-  root_frame_viewport->SetScrollOffset(
-      ScrollOffset(100, 75), kProgrammaticScroll, kScrollBehaviorInstant,
-      ScrollableArea::ScrollCallback());
+  root_frame_viewport->SetScrollOffset(ScrollOffset(100, 75),
+                                       kProgrammaticScroll);
 
   EXPECT_EQ(IntPoint(100, 75),
             root_frame_viewport->VisibleContentRect().Location());
@@ -480,35 +482,22 @@ TEST_F(RootFrameViewportTest, VisibleContentRect) {
 // trying to scroll the layout viewport.
 TEST_F(RootFrameViewportTest, ViewportScrollOrder) {
   IntSize viewport_size(100, 100);
-  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
-      viewport_size, IntSize(200, 300));
-  auto* visual_viewport =
-      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
+  RootLayoutViewportStub* layout_viewport =
+      RootLayoutViewportStub::Create(viewport_size, IntSize(200, 300));
+  VisualViewportStub* visual_viewport =
+      VisualViewportStub::Create(viewport_size, viewport_size);
 
-  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
-      *visual_viewport, *layout_viewport);
+  ScrollableArea* root_frame_viewport =
+      RootFrameViewport::Create(*visual_viewport, *layout_viewport);
 
   visual_viewport->SetScale(2);
 
-  root_frame_viewport->SetScrollOffset(
-      ScrollOffset(40, 40), kUserScroll, kScrollBehaviorInstant,
-      ScrollableArea::ScrollCallback(base::BindOnce(
-          [](ScrollableArea* visual_viewport, ScrollableArea* layout_viewport) {
-            EXPECT_EQ(ScrollOffset(40, 40), visual_viewport->GetScrollOffset());
-            EXPECT_EQ(ScrollOffset(0, 0), layout_viewport->GetScrollOffset());
-          },
-          visual_viewport, layout_viewport)));
+  root_frame_viewport->SetScrollOffset(ScrollOffset(40, 40), kUserScroll);
   EXPECT_EQ(ScrollOffset(40, 40), visual_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(0, 0), layout_viewport->GetScrollOffset());
 
-  root_frame_viewport->SetScrollOffset(
-      ScrollOffset(60, 60), kProgrammaticScroll, kScrollBehaviorInstant,
-      ScrollableArea::ScrollCallback(base::BindOnce(
-          [](ScrollableArea* visual_viewport, ScrollableArea* layout_viewport) {
-            EXPECT_EQ(ScrollOffset(50, 50), visual_viewport->GetScrollOffset());
-            EXPECT_EQ(ScrollOffset(10, 10), layout_viewport->GetScrollOffset());
-          },
-          visual_viewport, layout_viewport)));
+  root_frame_viewport->SetScrollOffset(ScrollOffset(60, 60),
+                                       kProgrammaticScroll);
   EXPECT_EQ(ScrollOffset(50, 50), visual_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(10, 10), layout_viewport->GetScrollOffset());
 }
@@ -517,22 +506,20 @@ TEST_F(RootFrameViewportTest, ViewportScrollOrder) {
 // instead of the original.
 TEST_F(RootFrameViewportTest, SetAlternateLayoutViewport) {
   IntSize viewport_size(100, 100);
-  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
-      viewport_size, IntSize(200, 300));
-  auto* visual_viewport =
-      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
+  RootLayoutViewportStub* layout_viewport =
+      RootLayoutViewportStub::Create(viewport_size, IntSize(200, 300));
+  VisualViewportStub* visual_viewport =
+      VisualViewportStub::Create(viewport_size, viewport_size);
 
-  auto* alternate_scroller = MakeGarbageCollected<RootLayoutViewportStub>(
-      viewport_size, IntSize(600, 500));
+  RootLayoutViewportStub* alternate_scroller =
+      RootLayoutViewportStub::Create(viewport_size, IntSize(600, 500));
 
-  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
-      *visual_viewport, *layout_viewport);
+  RootFrameViewport* root_frame_viewport =
+      RootFrameViewport::Create(*visual_viewport, *layout_viewport);
 
   visual_viewport->SetScale(2);
 
-  root_frame_viewport->SetScrollOffset(ScrollOffset(100, 100), kUserScroll,
-                                       kScrollBehaviorInstant,
-                                       ScrollableArea::ScrollCallback());
+  root_frame_viewport->SetScrollOffset(ScrollOffset(100, 100), kUserScroll);
   EXPECT_EQ(ScrollOffset(50, 50), visual_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(50, 50), layout_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(100, 100), root_frame_viewport->GetScrollOffset());
@@ -542,48 +529,13 @@ TEST_F(RootFrameViewportTest, SetAlternateLayoutViewport) {
   EXPECT_EQ(ScrollOffset(0, 0), alternate_scroller->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(50, 50), root_frame_viewport->GetScrollOffset());
 
-  root_frame_viewport->SetScrollOffset(ScrollOffset(200, 200), kUserScroll,
-                                       kScrollBehaviorInstant,
-                                       ScrollableArea::ScrollCallback());
+  root_frame_viewport->SetScrollOffset(ScrollOffset(200, 200), kUserScroll);
   EXPECT_EQ(ScrollOffset(50, 50), visual_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(150, 150), alternate_scroller->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(200, 200), root_frame_viewport->GetScrollOffset());
   EXPECT_EQ(ScrollOffset(50, 50), layout_viewport->GetScrollOffset());
 
   EXPECT_EQ(ScrollOffset(550, 450), root_frame_viewport->MaximumScrollOffset());
-}
-
-// Tests that scrolls on the root frame scroll the visual viewport before
-// trying to scroll the layout viewport when using
-// DistributeScrollBetweenViewports directly.
-TEST_F(RootFrameViewportTest, DistributeScrollOrder) {
-  IntSize viewport_size(100, 100);
-  auto* layout_viewport = MakeGarbageCollected<RootLayoutViewportStub>(
-      viewport_size, IntSize(200, 300));
-  auto* visual_viewport =
-      MakeGarbageCollected<VisualViewportStub>(viewport_size, viewport_size);
-
-  auto* root_frame_viewport = MakeGarbageCollected<RootFrameViewport>(
-      *visual_viewport, *layout_viewport);
-
-  visual_viewport->SetScale(2);
-
-  root_frame_viewport->DistributeScrollBetweenViewports(
-      ScrollOffset(60, 60), kProgrammaticScroll, kScrollBehaviorSmooth,
-      RootFrameViewport::kVisualViewport,
-      ScrollableArea::ScrollCallback(base::BindOnce(
-          [](ScrollableArea* visual_viewport, ScrollableArea* layout_viewport) {
-            EXPECT_EQ(ScrollOffset(50, 50), visual_viewport->GetScrollOffset());
-            EXPECT_EQ(ScrollOffset(10, 10), layout_viewport->GetScrollOffset());
-          },
-          visual_viewport, layout_viewport)));
-  root_frame_viewport->UpdateCompositorScrollAnimations();
-  root_frame_viewport->ServiceScrollAnimations(1);
-  EXPECT_EQ(ScrollOffset(0, 0), visual_viewport->GetScrollOffset());
-  EXPECT_EQ(ScrollOffset(0, 0), layout_viewport->GetScrollOffset());
-  root_frame_viewport->ServiceScrollAnimations(1000000);
-  EXPECT_EQ(ScrollOffset(50, 50), visual_viewport->GetScrollOffset());
-  EXPECT_EQ(ScrollOffset(10, 10), layout_viewport->GetScrollOffset());
 }
 
 }  // namespace blink

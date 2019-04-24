@@ -38,7 +38,14 @@ const CGFloat kLabelSize = 14;
   // the button's title may be empty or contain an easter egg, but the
   // accessibility value will always be equal to |tabCount|.
   NSString* tabStripButtonValue = [NSString stringWithFormat:@"%d", tabCount];
-  self.tabCountLabel.text = TextForTabCount(tabCount);
+  NSString* tabStripButtonTitle = TextForTabCount(tabCount);
+
+  // TODO(crbug.com/799601): Delete this once its not needed.
+  if (base::FeatureList::IsEnabled(kMemexTabSwitcher)) {
+    tabStripButtonTitle = @"M";
+  }
+
+  self.tabCountLabel.text = tabStripButtonTitle;
   [self setAccessibilityValue:tabStripButtonValue];
 }
 

@@ -11,8 +11,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/web/common/features.h"
 #include "ios/web/public/browser_state.h"
+#include "ios/web/public/features.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/web_state/js/page_script_util.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
@@ -111,19 +111,21 @@ WKWebViewConfigurationProvider::GetWebViewConfiguration() {
     [[configuration_ userContentController]
         addUserScript:InternalGetDocumentEndScriptForAllFrames(browser_state_)];
 
-    if (features::WebUISchemeHandlingEnabled()) {
-      if (!scheme_handler_) {
-        scoped_refptr<network::SharedURLLoaderFactory> shared_loader_factory =
-            browser_state_->GetSharedURLLoaderFactory();
-        scheme_handler_ = [[CRWWebUISchemeHandler alloc]
-            initWithURLLoaderFactory:shared_loader_factory];
-      }
-      WebClient::Schemes schemes;
-      GetWebClient()->AddAdditionalSchemes(&schemes);
-      GetWebClient()->GetAdditionalWebUISchemes(&(schemes.standard_schemes));
-      for (std::string scheme : schemes.standard_schemes) {
-        [configuration_ setURLSchemeHandler:scheme_handler_
-                               forURLScheme:base::SysUTF8ToNSString(scheme)];
+    if (@available(iOS 11, *)) {
+      if (features::WebUISchemeHandlingEnabled()) {
+        if (!scheme_handler_) {
+          scoped_refptr<network::SharedURLLoaderFactory> shared_loader_factory =
+              browser_state_->GetSharedURLLoaderFactory();
+          scheme_handler_ = [[CRWWebUISchemeHandler alloc]
+              initWithURLLoaderFactory:shared_loader_factory];
+        }
+        WebClient::Schemes schemes;
+        GetWebClient()->AddAdditionalSchemes(&schemes);
+        GetWebClient()->GetAdditionalWebUISchemes(&(schemes.standard_schemes));
+        for (std::string scheme : schemes.standard_schemes) {
+          [configuration_ setURLSchemeHandler:scheme_handler_
+                                 forURLScheme:base::SysUTF8ToNSString(scheme)];
+        }
       }
     }
   }

@@ -4,11 +4,11 @@
 
 #include "net/third_party/quiche/src/http2/decoder/payload_decoders/settings_payload_decoder.h"
 
+#include "base/logging.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
 #include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder_listener.h"
 #include "net/third_party/quiche/src/http2/http2_constants.h"
 #include "net/third_party/quiche/src/http2/http2_structures.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
 
 namespace http2 {
 
@@ -18,8 +18,7 @@ DecodeStatus SettingsPayloadDecoder::StartDecodingPayload(
   const Http2FrameHeader& frame_header = state->frame_header();
   const uint32_t total_length = frame_header.payload_length;
 
-  HTTP2_DVLOG(2) << "SettingsPayloadDecoder::StartDecodingPayload: "
-                 << frame_header;
+  DVLOG(2) << "SettingsPayloadDecoder::StartDecodingPayload: " << frame_header;
   DCHECK_EQ(Http2FrameType::SETTINGS, frame_header.type);
   DCHECK_LE(db->Remaining(), total_length);
   DCHECK_EQ(0, frame_header.flags & ~(Http2FrameFlag::ACK));
@@ -42,9 +41,9 @@ DecodeStatus SettingsPayloadDecoder::StartDecodingPayload(
 DecodeStatus SettingsPayloadDecoder::ResumeDecodingPayload(
     FrameDecoderState* state,
     DecodeBuffer* db) {
-  HTTP2_DVLOG(2) << "SettingsPayloadDecoder::ResumeDecodingPayload"
-                 << "  remaining_payload=" << state->remaining_payload()
-                 << "  db->Remaining=" << db->Remaining();
+  DVLOG(2) << "SettingsPayloadDecoder::ResumeDecodingPayload"
+           << "  remaining_payload=" << state->remaining_payload()
+           << "  db->Remaining=" << db->Remaining();
   DCHECK_EQ(Http2FrameType::SETTINGS, state->frame_header().type);
   DCHECK_LE(db->Remaining(), state->frame_header().payload_length);
 
@@ -60,9 +59,9 @@ DecodeStatus SettingsPayloadDecoder::ResumeDecodingPayload(
 DecodeStatus SettingsPayloadDecoder::StartDecodingSettings(
     FrameDecoderState* state,
     DecodeBuffer* db) {
-  HTTP2_DVLOG(2) << "SettingsPayloadDecoder::StartDecodingSettings"
-                 << "  remaining_payload=" << state->remaining_payload()
-                 << "  db->Remaining=" << db->Remaining();
+  DVLOG(2) << "SettingsPayloadDecoder::StartDecodingSettings"
+           << "  remaining_payload=" << state->remaining_payload()
+           << "  db->Remaining=" << db->Remaining();
   while (state->remaining_payload() > 0) {
     DecodeStatus status =
         state->StartDecodingStructureInPayload(&setting_fields_, db);
@@ -72,9 +71,9 @@ DecodeStatus SettingsPayloadDecoder::StartDecodingSettings(
     }
     return HandleNotDone(state, db, status);
   }
-  HTTP2_DVLOG(2) << "LEAVING SettingsPayloadDecoder::StartDecodingSettings"
-                 << "\n\tdb->Remaining=" << db->Remaining()
-                 << "\n\t remaining_payload=" << state->remaining_payload();
+  DVLOG(2) << "LEAVING SettingsPayloadDecoder::StartDecodingSettings"
+           << "\n\tdb->Remaining=" << db->Remaining()
+           << "\n\t remaining_payload=" << state->remaining_payload();
   state->listener()->OnSettingsEnd();
   return DecodeStatus::kDecodeDone;
 }

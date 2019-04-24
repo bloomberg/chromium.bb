@@ -44,7 +44,13 @@ class MockWebMediaPlayer : public EmptyWebMediaPlayer {
 
 class WebMediaStubLocalFrameClient : public EmptyLocalFrameClient {
  public:
-  explicit WebMediaStubLocalFrameClient(std::unique_ptr<WebMediaPlayer> player)
+  static WebMediaStubLocalFrameClient* Create(
+      std::unique_ptr<WebMediaPlayer> player) {
+    return MakeGarbageCollected<WebMediaStubLocalFrameClient>(
+        std::move(player));
+  }
+
+  WebMediaStubLocalFrameClient(std::unique_ptr<WebMediaPlayer> player)
       : player_(std::move(player)) {}
 
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
@@ -85,10 +91,9 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
     EXPECT_CALL(*mock_media_player, DidLazyLoad)
         .WillRepeatedly(testing::Return(false));
 
-    dummy_page_holder_ = std::make_unique<DummyPageHolder>(
+    dummy_page_holder_ = DummyPageHolder::Create(
         IntSize(), nullptr,
-        MakeGarbageCollected<WebMediaStubLocalFrameClient>(
-            std::move(mock_media_player)),
+        WebMediaStubLocalFrameClient::Create(std::move(mock_media_player)),
         nullptr);
 
     if (GetParam() == MediaTestParam::kAudio)
@@ -285,7 +290,7 @@ TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataRespondsToError) {
   EXPECT_FALSE(Media()->ended());
   EXPECT_TRUE(CouldPlayIfEnoughData());
 
-  SetError(MakeGarbageCollected<MediaError>(MediaError::kMediaErrDecode, ""));
+  SetError(MediaError::Create(MediaError::kMediaErrDecode, ""));
   EXPECT_FALSE(CouldPlayIfEnoughData());
 }
 

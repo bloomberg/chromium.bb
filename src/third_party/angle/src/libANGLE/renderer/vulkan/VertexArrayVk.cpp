@@ -138,7 +138,7 @@ VertexArrayVk::VertexArrayVk(ContextVk *contextVk, const gl::VertexArrayState &s
 
     mCurrentArrayBufferHandles.fill(mTheNullBuffer.getBuffer().getHandle());
     mCurrentArrayBufferOffsets.fill(0);
-    mCurrentArrayBuffers.fill(&mTheNullBuffer);
+    mCurrentArrayBuffers.fill(nullptr);
 
     for (vk::DynamicBuffer &buffer : mCurrentArrayBufferConversion)
     {
@@ -264,7 +264,7 @@ angle::Result VertexArrayVk::convertVertexBufferCpu(ContextVk *contextVk,
 {
     TRACE_EVENT0("gpu.angle", "VertexArrayVk::convertVertexBufferCpu");
     // Needed before reading buffer or we could get stale data.
-    ANGLE_TRY(contextVk->finishImpl());
+    ANGLE_TRY(contextVk->getRenderer()->finish(contextVk));
 
     unsigned srcFormatSize = vertexFormat.angleFormat().pixelBytes;
     unsigned dstFormatSize = vertexFormat.bufferFormat().pixelBytes;
@@ -438,7 +438,7 @@ angle::Result VertexArrayVk::syncDirtyAttrib(ContextVk *contextVk,
             {
                 if (bufferVk->getSize() == 0)
                 {
-                    mCurrentArrayBuffers[attribIndex] = &mTheNullBuffer;
+                    mCurrentArrayBuffers[attribIndex] = nullptr;
                     mCurrentArrayBufferHandles[attribIndex] =
                         mTheNullBuffer.getBuffer().getHandle();
                     mCurrentArrayBufferOffsets[attribIndex] = 0;
@@ -458,7 +458,7 @@ angle::Result VertexArrayVk::syncDirtyAttrib(ContextVk *contextVk,
         }
         else
         {
-            mCurrentArrayBuffers[attribIndex]       = &mTheNullBuffer;
+            mCurrentArrayBuffers[attribIndex]       = nullptr;
             mCurrentArrayBufferHandles[attribIndex] = mTheNullBuffer.getBuffer().getHandle();
             mCurrentArrayBufferOffsets[attribIndex] = 0;
             stride                                  = vertexFormat.bufferFormat().pixelBytes;
@@ -473,7 +473,7 @@ angle::Result VertexArrayVk::syncDirtyAttrib(ContextVk *contextVk,
         contextVk->invalidateDefaultAttribute(attribIndex);
 
         // These will be filled out by the ContextVk.
-        mCurrentArrayBuffers[attribIndex]       = &mTheNullBuffer;
+        mCurrentArrayBuffers[attribIndex]       = nullptr;
         mCurrentArrayBufferHandles[attribIndex] = mTheNullBuffer.getBuffer().getHandle();
         mCurrentArrayBufferOffsets[attribIndex] = 0;
 
@@ -483,7 +483,7 @@ angle::Result VertexArrayVk::syncDirtyAttrib(ContextVk *contextVk,
 
     if (anyVertexBufferConvertedOnGpu && renderer->getFeatures().flushAfterVertexConversion)
     {
-        ANGLE_TRY(contextVk->flushImpl());
+        ANGLE_TRY(renderer->flush(contextVk));
     }
 
     return angle::Result::Continue;
@@ -678,7 +678,7 @@ angle::Result VertexArrayVk::updateIndexTranslation(ContextVk *contextVk,
 
         TRACE_EVENT0("gpu.angle", "VertexArrayVk::updateIndexTranslation");
         // Needed before reading buffer or we could get stale data.
-        ANGLE_TRY(contextVk->finishImpl());
+        ANGLE_TRY(renderer->finish(contextVk));
 
         ASSERT(type == gl::DrawElementsType::UnsignedByte);
         // Unsigned bytes don't have direct support in Vulkan so we have to expand the

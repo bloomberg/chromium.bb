@@ -37,10 +37,7 @@ class RenderThreadManager : public CompositorFrameConsumer {
   void SetScrollOffsetOnUI(gfx::Vector2d scroll_offset) override;
   std::unique_ptr<ChildFrame> SetFrameOnUI(
       std::unique_ptr<ChildFrame> frame) override;
-  void TakeParentDrawDataOnUI(
-      ParentCompositorDrawConstraints* constraints,
-      CompositorID* compositor_id,
-      viz::PresentationFeedbackMap* presentation_feedbacks) override;
+  ParentCompositorDrawConstraints GetParentDrawConstraintsOnUI() const override;
   ChildFrameQueue PassUncommittedFrameOnUI() override;
 
   void RemoveFromCompositorFrameProducerOnUI();
@@ -48,10 +45,8 @@ class RenderThreadManager : public CompositorFrameConsumer {
   // Render thread methods.
   gfx::Vector2d GetScrollOffsetOnRT();
   ChildFrameQueue PassFramesOnRT();
-  void PostParentDrawDataToChildCompositorOnRT(
-      const ParentCompositorDrawConstraints& parent_draw_constraints,
-      const CompositorID& compositor_id,
-      viz::PresentationFeedbackMap presentation_feedbacks);
+  void PostExternalDrawConstraintsToChildCompositorOnRT(
+      const ParentCompositorDrawConstraints& parent_draw_constraints);
   void InsertReturnedResourcesOnRT(
       const std::vector<viz::ReturnedResource>& resources,
       const CompositorID& compositor_id,
@@ -113,8 +108,6 @@ class RenderThreadManager : public CompositorFrameConsumer {
   ChildFrameQueue child_frames_;
   bool mark_hardware_release_;
   ParentCompositorDrawConstraints parent_draw_constraints_;
-  CompositorID compositor_id_for_presentation_feedbacks_;
-  viz::PresentationFeedbackMap presentation_feedbacks_;
 
   base::WeakPtrFactory<RenderThreadManager> weak_factory_on_ui_thread_;
 

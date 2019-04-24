@@ -19,7 +19,6 @@
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_stream_writer.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/fileapi/file_system_features.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_options.h"
@@ -39,8 +38,8 @@ namespace storage {
 SandboxFileSystemBackend::SandboxFileSystemBackend(
     SandboxFileSystemBackendDelegate* delegate)
     : delegate_(delegate),
-      enable_temporary_file_system_in_incognito_(base::FeatureList::IsEnabled(
-          features::kEnableFilesystemInIncognito)) {}
+      enable_temporary_file_system_in_incognito_(false) {
+}
 
 SandboxFileSystemBackend::~SandboxFileSystemBackend() = default;
 
@@ -126,9 +125,7 @@ FileSystemOperation* SandboxFileSystemBackend::CreateFileSystemOperation(
 
 bool SandboxFileSystemBackend::SupportsStreaming(
     const storage::FileSystemURL& url) const {
-  // Streaming is required for in-memory implementation to access memory-backed
-  // files.
-  return delegate_->file_system_options().is_incognito();
+  return false;
 }
 
 bool SandboxFileSystemBackend::HasInplaceCopyImplementation(

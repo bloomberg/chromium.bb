@@ -48,9 +48,6 @@ BUILD_PACKAGES_PREBUILTS = '10774.0.0'
 BUILD_PACKAGES_WITH_DEBUG_SYMBOLS = '6302.0.0'
 CROS_RUN_UNITTESTS = '6773.0.0'
 BUILD_IMAGE_BUILDER_PATH = '8183.0.0'
-ANDROID_BREAKPAD = '9667.0.0'
-SETUP_BOARD_PORT_COMPLETE = '11802.0.0'
-
 
 class InvalidWorkspace(failures_lib.StepFailure):
   """Raised when a workspace isn't usable."""
@@ -216,7 +213,6 @@ class SyncStage(WorkspaceStageBase):
       cmd += ['--branch', self.branch]
 
     if self.version:
-      logging.PrintBuildbotStepText('Version: %s' % self.version)
       cmd += ['--version', self.version]
 
     if self.patch_pool:
@@ -280,8 +276,8 @@ class WorkspaceSyncChromeStage(WorkspaceStageBase):
   """Stage that syncs Chrome sources if needed."""
   category = constants.PRODUCT_CHROME_STAGE
 
-  # 6 hours in seconds should be long enough to fetch Chrome. I hope.
-  SYNC_CHROME_TIMEOUT = 6 * 60 * 60
+  # 4 hours in seconds should be long enough to fetch Chrome. I hope.
+  SYNC_CHROME_TIMEOUT = 4 * 60 * 60
 
   def DetermineChromeVersion(self):
     cpv = portage_util.PortageqBestVisible(constants.CHROME_CP,
@@ -382,9 +378,9 @@ class WorkspaceScheduleChildrenStage(WorkspaceStageBase):
 
   def PerformStage(self):
     """Schedule child builds for this buildspec."""
-    #build_identifier, _ = self._run.GetCIDBHandle()
-    #build_id = build_identifier.cidb_id
-    #master_buildbucket_id = self._run.options.buildbucket_id
+    build_identifier, _ = self._run.GetCIDBHandle()
+    build_id = build_identifier.cidb_id
+    master_buildbucket_id = self._run.options.buildbucket_id
     version_info = self.GetWorkspaceVersionInfo()
 
     extra_args = [
@@ -398,10 +394,8 @@ class WorkspaceScheduleChildrenStage(WorkspaceStageBase):
     for child_name in self._run.config.slave_configs:
       child = request_build.RequestBuild(
           build_config=child_name,
-          # See crbug.com/940969. These id's get children killed during
-          # multiple quick builds.
-          #master_cidb_id=build_id,
-          #master_buildbucket_id=master_buildbucket_id,
+          master_cidb_id=build_id,
+          master_buildbucket_id=master_buildbucket_id,
           extra_args=extra_args,
       )
       result = child.Submit(dryrun=self._run.options.debug)
@@ -456,9 +450,7 @@ class WorkspaceSetupBoardStage(generic_stages.BoardSpecificBuilderStage,
 
   def PerformStage(self):
     usepkg = self._run.config.usepkg_build_packages
-    func = (commands.SetupBoard if self.AfterLimit(SETUP_BOARD_PORT_COMPLETE)
-            else commands.LegacySetupBoard)
-    func(
+    commands.SetupBoard(
         self._build_root, board=self._current_board, usepkg=usepkg,
         force=self._run.config.board_replace,
         profile=self._run.options.profile or self._run.config.profile,
@@ -624,20 +616,10 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
     symbols_file = self.DownloadAndroidSymbols()
 
     if symbols_file:
-      try:
-        commands.GenerateAndroidBreakpadSymbols(
-            buildroot, board, symbols_file,
-            chroot_args=ChrootArgs(self._run.options),
-            extra_env=self._portage_extra_env)
-      except failures_lib.BuildScriptFailure:
-        # Android breakpad symbol preparation is expected to work in
-        # modern branches.
-        if self.AfterLimit(ANDROID_BREAKPAD):
-          raise
-
-        # For older branches, we only process them on a best effort basis.
-        logging.PrintBuildbotStepWarnings()
-        logging.warning('Preparing Android symbols failed, ignoring..')
+      commands.GenerateAndroidBreakpadSymbols(
+          buildroot, board, symbols_file,
+          chroot_args=ChrootArgs(self._run.options),
+          extra_env=self._portage_extra_env)
 
     # Upload them.
     self.UploadDebugTarball()
@@ -652,23 +634,18 @@ class WorkspaceDebugSymbolsStage(WorkspaceStageBase,
   def UploadDebugTarball(self):
     """Generate and upload the debug tarball."""
     filename = commands.GenerateDebugTarball(
-        buildroot=self._build_root,
-        board=self._current_board,
-        archive_path=self.archive_path,
-        gdb_symbols=self._run.config.archive_build_debug,
-        archive_name='debug.tgz',
-        chroot_compression=False)
+        self._build_root, self._current_board, self.archive_path,
+        self._run.config.archive_build_debug)
     self.UploadArtifact(filename, archive=False)
 
   def UploadDebugBreakpadTarball(self):
     """Generate and upload the debug tarball with only breakpad files."""
     filename = commands.GenerateDebugTarball(
-        buildroot=self._build_root,
-        board=self._current_board,
-        archive_path=self.archive_path,
-        gdb_symbols=False,
-        archive_name='debug_breakpad.tar.xz',
-        chroot_compression=False)
+        self._build_root,
+        self._current_board,
+        self.archive_path,
+        False,
+        archive_name='debug_breakpad.tar.xz')
     self.UploadArtifact(filename, archive=False)
 
   def UploadSymbols(self, buildroot, board):

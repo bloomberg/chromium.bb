@@ -28,11 +28,11 @@ int ClientView::NonClientHitTest(const gfx::Point& point) {
 }
 
 DialogClientView* ClientView::AsDialogClientView() {
-  return nullptr;
+  return NULL;
 }
 
 const DialogClientView* ClientView::AsDialogClientView() const {
-  return nullptr;
+  return NULL;
 }
 
 bool ClientView::CanClose() {

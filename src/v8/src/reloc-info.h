@@ -379,7 +379,7 @@ class RelocInfoWriter {
 //   }
 //
 // A mask can be specified to skip unwanted modes.
-class V8_EXPORT_PRIVATE RelocIterator : public Malloced {
+class RelocIterator : public Malloced {
  public:
   // Create a new iterator positioned at
   // the beginning of the reloc info.

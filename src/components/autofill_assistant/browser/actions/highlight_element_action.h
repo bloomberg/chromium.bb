@@ -13,7 +13,6 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 
 namespace autofill_assistant {
-
 // An action to highlight an element on Web.
 // TODO(crbug.com/806868): This action should be more configurable instead of
 // using hardcoded css styling since it depends on the content of a page.
@@ -29,10 +28,8 @@ class HighlightElementAction : public Action {
 
   void OnWaitForElement(ActionDelegate* delegate,
                         ProcessActionCallback callback,
-                        const Selector& selector,
                         bool element_found);
-  void OnHighlightElement(ProcessActionCallback callback,
-                          const ClientStatus& status);
+  void OnHighlightElement(ProcessActionCallback callback, bool status);
 
   base::WeakPtrFactory<HighlightElementAction> weak_ptr_factory_;
 

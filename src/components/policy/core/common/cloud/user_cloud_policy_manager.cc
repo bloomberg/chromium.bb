@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "components/account_id/account_id.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_service.h"
@@ -19,6 +20,7 @@
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "components/prefs/pref_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace em = enterprise_management;
@@ -55,6 +57,16 @@ void UserCloudPolicyManager::SetSigninAccountId(const AccountId& account_id) {
 void UserCloudPolicyManager::Connect(
     PrefService* local_state,
     std::unique_ptr<CloudPolicyClient> client) {
+  // TODO(emaxx): Remove the crash key after the crashes tracked at
+  // https://crbug.com/685996 are fixed.
+  if (core()->client()) {
+    static crash_reporter::CrashKeyString<1024> connect_callstack_key(
+        "user-cloud-policy-manager-connect-trace");
+    crash_reporter::SetCrashKeyStringToStackTrace(&connect_callstack_key,
+                                                  connect_callstack_);
+  } else {
+    connect_callstack_ = base::debug::StackTrace();
+  }
   CHECK(!core()->client());
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
@@ -62,7 +74,10 @@ void UserCloudPolicyManager::Connect(
 
   CreateComponentCloudPolicyService(
       dm_protocol::kChromeExtensionPolicyType, component_policy_cache_path_,
-      POLICY_SOURCE_CLOUD, client.get(), schema_registry());
+      (local_state->GetBoolean(policy_prefs::kCloudPolicyOverridesMachinePolicy)
+           ? POLICY_SOURCE_PRIORITY_CLOUD
+           : POLICY_SOURCE_CLOUD),
+      client.get(), schema_registry());
   core()->Connect(std::move(client));
   core()->StartRefreshScheduler();
   core()->TrackRefreshDelayPref(local_state,
@@ -109,8 +124,8 @@ void UserCloudPolicyManager::GetChromePolicy(PolicyMap* policy_map) {
   // If the store has a verified policy blob received from the server then apply
   // the defaults for policies that haven't been configured by the administrator
   // given that this is an enterprise user.
-  // TODO(crbug.com/640950): We should just call SetEnterpriseUsersDefaults
-  // here.
+  // TODO(treib,atwilson): We should just call SetEnterpriseUsersDefaults here,
+  // see crbug.com/640950.
 #if defined(OS_ANDROID)
   if (store()->has_policy() &&
       !policy_map->Get(key::kNTPContentSuggestionsEnabled)) {

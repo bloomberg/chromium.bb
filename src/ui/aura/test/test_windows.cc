@@ -99,7 +99,7 @@ std::string ChildWindowIDsAsString(aura::Window* parent) {
        ++i) {
     if (!result.empty())
       result += " ";
-    result += base::NumberToString((*i)->id());
+    result += base::IntToString((*i)->id());
   }
   return result;
 }

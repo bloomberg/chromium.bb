@@ -111,15 +111,13 @@ MediaSource::MediaSource(ExecutionContext* context)
     : ContextLifecycleObserver(context),
       ready_state_(ClosedKeyword()),
       async_event_queue_(
-          MakeGarbageCollected<EventQueue>(context,
-                                           TaskType::kMediaElementEvent)),
+          EventQueue::Create(context, TaskType::kMediaElementEvent)),
       attached_element_(nullptr),
-      source_buffers_(
-          MakeGarbageCollected<SourceBufferList>(GetExecutionContext(),
-                                                 async_event_queue_.Get())),
+      source_buffers_(SourceBufferList::Create(GetExecutionContext(),
+                                               async_event_queue_.Get())),
       active_source_buffers_(
-          MakeGarbageCollected<SourceBufferList>(GetExecutionContext(),
-                                                 async_event_queue_.Get())),
+          SourceBufferList::Create(GetExecutionContext(),
+                                   async_event_queue_.Get())),
       live_seekable_range_(TimeRanges::Create()),
       added_to_registry_counter_(0) {
   DVLOG(1) << __func__ << " this=" << this;

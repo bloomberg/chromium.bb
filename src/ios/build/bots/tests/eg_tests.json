@@ -5,8 +5,7 @@
   "tests": [
     {
       "app": "ios_chrome_bookmarks_egtests",
-      "shards": 3,
-      "xcode parallelization": true,
+      "shard size": 2,
       "xctest": true
     },
     {
@@ -22,16 +21,7 @@
     },
     {
       "app": "ios_chrome_settings_egtests",
-      "xcode parallelization": true,
-      "shards": 3
-    },
-    {
-      "app": "ios_chrome_translate_egtests",
-      "test args": [
-        "--enable-features=CompactTranslateInfobarIOS"
-      ],
-      "xctest": true,
-      "xcode parallelization": true
+      "xctest": true
     },
     {
       "app": "ios_chrome_reading_list_egtests",
@@ -39,8 +29,7 @@
     },
     {
       "app": "ios_showcase_egtests",
-      "xctest": true,
-      "xcode parallelization": true
+      "xctest": true
     }
   ]
 }

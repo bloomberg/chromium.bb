@@ -3122,7 +3122,7 @@ TEST_F(FileUtilTest, ReadFileToStringWithNamedPipe) {
   CommandLine child_command_line(GetMultiProcessTestChildBaseCommandLine());
   child_command_line.AppendSwitchPath("pipe-path", pipe_path);
   child_command_line.AppendSwitchASCII(
-      "sync_event", NumberToString(win::HandleToUint32(sync_event.Get())));
+      "sync_event", UintToString(win::HandleToUint32(sync_event.Get())));
 
   LaunchOptions options;
   options.handles_to_inherit.push_back(sync_event.Get());

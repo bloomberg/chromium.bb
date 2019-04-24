@@ -179,8 +179,8 @@ views::View* AssistantPageView::GetLastFocusableView() {
 }
 
 void AssistantPageView::OnUiModeChanged(ash::AssistantUiMode ui_mode) {
-  for (auto* child : children())
-    child->SetVisible(false);
+  for (int i = 0; i < child_count(); ++i)
+    child_at(i)->SetVisible(false);
 
   switch (ui_mode) {
     case ash::AssistantUiMode::kLauncherEmbeddedUi:

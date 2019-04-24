@@ -12,7 +12,6 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/web/public/navigation_manager.h"
@@ -135,7 +134,7 @@
 }
 
 - (void)executeJavaScript:(NSString*)script
-        completionHandler:(void (^)(id, NSError*))handler {
+        completionHandler:(web::JavaScriptResultBlock)handler {
   [webView_ evaluateJavaScript:script completionHandler:handler];
 }
 
@@ -234,11 +233,11 @@
   // if they are issued by the main frame.
   if (fromMainFrame) {
     dispatch_async(dispatch_get_main_queue(), ^{
+      ChromeLoadParams params(net::GURLWithNSURL([request URL]));
       ios::ChromeBrowserState* chrome_browser_state =
           ios::ChromeBrowserState::FromBrowserState(browserState_);
       UrlLoadingServiceFactory::GetForBrowserState(chrome_browser_state)
-          ->Load(
-              UrlLoadParams::InCurrentTab(net::GURLWithNSURL([request URL])));
+          ->LoadUrlInCurrentTab(params);
     });
   }
   return NO;

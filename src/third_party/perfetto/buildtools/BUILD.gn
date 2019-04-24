@@ -66,7 +66,6 @@ config("libunwindstack_config") {
       rebase_path("bionic/libc/include", root_build_dir),
     ]
   }
-  defines = [ "NO_LIBDEXFILE_SUPPORT" ]
 }
 
 # Config to include gtest.h in test targets.
@@ -687,6 +686,7 @@ source_set("libunwindstack") {
   deps = [
     ":lzma",
   ]
+  defines = [ "NO_LIBDEXFILE_SUPPORT" ]
   sources = [
     "android-core/base/file.cpp",
     "android-core/base/logging.cpp",

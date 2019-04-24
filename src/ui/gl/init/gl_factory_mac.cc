@@ -72,8 +72,7 @@ std::vector<GLImplementation> GetAllowedGLImplementations() {
   return impls;
 }
 
-bool GetGLWindowSystemBindingInfo(const GLVersionInfo& gl_info,
-                                  GLWindowSystemBindingInfo* info) {
+bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
   return false;
 }
 

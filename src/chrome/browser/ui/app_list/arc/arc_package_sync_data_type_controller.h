@@ -46,6 +46,8 @@ class ArcPackageSyncDataTypeController
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnArcInitialStart() override;
 
+  void EnableDataType();
+
   // Returns true if user enables app sync.
   bool ShouldSyncArc() const;
 

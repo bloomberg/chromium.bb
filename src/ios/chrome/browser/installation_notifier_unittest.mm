@@ -111,7 +111,6 @@ class InstallationNotifierTest : public PlatformTest {
 
   ~InstallationNotifierTest() override {
     [installationNotifier_ resetDispatcher];
-    [application_ stopMocking];
   }
 
   void VerifyHistogramValidity(int expectedYes, int expectedNo) {

@@ -86,7 +86,7 @@ class DeoptimizationLiteral {
 };
 
 // Generates native code for a sequence of instructions.
-class V8_EXPORT_PRIVATE CodeGenerator final : public GapResolver::Assembler {
+class CodeGenerator final : public GapResolver::Assembler {
  public:
   explicit CodeGenerator(Zone* codegen_zone, Frame* frame, Linkage* linkage,
                          InstructionSequence* instructions,
@@ -262,7 +262,7 @@ class V8_EXPORT_PRIVATE CodeGenerator final : public GapResolver::Assembler {
     kScalarPush = kRegisterPush | kStackSlotPush
   };
 
-  using PushTypeFlags = base::Flags<PushTypeFlag>;
+  typedef base::Flags<PushTypeFlag> PushTypeFlags;
 
   static bool IsValidPush(InstructionOperand source, PushTypeFlags push_type);
 

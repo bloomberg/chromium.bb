@@ -138,13 +138,6 @@ TEST_F('ChromeVoxEditingTest', 'TextButNoSelectionChange', function() {
 });
 
 TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', function() {
-  // Turn on rich text output settings.
-  localStorage['customizeRichTextIndication'] = 'true';
-  localStorage['indicateMisspell'] = 'announce';
-  localStorage['indicateBold'] = 'announce';
-  localStorage['indicateItalic'] = 'announce';
-  localStorage['indicateUnderline'] = 'announce';
-
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div role="textbox" contenteditable>
@@ -194,13 +187,6 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', function() {
 });
 
 TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
-  // Turn on rich text output settings.
-  localStorage['customizeRichTextIndication'] = 'true';
-  localStorage['indicateMisspell'] = 'announce';
-  localStorage['indicateBold'] = 'announce';
-  localStorage['indicateItalic'] = 'announce';
-  localStorage['indicateUnderline'] = 'announce';
-
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div role="textbox" contenteditable>This <b>is</b> a test.</div>
@@ -271,8 +257,7 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
   });
 });
 
-// Flakily times out. crbug.com/942241
-TEST_F('ChromeVoxEditingTest', 'DISABLED_RichTextMoveByCharacterAllAttributes', function() {
+TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterAllAttributes', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div role="textbox" contenteditable>
@@ -497,13 +482,6 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterEndOfLine', function() {
 });
 
 TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', function() {
-  // Turn on rich text output settings.
-  localStorage['customizeRichTextIndication'] = 'true';
-  localStorage['indicateMisspell'] = 'announce';
-  localStorage['indicateBold'] = 'announce';
-  localStorage['indicateItalic'] = 'announce';
-  localStorage['indicateUnderline'] = 'announce';
-
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
     <div role="textbox" contenteditable>a <a href="#">test</a></div>

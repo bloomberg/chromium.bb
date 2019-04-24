@@ -1,4 +1,4 @@
-#### api/gen
+#### api/messages
 
 Generated protobuf messages.
 

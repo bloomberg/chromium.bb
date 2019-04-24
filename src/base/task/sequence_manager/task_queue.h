@@ -12,10 +12,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/lock.h"
 #include "base/task/sequence_manager/lazy_now.h"
+#include "base/task/sequence_manager/moveable_auto_lock.h"
 #include "base/task/sequence_manager/tasks.h"
-#include "base/task/task_observer.h"
-#include "base/task/thread_pool/scheduler_lock.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
@@ -62,11 +62,9 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
                                           TimeTicks next_wake_up) = 0;
   };
 
-  // Shuts down the queue. All tasks currently queued will be discarded.
+  // Prepare the task queue to get released.
+  // All tasks posted after this call will be discarded.
   virtual void ShutdownTaskQueue();
-
-  // Shuts down the queue when there are no more tasks queued.
-  void ShutdownTaskQueueGracefully();
 
   // TODO(scheduler-dev): Could we define a more clear list of priorities?
   // See https://crbug.com/847858.
@@ -206,9 +204,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
     // are no voters.
     // NOTE this must be called on the thread the associated TaskQueue was
     // created on.
-    void SetVoteToEnable(bool enabled);
-
-    bool IsVotingToEnable() const { return enabled_; }
+    void SetQueueEnabled(bool enabled);
 
    private:
     friend class TaskQueue;
@@ -255,8 +251,8 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
 
   // These functions can only be called on the same thread that the task queue
   // manager executes its tasks on.
-  void AddTaskObserver(TaskObserver* task_observer);
-  void RemoveTaskObserver(TaskObserver* task_observer);
+  void AddTaskObserver(MessageLoop::TaskObserver* task_observer);
+  void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer);
 
   // Set the blame context which is entered and left while executing tasks from
   // this task queue. |blame_context| must be null or outlive this task queue.
@@ -319,7 +315,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // NOTE: Task runners don't hold a reference to a TaskQueue, hence,
   // it's required to retain that reference to prevent automatic graceful
   // shutdown. Unique ownership of task queues will fix this issue soon.
-  scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(TaskType task_type);
+  scoped_refptr<SingleThreadTaskRunner> CreateTaskRunner(int task_type);
 
   // Default task runner which doesn't annotate tasks with a task type.
   scoped_refptr<SingleThreadTaskRunner> task_runner() const {
@@ -343,6 +339,8 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
 
   bool IsOnMainThread() const;
 
+  Optional<MoveableAutoLock> AcquireImplReadLockIfNeeded() const;
+
   // TaskQueue has ownership of an underlying implementation but in certain
   // cases (e.g. detached frames) their lifetime may diverge.
   // This method should be used to take away the impl for graceful shutdown.
@@ -354,8 +352,7 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
   // |impl_lock_| must be acquired when writing to |impl_| or when accessing
   // it from non-main thread. Reading from the main thread does not require
   // a lock.
-  mutable base::internal::SchedulerLock impl_lock_{
-      base::internal::UniversalPredecessor{}};
+  mutable Lock impl_lock_;
   std::unique_ptr<internal::TaskQueueImpl> impl_;
 
   const WeakPtr<internal::SequenceManagerImpl> sequence_manager_;
@@ -365,7 +362,6 @@ class BASE_EXPORT TaskQueue : public RefCountedThreadSafe<TaskQueue> {
 
   int enabled_voter_count_ = 0;
   int voter_count_ = 0;
-  const char* name_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueue);
 };

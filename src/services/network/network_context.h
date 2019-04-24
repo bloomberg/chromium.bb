@@ -11,7 +11,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -128,8 +127,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // TODO(mmenke):  Remove this constructor when the network service ships.
   NetworkContext(NetworkService* network_service,
                  mojom::NetworkContextRequest request,
-                 net::URLRequestContext* url_request_context,
-                 const std::vector<std::string>& cors_exempt_header_list);
+                 net::URLRequestContext* url_request_context);
 
   ~NetworkContext() override;
 
@@ -152,10 +150,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   ResourceScheduler* resource_scheduler() { return resource_scheduler_.get(); }
 
   CookieManager* cookie_manager() { return cookie_manager_.get(); }
-
-  const std::unordered_set<std::string>& cors_exempt_header_list() const {
-    return cors_exempt_header_list_;
-  }
 
 #if defined(OS_ANDROID)
   base::android::ApplicationStatusListener* app_status_listener() const {
@@ -277,7 +271,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                        int32_t process_id,
                        int32_t render_frame_id,
                        const url::Origin& origin,
-                       uint32_t options,
                        mojom::AuthenticationHandlerPtr auth_handler,
                        mojom::TrustedHeaderClientPtr header_client) override;
   void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;
@@ -380,6 +373,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return proxy_delegate_.get();
   }
 
+  void set_host_resolver_factory_for_testing(
+      std::unique_ptr<net::HostResolver::Factory> factory) {
+    host_resolver_factory_ = std::move(factory);
+  }
+
   void set_network_qualities_pref_delegate_for_testing(
       std::unique_ptr<NetworkQualitiesPrefDelegate>
           network_qualities_pref_delegate) {
@@ -442,7 +440,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void OnSetExpectCTTestReportFailure();
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
-  void InitializeCorsParams();
+  void InitializeCorsOriginAccessList();
 
   NetworkService* const network_service_;
 
@@ -554,6 +552,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
            std::unique_ptr<net::HostResolver>,
            base::UniquePtrComparator>
       host_resolvers_;
+  // Factory used to create any needed private internal net::HostResolvers.
+  std::unique_ptr<net::HostResolver::Factory> host_resolver_factory_;
 
   std::unique_ptr<NetworkServiceProxyDelegate> proxy_delegate_;
 
@@ -576,10 +576,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // Manages allowed origin access lists.
   cors::OriginAccessList cors_origin_access_list_;
-
-  // Manages header keys that are allowed to be used in
-  // ResourceRequest::cors_exempt_headers.
-  std::unordered_set<std::string> cors_exempt_header_list_;
 
   // Manages CORS preflight requests and its cache.
   cors::PreflightController cors_preflight_controller_;

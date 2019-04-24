@@ -10,7 +10,6 @@
 #include "base/win/windows_types.h"
 
 namespace base {
-class CommandLine;
 class FilePath;
 }  // namespace base
 
@@ -25,8 +24,6 @@ namespace switches {
 extern const char kParentHandle[];
 extern const char kInstallPath[];
 extern const char kUninstall[];
-extern const char kEnableStats[];
-extern const char kDisableStats[];
 
 }  // namespace switches
 
@@ -53,10 +50,6 @@ HRESULT RelaunchUninstaller(const base::FilePath& installer_path);
 // used in tests to validate that files are correctly installed.
 void GetInstalledFileBasenames(const base::FilePath::CharType* const** names,
                                size_t* count);
-
-// Enable or disable stats and crash report collection.  Returns 0 on success
-// and -1 on failure.
-int EnableStatsCollection(const base::CommandLine& cmdline);
 
 }  // namespace credential_provider
 

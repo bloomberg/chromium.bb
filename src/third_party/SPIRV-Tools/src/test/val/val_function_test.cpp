@@ -321,15 +321,13 @@ TEST_P(ValidateFunctionCall, NonMemoryObjectDeclarationNoVariablePointers) {
   std::string spirv = GenerateShaderAccessChain(storage_class, "", "");
 
   const std::vector<std::string> valid_storage_classes = {
-      "Function", "Private", "Workgroup", "AtomicCounter"};
+      "UniformConstant", "Function", "Private", "Workgroup", "AtomicCounter"};
   bool valid_sc =
       std::find(valid_storage_classes.begin(), valid_storage_classes.end(),
                 storage_class) != valid_storage_classes.end();
 
   CompileSuccessfully(spirv);
-  spv_result_t expected_result =
-      storage_class == "UniformConstant" ? SPV_SUCCESS : SPV_ERROR_INVALID_ID;
-  EXPECT_EQ(expected_result, ValidateInstructions());
+  EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions());
   if (valid_sc) {
     EXPECT_THAT(
         getDiagnosticString(),
@@ -340,7 +338,7 @@ TEST_P(ValidateFunctionCall, NonMemoryObjectDeclarationNoVariablePointers) {
       EXPECT_THAT(getDiagnosticString(),
                   HasSubstr("StorageBuffer pointer operand 2[%gep] requires a "
                             "variable pointers capability"));
-    } else if (storage_class != "UniformConstant") {
+    } else {
       EXPECT_THAT(
           getDiagnosticString(),
           HasSubstr("Invalid storage class for pointer operand 2[%gep]"));
@@ -357,12 +355,12 @@ TEST_P(ValidateFunctionCall,
       "OpExtension \"SPV_KHR_variable_pointers\"");
 
   const std::vector<std::string> valid_storage_classes = {
-      "Function", "Private", "Workgroup", "StorageBuffer", "AtomicCounter"};
+      "UniformConstant", "Function",      "Private",
+      "Workgroup",       "StorageBuffer", "AtomicCounter"};
   bool valid_sc =
       std::find(valid_storage_classes.begin(), valid_storage_classes.end(),
                 storage_class) != valid_storage_classes.end();
-  bool validate =
-      storage_class == "StorageBuffer" || storage_class == "UniformConstant";
+  bool validate = storage_class == "StorageBuffer";
 
   CompileSuccessfully(spirv);
   if (validate) {
@@ -390,13 +388,13 @@ TEST_P(ValidateFunctionCall, NonMemoryObjectDeclarationVariablePointers) {
                                 "OpExtension \"SPV_KHR_variable_pointers\"");
 
   const std::vector<std::string> valid_storage_classes = {
-      "Function", "Private", "Workgroup", "StorageBuffer", "AtomicCounter"};
+      "UniformConstant", "Function",      "Private",
+      "Workgroup",       "StorageBuffer", "AtomicCounter"};
   bool valid_sc =
       std::find(valid_storage_classes.begin(), valid_storage_classes.end(),
                 storage_class) != valid_storage_classes.end();
-  bool validate = storage_class == "StorageBuffer" ||
-                  storage_class == "Workgroup" ||
-                  storage_class == "UniformConstant";
+  bool validate =
+      storage_class == "StorageBuffer" || storage_class == "Workgroup";
 
   CompileSuccessfully(spirv);
   if (validate) {

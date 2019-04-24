@@ -108,10 +108,8 @@ void PowerButtonScreenshotController::OnKeyEvent(ui::KeyEvent* event) {
 
       if (!volume_down_timer_.IsRunning()) {
         volume_down_timer_.Start(
-            FROM_HERE, kScreenshotChordDelay,
-            base::BindOnce(
-                &PowerButtonScreenshotController::OnVolumeDownTimeout,
-                base::Unretained(this), ui::Accelerator(*event)));
+            FROM_HERE, kScreenshotChordDelay, this,
+            &PowerButtonScreenshotController::OnVolumeDownTimeout);
       }
     }
   }
@@ -142,10 +140,8 @@ bool PowerButtonScreenshotController::InterceptScreenshotChord() {
   return false;
 }
 
-void PowerButtonScreenshotController::OnVolumeDownTimeout(
-    const ui::Accelerator& accelerator) {
-  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(VOLUME_DOWN,
-                                                                 accelerator);
+void PowerButtonScreenshotController::OnVolumeDownTimeout() {
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(VOLUME_DOWN);
 }
 
 }  // namespace ash

@@ -38,8 +38,6 @@ class CONTENT_EXPORT HardwareKeyMediaController
   void MediaSessionActionsChanged(
       const std::vector<media_session::mojom::MediaSessionAction>& actions)
       override;
-  void MediaSessionChanged(
-      const base::Optional<base::UnguessableToken>& request_id) override {}
 
   // ui::MediaKeysListener::Delegate:
   void OnMediaKeysAccelerator(const ui::Accelerator& accelerator) override;

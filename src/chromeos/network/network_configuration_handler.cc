@@ -18,9 +18,10 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill_profile_client.h"
+#include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -117,10 +118,12 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
   }
 
   void Run() {
-    ShillServiceClient::Get()->GetLoadableProfileEntries(
-        dbus::ObjectPath(service_path_),
-        base::Bind(&ProfileEntryDeleter::GetProfileEntriesToDeleteCallback,
-                   weak_ptr_factory_.GetWeakPtr()));
+    DBusThreadManager::Get()
+        ->GetShillServiceClient()
+        ->GetLoadableProfileEntries(
+            dbus::ObjectPath(service_path_),
+            base::Bind(&ProfileEntryDeleter::GetProfileEntriesToDeleteCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -163,7 +166,7 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
       NET_LOG(DEBUG) << "Delete Profile Entry: " << profile_path << ": "
                      << entry_path;
       profile_delete_entries_[profile_path] = entry_path;
-      ShillProfileClient::Get()->DeleteEntry(
+      DBusThreadManager::Get()->GetShillProfileClient()->DeleteEntry(
           dbus::ObjectPath(profile_path), entry_path,
           base::Bind(&ProfileEntryDeleter::ProfileEntryDeletedCallback,
                      weak_ptr_factory_.GetWeakPtr(), profile_path, entry_path),
@@ -255,7 +258,7 @@ void NetworkConfigurationHandler::GetShillProperties(
     callback.Run(service_path, dictionary);
     return;
   }
-  ShillServiceClient::Get()->GetProperties(
+  DBusThreadManager::Get()->GetShillServiceClient()->GetProperties(
       dbus::ObjectPath(service_path),
       base::Bind(&NetworkConfigurationHandler::GetPropertiesCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback, error_callback,
@@ -294,7 +297,7 @@ void NetworkConfigurationHandler::SetShillProperties(
 
   std::unique_ptr<base::DictionaryValue> properties_copy(
       properties_to_set->DeepCopy());
-  ShillServiceClient::Get()->SetProperties(
+  DBusThreadManager::Get()->GetShillServiceClient()->SetProperties(
       dbus::ObjectPath(service_path), *properties_to_set,
       base::Bind(&NetworkConfigurationHandler::SetPropertiesSuccessCallback,
                  weak_ptr_factory_.GetWeakPtr(), service_path,
@@ -323,7 +326,7 @@ void NetworkConfigurationHandler::ClearShillProperties(
        iter != names.end(); ++iter) {
     NET_LOG(DEBUG) << "ClearProperty: " << service_path << "." << *iter;
   }
-  ShillServiceClient::Get()->ClearProperties(
+  DBusThreadManager::Get()->GetShillServiceClient()->ClearProperties(
       dbus::ObjectPath(service_path), names,
       base::Bind(&NetworkConfigurationHandler::ClearPropertiesSuccessCallback,
                  weak_ptr_factory_.GetWeakPtr(), service_path, names, callback),
@@ -335,7 +338,8 @@ void NetworkConfigurationHandler::CreateShillConfiguration(
     const base::DictionaryValue& shill_properties,
     const network_handler::ServiceResultCallback& callback,
     const network_handler::ErrorCallback& error_callback) {
-  ShillManagerClient* manager = ShillManagerClient::Get();
+  ShillManagerClient* manager =
+      DBusThreadManager::Get()->GetShillManagerClient();
   std::string type;
   shill_properties.GetStringWithoutPathExpansion(shill::kTypeProperty, &type);
   DCHECK(!type.empty());
@@ -433,7 +437,7 @@ void NetworkConfigurationHandler::SetNetworkProfile(
   NET_LOG(USER) << "SetNetworkProfile: " << service_path << ": "
                 << profile_path;
   base::Value profile_path_value(profile_path);
-  ShillServiceClient::Get()->SetProperty(
+  DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
       dbus::ObjectPath(service_path), shill::kProfileProperty,
       profile_path_value,
       base::Bind(&NetworkConfigurationHandler::SetNetworkProfileCompleted,
@@ -449,7 +453,7 @@ void NetworkConfigurationHandler::SetManagerProperty(
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
   NET_LOG(USER) << "SetManagerProperty: " << property_name << ": " << value;
-  ShillManagerClient::Get()->SetProperty(
+  DBusThreadManager::Get()->GetShillManagerClient()->SetProperty(
       property_name, value, callback,
       base::Bind(&ManagerSetPropertiesErrorCallback, error_callback));
 }

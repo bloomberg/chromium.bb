@@ -114,6 +114,7 @@ class HostContextFactoryPrivate : public ContextFactoryPrivate {
 
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
   viz::HostFrameSinkManager* host_frame_sink_manager_;
+  const viz::RendererSettings renderer_settings_;
 
   bool is_gpu_compositing_disabled_ = false;
 

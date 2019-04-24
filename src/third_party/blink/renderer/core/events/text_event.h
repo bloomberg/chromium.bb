@@ -103,10 +103,11 @@ inline bool IsTextEvent(const Event& event) {
          event.HasInterface(event_interface_names::kTextEvent);
 }
 
-template <>
-struct DowncastTraits<TextEvent> {
-  static bool AllowFrom(const Event& event) { return IsTextEvent(event); }
-};
+DEFINE_TYPE_CASTS(TextEvent,
+                  Event,
+                  event,
+                  IsTextEvent(*event),
+                  IsTextEvent(event));
 
 }  // namespace blink
 

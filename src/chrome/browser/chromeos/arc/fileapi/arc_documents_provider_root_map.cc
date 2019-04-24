@@ -20,14 +20,13 @@ namespace {
 struct DocumentsProviderSpec {
   const char* authority;
   const char* root_document_id;
-  const char* root_id;
 };
 
 // List of documents providers for media views.
 constexpr DocumentsProviderSpec kDocumentsProviderWhitelist[] = {
-    {"com.android.providers.media.documents", "images_root", "images_root"},
-    {"com.android.providers.media.documents", "videos_root", "videos_root"},
-    {"com.android.providers.media.documents", "audio_root", "audio_root"},
+    {"com.android.providers.media.documents", "images_root"},
+    {"com.android.providers.media.documents", "videos_root"},
+    {"com.android.providers.media.documents", "audio_root"},
 };
 
 }  // namespace
@@ -52,7 +51,7 @@ ArcDocumentsProviderRootMap::ArcDocumentsProviderRootMap(Profile* profile)
   DCHECK(runner_);
 
   for (const auto& spec : kDocumentsProviderWhitelist)
-    RegisterRoot(spec.authority, spec.root_document_id, spec.root_id, {});
+    RegisterRoot(spec.authority, spec.root_document_id);
 }
 
 ArcDocumentsProviderRootMap::~ArcDocumentsProviderRootMap() {
@@ -92,9 +91,7 @@ ArcDocumentsProviderRoot* ArcDocumentsProviderRootMap::Lookup(
 
 void ArcDocumentsProviderRootMap::RegisterRoot(
     const std::string& authority,
-    const std::string& root_document_id,
-    const std::string& root_id,
-    const std::vector<std::string>& mime_types) {
+    const std::string& root_document_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Key key(authority, root_document_id);
@@ -103,9 +100,8 @@ void ArcDocumentsProviderRootMap::RegisterRoot(
             << ") which is already regisered.";
     return;
   }
-  map_.emplace(key,
-               std::make_unique<ArcDocumentsProviderRoot>(
-                   runner_, authority, root_document_id, root_id, mime_types));
+  map_.emplace(key, std::make_unique<ArcDocumentsProviderRoot>(
+                        runner_, authority, root_document_id));
 }
 
 void ArcDocumentsProviderRootMap::UnregisterRoot(

@@ -8,8 +8,8 @@
 
 #include "fxjs/xfa/cjx_object.h"
 #include "xfa/fxfa/cxfa_ffnotify.h"
+#include "xfa/fxfa/layout/cxfa_containerlayoutitem.h"
 #include "xfa/fxfa/layout/cxfa_contentlayoutitem.h"
-#include "xfa/fxfa/layout/cxfa_viewlayoutitem.h"
 #include "xfa/fxfa/parser/cxfa_margin.h"
 #include "xfa/fxfa/parser/cxfa_measurement.h"
 #include "xfa/fxfa/parser/cxfa_node.h"
@@ -28,7 +28,7 @@ void XFA_ReleaseLayoutItem(CXFA_LayoutItem* pLayoutItem) {
   }
   pNotify->OnLayoutItemRemoving(pDocLayout, pLayoutItem);
   if (pLayoutItem->GetFormNode()->GetElementType() == XFA_Element::PageArea) {
-    pNotify->OnPageEvent(ToViewLayoutItem(pLayoutItem),
+    pNotify->OnPageEvent(ToContainerLayoutItem(pLayoutItem),
                          XFA_PAGEVIEWEVENT_PostRemoved);
   }
   delete pLayoutItem;
@@ -39,13 +39,9 @@ CXFA_LayoutItem::CXFA_LayoutItem(CXFA_Node* pNode, ItemType type)
 
 CXFA_LayoutItem::~CXFA_LayoutItem() = default;
 
-CXFA_ViewLayoutItem* CXFA_LayoutItem::AsViewLayoutItem() {
-  return IsViewLayoutItem() ? static_cast<CXFA_ViewLayoutItem*>(this) : nullptr;
-}
-
-const CXFA_ViewLayoutItem* CXFA_LayoutItem::AsViewLayoutItem() const {
-  return IsViewLayoutItem() ? static_cast<const CXFA_ViewLayoutItem*>(this)
-                            : nullptr;
+CXFA_ContainerLayoutItem* CXFA_LayoutItem::AsContainerLayoutItem() {
+  return IsContainerLayoutItem() ? static_cast<CXFA_ContainerLayoutItem*>(this)
+                                 : nullptr;
 }
 
 CXFA_ContentLayoutItem* CXFA_LayoutItem::AsContentLayoutItem() {
@@ -53,17 +49,11 @@ CXFA_ContentLayoutItem* CXFA_LayoutItem::AsContentLayoutItem() {
                                : nullptr;
 }
 
-const CXFA_ContentLayoutItem* CXFA_LayoutItem::AsContentLayoutItem() const {
-  return IsContentLayoutItem()
-             ? static_cast<const CXFA_ContentLayoutItem*>(this)
-             : nullptr;
-}
-
-CXFA_ViewLayoutItem* CXFA_LayoutItem::GetPage() const {
+CXFA_ContainerLayoutItem* CXFA_LayoutItem::GetPage() const {
   for (CXFA_LayoutItem* pCurNode = const_cast<CXFA_LayoutItem*>(this); pCurNode;
        pCurNode = pCurNode->m_pParent) {
     if (pCurNode->m_pFormNode->GetElementType() == XFA_Element::PageArea)
-      return pCurNode->AsViewLayoutItem();
+      return pCurNode->AsContainerLayoutItem();
   }
   return nullptr;
 }

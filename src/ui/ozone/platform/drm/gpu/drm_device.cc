@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"

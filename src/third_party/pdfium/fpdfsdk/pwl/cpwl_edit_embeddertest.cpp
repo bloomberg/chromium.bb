@@ -60,7 +60,7 @@ class CPWLEditEmbedderTest : public EmbedderTest {
     }
 
     m_pFormFiller =
-        pInteractiveFormFiller->GetFormFillerForTesting(pAnnotTextField);
+        pInteractiveFormFiller->GetFormFiller(pAnnotTextField, false);
     ASSERT_TRUE(m_pFormFiller);
 
     CPWL_Wnd* pWindow =

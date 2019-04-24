@@ -86,18 +86,19 @@ uprv_detectWindowsTimeZone()
     }
 
     if (dynamicTZI.TimeZoneKeyName[0] != 0) {
-        StackUResourceBundle winTZ;
-        ures_getByKey(bundle.getAlias(), dynamicTZKeyName, winTZ.getAlias(), &status);
-
+        UResourceBundle winTZ;
+        ures_initStackObject(&winTZ);
+        ures_getByKey(bundle.getAlias(), dynamicTZKeyName, &winTZ, &status);
+        
         if (U_SUCCESS(status)) {
             const UChar* icuTZ = nullptr;
             if (errorCode != 0) {
-                icuTZ = ures_getStringByKey(winTZ.getAlias(), ISOcode, &len, &status);
+                icuTZ = ures_getStringByKey(&winTZ, ISOcode, &len, &status);
             }
             if (errorCode == 0 || icuTZ == nullptr) {
                 /* fallback to default "001" and reset status */
                 status = U_ZERO_ERROR;
-                icuTZ = ures_getStringByKey(winTZ.getAlias(), "001", &len, &status);
+                icuTZ = ures_getStringByKey(&winTZ, "001", &len, &status);
             }
 
             if (U_SUCCESS(status)) {
@@ -110,6 +111,7 @@ uprv_detectWindowsTimeZone()
                 tmpid[index] = '\0';
             }
         }
+        ures_close(&winTZ);
     }
 
     // Copy the timezone ID to icuid to be returned.

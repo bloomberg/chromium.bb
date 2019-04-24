@@ -20,11 +20,11 @@ namespace {
 // Wrapper for the scroll buttons.
 class ScrollBarButton : public BaseScrollBarButton {
  public:
-  enum class Type {
-    kUp,
-    kDown,
-    kLeft,
-    kRight,
+  enum Type {
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
   };
 
   ScrollBarButton(ButtonListener* listener, Type type);
@@ -47,7 +47,7 @@ class ScrollBarButton : public BaseScrollBarButton {
 // Wrapper for the scroll thumb
 class ScrollBarThumb : public BaseScrollBarThumb {
  public:
-  explicit ScrollBarThumb(ScrollBar* scroll_bar);
+  explicit ScrollBarThumb(BaseScrollBar* scroll_bar);
   ~ScrollBarThumb() override;
 
   gfx::Size CalculatePreferredSize() const override;
@@ -72,7 +72,7 @@ ScrollBarButton::ScrollBarButton(ButtonListener* listener, Type type)
   SetFocusBehavior(FocusBehavior::NEVER);
 }
 
-ScrollBarButton::~ScrollBarButton() = default;
+ScrollBarButton::~ScrollBarButton() {}
 
 gfx::Size ScrollBarButton::CalculatePreferredSize() const {
   return GetNativeTheme()->GetPartSize(
@@ -103,13 +103,13 @@ ui::NativeTheme::ExtraParams ScrollBarButton::GetNativeThemeParams() const {
 
 ui::NativeTheme::Part ScrollBarButton::GetNativeThemePart() const {
   switch (type_) {
-    case Type::kUp:
+    case UP:
       return ui::NativeTheme::kScrollbarUpArrow;
-    case Type::kDown:
+    case DOWN:
       return ui::NativeTheme::kScrollbarDownArrow;
-    case Type::kLeft:
+    case LEFT:
       return ui::NativeTheme::kScrollbarLeftArrow;
-    case Type::kRight:
+    case RIGHT:
       return ui::NativeTheme::kScrollbarRightArrow;
   }
 
@@ -138,10 +138,10 @@ ui::NativeTheme::State ScrollBarButton::GetNativeThemeState() const {
 /////////////////////////////////////////////////////////////////////////////
 // ScrollBarThumb
 
-ScrollBarThumb::ScrollBarThumb(ScrollBar* scroll_bar)
+ScrollBarThumb::ScrollBarThumb(BaseScrollBar* scroll_bar)
     : BaseScrollBarThumb(scroll_bar), scroll_bar_(scroll_bar) {}
 
-ScrollBarThumb::~ScrollBarThumb() = default;
+ScrollBarThumb::~ScrollBarThumb() {}
 
 gfx::Size ScrollBarThumb::CalculatePreferredSize() const {
   return GetNativeTheme()->GetPartSize(
@@ -199,17 +199,17 @@ ui::NativeTheme::State ScrollBarThumb::GetNativeThemeState() const {
 
 const char ScrollBarViews::kViewClassName[] = "ScrollBarViews";
 
-ScrollBarViews::ScrollBarViews(bool horizontal) : ScrollBar(horizontal) {
-  using Type = ScrollBarButton::Type;
+ScrollBarViews::ScrollBarViews(bool horizontal)
+    : BaseScrollBar(horizontal) {
   SetThumb(new ScrollBarThumb(this));
   if (horizontal) {
-    prev_button_ = new ScrollBarButton(this, Type::kLeft);
-    next_button_ = new ScrollBarButton(this, Type::kRight);
+    prev_button_ = new ScrollBarButton(this, ScrollBarButton::LEFT);
+    next_button_ = new ScrollBarButton(this, ScrollBarButton::RIGHT);
 
     part_ = ui::NativeTheme::kScrollbarHorizontalTrack;
   } else {
-    prev_button_ = new ScrollBarButton(this, Type::kUp);
-    next_button_ = new ScrollBarButton(this, Type::kDown);
+    prev_button_ = new ScrollBarButton(this, ScrollBarButton::UP);
+    next_button_ = new ScrollBarButton(this, ScrollBarButton::DOWN);
 
     part_ = ui::NativeTheme::kScrollbarVerticalTrack;
   }
@@ -223,7 +223,7 @@ ScrollBarViews::ScrollBarViews(bool horizontal) : ScrollBar(horizontal) {
   next_button_->set_context_menu_controller(this);
 }
 
-ScrollBarViews::~ScrollBarViews() = default;
+ScrollBarViews::~ScrollBarViews() {}
 
 // static
 int ScrollBarViews::GetVerticalScrollBarWidth(const ui::NativeTheme* theme) {
@@ -295,9 +295,9 @@ int ScrollBarViews::GetThickness() const {
 
 void ScrollBarViews::ButtonPressed(Button* sender, const ui::Event& event) {
   if (sender == prev_button_) {
-    ScrollByAmount(ScrollBar::ScrollAmount::kPrevLine);
+    ScrollByAmount(SCROLL_PREV_LINE);
   } else if (sender == next_button_) {
-    ScrollByAmount(ScrollBar::ScrollAmount::kNextLine);
+    ScrollByAmount(SCROLL_NEXT_LINE);
   }
 }
 

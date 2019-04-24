@@ -15,9 +15,10 @@ constexpr const char kUserActionButtonContinueSetup[] =
 }  // namespace
 
 AppDownloadingScreen::AppDownloadingScreen(
+    BaseScreenDelegate* base_screen_delegate,
     AppDownloadingScreenView* view,
     const base::RepeatingClosure& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_APP_DOWNLOADING),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_APP_DOWNLOADING),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

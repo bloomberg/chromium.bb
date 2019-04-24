@@ -26,7 +26,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
-#include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_observer.h"
@@ -47,6 +47,7 @@ enum class TrayActionState;
 }  // namespace ash
 
 namespace base {
+class DictionaryValue;
 class ListValue;
 }
 
@@ -92,6 +93,7 @@ class LoginDisplayWebUIHandler {
   virtual void ShowPasswordChangedDialog(bool show_password_error,
                                          const std::string& email) = 0;
   virtual void ShowWhitelistCheckFailedError() = 0;
+  virtual void ShowUnrecoverableCrypthomeErrorDialog() = 0;
   virtual void LoadUsers(const user_manager::UserList& users,
                          const base::ListValue& users_list) = 0;
 
@@ -223,7 +225,7 @@ class SigninScreenHandler
   // OobeUI::Observer implementation:
   void OnCurrentScreenChanged(OobeScreen current_screen,
                               OobeScreen new_screen) override;
-  void OnDestroyingOobeUI() override {}
+  void OnScreenInitialized(OobeScreen screen) override {}
 
   // ash::mojom::WallpaperObserver implementation:
   void OnWallpaperChanged(uint32_t image_id) override;
@@ -259,8 +261,9 @@ class SigninScreenHandler
   void ShowImpl();
 
   // Updates current UI of the signin screen according to |ui_state|
-  // argument.
-  void UpdateUIState(UIState ui_state);
+  // argument.  Optionally it can pass screen initialization data via
+  // |params| argument.
+  void UpdateUIState(UIState ui_state, base::DictionaryValue* params);
 
   void UpdateStateInternal(NetworkError::ErrorReason reason, bool force_update);
   void SetupAndShowOfflineMessage(NetworkStateInformer::State state,
@@ -273,6 +276,7 @@ class SigninScreenHandler
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
+  gfx::NativeWindow GetNativeWindow() override;
 
   // WebUIMessageHandler implementation:
   void RegisterMessages() override;
@@ -294,6 +298,7 @@ class SigninScreenHandler
                                  const std::string& email) override;
   void ShowErrorScreen(LoginDisplay::SigninError error_id) override;
   void ShowWhitelistCheckFailedError() override;
+  void ShowUnrecoverableCrypthomeErrorDialog() override;
   void LoadUsers(const user_manager::UserList& users,
                  const base::ListValue& users_list) override;
 
@@ -307,6 +312,8 @@ class SigninScreenHandler
 
   // TabletModeClientObserver:
   void OnTabletModeToggled(bool enabled) override;
+
+  void UpdateAddButtonStatus();
 
   // Restore input focus to current user pod.
   void RefocusCurrentPod();
@@ -331,6 +338,7 @@ class SigninScreenHandler
                                  const std::string& locale,
                                  const std::string& input_method);
   void HandleOfflineLogin(const base::ListValue* args);
+  void HandleShutdownSystem();
   void HandleRebootSystem();
   void HandleRemoveUser(const AccountId& account_id);
   void HandleToggleEnrollmentScreen();
@@ -346,6 +354,7 @@ class SigninScreenHandler
   // * After OOBE enrollment when policy contains device local accounts.
   // * On multiple sign-in account selection.
   void HandleAccountPickerReady();
+  void HandleSignOutUser();
   void HandleOpenInternetDetailDialog();
   void HandleLoginVisible(const std::string& source);
   void HandleCancelPasswordChangedFlow(const AccountId& account_id);
@@ -369,6 +378,7 @@ class SigninScreenHandler
   void HandleFirstIncorrectPasswordAttempt(const AccountId& account_id);
   void HandleMaxIncorrectPasswordAttempts(const AccountId& account_id);
   void HandleSendFeedback();
+  void HandleSendFeedbackAndResyncUserData();
 
   // Implements user sign-in.
   void AuthenticateExistingUser(const AccountId& account_id,

@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.consent_auditor.ConsentAuditorFeature;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog.ImportSyncType;
-import org.chromium.chrome.browser.sync.SyncUserDataWiper;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -670,6 +669,9 @@ public class AccountSigninView extends FrameLayout {
                                 mShouldShowConfirmationPageWhenAttachedToWindow = true;
                             }
                         }
+
+                        @Override
+                        public void onSystemAccountsChanged() {}
                     });
         }
     }
@@ -682,7 +684,7 @@ public class AccountSigninView extends FrameLayout {
                     @Override
                     public void onConfirm(boolean wipeData) {
                         mConfirmSyncDataStateMachine = null;
-                        SyncUserDataWiper.wipeSyncUserDataIfRequired(wipeData).then(
+                        SigninManager.wipeSyncUserDataIfRequired(wipeData).then(
                                 (Void v) -> showConfirmationPage());
                     }
 

@@ -6,7 +6,6 @@
 #define UI_OZONE_DEMO_VULKAN_RENDERER_H_
 
 #include <vulkan/vulkan.h>
-#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -25,12 +24,10 @@ class VulkanSurface;
 }  // namespace gpu
 
 namespace ui {
-class PlatformWindowSurface;
 
 class VulkanRenderer : public RendererBase {
  public:
-  VulkanRenderer(std::unique_ptr<PlatformWindowSurface> window_surface,
-                 std::unique_ptr<gpu::VulkanSurface> vulkan_surface,
+  VulkanRenderer(std::unique_ptr<gpu::VulkanSurface> surface,
                  gpu::VulkanImplementation* vulkan_instance,
                  gfx::AcceleratedWidget widget,
                  const gfx::Size& size);
@@ -72,14 +69,12 @@ class VulkanRenderer : public RendererBase {
   void RenderFrame();
   void PostRenderFrameTask();
 
-  std::unique_ptr<PlatformWindowSurface> window_surface_;
-
   std::vector<std::unique_ptr<Framebuffer>> framebuffers_;
 
   gpu::VulkanImplementation* const vulkan_implementation_;
   std::unique_ptr<gpu::VulkanDeviceQueue> device_queue_;
   std::unique_ptr<gpu::VulkanCommandPool> command_pool_;
-  std::unique_ptr<gpu::VulkanSurface> vulkan_surface_;
+  std::unique_ptr<gpu::VulkanSurface> surface_;
   gfx::Size size_;
 
   VkRenderPass render_pass_ = VK_NULL_HANDLE;

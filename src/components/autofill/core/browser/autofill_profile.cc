@@ -12,11 +12,11 @@
 #include <set>
 
 #include "base/guid.h"
-#include "base/hash/sha1.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/sha1.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -444,6 +444,12 @@ int AutofillProfile::Compare(const AutofillProfile& profile) const {
   return 0;
 }
 
+bool AutofillProfile::EqualsSansOrigin(const AutofillProfile& profile) const {
+  return guid() == profile.guid() &&
+         language_code() == profile.language_code() &&
+         Compare(profile) == 0;
+}
+
 bool AutofillProfile::EqualsForSyncPurposes(const AutofillProfile& profile)
     const {
   return use_count() == profile.use_count() &&
@@ -656,6 +662,16 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
     }
   }
   return true;
+}
+
+// static
+bool AutofillProfile::SupportsMultiValue(ServerFieldType type) {
+  FieldTypeGroup group = AutofillType(type).group();
+  return group == NAME ||
+         group == NAME_BILLING ||
+         group == EMAIL ||
+         group == PHONE_HOME ||
+         group == PHONE_BILLING;
 }
 
 // static

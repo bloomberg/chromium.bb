@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_HANDLER_CHROMEOS_H_
 #define CHROME_BROWSER_UI_WEBUI_SIGNIN_INLINE_LOGIN_HANDLER_CHROMEOS_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
+#include "chromeos/account_manager/account_manager.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 
@@ -21,7 +20,6 @@ class InlineLoginHandlerChromeOS : public InlineLoginHandler {
   ~InlineLoginHandlerChromeOS() override;
 
   // InlineLoginHandler overrides.
-  void RegisterMessages() override;
   void SetExtraInitParams(base::DictionaryValue& params) override;
   void CompleteLogin(const std::string& email,
                      const std::string& password,
@@ -33,8 +31,6 @@ class InlineLoginHandlerChromeOS : public InlineLoginHandler {
                      bool choose_what_to_sync) override;
 
  private:
-  void ShowIncognitoAndCloseDialog(const base::ListValue* args);
-
   base::RepeatingClosure close_dialog_closure_;
   DISALLOW_COPY_AND_ASSIGN(InlineLoginHandlerChromeOS);
 };

@@ -44,8 +44,7 @@ class MediaControlsDisplayCutoutDelegateTest : public PageTestBase {
     Page::PageClients clients;
     FillWithEmptyClients(clients);
     clients.chrome_client = chrome_client_.Get();
-    SetupPageWithClients(&clients,
-                         MakeGarbageCollected<EmptyLocalFrameClient>());
+    SetupPageWithClients(&clients, EmptyLocalFrameClient::Create());
 
     RuntimeEnabledFeatures::SetDisplayCutoutAPIEnabled(true);
     RuntimeEnabledFeatures::SetMediaControlsExpandGestureEnabled(true);

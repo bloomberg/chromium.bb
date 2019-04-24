@@ -86,8 +86,7 @@ ContentSettingsPref::ContentSettingsPref(
       pref_name_(pref_name),
       is_incognito_(incognito),
       updating_preferences_(false),
-      notify_callback_(notify_callback),
-      allow_resource_identifiers_(false) {
+      notify_callback_(notify_callback) {
   DCHECK(prefs_);
 
   ReadContentSettingsFromPref();
@@ -103,11 +102,6 @@ ContentSettingsPref::~ContentSettingsPref() {
 std::unique_ptr<RuleIterator> ContentSettingsPref::GetRuleIterator(
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
-  // Resource Identifiers have been supported by the API but never used by any
-  // users of the API.
-  // TODO(crbug.com/754178): remove |resource_identifier| from the API.
-  DCHECK(resource_identifier.empty() || allow_resource_identifiers_);
-
   if (incognito)
     return incognito_value_map_.GetRuleIterator(content_type_,
                                                 resource_identifier,
@@ -126,12 +120,7 @@ bool ContentSettingsPref::SetWebsiteSetting(
   DCHECK(prefs_);
   DCHECK(primary_pattern != ContentSettingsPattern::Wildcard() ||
          secondary_pattern != ContentSettingsPattern::Wildcard() ||
-         (!resource_identifier.empty() && allow_resource_identifiers_));
-
-  // Resource Identifiers have been supported by the API but never used by any
-  // users of the API.
-  // TODO(crbug.com/754178): remove |resource_identifier| from the API.
-  DCHECK(resource_identifier.empty() || allow_resource_identifiers_);
+         !resource_identifier.empty());
 
   // At this point take the ownership of the |in_value|.
   std::unique_ptr<base::Value> value(in_value);
@@ -288,8 +277,8 @@ void ContentSettingsPref::ReadContentSettingsFromPref() {
 
     if (SupportsResourceIdentifiers(content_type_)) {
       const base::DictionaryValue* resource_dictionary = nullptr;
-      if (settings_dictionary->GetDictionary(kPerResourceIdentifierPrefName,
-                                             &resource_dictionary)) {
+      if (settings_dictionary->GetDictionary(
+              kPerResourceIdentifierPrefName, &resource_dictionary)) {
         base::Time last_modified = GetTimeStamp(settings_dictionary);
         for (base::DictionaryValue::Iterator j(*resource_dictionary);
              !j.IsAtEnd();

@@ -4,12 +4,8 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.util.SparseArray;
-
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.List;
 
@@ -20,7 +16,6 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
 
     private final TabModelSelector mTabModelSelector;
     private final TabModelSelectorTabModelObserver mTabModelObserver;
-    private final SparseArray<Tab> mTabsToClose = new SparseArray<>();
 
     /**
      * Constructs an observer that should be notified of tabs changes for all tabs owned
@@ -40,35 +35,11 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
             public void didAddTab(Tab tab, @TabLaunchType int type) {
                 // This observer is automatically removed by tab when it is destroyed.
                 tab.addObserver(TabModelSelectorTabObserver.this);
-                onTabRegistered(tab);
-            }
-
-            @Override
-            public void willCloseTab(Tab tab, boolean animate) {
-                mTabsToClose.put(tab.getId(), tab);
-            }
-
-            @Override
-            public void tabClosureUndone(Tab tab) {
-                mTabsToClose.remove(tab.getId());
-            }
-
-            @Override
-            public void didCloseTab(int tabId, boolean incognito) {
-                Tab tab = mTabsToClose.get(tabId);
-                if (tab != null) {
-                    mTabsToClose.remove(tabId);
-                    onTabUnregistered(tab);
-                }
             }
 
             @Override
             public void tabRemoved(Tab tab) {
-                // Post the removal of the observer so that other tab events are notified
-                // before removing the tab observer (e.g. detach tab from activity).
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT,
-                        () -> tab.removeObserver(TabModelSelectorTabObserver.this));
-                onTabUnregistered(tab);
+                tab.removeObserver(TabModelSelectorTabObserver.this);
             }
 
             @Override
@@ -78,26 +49,13 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
                     TabModel tabModel = tabModels.get(i);
                     TabList comprehensiveTabList = tabModel.getComprehensiveModel();
                     for (int j = 0; j < comprehensiveTabList.getCount(); j++) {
-                        Tab tab = comprehensiveTabList.getTabAt(j);
-                        tab.addObserver(TabModelSelectorTabObserver.this);
-                        onTabRegistered(tab);
+                        comprehensiveTabList.getTabAt(j).addObserver(
+                                TabModelSelectorTabObserver.this);
                     }
                 }
             }
         };
     }
-
-    /**
-     * Called when a tab is registered to a tab model this selector is managing.
-     * @param tab The registered Tab.
-     */
-    protected void onTabRegistered(Tab tab) {}
-
-    /**
-     * Called when a tab is unregistered from a tab model this selector is managing.
-     * @param tab The unregistered Tab.
-     */
-    protected void onTabUnregistered(Tab tab) {}
 
     /**
      * Destroys the observer and removes itself as a listener for Tab updates.
@@ -112,9 +70,7 @@ public class TabModelSelectorTabObserver extends EmptyTabObserver {
 
             TabList comprehensiveTabList = tabModel.getComprehensiveModel();
             for (int j = 0; j < comprehensiveTabList.getCount(); j++) {
-                Tab tab = comprehensiveTabList.getTabAt(j);
-                tab.removeObserver(this);
-                onTabUnregistered(tab);
+                comprehensiveTabList.getTabAt(j).removeObserver(this);
             }
         }
     }

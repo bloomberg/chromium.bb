@@ -21,8 +21,7 @@ class SkiaBuildbotDesktopPage(page_module.Page):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.Navigate(self.url)
-    action_runner.ScrollPage(distance=6000000)
-    action_runner.Wait(60)
+    action_runner.Wait(25)
 
 
 class SkiaWowwikiDesktopPageSet(story.StorySet):

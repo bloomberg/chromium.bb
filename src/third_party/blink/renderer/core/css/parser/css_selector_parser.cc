@@ -340,7 +340,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeCompoundSelector(
     if (namespace_uri == DefaultNamespace())
       namespace_prefix = g_null_atom;
     context_->Count(WebFeature::kHasIDClassTagAttribute);
-    return std::make_unique<CSSParserSelector>(
+    return CSSParserSelector::Create(
         QualifiedName(namespace_prefix, element_name, namespace_uri));
   }
   // TODO(futhark@chromium.org): Prepending a type selector to the compound is
@@ -422,8 +422,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeId(
   DCHECK_EQ(range.Peek().GetType(), kHashToken);
   if (range.Peek().GetHashTokenType() != kHashTokenId)
     return nullptr;
-  std::unique_ptr<CSSParserSelector> selector =
-      std::make_unique<CSSParserSelector>();
+  std::unique_ptr<CSSParserSelector> selector = CSSParserSelector::Create();
   selector->SetMatch(CSSSelector::kId);
   AtomicString value = range.Consume().Value().ToAtomicString();
   selector->SetValue(value, IsQuirksModeBehavior(context_->MatchMode()));
@@ -438,8 +437,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeClass(
   range.Consume();
   if (range.Peek().GetType() != kIdentToken)
     return nullptr;
-  std::unique_ptr<CSSParserSelector> selector =
-      std::make_unique<CSSParserSelector>();
+  std::unique_ptr<CSSParserSelector> selector = CSSParserSelector::Create();
   selector->SetMatch(CSSSelector::kClass);
   AtomicString value = range.Consume().Value().ToAtomicString();
   selector->SetValue(value, IsQuirksModeBehavior(context_->MatchMode()));
@@ -473,8 +471,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumeAttribute(
           ? QualifiedName(g_null_atom, attribute_name, g_null_atom)
           : QualifiedName(namespace_prefix, attribute_name, namespace_uri);
 
-  std::unique_ptr<CSSParserSelector> selector =
-      std::make_unique<CSSParserSelector>();
+  std::unique_ptr<CSSParserSelector> selector = CSSParserSelector::Create();
 
   if (block.AtEnd()) {
     selector->SetAttribute(qualified_name, CSSSelector::kCaseSensitive);
@@ -513,8 +510,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
   if (token.GetType() != kIdentToken && token.GetType() != kFunctionToken)
     return nullptr;
 
-  std::unique_ptr<CSSParserSelector> selector =
-      std::make_unique<CSSParserSelector>();
+  std::unique_ptr<CSSParserSelector> selector = CSSParserSelector::Create();
   selector->SetMatch(colons == 1 ? CSSSelector::kPseudoClass
                                  : CSSSelector::kPseudoElement);
 
@@ -1108,7 +1104,6 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
           feature = WebFeature::kCSSSelectorPseudoWhere;
           break;
         case CSSSelector::kPseudoUnresolved:
-          DCHECK(context_->CustomElementsV0Enabled());
           feature = WebFeature::kCSSSelectorPseudoUnresolved;
           break;
         case CSSSelector::kPseudoDefined:

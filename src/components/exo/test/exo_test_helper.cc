@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "components/exo/buffer.h"
@@ -31,7 +30,7 @@ ExoTestWindow::ExoTestWindow(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_buffer,
                              bool is_modal) {
   surface_.reset(new Surface());
   int container = is_modal ? ash::kShellWindowId_SystemModalContainer
-                           : ash::desks_util::GetActiveDeskContainerId();
+                           : ash::kShellWindowId_DefaultContainer;
   shell_surface_ = std::make_unique<ShellSurface>(surface_.get(), gfx::Point(),
                                                   true, false, container);
 
@@ -85,7 +84,7 @@ std::unique_ptr<ClientControlledShellSurface>
 ExoTestHelper::CreateClientControlledShellSurface(Surface* surface,
                                                   bool is_modal) {
   int container = is_modal ? ash::kShellWindowId_SystemModalContainer
-                           : ash::desks_util::GetActiveDeskContainerId();
+                           : ash::kShellWindowId_DefaultContainer;
   return Display().CreateClientControlledShellSurface(
       surface, container,
       WMHelper::GetInstance()->GetDefaultDeviceScaleFactor());

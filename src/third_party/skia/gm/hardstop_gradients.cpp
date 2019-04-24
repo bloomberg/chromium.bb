@@ -133,10 +133,10 @@ protected:
             4,
         };
 
-        SkTileMode tilemodes[NUM_COLS] = {
-            SkTileMode::kClamp,
-            SkTileMode::kRepeat,
-            SkTileMode::kMirror,
+        SkShader::TileMode tilemodes[NUM_COLS] = {
+            SkShader::kClamp_TileMode,
+            SkShader::kRepeat_TileMode,
+            SkShader::kMirror_TileMode,
         };
 
         for (int cellRow = 0; cellRow < NUM_ROWS; cellRow++) {

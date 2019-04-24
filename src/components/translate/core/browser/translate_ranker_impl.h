@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
@@ -17,7 +16,6 @@
 #include "components/assist_ranker/ranker_model_loader.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/translate/core/browser/translate_ranker.h"
-#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -56,7 +54,7 @@ struct TranslateRankerFeatures {
                           const std::string& cntry,
                           const std::string& locale);
 
-  explicit TranslateRankerFeatures(const metrics::TranslateEventProto& tep);
+  TranslateRankerFeatures(const metrics::TranslateEventProto& tep);
 
   ~TranslateRankerFeatures();
 
@@ -92,7 +90,7 @@ class TranslateRankerImpl : public TranslateRanker {
   static base::FilePath GetModelPath(const base::FilePath& data_dir);
 
   // Get the URL from which the download the translate ranker model, by default
-  // from Field Trial parameters.
+  // from Finch.
   static GURL GetModelURL();
 
   // TranslateRanker...
@@ -104,11 +102,11 @@ class TranslateRankerImpl : public TranslateRanker {
       std::vector<metrics::TranslateEventProto>* events) override;
   void RecordTranslateEvent(
       int event_type,
-      ukm::SourceId ukm_source_id,
+      const GURL& url,
       metrics::TranslateEventProto* translate_event) override;
   bool ShouldOverrideDecision(
       int event_type,
-      ukm::SourceId ukm_source_id,
+      const GURL& url,
       metrics::TranslateEventProto* translate_event) override;
 
   void OnModelAvailable(std::unique_ptr<assist_ranker::RankerModel> model);
@@ -123,11 +121,11 @@ class TranslateRankerImpl : public TranslateRanker {
 
  private:
   void SendEventToUKM(const metrics::TranslateEventProto& translate_event,
-                      ukm::SourceId ukm_source_id);
+                      const GURL& url);
 
   // Caches the translate event.
   void AddTranslateEvent(const metrics::TranslateEventProto& translate_event,
-                         ukm::SourceId ukm_source_id);
+                         const GURL& url);
 
   // Used to log URL-keyed metrics. This pointer will outlive |this|.
   ukm::UkmRecorder* ukm_recorder_;

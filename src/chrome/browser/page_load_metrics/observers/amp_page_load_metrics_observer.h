@@ -90,14 +90,10 @@ class AMPPageLoadMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnSubFrameRenderDataUpdate(
       content::RenderFrameHost* subframe_rfh,
-      const page_load_metrics::mojom::FrameRenderDataUpdate& render_data,
+      const page_load_metrics::mojom::PageRenderData& render_data,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
-  void OnLoadingBehaviorObserved(
-      content::RenderFrameHost* subframe_rfh,
-      int behavior_flags,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
  private:
   // Information about an AMP navigation in the main frame. Both regular and
@@ -134,14 +130,11 @@ class AMPPageLoadMetricsObserver
 
     // Performance metrics observed in the AMP iframe.
     page_load_metrics::mojom::PageLoadTimingPtr timing;
-    page_load_metrics::PageRenderData render_data;
-
-    // Whether an AMP document was loaded, based on observed
-    // WebLoadingBehaviorFlags for this frame.
-    bool amp_document_loaded = false;
+    page_load_metrics::mojom::PageRenderDataPtr render_data;
   };
 
-  void ProcessMainFrameNavigation(content::NavigationHandle* navigation_handle);
+  void ProcessMainFrameNavigation(content::NavigationHandle* navigation_handle,
+                                  AMPViewType view_type);
   void MaybeRecordAmpDocumentMetrics();
 
   // Information about the currently active AMP navigation in the main

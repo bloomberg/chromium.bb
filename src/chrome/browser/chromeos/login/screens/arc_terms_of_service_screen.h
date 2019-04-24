@@ -17,6 +17,7 @@ class Profile;
 namespace chromeos {
 
 class ArcTermsOfServiceScreenView;
+class BaseScreenDelegate;
 
 class ArcTermsOfServiceScreen : public BaseScreen,
                                 public ArcTermsOfServiceScreenViewObserver {
@@ -28,7 +29,8 @@ class ArcTermsOfServiceScreen : public BaseScreen,
   static void MaybeLaunchArcSettings(Profile* profile);
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
-  ArcTermsOfServiceScreen(ArcTermsOfServiceScreenView* view,
+  ArcTermsOfServiceScreen(BaseScreenDelegate* base_screen_delegate,
+                          ArcTermsOfServiceScreenView* view,
                           const ScreenExitCallback& exit_callback);
   ~ArcTermsOfServiceScreen() override;
 

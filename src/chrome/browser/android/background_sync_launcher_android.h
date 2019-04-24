@@ -13,7 +13,10 @@
 #include "base/callback_forward.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/time/time.h"
+
+namespace content {
+class StoragePartition;
+}  // namespace content
 
 // The BackgroundSyncLauncherAndroid singleton owns the Java
 // BackgroundSyncLauncher object and is used to register interest in starting
@@ -23,12 +26,8 @@ class BackgroundSyncLauncherAndroid {
  public:
   static BackgroundSyncLauncherAndroid* Get();
 
-  // Calculates the soonest wakeup time across all the storage
-  // partitions for the non-incognito profile and ensures that the browser
-  // is running when the device next goes online after that time has passed.
-  // If this time is set to base::TimeDelta::Max() across all storage
-  // partitions, the wake-up task is cancelled.
-  static void LaunchBrowserIfStopped();
+  static void LaunchBrowserIfStopped(bool launch_when_next_online,
+                                     int64_t min_delay_ms);
 
   static bool ShouldDisableBackgroundSync();
 
@@ -48,8 +47,13 @@ class BackgroundSyncLauncherAndroid {
   BackgroundSyncLauncherAndroid();
   ~BackgroundSyncLauncherAndroid();
 
-  void LaunchBrowserIfStoppedImpl();
-  void LaunchBrowserWithWakeupDelta(base::TimeDelta soonest_wakeup_delta);
+  void LaunchBrowserIfStoppedImpl(bool launch_when_next_online,
+                                  int64_t min_delay_ms);
+  void FireBackgroundSyncEventsForStoragePartition(
+      base::OnceClosure done_closure,
+      content::StoragePartition* storage_partition);
+  void OnFiredBackgroundSyncEvents(
+      base::android::ScopedJavaGlobalRef<jobject> j_runnable);
 
   base::android::ScopedJavaGlobalRef<jobject>
       java_gcm_network_manager_launcher_;

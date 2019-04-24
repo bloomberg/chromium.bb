@@ -11,12 +11,10 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_cryptohome_client.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using chromeos::FakeCryptohomeClient;
 
 namespace policy {
 
@@ -29,26 +27,27 @@ class DMTokenStorageTest : public testing::Test {
   void SetSaltPending() {
     // Clear the cached salt.
     chromeos::SystemSaltGetter::Shutdown();
-    FakeCryptohomeClient::Get()->set_system_salt(std::vector<uint8_t>());
-    FakeCryptohomeClient::Get()->SetServiceIsAvailable(false);
+    fake_cryptohome_client_->set_system_salt(std::vector<uint8_t>());
+    fake_cryptohome_client_->SetServiceIsAvailable(false);
     chromeos::SystemSaltGetter::Initialize();
   }
 
   void SetSaltAvailable() {
-    FakeCryptohomeClient::Get()->set_system_salt(
-        FakeCryptohomeClient::GetStubSystemSalt());
-    FakeCryptohomeClient::Get()->SetServiceIsAvailable(true);
+    fake_cryptohome_client_->set_system_salt(
+        chromeos::FakeCryptohomeClient::GetStubSystemSalt());
+    fake_cryptohome_client_->SetServiceIsAvailable(true);
   }
 
   void SetSaltError() {
-    FakeCryptohomeClient::Get()->set_system_salt(std::vector<uint8_t>());
-    FakeCryptohomeClient::Get()->SetServiceIsAvailable(true);
+    fake_cryptohome_client_->set_system_salt(std::vector<uint8_t>());
+    fake_cryptohome_client_->SetServiceIsAvailable(true);
   }
 
   void SetUp() override {
-    chromeos::DBusThreadManager::Initialize();
-    chromeos::CryptohomeClient::InitializeFake();
+    fake_cryptohome_client_ = new chromeos::FakeCryptohomeClient;
     SetSaltAvailable();
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
+        std::unique_ptr<chromeos::CryptohomeClient>(fake_cryptohome_client_));
 
     chromeos::SystemSaltGetter::Initialize();
   }
@@ -92,6 +91,7 @@ class DMTokenStorageTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   ScopedTestingLocalState scoped_testing_local_state_;
+  chromeos::FakeCryptohomeClient* fake_cryptohome_client_;
   std::unique_ptr<DMTokenStorage> dm_token_storage_;
 };
 

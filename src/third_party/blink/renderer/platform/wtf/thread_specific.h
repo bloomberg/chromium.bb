@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
@@ -85,7 +86,7 @@ inline void ThreadSpecific<T>::Destroy(void* ptr) {
   // Never call destructors on the main thread. This is fine because Blink no
   // longer has a graceful shutdown sequence. Be careful to call this function
   // (which can be re-entrant) while the pointer is still set, to avoid lazily
-  // allocating Threading after it is destroyed.
+  // allocating WTFThreadData after it is destroyed.
   if (IsMainThread())
     return;
 

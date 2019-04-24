@@ -25,6 +25,7 @@
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_shared_worker_helper.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 class BrowsingDataFlashLSOHelper;
 class CookiesTreeModel;
@@ -59,7 +60,8 @@ class LocalDataContainer {
   using SharedWorkerInfoList =
       std::list<BrowsingDataSharedWorkerHelper::SharedWorkerInfo>;
   using CacheStorageUsageInfoList = std::list<content::StorageUsageInfo>;
-  using AppCacheInfoList = std::list<content::StorageUsageInfo>;
+  using AppCacheInfoMap =
+      std::map<url::Origin, std::list<blink::mojom::AppCacheInfo>>;
   using FlashLSODomainList = std::vector<std::string>;
   using MediaLicenseInfoList =
       std::list<BrowsingDataMediaLicenseHelper::MediaLicenseInfo>;
@@ -101,7 +103,8 @@ class LocalDataContainer {
   friend class CookieTreeFlashLSONode;
 
   // Callback methods to be invoked when fetching the data is complete.
-  void OnAppCacheModelInfoLoaded(const AppCacheInfoList& appcache_info_list);
+  void OnAppCacheModelInfoLoaded(
+      scoped_refptr<content::AppCacheInfoCollection>);
   void OnCookiesModelInfoLoaded(const net::CookieList& cookie_list);
   void OnDatabaseModelInfoLoaded(const DatabaseInfoList& database_info);
   void OnLocalStorageModelInfoLoaded(
@@ -139,7 +142,7 @@ class LocalDataContainer {
 
   // Storage for all the data that was retrieved through the helper objects.
   // The collected data is used for (re)creating the CookiesTreeModel.
-  AppCacheInfoList appcache_info_list_;
+  AppCacheInfoMap appcache_info_;
   CookieList cookie_list_;
   DatabaseInfoList database_info_list_;
   LocalStorageInfoList local_storage_info_list_;

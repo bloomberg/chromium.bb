@@ -178,7 +178,6 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
         gfx::Vector2dF(frame_rect_.X(), frame_rect_.Y()));
     layer_->SetBounds(gfx::Size(frame_rect_.Size()));
     layer_->SetIsDrawable(true);
-    layer_->SetHitTestable(true);
     // When compositing is after paint, composited plugins should have their
     // layers inserted rather than invoking WebPlugin::paint.
     RecordForeignLayer(context, DisplayItem::kForeignLayerPlugin, layer_);
@@ -432,7 +431,6 @@ void WebPluginContainerImpl::Copy() {
 
   SystemClipboard::GetInstance().WriteHTML(
       web_plugin_->SelectionAsMarkup(), KURL(), web_plugin_->SelectionAsText());
-  SystemClipboard::GetInstance().CommitWrite();
 }
 
 bool WebPluginContainerImpl::ExecuteEditCommand(const WebString& name) {
@@ -552,7 +550,7 @@ WebString WebPluginContainerImpl::ExecuteScriptURL(const WebURL& url,
                                            DecodeURLMode::kUTF8OrIsomorphic);
 
   if (!element_->GetDocument().GetContentSecurityPolicy()->AllowInline(
-          ContentSecurityPolicy::InlineType::kNavigation, element_, script,
+          ContentSecurityPolicy::InlineType::kJavaScriptURL, element_, script,
           String() /* nonce */, element_->GetDocument().Url(),
           OrdinalNumber())) {
     return WebString();

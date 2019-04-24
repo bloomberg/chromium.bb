@@ -726,8 +726,6 @@ public class DownloadUtils {
                     + intent.getData().getScheme(), ex);
         } catch (SecurityException ex) {
             Log.d(TAG, "cannot open intent: " + intent, ex);
-        } catch (Exception ex) {
-            Log.d(TAG, "cannot open intent: " + intent, ex);
         }
 
         return false;

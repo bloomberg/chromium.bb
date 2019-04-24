@@ -56,6 +56,7 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.facebook.com',
       'https://www.baidu.com',
       'https://www.wikipedia.org',
+      'http://www.qq.com',
       'https://world.taobao.com/',
       'https://www.tmall.com/',
       'http://www.amazon.com',
@@ -187,9 +188,9 @@ class LeakDetectionStorySet(story_module.StorySet):
       'http://www.airbnb.ch',
       'http://www.livedoor.jp',
       'http://www.blu-ray.com',
-      # TODO(953195): Test times out.
-      # 'http://www.block.io',
+      'http://www.block.io',
       'http://www.hockeybuzz.com',
+      'http://www.benzworld.org',
       'http://www.silverpop.com',
       'http://www.ansa.it',
       'http://www.gulfair.com',
@@ -246,6 +247,7 @@ class LeakDetectionStorySet(story_module.StorySet):
       'http://makfax.com.mk',
       'http://game.co.za',
       'http://www.savaari.com',
+      'http://www.520mojing.com',
       'http://www.railsguides.jp',
     ]
     resource_loading_urls_list = [
@@ -258,9 +260,6 @@ class LeakDetectionStorySet(story_module.StorySet):
       'http://www.listindiario.com',
       'https://www.engadget.com/',
       'https://www.sohu.com/',
-      'http://www.qq.com',
-      'http://www.benzworld.org',
-      'http://www.520mojing.com',
     ]
     for url in urls_list:
       self.AddStory(LeakDetectionPage(url, self, url))

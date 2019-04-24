@@ -39,8 +39,8 @@ namespace blink {
 
 using namespace html_names;
 
-HTMLTableCellElement::HTMLTableCellElement(const QualifiedName& tag_name,
-                                           Document& document)
+inline HTMLTableCellElement::HTMLTableCellElement(const QualifiedName& tag_name,
+                                                  Document& document)
     : HTMLTablePartElement(tag_name, document) {}
 
 DEFINE_ELEMENT_FACTORY_WITH_TAGNAME(HTMLTableCellElement)
@@ -98,20 +98,20 @@ void HTMLTableCellElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kNowrapAttr) {
-    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
-                                            CSSValueID::kWebkitNowrap);
+    AddPropertyToPresentationAttributeStyle(style, CSSPropertyWhiteSpace,
+                                            CSSValueWebkitNowrap);
   } else if (name == kWidthAttr) {
     if (!value.IsEmpty()) {
       int width_int = value.ToInt();
       if (width_int > 0)  // width="0" is ignored for compatibility with WinIE.
-        AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value);
+        AddHTMLLengthToStyle(style, CSSPropertyWidth, value);
     }
   } else if (name == kHeightAttr) {
     if (!value.IsEmpty()) {
       int height_int = value.ToInt();
       if (height_int >
           0)  // height="0" is ignored for compatibility with WinIE.
-        AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
+        AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
     }
   } else {
     HTMLTablePartElement::CollectStyleForPresentationAttribute(name, value,

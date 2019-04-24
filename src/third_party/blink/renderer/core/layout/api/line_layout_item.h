@@ -287,10 +287,10 @@ class LineLayoutItem {
     return layout_object_->DocumentBeingDestroyed();
   }
 
-  IntRect VisualRectForInlineBox() const {
+  LayoutRect VisualRectForInlineBox() const {
     return layout_object_->VisualRectForInlineBox();
   }
-  IntRect PartialInvalidationVisualRectForInlineBox() const {
+  LayoutRect PartialInvalidationVisualRectForInlineBox() const {
     return layout_object_->PartialInvalidationVisualRectForInlineBox();
   }
 

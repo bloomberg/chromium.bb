@@ -81,11 +81,8 @@ void WebViewWebMainParts::PreMainMessageLoopRun() {
 
 void WebViewWebMainParts::PostMainMessageLoopRun() {
   WebViewTranslateService::GetInstance()->Shutdown();
-
-  // CWVWebViewConfiguration must destroy its WebViewBrowserStates before the
-  // threads are stopped by ApplicationContext.
-  [CWVWebViewConfiguration shutDown];
   ApplicationContext::GetInstance()->SaveState();
+  [CWVWebViewConfiguration shutDown];
 }
 
 void WebViewWebMainParts::PostDestroyThreads() {

@@ -1,5 +1,4 @@
 include_rules = [
   "+chromeos/system",
-  "+mojo/public",
   "+services/metrics/public/cpp",
 ]

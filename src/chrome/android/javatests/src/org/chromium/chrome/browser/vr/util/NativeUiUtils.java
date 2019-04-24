@@ -15,7 +15,7 @@ import android.view.ViewGroup;
 
 import org.junit.Assert;
 
-import org.chromium.base.task.PostTask;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.vr.KeyboardTestAction;
@@ -28,10 +28,8 @@ import org.chromium.chrome.browser.vr.VrControllerTestAction;
 import org.chromium.chrome.browser.vr.VrDialog;
 import org.chromium.chrome.browser.vr.VrShell;
 import org.chromium.chrome.browser.vr.VrViewContainer;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -425,7 +423,7 @@ public class NativeUiUtils {
         operationData.timeoutMs = DEFAULT_UI_QUIESCENCE_TIMEOUT_MS;
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         action.run();
 
@@ -458,7 +456,7 @@ public class NativeUiUtils {
             resultLatch.countDown();
         };
         operationData.timeoutMs = DEFAULT_UI_QUIESCENCE_TIMEOUT_MS;
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         // Catch the interrupted exception so we don't have to try/catch anytime we chain multiple
         // actions.
@@ -498,7 +496,7 @@ public class NativeUiUtils {
         operationData.visibility = visible;
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         action.run();
 
@@ -522,9 +520,9 @@ public class NativeUiUtils {
      *
      * @param numFrames The number of frames to wait for.
      */
-    public static void waitNumFrames(int numFrames) {
+    public static void waitNumFrames(int numFrames) throws InterruptedException {
         final CountDownLatch frameLatch = new CountDownLatch(numFrames);
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+        ThreadUtils.runOnUiThread(() -> {
             final Choreographer.FrameCallback callback = new Choreographer.FrameCallback() {
                 @Override
                 public void doFrame(long frameTimeNanos) {
@@ -535,11 +533,7 @@ public class NativeUiUtils {
             };
             Choreographer.getInstance().postFrameCallback(callback);
         });
-        try {
-            frameLatch.await();
-        } catch (InterruptedException e) {
-            Assert.fail("Interrupted while waiting for frames: " + e.toString());
-        }
+        frameLatch.await();
     }
 
     /**
@@ -569,7 +563,7 @@ public class NativeUiUtils {
 
         // Run on the UI thread to prevent issues with registering a new callback before
         // ReportUiOperationResultForTesting has finished.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> { instance.registerUiOperationCallbackForTesting(operationData); });
         instance.saveNextFrameBufferToDiskForTesting(filepathBase);
         resultLatch.await();

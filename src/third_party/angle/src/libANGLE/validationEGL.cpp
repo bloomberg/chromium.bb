@@ -2869,7 +2869,11 @@ Error ValidateSwapBuffersWithDamageKHR(const Display *display,
                                        EGLint *rects,
                                        EGLint n_rects)
 {
-    ANGLE_TRY(ValidateSurface(display, surface));
+    Error error = ValidateSurface(display, surface);
+    if (error.isError())
+    {
+        return error;
+    }
 
     if (!display->getExtensions().swapBuffersWithDamage)
     {
@@ -2956,7 +2960,7 @@ Error ValidateBindTexImage(const Display *display,
     if (context)
     {
         gl::TextureType type = egl_gl::EGLTextureTargetToTextureType(surface->getTextureTarget());
-        *textureObject       = context->getTextureByType(type);
+        *textureObject       = context->getTargetTexture(type);
         ASSERT(*textureObject != nullptr);
 
         if ((*textureObject)->getImmutableFormat())

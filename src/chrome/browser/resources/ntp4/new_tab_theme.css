@@ -10,6 +10,17 @@ html {
   background-repeat: $i18n{backgroundTiling};
 }
 
+#attribution {
+  left: $i18n{leftAlignAttribution};
+  right: $i18n{rightAlignAttribution};
+  text-align: $i18n{textAlignAttribution};
+  display: $i18n{displayAttribution};
+}
+
+#attribution-img {
+  content: url(chrome://theme/IDR_THEME_NTP_ATTRIBUTION?$i18n{themeId});
+}
+
 html[bookmarkbarattached='true'] {
   background-position: $i18n{backgroundBarAttached};
 }
@@ -20,21 +31,13 @@ body {
   overflow: auto;
 }
 
-[is='action-link'],
-[is='action-link']:active {
-  color: rgb($i18n{colorLink});
-}
-
-#attribution {
+#attribution,
+[is='action-link'] {
   color: $i18n{colorTextLight};
-  display: $i18n{displayAttribution};
-  left: $i18n{leftAlignAttribution};
-  right: $i18n{rightAlignAttribution};
-  text-align: $i18n{textAlignAttribution};
 }
 
-#attribution-img {
-  content: url(chrome://theme/IDR_THEME_NTP_ATTRIBUTION?$i18n{themeId});
+[is='action-link']:active {
+  color: $i18n{colorTextRgba};
 }
 
 .page-switcher {

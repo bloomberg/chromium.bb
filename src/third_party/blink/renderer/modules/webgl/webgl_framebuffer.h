@@ -154,7 +154,8 @@ class WebGLFramebuffer final : public WebGLContextObject {
 
   GLuint object_;
 
-  typedef HeapHashMap<GLenum, Member<WebGLAttachment>> AttachmentMap;
+  typedef HeapHashMap<GLenum, TraceWrapperMember<WebGLAttachment>>
+      AttachmentMap;
 
   AttachmentMap attachments_;
 

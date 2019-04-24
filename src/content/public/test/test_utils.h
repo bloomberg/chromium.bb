@@ -72,7 +72,7 @@ void RunAllPendingInMessageLoop();
 // rather than flushing entire threads.
 void RunAllPendingInMessageLoop(BrowserThread::ID thread_id);
 
-// Runs all tasks on the current thread and ThreadPool threads until idle.
+// Runs all tasks on the current thread and TaskScheduler threads until idle.
 // Note: Prefer TestBrowserThreadBundle::RunUntilIdle() in unit tests.
 void RunAllTasksUntilIdle();
 
@@ -87,8 +87,9 @@ base::Closure GetDeferredQuitTaskForRunLoop(base::RunLoop* run_loop);
 // MessageLoop. When the result is available, it is returned.
 // This should not be used; the use of the ExecuteScript functions in
 // browser_test_utils is preferable.
-base::Value ExecuteScriptAndGetValue(RenderFrameHost* render_frame_host,
-                                     const std::string& script);
+std::unique_ptr<base::Value> ExecuteScriptAndGetValue(
+    RenderFrameHost* render_frame_host,
+    const std::string& script);
 
 // Returns true if all sites are isolated. Typically used to bail from a test
 // that is incompatible with --site-per-process.

@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
-#include "ToolUtils.h"
 #include "gm.h"
+#include "sk_tool_utils.h"
 
 #include "Resources.h"
 #include "SkBitmapProcState.h"
@@ -60,7 +60,9 @@ public:
     SkMatrix    fMatrix[2];
     SkString    fName;
 
-    FilterIndiaBoxGM() { this->setBGColor(ToolUtils::color_to_565(0xFFDDDDDD)); }
+    FilterIndiaBoxGM() {
+        this->setBGColor(sk_tool_utils::color_to_565(0xFFDDDDDD));
+    }
 
     FilterIndiaBoxGM(const char filename[]) : fFilename(filename) {
         fName.printf("filterindiabox");

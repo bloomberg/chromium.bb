@@ -1,3 +1,0 @@
-# tags: [foo bar honda]
-
-[ foo ] a/b/fail-test.html [ Failure ]

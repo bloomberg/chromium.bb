@@ -52,21 +52,6 @@ namespace {
         }
     }
 
-    const char* DeviceTypeName(dawn_native::DeviceType type) {
-        switch (type) {
-            case dawn_native::DeviceType::DiscreteGPU:
-                return "Discrete GPU";
-            case dawn_native::DeviceType::IntegratedGPU:
-                return "Integrated GPU";
-            case dawn_native::DeviceType::CPU:
-                return "CPU";
-            case dawn_native::DeviceType::Unknown:
-                return "Unknown";
-            default:
-                UNREACHABLE();
-        }
-    }
-
     struct MapReadUserdata {
         DawnTest* test;
         size_t slot;
@@ -145,9 +130,7 @@ void DawnTestEnvironment::SetUp() {
         deviceId << std::setfill('0') << std::uppercase << std::internal << std::hex << std::setw(4)
                  << pci.deviceId;
 
-        std::cout << " - \"" << pci.name << "\"\n";
-        std::cout << "   type: " << DeviceTypeName(adapter.GetDeviceType())
-                  << ", backend: " << ParamName(adapter.GetBackendType()) << "\n";
+        std::cout << " - \"" << pci.name << "\" on " << ParamName(adapter.GetBackendType()) << "\n";
         std::cout << "   vendorId: 0x" << vendorId.str() << ", deviceId: 0x" << deviceId.str()
                   << "\n";
     }
@@ -279,8 +262,8 @@ void DawnTest::SetUp() {
     }
 
     mPCIInfo = backendAdapter.GetPCIInfo();
-    DawnDevice backendDevice = backendAdapter.CreateDevice();
-    DawnProcTable backendProcs = dawn_native::GetProcs();
+    dawnDevice backendDevice = backendAdapter.CreateDevice();
+    dawnProcTable backendProcs = dawn_native::GetProcs();
 
     // Get the test window and create the device using it (esp. for OpenGL)
     GLFWwindow* testWindow = gTestEnv->GetWindowForBackend(GetParam());
@@ -289,8 +272,8 @@ void DawnTest::SetUp() {
     DAWN_ASSERT(mBinding != nullptr);
 
     // Choose whether to use the backend procs and devices directly, or set up the wire.
-    DawnDevice cDevice = nullptr;
-    DawnProcTable procs;
+    dawnDevice cDevice = nullptr;
+    dawnProcTable procs;
 
     if (gTestEnv->UseWire()) {
         mC2sBuf = std::make_unique<utils::TerribleCommandBuffer>();
@@ -300,8 +283,8 @@ void DawnTest::SetUp() {
         mC2sBuf->SetHandler(mWireServer.get());
 
         mWireClient.reset(new dawn_wire::WireClient(mC2sBuf.get()));
-        DawnDevice clientDevice = mWireClient->GetDevice();
-        DawnProcTable clientProcs = mWireClient->GetProcs();
+        dawnDevice clientDevice = mWireClient->GetDevice();
+        dawnProcTable clientProcs = mWireClient->GetProcs();
         mS2cBuf->SetHandler(mWireClient.get());
 
         procs = clientProcs;
@@ -327,7 +310,7 @@ void DawnTest::SetUp() {
         dawn::TextureUsageBit::OutputAttachment, 400, 400);
 
     device.SetErrorCallback(OnDeviceError,
-                            static_cast<DawnCallbackUserdata>(reinterpret_cast<uintptr_t>(this)));
+                            static_cast<dawnCallbackUserdata>(reinterpret_cast<uintptr_t>(this)));
 }
 
 void DawnTest::TearDown() {
@@ -351,7 +334,7 @@ bool DawnTest::EndExpectDeviceError() {
 }
 
 // static
-void DawnTest::OnDeviceError(const char* message, DawnCallbackUserdata userdata) {
+void DawnTest::OnDeviceError(const char* message, dawnCallbackUserdata userdata) {
     DawnTest* self = reinterpret_cast<DawnTest*>(static_cast<uintptr_t>(userdata));
 
     ASSERT_TRUE(self->mExpectError) << "Got unexpected device error: " << message;
@@ -362,8 +345,8 @@ void DawnTest::OnDeviceError(const char* message, DawnCallbackUserdata userdata)
 std::ostringstream& DawnTest::AddBufferExpectation(const char* file,
                                                    int line,
                                                    const dawn::Buffer& buffer,
-                                                   uint64_t offset,
-                                                   uint64_t size,
+                                                   uint32_t offset,
+                                                   uint32_t size,
                                                    detail::Expectation* expectation) {
     auto readback = ReserveReadback(size);
 
@@ -457,7 +440,7 @@ void DawnTest::FlushWire() {
     }
 }
 
-DawnTest::ReadbackReservation DawnTest::ReserveReadback(uint64_t readbackSize) {
+DawnTest::ReadbackReservation DawnTest::ReserveReadback(uint32_t readbackSize) {
     // For now create a new MapRead buffer for each readback
     // TODO(cwallez@chromium.org): eventually make bigger buffers and allocate linearly?
     dawn::BufferDescriptor descriptor;
@@ -498,10 +481,10 @@ void DawnTest::MapSlotsSynchronously() {
 }
 
 // static
-void DawnTest::SlotMapReadCallback(DawnBufferMapAsyncStatus status,
+void DawnTest::SlotMapReadCallback(dawnBufferMapAsyncStatus status,
                                    const void* data,
-                                   uint64_t,
-                                   DawnCallbackUserdata userdata_) {
+                                   uint32_t,
+                                   dawnCallbackUserdata userdata_) {
     DAWN_ASSERT(status == DAWN_BUFFER_MAP_ASYNC_STATUS_SUCCESS);
 
     auto userdata = reinterpret_cast<MapReadUserdata*>(static_cast<uintptr_t>(userdata_));

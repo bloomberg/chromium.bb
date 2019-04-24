@@ -6,7 +6,7 @@
 specific_include_rules = {
   '^.*_test\.cc$': [
     '+base',
-    '+testing/gtest/include',
-    '+testing/gmock/include',
+    '+gmock',
+    '+gtest',
   ],
 }

@@ -35,6 +35,7 @@ class SimpleThread : public Thread {
 
   ThreadScheduler* Scheduler() override { return scheduler_; }
 
+  void Init() override {}
   bool IsCurrentThread() const { return WTF::IsMainThread(); }
 
  private:
@@ -72,12 +73,14 @@ class SimpleFrameScheduler : public FrameScheduler {
     return WebScopedVirtualTimePauser();
   }
   void DidStartProvisionalLoad(bool is_main_frame) override {}
-  void DidCommitProvisionalLoad(bool, FrameScheduler::NavigationType) override {
-  }
+  void DidCommitProvisionalLoad(bool, bool, bool) override {}
   void OnFirstMeaningfulPaint() override {}
   bool IsExemptFromBudgetBasedThrottling() const override { return false; }
   std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>
   GetPauseSubresourceLoadingHandle() override {
+    return nullptr;
+  }
+  std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override {
     return nullptr;
   }
   std::unique_ptr<WebResourceLoadingTaskRunnerHandle>
@@ -86,15 +89,6 @@ class SimpleFrameScheduler : public FrameScheduler {
         base::ThreadTaskRunnerHandle::Get());
   }
   ukm::SourceId GetUkmSourceId() override { return ukm::kInvalidSourceId; }
-  void OnStartedUsingFeature(SchedulingPolicy::Feature feature,
-                             const SchedulingPolicy& policy) override {}
-  void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
-                             const SchedulingPolicy& policy) override {}
-  WTF::HashSet<SchedulingPolicy::Feature>
-  GetActiveFeaturesOptingOutFromBackForwardCache() override {
-    return WTF::HashSet<SchedulingPolicy::Feature>();
-  }
-  base::WeakPtr<FrameScheduler> GetWeakPtr() override { return nullptr; }
 
  private:
   PageScheduler* page_scheduler_;
@@ -119,7 +113,6 @@ class SimplePageScheduler : public PageScheduler {
   void SetKeepActive(bool) override {}
   bool IsMainFrameLocal() const override { return true; }
   void SetIsMainFrameLocal(bool) override {}
-  void OnLocalMainFrameNetworkAlmostIdle() override {}
   base::TimeTicks EnableVirtualTime() override { return base::TimeTicks(); }
   void DisableVirtualTimeForTesting() override {}
   bool VirtualTimeAllowedToAdvance() const override { return true; }
@@ -131,9 +124,7 @@ class SimplePageScheduler : public PageScheduler {
   void AudioStateChanged(bool is_audio_playing) override {}
   bool IsAudioPlaying() const override { return false; }
   bool IsExemptFromBudgetBasedThrottling() const override { return false; }
-  bool OptedOutFromAggressiveThrottlingForTest() const override {
-    return false;
-  }
+  bool HasActiveConnectionForTest() const override { return false; }
   bool RequestBeginMainFrameNotExpected(bool) override { return false; }
 
  private:
@@ -175,8 +166,7 @@ class SimpleThreadScheduler : public ThreadScheduler {
   void PostIdleTask(const base::Location&, Thread::IdleTask) override {}
   void PostNonNestableIdleTask(const base::Location&,
                                Thread::IdleTask) override {}
-  void AddRAILModeObserver(RAILModeObserver*) override {}
-  void RemoveRAILModeObserver(RAILModeObserver const*) override {}
+  void AddRAILModeObserver(WebRAILModeObserver*) override {}
   std::unique_ptr<WebThreadScheduler::RendererPauseHandle> PauseScheduler()
       override {
     return nullptr;
@@ -189,7 +179,6 @@ class SimpleThreadScheduler : public ThreadScheduler {
   NonMainThreadSchedulerImpl* AsNonMainThreadScheduler() override {
     return nullptr;
   }
-  void SetV8Isolate(v8::Isolate* isolate) override {}
 };
 
 class SimpleMainThreadScheduler : public WebThreadScheduler,

@@ -7,7 +7,6 @@
 
 #include <dwrite.h>
 #include <dwrite_2.h>
-#include <dwrite_3.h>
 #include <set>
 
 #include "base/location.h"
@@ -17,9 +16,6 @@ namespace content {
 
 namespace dwrite_font_file_util {
 
-bool FontFilePathAndTtcIndex(IDWriteFontFace* font,
-                             base::string16& file_path,
-                             uint32_t& ttc_index);
 bool FontFilePathAndTtcIndex(IDWriteFont* font,
                              base::string16& file_path,
                              uint32_t& ttc_index);

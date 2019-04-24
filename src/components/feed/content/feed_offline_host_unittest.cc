@@ -18,7 +18,6 @@
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/offline_page_types.h"
-#include "components/offline_pages/core/page_criteria.h"
 #include "components/offline_pages/core/prefetch/stub_prefetch_service.h"
 #include "components/offline_pages/core/stub_offline_page_model.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,12 +28,11 @@ namespace feed {
 
 namespace {
 
-using offline_pages::MultipleOfflinePageItemCallback;
 using offline_pages::OfflinePageItem;
 using offline_pages::OfflinePageModel;
-using offline_pages::PageCriteria;
-using offline_pages::PrefetchSuggestion;
 using offline_pages::StubOfflinePageModel;
+using offline_pages::MultipleOfflinePageItemCallback;
+using offline_pages::PrefetchSuggestion;
 using offline_pages::StubPrefetchService;
 using offline_pages::SuggestionsProvider;
 
@@ -77,12 +75,9 @@ class TestOfflinePageModel : public StubOfflinePageModel {
   MOCK_METHOD1(RemoveObserver, void(Observer*));
 
  private:
-  void GetPagesWithCriteria(const PageCriteria& criteria,
-                            MultipleOfflinePageItemCallback callback) override {
-    // Feed should ignore tab-bound pages.
-    EXPECT_TRUE(criteria.exclude_tab_bound_pages);
-
-    auto iter = url_to_offline_page_item_.equal_range(criteria.url.spec());
+  void GetPagesByURL(const GURL& url,
+                     MultipleOfflinePageItemCallback callback) override {
+    auto iter = url_to_offline_page_item_.equal_range(url.spec());
     std::vector<OfflinePageItem> ret;
     ret.resize(std::distance(iter.first, iter.second));
     std::transform(iter.first, iter.second, ret.begin(),

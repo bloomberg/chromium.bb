@@ -59,11 +59,11 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
 
-    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
-                                      GrFSAAType fsaaType, GrClampType clampType) override {
+    GrProcessorSet::Analysis finalize(
+            const GrCaps& caps, const GrAppliedClip* clip, GrFSAAType fsaaType) override {
         return fProcessors.finalize(
                 fColor, GrProcessorAnalysisCoverage::kNone, clip, &GrUserStencilSettings::kUnused,
-                fsaaType, caps, clampType, &fColor);
+                fsaaType, caps, &fColor);
     }
 
 private:
@@ -145,7 +145,8 @@ protected:
         const SkPoint center = { kRadius, kRadius };
         for (int i = 0; i < GrConvexPolyEffect::kMaxEdges; ++i) {
             SkScalar angle = 2 * SK_ScalarPI * i / GrConvexPolyEffect::kMaxEdges;
-            SkPoint point = { SkScalarCos(angle), SkScalarSin(angle) };
+            SkPoint point;
+            point.fY = SkScalarSinCos(angle, &point.fX);
             point.scale(kRadius);
             point = center + point;
             if (0 == i) {

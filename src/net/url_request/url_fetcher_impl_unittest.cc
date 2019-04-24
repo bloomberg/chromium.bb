@@ -523,6 +523,7 @@ TEST_F(URLFetcherTest, FetchedUsingProxy) {
   EXPECT_EQ(kDefaultResponseBody, data);
 
   EXPECT_EQ(proxy_server, delegate.fetcher()->ProxyServerUsed());
+  EXPECT_TRUE(delegate.fetcher()->WasFetchedViaProxy());
 }
 
 // Create the fetcher on the main thread.  Since network IO will happen on the
@@ -550,6 +551,7 @@ TEST_F(URLFetcherTest, SameThreadTest) {
             delegate.fetcher()->GetTotalReceivedBytes());
   EXPECT_EQ(ProxyServer::SCHEME_DIRECT,
             delegate.fetcher()->ProxyServerUsed().scheme());
+  EXPECT_FALSE(delegate.fetcher()->WasFetchedViaProxy());
 }
 
 // Create a separate thread that will create the URLFetcher.  A separate thread
@@ -567,7 +569,7 @@ TEST_F(URLFetcherTest, DifferentThreadsTest) {
   EXPECT_EQ(kDefaultResponseBody, data);
 }
 
-// Verifies that a URLFetcher works correctly on a ThreadPool Sequence.
+// Verifies that a URLFetcher works correctly on a TaskScheduler Sequence.
 TEST_F(URLFetcherTest, SequencedTaskTest) {
   auto sequenced_task_runner = base::CreateSequencedTaskRunnerWithTraits({});
 

@@ -13,20 +13,15 @@ skslc = sys.argv[1]
 clangFormat = sys.argv[2]
 processors = sys.argv[3:]
 for p in processors:
+    path, _ = os.path.splitext(p)
     print("Recompiling " + p + "...")
     try:
-        noExt, _ = os.path.splitext(p)
-        head, tail = os.path.split(noExt)
-        targetDir = os.path.join(head, "generated")
-        if not os.path.exists(targetDir):
-            os.mkdir(targetDir)
-        target = os.path.join(targetDir, tail)
-        subprocess.check_output([skslc, p, target + ".h"])
+        subprocess.check_output([skslc, p, path + ".h"])
         subprocess.check_call(clangFormat + " --sort-includes=false -i \"" +
-                              target + ".h\"", shell=True)
-        subprocess.check_output([skslc, p, target + ".cpp"])
+                              path + ".h\"", shell=True)
+        subprocess.check_output([skslc, p, path + ".cpp"])
         subprocess.check_call(clangFormat + " --sort-includes=false -i \"" +
-                              target + ".cpp\"", shell=True)
+                              path + ".cpp\"", shell=True)
     except subprocess.CalledProcessError as err:
         print("### Error compiling " + p + ":")
         print(err.output)

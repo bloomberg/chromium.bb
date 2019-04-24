@@ -35,6 +35,12 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
+namespace {
+
+const char kJsScreenPath[] = "login.WelcomeScreen";
+
+}  // namespace
+
 namespace chromeos {
 
 // WelcomeScreenHandler, public: -----------------------------------------------
@@ -43,7 +49,7 @@ WelcomeScreenHandler::WelcomeScreenHandler(JSCallsContainer* js_calls_container,
                                            CoreOobeView* core_oobe_view)
     : BaseScreenHandler(kScreenId, js_calls_container),
       core_oobe_view_(core_oobe_view) {
-  set_user_acted_method_path("login.WelcomeScreen.userActed");
+  set_call_js_prefix(kJsScreenPath);
   DCHECK(core_oobe_view_);
 }
 
@@ -108,6 +114,10 @@ void WelcomeScreenHandler::SetInputMethodId(
   CallJS("login.WelcomeScreen.onInputMethodIdSetFromBackend", input_method_id);
 }
 
+void WelcomeScreenHandler::SetTimezoneId(const std::string& timezone_id) {
+  CallJS("login.WelcomeScreen.onTimezoneIdSetFromBackend", timezone_id);
+}
+
 // WelcomeScreenHandler, BaseScreenHandler implementation: --------------------
 
 void WelcomeScreenHandler::DeclareLocalizedValues(
@@ -116,6 +126,8 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
     builder->Add("welcomeScreenGreeting", IDS_REMORA_CONFIRM_MESSAGE);
   else
     builder->Add("welcomeScreenGreeting", IDS_WELCOME_SCREEN_GREETING);
+
+  builder->Add("welcomeScreenTitle", IDS_WELCOME_SCREEN_TITLE);
 
   // MD-OOBE (oobe-welcome-md)
   builder->Add("debuggingFeaturesLink", IDS_WELCOME_ENABLE_DEV_FEATURES_LINK);

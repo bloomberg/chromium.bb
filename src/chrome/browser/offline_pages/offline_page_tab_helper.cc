@@ -24,7 +24,6 @@
 #include "components/offline_pages/core/offline_page_item_utils.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_store_utils.h"
-#include "components/offline_pages/core/page_criteria.h"
 #include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
@@ -319,12 +318,8 @@ void OfflinePageTabHelper::TryLoadingOfflinePageOnNetError(
     return;
   }
 
-  PageCriteria criteria;
-  criteria.url = navigation_handle->GetURL();
-  criteria.pages_for_tab_id = tab_id;
-  criteria.maximum_matches = 1;
-  OfflinePageUtils::SelectPagesWithCriteria(
-      web_contents()->GetBrowserContext(), criteria,
+  OfflinePageUtils::SelectPagesForURL(
+      web_contents()->GetBrowserContext(), navigation_handle->GetURL(), tab_id,
       base::BindOnce(&OfflinePageTabHelper::SelectPagesForURLDone,
                      weak_ptr_factory_.GetWeakPtr()));
 }

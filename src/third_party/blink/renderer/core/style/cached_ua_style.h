@@ -47,7 +47,9 @@ class CachedUAStyle {
   friend class ComputedStyle;
 
  public:
-  explicit CachedUAStyle(const ComputedStyle*);
+  static std::unique_ptr<CachedUAStyle> Create(const ComputedStyle* style) {
+    return base::WrapUnique(new CachedUAStyle(style));
+  }
 
   bool BorderColorEquals(const ComputedStyle& other) const;
   bool BorderWidthEquals(const ComputedStyle& other) const;
@@ -79,6 +81,7 @@ class CachedUAStyle {
   StyleColor background_color;
 
  private:
+  explicit CachedUAStyle(const ComputedStyle*);
   DISALLOW_COPY_AND_ASSIGN(CachedUAStyle);
 };
 

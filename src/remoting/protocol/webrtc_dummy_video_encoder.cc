@@ -104,7 +104,8 @@ int32_t WebrtcDummyVideoEncoder::Release() {
 
 int32_t WebrtcDummyVideoEncoder::Encode(
     const webrtc::VideoFrame& frame,
-    const std::vector<webrtc::VideoFrameType>* frame_types) {
+    const webrtc::CodecSpecificInfo* codec_specific_info,
+    const std::vector<webrtc::FrameType>* frame_types) {
   // WebrtcDummyVideoCapturer doesn't generate any video frames, so Encode() can
   // be called only from VCMGenericEncoder::RequestFrame() to request a key
   // frame.
@@ -145,9 +146,8 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
   encoded_image._encodedWidth = frame.size.width();
   encoded_image._encodedHeight = frame.size.height();
   encoded_image._completeFrame = true;
-  encoded_image._frameType = frame.key_frame
-                                 ? webrtc::VideoFrameType::kVideoFrameKey
-                                 : webrtc::VideoFrameType::kVideoFrameDelta;
+  encoded_image._frameType =
+      frame.key_frame ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta;
   int64_t capture_time_ms = (capture_time - base::TimeTicks()).InMilliseconds();
   int64_t encode_started_time_ms =
       (encode_started_time - base::TimeTicks()).InMilliseconds();

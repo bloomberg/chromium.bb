@@ -10,11 +10,12 @@
 
 #include "Benchmark.h"
 #include "SkCanvas.h"
-#include "SkGraphics.h"
 #include "SkStrikeCache.h"
+#include "SkGraphics.h"
 #include "SkTaskGroup.h"
 #include "SkTypeface.h"
-#include "ToolUtils.h"
+#include "sk_tool_utils.h"
+
 
 static void do_font_stuff(SkFont* font) {
     SkPaint defaultPaint;
@@ -57,7 +58,7 @@ protected:
         SkFont font;
         font.setEdging(SkFont::Edging::kAntiAlias);
         font.setSubpixel(true);
-        font.setTypeface(ToolUtils::create_portable_typeface("serif", SkFontStyle::Italic()));
+        font.setTypeface(sk_tool_utils::create_portable_typeface("serif", SkFontStyle::Italic()));
 
         for (int work = 0; work < loops; work++) {
             do_font_stuff(&font);
@@ -88,9 +89,9 @@ protected:
     void onDraw(int loops, SkCanvas*) override {
         size_t oldCacheLimitSize = SkGraphics::GetFontCacheLimit();
         SkGraphics::SetFontCacheLimit(fCacheSize);
-        sk_sp<SkTypeface> typefaces[] = {
-                ToolUtils::create_portable_typeface("serif", SkFontStyle::Italic()),
-                ToolUtils::create_portable_typeface("sans-serif", SkFontStyle::Italic())};
+        sk_sp<SkTypeface> typefaces[] =
+            {sk_tool_utils::create_portable_typeface("serif", SkFontStyle::Italic()),
+             sk_tool_utils::create_portable_typeface("sans-serif", SkFontStyle::Italic())};
 
         for (int work = 0; work < loops; work++) {
             SkTaskGroup().batch(16, [&](int threadIndex) {

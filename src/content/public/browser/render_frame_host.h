@@ -15,12 +15,12 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/page_visibility_state.h"
+#include "content/public/common/console_message_level.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-forward.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -172,34 +172,29 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual gfx::NativeView GetNativeView() = 0;
 
   // Adds |message| to the DevTools console.
-  virtual void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
+  virtual void AddMessageToConsole(ConsoleMessageLevel level,
                                    const std::string& message) = 0;
 
-  // Functions to run JavaScript in this frame's context. Pass in a callback to
-  // receive a result when it is available. If there is no need to receive the
-  // result, pass in a default-constructed callback. If provided, the callback
-  // will be invoked on the UI thread.
-  using JavaScriptResultCallback = base::OnceCallback<void(base::Value)>;
-
-  // This is the default API to run JavaScript in this frame. This API can only
-  // be called on chrome:// or chrome-devtools:// URLs.
+  // Runs some JavaScript in this frame's context. If a callback is provided, it
+  // will be used to return the result, when the result is available.
+  // This API can only be called on chrome:// or chrome-devtools:// URLs.
+  typedef base::Callback<void(const base::Value*)> JavaScriptResultCallback;
+  virtual void ExecuteJavaScript(const base::string16& javascript) = 0;
   virtual void ExecuteJavaScript(const base::string16& javascript,
-                                 JavaScriptResultCallback callback) = 0;
+                                 const JavaScriptResultCallback& callback) = 0;
 
-  // This runs the JavaScript in an isolated world of the top of this frame's
-  // context.
+  // Runs some JavaScript in an isolated world of top of this frame's context.
   virtual void ExecuteJavaScriptInIsolatedWorld(
       const base::string16& javascript,
-      JavaScriptResultCallback callback,
+      const JavaScriptResultCallback& callback,
       int world_id) = 0;
 
-  // This runs the JavaScript, but without restrictions. THIS IS ONLY FOR TESTS.
-  virtual void ExecuteJavaScriptForTests(const base::string16& javascript,
-                                         JavaScriptResultCallback callback) = 0;
-
-  // This runs the JavaScript, but without restrictions. THIS IS ONLY FOR TESTS.
-  // This version adds a fake UserGestureIndicator to test functionality that
-  // requires such a user gesture. https://crbug.com/408426
+  // ONLY FOR TESTS: Same as above but without restrictions. Optionally, adds a
+  // fake UserGestureIndicator around execution. (crbug.com/408426)
+  virtual void ExecuteJavaScriptForTests(const base::string16& javascript) = 0;
+  virtual void ExecuteJavaScriptForTests(
+      const base::string16& javascript,
+      const JavaScriptResultCallback& callback) = 0;
   virtual void ExecuteJavaScriptWithUserGestureForTests(
       const base::string16& javascript) = 0;
 
@@ -248,11 +243,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns the visibility state of the frame. The different visibility states
   // of a frame are defined in Blink.
   virtual PageVisibilityState GetVisibilityState() = 0;
-
-  // Returns true if WebContentsObserver::RenderFrameCreate notification has
-  // been dispatched for this frame, and so a RenderFrameDeleted notification
-  // will later be dispatched for this frame.
-  virtual bool IsRenderFrameCreated() = 0;
 
   // Returns whether the RenderFrame in the renderer process has been created
   // and still has a connection.  This is valid for all frames.

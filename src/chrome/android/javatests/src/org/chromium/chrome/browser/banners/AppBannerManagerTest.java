@@ -35,7 +35,6 @@ import org.mockito.quality.Strictness;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -63,7 +62,6 @@ import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TouchCommon;
@@ -138,8 +136,7 @@ public class AppBannerManagerTest {
             mAppData = new AppData(url, packageName);
             mAppData.setPackageInfo(NATIVE_APP_TITLE, mTestServer.getURL(NATIVE_ICON_PATH), 4.5f,
                     NATIVE_APP_INSTALL_TEXT, null, mInstallIntent);
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                    () -> { mObserver.onAppDetailsRetrieved(mAppData); });
+            ThreadUtils.runOnUiThread(() -> { mObserver.onAppDetailsRetrieved(mAppData); });
         }
 
         @Override
@@ -270,16 +267,14 @@ public class AppBannerManagerTest {
 
     private void waitUntilAmbientBadgeInfoBarAppears(
             ChromeActivityTestRule<? extends ChromeActivity> rule) {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR)) {
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    List<InfoBar> infobars = rule.getInfoBars();
-                    if (infobars.size() != 1) return false;
-                    return infobars.get(0) instanceof InstallableAmbientBadgeInfoBar;
-                }
-            });
-        }
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                List<InfoBar> infobars = rule.getInfoBars();
+                if (infobars.size() != 1) return false;
+                return infobars.get(0) instanceof InstallableAmbientBadgeInfoBar;
+            }
+        });
     }
 
     private void runFullNativeInstallPathway(
@@ -646,7 +641,6 @@ public class AppBannerManagerTest {
     @Test
     @MediumTest
     @Feature({"AppBanners"})
-    @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR)
     public void testBlockedAmbientBadgeDoesNotAppearAgainForMonths() throws Exception {
         // Visit a site that is a PWA. The ambient badge should show.
         String webBannerUrl = WebappTestPage.getServiceWorkerUrl(mTestServer);
@@ -929,7 +923,7 @@ public class AppBannerManagerTest {
         triggerWebAppBanner(mTabbedActivityTestRule, webBannerUrl, WEB_APP_TITLE, false);
 
         // Verify metrics calling in the successful case.
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+        ThreadUtils.runOnUiThread(() -> {
             AppBannerManager manager =
                     getAppBannerManager(mTabbedActivityTestRule.getActivity().getActivityTab());
             manager.recordMenuItemAddToHomescreen();
@@ -1059,7 +1053,7 @@ public class AppBannerManagerTest {
                 mTabbedActivityTestRule.getActivity().getActivityTab(), "Got userChoice: accepted")
                 .waitForTitleUpdate(3);
 
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+        ThreadUtils.runOnUiThread(() -> {
             Assert.assertEquals(1,
                     RecordHistogram.getHistogramValueCountForTesting(
                             "Webapp.Install.InstallEvent", 4));
@@ -1083,7 +1077,7 @@ public class AppBannerManagerTest {
                 "Got userChoice: accepted")
                 .waitForTitleUpdate(3);
 
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+        ThreadUtils.runOnUiThread(() -> {
             Assert.assertEquals(1,
                     RecordHistogram.getHistogramValueCountForTesting(
                             "Webapp.Install.InstallEvent", 5));

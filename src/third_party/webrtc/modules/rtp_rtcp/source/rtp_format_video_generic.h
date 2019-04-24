@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "api/array_view.h"
+#include "common_types.h"  // NOLINT(build/include)
 #include "modules/rtp_rtcp/source/rtp_format.h"
 #include "rtc_base/constructor_magic.h"
 
@@ -37,7 +38,7 @@ class RtpPacketizerGeneric : public RtpPacketizer {
   RtpPacketizerGeneric(rtc::ArrayView<const uint8_t> payload,
                        PayloadSizeLimits limits,
                        const RTPVideoHeader& rtp_video_header,
-                       VideoFrameType frametype);
+                       FrameType frametype);
 
   ~RtpPacketizerGeneric() override;
 
@@ -51,7 +52,7 @@ class RtpPacketizerGeneric : public RtpPacketizer {
  private:
   // Fills header_ and header_size_ members.
   void BuildHeader(const RTPVideoHeader& rtp_video_header,
-                   VideoFrameType frame_type);
+                   FrameType frame_type);
 
   uint8_t header_[3];
   size_t header_size_;

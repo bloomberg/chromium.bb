@@ -21,46 +21,40 @@ Crostini.prototype.init = function(volumeManager) {};
 Crostini.prototype.listen = function() {};
 
 /**
- * Set whether the specified VM is enabled.
- * @param {string} vmName
+ * Set from feature 'crostini-files'.
  * @param {boolean} enabled
  */
-Crostini.prototype.setEnabled = function(vmName, enabled) {};
+Crostini.prototype.setEnabled = function(enabled) {};
 
 /**
- * Returns true if the specified VM is enabled.
- * @param {string} vmName
+ * Returns true if crostini is enabled.
  * @return {boolean}
  */
-Crostini.prototype.isEnabled = function(vmName) {};
+Crostini.prototype.isEnabled = function() {};
 
 /**
- * Registers an entry as a shared path for the specified VM.
- * @param {string} vmName
+ * Registers an entry as a shared path.
  * @param {!Entry} entry
  */
-Crostini.prototype.registerSharedPath = function(vmName, entry) {};
+Crostini.prototype.registerSharedPath = function(entry) {};
 
 /**
- * Unregisters entry as a shared path from the specified VM.
- * @param {string} vmName
+ * Unregisters entry as a shared path.
  * @param {!Entry} entry
  */
-Crostini.prototype.unregisterSharedPath = function(vmName, entry) {};
+Crostini.prototype.unregisterSharedPath = function(entry) {};
 
 /**
- * Returns true if entry is shared with the specified VM.
- * @param {string} vmName
+ * Returns true if entry is shared.
  * @param {!Entry} entry
  * @return {boolean} True if path is shared either by a direct
  *   share or from one of its ancestor directories.
  */
-Crostini.prototype.isPathShared = function(vmName, entry) {};
+Crostini.prototype.isPathShared = function(entry) {};
 
 /**
- * Returns true if entry can be shared with the specified VM.
- * @param {string} vmName
+ * Returns true if entry can be shared with Crostini.
  * @param {!Entry} entry
  * @param {boolean} persist If path is to be persisted.
  */
-Crostini.prototype.canSharePath = function(vmName, entry, persist) {};
+Crostini.prototype.canSharePath = function(entry, persist) {};

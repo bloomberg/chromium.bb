@@ -9,7 +9,7 @@
 
 namespace views {
 
-MenuDelegate::~MenuDelegate() = default;
+MenuDelegate::~MenuDelegate() {}
 
 bool MenuDelegate::IsItemChecked(int id) const {
   return false;
@@ -125,7 +125,7 @@ MenuItemView* MenuDelegate::GetSiblingMenu(MenuItemView* menu,
                                            MenuAnchorPosition* anchor,
                                            bool* has_mnemonics,
                                            MenuButton** button) {
-  return nullptr;
+  return NULL;
 }
 
 int MenuDelegate::GetMaxWidthForMenu(MenuItemView* menu) {

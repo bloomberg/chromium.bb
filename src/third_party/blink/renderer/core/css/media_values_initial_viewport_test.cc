@@ -23,8 +23,8 @@ TEST_F(MediaValuesInitialViewportTest, InitialViewportSize) {
   ASSERT_TRUE(view);
   EXPECT_TRUE(view->LayoutSizeFixedToFrameSize());
 
-  auto* media_values = MakeGarbageCollected<MediaValuesInitialViewport>(
-      *GetDocument().GetFrame());
+  MediaValues* media_values =
+      MediaValuesInitialViewport::Create(*GetDocument().GetFrame());
   EXPECT_EQ(320, media_values->ViewportWidth());
   EXPECT_EQ(480, media_values->ViewportHeight());
 

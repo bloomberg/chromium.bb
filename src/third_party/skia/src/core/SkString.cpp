@@ -246,7 +246,7 @@ bool SkString::Rec::unique() const {
 }
 
 #ifdef SK_DEBUG
-const SkString& SkString::validate() const {
+void SkString::validate() const {
     // make sure know one has written over our global
     SkASSERT(0 == gEmptyRec.fLength);
     SkASSERT(0 == gEmptyRec.fRefCnt.load(std::memory_order_relaxed));
@@ -257,7 +257,6 @@ const SkString& SkString::validate() const {
         SkASSERT(fRec->fRefCnt.load(std::memory_order_relaxed) > 0);
         SkASSERT(0 == fRec->data()[fRec->fLength]);
     }
-    return *this;
 }
 #endif
 
@@ -280,9 +279,16 @@ SkString::SkString(const char text[], size_t len) {
     fRec = Rec::Make(text, len);
 }
 
-SkString::SkString(const SkString& src) : fRec(src.validate().fRec) {}
+SkString::SkString(const SkString& src) {
+    src.validate();
 
-SkString::SkString(SkString&& src) : fRec(std::move(src.validate().fRec)) {
+    fRec = src.fRec;
+}
+
+SkString::SkString(SkString&& src) {
+    src.validate();
+
+    fRec = std::move(src.fRec);
     src.fRec.reset(const_cast<Rec*>(&gEmptyRec));
 }
 
@@ -306,7 +312,11 @@ bool SkString::equals(const char text[], size_t len) const {
 
 SkString& SkString::operator=(const SkString& src) {
     this->validate();
-    fRec = src.fRec;  // sk_sp<Rec>::operator=(const sk_sp<Ref>&) checks for self-assignment.
+
+    if (fRec != src.fRec) {
+        SkString    tmp(src);
+        this->swap(tmp);
+    }
     return *this;
 }
 
@@ -321,7 +331,11 @@ SkString& SkString::operator=(SkString&& src) {
 
 SkString& SkString::operator=(const char text[]) {
     this->validate();
-    return *this = SkString(text);
+
+    SkString tmp(text);
+    this->swap(tmp);
+
+    return *this;
 }
 
 void SkString::reset() {

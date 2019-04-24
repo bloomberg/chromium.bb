@@ -319,7 +319,7 @@ void BluetoothDeviceChooserController::GetDevice(
         BLOCK_GLOBALLY_DISABLED: {
       // Log to the developer console.
       web_contents_->GetMainFrame()->AddMessageToConsole(
-          blink::mojom::ConsoleMessageLevel::kInfo,
+          content::CONSOLE_MESSAGE_LEVEL_INFO,
           "Bluetooth permission has been blocked.");
       // Block requests.
       RecordRequestDeviceOutcome(

@@ -67,7 +67,7 @@ PictureInPictureInterstitial::PictureInPictureInterstitial(
       video_element_(&videoElement) {
   SetShadowPseudoId(AtomicString("-internal-media-interstitial"));
 
-  background_image_ = MakeGarbageCollected<HTMLImageElement>(GetDocument());
+  background_image_ = HTMLImageElement::Create(GetDocument());
   background_image_->SetShadowPseudoId(
       AtomicString("-internal-media-interstitial-background-image"));
   background_image_->SetSrc(videoElement.getAttribute(html_names::kPosterAttr));
@@ -92,13 +92,12 @@ void PictureInPictureInterstitial::Show() {
   if (interstitial_timer_.IsActive())
     interstitial_timer_.Stop();
   should_be_visible_ = true;
-  RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
+  RemoveInlineStyleProperty(CSSPropertyDisplay);
   interstitial_timer_.StartOneShot(
       kPictureInPictureStyleChangeTransitionDuration, FROM_HERE);
 
   DCHECK(GetVideoElement().CcLayer());
   GetVideoElement().CcLayer()->SetIsDrawable(false);
-  GetVideoElement().CcLayer()->SetHitTestable(false);
 }
 
 void PictureInPictureInterstitial::Hide() {
@@ -108,15 +107,13 @@ void PictureInPictureInterstitial::Hide() {
   if (interstitial_timer_.IsActive())
     interstitial_timer_.Stop();
   should_be_visible_ = false;
-  SetInlineStyleProperty(CSSPropertyID::kOpacity, 0,
+  SetInlineStyleProperty(CSSPropertyOpacity, 0,
                          CSSPrimitiveValue::UnitType::kNumber);
   interstitial_timer_.StartOneShot(kPictureInPictureHiddenAnimationSeconds,
                                    FROM_HERE);
 
-  if (GetVideoElement().CcLayer()) {
+  if (GetVideoElement().CcLayer())
     GetVideoElement().CcLayer()->SetIsDrawable(true);
-    GetVideoElement().CcLayer()->SetHitTestable(true);
-  }
 }
 
 Node::InsertionNotificationRequest PictureInPictureInterstitial::InsertedInto(
@@ -150,11 +147,11 @@ void PictureInPictureInterstitial::NotifyElementSizeChanged(
 void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
   interstitial_timer_.Stop();
   if (should_be_visible_) {
-    SetInlineStyleProperty(CSSPropertyID::kBackgroundColor, CSSValueID::kBlack);
-    SetInlineStyleProperty(CSSPropertyID::kOpacity, 1,
+    SetInlineStyleProperty(CSSPropertyBackgroundColor, CSSValueBlack);
+    SetInlineStyleProperty(CSSPropertyOpacity, 1,
                            CSSPrimitiveValue::UnitType::kNumber);
   } else {
-    SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
+    SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
   }
 }
 

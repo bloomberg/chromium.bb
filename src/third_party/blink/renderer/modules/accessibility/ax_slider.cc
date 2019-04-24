@@ -40,6 +40,11 @@ AXSlider::AXSlider(LayoutObject* layout_object,
                    AXObjectCacheImpl& ax_object_cache)
     : AXLayoutObject(layout_object, ax_object_cache) {}
 
+AXSlider* AXSlider::Create(LayoutObject* layout_object,
+                           AXObjectCacheImpl& ax_object_cache) {
+  return MakeGarbageCollected<AXSlider>(layout_object, ax_object_cache);
+}
+
 ax::mojom::Role AXSlider::DetermineAccessibilityRole() {
   if ((aria_role_ = DetermineAriaRoleAttribute()) != ax::mojom::Role::kUnknown)
     return aria_role_;
@@ -122,6 +127,10 @@ HTMLInputElement* AXSlider::GetInputElement() const {
 
 AXSliderThumb::AXSliderThumb(AXObjectCacheImpl& ax_object_cache)
     : AXMockObject(ax_object_cache) {}
+
+AXSliderThumb* AXSliderThumb::Create(AXObjectCacheImpl& ax_object_cache) {
+  return MakeGarbageCollected<AXSliderThumb>(ax_object_cache);
+}
 
 LayoutObject* AXSliderThumb::LayoutObjectForRelativeBounds() const {
   if (!parent_)

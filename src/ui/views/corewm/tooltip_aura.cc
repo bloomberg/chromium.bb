@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "build/build_config.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
@@ -27,11 +26,11 @@ namespace {
 
 // Max visual tooltip width. If a tooltip is greater than this width, it will
 // be wrapped.
-constexpr int kTooltipMaxWidthPixels = 400;
+const int kTooltipMaxWidthPixels = 400;
 
 // FIXME: get cursor offset from actual cursor size.
-constexpr int kCursorOffsetX = 10;
-constexpr int kCursorOffsetY = 15;
+const int kCursorOffsetX = 10;
+const int kCursorOffsetY = 15;
 
 // TODO(varkha): Update if native widget can be transparent on Linux.
 bool CanUseTranslucentTooltipWidget() {
@@ -70,10 +69,11 @@ namespace corewm {
 // TODO(oshima): Consider to use views::Label.
 class TooltipAura::TooltipView : public views::View {
  public:
-  TooltipView() : render_text_(gfx::RenderText::CreateHarfBuzzInstance()) {
-    constexpr int kHorizontalPadding = 8;
-    constexpr int kVerticalPaddingTop = 4;
-    constexpr int kVerticalPaddingBottom = 5;
+  TooltipView()
+      : render_text_(gfx::RenderText::CreateHarfBuzzInstance()), max_width_(0) {
+    const int kHorizontalPadding = 8;
+    const int kVerticalPaddingTop = 4;
+    const int kVerticalPaddingBottom = 5;
     SetBorder(CreateEmptyBorder(kVerticalPaddingTop, kHorizontalPadding,
                                 kVerticalPaddingBottom, kHorizontalPadding));
 
@@ -84,7 +84,7 @@ class TooltipAura::TooltipView : public views::View {
     ResetDisplayRect();
   }
 
-  ~TooltipView() override = default;
+  ~TooltipView() override {}
 
   // views:View:
   void OnPaint(gfx::Canvas* canvas) override {
@@ -149,12 +149,16 @@ class TooltipAura::TooltipView : public views::View {
   }
 
   std::unique_ptr<gfx::RenderText> render_text_;
-  int max_width_ = 0;
+  int max_width_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipView);
 };
 
-TooltipAura::TooltipAura() : tooltip_view_(new TooltipView) {}
+TooltipAura::TooltipAura()
+    : tooltip_view_(new TooltipView),
+      widget_(NULL),
+      tooltip_window_(NULL) {
+}
 
 TooltipAura::~TooltipAura() {
   DestroyWidget();
@@ -191,7 +195,7 @@ void TooltipAura::DestroyWidget() {
   if (widget_) {
     widget_->RemoveObserver(this);
     widget_->Close();
-    widget_ = nullptr;
+    widget_ = NULL;
   }
 }
 
@@ -234,7 +238,7 @@ void TooltipAura::Show() {
 }
 
 void TooltipAura::Hide() {
-  tooltip_window_ = nullptr;
+  tooltip_window_ = NULL;
   if (widget_)
     widget_->Hide();
 }
@@ -245,8 +249,8 @@ bool TooltipAura::IsVisible() {
 
 void TooltipAura::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(widget_, widget);
-  widget_ = nullptr;
-  tooltip_window_ = nullptr;
+  widget_ = NULL;
+  tooltip_window_ = NULL;
 }
 
 }  // namespace corewm

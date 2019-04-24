@@ -1140,7 +1140,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyRemovedFromRootScrollableArea) {
   // sticky element to be a child of the scroller, and will set its previous
   // overflow layer to nullptr.
   ToElement(scroller->GetNode())
-      ->SetInlineStyleProperty(CSSPropertyID::kOverflow, "scroll");
+      ->SetInlineStyleProperty(CSSPropertyOverflow, "scroll");
   UpdateAllLifecyclePhasesForTest();
 
   // The sticky element should no longer be viewport constrained.
@@ -1150,9 +1150,9 @@ TEST_F(LayoutBoxModelObjectTest, StickyRemovedFromRootScrollableArea) {
   // (in this case by making it position: relative) will cause us to need to
   // recompute the sticky element's ancestor overflow layer.
   ToElement(scroller->GetNode())
-      ->SetInlineStyleProperty(CSSPropertyID::kPosition, "relative");
+      ->SetInlineStyleProperty(CSSPropertyPosition, "relative");
   ToElement(scroller->GetNode())
-      ->SetInlineStyleProperty(CSSPropertyID::kOverflow, "visible");
+      ->SetInlineStyleProperty(CSSPropertyOverflow, "visible");
 
   // Now try to scroll to the sticky element, this used to crash.
   GetDocument().GetFrame()->DomWindow()->scrollTo(0, 500);

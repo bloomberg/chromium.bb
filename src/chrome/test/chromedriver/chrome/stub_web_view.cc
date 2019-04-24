@@ -172,10 +172,10 @@ Status StubWebView::CaptureScreenshot(
   return Status(kOk);
 }
 
-Status StubWebView::SetFileInputFiles(const std::string& frame,
-                                      const base::DictionaryValue& element,
-                                      const std::vector<base::FilePath>& files,
-                                      const bool append) {
+Status StubWebView::SetFileInputFiles(
+    const std::string& frame,
+    const base::DictionaryValue& element,
+    const std::vector<base::FilePath>& files) {
   return Status(kOk);
 }
 

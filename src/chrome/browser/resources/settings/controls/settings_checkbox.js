@@ -19,24 +19,18 @@ Polymer({
     subLabelHtml: {
       type: String,
       value: '',
-      observer: 'onSubLabelHtmlChanged_',
     },
   },
 
   observers: [
-    'onSubLabelChanged_(subLabel, subLabelHtml)',
+    'subLabelHtmlChanged_(subLabelHtml)',
   ],
-
-  /** @private */
-  onSubLabelChanged_: function() {
-    this.$.checkbox.ariaDescription = this.$.subLabel.textContent;
-  },
 
   /**
    * Don't let clicks on a link inside the secondary label reach the checkbox.
    * @private
    */
-  onSubLabelHtmlChanged_: function() {
+  subLabelHtmlChanged_: function() {
     const links = this.root.querySelectorAll('.secondary.label a');
     links.forEach((link) => {
       link.addEventListener('click', this.stopPropagation);

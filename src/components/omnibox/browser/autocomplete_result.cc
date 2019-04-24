@@ -461,14 +461,11 @@ void AutocompleteResult::SortAndDedupMatches(
     // For each duplicate match, append its duplicates to that of the best
     // match, then append it, before we erase it.
     for (auto i = std::next(best_match); i != duplicate_matches.end(); ++i) {
-      auto& match = **i;
-      for (auto& dup_match : match.duplicate_matches)
-        (*best_match)->duplicate_matches.push_back(std::move(dup_match));
-      // Erase the duplicates before copying it. We don't need them any more.
-      match.duplicate_matches.erase(match.duplicate_matches.begin(),
-                                    match.duplicate_matches.end());
-      // Copy, don't move, because we need these below.
-      (*best_match)->duplicate_matches.push_back(match);
+      (*best_match)->duplicate_matches.insert(
+          (*best_match)->duplicate_matches.end(),
+          (*i)->duplicate_matches.begin(),
+          (*i)->duplicate_matches.end());
+      (*best_match)->duplicate_matches.push_back(**i);
     }
   }
 
@@ -627,9 +624,7 @@ void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
   // unlikely, as we normally would expect the search-what-you-typed suggestion
   // as a default match (and that's a non-tail suggestion).
   if (non_tail_default == matches->end()) {
-    base::EraseIf(*matches, [&is_tail](const AutocompleteMatch& match) {
-      return !is_tail(match);
-    });
+    base::EraseIf(*matches, std::not1(is_tail));
     return;
   }
   // Determine if there are both tail and non-tail matches, excluding the
@@ -704,7 +699,7 @@ void AutocompleteResult::MergeMatchesByProvider(
       AutocompleteMatch match = *i;
       match.relevance = std::min(max_relevance, match.relevance);
       match.from_previous = true;
-      matches_.push_back(std::move(match));
+      matches_.push_back(match);
       delta--;
     }
   }

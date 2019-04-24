@@ -20,6 +20,7 @@ login.createScreen('DiscoverScreen', 'discover', function() {
      * @param {object} data Screen init payload.
      */
     onBeforeShow: function(data) {
+      Oobe.getInstance().headerHidden = true;
       $('discover-impl').addEventListener('discover-done', function() {
         chrome.send('login.DiscoverScreen.userActed', ['finished']);
       });

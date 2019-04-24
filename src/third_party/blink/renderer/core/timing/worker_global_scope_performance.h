@@ -60,7 +60,7 @@ class CORE_EXPORT WorkerGlobalScopePerformance final
  private:
   WorkerPerformance* performance(WorkerGlobalScope*);
 
-  Member<WorkerPerformance> performance_;
+  TraceWrapperMember<WorkerPerformance> performance_;
 };
 
 }  // namespace blink

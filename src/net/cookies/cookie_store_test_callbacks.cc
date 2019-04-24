@@ -14,16 +14,15 @@
 namespace net {
 
 CookieCallback::CookieCallback(base::Thread* run_in_thread)
-    : run_in_thread_(run_in_thread), was_run_(false) {}
+    : run_in_thread_(run_in_thread) {}
 
 CookieCallback::CookieCallback()
-    : run_in_thread_(nullptr),
-      run_in_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      was_run_(false) {}
+    : run_in_thread_(NULL),
+      run_in_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 CookieCallback::~CookieCallback() = default;
 
-void CookieCallback::ValidateThread() const {
+void CookieCallback::CallbackEpilogue() {
   scoped_refptr<base::SingleThreadTaskRunner> expected_task_runner;
   if (run_in_thread_) {
     DCHECK(!run_in_task_runner_);
@@ -32,22 +31,13 @@ void CookieCallback::ValidateThread() const {
     expected_task_runner = run_in_task_runner_;
   }
   ASSERT_TRUE(expected_task_runner);
-  EXPECT_TRUE(expected_task_runner->BelongsToCurrentThread());
-}
 
-void CookieCallback::CallbackEpilogue() {
-  ValidateThread();
-  was_run_ = true;
+  EXPECT_TRUE(expected_task_runner->BelongsToCurrentThread());
   loop_to_quit_.Quit();
 }
 
 void CookieCallback::WaitUntilDone() {
   loop_to_quit_.Run();
-}
-
-bool CookieCallback::was_run() const {
-  ValidateThread();
-  return was_run_;
 }
 
 NoResultCookieCallback::NoResultCookieCallback() = default;

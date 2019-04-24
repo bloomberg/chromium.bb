@@ -183,7 +183,7 @@ ms{
         MF{"Saint Martin"}
         MG{"Madagaskar"}
         MH{"Kepulauan Marshall"}
-        MK{"Macedonia Utara"}
+        MK{"Macedonia (FYROM)"}
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongolia"}
@@ -287,8 +287,6 @@ ms{
         VU{"Vanuatu"}
         WF{"Wallis dan Futuna"}
         WS{"Samoa"}
-        XA{"XA"}
-        XB{"XB"}
         XK{"Kosovo"}
         YE{"Yaman"}
         YT{"Mayotte"}
@@ -309,5 +307,5 @@ ms{
         CZ{"Republik Czech"}
         TL{"Timor Timur"}
     }
-    Version{"2.1.49.2"}
+    Version{"2.1.44.91"}
 }

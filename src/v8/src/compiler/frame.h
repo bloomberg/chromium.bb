@@ -86,7 +86,7 @@ class CallDescriptor;
 //       |    return q-1   |   v                        v
 //  -----+-----------------+----- <-- stack ptr -------------
 //
-class V8_EXPORT_PRIVATE Frame : public ZoneObject {
+class Frame : public ZoneObject {
  public:
   explicit Frame(int fixed_frame_size_in_slots);
 
@@ -177,6 +177,7 @@ class V8_EXPORT_PRIVATE Frame : public ZoneObject {
   DISALLOW_COPY_AND_ASSIGN(Frame);
 };
 
+
 // Represents an offset from either the stack pointer or frame pointer.
 class FrameOffset {
  public:
@@ -214,7 +215,7 @@ class FrameAccessState : public ZoneObject {
         has_frame_(false) {}
 
   const Frame* frame() const { return frame_; }
-  V8_EXPORT_PRIVATE void MarkHasFrame(bool state);
+  void MarkHasFrame(bool state);
 
   int sp_delta() const { return sp_delta_; }
   void ClearSPDelta() { sp_delta_ = 0; }

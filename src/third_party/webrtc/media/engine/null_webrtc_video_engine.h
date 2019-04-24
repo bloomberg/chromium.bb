@@ -40,9 +40,7 @@ class NullWebRtcVideoEngine : public VideoEngineInterface {
       webrtc::Call* call,
       const MediaConfig& config,
       const VideoOptions& options,
-      const webrtc::CryptoOptions& crypto_options,
-      webrtc::VideoBitrateAllocatorFactory* video_bitrate_allocator_factory)
-      override {
+      const webrtc::CryptoOptions& crypto_options) override {
     return nullptr;
   }
 };

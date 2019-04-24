@@ -176,77 +176,37 @@ void TType::buildMangledName(TString& mangledName) const
 // Dump functions.
 //
 
-void TSymbol::dumpExtensions(TInfoSink& infoSink) const
+void TVariable::dump(TInfoSink& infoSink) const
 {
-    int numExtensions = getNumExtensions();
-    if (numExtensions) {
-        infoSink.debug << " <";
-
-        for (int i = 0; i < numExtensions; i++)
-            infoSink.debug << getExtensions()[i] << ",";
-        
-        infoSink.debug << ">";
+    infoSink.debug << getName().c_str() << ": " << type.getStorageQualifierString() << " " << type.getBasicTypeString();
+    if (type.isArray()) {
+        infoSink.debug << "[0]";
     }
-}
-
-void TVariable::dump(TInfoSink& infoSink, bool complete) const
-{
-    if (complete) {
-        infoSink.debug << getName().c_str() << ": " << type.getCompleteString();
-        dumpExtensions(infoSink);
-    } else {
-        infoSink.debug << getName().c_str() << ": " << type.getStorageQualifierString() << " "
-                       << type.getBasicTypeString();
-
-        if (type.isArray())
-            infoSink.debug << "[0]";
-    }
-
     infoSink.debug << "\n";
 }
 
-void TFunction::dump(TInfoSink& infoSink, bool complete) const
+void TFunction::dump(TInfoSink& infoSink) const
 {
-    if (complete) {
-        infoSink.debug << getName().c_str() << ": " << returnType.getCompleteString() << " " << getName().c_str()
-                       << "(";
-
-        int numParams = getParamCount();
-        for (int i = 0; i < numParams; i++) {
-            const TParameter &param = parameters[i];
-            infoSink.debug << param.type->getCompleteString() << " "
-                           << (param.type->isStruct() ? "of " + param.type->getTypeName() + " " : "")
-                           << (param.name ? *param.name : "") << (i < numParams - 1 ? "," : "");
-        }
-
-        infoSink.debug << ")";
-        dumpExtensions(infoSink);
-    } else {
-        infoSink.debug << getName().c_str() << ": " << returnType.getBasicTypeString() << " "
-                       << getMangledName().c_str() << "n";
-    }
-
-    infoSink.debug << "\n";
+    infoSink.debug << getName().c_str() << ": " <<  returnType.getBasicTypeString() << " " << getMangledName().c_str() << "\n";
 }
 
-void TAnonMember::dump(TInfoSink& TInfoSink, bool complete) const
+void TAnonMember::dump(TInfoSink& TInfoSink) const
 {
-    TInfoSink.debug << "anonymous member " << getMemberNumber() << " of " << getAnonContainer().getName().c_str()
-                    << "\n";
+    TInfoSink.debug << "anonymous member " << getMemberNumber() << " of " << getAnonContainer().getName().c_str() << "\n";
 }
 
-void TSymbolTableLevel::dump(TInfoSink& infoSink, bool complete) const
+void TSymbolTableLevel::dump(TInfoSink &infoSink) const
 {
     tLevel::const_iterator it;
     for (it = level.begin(); it != level.end(); ++it)
-        (*it).second->dump(infoSink, complete);
+        (*it).second->dump(infoSink);
 }
 
-void TSymbolTable::dump(TInfoSink& infoSink, bool complete) const
+void TSymbolTable::dump(TInfoSink &infoSink) const
 {
     for (int level = currentLevel(); level >= 0; --level) {
         infoSink.debug << "LEVEL " << level << "\n";
-        table[level]->dump(infoSink, complete);
+        table[level]->dump(infoSink);
     }
 }
 

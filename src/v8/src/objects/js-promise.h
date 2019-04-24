@@ -49,7 +49,7 @@ class JSPromise : public JSObject {
   void set_async_task_id(int id);
 
   static const char* Status(Promise::PromiseState status);
-  V8_EXPORT_PRIVATE Promise::PromiseState status() const;
+  Promise::PromiseState status() const;
   void set_status(Promise::PromiseState status);
 
   // ES section #sec-fulfillpromise

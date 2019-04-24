@@ -63,7 +63,8 @@ class MODULES_EXPORT PaintWorkletGlobalScope final : public WorkletGlobalScope {
 
   // The implementation of the "paint definition" concept:
   // https://drafts.css-houdini.org/css-paint-api/#paint-definition
-  typedef HeapHashMap<String, Member<CSSPaintDefinition>> DefinitionMap;
+  typedef HeapHashMap<String, TraceWrapperMember<CSSPaintDefinition>>
+      DefinitionMap;
   DefinitionMap paint_definitions_;
 
   // Only used for main-thread bound PaintWorkletGlobalScopes.

@@ -33,6 +33,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
 namespace history {
@@ -559,7 +560,9 @@ void WebHistoryService::QueryOtherFormsOfBrowsingHistory(
       CreateRequest(url, completion_callback, partial_traffic_annotation);
 
   // Set the Sync-specific user agent.
-  request->SetUserAgent(syncer::MakeUserAgentForSync(channel));
+  std::string user_agent = syncer::MakeUserAgentForSync(
+      channel, ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
+  request->SetUserAgent(user_agent);
 
   pending_other_forms_of_browsing_history_requests_[request] =
       base::WrapUnique(request);

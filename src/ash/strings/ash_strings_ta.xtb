@@ -12,7 +12,6 @@
 <translation id="1104621072296271835">இணைத்தால், உங்கள் சாதனங்கள் இன்னும் சிறப்பாக வேலை செய்யும்</translation>
 <translation id="112308213915226829">அடுக்கைத் தானாக மறை</translation>
 <translation id="1153356358378277386">இணைத்த சாதனங்கள்</translation>
-<translation id="1178581264944972037">இடைநிறுத்து</translation>
 <translation id="1195412055398077112">ஓவர்ஸ்கேன்</translation>
 <translation id="119944043368869598">அனைத்தையும் அழி</translation>
 <translation id="123828989343052515">புதிய டெஸ்க்</translation>
@@ -64,6 +63,7 @@
 <translation id="1919743966458266018">செயல் நிர்வாகியைத் திறப்பதற்கான ஷார்ட்கட் மாற்றப்பட்டது. <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
 <translation id="1923539912171292317">தன்னியக்க கிளிக்குகள்</translation>
 <translation id="1928739107511554905">புதுப்பிப்பைப் பெற, டச்ஸ்கிரீனைப் பயன்படுத்தி, விசைப்பலகை இணைக்கப்பட்ட உங்கள் Chromebookஐ மீண்டும் தொடங்கவும்.</translation>
+<translation id="1942830294380034169">கூடுதல் விருப்பங்களுக்கான பட்டன்</translation>
 <translation id="1951012854035635156">அசிஸ்டண்ட்</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1957958912175573503">எனது மொழியை அமை</translation>
@@ -125,6 +125,7 @@
 <translation id="2872961005593481000">நிறுத்து</translation>
 <translation id="2878884018241093801">சமீபத்திய உருப்படிகள் எதுவுமில்லை</translation>
 <translation id="2903844815300039659"><ph name="NAME" /> உடன் இணைக்கப்பட்டுள்ளீர்கள், <ph name="STRENGTH" /></translation>
+<translation id="2911940648265863620">உங்கள் திரையைப் பகிர்கிறீர்கள்</translation>
 <translation id="2942350706960889382">டாக் செய்யப்பட்ட பெரிதாக்கி</translation>
 <translation id="2942516765047364088">அடுக்கின் நிலை</translation>
 <translation id="2946119680249604491">இணைப்பைச் சேர்</translation>
@@ -230,8 +231,7 @@
 <translation id="4527045527269911712">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> ஆகும் 100% சார்ஜாக</translation>
 <translation id="4544944664594876241">திரையைப் பூட்டுவதற்கான ஷார்ட்கட் மாற்றப்பட்டது.  <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
-<translation id="4561267230861221837">3G</translation>
-<translation id="4570957409596482333">பேசும் திரைக்கான பொத்தான்</translation>
+<translation id="4570957409596482333">பேசும் திரைக்கான பட்டன்</translation>
 <translation id="4585337515783392668">தெரியாத ரிசீவருக்கு அனுப்புவதை நிறுத்து</translation>
 <translation id="4628757576491864469">சாதனங்கள்</translation>
 <translation id="4659419629803378708">ChromeVox இயக்கப்பட்டது</translation>
@@ -352,13 +352,13 @@
 <translation id="6670153871843998651">மேசை 3</translation>
 <translation id="6691659475504239918">தேடல்+Shift+H</translation>
 <translation id="6696025732084565524">உங்கள் அகற்றத்தக்க விசைப்பலகைக்கு முக்கியப் புதுப்பிப்பு வேண்டும்</translation>
-<translation id="6700713906295497288">IME மெனு பொத்தான்</translation>
+<translation id="6700713906295497288">IME மெனு பட்டன்</translation>
 <translation id="6713285437468012787">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" ஆனது இணைக்கப்பட்டது மற்றும் இப்போது எல்லா பயனர்களுக்கும் கிடைக்கக்கூடியதாக உள்ளது. அமைப்புகளைப் பயன்படுத்தி இந்த இணைத்தலை நீங்கள் அகற்றலாம்.</translation>
 <translation id="6715542151869432661">மொபைல் சாதனங்கள் எதுவுமில்லை.</translation>
+<translation id="671928215901716392">திரையைப் பூட்டு</translation>
 <translation id="6723839937902243910">ஆற்றல்</translation>
 <translation id="6751826523481687655">செயல்திறன் டிரேஸிங் இயக்கத்தில் உள்ளது</translation>
 <translation id="6785414152754474415">பேட்டரி <ph name="PERCENTAGE" />% நிரம்பியது, மேலும் சார்ஜ் ஆகிறது.</translation>
-<translation id="6790428901817661496">இயக்கு</translation>
 <translation id="6803622936009808957">ஆதரிக்கும் தெளிவுகள் கிடைக்காததால் காட்சிகளைப் பிரதிபலிக்க முடியவில்லை. பதிலாக நீட்டிக்கப்பட்ட டெஸ்க்டாப்பிற்குச் சென்றது.</translation>
 <translation id="6820676911989879663">சிறிது நேரம் இடைவேளை எடுத்துக்கொள்ளவும்!</translation>
 <translation id="683971173229319003">தேடல்+L</translation>

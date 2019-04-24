@@ -48,7 +48,14 @@ cvox.LibLouis = function(wasmPath, opt_tablesDir, opt_loadCallback) {
    */
   this.nextMessageId_ = 1;
 
-  this.loadOrReload_(opt_loadCallback);
+  this.worker_ = new Worker(this.wasmPath_);
+  this.worker_.addEventListener(
+      'message', goog.bind(this.onInstanceMessage_, this),
+      false /* useCapture */);
+  this.rpc_('load', {}, () => {
+    this.isLoaded_ = true;
+    opt_loadCallback && opt_loadCallback(this);
+  });
 };
 
 
@@ -141,8 +148,7 @@ cvox.LibLouis.prototype.onInstanceLoad_ = function(e) {
  * @private
  */
 cvox.LibLouis.prototype.onInstanceError_ = function(e) {
-  window.console.error('Error in liblouis ' + e.toString());
-  this.loadOrReload_();
+  window.console.error('failed to load liblouis Native Client instance');
 };
 
 
@@ -170,24 +176,6 @@ cvox.LibLouis.prototype.onInstanceMessage_ = function(e) {
     delete this.pendingRpcCallbacks_[messageId];
     callback(message);
   }
-};
-
-/**
- * @param {function(cvox.LibLouis)=} opt_loadCallback
- * @private
- */
-cvox.LibLouis.prototype.loadOrReload_ = function(opt_loadCallback) {
-  this.worker_ = new Worker(this.wasmPath_);
-  this.worker_.addEventListener(
-      'message', goog.bind(this.onInstanceMessage_, this),
-      false /* useCapture */);
-  this.worker_.addEventListener(
-      'error', goog.bind(this.onInstanceError_, this),
-      false /* useCapture */);
-  this.rpc_('load', {}, () => {
-    this.isLoaded_ = true;
-    opt_loadCallback && opt_loadCallback(this);
-  });
 };
 
 

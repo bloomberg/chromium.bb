@@ -117,7 +117,6 @@ class ProgramGL : public ProgramImpl
 
   private:
     class LinkTask;
-    class LinkEventNativeParallel;
     class LinkEventGL;
 
     void preLink();

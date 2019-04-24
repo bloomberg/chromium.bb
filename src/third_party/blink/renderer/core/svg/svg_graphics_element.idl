@@ -44,4 +44,4 @@ interface SVGGraphicsElement : SVGElement {
     [MeasureAs=SVGLocatableFarthestViewportElement] readonly attribute SVGElement farthestViewportElement;
 };
 
-SVGGraphicsElement includes SVGTests;
+SVGGraphicsElement implements SVGTests;

@@ -22,6 +22,10 @@ PageAnimator::PageAnimator(Page& page)
       servicing_animations_(false),
       updating_layout_and_style_for_painting_(false) {}
 
+PageAnimator* PageAnimator::Create(Page& page) {
+  return MakeGarbageCollected<PageAnimator>(page);
+}
+
 void PageAnimator::Trace(blink::Visitor* visitor) {
   visitor->Trace(page_);
 }

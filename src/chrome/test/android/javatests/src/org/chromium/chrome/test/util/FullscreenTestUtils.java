@@ -11,10 +11,9 @@ import android.os.Build;
 import android.view.View;
 import android.view.WindowManager;
 
-import org.chromium.base.task.PostTask;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
@@ -49,11 +48,14 @@ public class FullscreenTestUtils {
      */
     public static void togglePersistentFullscreen(final TabWebContentsDelegateAndroid delegate,
             final boolean state) {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
-            if (state) {
-                delegate.enterFullscreenModeForTab(false);
-            } else {
-                delegate.exitFullscreenModeForTab();
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (state) {
+                    delegate.enterFullscreenModeForTab(false);
+                } else {
+                    delegate.exitFullscreenModeForTab();
+                }
             }
         });
     }

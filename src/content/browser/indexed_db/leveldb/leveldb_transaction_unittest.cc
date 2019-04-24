@@ -37,7 +37,7 @@ class LevelDBTransactionTest : public testing::Test {
     scoped_refptr<LevelDBState> ldb_state;
     leveldb::Status status;
     std::tie(ldb_state, status, std::ignore) =
-        indexed_db::GetDefaultLevelDBFactory()->OpenLevelDBState(
+        indexed_db::GetDefaultLevelDBFactory()->OpenLevelDB(
             temp_directory_.GetPath(), LevelDBComparator::BytewiseComparator(),
             leveldb::BytewiseComparator());
     EXPECT_TRUE(status.ok());

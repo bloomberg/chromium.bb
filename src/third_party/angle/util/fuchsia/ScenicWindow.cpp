@@ -10,10 +10,9 @@
 #include "util/fuchsia/ScenicWindow.h"
 
 #include <lib/async-loop/cpp/loop.h>
-#include <lib/fdio/directory.h>
+#include <lib/fdio/util.h>
 #include <lib/fidl/cpp/interface_ptr.h>
 #include <lib/fidl/cpp/interface_request.h>
-#include <lib/ui/scenic/cpp/view_token_pair.h>
 #include <lib/zx/channel.h>
 #include <zircon/status.h>
 
@@ -77,17 +76,17 @@ bool ScenicWindow::initialize(const std::string &name, size_t width, size_t heig
     mShape.SetShape(scenic::Rectangle(&mScenicSession, width, height));
     mShape.SetMaterial(mMaterial);
 
-    fuchsia::ui::views::ViewToken viewToken;
-    fuchsia::ui::views::ViewHolderToken viewHolderToken;
-    std::tie(viewToken, viewHolderToken) = scenic::NewViewTokenPair();
-
     // Create view.
+    zx::eventpair viewHolderToken;
+    zx::eventpair viewToken;
+    zx_status_t status = zx::eventpair::create(0 /* options */, &viewToken, &viewHolderToken);
+    ASSERT(status == ZX_OK);
     mView = std::make_unique<scenic::View>(&mScenicSession, std::move(viewToken), name);
     mView->AddChild(mShape);
     mScenicSession.Present(0, [](fuchsia::images::PresentationInfo info) {});
 
     // Present view.
-    mPresenter->PresentView(std::move(viewHolderToken), nullptr);
+    mPresenter->Present2(std::move(viewHolderToken), nullptr);
 
     mWidth  = width;
     mHeight = height;

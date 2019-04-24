@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/chrome_cleaner/parsers/json_parser/sandboxed_json_parser.h"
-
 #include "base/bind.h"
 
 namespace chrome_cleaner {

@@ -18,13 +18,18 @@
 #include "rtc_base/checks.h"
 
 namespace webrtc {
-namespace webrtc_pc_e2e {
+namespace test {
 namespace {
 
 // The amount on which encoded image buffer will be expanded to inject frame id.
 // This is 2 bytes for uint16_t frame id itself and 4 bytes for original length
 // of the buffer.
 constexpr int kEncodedImageBufferExpansion = 6;
+constexpr size_t kInitialBufferSize = 2 * 1024;
+// Count of coding entities for which buffers pools will be added on
+// construction.
+constexpr int kPreInitCodingEntitiesCount = 2;
+constexpr size_t kBuffersPoolPerCodingEntity = 256;
 
 struct ExtractionInfo {
   size_t length;
@@ -33,16 +38,29 @@ struct ExtractionInfo {
 
 }  // namespace
 
-DefaultEncodedImageDataInjector::DefaultEncodedImageDataInjector() = default;
+DefaultEncodedImageDataInjector::DefaultEncodedImageDataInjector() {
+  for (size_t i = 0;
+       i < kPreInitCodingEntitiesCount * kBuffersPoolPerCodingEntity; ++i) {
+    bufs_pool_.push_back(
+        absl::make_unique<std::vector<uint8_t>>(kInitialBufferSize));
+  }
+}
 DefaultEncodedImageDataInjector::~DefaultEncodedImageDataInjector() = default;
 
 EncodedImage DefaultEncodedImageDataInjector::InjectData(
     uint16_t id,
     bool discard,
     const EncodedImage& source,
-    int /*coding_entity_id*/) {
+    int coding_entity_id) {
+  ExtendIfRequired(coding_entity_id);
+
   EncodedImage out = source;
-  out.Allocate(source.size() + kEncodedImageBufferExpansion);
+  out.Retain();
+  std::vector<uint8_t>* buffer = NextBuffer();
+  if (buffer->size() < source.size() + kEncodedImageBufferExpansion) {
+    buffer->resize(source.size() + kEncodedImageBufferExpansion);
+  }
+  out.set_buffer(buffer->data(), buffer->size());
   out.set_size(source.size() + kEncodedImageBufferExpansion);
   memcpy(out.data(), source.data(), source.size());
   size_t insertion_pos = source.size();
@@ -62,9 +80,15 @@ EncodedImage DefaultEncodedImageDataInjector::InjectData(
 
 EncodedImageExtractionResult DefaultEncodedImageDataInjector::ExtractData(
     const EncodedImage& source,
-    int /*coding_entity_id*/) {
+    int coding_entity_id) {
+  ExtendIfRequired(coding_entity_id);
+
   EncodedImage out = source;
-  out.Allocate(source.size());
+  std::vector<uint8_t>* buffer = NextBuffer();
+  if (buffer->size() < source.capacity() - kEncodedImageBufferExpansion) {
+    buffer->resize(source.capacity() - kEncodedImageBufferExpansion);
+  }
+  out.set_buffer(buffer->data(), buffer->size());
 
   size_t source_pos = source.size() - 1;
   absl::optional<uint16_t> id = absl::nullopt;
@@ -126,5 +150,36 @@ EncodedImageExtractionResult DefaultEncodedImageDataInjector::ExtractData(
   return EncodedImageExtractionResult{id.value(), out, discard};
 }
 
-}  // namespace webrtc_pc_e2e
+void DefaultEncodedImageDataInjector::ExtendIfRequired(int coding_entity_id) {
+  rtc::CritScope crit(&lock_);
+  if (coding_entities_.find(coding_entity_id) != coding_entities_.end()) {
+    // This entity is already known for this injector, so buffers are allocated.
+    return;
+  }
+
+  // New coding entity. We need allocate extra buffers for this encoder/decoder
+  // We will put them into front of the queue to use them first.
+  coding_entities_.insert(coding_entity_id);
+  if (coding_entities_.size() <= kPreInitCodingEntitiesCount) {
+    // Buffers for the first kPreInitCodingEntitiesCount coding entities were
+    // allocated during construction.
+    return;
+  }
+  for (size_t i = 0; i < kBuffersPoolPerCodingEntity; ++i) {
+    bufs_pool_.push_front(
+        absl::make_unique<std::vector<uint8_t>>(kInitialBufferSize));
+  }
+}
+
+std::vector<uint8_t>* DefaultEncodedImageDataInjector::NextBuffer() {
+  rtc::CritScope crit(&lock_);
+  // Get buffer from the front of the queue, return it to the caller and
+  // put in the back
+  std::vector<uint8_t>* out = bufs_pool_.front().get();
+  bufs_pool_.push_back(std::move(bufs_pool_.front()));
+  bufs_pool_.pop_front();
+  return out;
+}
+
+}  // namespace test
 }  // namespace webrtc

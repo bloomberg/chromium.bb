@@ -7,8 +7,8 @@
 namespace views {
 namespace test {
 
-TestInkDrop::TestInkDrop() = default;
-TestInkDrop::~TestInkDrop() = default;
+TestInkDrop::TestInkDrop() : state_(InkDropState::HIDDEN), is_hovered_(false) {}
+TestInkDrop::~TestInkDrop() {}
 
 void TestInkDrop::HostSizeChanged(const gfx::Size& new_size) {}
 

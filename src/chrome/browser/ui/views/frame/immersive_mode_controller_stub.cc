@@ -6,6 +6,12 @@
 
 #include "base/logging.h"
 
+ImmersiveModeControllerStub::ImmersiveModeControllerStub()
+    : ImmersiveModeController(Type::STUB) {}
+
+ImmersiveModeControllerStub::~ImmersiveModeControllerStub() {
+}
+
 void ImmersiveModeControllerStub::Init(BrowserView* browser_view) {
 }
 

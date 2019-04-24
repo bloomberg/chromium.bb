@@ -42,7 +42,6 @@
 <translation id="152234381334907219">Nu se salvează niciodată</translation>
 <translation id="1540800554400757039">Adresă 1</translation>
 <translation id="1545749641540134597">Scanează codul QR</translation>
-<translation id="1552525382687785070">Sincronizarea este dezactivată de administrator</translation>
 <translation id="1558704936695638228">Apasă lung pentru mai multe opțiuni de file</translation>
 <translation id="1580783302095112590">E-mail trimis.</translation>
 <translation id="1582732959743469162">Aceasta va opri progresul descărcării actuale.</translation>
@@ -85,7 +84,6 @@
 <translation id="213900355088104901">Pentru a naviga privat, deschide o filă incognito</translation>
 <translation id="2139867232736819575">Caută textul pe care l-ai copiat</translation>
 <translation id="2149973817440762519">Editați marcajul</translation>
-<translation id="2179182049312275900">Poți să activezi sincronizarea oricând în setări.</translation>
 <translation id="2198757192731523470">Google poate folosi istoricul pentru a personaliza Căutarea, anunțurile și alte servicii Google.</translation>
 <translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> articole necitite în Lista de lectură.</translation>
 <translation id="2230173723195178503">Pagina web s-a încărcat</translation>
@@ -104,7 +102,6 @@
 <translation id="2386793615875593361">1 selectată</translation>
 <translation id="2435457462613246316">Afișați parola</translation>
 <translation id="2481538920734869610">ADAUGĂ UN CONT</translation>
-<translation id="2497852260688568942">Sincronizarea este dezactivată de administrator</translation>
 <translation id="2523184218357549926">Trimite la Google adresele URL ale paginilor pe care le accesezi</translation>
 <translation id="2523363575747517183">Acest site încearcă în mod repetat să deschidă altă aplicație.</translation>
 <translation id="2529021024822217800">Deschide-le pe toate</translation>
@@ -203,9 +200,9 @@
 <translation id="4038354071007134711">Aplicațiile de pe dispozitiv nu deschid fișierul.</translation>
 <translation id="4042870976416480368">Găsește în pagină</translation>
 <translation id="4049507953662678203">Asigură-te că ai o conexiune la rețea și încearcă din nou.</translation>
-<translation id="4071530748369333746">Anulezi sincronizarea?</translation>
 <translation id="4082688844002261427">Controlează modul în care istoricul de navigare este folosit pentru a personaliza Căutarea, anunțurile și alte servicii</translation>
 <translation id="408404951701638773">Bara de căutare este acum mai ușor de accesat</translation>
+<translation id="4084682180776658562">Marcaj</translation>
 <translation id="411254640334432676">Nu s-a descărcat.</translation>
 <translation id="4112644173421521737">Caută</translation>
 <translation id="4121993058175073134">Pentru trimitere date de export în rețea, configurați e-mailul în Setări.</translation>
@@ -217,6 +214,7 @@
 <translation id="4272631900155121838">Pentru a scana un cod QR, activează camera foto din setări</translation>
 <translation id="4281844954008187215">Condiții de furnizare a serviciilor</translation>
 <translation id="430793432425771671">Sincronizează tot</translation>
+<translation id="4342284590510997375">Nou</translation>
 <translation id="4359125752503270327">Această pagină se va deschide în altă aplicație.</translation>
 <translation id="4370827530403103842">Sincronizarea nu funcționează. Atinge pentru a o remedia.</translation>
 <translation id="4375040482473363939">Căutare coduri QR</translation>
@@ -272,7 +270,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Activează sincronizarea</translation>
 <translation id="5244474230056479698">Se sincronizează cu <ph name="EMAIL" /></translation>
-<translation id="5245322853195994030">Anulează sincronizarea</translation>
 <translation id="5300589172476337783">Afișează</translation>
 <translation id="5317780077021120954">Salvează</translation>
 <translation id="5327248766486351172">Nume</translation>
@@ -366,9 +363,9 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="6643016212128521049">Șterge</translation>
 <translation id="6656103420185847513">Modificați dosarul</translation>
 <translation id="6657585470893396449">Parolă</translation>
-<translation id="6668619169535738264">Editează marcajul</translation>
 <translation id="667999046851023355">Document</translation>
 <translation id="6691331417640343772">Gestionează datele sincronizate în Tabloul de bord Google</translation>
+<translation id="6709334795756764830">Editează marcajul</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Nu se pot exporta parole</translation>
 <translation id="6780034285637185932">Codul poștal</translation>
@@ -409,7 +406,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="7291368939935408496">Se pregătesc parolele...</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% descărcat</translation>
 <translation id="7346909386216857016">OK, am înțeles</translation>
-<translation id="7348502496356775519">Marchează</translation>
 <translation id="7383797227493018512">Listă de lectură</translation>
 <translation id="7400418766976504921">Adresă URL</translation>
 <translation id="7425346204213733349">Modificările marcajelor, istoricului, parolelor sau ale altor setări nu vor mai fi sincronizate cu Contul Google. Totuși, datele existente vor rămâne stocate în Contul Google.</translation>
@@ -457,7 +453,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="8073670137947914548">Descărcarea s-a finalizat</translation>
 <translation id="8076014560081431679">Setările salvate pentru site-uri nu vor fi șterse și pot reflecta obiceiurile de navigare. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Descărcarea fișierelor este disponibilă. Opțiunile sunt disponibile în partea de jos a ecranului.</translation>
-<translation id="8131740175452115882">Confirmați</translation>
 <translation id="8205564605687841303">Anulează</translation>
 <translation id="8225985093977202398">Imaginile și fișierele memorate în cache</translation>
 <translation id="8261506727792406068">Șterge</translation>

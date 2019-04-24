@@ -665,7 +665,7 @@ void KeyedStoreGenericAssembler::LookupPropertyOnPrototypeChain(
             LoadObjectField(property_cell, PropertyCell::kValueOffset);
         GotoIf(WordEqual(value, TheHoleConstant()), &next_proto);
         Node* details = LoadAndUntagToWord32ObjectField(
-            property_cell, PropertyCell::kPropertyDetailsRawOffset);
+            property_cell, PropertyCell::kDetailsOffset);
         JumpIfDataProperty(details, &ok_to_write, readonly);
 
         if (accessor != nullptr) {
@@ -1014,7 +1014,7 @@ void KeyedStoreGenericAssembler::KeyedStoreGeneric(
 }
 
 void KeyedStoreGenericAssembler::KeyedStoreGeneric() {
-  using Descriptor = StoreDescriptor;
+  typedef StoreDescriptor Descriptor;
 
   TNode<Object> receiver = CAST(Parameter(Descriptor::kReceiver));
   TNode<Object> name = CAST(Parameter(Descriptor::kName));
@@ -1033,7 +1033,7 @@ void KeyedStoreGenericAssembler::SetProperty(TNode<Context> context,
 }
 
 void KeyedStoreGenericAssembler::StoreIC_Uninitialized() {
-  using Descriptor = StoreWithVectorDescriptor;
+  typedef StoreWithVectorDescriptor Descriptor;
 
   Node* receiver = Parameter(Descriptor::kReceiver);
   Node* name = Parameter(Descriptor::kName);

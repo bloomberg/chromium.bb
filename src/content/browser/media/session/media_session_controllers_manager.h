@@ -28,6 +28,7 @@ class RenderFrameHost;
 // handles MediaSessionController instances.
 class CONTENT_EXPORT MediaSessionControllersManager {
  public:
+  using MediaPlayerId = WebContentsObserver::MediaPlayerId;
   using ControllersMap =
       std::map<MediaPlayerId, std::unique_ptr<MediaSessionController>>;
 

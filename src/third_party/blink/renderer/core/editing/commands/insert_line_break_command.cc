@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -68,7 +67,7 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
   if (!DeleteSelection(editing_state, DeleteSelectionOptions::NormalDelete()))
     return;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   VisibleSelection selection = EndingVisibleSelection();
   if (selection.IsNone() || selection.Start().IsOrphan() ||
@@ -94,11 +93,11 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
 
   Node* node_to_insert = nullptr;
   if (ShouldUseBreakElement(pos))
-    node_to_insert = MakeGarbageCollected<HTMLBRElement>(GetDocument());
+    node_to_insert = HTMLBRElement::Create(GetDocument());
   else
     node_to_insert = GetDocument().createTextNode("\n");
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // FIXME: Need to merge text nodes when inserting just after or before text.
 
@@ -137,7 +136,7 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
     InsertNodeAt(node_to_insert, pos, editing_state);
     if (editing_state->IsAborted())
       return;
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
     // Insert an extra br or '\n' if the just inserted one collapsed.
     if (!IsStartOfParagraph(VisiblePosition::BeforeNode(*node_to_insert))) {
@@ -173,7 +172,7 @@ void InsertLineBreakCommand::DoApply(EditingState* editing_state) {
     Position ending_position = Position::FirstPositionInNode(*text_node);
 
     // Handle whitespace that occurs after the split
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
     if (!IsRenderedCharacter(ending_position)) {
       Position position_before_text_node(
           Position::InParentBeforeNode(*text_node));

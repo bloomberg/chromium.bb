@@ -25,10 +25,9 @@
 
 namespace {
 
-bool OriginMatcher(const url::Origin& origin,
-                   storage::SpecialStoragePolicy* policy) {
-  return policy->IsStorageSessionOnly(origin.GetURL()) &&
-         !policy->IsStorageProtected(origin.GetURL());
+bool OriginMatcher(const GURL& origin, storage::SpecialStoragePolicy* policy) {
+  return policy->IsStorageSessionOnly(origin) &&
+         !policy->IsStorageProtected(origin);
 }
 
 class SessionDataDeleter

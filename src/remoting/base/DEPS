@@ -5,7 +5,6 @@ include_rules = [
   "+net",
   "+services/network/public/cpp",
   "+third_party/breakpad",
-  "+third_party/grpc",
   "+third_party/zlib",
   "+ui/base",
 ]

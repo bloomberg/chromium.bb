@@ -93,8 +93,7 @@ class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
   virtual void DisableFlushWorkaroundForTest() = 0;
 
  protected:
-  RasterDecoder(DecoderClient* client,
-                CommandBufferServiceBase* command_buffer_service,
+  RasterDecoder(CommandBufferServiceBase* command_buffer_service,
                 gles2::Outputter* outputter);
 
  private:

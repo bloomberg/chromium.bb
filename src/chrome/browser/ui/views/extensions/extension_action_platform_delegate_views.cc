@@ -13,7 +13,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/accelerator_priority.h"
-#include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
@@ -130,10 +129,7 @@ bool ExtensionActionPlatformDelegateViews::AcceleratorPressed(
       ui::AcceleratorManager::kNormalPriority)
     return false;
 
-  if (controller_->IsShowingPopup())
-    controller_->HidePopup();
-  else
-    controller_->ExecuteAction(true);
+  controller_->ExecuteAction(true);
   return true;
 }
 

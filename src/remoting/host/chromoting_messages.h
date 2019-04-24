@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/files/file_path.h"
-#include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/shared_memory_handle.h"
 #include "base/time/time.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
@@ -143,7 +143,7 @@ IPC_MESSAGE_CONTROL(ChromotingDesktopDaemonMsg_InjectSas)
 // Notifies the network process that a shared buffer has been created.
 IPC_MESSAGE_CONTROL(ChromotingDesktopNetworkMsg_CreateSharedBuffer,
                     int /* id */,
-                    base::ReadOnlySharedMemoryRegion /* region */,
+                    base::SharedMemoryHandle /* handle */,
                     uint32_t /* size */)
 
 // Request the network process to stop using a shared buffer.

@@ -23,7 +23,6 @@
 
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -34,7 +33,7 @@ SVGRect::SVGRect() : is_valid_(true) {}
 SVGRect::SVGRect(const FloatRect& rect) : is_valid_(true), value_(rect) {}
 
 SVGRect* SVGRect::Clone() const {
-  return MakeGarbageCollected<SVGRect>(value_);
+  return SVGRect::Create(value_);
 }
 
 template <typename CharType>

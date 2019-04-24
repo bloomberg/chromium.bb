@@ -15,6 +15,7 @@
 #include "net/cert/test_root_certs.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/python_utils.h"
 #include "net/test/spawned_test_server/base_test_server.h"
 #include "net/test/spawned_test_server/local_test_server.h"
 #include "net/test/test_data_directory.h"
@@ -31,7 +32,7 @@ class ForwardingServer : public net::LocalTestServer {
   ForwardingServer(const std::string& ssl_host, const GURL& forward_target);
 
   // net::LocalTestServer:
-  base::Optional<std::vector<base::FilePath>> GetPythonPath() const override;
+  bool SetPythonPath() const override;
   bool GetTestServerPath(base::FilePath* testserver_path) const override;
   bool GenerateAdditionalArguments(
       base::DictionaryValue* arguments) const override;
@@ -51,18 +52,16 @@ ForwardingServer::ForwardingServer(const std::string& ssl_host,
       ssl_host_(ssl_host),
       forward_target_(forward_target) {}
 
-base::Optional<std::vector<base::FilePath>> ForwardingServer::GetPythonPath()
-    const {
-  base::Optional<std::vector<base::FilePath>> ret =
-      net::LocalTestServer::GetPythonPath();
-  if (!ret)
-    return base::nullopt;
+bool ForwardingServer::SetPythonPath() const {
+  if (!net::LocalTestServer::SetPythonPath())
+    return false;
 
   base::FilePath net_testserver_path;
   if (!LocalTestServer::GetTestServerPath(&net_testserver_path))
-    return base::nullopt;
-  ret->push_back(net_testserver_path.DirName());
-  return ret;
+    return false;
+  AppendToPythonPath(net_testserver_path.DirName());
+
+  return true;
 }
 
 bool ForwardingServer::GetTestServerPath(
@@ -119,10 +118,6 @@ bool HTTPSForwarder::Initialize(const std::string& ssl_host,
   ssl_host_ = ssl_host;
   forwarding_server_.reset(new ForwardingServer(ssl_host, forward_target));
   return forwarding_server_->Start();
-}
-
-bool HTTPSForwarder::Stop() {
-  return forwarding_server_->Stop();
 }
 
 }  // namespace chromeos

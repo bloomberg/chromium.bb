@@ -47,9 +47,6 @@ class ScopeInfo : public FixedArray {
   // True if this scope is a (var) declaration scope.
   bool is_declaration_scope() const;
 
-  // True if this scope is a class scope.
-  bool is_class_scope() const;
-
   // Does this scope make a sloppy eval call?
   bool CallsSloppyEval() const;
 
@@ -73,12 +70,12 @@ class ScopeInfo : public FixedArray {
   bool HasNewTarget() const;
 
   // Is this scope the scope of a named function expression?
-  V8_EXPORT_PRIVATE bool HasFunctionName() const;
+  bool HasFunctionName() const;
 
   // See SharedFunctionInfo::HasSharedName.
-  V8_EXPORT_PRIVATE bool HasSharedFunctionName() const;
+  bool HasSharedFunctionName() const;
 
-  V8_EXPORT_PRIVATE bool HasInferredFunctionName() const;
+  bool HasInferredFunctionName() const;
 
   void SetFunctionName(Object name);
   void SetInferredFunctionName(String name);
@@ -95,7 +92,7 @@ class ScopeInfo : public FixedArray {
   inline bool HasSimpleParameters() const;
 
   // Return the function_name if present.
-  V8_EXPORT_PRIVATE Object FunctionName() const;
+  Object FunctionName() const;
 
   // The function's name if it is non-empty, otherwise the inferred name or an
   // empty string.
@@ -103,7 +100,7 @@ class ScopeInfo : public FixedArray {
 
   // Return the function's inferred name if present.
   // See SharedFunctionInfo::function_identifier.
-  V8_EXPORT_PRIVATE Object InferredFunctionName() const;
+  Object InferredFunctionName() const;
 
   // Position information accessors.
   int StartPosition() const;

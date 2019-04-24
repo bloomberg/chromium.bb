@@ -44,7 +44,7 @@ void V8MessageChannel::ConstructorCustom(
   v8::Isolate* isolate = info.GetIsolate();
 
   ExecutionContext* context = CurrentExecutionContext(isolate);
-  auto* channel = MakeGarbageCollected<MessageChannel>(context);
+  MessageChannel* channel = MessageChannel::Create(context);
 
   v8::Local<v8::Object> wrapper = info.Holder();
 

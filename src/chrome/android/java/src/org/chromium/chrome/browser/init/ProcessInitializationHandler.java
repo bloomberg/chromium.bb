@@ -58,7 +58,6 @@ import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.media.MediaViewerUtils;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.PackageMetrics;
-import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -74,7 +73,6 @@ import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.util.ConversionUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -84,7 +82,6 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.content_public.browser.BrowserTaskExecutor;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.printing.PrintDocumentAdapterWrapper;
 import org.chromium.printing.PrintingControllerImpl;
@@ -156,8 +153,6 @@ public class ProcessInitializationHandler {
      */
     protected void handlePreNativeInitialization() {
         BrowserTaskExecutor.register();
-        BrowserTaskExecutor.setShouldPrioritizeBootstrapTasks(
-                FeatureUtilities.shouldPrioritizeBootstrapTasks());
 
         Context application = ContextUtils.getApplicationContext();
 
@@ -210,13 +205,16 @@ public class ProcessInitializationHandler {
      * Performs the post native initialization.
      */
     protected void handlePostNativeInitialization() {
+        final ChromeApplication application =
+                (ChromeApplication) ContextUtils.getApplicationContext();
+
         DataReductionProxySettings.handlePostNativeInitialization();
         ChromeActivitySessionTracker.getInstance().initializeWithNative();
         ProfileManagerUtils.removeSessionCookiesForAllProfiles();
         AppBannerManager.setAppDetailsDelegate(AppHooks.get().createAppDetailsDelegate());
         ChromeLifetimeController.initialize();
 
-        PrefServiceBridge.getInstance().migratePreferences();
+        PrefServiceBridge.getInstance().migratePreferences(application);
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.NEW_PHOTO_PICKER)) {
             UiUtils.setPhotoPickerDelegate(new UiUtils.PhotoPickerDelegate() {
@@ -282,13 +280,15 @@ public class ProcessInitializationHandler {
      * Performs the deferred startup task initialization.
      */
     protected void handleDeferredStartupTasksInitialization() {
+        final ChromeApplication application =
+                (ChromeApplication) ContextUtils.getApplicationContext();
         DeferredStartupHandler deferredStartupHandler = DeferredStartupHandler.getInstance();
 
         deferredStartupHandler.addDeferredTask(new Runnable() {
             @Override
             public void run() {
                 // Punt all tasks that may block on disk off onto a background thread.
-                initAsyncDiskTask();
+                initAsyncDiskTask(application);
 
                 DefaultBrowserInfo.initBrowserFetcher();
 
@@ -320,11 +320,11 @@ public class ProcessInitializationHandler {
             @Override
             public void run() {
                 // Clear any media notifications that existed when Chrome was last killed.
-                MediaCaptureNotificationService.clearMediaNotifications();
+                MediaCaptureNotificationService.clearMediaNotifications(application);
 
-                startModerateBindingManagementIfNeeded();
+                startModerateBindingManagementIfNeeded(application);
 
-                recordKeyboardLocaleUma();
+                recordKeyboardLocaleUma(application);
             }
         });
 
@@ -366,13 +366,17 @@ public class ProcessInitializationHandler {
         deferredStartupHandler.addDeferredTask(new Runnable() {
             @Override
             public void run() {
-                ForcedSigninProcessor.start(null);
+                ForcedSigninProcessor.start(application, null);
                 AccountManagerFacade.get().addObserver(
                         new AccountsChangeObserver() {
                             @Override
                             public void onAccountsChanged() {
-                                PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                                        () -> { ForcedSigninProcessor.start(null); });
+                                ThreadUtils.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ForcedSigninProcessor.start(application, null);
+                                    }
+                                });
                             }
                         });
             }
@@ -381,7 +385,7 @@ public class ProcessInitializationHandler {
         deferredStartupHandler.addDeferredTask(new Runnable() {
             @Override
             public void run() {
-                GoogleServicesManager.get().onMainActivityStart();
+                GoogleServicesManager.get(application).onMainActivityStart();
                 RevenueStats.getInstance();
             }
         });
@@ -407,7 +411,7 @@ public class ProcessInitializationHandler {
                 }
 
                 if (ApiCompatibilityUtils.isPrintingSupported()) {
-                    String errorText = ContextUtils.getApplicationContext().getString(
+                    String errorText = application.getResources().getString(
                             R.string.error_printing_failed);
                     PrintingControllerImpl.create(new PrintDocumentAdapterWrapper(), errorText);
                 }
@@ -415,9 +419,7 @@ public class ProcessInitializationHandler {
         });
 
         deferredStartupHandler.addDeferredTask(
-                ()
-                        -> BackgroundTaskSchedulerFactory.getScheduler().checkForOSUpgrade(
-                                ContextUtils.getApplicationContext()));
+                () -> BackgroundTaskSchedulerFactory.getScheduler().checkForOSUpgrade(application));
 
         deferredStartupHandler.addDeferredTask(
                 ProcessInitializationHandler::logEGLShaderCacheSizeHistogram);
@@ -426,15 +428,14 @@ public class ProcessInitializationHandler {
                 BuildHooksAndroid::maybeRecordResourceMetrics);
 
         deferredStartupHandler.addDeferredTask(
-                () -> MediaViewerUtils.updateMediaLauncherActivityEnabled());
+                () -> MediaViewerUtils.updateMediaLauncherActivityEnabled(application));
 
         deferredStartupHandler.addDeferredTask(
                 ChromeApplication.getComponent().resolveTwaClearDataDialogRecorder()
                         ::makeDeferredRecordings);
-        deferredStartupHandler.addDeferredTask(WebApkUma::recordDeferredUma);
 
         deferredStartupHandler.addDeferredTask(
-                () -> IncognitoTabLauncher.updateComponentEnabledState());
+                () ->  IncognitoTabLauncher.updateComponentEnabledState(application));
     }
 
     private void initChannelsAsync() {
@@ -447,7 +448,7 @@ public class ProcessInitializationHandler {
         }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
-    private void initAsyncDiskTask() {
+    private void initAsyncDiskTask(final Context context) {
         new AsyncTask<Void>() {
             /**
              * The threshold after which it's no longer appropriate to try to attach logcat output
@@ -481,11 +482,11 @@ public class ProcessInitializationHandler {
                     // Force a widget refresh in order to wake up any possible zombie widgets.
                     // This is needed to ensure the right behavior when the process is suddenly
                     // killed.
-                    BookmarkWidgetProvider.refreshAllWidgets();
+                    BookmarkWidgetProvider.refreshAllWidgets(context);
 
                     WebApkVersionManager.updateWebApksIfNeeded();
 
-                    removeSnapshotDatabase();
+                    removeSnapshotDatabase(context);
 
                     // Warm up all web app shared prefs. This must be run after the WebappRegistry
                     // instance is initialized.
@@ -632,28 +633,26 @@ public class ProcessInitializationHandler {
      * in Chrome M41.
      */
     @WorkerThread
-    private void removeSnapshotDatabase() {
+    private void removeSnapshotDatabase(Context context) {
         synchronized (SNAPSHOT_DATABASE_LOCK) {
             SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
             if (!prefs.getBoolean(SNAPSHOT_DATABASE_REMOVED, false)) {
-                ContextUtils.getApplicationContext().deleteDatabase(SNAPSHOT_DATABASE_NAME);
+                context.deleteDatabase(SNAPSHOT_DATABASE_NAME);
                 prefs.edit().putBoolean(SNAPSHOT_DATABASE_REMOVED, true).apply();
             }
         }
     }
 
-    private void startModerateBindingManagementIfNeeded() {
+    private void startModerateBindingManagementIfNeeded(Context context) {
         // Moderate binding doesn't apply to low end devices.
         if (SysUtils.isLowEndDevice()) return;
-        ChildProcessLauncherHelper.startModerateBindingManagement(
-                ContextUtils.getApplicationContext());
+        ChildProcessLauncherHelper.startModerateBindingManagement(context);
     }
 
     @SuppressWarnings("deprecation") // InputMethodSubtype.getLocale() deprecated in API 24
-    private void recordKeyboardLocaleUma() {
+    private void recordKeyboardLocaleUma(Context context) {
         InputMethodManager imm =
-                (InputMethodManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.INPUT_METHOD_SERVICE);
+                (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
         List<InputMethodInfo> ims = imm.getEnabledInputMethodList();
         ArrayList<String> uniqueLanguages = new ArrayList<>();
         for (InputMethodInfo method : ims) {

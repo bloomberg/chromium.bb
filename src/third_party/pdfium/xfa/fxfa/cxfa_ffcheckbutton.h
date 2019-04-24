@@ -22,7 +22,7 @@ class CXFA_FFCheckButton final : public CXFA_FFField {
   // CXFA_FFField
   void RenderWidget(CXFA_Graphics* pGS,
                     const CFX_Matrix& matrix,
-                    HighlightOption highlight) override;
+                    uint32_t dwStatus) override;
 
   bool LoadWidget() override;
   bool PerformLayout() override;

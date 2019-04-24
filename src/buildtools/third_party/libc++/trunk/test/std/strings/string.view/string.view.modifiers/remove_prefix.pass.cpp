@@ -13,6 +13,7 @@
 
 #include <string_view>
 #include <cassert>
+#include <iostream>
 
 #include "test_macros.h"
 

@@ -21,10 +21,9 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
   void SetUp() override {
     source_params_.Reset(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
                          media::CHANNEL_LAYOUT_MONO, 48000, 480);
-    const int context_sample_rate = 44100;
     sink_params_.Reset(
         media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        media::CHANNEL_LAYOUT_STEREO, context_sample_rate,
+        media::CHANNEL_LAYOUT_STEREO, 44100,
         WebRtcLocalAudioSourceProvider::kWebAudioRenderBufferSize);
     sink_bus_ = media::AudioBus::Create(sink_params_);
     blink::WebMediaStreamSource audio_source;
@@ -36,8 +35,7 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
                             audio_source);
     blink_track_.SetPlatformTrack(
         std::make_unique<blink::MediaStreamAudioTrack>(true));
-    source_provider_.reset(
-        new WebRtcLocalAudioSourceProvider(blink_track_, context_sample_rate));
+    source_provider_.reset(new WebRtcLocalAudioSourceProvider(blink_track_));
     source_provider_->SetSinkParamsForTesting(sink_params_);
     source_provider_->OnSetFormat(source_params_);
   }

@@ -9,7 +9,7 @@ namespace blink {
 CompositionMarker::CompositionMarker(unsigned start_offset,
                                      unsigned end_offset,
                                      Color underline_color,
-                                     ui::mojom::ImeTextSpanThickness thickness,
+                                     ws::mojom::ImeTextSpanThickness thickness,
                                      Color background_color)
     : StyleableMarker(start_offset,
                       end_offset,

@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -20,6 +21,7 @@
 #include "components/crx_file/id_util.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
 #include "extensions/test/test_extension_dir.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -199,6 +201,11 @@ TEST_F(PermissionsAPIUnitTest, Contains) {
 }
 
 TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
+  // This test relies on the click-to-script feature.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   constexpr char kExampleCom[] = "https://example.com/*";
   constexpr char kContentScriptCom[] = "https://contentscript.com/*";
   scoped_refptr<const Extension> extension =
@@ -305,6 +312,10 @@ TEST_F(PermissionsAPIUnitTest, ContainsAndGetAllWithRuntimeHostPermissions) {
 
 // Tests requesting withheld permissions with the permissions.request() API.
 TEST_F(PermissionsAPIUnitTest, RequestingWithheldPermissions) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   // Create an extension with required host permissions, and withhold those
   // permissions.
   scoped_refptr<const Extension> extension =
@@ -342,6 +353,10 @@ TEST_F(PermissionsAPIUnitTest, RequestingWithheldPermissions) {
 // Tests requesting withheld content script permissions with the
 // permissions.request() API.
 TEST_F(PermissionsAPIUnitTest, RequestingWithheldContentScriptPermissions) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   constexpr char kContentScriptPattern[] = "https://contentscript.com/*";
   // Create an extension with required host permissions, and withhold those
   // permissions.
@@ -380,6 +395,10 @@ TEST_F(PermissionsAPIUnitTest, RequestingWithheldContentScriptPermissions) {
 // scriptable host with the permissions.request() API.
 TEST_F(PermissionsAPIUnitTest,
        RequestingWithheldExplicitAndScriptablePermissionsInTheSameCall) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   constexpr char kContentScriptPattern[] = "https://example.com/*";
   // Create an extension with required host permissions, and withhold those
   // permissions.
@@ -418,6 +437,10 @@ TEST_F(PermissionsAPIUnitTest,
 
 // Tests an extension re-requesting an optional host after the user removes it.
 TEST_F(PermissionsAPIUnitTest, ReRequestingWithheldOptionalPermissions) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   // Create an extension an optional host permissions, and withhold those
   // permissions.
   scoped_refptr<const Extension> extension =
@@ -474,6 +497,10 @@ TEST_F(PermissionsAPIUnitTest, ReRequestingWithheldOptionalPermissions) {
 // Tests requesting both optional and withheld permissions in the same call to
 // permissions.request().
 TEST_F(PermissionsAPIUnitTest, RequestingWithheldAndOptionalPermissions) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   // Create an extension with required and optional host permissions, and
   // withhold the required permissions.
   scoped_refptr<const Extension> extension =
@@ -520,6 +547,10 @@ TEST_F(PermissionsAPIUnitTest, RequestingWithheldAndOptionalPermissions) {
 // Tests requesting permissions that weren't specified in the manifest (either
 // in optional permissions or in required permissions).
 TEST_F(PermissionsAPIUnitTest, RequestingPermissionsNotSpecifiedInManifest) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   // Create an extension with required and optional host permissions, and
   // withhold the required permissions.
   scoped_refptr<const Extension> extension =
@@ -559,6 +590,10 @@ TEST_F(PermissionsAPIUnitTest, RequestingPermissionsNotSpecifiedInManifest) {
 
 // Tests requesting withheld permissions that have already been granted.
 TEST_F(PermissionsAPIUnitTest, RequestingAlreadyGrantedWithheldPermissions) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions_features::kRuntimeHostPermissions);
+
   // Create an extension with required host permissions, withhold host
   // permissions, and then grant one of the hosts.
   scoped_refptr<const Extension> extension =

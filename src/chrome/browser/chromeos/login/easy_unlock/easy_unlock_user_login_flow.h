@@ -30,6 +30,7 @@ class EasyUnlockUserLoginFlow : public ExtendedUserFlow {
   bool ShouldSkipPostLoginScreens() override;
   bool HandleLoginFailure(const AuthFailure& failure) override;
   void HandleLoginSuccess(const UserContext& context) override;
+  bool HandlePasswordChangeDetected() override;
   void HandleOAuthTokenStatusChange(
       user_manager::User::OAuthTokenStatus status) override;
   void LaunchExtraSteps(Profile* profile) override;

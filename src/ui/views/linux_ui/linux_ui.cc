@@ -10,7 +10,7 @@
 
 namespace {
 
-views::LinuxUI* g_linux_ui = nullptr;
+views::LinuxUI* g_linux_ui = NULL;
 
 }  // namespace
 

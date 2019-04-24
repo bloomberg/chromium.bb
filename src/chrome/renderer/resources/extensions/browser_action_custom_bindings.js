@@ -4,16 +4,29 @@
 
 // Custom binding for the browserAction API.
 
+var binding = apiBridge || require('binding').Binding.create('browserAction');
+
 var setIcon = require('setIcon').setIcon;
 var getExtensionViews = requireNative('runtime').GetExtensionViews;
+var sendRequest = bindingUtil ?
+    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
+    require('sendRequest').sendRequest;
 
-apiBridge.registerCustomHook(function(bindingsAPI) {
+var jsLastError = bindingUtil ? undefined : require('lastError');
+function hasLastError() {
+  return bindingUtil ?
+      bindingUtil.hasLastError() : jsLastError.hasError(chrome);
+}
+
+binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('setIcon', function(details, callback) {
     setIcon(details, function(args) {
-      bindingUtil.sendRequest(
-          'browserAction.setIcon', [args, callback], undefined);
+      sendRequest('browserAction.setIcon',
+                  [args, callback],
+                  apiBridge ? undefined : this.definition.parameters,
+                  undefined);
     }.bind(this));
   });
 
@@ -22,7 +35,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     if (!callback)
       return;
 
-    if (bindingUtil.hasLastError()) {
+    if (hasLastError()) {
       callback();
     } else {
       var views = getExtensionViews(-1, -1, 'POPUP');
@@ -30,3 +43,6 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     }
   });
 });
+
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

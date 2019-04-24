@@ -71,14 +71,8 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
   // overwrite the previously supplied one, and the first will not be called.
   void Load(base::OnceClosure callback);
 
-  // Clears any data associated with the upload list, where the upload time or
-  // capture time falls within the given range.
-  void Clear(const base::Time& begin,
-             const base::Time& end,
-             base::OnceClosure callback = base::OnceClosure());
-
   // Clears any callback specified in Load().
-  void CancelLoadCallback();
+  void CancelCallback();
 
   // Asynchronously requests a user triggered upload.
   void RequestSingleUploadAsync(const std::string& local_id);
@@ -98,10 +92,6 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
   // Reads the upload log and stores the entries in |uploads|.
   virtual std::vector<UploadInfo> LoadUploadList() = 0;
 
-  // Clears data within the given time range. See Clear.
-  virtual void ClearUploadList(const base::Time& begin,
-                               const base::Time& end) = 0;
-
   // Requests a user triggered upload for a crash report with a given id.
   virtual void RequestSingleUpload(const std::string& local_id);
 
@@ -109,18 +99,14 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
   friend class base::RefCountedThreadSafe<UploadList>;
 
   // When LoadUploadList() finishes, the results are reported in |uploads|
-  // and the |load_callback_| is run.
+  // and the |callback_| is run.
   void OnLoadComplete(const std::vector<UploadInfo>& uploads);
-
-  // Called when ClearUploadList() finishes.
-  void OnClearComplete();
 
   // Ensures that this class' thread unsafe state is only accessed from the
   // sequence that owns this UploadList.
   base::SequenceChecker sequence_checker_;
 
-  base::OnceClosure load_callback_;
-  base::OnceClosure clear_callback_;
+  base::OnceClosure callback_;
 
   std::vector<UploadInfo> uploads_;
 

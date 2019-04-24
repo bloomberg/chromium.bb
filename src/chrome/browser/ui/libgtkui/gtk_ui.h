@@ -36,12 +36,16 @@ class GtkUi : public views::LinuxUI {
   GtkUi();
   ~GtkUi() override;
 
+  typedef base::Callback<ui::NativeTheme*(aura::Window* window)>
+      NativeThemeGetter;
+
   // Setters used by SettingsProvider:
   void SetWindowButtonOrdering(
       const std::vector<views::FrameButton>& leading_buttons,
       const std::vector<views::FrameButton>& trailing_buttons);
-  void SetWindowFrameAction(WindowFrameActionSource source,
-                            WindowFrameAction action);
+  void SetNonClientWindowFrameAction(
+      NonClientWindowFrameActionSourceType source,
+      NonClientWindowFrameAction action);
 
   // Called when gtk style changes
   void ResetStyle();
@@ -79,7 +83,7 @@ class GtkUi : public views::LinuxUI {
   SkColor GetInactiveSelectionFgColor() const override;
   base::TimeDelta GetCursorBlinkInterval() const override;
   ui::NativeTheme* GetNativeTheme(aura::Window* window) const override;
-  void SetNativeThemeOverride(NativeThemeGetter callback) override;
+  void SetNativeThemeOverride(const NativeThemeGetter& callback) override;
   bool GetDefaultUsesSystemTheme() const override;
   void SetDownloadCount(int count) const override;
   void SetProgressFraction(float percentage) const override;
@@ -97,8 +101,8 @@ class GtkUi : public views::LinuxUI {
       views::WindowButtonOrderObserver* observer) override;
   void RemoveWindowButtonOrderObserver(
       views::WindowButtonOrderObserver* observer) override;
-  WindowFrameAction GetWindowFrameAction(
-      WindowFrameActionSource source) override;
+  NonClientWindowFrameAction GetNonClientWindowFrameAction(
+      NonClientWindowFrameActionSourceType source) override;
   void NotifyWindowManagerStartupComplete() override;
   void UpdateDeviceScaleFactor() override;
   float GetDeviceScaleFactor() const override;
@@ -192,8 +196,8 @@ class GtkUi : public views::LinuxUI {
       device_scale_factor_observer_list_;
 
   // The action to take when middle, double, or right clicking the titlebar.
-  base::flat_map<WindowFrameActionSource, WindowFrameAction>
-      window_frame_actions_;
+  NonClientWindowFrameAction
+      window_frame_actions_[WINDOW_FRAME_ACTION_SOURCE_LAST];
 
   // Used to override the native theme for a window. If no override is provided
   // or the callback returns nullptr, GtkUi will default to a NativeThemeGtk

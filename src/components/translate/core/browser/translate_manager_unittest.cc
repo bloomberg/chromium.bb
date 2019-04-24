@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "components/infobars/core/infobar.h"
 #include "components/language/core/browser/language_model.h"
-#include "components/language/core/browser/language_prefs.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -115,10 +114,11 @@ using namespace translate::TranslateBrowserMetrics;
 // TranslatePrefs gets created.
 struct ProfilePrefRegistration {
   ProfilePrefRegistration(sync_preferences::TestingPrefServiceSyncable* prefs) {
-    language::LanguagePrefs::RegisterProfilePrefs(prefs->registry());
-    prefs->SetString(accept_languages_prefs, std::string());
+    prefs->registry()->RegisterStringPref(accept_languages_prefs,
+                                          std::string());
 #if defined(OS_CHROMEOS)
-    prefs->SetString(preferred_languages_prefs, std::string());
+    prefs->registry()->RegisterStringPref(preferred_languages_prefs,
+                                          std::string());
 #endif
     TranslatePrefs::RegisterProfilePrefs(prefs->registry());
     // TODO(groby): Figure out RegisterProfilePrefs() should register this.

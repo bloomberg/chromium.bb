@@ -143,7 +143,7 @@ AppSorting* TestExtensionSystem::app_sorting() {
   return app_sorting_.get();
 }
 
-const base::OneShotEvent& TestExtensionSystem::ready() const {
+const OneShotEvent& TestExtensionSystem::ready() const {
   return ready_;
 }
 

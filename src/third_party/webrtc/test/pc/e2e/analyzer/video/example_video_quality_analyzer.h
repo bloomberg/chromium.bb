@@ -16,13 +16,13 @@
 #include <set>
 #include <string>
 
-#include "api/test/video_quality_analyzer_interface.h"
 #include "api/video/encoded_image.h"
 #include "api/video/video_frame.h"
 #include "rtc_base/critical_section.h"
+#include "test/pc/e2e/api/video_quality_analyzer_interface.h"
 
 namespace webrtc {
-namespace webrtc_pc_e2e {
+namespace test {
 
 // This class is an example implementation of
 // webrtc::VideoQualityAnalyzerInterface and calculates simple metrics
@@ -81,7 +81,7 @@ class ExampleVideoQualityAnalyzer : public VideoQualityAnalyzerInterface {
   uint64_t frames_dropped_ RTC_GUARDED_BY(lock_) = 0;
 };
 
-}  // namespace webrtc_pc_e2e
+}  // namespace test
 }  // namespace webrtc
 
 #endif  // TEST_PC_E2E_ANALYZER_VIDEO_EXAMPLE_VIDEO_QUALITY_ANALYZER_H_

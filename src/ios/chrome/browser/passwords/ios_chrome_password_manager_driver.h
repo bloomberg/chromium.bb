@@ -18,6 +18,7 @@ struct PasswordFormFillData;
 namespace password_manager {
 class PasswordAutofillManager;
 class PasswordManager;
+class PasswordGenerationManager;
 }  // namespace password_manager
 
 // Defines the interface the driver needs to the controller.
@@ -37,8 +38,8 @@ class PasswordManager;
 // Informs delegate that there are no saved credentials for the current page.
 - (void)onNoSavedCredentials;
 
-// Gets the PasswordGenerationFrameHelper owned by this delegate.
-- (password_manager::PasswordGenerationFrameHelper*)passwordGenerationHelper;
+// Gets the PasswordGenerationManager owned by this delegate.
+- (password_manager::PasswordGenerationManager*)passwordGenerationManager;
 
 // Informs delegate of form for password generation found.
 - (void)formEligibleForGenerationFound:
@@ -72,7 +73,7 @@ class IOSChromePasswordManagerDriver
   void ShowInitialPasswordAccountSuggestions(
       const autofill::PasswordFormFillData& form_data) override;
   void ClearPreviewedForm() override;
-  password_manager::PasswordGenerationFrameHelper* GetPasswordGenerationHelper()
+  password_manager::PasswordGenerationManager* GetPasswordGenerationManager()
       override;
   password_manager::PasswordManager* GetPasswordManager() override;
   password_manager::PasswordAutofillManager* GetPasswordAutofillManager()

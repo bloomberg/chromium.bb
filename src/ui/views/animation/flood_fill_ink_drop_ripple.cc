@@ -21,7 +21,7 @@ namespace {
 
 // The minimum radius to use when scaling the painted layers. Smaller values
 // were causing visual anomalies.
-constexpr float kMinRadius = 1.f;
+const float kMinRadius = 1.f;
 
 // All the sub animations that are used to animate each of the InkDropStates.
 // These are used to get time durations with
@@ -448,6 +448,9 @@ base::TimeDelta FloodFillInkDropRipple::GetAnimationDuration(int state) {
   }
 
   return base::TimeDelta::FromMilliseconds(
+      (views::InkDropRipple::UseFastAnimations()
+           ? 1
+           : views::InkDropRipple::kSlowAnimationDurationFactor) *
       kAnimationDurationInMs[state_override] * duration_factor_);
 }
 

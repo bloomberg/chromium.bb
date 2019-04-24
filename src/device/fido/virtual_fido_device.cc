@@ -80,42 +80,6 @@ bool VirtualFidoDevice::State::InjectRegistration(
   return was_inserted;
 }
 
-bool VirtualFidoDevice::State::InjectResidentKey(
-    const std::vector<uint8_t>& credential_id,
-    const std::string& relying_party_id,
-    const std::vector<uint8_t>& user_id,
-    const std::string& name,
-    const std::string& display_name) {
-  auto application_parameter =
-      fido_parsing_utils::CreateSHA256Hash(relying_party_id);
-
-  // Cannot create a duplicate credential for the same (RP ID, user ID) pair.
-  for (const auto& registration : registrations) {
-    if (registration.second.is_resident &&
-        application_parameter == registration.second.application_parameter &&
-        user_id == registration.second.user->id) {
-      return false;
-    }
-  }
-
-  auto private_key = crypto::ECPrivateKey::Create();
-  DCHECK(private_key);
-
-  RegistrationData registration(std::move(private_key),
-                                std::move(application_parameter),
-                                0 /* signature counter */);
-  registration.is_resident = true;
-  PublicKeyCredentialUserEntity user(user_id);
-  user.name = name;
-  user.display_name = display_name;
-  registration.user = std::move(user);
-
-  bool was_inserted;
-  std::tie(std::ignore, was_inserted) =
-      registrations.emplace(credential_id, std::move(registration));
-  return was_inserted;
-}
-
 VirtualFidoDevice::VirtualFidoDevice() = default;
 
 // VirtualFidoDevice ----------------------------------------------------------
@@ -174,14 +138,15 @@ VirtualFidoDevice::GenerateAttestationCertificate(
 }
 
 void VirtualFidoDevice::StoreNewKey(
+    base::span<const uint8_t, kRpIdHashLength> application_parameter,
     base::span<const uint8_t> key_handle,
-    VirtualFidoDevice::RegistrationData registration_data) {
+    std::unique_ptr<crypto::ECPrivateKey> private_key) {
   // Store the registration. Because the key handle is the hashed public key we
   // just generated, no way this should already be registered.
   bool did_insert = false;
   std::tie(std::ignore, did_insert) = mutable_state()->registrations.emplace(
       fido_parsing_utils::Materialize(key_handle),
-      std::move(registration_data));
+      RegistrationData(std::move(private_key), application_parameter, 1));
   DCHECK(did_insert);
 }
 
@@ -199,7 +164,11 @@ VirtualFidoDevice::RegistrationData* VirtualFidoDevice::FindRegistrationData(
     return nullptr;
   }
 
-  return &it->second;
+  return &(it->second);
+}
+
+void VirtualFidoDevice::TryWink(WinkCallback cb) {
+  std::move(cb).Run();
 }
 
 std::string VirtualFidoDevice::GetId() const {

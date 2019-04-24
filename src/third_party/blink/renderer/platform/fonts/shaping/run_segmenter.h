@@ -26,7 +26,8 @@ class PLATFORM_EXPORT RunSegmenter {
 
  public:
   // Indices into the UTF-16 buffer that is passed in
-  struct PLATFORM_EXPORT RunSegmenterRange {
+  struct RunSegmenterRange {
+    DISALLOW_NEW();
     unsigned start;
     unsigned end;
     UScriptCode script;

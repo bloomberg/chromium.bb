@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.BaseSwitches;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.process_launcher.ChildConnectionAllocator;
@@ -34,7 +35,6 @@ import org.chromium.content_public.browser.test.ChildProcessAllocatorSettings;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell_apk.ChildProcessLauncherTestHelperService;
 import org.chromium.content_shell_apk.ChildProcessLauncherTestUtils;
 
@@ -214,8 +214,12 @@ public class ChildProcessLauncherHelperTest {
     }
 
     private static void warmUpOnUiThreadBlocking(final Context context, boolean sandboxed) {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { ChildProcessLauncherHelperImpl.warmUp(context, sandboxed); });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ChildProcessLauncherHelperImpl.warmUp(context, sandboxed);
+            }
+        });
         ChildProcessConnection connection = getWarmUpConnection(sandboxed);
         Assert.assertNotNull(connection);
         blockUntilConnected(connection);

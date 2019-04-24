@@ -203,6 +203,7 @@ static void get_ubo_aligned_offset(uint32_t* uniformOffset,
 GrGLSLUniformHandler::UniformHandle GrVkUniformHandler::internalAddUniformArray(
                                                                             uint32_t visibility,
                                                                             GrSLType type,
+                                                                            GrSLPrecision precision,
                                                                             const char* name,
                                                                             bool mangleName,
                                                                             int arrayCount,
@@ -214,6 +215,7 @@ GrGLSLUniformHandler::UniformHandle GrVkUniformHandler::internalAddUniformArray(
              kGeometry_GrShaderFlag == visibility ||
              (kVertex_GrShaderFlag | kGeometry_GrShaderFlag) == visibility ||
              kFragment_GrShaderFlag == visibility);
+    SkASSERT(kDefault_GrSLPrecision == precision || GrSLTypeIsFloatType(type));
     GrSLTypeIsFloatType(type);
 
     UniformInfo& uni = fUniforms.push_back();
@@ -231,6 +233,7 @@ GrGLSLUniformHandler::UniformHandle GrVkUniformHandler::internalAddUniformArray(
     fProgramBuilder->nameVariable(uni.fVariable.accessName(), prefix, name, mangleName);
     uni.fVariable.setArrayCount(arrayCount);
     uni.fVisibility = visibility;
+    uni.fVariable.setPrecision(precision);
     // When outputing the GLSL, only the outer uniform block will get the Uniform modifier. Thus
     // we set the modifier to none for all uniforms declared inside the block.
     uni.fVariable.setTypeModifier(GrShaderVar::kNone_TypeModifier);
@@ -265,12 +268,14 @@ GrGLSLUniformHandler::SamplerHandle GrVkUniformHandler::addSampler(const GrTextu
     char prefix = 'u';
     fProgramBuilder->nameVariable(&mangleName, prefix, name, true);
 
+    GrSLPrecision precision = GrSLSamplerPrecision(texture->config());
     GrSwizzle swizzle = shaderCaps->configTextureSwizzle(texture->config());
     GrTextureType type = texture->texturePriv().textureType();
 
     UniformInfo& info = fSamplers.push_back();
     info.fVariable.setType(GrSLCombinedSamplerTypeForTextureType(type));
     info.fVariable.setTypeModifier(GrShaderVar::kUniform_TypeModifier);
+    info.fVariable.setPrecision(precision);
     info.fVariable.setName(mangleName);
     SkString layoutQualifier;
     layoutQualifier.appendf("set=%d, binding=%d", kSamplerDescSet, fSamplers.count() - 1);

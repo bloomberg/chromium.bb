@@ -7,11 +7,9 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
 
 namespace base {
@@ -36,7 +34,6 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   void SetAll(const gfx::Transform& quad_to_target_transform,
               const gfx::Rect& layer_rect,
               const gfx::Rect& visible_layer_rect,
-              const gfx::RRectF& rounded_corner_bounds,
               const gfx::Rect& clip_rect,
               bool is_clipped,
               bool are_contents_opaque,
@@ -55,9 +52,6 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   // The size of the visible area in the quads' originating layer, in the space
   // of the quad rects.
   gfx::Rect visible_quad_layer_rect;
-  // This rect lives in the target content space. It defines the corner radius
-  // to clip the quads with.
-  gfx::RRectF rounded_corner_bounds;
   // This rect lives in the target content space.
   gfx::Rect clip_rect;
   bool is_clipped;
@@ -66,15 +60,13 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   float opacity;
   SkBlendMode blend_mode;
   int sorting_context_id;
-  // An internal flag used only by the SurfaceAggregator to decide whether to
-  // merge quads for a surface into their target render pass. It is a
-  // performance optimization by avoiding render passes as much as possible.
-  bool is_fast_rounded_corner = false;
-  // This is for underlay optimization and used only in the SurfaceAggregator
-  // and the OverlayProcessor. This damage rect contains union of damage from
-  // occluding surfaces and is only for quads that are the only quad in
-  // their surface. SetAll() doesn't update this data.
-  base::Optional<gfx::Rect> occluding_damage_rect;
+  // An internal flag used only in the SurfaceAggregator and the
+  // OverlayProcessor. If set to true surface's compositor frame was updated in
+  // current aggregation, and if set to false the surface has not changed since
+  // the previous frame. It can be used for underlay optimization when the quads
+  // on top are not damaged. SetAll() doesn't update this flag. It has to be set
+  // sepaerately.
+  bool has_surface_damage = false;
 };
 
 }  // namespace viz

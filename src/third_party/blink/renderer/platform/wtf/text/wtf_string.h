@@ -29,7 +29,7 @@
 #include <iosfwd>
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/text/integer_to_string_conversion.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
@@ -57,7 +57,8 @@ enum UTF8ConversionMode {
              ? op##IgnoringASCIICase args               \
              : op##IgnoringCase args)
 
-// You can find documentation about this class in README.md in this directory.
+// You can find documentation about this class in this doc:
+// https://docs.google.com/document/d/1kOCUlJdh2WJMJGDf-WoEQhmnjKLaOYRbiHz5TiGJl14/edit?usp=sharing
 class WTF_EXPORT String {
   USING_FAST_MALLOC(String);
 
@@ -151,10 +152,9 @@ class WTF_EXPORT String {
 
   bool Is8Bit() const { return impl_->Is8Bit(); }
 
-  CString Ascii() const WARN_UNUSED_RESULT;
-  CString Latin1() const WARN_UNUSED_RESULT;
-  CString Utf8(UTF8ConversionMode = kLenientUTF8Conversion) const
-      WARN_UNUSED_RESULT;
+  CString Ascii() const;
+  CString Latin1() const;
+  CString Utf8(UTF8ConversionMode = kLenientUTF8Conversion) const;
 
   UChar operator[](unsigned index) const {
     if (!impl_ || index >= impl_->length())
@@ -162,20 +162,18 @@ class WTF_EXPORT String {
     return (*impl_)[index];
   }
 
-  template <typename IntegerType>
-  static String Number(IntegerType number) {
-    IntegerToStringConverter<IntegerType> converter(number);
-    return StringImpl::Create(converter.Characters8(), converter.length());
-  }
+  static String Number(int);
+  static String Number(unsigned);
+  static String Number(long);
+  static String Number(unsigned long);
+  static String Number(long long);
+  static String Number(unsigned long long);
 
-  static String Number(float) WARN_UNUSED_RESULT;
-
-  static String Number(double, unsigned precision = 6) WARN_UNUSED_RESULT;
+  static String Number(double, unsigned precision = 6);
 
   // Number to String conversion following the ECMAScript definition.
-  static String NumberToStringECMAScript(double) WARN_UNUSED_RESULT;
-  static String NumberToStringFixedWidth(double, unsigned decimal_places)
-      WARN_UNUSED_RESULT;
+  static String NumberToStringECMAScript(double);
+  static String NumberToStringFixedWidth(double, unsigned decimal_places);
 
   // Find characters.
   wtf_size_t find(UChar c, unsigned start = 0) const {
@@ -268,6 +266,12 @@ class WTF_EXPORT String {
     return impl_ ? impl_->EndsWith(character) : false;
   }
 
+  void append(const StringView&);
+  void append(LChar);
+  void append(char c) { append(static_cast<LChar>(c)); }
+  void append(UChar);
+  void insert(const StringView&, unsigned pos);
+
   // TODO(esprehn): replace strangely both modifies this String *and* return a
   // value. It should only do one of those.
   String& Replace(UChar pattern, UChar replacement) {
@@ -303,14 +307,9 @@ class WTF_EXPORT String {
   void Truncate(unsigned length);
   void Remove(unsigned start, unsigned length = 1);
 
-  String Substring(unsigned pos,
-                   unsigned len = UINT_MAX) const WARN_UNUSED_RESULT;
-  String Left(unsigned len) const WARN_UNUSED_RESULT {
-    return Substring(0, len);
-  }
-  String Right(unsigned len) const WARN_UNUSED_RESULT {
-    return Substring(length() - len, len);
-  }
+  String Substring(unsigned pos, unsigned len = UINT_MAX) const;
+  String Left(unsigned len) const { return Substring(0, len); }
+  String Right(unsigned len) const { return Substring(length() - len, len); }
 
   // Returns a lowercase version of the string. This function might convert
   // non-ASCII characters to ASCII characters. For example, DeprecatedLower()
@@ -319,56 +318,49 @@ class WTF_EXPORT String {
   // crbug.com/627682.
   // This function is deprecated. We should use LowerASCII() or introduce
   // LowerUnicode().
-  String DeprecatedLower() const WARN_UNUSED_RESULT;
+  String DeprecatedLower() const;
 
   // |locale_identifier| is case-insensitive, and accepts either of "aa_aa" or
   // "aa-aa". Empty/null |locale_identifier| indicates locale-independent
   // Unicode case conversion.
-  String LowerUnicode(const AtomicString& locale_identifier) const
-      WARN_UNUSED_RESULT;
-  String UpperUnicode(const AtomicString& locale_identifier) const
-      WARN_UNUSED_RESULT;
+  String LowerUnicode(const AtomicString& locale_identifier) const;
+  String UpperUnicode(const AtomicString& locale_identifier) const;
 
   // Returns a lowercase version of the string.
   // This function converts ASCII characters only.
-  String LowerASCII() const WARN_UNUSED_RESULT;
+  String LowerASCII() const;
   // Returns a uppercase version of the string.
   // This function converts ASCII characters only.
-  String UpperASCII() const WARN_UNUSED_RESULT;
+  String UpperASCII() const;
 
-  String StripWhiteSpace() const WARN_UNUSED_RESULT;
-  String StripWhiteSpace(IsWhiteSpaceFunctionPtr) const WARN_UNUSED_RESULT;
-  String SimplifyWhiteSpace(StripBehavior = kStripExtraWhiteSpace) const
-      WARN_UNUSED_RESULT;
+  String StripWhiteSpace() const;
+  String StripWhiteSpace(IsWhiteSpaceFunctionPtr) const;
+  String SimplifyWhiteSpace(StripBehavior = kStripExtraWhiteSpace) const;
   String SimplifyWhiteSpace(IsWhiteSpaceFunctionPtr,
-                            StripBehavior = kStripExtraWhiteSpace) const
-      WARN_UNUSED_RESULT;
+                            StripBehavior = kStripExtraWhiteSpace) const;
 
-  String RemoveCharacters(CharacterMatchFunctionPtr) const WARN_UNUSED_RESULT;
+  String RemoveCharacters(CharacterMatchFunctionPtr) const;
   template <bool isSpecialCharacter(UChar)>
   bool IsAllSpecialCharacters() const;
 
   // Return the string with case folded for case insensitive comparison.
-  String FoldCase() const WARN_UNUSED_RESULT;
+  String FoldCase() const;
 
   // Takes a printf format and args and prints into a String.
   // This function supports Latin-1 characters only.
-  PRINTF_FORMAT(1, 2)
-  static String Format(const char* format, ...) WARN_UNUSED_RESULT;
+  PRINTF_FORMAT(1, 2) static String Format(const char* format, ...);
 
   // Returns a version suitable for gtest and base/logging.*.  It prepends and
   // appends double-quotes, and escapes characters other than ASCII printables.
-  String EncodeForDebugging() const WARN_UNUSED_RESULT;
+  String EncodeForDebugging() const;
 
   // Returns an uninitialized string. The characters needs to be written
   // into the buffer returned in data before the returned string is used.
   // Failure to do this will have unpredictable results.
-  static String CreateUninitialized(unsigned length,
-                                    UChar*& data) WARN_UNUSED_RESULT {
+  static String CreateUninitialized(unsigned length, UChar*& data) {
     return StringImpl::CreateUninitialized(length, data);
   }
-  static String CreateUninitialized(unsigned length,
-                                    LChar*& data) WARN_UNUSED_RESULT {
+  static String CreateUninitialized(unsigned length, LChar*& data) {
     return StringImpl::CreateUninitialized(length, data);
   }
 
@@ -465,7 +457,7 @@ class WTF_EXPORT String {
   double ToDouble(bool* ok = nullptr) const;
   float ToFloat(bool* ok = nullptr) const;
 
-  String IsolatedCopy() const WARN_UNUSED_RESULT;
+  String IsolatedCopy() const;
   bool IsSafeToSendToAnotherThread() const;
 
 #ifdef __OBJC__
@@ -481,36 +473,32 @@ class WTF_EXPORT String {
   }
 #endif
 
-  static String Make8BitFrom16BitSource(const UChar*,
-                                        wtf_size_t) WARN_UNUSED_RESULT;
+  static String Make8BitFrom16BitSource(const UChar*, wtf_size_t);
   template <wtf_size_t inlineCapacity>
-  static WARN_UNUSED_RESULT String
-  Make8BitFrom16BitSource(const Vector<UChar, inlineCapacity>& buffer) {
+  static String Make8BitFrom16BitSource(
+      const Vector<UChar, inlineCapacity>& buffer) {
     return Make8BitFrom16BitSource(buffer.data(), buffer.size());
   }
 
-  static String Make16BitFrom8BitSource(const LChar*,
-                                        wtf_size_t) WARN_UNUSED_RESULT;
+  static String Make16BitFrom8BitSource(const LChar*, wtf_size_t);
 
   // String::fromUTF8 will return a null string if
   // the input data contains invalid UTF-8 sequences.
   // Does not strip BOMs.
-  static String FromUTF8(const LChar*, size_t) WARN_UNUSED_RESULT;
-  static String FromUTF8(const LChar*) WARN_UNUSED_RESULT;
-  static String FromUTF8(const char* s, size_t length) WARN_UNUSED_RESULT {
+  static String FromUTF8(const LChar*, size_t);
+  static String FromUTF8(const LChar*);
+  static String FromUTF8(const char* s, size_t length) {
     return FromUTF8(reinterpret_cast<const LChar*>(s), length);
   }
-  static String FromUTF8(const char* s) WARN_UNUSED_RESULT {
+  static String FromUTF8(const char* s) {
     return FromUTF8(reinterpret_cast<const LChar*>(s));
   }
-  static String FromUTF8(const CString&) WARN_UNUSED_RESULT;
+  static String FromUTF8(const CString&);
 
   // Tries to convert the passed in string to UTF-8, but will fall back to
   // Latin-1 if the string is not valid UTF-8.
-  static String FromUTF8WithLatin1Fallback(const LChar*,
-                                           size_t) WARN_UNUSED_RESULT;
-  static String FromUTF8WithLatin1Fallback(const char* s,
-                                           size_t length) WARN_UNUSED_RESULT {
+  static String FromUTF8WithLatin1Fallback(const LChar*, size_t);
+  static String FromUTF8WithLatin1Fallback(const char* s, size_t length) {
     return FromUTF8WithLatin1Fallback(reinterpret_cast<const LChar*>(s),
                                       length);
   }
@@ -534,6 +522,9 @@ class WTF_EXPORT String {
 
  private:
   friend struct HashTraits<String>;
+
+  template <typename CharacterType>
+  void AppendInternal(CharacterType);
 
   scoped_refptr<StringImpl> impl_;
 };

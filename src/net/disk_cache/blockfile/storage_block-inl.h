@@ -10,41 +10,25 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/hash/hash.h"
+#include "base/hash.h"
 #include "base/logging.h"
 #include "net/disk_cache/blockfile/trace.h"
 
 namespace disk_cache {
 
-template <typename T>
-StorageBlock<T>::StorageBlock(MappedFile* file, Addr address)
-    : data_(nullptr),
-      file_(file),
-      address_(address),
-      modified_(false),
-      own_data_(false),
-      extended_(false) {
+template<typename T> StorageBlock<T>::StorageBlock(MappedFile* file,
+                                                   Addr address)
+    : data_(NULL), file_(file), address_(address), modified_(false),
+      own_data_(false), extended_(false) {
   if (address.num_blocks() > 1)
     extended_ = true;
-  DCHECK(!address.is_initialized() || sizeof(*data_) == address.BlockSize())
-      << address.value();
+  DCHECK(!address.is_initialized() || sizeof(*data_) == address.BlockSize());
 }
 
 template<typename T> StorageBlock<T>::~StorageBlock() {
   if (modified_)
     Store();
   DeleteData();
-}
-
-template <typename T>
-void StorageBlock<T>::CopyFrom(StorageBlock<T>* other) {
-  DCHECK(!modified_);
-  DCHECK(!other->modified_);
-  Discard();
-  *Data() = *other->Data();
-  file_ = other->file_;
-  address_ = other->address_;
-  extended_ = other->extended_;
 }
 
 template<typename T> void* StorageBlock<T>::buffer() const {
@@ -90,7 +74,7 @@ template<typename T> void  StorageBlock<T>::Discard() {
     return;
   }
   DeleteData();
-  data_ = nullptr;
+  data_ = NULL;
   modified_ = false;
   extended_ = false;
 }
@@ -99,7 +83,7 @@ template<typename T> void  StorageBlock<T>::StopSharingData() {
   if (!data_ || own_data_)
     return;
   DCHECK(!modified_);
-  data_ = nullptr;
+  data_ = NULL;
 }
 
 template<typename T> void StorageBlock<T>::set_modified() {
@@ -118,7 +102,7 @@ template<typename T> T* StorageBlock<T>::Data() {
 }
 
 template<typename T> bool StorageBlock<T>::HasData() const {
-  return (nullptr != data_);
+  return (NULL != data_);
 }
 
 template<typename T> bool StorageBlock<T>::VerifyHash() const {

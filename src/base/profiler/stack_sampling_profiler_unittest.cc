@@ -19,7 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/native_library.h"
 #include "base/path_service.h"
-#include "base/profiler/stack_sampler.h"
+#include "base/profiler/native_stack_sampler.h"
 #include "base/profiler/stack_sampling_profiler.h"
 #include "base/run_loop.h"
 #include "base/scoped_native_library.h"
@@ -63,6 +63,7 @@ namespace base {
 #endif
 
 using SamplingParams = StackSamplingProfiler::SamplingParams;
+using Frame = StackSamplingProfiler::Frame;
 using Frames = std::vector<Frame>;
 using FrameSets = std::vector<std::vector<Frame>>;
 
@@ -315,14 +316,14 @@ Profile::Profile(const FrameSets& frame_sets,
 using ProfileCompletedCallback = Callback<void(Profile)>;
 
 // TestProfileBuilder collects frames produced by the profiler.
-class TestProfileBuilder : public ProfileBuilder {
+class TestProfileBuilder : public StackSamplingProfiler::ProfileBuilder {
  public:
   TestProfileBuilder(ModuleCache* module_cache,
                      const ProfileCompletedCallback& callback);
 
   ~TestProfileBuilder() override;
 
-  // ProfileBuilder:
+  // StackSamplingProfiler::ProfileBuilder:
   ModuleCache* GetModuleCache() override;
   void RecordMetadata() override;
   void OnSampleCompleted(Frames frames) override;
@@ -442,7 +443,7 @@ struct TestProfilerInfo {
   TestProfilerInfo(PlatformThreadId thread_id,
                    const SamplingParams& params,
                    ModuleCache* module_cache,
-                   StackSamplerTestDelegate* delegate = nullptr)
+                   NativeStackSamplerTestDelegate* delegate = nullptr)
       : completed(WaitableEvent::ResetPolicy::MANUAL,
                   WaitableEvent::InitialState::NOT_SIGNALED),
         profiler(thread_id,
@@ -561,8 +562,7 @@ std::string FormatSampleForDiagnosticOutput(const Frames& frames) {
   for (const auto& frame : frames) {
     output += StringPrintf(
         "0x%p %s\n", reinterpret_cast<const void*>(frame.instruction_pointer),
-        frame.module ? frame.module->GetDebugBasename().AsUTF8Unsafe().c_str()
-                     : "null module");
+        frame.module->GetDebugBasename().AsUTF8Unsafe().c_str());
   }
   return output;
 }
@@ -580,7 +580,7 @@ TimeDelta AVeryLongTimeDelta() {
 void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
   // Test delegate that supports intervening between the copying of the stack
   // and the walking of the stack.
-  class StackCopiedSignaler : public StackSamplerTestDelegate {
+  class StackCopiedSignaler : public NativeStackSamplerTestDelegate {
    public:
     StackCopiedSignaler(WaitableEvent* stack_copied,
                         WaitableEvent* start_stack_walk,
@@ -676,17 +676,13 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
 
   if (wait_until_unloaded) {
     // The stack should look like this, resulting one frame after
-    // SignalAndWaitUntilSignaled. The frame in the now-unloaded library should
-    // have a null module.
+    // SignalAndWaitUntilSignaled. The frame in the now-unloaded library is
+    // not recorded since we can't get module information.
     //
     // ... WaitableEvent and system frames ...
     // TargetThread::SignalAndWaitUntilSignaled
     // TargetThread::OtherLibraryCallback
-    // <frame in unloaded library>
-    EXPECT_EQ(3, frames.end() - end_frame)
-        << "Stack:\n"
-        << FormatSampleForDiagnosticOutput(frames);
-    EXPECT_EQ(nullptr, frames.back().module)
+    EXPECT_EQ(2, frames.end() - end_frame)
         << "Stack:\n"
         << FormatSampleForDiagnosticOutput(frames);
   } else {
@@ -695,7 +691,7 @@ void TestLibraryUnload(bool wait_until_unloaded, ModuleCache* module_cache) {
     // the same stack as |wait_until_unloaded|, if not we should have the full
     // stack. The important thing is that we should not crash.
 
-    if (frames.end() - end_frame == 3) {
+    if (frames.end() - end_frame == 2) {
       // This is the same case as |wait_until_unloaded|.
       return;
     }
@@ -882,7 +878,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopWithoutStarting) {
 // sampling thread continues to run.
 PROFILER_TEST_F(StackSamplingProfilerTest, StopSafely) {
   // Test delegate that counts samples.
-  class SampleRecordedCounter : public StackSamplerTestDelegate {
+  class SampleRecordedCounter : public NativeStackSamplerTestDelegate {
    public:
     SampleRecordedCounter() = default;
 
@@ -969,7 +965,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopDuringInitialDelay) {
 // captured.
 PROFILER_TEST_F(StackSamplingProfilerTest, StopDuringInterSampleInterval) {
   // Test delegate that counts samples.
-  class SampleRecordedEvent : public StackSamplerTestDelegate {
+  class SampleRecordedEvent : public NativeStackSamplerTestDelegate {
    public:
     SampleRecordedEvent()
         : sample_recorded_(WaitableEvent::ResetPolicy::MANUAL,
@@ -1516,7 +1512,7 @@ class ProfilerThread : public SimpleThread {
 
 // Checks that different threads can run samplers in parallel.
 PROFILER_TEST_F(StackSamplingProfilerTest, MultipleProfilerThreads) {
-  WithTargetThread([](PlatformThreadId target_thread_id) {
+  WithTargetThread([this](PlatformThreadId target_thread_id) {
     // Providing an initial delay makes it more likely that both will be
     // scheduled before either starts to run. Once started, samples will
     // run ordered by their scheduled, interleaved times regardless of
@@ -1530,12 +1526,10 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleProfilerThreads) {
     params2.samples_per_profile = 8;
 
     // Start the profiler threads and give them a moment to get going.
-    ModuleCache module_cache1;
     ProfilerThread profiler_thread1("profiler1", target_thread_id, params1,
-                                    &module_cache1);
-    ModuleCache module_cache2;
+                                    module_cache());
     ProfilerThread profiler_thread2("profiler2", target_thread_id, params2,
-                                    &module_cache2);
+                                    module_cache());
     profiler_thread1.Start();
     profiler_thread2.Start();
     PlatformThread::Sleep(TimeDelta::FromMilliseconds(10));

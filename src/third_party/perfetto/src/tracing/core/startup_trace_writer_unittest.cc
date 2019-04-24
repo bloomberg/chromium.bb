@@ -119,11 +119,8 @@ class StartupTraceWriterTest : public AlignedBufferTest {
     while (true) {
       TracePacket packet;
       TraceBuffer::PacketSequenceProperties sequence_properties{};
-      bool previous_packet_dropped;
-      if (!buffer->ReadNextTracePacket(&packet, &sequence_properties,
-                                       &previous_packet_dropped)) {
+      if (!buffer->ReadNextTracePacket(&packet, &sequence_properties))
         break;
-      }
       EXPECT_EQ(static_cast<uid_t>(1),
                 sequence_properties.producer_uid_trusted);
 

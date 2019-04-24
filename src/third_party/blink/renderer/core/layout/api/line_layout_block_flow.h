@@ -204,10 +204,10 @@ class LineLayoutBlockFlow : public LineLayoutBox {
 
  private:
   LayoutBlockFlow* ToBlockFlow() {
-    return To<LayoutBlockFlow>(GetLayoutObject());
+    return ToLayoutBlockFlow(GetLayoutObject());
   }
   const LayoutBlockFlow* ToBlockFlow() const {
-    return To<LayoutBlockFlow>(GetLayoutObject());
+    return ToLayoutBlockFlow(GetLayoutObject());
   }
 };
 

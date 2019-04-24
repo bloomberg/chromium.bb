@@ -13,6 +13,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {
+
 namespace background_fetch {
 
 using SerializeIconCallback = base::OnceCallback<void(std::string)>;
@@ -34,6 +35,7 @@ CONTENT_EXPORT void DeserializeIcon(
     DeserializeIconCallback callback);
 
 }  // namespace background_fetch
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_IMAGE_HELPERS_H_

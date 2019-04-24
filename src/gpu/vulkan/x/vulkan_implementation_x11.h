@@ -18,10 +18,11 @@ class COMPONENT_EXPORT(VULKAN_X11) VulkanImplementationX11
     : public VulkanImplementation {
  public:
   VulkanImplementationX11();
+  explicit VulkanImplementationX11(XDisplay* x_display);
   ~VulkanImplementationX11() override;
 
   // VulkanImplementation:
-  bool InitializeVulkanInstance(bool using_surface) override;
+  bool InitializeVulkanInstance() override;
   VulkanInstance* GetVulkanInstance() override;
   std::unique_ptr<VulkanSurface> CreateViewSurface(
       gfx::AcceleratedWidget window) override;
@@ -34,16 +35,14 @@ class COMPONENT_EXPORT(VULKAN_X11) VulkanImplementationX11
   std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
       VkDevice vk_device,
       VkFence vk_fence) override;
-  VkSemaphore CreateExternalSemaphore(VkDevice vk_device) override;
-  VkSemaphore ImportSemaphoreHandle(VkDevice vk_device,
-                                    SemaphoreHandle handle) override;
-  SemaphoreHandle GetSemaphoreHandle(VkDevice vk_device,
-                                     VkSemaphore vk_semaphore) override;
-  VkExternalMemoryHandleTypeFlagBits GetExternalImageHandleType() override;
 
  private:
-  bool using_surface_ = true;
+  XDisplay* const x_display_;
   VulkanInstance vulkan_instance_;
+
+  PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR
+      vkGetPhysicalDeviceXlibPresentationSupportKHR_ = nullptr;
+  PFN_vkCreateXlibSurfaceKHR vkCreateXlibSurfaceKHR_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanImplementationX11);
 };

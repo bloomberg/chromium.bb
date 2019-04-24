@@ -79,7 +79,8 @@ class FramebufferAttachment final
                 FramebufferAttachmentObject *resource,
                 GLsizei numViews,
                 GLuint baseViewIndex,
-                bool isMultiview);
+                GLenum multiviewLayout,
+                const GLint *viewportOffsets);
 
     // Helper methods
     GLuint getRedSize() const;
@@ -112,8 +113,9 @@ class FramebufferAttachment final
 
     GLsizei getNumViews() const { return mNumViews; }
 
-    bool isMultiview() const;
+    GLenum getMultiviewLayout() const;
     GLint getBaseViewIndex() const;
+    const std::vector<Offset> &getMultiviewViewportOffsets() const;
 
     // The size of the underlying resource the attachment points to. The 'depth' value will
     // correspond to a 3D texture depth or the layer count of a 2D array texture. For Surfaces and
@@ -146,8 +148,11 @@ class FramebufferAttachment final
     bool operator==(const FramebufferAttachment &other) const;
     bool operator!=(const FramebufferAttachment &other) const;
 
+    static std::vector<Offset> GetDefaultViewportOffsetVector();
     static const GLsizei kDefaultNumViews;
+    static const GLenum kDefaultMultiviewLayout;
     static const GLint kDefaultBaseViewIndex;
+    static const GLint kDefaultViewportOffsets[2];
 
   private:
     angle::Result getRenderTargetImpl(const Context *context,
@@ -179,8 +184,9 @@ class FramebufferAttachment final
     Target mTarget;
     FramebufferAttachmentObject *mResource;
     GLsizei mNumViews;
-    bool mIsMultiview;
+    GLenum mMultiviewLayout;
     GLint mBaseViewIndex;
+    std::vector<Offset> mViewportOffsets;
 };
 
 // A base class for objects that FBO Attachments may point to.

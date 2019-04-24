@@ -179,12 +179,12 @@ bool GetHubDevicePath(const std::string& instance_id,
 
 }  // namespace
 
-class UsbServiceWin::BlockingTaskRunnerHelper {
+class UsbServiceWin::BlockingTaskHelper {
  public:
-  explicit BlockingTaskRunnerHelper(base::WeakPtr<UsbServiceWin> service)
+  explicit BlockingTaskHelper(base::WeakPtr<UsbServiceWin> service)
       : service_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         service_(service) {}
-  ~BlockingTaskRunnerHelper() {}
+  ~BlockingTaskHelper() {}
 
   void EnumerateDevices() {
     ScopedDevInfo dev_info(
@@ -290,7 +290,6 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
 UsbServiceWin::UsbServiceWin()
     : UsbService(),
       blocking_task_runner_(CreateBlockingTaskRunner()),
-      helper_(nullptr, base::OnTaskRunnerDeleter(blocking_task_runner_)),
       device_observer_(this),
       weak_factory_(this) {
   DeviceMonitorWin* device_monitor =
@@ -298,13 +297,15 @@ UsbServiceWin::UsbServiceWin()
   if (device_monitor)
     device_observer_.Add(device_monitor);
 
-  helper_.reset(new BlockingTaskRunnerHelper(weak_factory_.GetWeakPtr()));
+  helper_ = std::make_unique<BlockingTaskHelper>(weak_factory_.GetWeakPtr());
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::EnumerateDevices,
+      FROM_HERE, base::BindOnce(&BlockingTaskHelper::EnumerateDevices,
                                 base::Unretained(helper_.get())));
 }
 
-UsbServiceWin::~UsbServiceWin() = default;
+UsbServiceWin::~UsbServiceWin() {
+  blocking_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
+}
 
 void UsbServiceWin::GetDevices(const GetDevicesCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -317,7 +318,7 @@ void UsbServiceWin::GetDevices(const GetDevicesCallback& callback) {
 void UsbServiceWin::OnDeviceAdded(const GUID& class_guid,
                                   const std::string& device_path) {
   blocking_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BlockingTaskRunnerHelper::EnumerateDevicePath,
+      FROM_HERE, base::BindOnce(&BlockingTaskHelper::EnumerateDevicePath,
                                 base::Unretained(helper_.get()), device_path));
 }
 

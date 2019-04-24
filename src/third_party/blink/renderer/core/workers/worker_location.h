@@ -39,6 +39,10 @@ class WorkerLocation final : public ScriptWrappable,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static WorkerLocation* Create(const KURL& url) {
+    return MakeGarbageCollected<WorkerLocation>(url);
+  }
+
   explicit WorkerLocation(const KURL& url) : url_(url) {}
 
   KURL Url() const override { return url_; }

@@ -21,8 +21,9 @@ class TestNuxSetAsDefaultProxy extends TestBrowserProxy {
 
   /** @override */
   requestDefaultBrowserState() {
+    cr.webUIListenerCallback(
+        'browser-default-state-changed', this.defaultStatus_);
     this.methodCalled('requestDefaultBrowserState');
-    return Promise.resolve(this.defaultStatus_);
   }
 
   /** @override */

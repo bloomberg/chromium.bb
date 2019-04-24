@@ -179,7 +179,7 @@ mt{
         MF{"Saint Martin"}
         MG{"Madagascar"}
         MH{"Gżejjer Marshall"}
-        MK{"il-Maċedonja ta’ Fuq"}
+        MK{"l-Eks Repubblika Jugoslava tal-Maċedonia"}
         ML{"il-Mali"}
         MM{"il-Myanmar/Burma"}
         MN{"il-Mongolja"}
@@ -291,17 +291,13 @@ mt{
     }
     Countries%short{
         GB{"UK"}
-        HK{"Hong Kong"}
-        MO{"il-Macao"}
-        PS{"il-Palestina"}
         US{"US"}
     }
     Countries%variant{
         CD{"Kongo (RDK)"}
         CG{"ir-Repubblika tal-Kongo"}
         CZ{"Ir-Repubblika Ċeka"}
-        FK{"Il-Gżejjer Falkland (il-Gżejjer Malvinas)"}
         TL{"Timor tal-Lvant"}
     }
-    Version{"2.1.49.82"}
+    Version{"2.1.43.94"}
 }

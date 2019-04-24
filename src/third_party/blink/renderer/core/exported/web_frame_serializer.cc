@@ -441,7 +441,8 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLParts(
 
   TRACE_EVENT_END1("page-serialization",
                    "WebFrameSerializer::generateMHTMLParts serializing",
-                   "resource count", static_cast<uint64_t>(resources.size()));
+                   "resource count",
+                   static_cast<unsigned long long>(resources.size()));
 
   // There was an error serializing the frame (e.g. of an image resource).
   if (resources.IsEmpty())
@@ -471,10 +472,8 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLParts(
 bool WebFrameSerializer::Serialize(
     WebLocalFrame* frame,
     WebFrameSerializerClient* client,
-    WebFrameSerializer::LinkRewritingDelegate* delegate,
-    bool save_with_empty_url) {
-  WebFrameSerializerImpl serializer_impl(frame, client, delegate,
-                                         save_with_empty_url);
+    WebFrameSerializer::LinkRewritingDelegate* delegate) {
+  WebFrameSerializerImpl serializer_impl(frame, client, delegate);
   return serializer_impl.Serialize();
 }
 
@@ -494,6 +493,16 @@ WebString WebFrameSerializer::GenerateMarkOfTheWebDeclaration(
   builder.Append(FrameSerializer::MarkOfTheWebDeclaration(url));
   builder.Append(" -->\n");
   return builder.ToString();
+}
+
+WebString WebFrameSerializer::GenerateBaseTagDeclaration(
+    const WebString& base_target) {
+  // TODO(yosin) We should call |FrameSerializer::baseTagDeclarationOf()|.
+  if (base_target.IsEmpty())
+    return String("<base href=\".\">");
+  String base_string = "<base href=\".\" target=\"" +
+                       static_cast<const String&>(base_target) + "\">";
+  return base_string;
 }
 
 }  // namespace blink

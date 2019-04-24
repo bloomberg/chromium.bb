@@ -65,11 +65,11 @@
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/not_found.h"
+#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_hasher.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
-#include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -152,7 +152,7 @@ ContentSecurityPolicy::ContentSecurityPolicy()
       override_inline_style_allowed_(false),
       script_hash_algorithms_used_(kContentSecurityPolicyHashAlgorithmNone),
       style_hash_algorithms_used_(kContentSecurityPolicyHashAlgorithmNone),
-      sandbox_mask_(WebSandboxFlags::kNone),
+      sandbox_mask_(0),
       treat_as_public_address_(false),
       require_trusted_types_(false),
       insecure_request_policy_(kLeaveInsecureRequestsAlone) {}
@@ -191,7 +191,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
 
   // Set mixed content checking and sandbox flags, then dump all the parsing
   // error messages, then poke at histograms.
-  if (sandbox_mask_ != WebSandboxFlags::kNone) {
+  if (sandbox_mask_ != kSandboxNone) {
     Count(WebFeature::kSandboxViaCSP);
     delegate_->SetSandboxFlags(sandbox_mask_);
   }
@@ -452,8 +452,8 @@ void ContentSecurityPolicy::FillInCSPHashValues(
     DigestValue digest;
     if (algorithm_map.csp_hash_algorithm & hash_algorithms_used) {
       bool digest_success =
-          ComputeDigest(algorithm_map.algorithm, utf8_source.data(),
-                        utf8_source.size(), digest);
+          ComputeDigest(algorithm_map.algorithm, utf8_source.Data(),
+                        utf8_source.length(), digest);
       if (digest_success) {
         csp_hash_values->push_back(
             CSPHashValue(algorithm_map.csp_hash_algorithm, digest));
@@ -474,7 +474,6 @@ bool ContentSecurityPolicy::CheckHashAgainstPolicy(
   return false;
 }
 
-// https://w3c.github.io/webappsec-csp/#should-block-inline
 bool ContentSecurityPolicy::AllowInline(
     InlineType inline_type,
     Element* element,
@@ -483,8 +482,8 @@ bool ContentSecurityPolicy::AllowInline(
     const String& context_url,
     const WTF::OrdinalNumber& context_line,
     SecurityViolationReportingPolicy reporting_policy) const {
-  DCHECK(element || inline_type == InlineType::kScriptAttribute ||
-         inline_type == InlineType::kNavigation);
+  DCHECK(element || inline_type == InlineType::kInlineEventHandler ||
+         inline_type == InlineType::kJavaScriptURL);
 
   const bool is_script = IsScriptInlineType(inline_type);
   if (!is_script && override_inline_style_allowed_) {
@@ -497,11 +496,7 @@ bool ContentSecurityPolicy::AllowInline(
       is_script ? script_hash_algorithms_used_ : style_hash_algorithms_used_,
       &csp_hash_values);
 
-  // Step 2. Let result be "Allowed". [spec text]
   bool is_allowed = true;
-
-  // Step 3. For each policy in element’s Document's global object’s CSP list:
-  // [spec text]
   for (const auto& policy : policies_) {
     // May be whitelisted by hash, if 'unsafe-hashes' is present in a policy.
     // Check against the digest of the |content| and also check whether inline
@@ -517,13 +512,13 @@ bool ContentSecurityPolicy::AllowInline(
 
 bool ContentSecurityPolicy::IsScriptInlineType(InlineType inline_type) {
   switch (inline_type) {
-    case ContentSecurityPolicy::InlineType::kNavigation:
-    case ContentSecurityPolicy::InlineType::kScriptAttribute:
-    case ContentSecurityPolicy::InlineType::kScript:
+    case ContentSecurityPolicy::InlineType::kJavaScriptURL:
+    case ContentSecurityPolicy::InlineType::kInlineEventHandler:
+    case ContentSecurityPolicy::InlineType::kInlineScriptElement:
       return true;
 
-    case ContentSecurityPolicy::InlineType::kStyleAttribute:
-    case ContentSecurityPolicy::InlineType::kStyle:
+    case ContentSecurityPolicy::InlineType::kInlineStyleAttribute:
+    case ContentSecurityPolicy::InlineType::kInlineStyleElement:
       return false;
   }
 }
@@ -1097,7 +1092,7 @@ void ContentSecurityPolicy::PostViolationReport(
   // TODO(mkwst): This justification is BS. Insecure reports are mixed content,
   // let's kill them. https://crbug.com/695363
 
-  auto csp_report = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> csp_report = JSONObject::Create();
   csp_report->SetString("document-uri", violation_data->documentURI());
   csp_report->SetString("referrer", violation_data->referrer());
   csp_report->SetString("violated-directive",
@@ -1117,7 +1112,7 @@ void ContentSecurityPolicy::PostViolationReport(
 
   csp_report->SetString("script-sample", violation_data->sample());
 
-  auto report_object = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> report_object = JSONObject::Create();
   report_object->SetObject("csp-report", std::move(csp_report));
   String stringified_report = report_object->ToJSONString();
 
@@ -1323,8 +1318,7 @@ void ContentSecurityPolicy::ReportMissingReportURI(const String& policy) {
 
 void ContentSecurityPolicy::LogToConsole(const String& message,
                                          mojom::ConsoleMessageLevel level) {
-  LogToConsole(ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
-                                      level, message));
+  LogToConsole(ConsoleMessage::Create(kSecurityMessageSource, level, message));
 }
 
 void ContentSecurityPolicy::LogToConsole(ConsoleMessage* console_message,
@@ -1582,7 +1576,7 @@ bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr,
   if (attr.Contains('\n') || attr.Contains('\r'))
     return false;
 
-  auto* attr_policy = MakeGarbageCollected<ContentSecurityPolicy>();
+  ContentSecurityPolicy* attr_policy = ContentSecurityPolicy::Create();
   attr_policy->AddPolicyFromHeaderValue(attr,
                                         kContentSecurityPolicyHeaderTypeEnforce,
                                         kContentSecurityPolicyHeaderSourceHTTP);
@@ -1601,7 +1595,7 @@ bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr,
     return true;
   }
 
-  auto* context_policy = MakeGarbageCollected<ContentSecurityPolicy>();
+  ContentSecurityPolicy* context_policy = ContentSecurityPolicy::Create();
   context_policy->AddPolicyFromHeaderValue(
       context_required_csp, kContentSecurityPolicyHeaderTypeEnforce,
       kContentSecurityPolicyHeaderSourceHTTP);

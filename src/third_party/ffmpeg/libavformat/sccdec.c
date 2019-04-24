@@ -29,7 +29,7 @@ typedef struct SCCContext {
     FFDemuxSubtitlesQueue q;
 } SCCContext;
 
-static int scc_probe(const AVProbeData *p)
+static int scc_probe(AVProbeData *p)
 {
     char buf[18];
     FFTextReader tr;

@@ -64,9 +64,7 @@ class TestAXImageAnnotator : public AXImageAnnotator {
  public:
   TestAXImageAnnotator(TestRenderAccessibilityImpl* const render_accessibility,
                        image_annotation::mojom::AnnotatorPtr annotator_ptr)
-      : AXImageAnnotator(render_accessibility,
-                         std::string() /* preferred_language */,
-                         std::move(annotator_ptr)) {}
+      : AXImageAnnotator(render_accessibility, std::move(annotator_ptr)) {}
   ~TestAXImageAnnotator() override = default;
 
  private:
@@ -99,7 +97,6 @@ class MockAnnotationService : public image_annotation::mojom::Annotator {
   }
 
   void AnnotateImage(const std::string& image_id,
-                     const std::string& /* description_language_tag */,
                      image_annotation::mojom::ImageProcessorPtr image_processor,
                      AnnotateImageCallback callback) override {
     image_ids_.push_back(image_id);
@@ -295,7 +292,7 @@ TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {
   ExecuteJavaScriptForTests(
       "document.getElementById('B').style.visibility = 'hidden';");
   // Force layout now.
-  root_obj.UpdateLayoutAndCheckValidity();
+  ExecuteJavaScriptForTests("document.getElementById('B').offsetLeft;");
 
   // Send a childrenChanged on "A".
   sink_->ClearMessages();
@@ -331,19 +328,17 @@ TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
 
   EXPECT_EQ(3, CountAccessibilityNodesSentToBrowser());
 
-  WebDocument document = GetMainFrame()->GetDocument();
-  WebAXObject root_obj = WebAXObject::FromWebDocument(document);
-  WebAXObject node_a = root_obj.ChildAt(0);
-  WebAXObject node_c = node_a.ChildAt(0);
-
   // Show node "B", then send a childrenChanged on "A".
   ExecuteJavaScriptForTests(
       "document.getElementById('B').style.visibility = 'visible';");
+  ExecuteJavaScriptForTests("document.getElementById('B').offsetLeft;");
 
-  root_obj.UpdateLayoutAndCheckValidity();
   sink_->ClearMessages();
-
+  WebDocument document = GetMainFrame()->GetDocument();
+  WebAXObject root_obj = WebAXObject::FromWebDocument(document);
+  WebAXObject node_a = root_obj.ChildAt(0);
   WebAXObject node_b = node_a.ChildAt(0);
+  WebAXObject node_c = node_b.ChildAt(0);
 
   render_accessibility().HandleAXEvent(node_a,
                                        ax::mojom::Event::kChildrenChanged);
@@ -420,16 +415,14 @@ TEST_F(AXImageAnnotatorTest, OnImageAdded) {
   EXPECT_TRUE(mock_annotator().image_processors_[0].is_bound());
   EXPECT_EQ(1u, mock_annotator().callbacks_.size());
 
-  WebDocument document = GetMainFrame()->GetDocument();
-  WebAXObject root_obj = WebAXObject::FromWebDocument(document);
-  ASSERT_FALSE(root_obj.IsNull());
-
   // Show node "B".
   ExecuteJavaScriptForTests(
       "document.getElementById('B').style.visibility = 'visible';");
-  sink_->ClearMessages();
-  root_obj.UpdateLayoutAndCheckValidity();
 
+  sink_->ClearMessages();
+  WebDocument document = GetMainFrame()->GetDocument();
+  WebAXObject root_obj = WebAXObject::FromWebDocument(document);
+  ASSERT_FALSE(root_obj.IsNull());
   // This should update the annotations of all images on the page, including the
   // already visible one.
   render_accessibility().MarkWebAXObjectDirty(root_obj, true /* subtree */);

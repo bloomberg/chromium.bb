@@ -59,8 +59,8 @@ void BrowserAccessibilityStateImpl::PlatformInitialize() {
       base::BindOnce(&SetupAccessibilityDisplayOptionsNotifier));
 }
 
-void BrowserAccessibilityStateImpl::
-    UpdatePlatformSpecificHistogramsOnUIThread() {
+void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
+  // NOTE: This function is running on the file thread.
   NSWorkspace* workspace = [NSWorkspace sharedWorkspace];
 
   SEL sel = @selector(accessibilityDisplayShouldIncreaseContrast);
@@ -85,8 +85,5 @@ void BrowserAccessibilityStateImpl::
                           workspace.accessibilityDisplayShouldReduceMotion);
   }
 }
-
-void BrowserAccessibilityStateImpl::
-    UpdatePlatformSpecificHistogramsOnOtherThread() {}
 
 }  // namespace content

@@ -146,6 +146,18 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
     return bind_result_;
   }
 
+  // TODO(enne): remove the kEnablePassthroughRasterDecoder flag and
+  // assume it is always available.
+  bool enable_passthrough_raster_decoder =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePassthroughRasterDecoder);
+#if defined(OS_WIN)
+  enable_passthrough_raster_decoder = true;
+#endif
+
+  bool allow_raster_decoder =
+      !command_buffer_->channel()->gpu_info().passthrough_cmd_decoder ||
+      enable_passthrough_raster_decoder;
   if (attributes_.context_type == gpu::CONTEXT_TYPE_WEBGPU) {
     DCHECK(!attributes_.enable_raster_interface);
     DCHECK(!attributes_.enable_gles2_interface);
@@ -168,21 +180,16 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
     // gpu::ContextSupport interface.
     auto webgpu_impl = std::make_unique<gpu::webgpu::WebGPUImplementation>(
         webgpu_helper.get(), transfer_buffer_.get(), command_buffer_.get());
-    bind_result_ = webgpu_impl->Initialize(memory_limits_);
-    if (bind_result_ != gpu::ContextResult::kSuccess) {
-      DLOG(ERROR) << "Failed to initialize WebGPUImplementation.";
-      return bind_result_;
-    }
 
     std::string type_name =
         command_buffer_metrics::ContextTypeToString(context_type_);
     std::string unique_context_name =
         base::StringPrintf("%s-%p", type_name.c_str(), webgpu_impl.get());
 
-    impl_ = webgpu_impl.get();
+    impl_ = nullptr;
     webgpu_interface_ = std::move(webgpu_impl);
     helper_ = std::move(webgpu_helper);
-  } else if (attributes_.enable_raster_interface &&
+  } else if (allow_raster_decoder && attributes_.enable_raster_interface &&
              !attributes_.enable_gles2_interface) {
     DCHECK(!support_grcontext_);
     // The raster helper writes the command buffer protocol.
@@ -492,7 +499,9 @@ bool ContextProviderCommandBuffer::OnMemoryDump(
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
 
-  base::AutoLockMaybe hold_if_supported(GetLock());
+  base::Optional<base::AutoLock> hold;
+  if (support_locking_)
+    hold.emplace(context_lock_);
 
   impl_->OnMemoryDump(args, pmd);
   helper_->OnMemoryDump(args, pmd);

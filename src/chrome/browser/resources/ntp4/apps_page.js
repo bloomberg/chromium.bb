@@ -53,7 +53,9 @@ cr.define('ntp', function() {
       menu.appendChild(cr.ui.MenuItem.createSeparator());
       this.launchRegularTab_ = this.appendMenuItem_('applaunchtyperegular');
       this.launchPinnedTab_ = this.appendMenuItem_('applaunchtypepinned');
-      this.launchNewWindow_ = this.appendMenuItem_('applaunchtypewindow');
+      if (loadTimeData.getBoolean('canHostedAppsOpenInWindows')) {
+        this.launchNewWindow_ = this.appendMenuItem_('applaunchtypewindow');
+      }
       this.launchFullscreen_ = this.appendMenuItem_('applaunchtypefullscreen');
 
       const self = this;
@@ -87,12 +89,6 @@ cr.define('ntp', function() {
       this.createShortcut_ = this.appendMenuItem_('appcreateshortcut');
       this.createShortcut_.addEventListener(
           'activate', this.onCreateShortcut_.bind(this));
-
-      this.installLocallySeparator_ =
-          menu.appendChild(cr.ui.MenuItem.createSeparator());
-      this.installLocally_ = this.appendMenuItem_('appinstalllocally');
-      this.installLocally_.addEventListener(
-          'activate', this.onInstallLocally_.bind(this));
 
       document.body.appendChild(menu);
     },
@@ -150,11 +146,16 @@ cr.define('ntp', function() {
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         launchTypeButton.disabled = false;
         launchTypeButton.checked = app.appData.launch_type == id;
-        // There are two cases when a launch type is hidden:
+        // There are three cases when a launch type is hidden:
         //  1. if the launch type can't be changed.
-        //  2. type is anything except launchTypeWindow
+        //  2. canHostedAppsOpenInWindows is false and type is launchTypeWindow
+        //  3. enableNewBookmarkApps is true and type is anything except
+        //     launchTypeWindow
         launchTypeButton.hidden = !app.appData.mayChangeLaunchType ||
-            launchTypeButton != launchTypeWindow;
+            (!loadTimeData.getBoolean('canHostedAppsOpenInWindows') &&
+             launchTypeButton == launchTypeWindow) ||
+            (loadTimeData.getBoolean('enableNewBookmarkApps') &&
+             launchTypeButton != launchTypeWindow);
         if (!launchTypeButton.hidden) {
           hasLaunchType = true;
         }
@@ -174,9 +175,6 @@ cr.define('ntp', function() {
 
       this.createShortcutSeparator_.hidden = this.createShortcut_.hidden =
           !app.appData.mayCreateShortcuts;
-
-      this.installLocallySeparator_.hidden = this.installLocally_.hidden =
-          app.appData.isLocallyInstalled;
     },
 
     /** @private */
@@ -194,9 +192,11 @@ cr.define('ntp', function() {
       let targetLaunchType = pressed;
       // When bookmark apps are enabled, hosted apps can only toggle between
       // open as window and open as tab.
-      targetLaunchType = this.launchNewWindow_.checked ?
-          this.launchRegularTab_ :
-          this.launchNewWindow_;
+      if (loadTimeData.getBoolean('enableNewBookmarkApps')) {
+        targetLaunchType = this.launchNewWindow_.checked ?
+            this.launchRegularTab_ :
+            this.launchNewWindow_;
+      }
       this.forAllLaunchTypes_(function(launchTypeButton, id) {
         if (launchTypeButton == targetLaunchType) {
           chrome.send('setLaunchType', [app.appId, id]);
@@ -227,11 +227,6 @@ cr.define('ntp', function() {
     /** @private */
     onCreateShortcut_: function() {
       chrome.send('createAppShortcut', [this.app_.appData.id]);
-    },
-
-    /** @private */
-    onInstallLocally_: function() {
-      chrome.send('installAppLocally', [this.app_.appData.id]);
     },
 
     /** @private */

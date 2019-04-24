@@ -5,10 +5,8 @@
 #include "ui/views/controls/tree/tree_view.h"
 
 #include <algorithm>
-#include <utility>
 
 #include "base/i18n/rtl.h"
-#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -44,16 +42,16 @@ using ui::TreeModelNode;
 namespace views {
 
 // Insets around the view.
-static constexpr int kHorizontalInset = 2;
+static const int kHorizontalInset = 2;
 // Padding before/after the image.
-static constexpr int kImagePadding = 4;
+static const int kImagePadding = 4;
 // Size of the arrow region.
-static constexpr int kArrowRegionSize = 12;
+static const int kArrowRegionSize = 12;
 // Padding around the text (on each side).
-static constexpr int kTextVerticalPadding = 3;
-static constexpr int kTextHorizontalPadding = 2;
+static const int kTextVerticalPadding = 3;
+static const int kTextHorizontalPadding = 2;
 // How much children are indented from their parent.
-static constexpr int kIndent = 20;
+static const int kIndent = 20;
 
 // static
 const char TreeView::kViewClassName[] = "TreeView";
@@ -68,7 +66,16 @@ bool EventIsDoubleTapOrClick(const ui::LocatedEvent& event) {
 
 }  // namespace
 TreeView::TreeView()
-    : row_height_(font_list_.GetHeight() + kTextVerticalPadding * 2),
+    : model_(NULL),
+      selected_node_(NULL),
+      editing_(false),
+      editor_(NULL),
+      focus_manager_(NULL),
+      auto_expand_children_(false),
+      editable_(true),
+      controller_(NULL),
+      root_shown_(true),
+      row_height_(font_list_.GetHeight() + kTextVerticalPadding * 2),
       drawing_provider_(std::make_unique<TreeViewDrawingProvider>()) {
   // Always focusable, even on Mac (consistent with NSOutlineView).
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -108,15 +115,13 @@ TreeView::~TreeView() {
 
   if (focus_manager_) {
     focus_manager_->RemoveFocusChangeListener(this);
-    focus_manager_ = nullptr;
+    focus_manager_ = NULL;
   }
 }
 
-// static
-std::unique_ptr<ScrollView> TreeView::CreateScrollViewWithTree(
-    std::unique_ptr<TreeView> tree) {
-  auto scroll_view = base::WrapUnique(ScrollView::CreateScrollViewWithBorder());
-  scroll_view->SetContents(std::move(tree));
+View* TreeView::CreateParentIfNecessary() {
+  ScrollView* scroll_view = ScrollView::CreateScrollViewWithBorder();
+  scroll_view->SetContents(this);
   return scroll_view;
 }
 
@@ -129,7 +134,7 @@ void TreeView::SetModel(TreeModel* model) {
   CancelEdit();
 
   model_ = model;
-  selected_node_ = nullptr;
+  selected_node_ = NULL;
   icons_.clear();
   if (model_) {
     model_->AddObserver(this);
@@ -209,7 +214,7 @@ void TreeView::CancelEdit() {
   editing_ = false;
   if (focus_manager_) {
     focus_manager_->RemoveFocusChangeListener(this);
-    focus_manager_ = nullptr;
+    focus_manager_ = NULL;
   }
   editor_->SetVisible(false);
   SchedulePaint();
@@ -231,7 +236,7 @@ void TreeView::CommitEdit() {
 }
 
 TreeModelNode* TreeView::GetEditingNode() {
-  return editing_ ? selected_node_->model_node() : nullptr;
+  return editing_ ? selected_node_->model_node() : NULL;
 }
 
 void TreeView::SetSelectedNode(TreeModelNode* model_node) {
@@ -241,16 +246,15 @@ void TreeView::SetSelectedNode(TreeModelNode* model_node) {
     Expand(model_->GetParent(model_node));
   if (model_node && model_node == root_.model_node() && !root_shown_)
     return;  // Ignore requests to select the root when not shown.
-  InternalNode* node =
-      model_node ? GetInternalNodeForModelNode(model_node, CREATE_IF_NOT_LOADED)
-                 : nullptr;
-  bool was_empty_selection = (selected_node_ == nullptr);
+  InternalNode* node = model_node ? GetInternalNodeForModelNode(
+      model_node, CREATE_IF_NOT_LOADED) : NULL;
+  bool was_empty_selection = (selected_node_ == NULL);
   bool changed = (selected_node_ != node);
   if (changed) {
     SchedulePaintForNode(selected_node_);
     selected_node_ = node;
     if (selected_node_ == &root_ && !root_shown_)
-      selected_node_ = nullptr;
+      selected_node_ = NULL;
     if (selected_node_ && selected_node_ != &root_)
       Expand(model_->GetParent(selected_node_->model_node()));
     SchedulePaintForNode(selected_node_);
@@ -276,7 +280,7 @@ void TreeView::SetSelectedNode(TreeModelNode* model_node) {
 }
 
 TreeModelNode* TreeView::GetSelectedNode() {
-  return selected_node_ ? selected_node_->model_node() : nullptr;
+  return selected_node_ ? selected_node_->model_node() : NULL;
 }
 
 void TreeView::Collapse(ui::TreeModelNode* model_node) {
@@ -345,7 +349,7 @@ void TreeView::SetRootShown(bool root_shown) {
     if (model_->GetChildCount(root_.model_node()))
       SetSelectedNode(model_->GetChild(root_.model_node(), 0));
     else
-      SetSelectedNode(nullptr);
+      SetSelectedNode(NULL);
   }
   DrawnNodesChanged();
 }
@@ -353,7 +357,7 @@ void TreeView::SetRootShown(bool root_shown) {
 ui::TreeModelNode* TreeView::GetNodeForRow(int row) {
   int depth = 0;
   InternalNode* node = GetNodeByRow(row, &depth);
-  return node ? node->model_node() : nullptr;
+  return node ? node->model_node() : NULL;
 }
 
 int TreeView::GetRowForNode(ui::TreeModelNode* node) {
@@ -482,12 +486,11 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
     // its model_node() is likely deleted). Explicitly NULL out the field
     // rather than invoking SetSelectedNode() otherwise, we'll try and use a
     // deleted value.
-    selected_node_ = nullptr;
+    selected_node_ = NULL;
     TreeModelNode* to_select = parent;
     if (parent == root_.model_node() && !root_shown_) {
-      to_select = model_->GetChildCount(parent) > 0
-                      ? model_->GetChild(parent, 0)
-                      : nullptr;
+      to_select = model_->GetChildCount(parent) > 0 ?
+          model_->GetChild(parent, 0) : NULL;
     }
     SetSelectedNode(to_select);
   }
@@ -895,10 +898,10 @@ TreeView::InternalNode* TreeView::GetInternalNodeForModelNode(
   InternalNode* parent_internal_node =
       GetInternalNodeForModelNode(model_->GetParent(model_node), create_type);
   if (!parent_internal_node)
-    return nullptr;
+    return NULL;
   if (!parent_internal_node->loaded_children()) {
     if (create_type == DONT_CREATE_IF_NOT_LOADED)
-      return nullptr;
+      return NULL;
     LoadChildren(parent_internal_node);
   }
   return parent_internal_node->GetChild(
@@ -1024,7 +1027,7 @@ TreeView::InternalNode* TreeView::GetNodeByRowImpl(InternalNode* node,
         return result;
     }
   }
-  return nullptr;
+  return NULL;
 }
 
 void TreeView::IncrementSelection(IncrementType type) {
@@ -1102,7 +1105,7 @@ bool TreeView::ExpandImpl(TreeModelNode* model_node) {
 
 PrefixSelector* TreeView::GetPrefixSelector() {
   if (!selector_)
-    selector_ = std::make_unique<PrefixSelector>(this, this);
+    selector_.reset(new PrefixSelector(this, this));
   return selector_.get();
 }
 
@@ -1133,9 +1136,15 @@ void TreeView::SetHasFocusIndicator(bool shows) {
 
 // InternalNode ----------------------------------------------------------------
 
-TreeView::InternalNode::InternalNode() = default;
+TreeView::InternalNode::InternalNode()
+    : model_node_(NULL),
+      loaded_children_(false),
+      is_expanded_(false),
+      text_width_(0) {
+}
 
-TreeView::InternalNode::~InternalNode() = default;
+TreeView::InternalNode::~InternalNode() {
+}
 
 void TreeView::InternalNode::Reset(ui::TreeModelNode* node) {
   model_node_ = node;

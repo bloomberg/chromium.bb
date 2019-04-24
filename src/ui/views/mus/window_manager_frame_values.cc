@@ -14,9 +14,10 @@ base::LazyInstance<WindowManagerFrameValues>::Leaky lazy_instance =
 
 }  // namespace
 
-WindowManagerFrameValues::WindowManagerFrameValues() = default;
+WindowManagerFrameValues::WindowManagerFrameValues()
+    : max_title_bar_button_width(0) {}
 
-WindowManagerFrameValues::~WindowManagerFrameValues() = default;
+WindowManagerFrameValues::~WindowManagerFrameValues() {}
 
 // static
 void WindowManagerFrameValues::SetInstance(

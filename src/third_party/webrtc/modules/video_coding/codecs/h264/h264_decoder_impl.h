@@ -16,20 +16,6 @@
 
 #include "modules/video_coding/codecs/h264/include/h264.h"
 
-// CAVEAT: According to ffmpeg docs for avcodec_send_packet, ffmpeg requires a
-// few extra padding bytes after the end of input. And in addition, docs for
-// AV_INPUT_BUFFER_PADDING_SIZE says "If the first 23 bits of the additional
-// bytes are not 0, then damaged MPEG bitstreams could cause overread and
-// segfault."
-//
-// WebRTC doesn't ensure any such padding, and REQUIRES ffmpeg to be compiled
-// with CONFIG_SAFE_BITSTREAM_READER, which is intended to eliminate
-// out-of-bounds reads. ffmpeg docs doesn't say explicitly what effects this
-// flag has on the h.264 decoder or avcodec_send_packet, though, so this is in
-// some way depending on undocumented behavior. If any problems turn up, we may
-// have to add an extra copy operation, to enforce padding before buffers are
-// passed to ffmpeg.
-
 extern "C" {
 #include "third_party/ffmpeg/libavcodec/avcodec.h"
 }  // extern "C"
@@ -63,6 +49,7 @@ class H264DecoderImpl : public H264Decoder {
   // |missing_frames|, |fragmentation| and |render_time_ms| are ignored.
   int32_t Decode(const EncodedImage& input_image,
                  bool /*missing_frames*/,
+                 const CodecSpecificInfo* codec_specific_info = nullptr,
                  int64_t render_time_ms = -1) override;
 
   const char* ImplementationName() const override;

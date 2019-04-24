@@ -31,34 +31,25 @@ class EGLProgramCacheControlTest : public ANGLETest
     }
 
   protected:
-    EGLProgramCacheControlTest()
-    {
-        // Test flakiness was noticed when reusing displays.
-        forceNewDisplay();
-        setDeferContextInit(true);
-    }
+    EGLProgramCacheControlTest() { setDeferContextInit(true); }
 
     void SetUp() override
     {
-        setContextProgramCacheEnabled(true, &TestCacheProgram);
+        mPlatformMethods.cacheProgram = &TestCacheProgram;
 
         ANGLETest::SetUp();
 
         if (extensionAvailable())
         {
             EGLDisplay display = getEGLWindow()->getDisplay();
+            setContextProgramCacheEnabled(true);
             eglProgramCacheResizeANGLE(display, kEnabledCacheSize, EGL_PROGRAM_CACHE_RESIZE_ANGLE);
-            ASSERT_EGL_SUCCESS();
         }
 
-        ASSERT_TRUE(getEGLWindow()->initializeContext());
+        getEGLWindow()->initializeContext();
     }
 
-    void TearDown() override
-    {
-        setContextProgramCacheEnabled(false, angle::DefaultCacheProgram);
-        ANGLETest::TearDown();
-    }
+    void TearDown() override { ANGLETest::TearDown(); }
 
     bool extensionAvailable()
     {

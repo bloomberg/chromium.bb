@@ -16,7 +16,7 @@ FakeHammerdClient::FakeHammerdClient() {
 }
 
 FakeHammerdClient::~FakeHammerdClient() {
-  CHECK_EQ(this, g_instance);
+  CHECK_EQ(g_instance, this);
   g_instance = nullptr;
 }
 

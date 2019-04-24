@@ -371,15 +371,17 @@ TEST(JSONReaderTest, NestedDictionaries) {
       "{\"inner\":{\"array\":[true]},\"false\":false,\"d\":{}}");
   ASSERT_TRUE(dict_val);
   ASSERT_TRUE(dict_val->is_dict());
-  const Value* inner_dict = dict_val->FindDictKey("inner");
+  const Value* inner_dict =
+      dict_val->FindKeyOfType("inner", base::Value::Type::DICTIONARY);
   ASSERT_TRUE(inner_dict);
-  const Value* inner_array = inner_dict->FindListKey("array");
+  const Value* inner_array =
+      inner_dict->FindKeyOfType("array", base::Value::Type::LIST);
   ASSERT_TRUE(inner_array);
   EXPECT_EQ(1U, inner_array->GetList().size());
   auto bool_value = dict_val->FindBoolKey("false");
   ASSERT_TRUE(bool_value);
   EXPECT_FALSE(*bool_value);
-  inner_dict = dict_val->FindDictKey("d");
+  inner_dict = dict_val->FindKeyOfType("d", base::Value::Type::DICTIONARY);
   EXPECT_TRUE(inner_dict);
 
   Optional<Value> root2 = JSONReader::Read(
@@ -401,7 +403,8 @@ TEST(JSONReaderTest, DictionaryKeysWithPeriods) {
   integer_value = dict_val->FindIntKey("c");
   ASSERT_TRUE(integer_value);
   EXPECT_EQ(2, *integer_value);
-  const Value* inner_dict = dict_val->FindDictKey("d.e.f");
+  const Value* inner_dict =
+      dict_val->FindKeyOfType("d.e.f", base::Value::Type::DICTIONARY);
   ASSERT_TRUE(inner_dict);
   EXPECT_EQ(1U, inner_dict->DictSize());
   integer_value = inner_dict->FindIntKey("g.h.i.j");
@@ -592,9 +595,9 @@ TEST(JSONReaderTest, StringOptimizations) {
     ASSERT_TRUE(root);
     ASSERT_TRUE(root->is_dict());
 
-    Value* dict = root->FindDictKey("test");
+    Value* dict = root->FindKeyOfType("test", Value::Type::DICTIONARY);
     ASSERT_TRUE(dict);
-    Value* list = root->FindListKey("list");
+    Value* list = root->FindKeyOfType("list", Value::Type::LIST);
     ASSERT_TRUE(list);
 
     Value* to_move = dict->FindKey("foo");

@@ -110,13 +110,6 @@
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowIsTranslucent">true</item>
     </style>
-    <!-- A style for Activities that need translucency for technical reasons, but otherwise should
-         look as usual (according to Theme.Chromium.Activity).-->
-    <style name="Theme.Chromium.Activity.FakeTranslucent" parent="Theme.Chromium.Activity">
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowAnimationStyle">@null</item>
-    </style>
 
     <!-- Extend base theme rather than Theme.Chromium.WithWindowAnimation to avoid values-v27
          navigation bar colors from being applied -->
@@ -678,7 +671,7 @@
         <item name="android:textColor">@color/secondary_text_default_material_light</item>
     </style>
     <style name="TextAppearance.PhotoPickerSpecialTile" parent="TextAppearance.BlackTitle2">
-        <item name="android:textColor">@color/photo_picker_special_tile_text_color</item>
+        <item name="android:textColor">@color/photo_picker_special_tile_color</item>
     </style>
     <style name="TextAppearance.SearchEngineRecentTitle" parent="TextAppearance.RobotoMediumStyle">
         <item name="android:textColor">@color/default_text_color_link</item>

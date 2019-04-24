@@ -48,10 +48,9 @@ class MockCloudPolicyClient : public CloudPolicyClient {
                void(const std::string&, const StatusCallback&));
   MOCK_METHOD2(UploadEnterpriseEnrollmentId,
                void(const std::string&, const StatusCallback&));
-  MOCK_METHOD4(UploadDeviceStatus,
+  MOCK_METHOD3(UploadDeviceStatus,
                void(const enterprise_management::DeviceStatusReportRequest*,
                     const enterprise_management::SessionStatusReportRequest*,
-                    const enterprise_management::ChildStatusReportRequest*,
                     const StatusCallback&));
   MOCK_METHOD2(UploadAppInstallReport,
                void(const enterprise_management::AppInstallReportRequest*,

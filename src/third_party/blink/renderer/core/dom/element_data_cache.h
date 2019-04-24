@@ -39,6 +39,10 @@ class ShareableElementData;
 
 class ElementDataCache final : public GarbageCollected<ElementDataCache> {
  public:
+  static ElementDataCache* Create() {
+    return MakeGarbageCollected<ElementDataCache>();
+  }
+
   ElementDataCache();
 
   ShareableElementData* CachedShareableElementDataWithAttributes(

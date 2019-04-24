@@ -309,6 +309,26 @@ const gfx::ImageSkia& GetDefaultExtensionIcon() {
       IDR_EXTENSION_DEFAULT_ICON);
 }
 
+bool IsNewBookmarkAppsEnabled() {
+#if defined(OS_MACOSX)
+  return base::FeatureList::IsEnabled(features::kBookmarkApps) ||
+         base::FeatureList::IsEnabled(features::kAppBanners) ||
+         banners::AppBannerManager::IsExperimentalAppBannersEnabled();
+#else
+  return true;
+#endif
+}
+
+bool CanHostedAppsOpenInWindows() {
+#if defined(OS_MACOSX)
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             ::switches::kEnableHostedAppsInWindows) ||
+         base::FeatureList::IsEnabled(features::kDesktopPWAWindowing);
+#else
+  return true;
+#endif
+}
+
 bool IsExtensionSupervised(const Extension* extension, Profile* profile) {
   return WasInstalledByCustodian(extension->id(), profile) &&
          profile->IsSupervised();
@@ -337,7 +357,7 @@ const Extension* GetInstalledPwaForUrl(
 }
 
 const Extension* GetPwaForSecureActiveTab(Browser* browser) {
-  switch (browser->location_bar_model()->GetSecurityLevel()) {
+  switch (browser->location_bar_model()->GetSecurityLevel(true)) {
     case security_state::SECURITY_LEVEL_COUNT:
       NOTREACHED();
       FALLTHROUGH;
@@ -361,7 +381,7 @@ bool IsWebContentsInAppWindow(content::WebContents* web_contents) {
   // TODO(loyso): Unify this check as a util (including
   // MaybeCreateHostedAppController).
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  return browser && browser->web_app_controller();
+  return browser && browser->hosted_app_controller();
 }
 
 }  // namespace util

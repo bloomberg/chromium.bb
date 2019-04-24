@@ -128,6 +128,7 @@
 #include <stack>
 #include <string>
 
+#include "common_types.h"  // NOLINT(build/include)
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/critical_section.h"
 

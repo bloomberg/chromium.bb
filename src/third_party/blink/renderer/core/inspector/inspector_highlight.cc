@@ -203,8 +203,7 @@ void AppendStyleInfo(Node* node,
                      const InspectorHighlightContrastInfo& node_contrast) {
   std::unique_ptr<protocol::DictionaryValue> computed_style =
       protocol::DictionaryValue::create();
-  CSSStyleDeclaration* style =
-      MakeGarbageCollected<CSSComputedStyleDeclaration>(node, true);
+  CSSStyleDeclaration* style = CSSComputedStyleDeclaration::Create(node, true);
   Vector<AtomicString> properties;
 
   // For text nodes, we can show color & font properties.
@@ -359,8 +358,7 @@ void CollectQuadsRecursive(Node* node, Vector<FloatQuad>& out_quads) {
   // elements like images should use their intristic height and expand the
   // linebox  as needed. To get an appropriate quads we descend
   // into the children and have them add their boxes.
-  if (layout_object->IsLayoutInline() &&
-      LayoutTreeBuilderTraversal::FirstChild(*node)) {
+  if (layout_object->IsLayoutInline()) {
     for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node); child;
          child = LayoutTreeBuilderTraversal::NextSibling(*child))
       CollectQuadsRecursive(child, out_quads);

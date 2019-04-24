@@ -9,7 +9,8 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
 
@@ -31,14 +32,15 @@ void TpmPasswordFetcher::Fetch() {
   // Since this method is also called directly.
   weak_factory_.InvalidateWeakPtrs();
 
-  CryptohomeClient::Get()->TpmIsReady(base::BindOnce(
+  DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsReady(base::BindOnce(
       &TpmPasswordFetcher::OnTpmIsReady, weak_factory_.GetWeakPtr()));
 }
 
 void TpmPasswordFetcher::OnTpmIsReady(base::Optional<bool> tpm_is_ready) {
   if (tpm_is_ready.value_or(false)) {
-    CryptohomeClient::Get()->TpmGetPassword(base::BindOnce(
-        &TpmPasswordFetcher::OnTpmGetPassword, weak_factory_.GetWeakPtr()));
+    DBusThreadManager::Get()->GetCryptohomeClient()->TpmGetPassword(
+        base::BindOnce(&TpmPasswordFetcher::OnTpmGetPassword,
+                       weak_factory_.GetWeakPtr()));
   } else {
     // Password hasn't been acquired, reschedule fetch.
     RescheduleFetch();

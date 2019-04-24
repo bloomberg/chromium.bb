@@ -71,7 +71,7 @@ class SparseSidetable {
 // necessary node revisitations happen.
 class ReduceScope {
  public:
-  using Reduction = EffectGraphReducer::Reduction;
+  typedef EffectGraphReducer::Reduction Reduction;
   explicit ReduceScope(Node* node, Reduction* reduction)
       : current_node_(node), reduction_(reduction) {}
 
@@ -96,9 +96,9 @@ class VariableTracker {
  private:
   // The state of all variables at one point in the effect chain.
   class State {
-   public:
-    using Map = PersistentMap<Variable, Node*>;
+    typedef PersistentMap<Variable, Node*> Map;
 
+   public:
     explicit State(Zone* zone) : map_(zone) {}
     Node* Get(Variable var) const {
       CHECK(var != Variable::Invalid());

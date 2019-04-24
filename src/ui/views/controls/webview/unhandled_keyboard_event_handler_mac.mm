@@ -4,7 +4,8 @@
 
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 
-#import "ui/views/cocoa/bridged_native_widget_host_impl.h"
+#import "base/mac/foundation_util.h"
+#import "ui/views_bridge_mac/native_widget_mac_nswindow.h"
 
 namespace views {
 
@@ -12,11 +13,9 @@ namespace views {
 bool UnhandledKeyboardEventHandler::HandleNativeKeyboardEvent(
     gfx::NativeEvent event,
     FocusManager* focus_manager) {
-  auto* host =
-      views::BridgedNativeWidgetHostImpl::GetFromNativeWindow([event window]);
-  if (host)
-    return host->RedispatchKeyEvent(event);
-  return false;
+  [[base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>([event window])
+      commandDispatcher] redispatchKeyEvent:event];
+  return true;
 }
 
 }  // namespace views

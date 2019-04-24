@@ -54,8 +54,7 @@ class BaseButtonInputType : public InputType,
   InputTypeView* CreateView() override;
   bool ShouldSaveAndRestoreFormControlState() const override;
   void AppendToFormData(FormData&) const override;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&,
-                                   LegacyLayout) const override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) const override;
   ValueMode GetValueMode() const override;
   void SetValue(const String&,
                 bool,

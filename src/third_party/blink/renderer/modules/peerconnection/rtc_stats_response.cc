@@ -26,6 +26,10 @@
 
 namespace blink {
 
+RTCStatsResponse* RTCStatsResponse::Create() {
+  return MakeGarbageCollected<RTCStatsResponse>();
+}
+
 RTCStatsResponse::RTCStatsResponse() = default;
 
 RTCLegacyStatsReport* RTCStatsResponse::namedItem(const AtomicString& name) {
@@ -35,8 +39,8 @@ RTCLegacyStatsReport* RTCStatsResponse::namedItem(const AtomicString& name) {
 }
 
 void RTCStatsResponse::AddStats(const WebRTCLegacyStats& stats) {
-  result_.push_back(MakeGarbageCollected<RTCLegacyStatsReport>(
-      stats.Id(), stats.GetType(), stats.Timestamp()));
+  result_.push_back(RTCLegacyStatsReport::Create(stats.Id(), stats.GetType(),
+                                                 stats.Timestamp()));
   idmap_.insert(stats.Id(), result_.size() - 1);
   RTCLegacyStatsReport* report = result_[result_.size() - 1].Get();
 

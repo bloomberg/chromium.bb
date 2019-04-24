@@ -19,7 +19,7 @@
 #include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
-#include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
+#include "third_party/blink/public/platform/modules/mediasession/media_session.mojom.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -85,9 +85,7 @@ class MediaSessionImplServiceRoutingTest
 
     main_frame_ = contents()->GetMainFrame();
     sub_frame_ = main_frame_->AppendChild("sub_frame");
-
-    empty_metadata_.title = contents()->GetTitle();
-    empty_metadata_.artist = base::ASCIIToUTF16("http://www.example.com");
+    empty_metadata_.source_title = base::ASCIIToUTF16("http://www.example.com");
   }
 
   void TearDown() override {
@@ -160,10 +158,6 @@ class MediaSessionImplServiceRoutingTest
 
   const media_session::MediaMetadata& empty_metadata() const {
     return empty_metadata_;
-  }
-
-  const base::string16& GetSourceTitleForNonEmptyMetadata() const {
-    return empty_metadata_.artist;
   }
 
   TestRenderFrameHost* main_frame_;
@@ -294,7 +288,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
-  expected_metadata.source_title = GetSourceTitleForNonEmptyMetadata();
+  expected_metadata.source_title = empty_metadata().source_title;
 
   CreateServiceForFrame(main_frame_);
   StartPlayerForFrame(main_frame_);
@@ -332,7 +326,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
-  expected_metadata.source_title = GetSourceTitleForNonEmptyMetadata();
+  expected_metadata.source_title = empty_metadata().source_title;
 
   CreateServiceForFrame(main_frame_);
 
@@ -374,7 +368,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
-  expected_metadata.source_title = GetSourceTitleForNonEmptyMetadata();
+  expected_metadata.source_title = empty_metadata().source_title;
 
   CreateServiceForFrame(main_frame_);
 
@@ -579,7 +573,7 @@ TEST_F(MediaSessionImplServiceRoutingTest,
   expected_metadata.title = base::ASCIIToUTF16("title");
   expected_metadata.artist = base::ASCIIToUTF16("artist");
   expected_metadata.album = base::ASCIIToUTF16("album");
-  expected_metadata.source_title = GetSourceTitleForNonEmptyMetadata();
+  expected_metadata.source_title = empty_metadata().source_title;
 
   CreateServiceForFrame(main_frame_);
   StartPlayerForFrame(main_frame_);
@@ -698,22 +692,7 @@ TEST_F(MediaSessionImplServiceRoutingTest, NotifyObserverOnNavigation) {
   contents()->NavigateAndCommit(GURL("http://www.google.com/test"));
 
   media_session::MediaMetadata expected_metadata;
-  expected_metadata.title = contents()->GetTitle();
-  expected_metadata.artist = base::ASCIIToUTF16("http://www.google.com");
-  observer.WaitForExpectedMetadata(expected_metadata);
-}
-
-TEST_F(MediaSessionImplServiceRoutingTest, NotifyObserverOnTitleChange) {
-  media_session::test::MockMediaSessionMojoObserver observer(
-      *GetMediaSession());
-
-  media_session::MediaMetadata expected_metadata;
-  expected_metadata.title = base::ASCIIToUTF16("new title");
-  expected_metadata.artist = GetSourceTitleForNonEmptyMetadata();
-
-  contents()->UpdateTitle(contents()->GetMainFrame(), expected_metadata.title,
-                          base::i18n::TextDirection::LEFT_TO_RIGHT);
-
+  expected_metadata.source_title = base::ASCIIToUTF16("http://www.google.com");
   observer.WaitForExpectedMetadata(expected_metadata);
 }
 

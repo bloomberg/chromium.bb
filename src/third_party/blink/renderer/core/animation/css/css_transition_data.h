@@ -27,16 +27,16 @@ class CORE_EXPORT CSSTransitionData final : public CSSTimingData {
     DISALLOW_NEW();
     TransitionProperty(CSSPropertyID id)
         : property_type(kTransitionKnownProperty), unresolved_property(id) {
-      DCHECK_NE(id, CSSPropertyID::kInvalid);
+      DCHECK_NE(id, CSSPropertyInvalid);
     }
 
     TransitionProperty(const AtomicString& string)
         : property_type(kTransitionUnknownProperty),
-          unresolved_property(CSSPropertyID::kInvalid),
+          unresolved_property(CSSPropertyInvalid),
           property_string(string) {}
 
     TransitionProperty(TransitionPropertyType type)
-        : property_type(type), unresolved_property(CSSPropertyID::kInvalid) {
+        : property_type(type), unresolved_property(CSSPropertyInvalid) {
       DCHECK_EQ(type, kTransitionNone);
     }
 
@@ -51,12 +51,13 @@ class CORE_EXPORT CSSTransitionData final : public CSSTimingData {
     AtomicString property_string;
   };
 
+  static std::unique_ptr<CSSTransitionData> Create() {
+    return base::WrapUnique(new CSSTransitionData);
+  }
+
   std::unique_ptr<CSSTransitionData> Clone() {
     return base::WrapUnique(new CSSTransitionData(*this));
   }
-
-  CSSTransitionData();
-  explicit CSSTransitionData(const CSSTransitionData&);
 
   bool TransitionsMatchForStyleRecalc(const CSSTransitionData& other) const;
   bool operator==(const CSSTransitionData& other) const {
@@ -71,10 +72,13 @@ class CORE_EXPORT CSSTransitionData final : public CSSTimingData {
   Vector<TransitionProperty>& PropertyList() { return property_list_; }
 
   static TransitionProperty InitialProperty() {
-    return TransitionProperty(CSSPropertyID::kAll);
+    return TransitionProperty(CSSPropertyAll);
   }
 
  private:
+  CSSTransitionData();
+  explicit CSSTransitionData(const CSSTransitionData&);
+
   Vector<TransitionProperty> property_list_;
 };
 

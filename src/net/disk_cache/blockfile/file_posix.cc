@@ -13,7 +13,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 
@@ -136,7 +136,7 @@ void File::WaitForPendingIO(int* num_pending_io) {
   // We are running unit tests so we should wait for all callbacks.
 
   // This waits for callbacks running on worker threads.
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::TaskScheduler::GetInstance()->FlushForTesting();
   // This waits for the "Reply" tasks running on the current MessageLoop.
   base::RunLoop().RunUntilIdle();
 }

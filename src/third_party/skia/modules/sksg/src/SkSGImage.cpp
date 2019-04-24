@@ -24,7 +24,7 @@ void Image::onRender(SkCanvas* canvas, const RenderContext* ctx) const {
     paint.setFilterQuality(fQuality);
 
     if (ctx) {
-        ctx->modulatePaint(canvas->getTotalMatrix(), &paint);
+        ctx->modulatePaint(&paint);
     }
 
     canvas->drawImage(fImage, 0, 0, &paint);

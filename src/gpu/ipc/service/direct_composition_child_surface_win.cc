@@ -59,13 +59,14 @@ bool IsSwapChainTearingSupported() {
       return false;
     }
     Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
-    d3d11_device.As(&dxgi_device);
+    d3d11_device.CopyTo(dxgi_device.GetAddressOf());
     DCHECK(dxgi_device);
     Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
-    dxgi_device->GetAdapter(&dxgi_adapter);
+    dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
     DCHECK(dxgi_adapter);
     Microsoft::WRL::ComPtr<IDXGIFactory5> dxgi_factory;
-    if (FAILED(dxgi_adapter->GetParent(IID_PPV_ARGS(&dxgi_factory)))) {
+    if (FAILED(dxgi_adapter->GetParent(
+            IID_PPV_ARGS(dxgi_factory.GetAddressOf())))) {
       DLOG(ERROR) << "Not using swap chain tearing because failed to retrieve "
                      "IDXGIFactory5 interface";
       return false;
@@ -165,7 +166,7 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
         // may flicker black when it's first presented.
         first_swap_ = false;
         Microsoft::WRL::ComPtr<IDXGIDevice2> dxgi_device2;
-        d3d11_device_.As(&dxgi_device2);
+        d3d11_device_.CopyTo(dxgi_device2.GetAddressOf());
         DCHECK(dxgi_device2);
         base::WaitableEvent event(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
@@ -293,7 +294,7 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     // become transparent.
     HRESULT hr = dcomp_device_->CreateSurface(
         size_.width(), size_.height(), output_format,
-        DXGI_ALPHA_MODE_PREMULTIPLIED, &dcomp_surface_);
+        DXGI_ALPHA_MODE_PREMULTIPLIED, dcomp_surface_.GetAddressOf());
     if (FAILED(hr)) {
       DLOG(ERROR) << "CreateSurface failed with error " << std::hex << hr;
       return false;
@@ -306,13 +307,13 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     DXGI_ALPHA_MODE alpha_mode =
         has_alpha_ ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
     Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
-    d3d11_device_.As(&dxgi_device);
+    d3d11_device_.CopyTo(dxgi_device.GetAddressOf());
     DCHECK(dxgi_device);
     Microsoft::WRL::ComPtr<IDXGIAdapter> dxgi_adapter;
-    dxgi_device->GetAdapter(&dxgi_adapter);
+    dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
     DCHECK(dxgi_adapter);
     Microsoft::WRL::ComPtr<IDXGIFactory2> dxgi_factory;
-    dxgi_adapter->GetParent(IID_PPV_ARGS(&dxgi_factory));
+    dxgi_adapter->GetParent(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
     DCHECK(dxgi_factory);
 
     DXGI_SWAP_CHAIN_DESC1 desc = {};
@@ -329,7 +330,7 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     desc.Flags =
         IsSwapChainTearingSupported() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
     HRESULT hr = dxgi_factory->CreateSwapChainForComposition(
-        d3d11_device_.Get(), &desc, nullptr, &swap_chain_);
+        d3d11_device_.Get(), &desc, nullptr, swap_chain_.GetAddressOf());
     first_swap_ = true;
     if (FAILED(hr)) {
       DLOG(ERROR) << "CreateSwapChainForComposition failed with error "
@@ -344,15 +345,15 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
   if (dcomp_surface_) {
     POINT update_offset;
     const RECT rect = rectangle.ToRECT();
-    HRESULT hr = dcomp_surface_->BeginDraw(&rect, IID_PPV_ARGS(&draw_texture_),
-                                           &update_offset);
+    HRESULT hr = dcomp_surface_->BeginDraw(
+        &rect, IID_PPV_ARGS(draw_texture_.GetAddressOf()), &update_offset);
     if (FAILED(hr)) {
       DLOG(ERROR) << "BeginDraw failed with error " << std::hex << hr;
       return false;
     }
     draw_offset_ = gfx::Point(update_offset) - rectangle.origin();
   } else {
-    swap_chain_->GetBuffer(0, IID_PPV_ARGS(&draw_texture_));
+    swap_chain_->GetBuffer(0, IID_PPV_ARGS(draw_texture_.GetAddressOf()));
   }
   DCHECK(draw_texture_);
 

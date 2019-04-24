@@ -17,6 +17,8 @@ class TrackDefaultList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static TrackDefaultList* Create();  // Creates an empty TrackDefaultList.
+
   // Implement the IDL
   static TrackDefaultList* Create(const HeapVector<Member<TrackDefault>>&,
                                   ExceptionState&);

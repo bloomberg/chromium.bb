@@ -114,6 +114,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -352,16 +353,14 @@ Node::~Node() {
 }
 
 NodeRareData& Node::CreateRareData() {
-  if (IsElementNode()) {
-    data_.rare_data_ =
-        MakeGarbageCollected<ElementRareData>(data_.node_layout_data_);
-  } else {
-    data_.rare_data_ =
-        MakeGarbageCollected<NodeRareData>(data_.node_layout_data_);
-  }
+  if (IsElementNode())
+    data_.rare_data_ = ElementRareData::Create(data_.node_layout_data_);
+  else
+    data_.rare_data_ = NodeRareData::Create(data_.node_layout_data_);
 
   DCHECK(data_.rare_data_);
   SetFlag(kHasRareDataFlag);
+  ScriptWrappableMarkingVisitor::WriteBarrier(RareData());
   MarkingVisitor::WriteBarrier(RareData());
   return *RareData();
 }
@@ -530,8 +529,8 @@ void Node::NativeApplyScroll(ScrollState& scroll_state) {
     return;
 
   // TODO(esprehn): This should use
-  // updateStyleAndLayoutForNode.
-  GetDocument().UpdateStyleAndLayout();
+  // updateStyleAndLayoutIgnorePendingStylesheetsForNode.
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   LayoutBox* box_to_scroll = ToLayoutBox(GetLayoutObject());
 
@@ -1109,8 +1108,7 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
     // will be done when the lock is committed.
     if (RuntimeEnabledFeatures::DisplayLockingEnabled()) {
       if (ancestor->IsElementNode() &&
-          ToElement(ancestor)->StyleRecalcBlockedByDisplayLock(
-              DisplayLockContext::kChildren)) {
+          ToElement(ancestor)->StyleRecalcBlockedByDisplayLock()) {
         break;
       }
     }
@@ -1131,9 +1129,7 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
     for (auto* ancestor_copy = ancestor; ancestor_copy;
          ancestor_copy = ancestor_copy->ParentOrShadowHostNode()) {
       if (ancestor_copy->IsElementNode() &&
-          ToElement(ancestor_copy)
-              ->StyleRecalcBlockedByDisplayLock(
-                  DisplayLockContext::kChildren)) {
+          ToElement(ancestor_copy)->StyleRecalcBlockedByDisplayLock()) {
         return;
       }
     }
@@ -1205,9 +1201,7 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   if (change_type > existing_change_type)
     SetStyleChange(change_type);
 
-  if (existing_change_type == kNoStyleChange &&
-      (!IsElementNode() || !ToElement(this)->StyleRecalcBlockedByDisplayLock(
-                               DisplayLockContext::kSelf)))
+  if (existing_change_type == kNoStyleChange)
     MarkAncestorsWithChildNeedsStyleRecalc();
 
   if (IsElementNode() && HasRareData())
@@ -2364,8 +2358,8 @@ void Node::DidMoveToNewDocument(Document& old_document) {
     GetDocument().GetFrame()->GetEventHandlerRegistry().DidMoveIntoPage(*this);
   }
 
-  if (const HeapVector<Member<MutationObserverRegistration>>* registry =
-          MutationObserverRegistry()) {
+  if (const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
+          registry = MutationObserverRegistry()) {
     for (const auto& registration : *registry) {
       GetDocument().AddMutationObserverTypes(registration->MutationTypes());
     }
@@ -2420,7 +2414,7 @@ void Node::RemoveAllEventListenersRecursively() {
 }
 
 using EventTargetDataMap =
-    HeapHashMap<WeakMember<Node>, Member<EventTargetData>>;
+    HeapHashMap<WeakMember<Node>, TraceWrapperMember<EventTargetData>>;
 static EventTargetDataMap& GetEventTargetDataMap() {
   DEFINE_STATIC_LOCAL(Persistent<EventTargetDataMap>, map,
                       (MakeGarbageCollected<EventTargetDataMap>()));
@@ -2441,7 +2435,7 @@ EventTargetData& Node::EnsureEventTargetData() {
   return *data;
 }
 
-const HeapVector<Member<MutationObserverRegistration>>*
+const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
 Node::MutationObserverRegistry() {
   if (!HasRareData())
     return nullptr;
@@ -2451,7 +2445,7 @@ Node::MutationObserverRegistry() {
   return &data->Registry();
 }
 
-const HeapHashSet<Member<MutationObserverRegistration>>*
+const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>*
 Node::TransientMutationObserverRegistry() {
   if (!HasRareData())
     return nullptr;
@@ -2532,7 +2526,7 @@ void Node::RegisterMutationObserver(
 
 void Node::UnregisterMutationObserver(
     MutationObserverRegistration* registration) {
-  const HeapVector<Member<MutationObserverRegistration>>* registry =
+  const HeapVector<TraceWrapperMember<MutationObserverRegistration>>* registry =
       MutationObserverRegistry();
   DCHECK(registry);
   if (!registry)
@@ -2554,8 +2548,8 @@ void Node::RegisterTransientMutationObserver(
 
 void Node::UnregisterTransientMutationObserver(
     MutationObserverRegistration* registration) {
-  const HeapHashSet<Member<MutationObserverRegistration>>* transient_registry =
-      TransientMutationObserverRegistry();
+  const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>*
+      transient_registry = TransientMutationObserverRegistry();
   DCHECK(transient_registry);
   if (!transient_registry)
     return;
@@ -2570,13 +2564,13 @@ void Node::NotifyMutationObserversNodeWillDetach() {
 
   ScriptForbiddenScope forbid_script_during_raw_iteration;
   for (Node* node = parentNode(); node; node = node->parentNode()) {
-    if (const HeapVector<Member<MutationObserverRegistration>>* registry =
-            node->MutationObserverRegistry()) {
+    if (const HeapVector<TraceWrapperMember<MutationObserverRegistration>>*
+            registry = node->MutationObserverRegistry()) {
       for (const auto& registration : *registry)
         registration->ObservedSubtreeNodeWillDetach(*this);
     }
 
-    if (const HeapHashSet<Member<MutationObserverRegistration>>*
+    if (const HeapHashSet<TraceWrapperMember<MutationObserverRegistration>>*
             transient_registry = node->TransientMutationObserverRegistry()) {
       for (auto& registration : *transient_registry)
         registration->ObservedSubtreeNodeWillDetach(*this);
@@ -2666,8 +2660,7 @@ void Node::DefaultEventHandler(Event& event) {
     return;
   const AtomicString& event_type = event.type();
   if (event_type == event_type_names::kKeydown ||
-      event_type == event_type_names::kKeypress ||
-      event_type == event_type_names::kKeyup) {
+      event_type == event_type_names::kKeypress) {
     if (event.IsKeyboardEvent()) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
         frame->GetEventHandler().DefaultKeyboardEventHandler(
@@ -2689,7 +2682,7 @@ void Node::DefaultEventHandler(Event& event) {
     if (event.HasInterface(event_interface_names::kTextEvent)) {
       if (LocalFrame* frame = GetDocument().GetFrame()) {
         frame->GetEventHandler().DefaultTextInputEventHandler(
-            To<TextEvent>(&event));
+            ToTextEvent(&event));
       }
     }
   } else if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled() &&
@@ -2706,7 +2699,7 @@ void Node::DefaultEventHandler(Event& event) {
       // FIXME: We should avoid synchronous layout if possible. We can
       // remove this synchronous layout if we avoid synchronous layout in
       // LayoutTextControlSingleLine::scrollHeight
-      GetDocument().UpdateStyleAndLayout();
+      GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
       LayoutObject* layout_object = GetLayoutObject();
       while (
           layout_object &&
@@ -2789,6 +2782,15 @@ bool Node::WillRespondToMouseClickEvents() {
          HasEventListeners(event_type_names::kDOMActivate);
 }
 
+bool Node::WillRespondToTouchEvents() {
+  if (IsDisabledFormControl(this))
+    return false;
+  return HasEventListeners(event_type_names::kTouchstart) ||
+         HasEventListeners(event_type_names::kTouchmove) ||
+         HasEventListeners(event_type_names::kTouchcancel) ||
+         HasEventListeners(event_type_names::kTouchend);
+}
+
 unsigned Node::ConnectedSubframeCount() const {
   return HasRareData() ? RareData()->ConnectedSubframeCount() : 0;
 }
@@ -2817,12 +2819,12 @@ StaticNodeList* Node::getDestinationInsertionPoints() {
 }
 
 HTMLSlotElement* Node::AssignedSlot() const {
+  // assignedSlot doesn't need to recalc assignment.
   DCHECK(!IsPseudoElement());
   ShadowRoot* root = V1ShadowRootOfParent();
   if (!root)
     return nullptr;
   if (!RuntimeEnabledFeatures::FastFlatTreeTraversalEnabled()) {
-    // Don't recalc assignment in this case.
     return root->AssignedSlotFor(*this);
   }
 
@@ -2842,19 +2844,27 @@ HTMLSlotElement* Node::AssignedSlot() const {
   //
   // If we can remove such code path, we don't need to check
   // IsInSlotAssignmentRecalc() here.
-  if (GetDocument().IsInSlotAssignmentRecalc()) {
+  if (root->NeedsSlotAssignmentRecalc() ||
+      GetDocument().IsInSlotAssignmentRecalc()) {
     // FlatTreeNodeData is not realiable here. Entering slow path.
     return root->AssignedSlotFor(*this);
   }
-
-  // Recalc assignment, if necessary, to make sure the FlatTreeNodeData is not
-  // dirty. RecalcAssignment() is almost no-op if we don't need to recalc.
-  root->GetSlotAssignment().RecalcAssignment();
   if (FlatTreeNodeData* data = GetFlatTreeNodeData()) {
     DCHECK_EQ(root->AssignedSlotFor(*this), data->AssignedSlot());
     return data->AssignedSlot();
   }
   return nullptr;
+}
+
+HTMLSlotElement* Node::FinalDestinationSlot() const {
+  HTMLSlotElement* slot = AssignedSlot();
+  if (!slot)
+    return nullptr;
+  for (HTMLSlotElement* next = slot->AssignedSlot(); next;
+       next = next->AssignedSlot()) {
+    slot = next;
+  }
+  return slot;
 }
 
 HTMLSlotElement* Node::assignedSlotForBinding() {
@@ -2951,13 +2961,11 @@ void Node::SetCustomElementState(CustomElementState new_state) {
 
   if (element->IsDefined() != was_defined) {
     element->PseudoStateChanged(CSSSelector::kPseudoDefined);
-    if (RuntimeEnabledFeatures::CustomElementsV0Enabled(&GetDocument()))
-      element->PseudoStateChanged(CSSSelector::kPseudoUnresolved);
+    element->PseudoStateChanged(CSSSelector::kPseudoUnresolved);
   }
 }
 
 void Node::SetV0CustomElementState(V0CustomElementState new_state) {
-  DCHECK(RuntimeEnabledFeatures::CustomElementsV0Enabled(&GetDocument()));
   V0CustomElementState old_state = GetV0CustomElementState();
 
   switch (new_state) {
@@ -3075,8 +3083,8 @@ void Node::Trace(Visitor* visitor) {
   // rareData() and data_.node_layout_data_ share their storage. We have to
   // trace only one of them.
   if (HasRareData())
-    visitor->Trace(RareData());
-  visitor->Trace(GetEventTargetData());
+    visitor->TraceWithWrappers(RareData());
+  visitor->TraceWithWrappers(GetEventTargetData());
   visitor->Trace(tree_scope_);
   EventTarget::Trace(visitor);
 }

@@ -4,8 +4,6 @@
 
 #include "ui/views/bubble/info_bubble.h"
 
-#include <memory>
-
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -21,7 +19,7 @@ namespace views {
 namespace {
 
 // The visible width of bubble borders (differs from the actual width) in px.
-constexpr int kBubbleBorderVisibleWidth = 1;
+const int kBubbleBorderVisibleWidth = 1;
 
 }  // namespace
 
@@ -29,7 +27,7 @@ class InfoBubbleFrame : public BubbleFrameView {
  public:
   explicit InfoBubbleFrame(const gfx::Insets& content_margins)
       : BubbleFrameView(gfx::Insets(), content_margins) {}
-  ~InfoBubbleFrame() override = default;
+  ~InfoBubbleFrame() override {}
 
   gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) const override {
     return available_bounds_;
@@ -62,7 +60,7 @@ InfoBubble::InfoBubble(View* anchor, const base::string16& message)
   AddChildView(label);
 }
 
-InfoBubble::~InfoBubble() = default;
+InfoBubble::~InfoBubble() {}
 
 void InfoBubble::Show() {
   widget_ = BubbleDialogDelegateView::CreateBubble(this);
@@ -80,8 +78,8 @@ NonClientFrameView* InfoBubble::CreateNonClientFrameView(Widget* widget) {
   DCHECK(!frame_);
   frame_ = new InfoBubbleFrame(margins());
   frame_->set_available_bounds(anchor_widget()->GetWindowBoundsInScreen());
-  frame_->SetBubbleBorder(
-      std::make_unique<BubbleBorder>(arrow(), GetShadow(), color()));
+  frame_->SetBubbleBorder(std::unique_ptr<BubbleBorder>(
+      new BubbleBorder(arrow(), GetShadow(), color())));
   return frame_;
 }
 

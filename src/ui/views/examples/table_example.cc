@@ -12,7 +12,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/checkbox.h"
-#include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/grid_layout.h"
 
 using base::ASCIIToUTF16;
@@ -32,12 +31,13 @@ ui::TableColumn TestTableColumn(int id, const std::string& title) {
 
 }  // namespace
 
-TableExample::TableExample() : ExampleBase("Table") {}
+TableExample::TableExample() : ExampleBase("Table") , table_(NULL) {
+}
 
 TableExample::~TableExample() {
   // Delete the view before the model.
   delete table_;
-  table_ = nullptr;
+  table_ = NULL;
 }
 
 void TableExample::CreateExampleView(View* container) {
@@ -64,9 +64,9 @@ void TableExample::CreateExampleView(View* container) {
   columns.push_back(TestTableColumn(2, "Origin"));
   columns.push_back(TestTableColumn(3, "Price"));
   columns.back().alignment = ui::TableColumn::RIGHT;
-  auto table = std::make_unique<TableView>(this, columns, ICON_AND_TEXT, true);
-  table->SetGrouper(this);
-  table->set_observer(this);
+  table_ = new TableView(this, columns, ICON_AND_TEXT, true);
+  table_->SetGrouper(this);
+  table_->set_observer(this);
   icon1_.allocN32Pixels(16, 16);
   SkCanvas canvas1(icon1_);
   canvas1.drawColor(SK_ColorRED);
@@ -79,9 +79,7 @@ void TableExample::CreateExampleView(View* container) {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1 /* expand */, 0);
-  table_ = table.get();
-  layout->AddView(
-      TableView::CreateScrollViewWithTable(std::move(table)).release());
+  layout->AddView(table_->CreateParentIfNecessary());
 
   column_set = layout->AddColumnSet(1);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,

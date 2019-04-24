@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_constants.h"
+#include "third_party/blink/public/mojom/appcache/appcache_info.mojom.h"
 
 namespace {
 
@@ -120,11 +121,15 @@ void SiteDataSizeCollector::Fetch(FetchCallback callback) {
 }
 
 void SiteDataSizeCollector::OnAppCacheModelInfoLoaded(
-    const std::list<content::StorageUsageInfo>& info_list) {
+    scoped_refptr<content::AppCacheInfoCollection> appcache_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   int64_t total_size = 0;
-  for (const auto& info : info_list)
-    total_size += info.total_size_bytes;
+  if (appcache_info.get()) {
+    for (const auto& origin : appcache_info->infos_by_origin) {
+      for (const auto& info : origin.second)
+        total_size += info.size;
+    }
+  }
   OnStorageSizeFetched(total_size);
 }
 

@@ -16,6 +16,7 @@
 #include "url/origin.h"
 
 namespace content {
+
 namespace background_fetch {
 
 // Gets an active Background Fetch metadata entry from the database.
@@ -61,6 +62,7 @@ class GetMetadataTask : public DatabaseTask {
 };
 
 }  // namespace background_fetch
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_GET_METADATA_TASK_H_

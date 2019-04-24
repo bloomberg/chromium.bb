@@ -13,7 +13,7 @@ class CSSRayInterpolationType : public CSSInterpolationType {
  public:
   CSSRayInterpolationType(PropertyHandle property)
       : CSSInterpolationType(property) {
-    DCHECK(CssProperty().PropertyID() == CSSPropertyID::kOffsetPath);
+    DCHECK(CssProperty().PropertyID() == CSSPropertyOffsetPath);
   }
 
   void ApplyStandardPropertyValue(const InterpolableValue&,

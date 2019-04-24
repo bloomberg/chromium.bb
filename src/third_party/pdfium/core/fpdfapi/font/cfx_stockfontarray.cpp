@@ -9,7 +9,6 @@
 #include <memory>
 #include <utility>
 
-#include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fxcrt/fx_memory.h"
 

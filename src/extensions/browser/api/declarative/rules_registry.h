@@ -17,12 +17,12 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/one_shot_event.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/api/events.h"
 #include "extensions/common/extension_id.h"
+#include "extensions/common/one_shot_event.h"
 
 namespace content {
 class BrowserContext;
@@ -55,7 +55,9 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
                 RulesCacheDelegate* cache_delegate,
                 int id);
 
-  const base::OneShotEvent& ready() const { return ready_; }
+  const OneShotEvent& ready() const {
+    return ready_;
+  }
 
   // RulesRegistry implementation:
 
@@ -256,7 +258,7 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
 
   // Signaled when we have finished reading from storage for all extensions that
   // are loaded on startup.
-  base::OneShotEvent ready_;
+  OneShotEvent ready_;
 
   ProcessStateMap process_changed_rules_requested_;
 

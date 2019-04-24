@@ -27,21 +27,6 @@ extern const char kAppShimSocketShortName[];
 // user data dir with this name.
 extern const char kAppShimSocketSymlinkName[];
 
-// Mach message ID used by the shim to connect to Chrome.
-constexpr mach_msg_id_t kBootstrapMsgId = 'apps';
-
-// Name fragment of the Mach server endpoint published in the bootstrap
-// namespace. The full name is "<bundle-id>.apps.<profile_path_hash>".
-// <bundle-id> is the BaseBundleID() and <profile_path_hash> is an MD5 hash
-// of the full profile directory path.
-extern const char kAppShimBootstrapNameFragment[];
-
-// The name of a file placed in the profile directory to indicate that app
-// shims should connect over Mach IPC rather than a UNIX domain socket. If
-// a file named this does not exist, app shims will fall back to the UNIX
-// domain socket.
-extern const char kMojoChannelMacSignalFile[];
-
 // A symlink used to store the version string of the currently running Chrome.
 // The shim will read this to determine which version of the framework to load.
 extern const char kRunningChromeVersionSymlinkName[];

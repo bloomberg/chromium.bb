@@ -25,7 +25,6 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -81,10 +80,7 @@ class CORE_EXPORT CSSValueList : public CSSValue {
   DISALLOW_COPY_AND_ASSIGN(CSSValueList);
 };
 
-template <>
-struct DowncastTraits<CSSValueList> {
-  static bool AllowFrom(const CSSValue& value) { return value.IsValueList(); }
-};
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSValueList, IsValueList());
 
 }  // namespace blink
 

@@ -208,7 +208,6 @@ UsageTracker::AccumulateInfo::~AccumulateInfo() = default;
 
 void UsageTracker::AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
                                                       int64_t limited_usage) {
-  DCHECK_GT(info->pending_clients, 0U);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   info->usage += limited_usage;
   if (--info->pending_clients)
@@ -225,7 +224,6 @@ void UsageTracker::AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
 void UsageTracker::AccumulateClientGlobalUsage(AccumulateInfo* info,
                                                int64_t usage,
                                                int64_t unlimited_usage) {
-  DCHECK_GT(info->pending_clients, 0U);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   info->usage += usage;
   info->unlimited_usage += unlimited_usage;

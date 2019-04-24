@@ -7,6 +7,6 @@
 [
     SecureContext,
     Exposed=Window,
-    RuntimeEnabled=WebXR
+    OriginTrialEnabled=WebXR
 ] interface XRUnboundedReferenceSpace : XRReferenceSpace {
 };

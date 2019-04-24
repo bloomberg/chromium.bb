@@ -17,8 +17,7 @@ namespace blink {
 
 class PaintLayerClipperTest : public RenderingTest {
  public:
-  PaintLayerClipperTest()
-      : RenderingTest(MakeGarbageCollected<EmptyLocalFrameClient>()) {}
+  PaintLayerClipperTest() : RenderingTest(EmptyLocalFrameClient::Create()) {}
 
   void SetUp() override {
     WebTestSupport::SetMockThemeEnabledForTest(true);
@@ -317,7 +316,7 @@ TEST_F(PaintLayerClipperTest, ControlClipSelect) {
 #else
   EXPECT_EQ(LayoutRect(17, 9, 60, 15), foreground_rect.Rect());
 #endif
-}  // namespace blink
+}
 
 TEST_F(PaintLayerClipperTest, LayoutSVGRootChild) {
   SetBodyInnerHTML(R"HTML(
@@ -618,8 +617,8 @@ TEST_F(PaintLayerClipperTest, Filter) {
 // Computed infinite clip rects may not match LayoutRect::InfiniteIntRect()
 // due to floating point errors.
 static bool IsInfinite(const LayoutRect& rect) {
-  return rect.X().Round() < -10000000 && rect.MaxX().Round() > 10000000 &&
-         rect.Y().Round() < -10000000 && rect.MaxY().Round() > 10000000;
+  return rect.X().Round() < -10000000 && rect.MaxX().Round() > 10000000
+      && rect.Y().Round() < -10000000 && rect.MaxY().Round() > 10000000;
 }
 
 TEST_F(PaintLayerClipperTest, IgnoreRootLayerClipWithCSSClip) {

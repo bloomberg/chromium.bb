@@ -5,7 +5,7 @@
 'use strict';
 tr.exportTo('cp', () => {
   class RequestBase {
-    constructor(options = {}) {
+    constructor(options) {
       this.responsePromise_ = undefined;
       this.method_ = 'GET';
       this.headers_ = new Headers(options.headers);
@@ -43,7 +43,8 @@ tr.exportTo('cp', () => {
     }
 
     async addAuthorizationHeaders_() {
-      if (!window.AUTH_CLIENT_ID) return;
+      if (!window.IS_PRODUCTION && !window.mocha) return;
+      if (!window.getAuthorizationHeaders) return;
       const headers = await window.getAuthorizationHeaders();
       for (const [name, value] of Object.entries(headers)) {
         this.headers_.set(name, value);

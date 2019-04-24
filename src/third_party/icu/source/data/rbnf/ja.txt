@@ -8,11 +8,6 @@ ja{
             "0: \u7B2C=#,##0=;",
         }
         SpelloutRules{
-            "%spellout-numbering-year-latn:",
-            "x.x: =0.0=;",
-            "0: =0=;",
-            "1: \u5143;",
-            "2: =0=;",
             "%spellout-numbering-year:",
             "x.x: =0.0=;",
             "0: =%spellout-numbering=;",
@@ -78,5 +73,5 @@ ja{
             "0: \u7B2C=%spellout-numbering=;",
         }
     }
-    Version{"2.1.48.72"}
+    Version{"2.1.27.22"}
 }

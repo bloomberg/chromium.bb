@@ -51,6 +51,10 @@ class CORE_EXPORT Navigator final : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(Navigator);
 
  public:
+  static Navigator* Create(LocalFrame* frame) {
+    return MakeGarbageCollected<Navigator>(frame);
+  }
+
   explicit Navigator(LocalFrame*);
 
   // NavigatorCookies

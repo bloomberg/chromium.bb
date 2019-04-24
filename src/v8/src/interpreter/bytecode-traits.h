@@ -30,14 +30,14 @@ OPERAND_TYPE_INFO_LIST(DECLARE_OPERAND_TYPE_INFO)
 
 template <OperandType>
 struct OperandTraits {
-  using TypeInfoTraits = OperandTypeInfoTraits<OperandTypeInfo::kNone>;
+  typedef OperandTypeInfoTraits<OperandTypeInfo::kNone> TypeInfoTraits;
   static const OperandTypeInfo kOperandTypeInfo = OperandTypeInfo::kNone;
 };
 
 #define DECLARE_OPERAND_TYPE_TRAITS(Name, InfoType)           \
   template <>                                                 \
   struct OperandTraits<OperandType::k##Name> {                \
-    using TypeInfoTraits = OperandTypeInfoTraits<InfoType>;   \
+    typedef OperandTypeInfoTraits<InfoType> TypeInfoTraits;   \
     static const OperandTypeInfo kOperandTypeInfo = InfoType; \
   };
 OPERAND_TYPE_LIST(DECLARE_OPERAND_TYPE_TRAITS)

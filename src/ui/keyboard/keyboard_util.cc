@@ -64,7 +64,7 @@ bool GetTouchKeyboardEnabled() {
 }
 
 bool IsKeyboardEnabled() {
-  return KeyboardController::Get()->IsEnabled();
+  return KeyboardController::Get()->IsKeyboardEnableRequested();
 }
 
 }  // namespace keyboard

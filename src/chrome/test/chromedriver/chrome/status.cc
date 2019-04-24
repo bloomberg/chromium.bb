@@ -7,8 +7,10 @@
 #include "base/debug/stack_trace.h"
 #include "base/strings/stringprintf.h"
 
+namespace {
+
 // Returns the string equivalent of the given |ErrorCode|.
-const char* StatusCodeToString(StatusCode code) {
+const char* DefaultMessageForStatusCode(StatusCode code) {
   switch (code) {
     case kOk:
       return "ok";
@@ -79,30 +81,35 @@ const char* StatusCodeToString(StatusCode code) {
   }
 }
 
-Status::Status(StatusCode code) : code_(code), msg_(StatusCodeToString(code)) {
+}  // namespace
+
+Status::Status(StatusCode code)
+    : code_(code), msg_(DefaultMessageForStatusCode(code)) {
   if (code != kOk)
     stack_trace_ = base::debug::StackTrace().ToString();
 }
 
 Status::Status(StatusCode code, const std::string& details)
     : code_(code),
-      msg_(StatusCodeToString(code) + std::string(": ") + details) {
+      msg_(DefaultMessageForStatusCode(code) + std::string(": ") + details) {
   if (code != kOk)
         stack_trace_ = base::debug::StackTrace().ToString();
 }
 
 Status::Status(StatusCode code, const Status& cause)
     : code_(code),
-      msg_(StatusCodeToString(code) + std::string("\nfrom ") +
+      msg_(DefaultMessageForStatusCode(code) + std::string("\nfrom ") +
            cause.message()) {
   if (code != kOk)
     stack_trace_ = cause.stack_trace();
 }
 
-Status::Status(StatusCode code, const std::string& details, const Status& cause)
+Status::Status(StatusCode code,
+               const std::string& details,
+               const Status& cause)
     : code_(code),
-      msg_(StatusCodeToString(code) + std::string(": ") + details + "\nfrom " +
-           cause.message()) {
+      msg_(DefaultMessageForStatusCode(code) + std::string(": ") + details +
+           "\nfrom " + cause.message()) {
   if (code != kOk)
     stack_trace_ = cause.stack_trace();
 }

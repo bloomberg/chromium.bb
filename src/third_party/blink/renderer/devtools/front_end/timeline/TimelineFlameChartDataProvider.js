@@ -118,7 +118,12 @@ Timeline.TimelineFlameChartDataProvider = class extends Common.Object {
         return Common.UIString('Blackboxed');
       if (this._performanceModel.timelineModel().isMarkerEvent(event))
         return Timeline.TimelineUIUtils.markerShortTitle(event);
-      return Timeline.TimelineUIUtils.eventTitle(event);
+      const name = Timeline.TimelineUIUtils.eventStyle(event).title;
+      const detailsText =
+          Timeline.TimelineUIUtils.buildDetailsTextForTraceEvent(event, this._model.targetByEvent(event));
+      if (event.name === TimelineModel.TimelineModel.RecordType.JSFrame && detailsText)
+        return detailsText;
+      return detailsText ? Common.UIString('%s (%s)', name, detailsText) : name;
     }
     if (entryType === entryTypes.ExtensionEvent) {
       const event = /** @type {!SDK.TracingModel.Event} */ (this._entryData[entryIndex]);
@@ -215,14 +220,8 @@ Timeline.TimelineFlameChartDataProvider = class extends Common.Object {
     const eventEntryType = Timeline.TimelineFlameChartDataProvider.EntryType.Event;
     /** @type {!Multimap<!SDK.TracingModel.Process, !TimelineModel.TimelineModel.Track>} */
     const tracksByProcess = new Multimap();
-    for (const track of this._model.tracks()) {
-      if (track.thread !== null) {
-        tracksByProcess.set(track.thread.process(), track);
-      } else {
-        // The Timings track can reach this point, so we should probably do something more useful.
-        console.error('Failed to process track');
-      }
-    }
+    for (const track of this._model.tracks())
+      tracksByProcess.set(track.thread.process(), track);
     for (const process of tracksByProcess.keysArray()) {
       if (tracksByProcess.size > 1) {
         const name = `${process.name()} ${process.id()}`;

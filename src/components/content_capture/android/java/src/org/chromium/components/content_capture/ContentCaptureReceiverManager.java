@@ -4,6 +4,9 @@
 
 package org.chromium.components.content_capture;
 
+import android.view.ViewGroup;
+
+import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.content_public.browser.WebContents;
@@ -15,17 +18,25 @@ import java.util.Arrays;
  */
 public class ContentCaptureReceiverManager {
     private static final String TAG = "ContentCapture";
+    private static final String FLAG = "dump-captured-content-to-logcat-for-testing";
     private static Boolean sDump;
 
     private ContentCaptureConsumer mContentCaptureConsumer;
 
-    public static ContentCaptureReceiverManager createOrGet(WebContents webContents) {
-        return nativeCreateOrGet(webContents);
+    public static ContentCaptureReceiverManager create(WebContents webContents) {
+        ContentCaptureReceiverManager manager = new ContentCaptureReceiverManager();
+        manager.nativeInit(webContents);
+        return manager;
     }
 
-    @CalledByNative
-    private ContentCaptureReceiverManager() {
-        if (sDump == null) sDump = ContentCaptureFeatures.isDumpForTestingEnabled();
+    public ContentCaptureReceiverManager() {
+        if (sDump == null) sDump = CommandLine.getInstance().hasSwitch(FLAG);
+    }
+
+    public void onContainerViewChanged(ViewGroup containerView) {
+        // Reset current consumer, the new consumer that associates with contanerView shall be set
+        // from setContentCaptureConsumer().
+        mContentCaptureConsumer = null;
     }
 
     public void setContentCaptureConsumer(ContentCaptureConsumer consumer) {
@@ -63,5 +74,5 @@ public class ContentCaptureReceiverManager {
         return frameSession;
     }
 
-    private static native ContentCaptureReceiverManager nativeCreateOrGet(WebContents webContents);
+    private native void nativeInit(WebContents webContents);
 }

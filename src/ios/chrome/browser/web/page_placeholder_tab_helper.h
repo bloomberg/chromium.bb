@@ -55,9 +55,6 @@ class PagePlaceholderTabHelper
   void AddPlaceholder();
   void RemovePlaceholder();
 
-  // Adds the given |snapshot| image to the |web_state_|'s view.
-  void DisplaySnapshotImage(UIImage* snapshot);
-
   // WebState this tab helper is attached to.
   web::WebState* web_state_ = nullptr;
 

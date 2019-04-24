@@ -54,21 +54,14 @@ void *allocateRaw(size_t bytes, size_t alignment)
 	ASSERT((alignment & (alignment - 1)) == 0);   // Power of 2 alignment.
 
 	#if defined(LINUX_ENABLE_NAMED_MMAP)
-		if(alignment < sizeof(void*))
+		void *allocation;
+		int result = posix_memalign(&allocation, alignment, bytes);
+		if(result != 0)
 		{
-			return malloc(bytes);
+			errno = result;
+			allocation = nullptr;
 		}
-		else
-		{
-			void *allocation;
-			int result = posix_memalign(&allocation, alignment, bytes);
-			if(result != 0)
-			{
-				errno = result;
-				allocation = nullptr;
-			}
-			return allocation;
-		}
+		return allocation;
 	#else
 		unsigned char *block = new unsigned char[bytes + sizeof(Allocation) + alignment];
 		unsigned char *aligned = nullptr;

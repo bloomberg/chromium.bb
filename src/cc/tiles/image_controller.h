@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
@@ -33,10 +34,7 @@ class CC_EXPORT ImageController {
   explicit ImageController(
       base::SequencedTaskRunner* origin_task_runner,
       scoped_refptr<base::SequencedTaskRunner> worker_task_runner);
-  ImageController(const ImageController&) = delete;
   virtual ~ImageController();
-
-  ImageController& operator=(const ImageController&) = delete;
 
   void SetImageDecodeCache(ImageDecodeCache* cache);
   void SetPaintWorkletLayerPainter(
@@ -152,6 +150,8 @@ class CC_EXPORT ImageController {
   std::vector<ImageDecodeRequest> orphaned_decode_requests_;
 
   base::WeakPtrFactory<ImageController> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ImageController);
 };
 
 }  // namespace cc

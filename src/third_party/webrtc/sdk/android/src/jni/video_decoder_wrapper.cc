@@ -49,7 +49,7 @@ VideoDecoderWrapper::VideoDecoderWrapper(JNIEnv* jni,
                                  // if the decoder provides frames.
 
 {
-  decoder_thread_checker_.Detach();
+  decoder_thread_checker_.DetachFromThread();
 }
 
 VideoDecoderWrapper::~VideoDecoderWrapper() = default;
@@ -141,7 +141,7 @@ int32_t VideoDecoderWrapper::Release() {
   }
   initialized_ = false;
   // It is allowed to reinitialize the codec on a different thread.
-  decoder_thread_checker_.Detach();
+  decoder_thread_checker_.DetachFromThread();
   return status;
 }
 

@@ -11,6 +11,7 @@
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_query_history.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "ash/assistant/ui/dialog_plate/action_view.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
@@ -27,17 +28,17 @@ class ImageButton;
 
 namespace ash {
 
+class ActionView;
 enum class AssistantButtonId;
 class AssistantViewDelegate;
-class MicView;
 
 // DialogPlate -----------------------------------------------------------------
 
 // DialogPlate is the child of AssistantMainView concerned with providing the
 // means by which a user converses with Assistant. To this end, DialogPlate
-// provides a textfield for use with the keyboard input modality, and a MicView
-// which serves to toggle voice interaction as appropriate for use with the
-// voice input modality.
+// provides a textfield for use with the keyboard input modality, and an
+// ActionView which serves to either commit a text query, or toggle voice
+// interaction as appropriate for the user's current input modality.
 class COMPONENT_EXPORT(ASSISTANT_UI) DialogPlate
     : public views::View,
       public views::TextfieldController,
@@ -94,7 +95,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) DialogPlate
   views::View* voice_layout_container_;              // Owned by view hierarchy.
   views::ImageButton* keyboard_input_toggle_;        // Owned by view hierarchy.
   views::ImageButton* voice_input_toggle_;           // Owned by view hierarchy.
-  MicView* animated_voice_input_toggle_;             // Owned by view hierarchy.
+  ActionView* animated_voice_input_toggle_;          // Owned by view hierarchy.
   views::ImageButton* settings_button_;              // Owned by view hierarchy.
   views::Textfield* textfield_;                      // Owned by view hierarchy.
 

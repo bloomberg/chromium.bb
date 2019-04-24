@@ -7,8 +7,7 @@
 namespace {
 
 FARPROC LoadComBaseFunction(const char* function_name) {
-  static HMODULE const handle =
-      ::LoadLibraryEx(L"combase.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+  static HMODULE const handle = ::LoadLibrary(L"combase.dll");
   return handle ? ::GetProcAddress(handle, function_name) : nullptr;
 }
 

@@ -36,6 +36,15 @@ namespace blink {
 
 static int g_next_unused_id = 1;
 
+InspectorDatabaseResource* InspectorDatabaseResource::Create(
+    Database* database,
+    const String& domain,
+    const String& name,
+    const String& version) {
+  return MakeGarbageCollected<InspectorDatabaseResource>(database, domain, name,
+                                                         version);
+}
+
 InspectorDatabaseResource::InspectorDatabaseResource(Database* database,
                                                      const String& domain,
                                                      const String& name,

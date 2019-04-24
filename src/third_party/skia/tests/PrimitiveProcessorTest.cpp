@@ -42,8 +42,7 @@ public:
         return FixedFunctionFlags::kNone;
     }
 
-    GrProcessorSet::Analysis finalize(
-            const GrCaps&, const GrAppliedClip*, GrFSAAType, GrClampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrFSAAType) override {
         return GrProcessorSet::EmptySetAnalysis();
     }
 
@@ -63,15 +62,8 @@ private:
                 fAttributes.reset(new Attribute[numAttribs]);
                 for (auto i = 0; i < numAttribs; ++i) {
                     fAttribNames[i].printf("attr%d", i);
-                    // This gives us more of a mix of attribute types, and allows the
-                    // component count to fit within the limits for iOS Metal.
-                    if (i & 0x1) {
-                        fAttributes[i] = {fAttribNames[i].c_str(), kFloat_GrVertexAttribType,
-                                                                   kFloat_GrSLType};
-                    } else {
-                        fAttributes[i] = {fAttribNames[i].c_str(), kFloat2_GrVertexAttribType,
-                                                                   kFloat2_GrSLType};
-                    }
+                    fAttributes[i] = {fAttribNames[i].c_str(), kFloat2_GrVertexAttribType,
+                                                               kFloat2_GrSLType};
                 }
                 this->setVertexAttributes(fAttributes.get(), numAttribs);
             }

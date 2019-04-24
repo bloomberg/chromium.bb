@@ -87,6 +87,7 @@ DirectoryTreeNamingController.prototype.getInputElement = function() {
  */
 DirectoryTreeNamingController.prototype.attachAndStart = function(
     directoryItem, isRemovableRoot, volumeInfo) {
+
   this.isRemovableRoot_ = isRemovableRoot;
   this.volumeInfo_ = this.isRemovableRoot_ ? assert(volumeInfo) : null;
 
@@ -152,10 +153,13 @@ DirectoryTreeNamingController.prototype.commitRename_ = function() {
               parentEntry, newName,
               !this.directoryModel_.getFileFilter().isHiddenFilesVisible());
         })
-        .then(this.performRename_.bind(this, entry, newName), errorMessage => {
-          this.alertDialog_.show(
-              /** @type {string} */ (errorMessage), this.detach_.bind(this));
-        });
+        .then(
+            this.performRename_.bind(this, entry, newName),
+            errorMessage => {
+              this.alertDialog_.show(
+                  /** @type {string} */ (errorMessage),
+                  this.detach_.bind(this));
+            });
   }
 };
 
@@ -167,8 +171,8 @@ DirectoryTreeNamingController.prototype.commitRename_ = function() {
  */
 DirectoryTreeNamingController.prototype.performRename_ = function(
     entry, newName) {
-  const renamingCurrentDirectory =
-      util.isSameEntry(entry, this.directoryModel_.getCurrentDirEntry());
+  const renamingCurrentDirectory = util.isSameEntry(entry,
+      this.directoryModel_.getCurrentDirEntry());
   if (renamingCurrentDirectory) {
     this.directoryModel_.setIgnoringCurrentDirectoryDeletion(true /* ignore */);
   }

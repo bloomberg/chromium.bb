@@ -19,7 +19,6 @@ class CORE_EXPORT DOMNodeIds {
   STATIC_ONLY(DOMNodeIds);
 
  public:
-  static DOMNodeId ExistingIdForNode(Node*);
   static DOMNodeId IdForNode(Node*);
   static Node* NodeForId(DOMNodeId);
 };

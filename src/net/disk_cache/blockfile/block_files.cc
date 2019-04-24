@@ -39,7 +39,8 @@ inline int GetMapBlockType(uint32_t value) {
 
 namespace disk_cache {
 
-BlockHeader::BlockHeader() : header_(nullptr) {}
+BlockHeader::BlockHeader() : header_(NULL) {
+}
 
 BlockHeader::BlockHeader(BlockFileHeader* header) : header_(header) {
 }
@@ -261,7 +262,8 @@ BlockFileHeader* BlockHeader::Header() {
 // ------------------------------------------------------------------------
 
 BlockFiles::BlockFiles(const base::FilePath& path)
-    : init_(false), zero_buffer_(nullptr), path_(path) {}
+    : init_(false), zero_buffer_(NULL), path_(path) {
+}
 
 BlockFiles::~BlockFiles() {
   if (zero_buffer_)
@@ -300,14 +302,14 @@ MappedFile* BlockFiles::GetFile(Addr address) {
             static_cast<size_t>(kFirstAdditionalBlockFile));
   DCHECK(address.is_block_file() || !address.is_initialized());
   if (!address.is_initialized())
-    return nullptr;
+    return NULL;
 
   int file_index = address.FileNumber();
   if (static_cast<unsigned int>(file_index) >= block_files_.size() ||
       !block_files_[file_index]) {
     // We need to open the file
     if (!OpenBlockFile(file_index))
-      return nullptr;
+      return NULL;
   }
   DCHECK_GE(block_files_.size(), static_cast<unsigned int>(file_index));
   return block_files_[file_index].get();
@@ -549,13 +551,13 @@ MappedFile* BlockFiles::FileForNewBlock(FileType block_type, int block_count) {
     if (kMaxBlocks == file_header.Header()->max_entries) {
       file = NextFile(file);
       if (!file)
-        return nullptr;
+        return NULL;
       file_header = BlockHeader(file);
       continue;
     }
 
     if (!GrowBlockFile(file, file_header.Header()))
-      return nullptr;
+      return NULL;
     break;
   }
   LOCAL_HISTOGRAM_TIMES("DiskCache.GetFileForNewBlock",
@@ -576,7 +578,7 @@ MappedFile* BlockFiles::NextFile(MappedFile* file) {
 
     new_file = CreateNextBlockFile(type);
     if (!new_file)
-      return nullptr;
+      return NULL;
 
     FileLock lock(header);
     header->next_file = new_file;
@@ -623,7 +625,7 @@ bool BlockFiles::RemoveEmptyFile(FileType block_type) {
       base::FilePath name = Name(file_index);
       scoped_refptr<File> this_file(new File(false));
       this_file->Init(name);
-      block_files_[file_index] = nullptr;
+      block_files_[file_index] = NULL;
 
       int failure = DeleteCacheFile(name) ? 0 : 1;
       UMA_HISTOGRAM_COUNTS_1M("DiskCache.DeleteFailed2", failure);

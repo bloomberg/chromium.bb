@@ -34,8 +34,7 @@ sk_sp<SkImage> SkDeferredDisplayListRecorder::makePromiseTexture(
         PromiseImageTextureFulfillProc textureFulfillProc,
         PromiseImageTextureReleaseProc textureReleaseProc,
         PromiseImageTextureDoneProc textureDoneProc,
-        PromiseImageTextureContext textureContext,
-        PromiseImageApiVersion) {
+        PromiseImageTextureContext textureContext) {
     return nullptr;
 }
 
@@ -51,8 +50,7 @@ sk_sp<SkImage> SkDeferredDisplayListRecorder::makeYUVAPromiseTexture(
         PromiseImageTextureFulfillProc textureFulfillProc,
         PromiseImageTextureReleaseProc textureReleaseProc,
         PromiseImageTextureDoneProc textureDoneProc,
-        PromiseImageTextureContext textureContexts[],
-        PromiseImageApiVersion) {
+        PromiseImageTextureContext textureContexts[]) {
     return nullptr;
 }
 
@@ -162,11 +160,14 @@ bool SkDeferredDisplayListRecorder::init() {
 
     sk_sp<GrRenderTargetProxy> proxy = proxyProvider->createLazyRenderTargetProxy(
             [lazyProxyData](GrResourceProvider* resourceProvider) {
+                if (!resourceProvider) {
+                    return sk_sp<GrSurface>();
+                }
+
                 // The proxy backing the destination surface had better have been instantiated
                 // prior to the proxy backing the DLL's surface. Steal its GrRenderTarget.
                 SkASSERT(lazyProxyData->fReplayDest->peekSurface());
-                auto surface = sk_ref_sp<GrSurface>(lazyProxyData->fReplayDest->peekSurface());
-                return GrSurfaceProxy::LazyInstantiationResult(std::move(surface));
+                return sk_ref_sp<GrSurface>(lazyProxyData->fReplayDest->peekSurface());
             },
             format,
             desc,
@@ -232,8 +233,7 @@ sk_sp<SkImage> SkDeferredDisplayListRecorder::makePromiseTexture(
         PromiseImageTextureFulfillProc textureFulfillProc,
         PromiseImageTextureReleaseProc textureReleaseProc,
         PromiseImageTextureDoneProc textureDoneProc,
-        PromiseImageTextureContext textureContext,
-        PromiseImageApiVersion version) {
+        PromiseImageTextureContext textureContext) {
     if (!fContext) {
         return nullptr;
     }
@@ -250,8 +250,7 @@ sk_sp<SkImage> SkDeferredDisplayListRecorder::makePromiseTexture(
                                            textureFulfillProc,
                                            textureReleaseProc,
                                            textureDoneProc,
-                                           textureContext,
-                                           version);
+                                           textureContext);
 }
 
 sk_sp<SkImage> SkDeferredDisplayListRecorder::makeYUVAPromiseTexture(
@@ -266,8 +265,7 @@ sk_sp<SkImage> SkDeferredDisplayListRecorder::makeYUVAPromiseTexture(
         PromiseImageTextureFulfillProc textureFulfillProc,
         PromiseImageTextureReleaseProc textureReleaseProc,
         PromiseImageTextureDoneProc textureDoneProc,
-        PromiseImageTextureContext textureContexts[],
-        PromiseImageApiVersion version) {
+        PromiseImageTextureContext textureContexts[]) {
     if (!fContext) {
         return nullptr;
     }
@@ -284,8 +282,7 @@ sk_sp<SkImage> SkDeferredDisplayListRecorder::makeYUVAPromiseTexture(
                                                    textureFulfillProc,
                                                    textureReleaseProc,
                                                    textureDoneProc,
-                                                   textureContexts,
-                                                   version);
+                                                   textureContexts);
 }
 
 #endif

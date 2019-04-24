@@ -49,7 +49,6 @@ tr.exportTo('cp', () => {
   }
 
   function deepFreeze(o) {
-    if (!o) return o;
     Object.freeze(o);
     for (const [name, value] of Object.entries(o)) {
       if (typeof(value) !== 'object') continue;
@@ -306,10 +305,6 @@ tr.exportTo('cp', () => {
     return dict;
   }
 
-  function denormalize(objects, columnNames) {
-    return objects.map(obj => columnNames.map(col => obj[col]));
-  }
-
   async function* asGenerator(promise) {
     yield await promise;
   }
@@ -482,28 +477,8 @@ tr.exportTo('cp', () => {
     return colors;
   }
 
-  let nextGUID = 0;
-  function simpleGUID() {
-    return ++nextGUID;
-  }
-
-  function* enumerate(iter) {
-    let i = -1;
-    for (const value of iter) {
-      yield [++i, value];
-    }
-  }
-
-  const IS_MAC = navigator.platform.startsWith('Mac');
-  const CTRL_KEY_NAME = IS_MAC ? 'command' : 'Ctrl';
-
-  function hasCtrlKey(event) {
-    return IS_MAC ? event.metaKey : event.ctrlKey;
-  }
-
   return {
     BatchIterator,
-    CTRL_KEY_NAME,
     NON_BREAKING_SPACE,
     ZERO_WIDTH_SPACE,
     afterRender,
@@ -512,11 +487,8 @@ tr.exportTo('cp', () => {
     buildProperties,
     buildState,
     deepFreeze,
-    denormalize,
-    enumerate,
     generateColors,
     getActiveElement,
-    hasCtrlKey,
     idle,
     isElementChildOf,
     measureElement,
@@ -528,7 +500,6 @@ tr.exportTo('cp', () => {
     plural,
     setImmutable,
     sha,
-    simpleGUID,
     timeout,
   };
 });

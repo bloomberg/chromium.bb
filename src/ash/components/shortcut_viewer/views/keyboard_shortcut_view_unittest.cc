@@ -41,7 +41,7 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
   }
 
  protected:
-  size_t GetTabCount() const {
+  int GetTabCount() const {
     DCHECK(GetView());
     return GetView()->GetTabCountForTesting();
   }
@@ -124,7 +124,7 @@ TEST_F(KeyboardShortcutViewTest, SideTabsCount) {
   // Show the widget.
   views::Widget* widget = Toggle();
 
-  size_t category_number = 0;
+  int category_number = 0;
   ShortcutCategory current_category = ShortcutCategory::kUnknown;
   for (const auto& item_view : GetShortcutViews()) {
     const ShortcutCategory category = item_view->category();
@@ -151,7 +151,7 @@ TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
     if (item_view->category() != ShortcutCategory::kPopular)
       continue;
 
-    DCHECK_EQ(2u, item_view->children().size());
+    DCHECK(item_view->child_count() == 2);
 
     // The top lines in both |description_label_view_| and
     // |shortcut_label_view_| should be center aligned. Only need to check one

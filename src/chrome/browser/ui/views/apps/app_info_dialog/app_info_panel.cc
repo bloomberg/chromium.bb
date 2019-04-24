@@ -37,42 +37,38 @@ void AppInfoPanel::OpenLink(const GURL& url) {
   Navigate(&params);
 }
 
-std::unique_ptr<views::Label> AppInfoPanel::CreateHeading(
-    const base::string16& text) const {
-  auto label = std::make_unique<views::Label>(text);
+views::Label* AppInfoPanel::CreateHeading(const base::string16& text) const {
+  views::Label* label = new views::Label(text);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::MediumFont));
   return label;
 }
 
-std::unique_ptr<views::View> AppInfoPanel::CreateVerticalStack(
-    int child_spacing) const {
-  auto vertically_stacked_view = std::make_unique<views::View>();
+views::View* AppInfoPanel::CreateVerticalStack(int child_spacing) const {
+  views::View* vertically_stacked_view = new views::View();
   vertically_stacked_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical, gfx::Insets(), child_spacing));
   return vertically_stacked_view;
 }
 
-std::unique_ptr<views::View> AppInfoPanel::CreateVerticalStack() const {
+views::View* AppInfoPanel::CreateVerticalStack() const {
   return CreateVerticalStack(ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_VERTICAL));
 }
 
-std::unique_ptr<views::View> AppInfoPanel::CreateHorizontalStack(
-    int child_spacing) const {
-  auto vertically_stacked_view = std::make_unique<views::View>();
+views::View* AppInfoPanel::CreateHorizontalStack(int child_spacing) const {
+  views::View* vertically_stacked_view = new views::View();
   vertically_stacked_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(), child_spacing));
   return vertically_stacked_view;
 }
 
-std::unique_ptr<views::View> AppInfoPanel::CreateKeyValueField(
-    std::unique_ptr<views::View> key,
-    std::unique_ptr<views::View> value) const {
-  auto horizontal_stack =
+views::View* AppInfoPanel::CreateKeyValueField(views::View* key,
+                                               views::View* value) const {
+  views::View* horizontal_stack =
       CreateHorizontalStack(kSpacingBetweenKeyAndStartOfValue);
-  horizontal_stack->AddChildView(std::move(key));
-  horizontal_stack->AddChildView(std::move(value));
+  horizontal_stack->AddChildView(key);
+  horizontal_stack->AddChildView(value);
   return horizontal_stack;
 }

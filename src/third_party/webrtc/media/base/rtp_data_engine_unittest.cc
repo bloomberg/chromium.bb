@@ -49,7 +49,7 @@ class FakeDataReceiver : public sigslot::has_slots<> {
   cricket::ReceiveDataParams last_received_data_params_;
 };
 
-class RtpDataMediaChannelTest : public ::testing::Test {
+class RtpDataMediaChannelTest : public testing::Test {
  protected:
   virtual void SetUp() {
     // Seed needed for each test to satisfy expectations.
@@ -58,7 +58,9 @@ class RtpDataMediaChannelTest : public ::testing::Test {
     receiver_.reset(new FakeDataReceiver());
   }
 
-  void SetNow(double now) { clock_.SetTime(webrtc::Timestamp::seconds(now)); }
+  void SetNow(double now) {
+    clock_.SetTimeNanos(now * rtc::kNumNanosecsPerSec);
+  }
 
   cricket::RtpDataEngine* CreateEngine() {
     cricket::RtpDataEngine* dme = new cricket::RtpDataEngine();
@@ -317,13 +319,13 @@ TEST_F(RtpDataMediaChannelTest, ReceiveData) {
   std::unique_ptr<cricket::RtpDataMediaChannel> dmc(CreateChannel());
 
   // SetReceived not called.
-  dmc->OnPacketReceived(packet, /* packet_time_us */ -1);
+  dmc->OnPacketReceived(&packet, /* packet_time_us */ -1);
   EXPECT_FALSE(HasReceivedData());
 
   dmc->SetReceive(true);
 
   // Unknown payload id
-  dmc->OnPacketReceived(packet, /* packet_time_us */ -1);
+  dmc->OnPacketReceived(&packet, /* packet_time_us */ -1);
   EXPECT_FALSE(HasReceivedData());
 
   cricket::DataCodec codec;
@@ -334,7 +336,7 @@ TEST_F(RtpDataMediaChannelTest, ReceiveData) {
   ASSERT_TRUE(dmc->SetRecvParameters(parameters));
 
   // Unknown stream
-  dmc->OnPacketReceived(packet, /* packet_time_us */ -1);
+  dmc->OnPacketReceived(&packet, /* packet_time_us */ -1);
   EXPECT_FALSE(HasReceivedData());
 
   cricket::StreamParams stream;
@@ -342,7 +344,7 @@ TEST_F(RtpDataMediaChannelTest, ReceiveData) {
   ASSERT_TRUE(dmc->AddRecvStream(stream));
 
   // Finally works!
-  dmc->OnPacketReceived(packet, /* packet_time_us */ -1);
+  dmc->OnPacketReceived(&packet, /* packet_time_us */ -1);
   EXPECT_TRUE(HasReceivedData());
   EXPECT_EQ("abcde", GetReceivedData());
   EXPECT_EQ(5U, GetReceivedDataLen());
@@ -355,6 +357,6 @@ TEST_F(RtpDataMediaChannelTest, InvalidRtpPackets) {
   std::unique_ptr<cricket::RtpDataMediaChannel> dmc(CreateChannel());
 
   // Too short
-  dmc->OnPacketReceived(packet, /* packet_time_us */ -1);
+  dmc->OnPacketReceived(&packet, /* packet_time_us */ -1);
   EXPECT_FALSE(HasReceivedData());
 }

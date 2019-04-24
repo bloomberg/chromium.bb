@@ -194,10 +194,10 @@ exsltDynMapFunction(xmlXPathParserContextPtr ctxt, int nargs)
                     case XPATH_BOOLEAN:
                         if (container != NULL) {
                             xmlNodePtr cur =
-                                xmlNewTextChild((xmlNodePtr) container, NULL,
-                                                BAD_CAST "boolean",
-                                                BAD_CAST (subResult->
-                                                boolval ? "true" : ""));
+                                xmlNewChild((xmlNodePtr) container, NULL,
+                                            BAD_CAST "boolean",
+                                            BAD_CAST (subResult->
+                                            boolval ? "true" : ""));
                             if (cur != NULL) {
                                 cur->ns =
                                     xmlNewNs(cur,
@@ -215,8 +215,8 @@ exsltDynMapFunction(xmlXPathParserContextPtr ctxt, int nargs)
                                 xmlXPathCastNumberToString(subResult->
                                                            floatval);
                             xmlNodePtr cur =
-                                xmlNewTextChild((xmlNodePtr) container, NULL,
-                                                BAD_CAST "number", val);
+                                xmlNewChild((xmlNodePtr) container, NULL,
+                                            BAD_CAST "number", val);
                             if (val != NULL)
                                 xmlFree(val);
 
@@ -234,9 +234,9 @@ exsltDynMapFunction(xmlXPathParserContextPtr ctxt, int nargs)
                     case XPATH_STRING:
                         if (container != NULL) {
                             xmlNodePtr cur =
-                                xmlNewTextChild((xmlNodePtr) container, NULL,
-                                                BAD_CAST "string",
-                                                subResult->stringval);
+                                xmlNewChild((xmlNodePtr) container, NULL,
+                                            BAD_CAST "string",
+                                            subResult->stringval);
                             if (cur != NULL) {
                                 cur->ns =
                                     xmlNewNs(cur,

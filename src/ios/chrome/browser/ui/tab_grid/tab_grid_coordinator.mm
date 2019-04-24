@@ -24,8 +24,8 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_transition_handler.h"
+#import "ios/chrome/browser/ui/tab_grid/tab_grid_url_loader.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -57,6 +57,9 @@
 @property(nonatomic, strong) RecentTabsMediator* remoteTabsMediator;
 // Coordinator for history, which can be started from recent tabs.
 @property(nonatomic, strong) HistoryCoordinator* historyCoordinator;
+// Specialized URL loader for tab grid, since tab grid has a different use case
+// than BVC.
+@property(nonatomic, strong) TabGridURLLoader* URLLoader;
 @end
 
 @implementation TabGridCoordinator
@@ -186,8 +189,13 @@
       self.remoteTabsMediator;
   baseViewController.remoteTabsViewController.dispatcher =
       static_cast<id<ApplicationCommands>>(self.dispatcher);
-  baseViewController.remoteTabsViewController.loadStrategy =
-      UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB;
+  self.URLLoader = [[TabGridURLLoader alloc]
+      initWithRegularWebStateList:self.regularTabModel.webStateList
+            incognitoWebStateList:self.incognitoTabModel.webStateList
+              regularBrowserState:self.regularTabModel.browserState
+            incognitoBrowserState:self.incognitoTabModel.browserState];
+  self.adaptor.loader = self.URLLoader;
+  baseViewController.remoteTabsViewController.loader = self.URLLoader;
   baseViewController.remoteTabsViewController.restoredTabDisposition =
       WindowOpenDisposition::NEW_FOREGROUND_TAB;
   baseViewController.remoteTabsViewController.webStateList =
@@ -358,13 +366,12 @@
 
 - (void)showHistoryFromRecentTabs {
   // A history coordinator from main_controller won't work properly from the
-  // tab grid. Using a local coordinator works better and we need to set
-  // |loadStrategy| to YES to ALWAYS_NEW_FOREGROUND_TAB.
+  // tab grid. Using a local coordinator works better when hooked up with a
+  // specialized URL loader and tab presentation delegate.
   self.historyCoordinator = [[HistoryCoordinator alloc]
       initWithBaseViewController:self.baseViewController
                     browserState:self.regularTabModel.browserState];
-  self.historyCoordinator.loadStrategy =
-      UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB;
+  self.historyCoordinator.loader = self.URLLoader;
   self.historyCoordinator.presentationDelegate = self;
   self.historyCoordinator.dispatcher =
       static_cast<id<ApplicationCommands>>(self.dispatcher);

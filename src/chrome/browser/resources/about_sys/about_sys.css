@@ -132,9 +132,14 @@ div#header h1::before {
 
 .number-expanded,
 .number-collapsed  {
-  text-align: start;
+  text-align: left;
   text-overflow: ellipsis;
   width: 80%;
+}
+
+html[dir='rtl'] .number-expanded,
+html[dir='rtl'] .number-collapsed  {
+  text-align: right;
 }
 
 tr > *:nth-child(1),
@@ -166,7 +171,7 @@ html[dir='rtl'] #details .name {
 }
 
 .spinner {
-  animation: rotate 2s linear infinite;
+  -webkit-animation: rotate 2s linear infinite;
   border: 4px solid rgb(239, 243, 255);
   border-radius: 50%;
   border-top: 4px solid rgb(82, 150, 222);
@@ -174,7 +179,7 @@ html[dir='rtl'] #details .name {
   width: 20px;
 }
 
-@keyframes rotate {
+@-webkit-keyframes rotate {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }

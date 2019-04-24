@@ -353,9 +353,13 @@ function checkResult(context, compositeIndex, testIndex) {
 }
 
 function runTest(testMode) {
-  if (window.testRunner && testMode == "dumpAsText")
-    testRunner.dumpAsText();
-
+  if (window.testRunner) {
+    if (testMode == "dumpAsText") {
+      testRunner.dumpAsText();
+    } else if (testMode == "dumpAsTextWithPixelResults") {
+      testRunner.dumpAsTextWithPixelResults();
+    }
+  }
   setupTest();
   createOutputTable();
   for (var i = 0; i < compositeTypes.length; i++) {

@@ -5,8 +5,6 @@
 #ifndef UI_VIEWS_EXAMPLES_TREE_VIEW_EXAMPLE_H_
 #define UI_VIEWS_EXAMPLES_TREE_VIEW_EXAMPLE_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/models/tree_node_model.h"
@@ -72,14 +70,14 @@ class VIEWS_EXAMPLES_EXPORT TreeViewExample
   void ExecuteCommand(int command_id, int event_flags) override;
 
   // The tree view to be tested.
-  TreeView* tree_view_ = nullptr;
+  std::unique_ptr<TreeView> tree_view_;
 
   // Control buttons to modify the model.
-  LabelButton* add_ = nullptr;
-  LabelButton* remove_ = nullptr;
-  LabelButton* change_title_ = nullptr;
+  LabelButton* add_;
+  LabelButton* remove_;
+  LabelButton* change_title_;
 
-  using NodeType = ui::TreeNodeWithValue<int>;
+  typedef ui::TreeNodeWithValue<int> NodeType;
 
   ui::TreeNodeModel<NodeType> model_;
 

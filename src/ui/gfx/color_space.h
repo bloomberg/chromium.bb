@@ -18,24 +18,12 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/color_space_export.h"
 
-// These forward declarations are used to give IPC code friend access to private
-// fields of gfx::ColorSpace for the purpose of serialization and
-// deserialization.
 namespace IPC {
 template <class P>
 struct ParamTraits;
 }  // namespace IPC
 
-namespace mojo {
-template <class T, class U>
-struct StructTraits;
-}  // namespace mojo
-
 namespace gfx {
-
-namespace mojom {
-class ColorSpaceDataView;
-}  // namespace mojom
 
 class ICCProfile;
 
@@ -214,6 +202,14 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // Returns true if the encoded values can be outside of the 0.0-1.0 range.
   bool FullRangeEncodedValues() const;
 
+  // Returns true if this color space is parametric (or a sufficiently accurate
+  // approximation of its ICCProfile that we can use it directly).
+  bool IsParametricAccurate() const;
+
+  // Return a parametric approximation of this color space (if it is not already
+  // parametric).
+  ColorSpace GetParametricApproximation() const;
+
   // Return this color space with any YUV to RGB conversion stripped off.
   ColorSpace GetAsRGB() const;
 
@@ -275,14 +271,18 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // order.
   float custom_transfer_params_[7] = {0, 0, 0, 0, 0, 0, 0};
 
+  // This is set if and only if this color space is to represent an ICC profile
+  // that cannot be sufficiently accurately represented with a custom primary
+  // matrix and transfer function. It can be used to look up the original
+  // ICCProfile to create a LUT based transform.
+  uint64_t icc_profile_id_ = 0;
+
   friend class ICCProfile;
   friend class ICCProfileCache;
   friend class ColorTransform;
   friend class ColorTransformInternal;
   friend class ColorSpaceWin;
   friend struct IPC::ParamTraits<ColorSpace>;
-  friend struct mojo::StructTraits<gfx::mojom::ColorSpaceDataView,
-                                   gfx::ColorSpace>;
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, GetColorSpace);
 };
 

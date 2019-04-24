@@ -34,9 +34,9 @@ import org.robolectric.shadows.ShadowLooper;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.AppHooksImpl;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
-import org.chromium.chrome.browser.notifications.ForegroundServiceUtils;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.services.media_session.MediaMetadata;
 
@@ -53,7 +53,7 @@ public class MediaNotificationManagerTestBase {
     Context mMockContext;
     MockListenerService mService;
     MediaNotificationListener mListener;
-    ForegroundServiceUtils mMockForegroundServiceUtils;
+    AppHooksImpl mMockAppHooks;
     NotificationUmaTracker mMockUmaTracker;
 
     MediaNotificationInfo.Builder mMediaNotificationInfoBuilder;
@@ -135,8 +135,8 @@ public class MediaNotificationManagerTestBase {
                 .when(mMockContext)
                 .startService(any(Intent.class));
 
-        mMockForegroundServiceUtils = mock(ForegroundServiceUtils.class);
-        ForegroundServiceUtils.setInstanceForTesting(mMockForegroundServiceUtils);
+        mMockAppHooks = mock(AppHooksImpl.class);
+        AppHooks.setInstanceForTesting(mMockAppHooks);
 
         // Init the command line to avoid assertion failure in |SysUtils#isLowEndDevice()|.
         CommandLine.init(null);

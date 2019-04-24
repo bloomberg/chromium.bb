@@ -21,9 +21,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/assistant/assistant_pref_util.h"
-#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
-#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
@@ -41,6 +40,7 @@ using chromeos::assistant::ConsentFlowUi;
 namespace {
 
 constexpr char kAssistantDisplaySource[] = "Assistant";
+constexpr char kAssistantSubPage[] = "googleAssistant";
 constexpr char kHotwordNotificationId[] = "assistant/hotword";
 constexpr char kNotifierAssistant[] = "assistant";
 
@@ -71,8 +71,8 @@ class AssistantHotwordNotificationDelegate
 
   void HandleHotwordEnableNotificationResult(bool enable) {
     if (enable) {
-      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-          ProfileManager::GetActiveUserProfile(), chrome::kAssistantSubPage);
+      chrome::ShowSettingsSubPageForProfile(
+          ProfileManager::GetActiveUserProfile(), kAssistantSubPage);
     }
     UMA_HISTOGRAM_BOOLEAN("Assistant.HotwordEnableNotification", enable);
   }
@@ -151,8 +151,7 @@ void AssistantSetup::OnStateChanged(ash::mojom::VoiceInteractionState state) {
       message_center::SystemNotificationWarningLevel::NORMAL);
 
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification,
-      /*metadata=*/nullptr);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 void AssistantSetup::SyncActivityControlState() {

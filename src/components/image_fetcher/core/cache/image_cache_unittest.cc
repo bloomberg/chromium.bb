@@ -14,10 +14,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/image_fetcher/core/cache/cached_image_fetcher_metrics_reporter.h"
 #include "components/image_fetcher/core/cache/image_data_store_disk.h"
 #include "components/image_fetcher/core/cache/image_metadata_store_leveldb.h"
 #include "components/image_fetcher/core/cache/proto/cached_image_metadata.pb.h"
-#include "components/image_fetcher/core/image_fetcher_metrics_reporter.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -32,7 +32,8 @@ namespace {
 
 constexpr char kPrefLastStartupEviction[] =
     "cached_image_fetcher_last_startup_eviction_time";
-constexpr char kImageFetcherEventHistogramName[] = "ImageFetcher.Events";
+constexpr char kCachedImageFetcherEventHistogramName[] =
+    "CachedImageFetcher.Events";
 constexpr char kImageUrl[] = "http://gstatic.img.com/foo.jpg";
 constexpr char kImageUrlHashed[] = "3H7UODDH3WKDWK6FQ3IZT3LQMVBPYJ4M";
 constexpr char kImageData[] = "data";
@@ -51,8 +52,8 @@ class CachedImageFetcherImageCacheTest : public testing::Test {
 
     auto db = std::make_unique<FakeDB<CachedImageMetadataProto>>(&db_store_);
     db_ = db.get();
-    auto metadata_store =
-        std::make_unique<ImageMetadataStoreLevelDB>(std::move(db), &clock_);
+    auto metadata_store = std::make_unique<ImageMetadataStoreLevelDB>(
+        base::FilePath(), std::move(db), &clock_);
     metadata_store_ = metadata_store.get();
 
     auto data_store = std::make_unique<ImageDataStoreDisk>(
@@ -67,7 +68,7 @@ class CachedImageFetcherImageCacheTest : public testing::Test {
 
   void InitializeImageCache() {
     image_cache_->MaybeStartInitialization();
-    db()->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+    db()->InitCallback(true);
     RunUntilIdle();
     ASSERT_TRUE(metadata_store()->IsInitialized());
   }
@@ -212,7 +213,7 @@ TEST_F(CachedImageFetcherImageCacheTest, SaveCallsInitialization) {
 
   ASSERT_FALSE(IsCacheInitialized());
   image_cache()->SaveImage(kImageUrl, kImageData);
-  db()->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db()->InitCallback(true);
   RunUntilIdle();
 
   ASSERT_TRUE(IsCacheInitialized());
@@ -304,11 +305,11 @@ TEST_F(CachedImageFetcherImageCacheTest, Eviction) {
   RunUntilIdle();
 
   histogram_tester().ExpectBucketCount(
-      kImageFetcherEventHistogramName,
-      ImageFetcherEvent::kCacheStartupEvictionStarted, 1);
+      kCachedImageFetcherEventHistogramName,
+      CachedImageFetcherEvent::kCacheStartupEvictionStarted, 1);
   histogram_tester().ExpectBucketCount(
-      kImageFetcherEventHistogramName,
-      ImageFetcherEvent::kCacheStartupEvictionFinished, 1);
+      kCachedImageFetcherEventHistogramName,
+      CachedImageFetcherEvent::kCacheStartupEvictionFinished, 1);
 }
 
 TEST_F(CachedImageFetcherImageCacheTest, EvictionWhenFull) {

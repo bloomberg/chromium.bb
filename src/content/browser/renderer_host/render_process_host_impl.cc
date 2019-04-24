@@ -132,6 +132,7 @@
 #include "content/browser/renderer_host/web_database_host_impl.h"
 #include "content/browser/resolve_proxy_msg_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream_context.h"
@@ -215,7 +216,6 @@
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -280,6 +280,9 @@
 #endif
 
 namespace content {
+
+using CheckOriginLockResult =
+    ChildProcessSecurityPolicyImpl::CheckOriginLockResult;
 
 namespace {
 
@@ -1505,6 +1508,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
               ChromeBlobStorageContext::GetFor(browser_context_)),
           base::OnTaskRunnerDeleter(
               storage_partition_impl_->GetIndexedDBContext()->TaskRunner())),
+      service_worker_dispatcher_host_(new ServiceWorkerDispatcherHost(
+          storage_partition_impl_->GetServiceWorkerContext(),
+          id_)),
       channel_connected_(false),
       sent_render_process_ready_(false),
       renderer_host_binding_(this),
@@ -1539,6 +1545,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       GetID(), storage_partition_impl_->GetServiceWorkerContext()));
 
   AddObserver(indexed_db_factory_.get());
+  AddObserver(service_worker_dispatcher_host_.get());
 #if defined(OS_MACOSX)
   AddObserver(MachBroker::GetInstance());
 #endif
@@ -1898,6 +1905,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
         storage_partition_impl_->GetFileSystemContext(),
         storage_partition_impl_->GetServiceWorkerContext(),
         storage_partition_impl_->GetPrefetchURLLoaderService(),
+        browser_context->GetSharedCorsOriginAccessList(),
         std::move(get_contexts_callback),
         base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
 
@@ -2022,6 +2030,10 @@ void RenderProcessHostImpl::CleanupCorbExceptionForPluginUponDestruction() {
 
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
   auto registry = std::make_unique<service_manager::BinderRegistry>();
+
+  channel_->AddAssociatedInterfaceForIOThread(base::BindRepeating(
+      &ServiceWorkerDispatcherHost::AddBinding,
+      base::Unretained(service_worker_dispatcher_host_.get())));
 
   AddUIThreadInterface(
       registry.get(),
@@ -2443,6 +2455,11 @@ void RenderProcessHostImpl::DisableKeepAliveRefCount() {
 bool RenderProcessHostImpl::IsKeepAliveRefCountDisabled() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return is_keep_alive_ref_count_disabled_;
+}
+
+void RenderProcessHostImpl::PurgeAndSuspend() {
+  TRACE_EVENT0("renderer_host", "RenderProcessHostImpl::PurgeAndSuspend");
+  GetRendererInterface()->ProcessPurgeAndSuspend();
 }
 
 void RenderProcessHostImpl::Resume() {}
@@ -2940,6 +2957,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableBackgroundTimerThrottling,
     switches::kDisableBestEffortTasks,
     switches::kDisableBreakpad,
+    switches::kDisableCompositorUkmForTests,
     switches::kDisablePreferCompositingToLCDText,
     switches::kDisableDatabases,
     switches::kDisableFileSystem,
@@ -2955,7 +2973,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableOopRasterization,
     switches::kDisableOriginTrialControlledBlinkFeatures,
     switches::kDisablePepper3DImageChromium,
-    switches::kDisablePerfetto,
     switches::kDisablePermissionsAPI,
     switches::kDisablePresentationAPI,
     switches::kDisableRGBA4444Textures,
@@ -2972,8 +2989,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDomAutomationController,
     switches::kEnableAccessibilityObjectModel,
     switches::kEnableAutomation,
-    switches::kEnableExperimentalAccessibilityLanguageDetection,
-    switches::kEnableExperimentalAccessibilityLabelsDebugging,
     switches::kEnableExperimentalWebPlatformFeatures,
     switches::kEnableGPUClientLogging,
     switches::kEnableGpuClientTracing,
@@ -2985,6 +3000,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableLogging,
     switches::kEnableNetworkInformationDownlinkMax,
     switches::kEnableOopRasterization,
+    switches::kEnablePassthroughRasterDecoder,
+    switches::kEnablePerfetto,
     switches::kEnablePluginPlaceholderTesting,
     switches::kEnablePreciseMemoryInfo,
     switches::kEnablePrintBrowser,
@@ -3714,13 +3731,13 @@ bool RenderProcessHostImpl::IsSuitableHost(
   // from |site_url| if an effective URL is used.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   bool host_has_web_ui_bindings = policy->HasWebUIBindings(host->GetID());
-  GURL process_lock = policy->GetOriginLock(host->GetID());
+  auto lock_state = policy->CheckOriginLock(host->GetID(), lock_url);
   if (host->HostHasNotBeenUsed()) {
     // If the host hasn't been used, it won't have the expected WebUI bindings
     // or origin locks just *yet* - skip the checks in this case.  One example
     // where this case can happen is when the spare RenderProcessHost gets used.
     CHECK(!host_has_web_ui_bindings);
-    CHECK(process_lock.is_empty());
+    CHECK_EQ(CheckOriginLockResult::NO_LOCK, lock_state);
   } else {
     // WebUI checks.
     bool url_requires_web_ui_bindings =
@@ -3729,26 +3746,22 @@ bool RenderProcessHostImpl::IsSuitableHost(
     if (host_has_web_ui_bindings != url_requires_web_ui_bindings)
       return false;
 
-    if (!process_lock.is_empty()) {
-      // If this process is locked to a site, it cannot be reused for a
-      // destination that doesn't require a dedicated process, even for the
-      // same site. This can happen with dynamic isolated origins (see
-      // https://crbug.com/950453).
-      if (!SiteInstanceImpl::ShouldLockToOrigin(isolation_context, site_url))
+    // Sites requiring dedicated processes can only reuse a compatible process.
+    switch (lock_state) {
+      case CheckOriginLockResult::HAS_EQUAL_LOCK:
+        break;
+      case CheckOriginLockResult::HAS_WRONG_LOCK:
         return false;
-
-      // If the destination requires a different process lock, this process
-      // cannot be used.
-      if (process_lock != lock_url)
-        return false;
-    } else {
-      if (!host->IsUnused() &&
-          SiteInstanceImpl::ShouldLockToOrigin(isolation_context, site_url)) {
-        // If this process has been used to host any other content, it cannot
-        // be reused if the destination site requires a dedicated process and
-        // should use a process locked to just that site.
-        return false;
-      }
+      case CheckOriginLockResult::NO_LOCK:
+        if (!host->IsUnused() &&
+            SiteInstanceImpl::ShouldLockToOrigin(browser_context,
+                                                 isolation_context, site_url)) {
+          // If this process has been used to host any other content, it cannot
+          // be reused if the destination site requires a dedicated process and
+          // should use a process locked to just that site.
+          return false;
+        }
+        break;
     }
   }
 
@@ -3901,10 +3914,11 @@ RenderProcessHost* RenderProcessHostImpl::GetSoleProcessHostForURL(
     BrowserContext* browser_context,
     const IsolationContext& isolation_context,
     const GURL& url) {
-  GURL site_url = SiteInstanceImpl::GetSiteForURL(
-      isolation_context, url, true /* should_use_effective_urls */);
-  GURL lock_url =
-      SiteInstanceImpl::DetermineProcessLockURL(isolation_context, url);
+  GURL site_url =
+      SiteInstanceImpl::GetSiteForURL(browser_context, isolation_context, url,
+                                      true /* should_use_effective_urls */);
+  GURL lock_url = SiteInstanceImpl::DetermineProcessLockURL(
+      BrowserOrResourceContext(browser_context), isolation_context, url);
   return GetSoleProcessHostForSite(browser_context, isolation_context, site_url,
                                    lock_url);
 }

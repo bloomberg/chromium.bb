@@ -356,7 +356,7 @@ class UserPrompt(object):
     @text.setter
     @command
     def text(self, value):
-        body = {"text": value}
+        body = {"value": list(value)}
         self.session.send_session_command("POST", "alert/text", body=body)
 
 

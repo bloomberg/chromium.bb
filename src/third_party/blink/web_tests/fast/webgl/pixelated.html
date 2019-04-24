@@ -25,6 +25,10 @@
       }
     </script>
     <script>
+    if (window.testRunner) {
+        testRunner.dumpAsTextWithPixelResults();
+    }
+
     function draw(gl) {
         var vertices = [ 0.0, 0.8, 0.0,
                         -0.8, -0.8, 0.0,

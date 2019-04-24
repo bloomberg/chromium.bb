@@ -56,8 +56,7 @@ ScriptPromise KeyboardLayout::GetKeyboardLayoutMap(ScriptState* script_state) {
                                            kKeyboardMapRequestFailedErrorMsg));
   }
 
-  script_promise_resolver_ =
-      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  script_promise_resolver_ = ScriptPromiseResolver::Create(script_state);
   service_->GetKeyboardLayoutMap(
       WTF::Bind(&KeyboardLayout::GotKeyboardLayoutMap, WrapPersistent(this),
                 WrapPersistent(script_promise_resolver_.Get())));

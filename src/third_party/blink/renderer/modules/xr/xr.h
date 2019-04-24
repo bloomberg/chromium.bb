@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/focus_changed_observer.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_session_creation_options.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -39,7 +40,7 @@ class XR final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(devicechange, kDevicechange)
 
   ScriptPromise supportsSessionMode(ScriptState*, const String&);
-  ScriptPromise requestSession(ScriptState*, const String&);
+  ScriptPromise requestSession(ScriptState*, const XRSessionCreationOptions*);
 
   XRFrameProvider* frameProvider();
 
@@ -69,10 +70,6 @@ class XR final : public EventTargetWithInlineData,
   bool IsFrameFocused();
 
   int64_t GetSourceId() const { return ukm_source_id_; }
-
-  using EnvironmentProviderErrorCallback = base::OnceCallback<void()>;
-  void AddEnvironmentProviderErrorHandler(
-      EnvironmentProviderErrorCallback callback);
 
  private:
   class PendingSessionQuery final
@@ -106,17 +103,9 @@ class XR final : public EventTargetWithInlineData,
   void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
 
-  XRSession* CreateSession(
-      XRSession::SessionMode mode,
-      XRSession::EnvironmentBlendMode blend_mode,
-      device::mojom::blink::XRSessionClientRequest client_request,
-      device::mojom::blink::VRDisplayInfoPtr display_info,
-      bool sensorless_session = false);
-  XRSession* CreateSensorlessInlineSession();
+  void CreateInlineIdentitySession(PendingSessionQuery*);
 
   void Dispose();
-
-  void OnEnvironmentProviderDisconnect();
 
   bool pending_device_ = false;
 
@@ -135,9 +124,6 @@ class XR final : public EventTargetWithInlineData,
   // respective calls to be made directly.
   HeapVector<Member<PendingSessionQuery>> pending_mode_queries_;
   HeapVector<Member<PendingSessionQuery>> pending_session_requests_;
-
-  Vector<EnvironmentProviderErrorCallback>
-      environment_provider_error_callbacks_;
 
   Member<XRFrameProvider> frame_provider_;
   HeapHashSet<WeakMember<XRSession>> sessions_;

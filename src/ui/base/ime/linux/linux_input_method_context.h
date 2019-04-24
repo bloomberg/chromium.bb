@@ -5,8 +5,8 @@
 #ifndef UI_BASE_IME_LINUX_LINUX_INPUT_METHOD_CONTEXT_H_
 #define UI_BASE_IME_LINUX_LINUX_INPUT_METHOD_CONTEXT_H_
 
-#include "base/component_export.h"
 #include "base/strings/string16.h"
+#include "ui/base/ime/linux/ui_base_ime_linux_export.h"
 #include "ui/base/ime/text_input_type.h"
 
 namespace gfx {
@@ -21,7 +21,7 @@ class KeyEvent;
 
 // An interface of input method context for input method frameworks on
 // GNU/Linux and likes.
-class COMPONENT_EXPORT(UI_BASE_IME_LINUX) LinuxInputMethodContext {
+class UI_BASE_IME_LINUX_EXPORT LinuxInputMethodContext {
  public:
   virtual ~LinuxInputMethodContext() {}
 
@@ -50,7 +50,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) LinuxInputMethodContext {
 };
 
 // An interface of callback functions called from LinuxInputMethodContext.
-class COMPONENT_EXPORT(UI_BASE_IME_LINUX) LinuxInputMethodContextDelegate {
+class UI_BASE_IME_LINUX_EXPORT LinuxInputMethodContextDelegate {
  public:
   virtual ~LinuxInputMethodContextDelegate() {}
 

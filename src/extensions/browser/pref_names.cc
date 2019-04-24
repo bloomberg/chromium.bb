@@ -40,8 +40,8 @@ const char kInsecureExtensionUpdatesEnabled[] =
 const char kInstallAllowList[] = "extensions.install.allowlist";
 const char kInstallDenyList[] = "extensions.install.denylist";
 const char kInstallForceList[] = "extensions.install.forcelist";
-const char kLoginScreenExtensions[] =
-    "extensions.install.login_screen_extensions";
+const char kInstallLoginScreenAppList[] =
+    "extensions.install.login_screen_app_list";
 const char kLastChromeVersion[] = "extensions.last_chrome_version";
 const char kNativeMessagingBlacklist[] = "native_messaging.blacklist";
 const char kNativeMessagingWhitelist[] = "native_messaging.whitelist";
@@ -56,7 +56,6 @@ const char kPrefIncognitoPreferences[] = "incognito_preferences";
 const char kPrefRegularOnlyPreferences[] = "regular_only_preferences";
 const char kPrefContentSettings[] = "content_settings";
 const char kPrefIncognitoContentSettings[] = "incognito_content_settings";
-const char kUninstallBlacklistedExtensions[] = "extensions.remove_blacklisted";
 
 }  // namespace pref_names
 }  // namespace extensions

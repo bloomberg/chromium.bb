@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
 import java.lang.annotation.Retention;
@@ -35,8 +34,7 @@ public final class NewTabPageUma {
     private NewTabPageUma() {}
 
     // Possible actions taken by the user on the NTP. These values are also defined in
-    // enums.xml as NewTabPageActionAndroid2.
-    // WARNING: these values must stay in sync with enums.xml.
+    // histograms.xml. WARNING: these values must stay in sync with histograms.xml.
 
     /** User performed a search using the omnibox. */
     private static final int ACTION_SEARCHED_USING_OMNIBOX = 0;
@@ -71,11 +69,8 @@ public final class NewTabPageUma {
     /** User clicked on the "Refresh" button in the "all dismissed" state. */
     public static final int ACTION_CLICKED_ALL_DISMISSED_REFRESH = 10;
 
-    /** User opened an explore sites tile. */
-    public static final int ACTION_OPENED_EXPLORE_SITES_TILE = 11;
-
     /** The number of possible actions. */
-    private static final int NUM_ACTIONS = 12;
+    private static final int NUM_ACTIONS = 11;
 
     /** User navigated to a page using the omnibox. */
     private static final int RAPPOR_ACTION_NAVIGATED_USING_OMNIBOX = 0;
@@ -98,7 +93,7 @@ public final class NewTabPageUma {
 
     /**
      * Possible results when updating content suggestions list in the UI. Keep in sync with the
-     * ContentSuggestionsUIUpdateResult2 enum in enums.xml. Do not remove or change existing
+     * ContentSuggestionsUIUpdateResult enum in histograms.xml. Do not remove or change existing
      * values other than NUM_UI_UPDATE_RESULTS.
      */
     @IntDef({ContentSuggestionsUIUpdateResult.SUCCESS_APPENDED,
@@ -226,8 +221,7 @@ public final class NewTabPageUma {
     }
 
     /**
-     * Record a NTP impression (even potential ones to make informed product decisions). If the
-     * impression type is {@link NewTabPageUma#NTP_IMPRESSION_REGULAR}, also records a user action.
+     * Record a NTP impression (even potential ones to make informed product decisions).
      * @param impressionType Type of the impression from NewTabPageUma.java
      */
     public static void recordNTPImpression(int impressionType) {
@@ -266,23 +260,6 @@ public final class NewTabPageUma {
                 "NewTabPage.LoadType", LOAD_TYPE_COLD_START, LOAD_TYPE_COUNT);
     }
 
-    /**
-     * Records the network status of the user.
-     */
-    public static void recordIsUserOnline() {
-        RecordHistogram.recordBooleanHistogram(
-                "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());
-    }
-
-    /**
-     * Records the time duration that the NTP was visible.
-     * @param lastShownTimeNs A long as returned by System#nanoTime() - this should have been
-     *                        called at the moment the new tab page is shown.
-     */
-    public static void recordTimeSpentOnNtp(long lastShownTimeNs) {
-        RecordHistogram.recordMediumTimesHistogram("NewTabPage.TimeSpent",
-                (System.nanoTime() - lastShownTimeNs) / TimeUtils.NANOSECONDS_PER_MILLISECOND);
-    }
     /**
      * Records how much time elapsed from start until the search box became available to the user.
      */

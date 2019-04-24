@@ -15,6 +15,11 @@ class ViewModelBase;
 
 class VIEWS_EXPORT ViewModelUtils {
  public:
+  enum Alignment {
+    HORIZONTAL,
+    VERTICAL
+  };
+
   // Sets the bounds of each view to its ideal bounds.
   static void SetViewBoundsToIdealBounds(const ViewModelBase& model);
 
@@ -24,7 +29,7 @@ class VIEWS_EXPORT ViewModelUtils {
   // Returns the index to move |view| to based on a coordinate of |x| and |y|.
   static int DetermineMoveIndex(const ViewModelBase& model,
                                 View* view,
-                                bool is_horizontal,
+                                Alignment alignment,
                                 int x,
                                 int y);
 

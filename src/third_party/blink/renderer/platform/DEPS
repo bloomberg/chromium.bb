@@ -76,10 +76,6 @@ include_rules = [
 ]
 
 specific_include_rules = {
-    "crypto\.(cc|h)": [
-        "+crypto",
-        "+third_party/boringssl/src/include",
-    ],
     "web_url_error\.cc": [
         "+net/base/net_errors.h"
     ],

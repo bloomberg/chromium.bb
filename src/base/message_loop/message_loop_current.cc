@@ -9,24 +9,26 @@
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_for_ui.h"
 #include "base/no_destructor.h"
-#include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace base {
 
+namespace {
+
+base::ThreadLocalPointer<MessageLoopBase>* GetTLSMessageLoop() {
+  static NoDestructor<ThreadLocalPointer<MessageLoopBase>> lazy_tls_ptr;
+  return lazy_tls_ptr.get();
+}
+
+}  // namespace
+
 //------------------------------------------------------------------------------
 // MessageLoopCurrent
 
 // static
-sequence_manager::internal::SequenceManagerImpl*
-MessageLoopCurrent::GetCurrentSequenceManagerImpl() {
-  return sequence_manager::internal::SequenceManagerImpl::GetCurrent();
-}
-
-// static
 MessageLoopCurrent MessageLoopCurrent::Get() {
-  return MessageLoopCurrent(GetCurrentSequenceManagerImpl());
+  return MessageLoopCurrent(GetTLSMessageLoop()->Get());
 }
 
 // static
@@ -36,7 +38,7 @@ MessageLoopCurrent MessageLoopCurrent::GetNull() {
 
 // static
 bool MessageLoopCurrent::IsSet() {
-  return !!GetCurrentSequenceManagerImpl();
+  return !!GetTLSMessageLoop()->Get();
 }
 
 void MessageLoopCurrent::AddDestructionObserver(
@@ -67,7 +69,7 @@ void MessageLoopCurrent::SetTaskRunner(
 }
 
 bool MessageLoopCurrent::IsBoundToCurrentThread() const {
-  return current_ == GetCurrentSequenceManagerImpl();
+  return current_ == GetTLSMessageLoop()->Get();
 }
 
 bool MessageLoopCurrent::IsIdleForTesting() {
@@ -100,13 +102,27 @@ bool MessageLoopCurrent::NestableTasksAllowed() const {
 }
 
 MessageLoopCurrent::ScopedNestableTaskAllower::ScopedNestableTaskAllower()
-    : sequence_manager_(GetCurrentSequenceManagerImpl()),
-      old_state_(sequence_manager_->IsTaskExecutionAllowed()) {
-  sequence_manager_->SetTaskExecutionAllowed(true);
+    : loop_(GetTLSMessageLoop()->Get()),
+      old_state_(loop_->IsTaskExecutionAllowed()) {
+  loop_->SetTaskExecutionAllowed(true);
 }
 
 MessageLoopCurrent::ScopedNestableTaskAllower::~ScopedNestableTaskAllower() {
-  sequence_manager_->SetTaskExecutionAllowed(old_state_);
+  loop_->SetTaskExecutionAllowed(old_state_);
+}
+
+// static
+void MessageLoopCurrent::BindToCurrentThreadInternal(MessageLoopBase* current) {
+  DCHECK(!GetTLSMessageLoop()->Get())
+      << "Can't register a second MessageLoop on the same thread.";
+  GetTLSMessageLoop()->Set(current);
+}
+
+// static
+void MessageLoopCurrent::UnbindFromCurrentThreadInternal(
+    MessageLoopBase* current) {
+  DCHECK_EQ(current, GetTLSMessageLoop()->Get());
+  GetTLSMessageLoop()->Set(nullptr);
 }
 
 bool MessageLoopCurrent::operator==(const MessageLoopCurrent& other) const {
@@ -120,27 +136,26 @@ bool MessageLoopCurrent::operator==(const MessageLoopCurrent& other) const {
 
 // static
 MessageLoopCurrentForUI MessageLoopCurrentForUI::Get() {
-  auto* sequence_manager = GetCurrentSequenceManagerImpl();
-  DCHECK(sequence_manager);
+  MessageLoopBase* loop = GetTLSMessageLoop()->Get();
+  DCHECK(loop);
 #if defined(OS_ANDROID)
-  DCHECK(sequence_manager->IsType(MessageLoop::TYPE_UI) ||
-         sequence_manager->IsType(MessageLoop::TYPE_JAVA));
+  DCHECK(loop->IsType(MessageLoop::TYPE_UI) ||
+         loop->IsType(MessageLoop::TYPE_JAVA));
 #else   // defined(OS_ANDROID)
-  DCHECK(sequence_manager->IsType(MessageLoop::TYPE_UI));
+  DCHECK(loop->IsType(MessageLoop::TYPE_UI));
 #endif  // defined(OS_ANDROID)
-  return MessageLoopCurrentForUI(sequence_manager);
+  return MessageLoopCurrentForUI(loop);
 }
 
 // static
 bool MessageLoopCurrentForUI::IsSet() {
-  sequence_manager::internal::SequenceManagerImpl* sequence_manager =
-      GetCurrentSequenceManagerImpl();
-  return sequence_manager &&
+  MessageLoopBase* loop = GetTLSMessageLoop()->Get();
+  return loop &&
 #if defined(OS_ANDROID)
-         (sequence_manager->IsType(MessageLoop::TYPE_UI) ||
-          sequence_manager->IsType(MessageLoop::TYPE_JAVA));
+         (loop->IsType(MessageLoop::TYPE_UI) ||
+          loop->IsType(MessageLoop::TYPE_JAVA));
 #else   // defined(OS_ANDROID)
-         sequence_manager->IsType(MessageLoop::TYPE_UI);
+         loop->IsType(MessageLoop::TYPE_UI);
 #endif  // defined(OS_ANDROID)
 }
 
@@ -192,16 +207,16 @@ void MessageLoopCurrentForUI::RemoveMessagePumpObserver(
 
 // static
 MessageLoopCurrentForIO MessageLoopCurrentForIO::Get() {
-  auto* sequence_manager = GetCurrentSequenceManagerImpl();
-  DCHECK(sequence_manager);
-  DCHECK(sequence_manager->IsType(MessageLoop::TYPE_IO));
-  return MessageLoopCurrentForIO(sequence_manager);
+  MessageLoopBase* loop = GetTLSMessageLoop()->Get();
+  DCHECK(loop);
+  DCHECK(loop->IsType(MessageLoop::TYPE_IO));
+  return MessageLoopCurrentForIO(loop);
 }
 
 // static
 bool MessageLoopCurrentForIO::IsSet() {
-  auto* sequence_manager = GetCurrentSequenceManagerImpl();
-  return sequence_manager && sequence_manager->IsType(MessageLoop::TYPE_IO);
+  MessageLoopBase* loop = GetTLSMessageLoop()->Get();
+  return loop && loop->IsType(MessageLoop::TYPE_IO);
 }
 
 MessagePumpForIO* MessageLoopCurrentForIO::GetMessagePumpForIO() const {

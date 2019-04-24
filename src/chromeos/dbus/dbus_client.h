@@ -27,6 +27,7 @@ class DBusClient {
 
  private:
   friend class DBusClientsBrowser;
+  friend class DBusClientsCommon;
 
   DISALLOW_ASSIGN(DBusClient);
 };

@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BASE_OPTIONAL_H_
 #define THIRD_PARTY_BASE_OPTIONAL_H_
 
-#include <functional>
 #include <type_traits>
 #include <utility>
 

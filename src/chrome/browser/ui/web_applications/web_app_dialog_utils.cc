@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
@@ -57,18 +56,14 @@ void WebAppInstallDialogCallback(
   }
 }
 
-WebAppInstalledCallback& GetInstalledCallbackForTesting() {
-  static base::NoDestructor<WebAppInstalledCallback> instance;
+WebAppInstalledCallbackForTesting& GetInstalledCallbackForTesting() {
+  static base::NoDestructor<WebAppInstalledCallbackForTesting> instance;
   return *instance;
 }
 
-void OnWebAppInstalled(WebAppInstalledCallback callback,
-                       const AppId& installed_app_id,
-                       InstallResultCode code) {
+void OnWebAppInstalled(const AppId& installed_app_id, InstallResultCode code) {
   if (GetInstalledCallbackForTesting())
     std::move(GetInstalledCallbackForTesting()).Run(installed_app_id, code);
-
-  std::move(callback).Run(installed_app_id, code);
 }
 
 }  // namespace
@@ -92,29 +87,15 @@ void CreateWebAppFromCurrentWebContents(Browser* browser,
   auto* provider = WebAppProvider::GetForWebContents(web_contents);
   DCHECK(provider);
 
-  WebAppInstalledCallback installed_callback = base::DoNothing();
-
-  provider->install_manager().InstallWebAppFromManifestWithFallback(
+  provider->install_manager().InstallWebApp(
       web_contents, force_shortcut_app,
       InstallableMetrics::GetInstallSource(web_contents, InstallTrigger::MENU),
       base::BindOnce(WebAppInstallDialogCallback),
-      base::BindOnce(OnWebAppInstalled, std::move(installed_callback)));
+      base::BindOnce(OnWebAppInstalled));
 }
 
-bool CreateWebAppFromManifest(content::WebContents* web_contents,
-                              WebappInstallSource install_source,
-                              WebAppInstalledCallback installed_callback) {
-  auto* provider = WebAppProvider::GetForWebContents(web_contents);
-  if (!provider)
-    return false;
-
-  provider->install_manager().InstallWebAppFromManifest(
-      web_contents, install_source, base::BindOnce(WebAppInstallDialogCallback),
-      base::BindOnce(OnWebAppInstalled, std::move(installed_callback)));
-  return true;
-}
-
-void SetInstalledCallbackForTesting(WebAppInstalledCallback callback) {
+void SetInstalledCallbackForTesting(
+    WebAppInstalledCallbackForTesting callback) {
   GetInstalledCallbackForTesting() = std::move(callback);
 }
 

@@ -7,8 +7,6 @@
 
 """
 
-from __future__ import print_function
-
 import atexit
 import difflib
 import os
@@ -87,7 +85,7 @@ class SubprocessCpuTimer:
         ctypes.byref(kernel_time),
         ctypes.byref(user_time))
     if not rc:
-      print('Could not obtain process time', file=sys.stderr)
+      print >>sys.stderr, 'Could not obtain process time'
       return 0
     return ((kernel_time.value + user_time.value)
             / SubprocessCpuTimer.WIN32_PROCESS_TIMES_TICKS_PER_SECOND)
@@ -158,7 +156,7 @@ def RunTestWithInput(cmd, input_data, timeout=None):
                            stdin=input_data)
       _, _, retcode = CommunicateWithTimeout(p, timeout=timeout)
   except OSError:
-    print('exception: ' + str(sys.exc_info()[1]))
+    print 'exception: ' + str(sys.exc_info()[1])
     retcode = 0
     failed = 1
 
@@ -220,15 +218,15 @@ def RunTestWithInputOutput(cmd, input_data, capture_stderr=True, timeout=None):
       stdout, stderr, retcode = CommunicateWithTimeout(p, timeout=timeout)
   except OSError, x:
     if x.errno == 10:
-      print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-      print('ignoring exception', str(sys.exc_info()[1]))
-      print('return code NOT checked')
-      print('this seems to be a windows issue')
-      print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+      print '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
+      print 'ignoring exception', str(sys.exc_info()[1])
+      print 'return code NOT checked'
+      print 'this seems to be a windows issue'
+      print '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
       failed = 0
       retcode = 0
     else:
-      print('exception: ' + str(sys.exc_info()[1]))
+      print 'exception: ' + str(sys.exc_info()[1])
       retcode = 0
       failed = 1
   if p is None:

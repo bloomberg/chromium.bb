@@ -92,12 +92,14 @@ class TestVideoConfig {
   static VideoDecoderConfig NormalWithColorSpace(
       VideoCodec codec,
       const VideoColorSpace& color_space);
-  static VideoDecoderConfig NormalH264(VideoCodecProfile = H264PROFILE_MIN);
+  static VideoDecoderConfig NormalH264(
+      VideoCodecProfile = VIDEO_CODEC_PROFILE_UNKNOWN);
   static VideoDecoderConfig NormalCodecProfile(
       VideoCodec codec = kCodecVP8,
-      VideoCodecProfile profile = VP8PROFILE_MIN);
-  static VideoDecoderConfig NormalEncrypted(VideoCodec codec = kCodecVP8,
-                                            VideoCodecProfile = VP8PROFILE_MIN);
+      VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN);
+  static VideoDecoderConfig NormalEncrypted(
+      VideoCodec codec = kCodecVP8,
+      VideoCodecProfile = VIDEO_CODEC_PROFILE_UNKNOWN);
   static VideoDecoderConfig NormalRotated(VideoRotation rotation);
 
   // Returns a configuration that is larger in dimensions than Normal().

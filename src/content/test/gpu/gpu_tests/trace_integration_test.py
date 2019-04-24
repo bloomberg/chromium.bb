@@ -8,6 +8,7 @@ import sys
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 from gpu_tests import pixel_test_pages
+from gpu_tests import trace_test_expectations
 
 from telemetry.timeline import model as model_module
 from telemetry.timeline import tracing_config
@@ -184,7 +185,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def _CreateExpectations(cls):
-    raise NotImplementedError
+    return trace_test_expectations.TraceTestExpectations()
 
   @classmethod
   def SetUpProcess(cls):
@@ -355,32 +356,22 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                   _GET_STATISTICS_EVENT_NAME)
       presentation_mode_history.append(detected_presentation_mode)
     valid_entry_found = False
-    for index in range(len(presentation_mode_history)):
-      mode = presentation_mode_history[index]
+    for mode in presentation_mode_history:
       if (mode == _SWAP_CHAIN_PRESENTATION_MODE_NONE or
           mode == _SWAP_CHAIN_GET_FRAME_STATISTICS_MEDIA_FAILED):
         # Be more tolerant to avoid test flakiness
         continue
       if mode != expected_presentation_mode:
-        if index >= len(presentation_mode_history) // 2:
-          # Be more tolerant for the first half frames in non-overlay mode.
-          self.fail('SwapChain presentation mode mismatch, expected %s got %s' %
-              (TraceIntegrationTest._SwapChainPresentationModeToStr(
-                   expected_presentation_mode),
-               TraceIntegrationTest._SwapChainPresentationModeListToStr(
-                   presentation_mode_history)))
+        self.fail('SwapChain presentation mode mismatch, expected %s got %s' %
+            (TraceIntegrationTest._SwapChainPresentationModeToStr(
+                 expected_presentation_mode),
+             TraceIntegrationTest._SwapChainPresentationModeListToStr(
+                 presentation_mode_history)))
       valid_entry_found = True
     if not valid_entry_found:
       self.fail('No valid frame statistics being collected: %s',
           TraceIntegrationTest._SwapChainPresentationModeListToStr(
               presentation_mode_history))
-
-  @classmethod
-  def ExpectationsFiles(cls):
-    return [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                     'test_expectations',
-                     'trace_test_expectations.txt')]
 
 
 def load_tests(loader, tests, pattern):

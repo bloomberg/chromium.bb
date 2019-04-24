@@ -103,7 +103,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.tableView.accessibilityIdentifier = kAutofillProfileTableViewID;
   self.tableView.estimatedSectionFooterHeight =
       kTableViewHeaderFooterViewHeight;
-  [self updateUIForEditState];
+  [self updateEditButton];
   [self loadModel];
 }
 
@@ -205,8 +205,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return [self localProfilesExist];
 }
 
-- (void)updateUIForEditState {
-  [super updateUIForEditState];
+- (void)editButtonPressed {
+  [super editButtonPressed];
   [self setSwitchItemEnabled:!self.tableView.editing
                     itemType:ItemTypeAutofillAddressSwitch];
 }
@@ -348,7 +348,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self setEditing:NO animated:NO];
   }
 
-  [self updateUIForEditState];
+  [self updateEditButton];
   [self reloadData];
 }
 
@@ -414,7 +414,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
               [strongSelf.tableView isEditing]) {
             [strongSelf setEditing:NO animated:YES];
           }
-          [strongSelf updateUIForEditState];
+          [strongSelf updateEditButton];
           strongSelf->_deletionInProgress = NO;
         }];
   } else {

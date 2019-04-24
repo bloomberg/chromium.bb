@@ -4,8 +4,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import print_function
-
 import getopt
 import sys
 
@@ -27,13 +25,13 @@ Options:
 
 
 def Fatal(mesg):
-  print(mesg, file=sys.stderr)
+  print >>sys.stderr, mesg
   sys.exit(1)
 
 
 def DumpSegments(elf_obj):
   for n, s in enumerate(elf_obj.PhdrList()):
-    print(n, str(s))
+    print n, str(s)
 
 
 def CheckSegments(elf_obj, attribute, segment, flags, divisor, remainder):
@@ -45,7 +43,7 @@ def CheckSegments(elf_obj, attribute, segment, flags, divisor, remainder):
     Fatal('no matching segments found')
 
   for s in filtered_segments:
-    print('found: ', str(s))
+    print 'found: ', str(s)
     val = s.__dict__[attribute]
     result = val % divisor
     if result != remainder:

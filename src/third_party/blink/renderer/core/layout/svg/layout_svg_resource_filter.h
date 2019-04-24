@@ -52,6 +52,8 @@ class FilterData final : public GarbageCollected<FilterData> {
     kPaintingFilterCycleDetected
   };
 
+  static FilterData* Create() { return MakeGarbageCollected<FilterData>(); }
+
   FilterData() : state_(kInitial) {}
 
   void Dispose();

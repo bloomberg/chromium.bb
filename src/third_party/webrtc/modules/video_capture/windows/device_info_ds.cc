@@ -16,6 +16,7 @@
 #include "rtc_base/string_utils.h"
 
 #include <dvdmedia.h>
+#include <streams.h>
 
 namespace webrtc {
 namespace videocapturemodule {
@@ -518,7 +519,7 @@ int32_t DeviceInfoDS::CreateCapabilityMap(const char* deviceUniqueIdUTF8)
                        << " type:" << static_cast<int>(capability.videoType)
                        << " fps:" << capability.maxFPS;
     }
-    FreeMediaType(pmt);
+    DeleteMediaType(pmt);
     pmt = NULL;
   }
   RELEASE_AND_CLEAR(streamConfig);

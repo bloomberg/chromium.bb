@@ -49,7 +49,6 @@ class FieldPositionHandler;
 class TimeZoneFormat;
 class SharedNumberFormat;
 class SimpleDateFormatMutableNFs;
-class DateIntervalFormat;
 
 namespace number {
 class LocalizedNumberFormatter;
@@ -1218,7 +1217,6 @@ public:
 
 private:
     friend class DateFormat;
-    friend class DateIntervalFormat;
 
     void initializeDefaultCentury(void);
 
@@ -1599,7 +1597,6 @@ private:
 
     UBool                fHasMinute;
     UBool                fHasSecond;
-    UBool                fHasHanYearChar; // pattern contains the Han year character \u5E74
 
     /**
      * Sets fHasMinutes and fHasSeconds.

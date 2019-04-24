@@ -115,7 +115,7 @@ SquareInkDropRippleCalculateTransformsTest::
       test_api_(&ink_drop_ripple_) {}
 
 SquareInkDropRippleCalculateTransformsTest::
-    ~SquareInkDropRippleCalculateTransformsTest() = default;
+    ~SquareInkDropRippleCalculateTransformsTest() {}
 
 }  // namespace
 

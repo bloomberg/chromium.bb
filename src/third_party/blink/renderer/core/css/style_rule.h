@@ -184,6 +184,13 @@ class CORE_EXPORT StyleRuleFontFace : public StyleRuleBase {
 
 class StyleRulePage : public StyleRuleBase {
  public:
+  // Adopts the selector list
+  static StyleRulePage* Create(CSSSelectorList selector_list,
+                               CSSPropertyValueSet* properties) {
+    return MakeGarbageCollected<StyleRulePage>(std::move(selector_list),
+                                               properties);
+  }
+
   StyleRulePage(CSSSelectorList, CSSPropertyValueSet*);
   StyleRulePage(const StyleRulePage&);
   ~StyleRulePage();
@@ -245,6 +252,12 @@ class CORE_EXPORT StyleRuleCondition : public StyleRuleGroup {
 
 class CORE_EXPORT StyleRuleMedia : public StyleRuleCondition {
  public:
+  static StyleRuleMedia* Create(
+      scoped_refptr<MediaQuerySet> media,
+      HeapVector<Member<StyleRuleBase>>& adopt_rules) {
+    return MakeGarbageCollected<StyleRuleMedia>(media, adopt_rules);
+  }
+
   StyleRuleMedia(scoped_refptr<MediaQuerySet>,
                  HeapVector<Member<StyleRuleBase>>& adopt_rules);
   StyleRuleMedia(const StyleRuleMedia&);
@@ -263,6 +276,14 @@ class CORE_EXPORT StyleRuleMedia : public StyleRuleCondition {
 
 class StyleRuleSupports : public StyleRuleCondition {
  public:
+  static StyleRuleSupports* Create(
+      const String& condition_text,
+      bool condition_is_supported,
+      HeapVector<Member<StyleRuleBase>>& adopt_rules) {
+    return MakeGarbageCollected<StyleRuleSupports>(
+        condition_text, condition_is_supported, adopt_rules);
+  }
+
   StyleRuleSupports(const String& condition_text,
                     bool condition_is_supported,
                     HeapVector<Member<StyleRuleBase>>& adopt_rules);
@@ -284,8 +305,12 @@ class StyleRuleSupports : public StyleRuleCondition {
 
 class StyleRuleViewport : public StyleRuleBase {
  public:
-  explicit StyleRuleViewport(CSSPropertyValueSet*);
-  explicit StyleRuleViewport(const StyleRuleViewport&);
+  static StyleRuleViewport* Create(CSSPropertyValueSet* properties) {
+    return MakeGarbageCollected<StyleRuleViewport>(properties);
+  }
+
+  StyleRuleViewport(CSSPropertyValueSet*);
+  StyleRuleViewport(const StyleRuleViewport&);
   ~StyleRuleViewport();
 
   const CSSPropertyValueSet& Properties() const { return *properties_; }
@@ -304,6 +329,10 @@ class StyleRuleViewport : public StyleRuleBase {
 // This should only be used within the CSS Parser
 class StyleRuleCharset : public StyleRuleBase {
  public:
+  static StyleRuleCharset* Create() {
+    return MakeGarbageCollected<StyleRuleCharset>();
+  }
+
   StyleRuleCharset() : StyleRuleBase(kCharset) {}
   void TraceAfterDispatch(blink::Visitor* visitor) {
     StyleRuleBase::TraceAfterDispatch(visitor);
@@ -314,6 +343,13 @@ class StyleRuleCharset : public StyleRuleBase {
 
 class CORE_EXPORT StyleRuleFontFeatureValues : public StyleRuleBase {
  public:
+  static StyleRuleFontFeatureValues* Create(
+      const CSSValueList* font_family,
+      const CSSIdentifierValue* font_display) {
+    return MakeGarbageCollected<StyleRuleFontFeatureValues>(font_family,
+                                                            font_display);
+  }
+
   StyleRuleFontFeatureValues(const CSSValueList* font_family,
                              const CSSIdentifierValue* font_display);
   StyleRuleFontFeatureValues(const StyleRuleFontFeatureValues&) = default;

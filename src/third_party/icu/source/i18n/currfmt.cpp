@@ -21,16 +21,19 @@
 U_NAMESPACE_BEGIN
 
 CurrencyFormat::CurrencyFormat(const Locale& locale, UErrorCode& ec) :
-    MeasureFormat(locale, UMEASFMT_WIDTH_WIDE, ec)
+    MeasureFormat(locale, UMEASFMT_WIDTH_WIDE, ec), fmt(NULL)
 {
+    fmt = NumberFormat::createCurrencyInstance(locale, ec);
 }
 
 CurrencyFormat::CurrencyFormat(const CurrencyFormat& other) :
-    MeasureFormat(other)
+    MeasureFormat(other), fmt(NULL)
 {
+    fmt = (NumberFormat*) other.fmt->clone();
 }
 
 CurrencyFormat::~CurrencyFormat() {
+    delete fmt;
 }
 
 Format* CurrencyFormat::clone() const {
@@ -42,14 +45,14 @@ UnicodeString& CurrencyFormat::format(const Formattable& obj,
                                       FieldPosition& pos,
                                       UErrorCode& ec) const
 {
-    return getCurrencyFormatInternal().format(obj, appendTo, pos, ec);
+    return fmt->format(obj, appendTo, pos, ec);
 }
 
 void CurrencyFormat::parseObject(const UnicodeString& source,
                                  Formattable& result,
                                  ParsePosition& pos) const
 {
-    CurrencyAmount* currAmt = getCurrencyFormatInternal().parseCurrency(source, pos);
+    CurrencyAmount* currAmt = fmt->parseCurrency(source, pos);
     if (currAmt != NULL) {
         result.adoptObject(currAmt);
     }

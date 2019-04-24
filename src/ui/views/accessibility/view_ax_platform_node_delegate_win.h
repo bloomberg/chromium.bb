@@ -20,10 +20,8 @@ class ViewAXPlatformNodeDelegateWin : public ViewAXPlatformNodeDelegate {
   // |ViewAXPlatformNodeDelegate| overrides:
   gfx::NativeViewAccessible GetParent() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
-  gfx::Rect GetBoundsRect(
-      const ui::AXCoordinateSystem coordinate_system,
-      const ui::AXClippingBehavior clipping_behavior,
-      ui::AXOffscreenResult* offscreen_result) const override;
+  gfx::Rect GetClippedScreenBoundsRect() const override;
+  gfx::Rect GetUnclippedScreenBoundsRect() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ViewAXPlatformNodeDelegateWin);

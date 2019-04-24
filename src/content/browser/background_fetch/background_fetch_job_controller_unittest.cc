@@ -188,7 +188,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
         browser_context(),
         base::WrapRefCounted(embedded_worker_test_helper()->context_wrapper()),
         base::WrapRefCounted(partition->GetCacheStorageContext()),
-        /* quota_manager_proxy= */ nullptr, devtools_context());
+        /* quota_manager_proxy= */ nullptr);
   }
 
   void TearDown() override {
@@ -220,8 +220,7 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
 
  private:
   void DidUpdateProgress(
-      const std::string& unique_id,
-      const blink::mojom::BackgroundFetchRegistrationData& registration) {
+      const blink::mojom::BackgroundFetchRegistration& registration) {
     last_downloaded_ = registration.downloaded;
 
     if (job_progress_closure_)

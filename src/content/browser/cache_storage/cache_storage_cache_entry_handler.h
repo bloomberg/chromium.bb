@@ -35,8 +35,7 @@ struct PutContext {
              blink::mojom::BlobPtr blob,
              uint64_t blob_size,
              blink::mojom::BlobPtr side_data_blob,
-             uint64_t side_data_blob_size,
-             int64_t trace_id);
+             uint64_t side_data_blob_size);
 
   ~PutContext();
 
@@ -47,7 +46,6 @@ struct PutContext {
   uint64_t blob_size;
   blink::mojom::BlobPtr side_data_blob;
   uint64_t side_data_blob_size;
-  int64_t trace_id;
 
   // Provided while writing to the cache.
   ErrorCallback callback;
@@ -91,8 +89,7 @@ class CONTENT_EXPORT CacheStorageCacheEntryHandler {
 
   virtual std::unique_ptr<PutContext> CreatePutContext(
       blink::mojom::FetchAPIRequestPtr request,
-      blink::mojom::FetchAPIResponsePtr response,
-      int64_t trace_id) = 0;
+      blink::mojom::FetchAPIResponsePtr response) = 0;
   virtual void PopulateResponseBody(
       scoped_refptr<BlobDataHandle> data_handle,
       blink::mojom::FetchAPIResponse* response) = 0;

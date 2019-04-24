@@ -483,7 +483,7 @@ void GetFingerprint(
   gfx::Rect content_bounds = web_contents->GetContainerBounds();
 
   content::ScreenInfo screen_info;
-  content::RenderWidgetHostView* host_view =
+  const content::RenderWidgetHostView* host_view =
       web_contents->GetRenderWidgetHostView();
   if (host_view)
     host_view->GetRenderWidgetHost()->GetScreenInfo(&screen_info);

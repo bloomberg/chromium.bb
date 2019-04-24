@@ -91,7 +91,7 @@ struct SearchResultMetadata {
 enum AppListState {
   kStateApps = 0,
   kStateSearchResults,
-  kStateStart_DEPRECATED,
+  kStateStart,
   kStateEmbeddedAssistant,
 };
 
@@ -409,6 +409,5 @@ interface AppListClient {
   // Acquires a NavigableContentsFactory (indirectly) from the Content Service
   // to allow the app list to display embedded web contents. Currently used only
   // for answer card search results.
-  GetNavigableContentsFactory(
-      pending_receiver<content.mojom.NavigableContentsFactory> receiver);
+  GetNavigableContentsFactory(content.mojom.NavigableContentsFactory& request);
 };

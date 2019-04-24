@@ -4,10 +4,10 @@
 
 'use strict';
 
-/** @type {snippetsInternals.mojom.PageHandlerProxy} */
+/** @type {snippetsInternals.mojom.PageHandlerPtr} */
 let pageHandler = null;
 
-/** @type {snippetsInternals.mojom.PageInterface} */
+/** @type {snippetsInternals.mojom.PageImpl} */
 let page = null;
 
 /* Javascript module for chrome://snippets-internals. */
@@ -18,11 +18,11 @@ let page = null;
 /**
  * Sets all the properties contained in the mapping in the page.
  * property map {id -> value}.
- * @param {!Object<string,string>} propertyMap Property name to value mapping.
+ * @param {Map} propertyMap Property name to value mapping.
  */
 function setPropertiesInPage(propertyMap) {
-  Object.keys(propertyMap).forEach(function(field) {
-    setPropertyInPage(field, propertyMap[field]);
+  propertyMap.forEach(function(value, field) {
+    setPropertyInPage(field, value);
   });
 }
 
@@ -91,14 +91,21 @@ function getCategoryRankerProperties() {
 
     const table = $(domId);
     const rowTemplate = $('category-ranker-row');
-    Object.keys(response.properties).forEach(function(field) {
+    response.properties.forEach(function(value, field) {
       const row = document.importNode(rowTemplate.content, true);
       const td = row.querySelectorAll('td');
 
       td[0].textContent = field;
-      td[1].textContent = response.properties[field];
+      td[1].textContent = value;
       table.appendChild(row);
     });
+  });
+}
+
+/* Check if pushing dummy suggestions is possible. */
+function checkIfPushingDummySuggestionPossible() {
+  pageHandler.isPushingDummySuggestionPossible().then(function(response) {
+    $('push-dummy-suggestion').disabled = !response.result;
   });
 }
 
@@ -187,6 +194,7 @@ function refreshContent() {
   getUserClassifierProperties();
   getCategoryRankerProperties();
   getRemoteContentSuggestionsProperties();
+  checkIfPushingDummySuggestionPossible();
 }
 
 /* Setup buttons and other event listeners. */
@@ -222,6 +230,14 @@ function setupEventListeners() {
 
       // After we've fetched, update the page.
       getRemoteContentSuggestionsProperties();
+    });
+  });
+
+  $('push-dummy-suggestion').addEventListener('click', function(event) {
+    const content = $('push-dummy-suggestion').textContent;
+    $('push-dummy-suggestion').textContent = '...';
+    pageHandler.pushDummySuggestionInBackground(10).then(function(response) {
+      $('push-dummy-suggestion').textContent = content;
     });
   });
 
@@ -263,8 +279,13 @@ function setupEventListeners() {
 }
 
 /* Represents the js-side of the IPC link. Backend talks to this. */
-/** @implements {snippetsInternals.mojom.PageInterface} */
+/** @implements {snippetsInternals.mojom.PageImpl} */
 class SnippetsInternalsPageImpl {
+  constructor(request) {
+    this.binding_ =
+        new mojo.Binding(snippetsInternals.mojom.Page, this, request);
+  }
+
   /* Callback for when suggestions change on the backend. */
   onSuggestionsChanged() {
     getSuggestionsByCategory();
@@ -274,14 +295,17 @@ class SnippetsInternalsPageImpl {
 /* Main entry point. */
 document.addEventListener('DOMContentLoaded', function() {
   // Setup frontend mojo.
-  page = new SnippetsInternalsPageImpl;
+  const client = new snippetsInternals.mojom.PagePtr;
+  assert(client);
+  page = new SnippetsInternalsPageImpl(mojo.makeRequest(client));
 
   // Setup backend mojo.
-  const pageHandlerFactory =
-      snippetsInternals.mojom.PageHandlerFactory.getProxy();
+  const pageHandlerFactory = new snippetsInternals.mojom.PageHandlerFactoryPtr;
+  Mojo.bindInterface(
+      snippetsInternals.mojom.PageHandlerFactory.name,
+      mojo.makeRequest(pageHandlerFactory).handle);
 
   // Give backend mojo a reference to frontend mojo.
-  const client = new snippetsInternals.mojom.Page(page).createProxy();
   pageHandlerFactory.createPageHandler(client).then((response) => {
 
     pageHandler = response.handler;

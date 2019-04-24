@@ -23,8 +23,4 @@ TypeId TypeIdTestSupportA::GetTypeIdForUniquePtrInt() {
   return TypeId::From<std::unique_ptr<int>>();
 }
 
-TypeId TypeIdTestSupportA::GetTypeIdForUniquePtrTestType() {
-  return TypeId::From<std::unique_ptr<TestType>>();
-}
-
 }  // namespace base

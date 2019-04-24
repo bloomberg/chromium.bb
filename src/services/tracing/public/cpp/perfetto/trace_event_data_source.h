@@ -51,13 +51,10 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
 
  private:
   void GenerateMetadata(std::unique_ptr<perfetto::TraceWriter> trace_writer);
-  std::unique_ptr<base::DictionaryValue> GenerateTraceConfigMetadataDict();
 
   std::vector<MetadataGeneratorFunction> generator_functions_;
   scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
   std::unique_ptr<perfetto::TraceWriter> trace_writer_;
-  bool privacy_filtering_enabled_ = false;
-  std::string chrome_config_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventMetadataSource);
 };
@@ -131,8 +128,8 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // Logs a given histogram in traces.
   void LogHistogram(base::HistogramBase* histogram);
 
-  bool disable_interning_ = false;
-  bool privacy_filtering_enabled_ = false;
+  bool use_chrome_proto_;
+  bool disable_interning_;
   base::OnceClosure stop_complete_callback_;
 
   // Incremented and accessed atomically but without memory order guarantees.

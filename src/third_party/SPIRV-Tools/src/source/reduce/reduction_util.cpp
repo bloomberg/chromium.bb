@@ -19,11 +19,7 @@
 namespace spvtools {
 namespace reduce {
 
-using opt::IRContext;
-using opt::Instruction;
-
-const uint32_t kTrueBranchOperandIndex = 1;
-const uint32_t kFalseBranchOperandIndex = 2;
+using namespace opt;
 
 uint32_t FindOrCreateGlobalUndef(IRContext* context, uint32_t type_id) {
   for (auto& inst : context->module()->types_values()) {

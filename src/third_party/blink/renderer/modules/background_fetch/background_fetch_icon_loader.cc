@@ -32,7 +32,7 @@ namespace blink {
 
 namespace {
 
-constexpr uint32_t kIconFetchTimeoutInMs = 30000;
+constexpr unsigned long kIconFetchTimeoutInMs = 30000;
 constexpr int kMinimumIconSizeInPx = 0;
 
 // Because including base::ClampToRange would be a dependency violation.
@@ -128,7 +128,7 @@ KURL BackgroundFetchIconLoader::PickBestIconForDisplay(
     icons.emplace_back(candidate_icon);
   }
 
-  return KURL(ManifestIconSelector::FindBestMatchingSquareIcon(
+  return KURL(ManifestIconSelector::FindBestMatchingIcon(
       std::move(icons), icon_display_size_pixels_.height, kMinimumIconSizeInPx,
       Manifest::ImageResource::Purpose::ANY));
 }
@@ -151,7 +151,8 @@ void BackgroundFetchIconLoader::DidReceiveData(const char* data,
   data_->Append(data, length);
 }
 
-void BackgroundFetchIconLoader::DidFinishLoading(uint64_t resource_identifier) {
+void BackgroundFetchIconLoader::DidFinishLoading(
+    unsigned long resource_identifier) {
   if (stopped_)
     return;
 

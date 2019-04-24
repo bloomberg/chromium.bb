@@ -13,8 +13,7 @@ namespace blink {
 
 class MapCoordinatesTest : public RenderingTest {
  public:
-  MapCoordinatesTest()
-      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
+  MapCoordinatesTest() : RenderingTest(SingleChildLocalFrameClient::Create()) {}
   FloatPoint MapLocalToAncestor(const LayoutObject*,
                                 const LayoutBoxModelObject* ancestor,
                                 FloatPoint,
@@ -112,7 +111,7 @@ TEST_F(MapCoordinatesTest, SimpleText) {
   SetBodyInnerHTML("<div id='container'><br>text</div>");
 
   LayoutBox* container = ToLayoutBox(GetLayoutObjectByElementId("container"));
-  LayoutObject* text = To<LayoutBlockFlow>(container)->LastChild();
+  LayoutObject* text = ToLayoutBlockFlow(container)->LastChild();
   ASSERT_TRUE(text->IsText());
   FloatPoint mapped_point =
       MapLocalToAncestor(text, container, FloatPoint(10, 30));
@@ -214,7 +213,7 @@ TEST_F(MapCoordinatesTest, RelposInlineInRelposInline) {
 
   LayoutObject* target = GetLayoutObjectByElementId("target");
   LayoutInline* parent = ToLayoutInline(target->Parent());
-  auto* containing_block = To<LayoutBlockFlow>(parent->Parent());
+  LayoutBlockFlow* containing_block = ToLayoutBlockFlow(parent->Parent());
 
   FloatPoint mapped_point =
       MapLocalToAncestor(target, containing_block, FloatPoint(20, 10));

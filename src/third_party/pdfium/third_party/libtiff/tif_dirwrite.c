@@ -1893,14 +1893,12 @@ TIFFWriteDirectoryTagTransferfunction(TIFF* tif, uint32* ndir, TIFFDirEntry* dir
 		n=3;
 	if (n==3)
 	{
-		if (tif->tif_dir.td_transferfunction[2] == NULL ||
-		    !_TIFFmemcmp(tif->tif_dir.td_transferfunction[0],tif->tif_dir.td_transferfunction[2],m*sizeof(uint16)))
+		if (!_TIFFmemcmp(tif->tif_dir.td_transferfunction[0],tif->tif_dir.td_transferfunction[2],m*sizeof(uint16)))
 			n=2;
 	}
 	if (n==2)
 	{
-		if (tif->tif_dir.td_transferfunction[1] == NULL ||
-		    !_TIFFmemcmp(tif->tif_dir.td_transferfunction[0],tif->tif_dir.td_transferfunction[1],m*sizeof(uint16)))
+		if (!_TIFFmemcmp(tif->tif_dir.td_transferfunction[0],tif->tif_dir.td_transferfunction[1],m*sizeof(uint16)))
 			n=1;
 	}
 	if (n==0)

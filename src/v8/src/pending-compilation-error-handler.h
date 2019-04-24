@@ -57,8 +57,7 @@ class PendingCompilationErrorHandler {
   // Handle warnings detected during compilation.
   void ReportWarnings(Isolate* isolate, Handle<Script> script);
 
-  V8_EXPORT_PRIVATE Handle<String> FormatErrorMessageForTest(
-      Isolate* isolate) const;
+  Handle<String> FormatErrorMessageForTest(Isolate* isolate) const;
 
   void set_unidentifiable_error() {
     has_pending_error_ = true;

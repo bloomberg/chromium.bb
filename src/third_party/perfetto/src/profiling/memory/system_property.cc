@@ -93,20 +93,15 @@ SystemProperties::Handle SystemProperties::SetAll() {
 #endif
 
 // static
-void SystemProperties::ResetHeapprofdProperties() {
+void SystemProperties::ResetProperties() {
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
   int r = __system_property_foreach(
       [](const prop_info* pi, void*) {
         __system_property_read_callback(
             pi,
             [](void*, const char* name, const char*, uint32_t) {
-              constexpr char kDebugModePropName[] = "heapprofd.userdebug.mode";
-
-              // Unset everything starting with "heapprofd.", except for the
-              // property stating which mode to use on debug builds.
-              const char* found = strstr(name, "heapprofd.");
-              if (found == name && strncmp(name, kDebugModePropName,
-                                           strlen(kDebugModePropName))) {
+              const char* found = strstr(name, "heapprofd");
+              if (found == name) {
                 int ret = __system_property_set(name, "");
                 PERFETTO_DCHECK(ret == 0);
               }
@@ -116,7 +111,7 @@ void SystemProperties::ResetHeapprofdProperties() {
       nullptr);
   PERFETTO_DCHECK(r == 0);
 #else
-  PERFETTO_DFATAL("Cannot ResetHeapprofdProperties on out-of-tree builds.");
+  PERFETTO_DFATAL("Cannot ResetProperties on out-of-tree builds.");
 #endif
 }
 

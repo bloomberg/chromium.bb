@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/devtools/devtools_io_context.h"
@@ -29,13 +28,9 @@ std::vector<FetchHandler*> FetchHandler::ForAgentHost(
   return host->HandlersByName<FetchHandler>(Fetch::Metainfo::domainName);
 }
 
-FetchHandler::FetchHandler(
-    DevToolsIOContext* io_context,
-    UpdateLoaderFactoriesCallback update_loader_factories_callback)
+FetchHandler::FetchHandler(DevToolsIOContext* io_context)
     : DevToolsDomainHandler(Fetch::Metainfo::domainName),
       io_context_(io_context),
-      update_loader_factories_callback_(
-          std::move(update_loader_factories_callback)),
       weak_factory_(this) {}
 
 FetchHandler::~FetchHandler() = default;
@@ -85,25 +80,22 @@ Response ToInterceptionPatterns(
 }
 
 bool FetchHandler::MaybeCreateProxyForInterception(
-    RenderProcessHost* rph,
-    const base::UnguessableToken& frame_token,
+    RenderFrameHostImpl* rfh,
     bool is_navigation,
     bool is_download,
     network::mojom::URLLoaderFactoryRequest* target_factory_request) {
-  return interceptor_ && interceptor_->CreateProxyForInterception(
-                             rph, frame_token, is_navigation, is_download,
-                             target_factory_request);
+  return interceptor_ &&
+         interceptor_->CreateProxyForInterception(
+             rfh, is_navigation, is_download, target_factory_request);
 }
 
-void FetchHandler::Enable(Maybe<Array<Fetch::RequestPattern>> patterns,
-                          Maybe<bool> handleAuth,
-                          std::unique_ptr<EnableCallback> callback) {
+Response FetchHandler::Enable(Maybe<Array<Fetch::RequestPattern>> patterns,
+                              Maybe<bool> handleAuth) {
   if (!interceptor_) {
     if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      callback->sendFailure(
-          Response::Error("Fetch domain is only supported with "
-                          "--enable-features=NetworkService"));
-      return;
+      return Response::Error(
+          "Fetch domain is only supported with "
+          "--enable-features=NetworkService");
     }
     interceptor_ =
         std::make_unique<DevToolsURLLoaderInterceptor>(base::BindRepeating(
@@ -111,26 +103,18 @@ void FetchHandler::Enable(Maybe<Array<Fetch::RequestPattern>> patterns,
   }
   std::vector<DevToolsNetworkInterceptor::Pattern> interception_patterns;
   Response response = ToInterceptionPatterns(patterns, &interception_patterns);
-  if (!response.isSuccess()) {
-    callback->sendFailure(response);
-    return;
-  }
-  if (!interception_patterns.size() && handleAuth.fromMaybe(false)) {
-    callback->sendFailure(Response::InvalidParams(
-        "Can\'t specify empty patterns with handleAuth set"));
-    return;
-  }
+  if (!response.isSuccess())
+    return response;
+  if (!interception_patterns.size() && handleAuth.fromMaybe(false))
+    return Response::InvalidParams(
+        "Can\'t specify empty patterns with handleAuth set");
   interceptor_->SetPatterns(std::move(interception_patterns),
                             handleAuth.fromMaybe(false));
-  update_loader_factories_callback_.Run(
-      base::BindOnce(&EnableCallback::sendSuccess, std::move(callback)));
+  return Response::OK();
 }
 
 Response FetchHandler::Disable() {
-  const bool was_enabled = !!interceptor_;
   interceptor_.reset();
-  if (was_enabled)
-    update_loader_factories_callback_.Run(base::DoNothing());
   return Response::OK();
 }
 
@@ -396,7 +380,7 @@ void FetchHandler::RequestIntercepted(
       info->frame_id.ToString(),
       NetworkHandler::ResourceTypeToString(info->resource_type),
       std::move(error_reason), std::move(status_code),
-      std::move(response_headers), std::move(info->renderer_request_id));
+      std::move(response_headers));
 }
 
 }  // namespace protocol

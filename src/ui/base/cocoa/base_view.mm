@@ -71,26 +71,6 @@ NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
   }
 }
 
-- (void)handleLeftMouseUp:(NSEvent*)theEvent {
-  DCHECK_EQ([theEvent type], NSLeftMouseUp);
-  dragging_ = NO;
-  if (!pendingExitEvent_)
-    return;
-
-  NSEvent* exitEvent =
-      [NSEvent enterExitEventWithType:NSMouseExited
-                             location:[theEvent locationInWindow]
-                        modifierFlags:[theEvent modifierFlags]
-                            timestamp:[theEvent timestamp]
-                         windowNumber:[theEvent windowNumber]
-                              context:[theEvent context]
-                          eventNumber:[pendingExitEvent_ eventNumber]
-                       trackingNumber:[pendingExitEvent_ trackingNumber]
-                             userData:[pendingExitEvent_ userData]];
-  [self mouseEvent:exitEvent];
-  pendingExitEvent_.reset();
-}
-
 - (void)mouseEvent:(NSEvent*)theEvent {
   // This method left intentionally blank.
 }
@@ -125,7 +105,22 @@ NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
 
 - (void)mouseUp:(NSEvent*)theEvent {
   [self mouseEvent:theEvent];
-  [self handleLeftMouseUp:theEvent];
+
+  dragging_ = NO;
+  if (pendingExitEvent_.get()) {
+    NSEvent* exitEvent =
+        [NSEvent enterExitEventWithType:NSMouseExited
+                               location:[theEvent locationInWindow]
+                          modifierFlags:[theEvent modifierFlags]
+                              timestamp:[theEvent timestamp]
+                           windowNumber:[theEvent windowNumber]
+                                context:[theEvent context]
+                            eventNumber:[pendingExitEvent_.get() eventNumber]
+                         trackingNumber:[pendingExitEvent_.get() trackingNumber]
+                               userData:[pendingExitEvent_.get() userData]];
+    [self mouseEvent:exitEvent];
+    pendingExitEvent_.reset();
+  }
 }
 
 - (void)rightMouseUp:(NSEvent*)theEvent {
@@ -153,7 +148,7 @@ NSString* kSelectionDirection = @"Chromium.kSelectionDirection";
 }
 
 - (void)mouseEntered:(NSEvent*)theEvent {
-  if (pendingExitEvent_) {
+  if (pendingExitEvent_.get()) {
     pendingExitEvent_.reset();
     return;
   }

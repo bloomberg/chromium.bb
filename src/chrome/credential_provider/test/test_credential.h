@@ -109,8 +109,11 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
       CGaiaCredentialBase::UIProcessInfo* uiprocinfo) override;
 
   // Overrides to directly save to a fake scoped user profile.
-  HRESULT ForkSaveAccountInfoStub(const base::Value& dict,
-                                  BSTR* status_text) override;
+  HRESULT ForkSaveAccountInfoStub(
+      const std::unique_ptr<base::DictionaryValue>& dict,
+      BSTR* status_text) override;
+
+  void ResetInternalState() override;
 
   UiExitCodes default_exit_code_ = kUiecSuccess;
   std::string gls_email_;
@@ -174,16 +177,18 @@ BSTR CTestCredentialBase<T>::GetFinalUsername() {
 
 template <class T>
 std::string CTestCredentialBase<T>::GetFinalEmail() {
-  auto& results = this->get_authentication_results();
+  const base::DictionaryValue* results = this->get_authentication_results();
 
   if (!results)
     return std::string();
 
-  const std::string* email_value = results->FindStringKey(kKeyEmail);
+  const base::Value* email_value =
+      results->FindKeyOfType(kKeyEmail, base::Value::Type::STRING);
 
   if (!email_value)
     return std::string();
-  return *email_value;
+
+  return email_value->GetString();
 }
 
 template <class T>
@@ -248,9 +253,10 @@ HRESULT CTestCredentialBase<T>::ForkGaiaLogonStub(
 }
 
 template <class T>
-HRESULT CTestCredentialBase<T>::ForkSaveAccountInfoStub(const base::Value& dict,
-                                                        BSTR* status_text) {
-  return CGaiaCredentialBase::SaveAccountInfo(dict);
+HRESULT CTestCredentialBase<T>::ForkSaveAccountInfoStub(
+    const std::unique_ptr<base::DictionaryValue>& dict,
+    BSTR* status_text) {
+  return CGaiaCredentialBase::SaveAccountInfo(*dict);
 }
 
 template <class T>
@@ -284,6 +290,12 @@ void CTestCredentialBase<T>::DisplayErrorInUI(LONG status,
                                               BSTR status_text) {
   error_text_ = status_text;
   T::DisplayErrorInUI(status, substatus, status_text);
+}
+
+template <class T>
+void CTestCredentialBase<T>::ResetInternalState() {
+  gls_process_started_ = false;
+  T::ResetInternalState();
 }
 
 // This class is used to implement a test credential based off a fully

@@ -114,6 +114,9 @@ Status DeriveKey(const blink::WebCryptoAlgorithm& algorithm,
                  blink::WebCryptoKeyUsageMask usages,
                  blink::WebCryptoKey* derived_key);
 
+std::unique_ptr<blink::WebCryptoDigestor> CreateDigestor(
+    blink::WebCryptoAlgorithmId algorithm);
+
 bool SerializeKeyForClone(const blink::WebCryptoKey& key,
                           blink::WebVector<uint8_t>* key_data);
 

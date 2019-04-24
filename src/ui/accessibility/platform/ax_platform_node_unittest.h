@@ -2,21 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_UNITTEST_H_
-#define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_UNITTEST_H_
-
-#include <memory>
+#ifndef UI_ACCESSIBILITY_AX_PLATFORM_NODE_UNITTEST_H_
+#define UI_ACCESSIBILITY_AX_PLATFORM_NODE_UNITTEST_H_
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree.h"
-#include "ui/accessibility/ax_tree_manager.h"
 #include "ui/accessibility/ax_tree_update.h"
 
 namespace ui {
 
-class AXPlatformNodeTest : public testing::Test, public AXTreeManager {
+class AXPlatformNodeTest : public testing::Test {
  public:
   AXPlatformNodeTest();
   ~AXPlatformNodeTest() override;
@@ -37,11 +34,6 @@ class AXPlatformNodeTest : public testing::Test, public AXTreeManager {
             const ui::AXNodeData& node10 = ui::AXNodeData(),
             const ui::AXNodeData& node11 = ui::AXNodeData(),
             const ui::AXNodeData& node12 = ui::AXNodeData());
-
-  // AXTreeManager implementation.
-  AXNode* GetNodeFromTree(ui::AXTreeID tree_id, int32_t node_id) override;
-  AXPlatformNodeDelegate* GetDelegate(AXTreeID tree_id,
-                                      int32_t node_id) override;
 
  protected:
   AXNode* GetRootNode() { return tree_->root(); }
@@ -65,4 +57,4 @@ class AXPlatformNodeTest : public testing::Test, public AXTreeManager {
 
 }  // namespace ui
 
-#endif  // UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_UNITTEST_H_
+#endif  // UI_ACCESSIBILITY_AX_PLATFORM_NODE_UNITTEST_H_

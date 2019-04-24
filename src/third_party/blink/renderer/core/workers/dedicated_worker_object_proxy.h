@@ -55,8 +55,9 @@ class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {
   USING_FAST_MALLOC(DedicatedWorkerObjectProxy);
 
  public:
-  DedicatedWorkerObjectProxy(DedicatedWorkerMessagingProxy*,
-                             ParentExecutionContextTaskRunners*);
+  static std::unique_ptr<DedicatedWorkerObjectProxy> Create(
+      DedicatedWorkerMessagingProxy*,
+      ParentExecutionContextTaskRunners*);
   ~DedicatedWorkerObjectProxy() override;
 
   void PostMessageToWorkerObject(BlinkTransferableMessage);
@@ -73,6 +74,9 @@ class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {
   void DidEvaluateModuleScript(bool success) override;
 
  protected:
+  DedicatedWorkerObjectProxy(DedicatedWorkerMessagingProxy*,
+                             ParentExecutionContextTaskRunners*);
+
   CrossThreadWeakPersistent<ThreadedMessagingProxyBase> MessagingProxyWeakPtr()
       final;
 

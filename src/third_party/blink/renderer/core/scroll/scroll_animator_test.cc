@@ -60,6 +60,14 @@ class MockScrollableAreaForAnimatorTest
   USING_GARBAGE_COLLECTED_MIXIN(MockScrollableAreaForAnimatorTest);
 
  public:
+  static MockScrollableAreaForAnimatorTest* Create(
+      bool scroll_animator_enabled,
+      const ScrollOffset& min_offset,
+      const ScrollOffset& max_offset) {
+    return MakeGarbageCollected<MockScrollableAreaForAnimatorTest>(
+        scroll_animator_enabled, min_offset, max_offset);
+  }
+
   explicit MockScrollableAreaForAnimatorTest(bool scroll_animator_enabled,
                                              const ScrollOffset& min_offset,
                                              const ScrollOffset& max_offset)
@@ -112,14 +120,13 @@ class MockScrollableAreaForAnimatorTest
     return ScrollableArea::GetScrollOffset();
   }
 
-  void SetScrollOffset(const ScrollOffset& offset,
-                       ScrollType type,
-                       ScrollBehavior behavior = kScrollBehaviorInstant,
-                       ScrollCallback on_finish = ScrollCallback()) override {
+  void SetScrollOffset(
+      const ScrollOffset& offset,
+      ScrollType type,
+      ScrollBehavior behavior = kScrollBehaviorInstant) override {
     if (animator)
       animator->SetCurrentOffset(offset);
-    ScrollableArea::SetScrollOffset(offset, type, behavior,
-                                    std::move(on_finish));
+    ScrollableArea::SetScrollOffset(offset, type, behavior);
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final {
@@ -184,9 +191,9 @@ static void Reset(ScrollAnimator& scroll_animator) {
 // TODO(skobes): Add unit tests for composited scrolling paths.
 
 TEST(ScrollAnimatorTest, MainThreadStates) {
-  auto* scrollable_area =
-      MakeGarbageCollected<MockScrollableAreaForAnimatorTest>(
-          true, ScrollOffset(), ScrollOffset(1000, 1000));
+  MockScrollableAreaForAnimatorTest* scrollable_area =
+      MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(),
+                                                ScrollOffset(1000, 1000));
   ScrollAnimator* scroll_animator =
       MakeGarbageCollected<ScrollAnimator>(scrollable_area, GetMockedTime);
 
@@ -234,13 +241,13 @@ TEST(ScrollAnimatorTest, MainThreadStates) {
   Reset(*scroll_animator);
 
   // Forced GC in order to finalize objects depending on the mock object.
-  ThreadState::Current()->CollectAllGarbageForTesting();
+  ThreadState::Current()->CollectAllGarbage();
 }
 
 TEST(ScrollAnimatorTest, MainThreadEnabled) {
-  auto* scrollable_area =
-      MakeGarbageCollected<MockScrollableAreaForAnimatorTest>(
-          true, ScrollOffset(), ScrollOffset(1000, 1000));
+  MockScrollableAreaForAnimatorTest* scrollable_area =
+      MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(),
+                                                ScrollOffset(1000, 1000));
   ScrollAnimator* scroll_animator =
       MakeGarbageCollected<ScrollAnimator>(scrollable_area, GetMockedTime);
 
@@ -318,9 +325,9 @@ TEST(ScrollAnimatorTest, MainThreadEnabled) {
 // Test that a smooth scroll offset animation is aborted when followed by a
 // non-smooth scroll offset animation.
 TEST(ScrollAnimatorTest, AnimatedScrollAborted) {
-  auto* scrollable_area =
-      MakeGarbageCollected<MockScrollableAreaForAnimatorTest>(
-          true, ScrollOffset(), ScrollOffset(1000, 1000));
+  MockScrollableAreaForAnimatorTest* scrollable_area =
+      MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(),
+                                                ScrollOffset(1000, 1000));
   ScrollAnimator* scroll_animator =
       MakeGarbageCollected<ScrollAnimator>(scrollable_area, GetMockedTime);
 
@@ -366,9 +373,9 @@ TEST(ScrollAnimatorTest, AnimatedScrollAborted) {
 // Test that a smooth scroll offset animation running on the compositor is
 // completed on the main thread.
 TEST(ScrollAnimatorTest, AnimatedScrollTakeover) {
-  auto* scrollable_area =
-      MakeGarbageCollected<MockScrollableAreaForAnimatorTest>(
-          true, ScrollOffset(), ScrollOffset(1000, 1000));
+  MockScrollableAreaForAnimatorTest* scrollable_area =
+      MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(),
+                                                ScrollOffset(1000, 1000));
   TestScrollAnimator* scroll_animator =
       MakeGarbageCollected<TestScrollAnimator>(scrollable_area, GetMockedTime);
 
@@ -418,9 +425,9 @@ TEST(ScrollAnimatorTest, AnimatedScrollTakeover) {
 }
 
 TEST(ScrollAnimatorTest, Disabled) {
-  auto* scrollable_area =
-      MakeGarbageCollected<MockScrollableAreaForAnimatorTest>(
-          false, ScrollOffset(), ScrollOffset(1000, 1000));
+  MockScrollableAreaForAnimatorTest* scrollable_area =
+      MockScrollableAreaForAnimatorTest::Create(false, ScrollOffset(),
+                                                ScrollOffset(1000, 1000));
   ScrollAnimator* scroll_animator =
       MakeGarbageCollected<ScrollAnimator>(scrollable_area, GetMockedTime);
 
@@ -451,9 +458,9 @@ TEST(ScrollAnimatorTest, Disabled) {
 // Test that cancelling an animation resets the animation state.
 // See crbug.com/598548.
 TEST(ScrollAnimatorTest, CancellingAnimationResetsState) {
-  auto* scrollable_area =
-      MakeGarbageCollected<MockScrollableAreaForAnimatorTest>(
-          true, ScrollOffset(), ScrollOffset(1000, 1000));
+  MockScrollableAreaForAnimatorTest* scrollable_area =
+      MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(),
+                                                ScrollOffset(1000, 1000));
   ScrollAnimator* scroll_animator =
       MakeGarbageCollected<ScrollAnimator>(scrollable_area, GetMockedTime);
 
@@ -517,9 +524,9 @@ TEST(ScrollAnimatorTest, CancellingAnimationResetsState) {
 // Test the behavior when in WaitingToCancelOnCompositor and a new user scroll
 // happens.
 TEST(ScrollAnimatorTest, CancellingCompositorAnimation) {
-  auto* scrollable_area =
-      MakeGarbageCollected<MockScrollableAreaForAnimatorTest>(
-          true, ScrollOffset(), ScrollOffset(1000, 1000));
+  MockScrollableAreaForAnimatorTest* scrollable_area =
+      MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(),
+                                                ScrollOffset(1000, 1000));
   TestScrollAnimator* scroll_animator =
       MakeGarbageCollected<TestScrollAnimator>(scrollable_area, GetMockedTime);
 
@@ -591,15 +598,15 @@ TEST(ScrollAnimatorTest, CancellingCompositorAnimation) {
   Reset(*scroll_animator);
 
   // Forced GC in order to finalize objects depending on the mock object.
-  ThreadState::Current()->CollectAllGarbageForTesting();
+  ThreadState::Current()->CollectAllGarbage();
 }
 
 // This test verifies that impl only animation updates get cleared once they
 // are pushed to compositor animation host.
 TEST(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared) {
-  auto* scrollable_area =
-      MakeGarbageCollected<MockScrollableAreaForAnimatorTest>(
-          true, ScrollOffset(), ScrollOffset(1000, 1000));
+  MockScrollableAreaForAnimatorTest* scrollable_area =
+      MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(),
+                                                ScrollOffset(1000, 1000));
   TestScrollAnimator* animator =
       MakeGarbageCollected<TestScrollAnimator>(scrollable_area, GetMockedTime);
 
@@ -631,13 +638,13 @@ TEST(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared) {
   EXPECT_FALSE(animator->HasAnimationThatRequiresService());
 
   // Forced GC in order to finalize objects depending on the mock object.
-  ThreadState::Current()->CollectAllGarbageForTesting();
+  ThreadState::Current()->CollectAllGarbage();
 }
 
 TEST(ScrollAnimatorTest, MainThreadAnimationTargetAdjustment) {
-  auto* scrollable_area =
-      MakeGarbageCollected<MockScrollableAreaForAnimatorTest>(
-          true, ScrollOffset(-100, -100), ScrollOffset(1000, 1000));
+  MockScrollableAreaForAnimatorTest* scrollable_area =
+      MockScrollableAreaForAnimatorTest::Create(true, ScrollOffset(-100, -100),
+                                                ScrollOffset(1000, 1000));
   ScrollAnimator* animator =
       MakeGarbageCollected<ScrollAnimator>(scrollable_area, GetMockedTime);
   scrollable_area->SetScrollAnimator(animator);
@@ -689,7 +696,7 @@ TEST(ScrollAnimatorTest, MainThreadAnimationTargetAdjustment) {
   Reset(*animator);
 
   // Forced GC in order to finalize objects depending on the mock object.
-  ThreadState::Current()->CollectAllGarbageForTesting();
+  ThreadState::Current()->CollectAllGarbage();
 }
 
 }  // namespace blink

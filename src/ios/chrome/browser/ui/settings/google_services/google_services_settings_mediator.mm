@@ -25,9 +25,6 @@
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
-#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
@@ -64,8 +61,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   RestartAuthenticationFlowErrorItemType,
   ReauthDialogAsSyncIsInAuthErrorItemType,
   ShowPassphraseDialogErrorItemType,
-  SyncDisabledByAdministratorErrorItemType,
-  SyncSettingsNotCofirmedErrorItemType,
   SyncChromeDataItemType,
   ManageSyncItemType,
   // NonPersonalizedSectionIdentifier section.
@@ -74,9 +69,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   BetterSearchAndBrowsingItemType,
 };
 
-// Enterprise icon.
-NSString* kGoogleServicesEnterpriseImage = @"google_services_enterprise";
-// Sync error icon.
 NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 }  // namespace
@@ -97,13 +89,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 // Returns YES if the user is authenticated.
 @property(nonatomic, assign, readonly) BOOL isAuthenticated;
-// Returns YES if Sync settings has been confirmed.
-@property(nonatomic, assign, readonly) BOOL isSyncSettingsConfirmed;
-// Returns YES if the user cannot turn on sync for enterprise policy reasons.
-@property(nonatomic, assign, readonly) BOOL isSyncDisabledByAdministrator;
-// Returns YES if the user is allowed to turn on sync (even if there is a sync
-// error).
-@property(nonatomic, assign, readonly) BOOL isSyncCanBeAvailable;
 // Sync setup service.
 @property(nonatomic, assign, readonly) SyncSetupService* syncSetupService;
 // ** Identity section.
@@ -118,8 +103,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 @property(nonatomic, strong) TableViewItem* syncErrorItem;
 // Sync your Chrome data switch item.
 @property(nonatomic, strong) SyncSwitchItem* syncChromeDataSwitchItem;
-// Items to open "Manage sync" settings.
-@property(nonatomic, strong) TableViewImageItem* manageSyncItem;
 // ** Non personalized section.
 // Preference value for the "Autocomplete searches and URLs" feature.
 @property(nonatomic, strong, readonly)
@@ -146,14 +129,12 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 - (instancetype)initWithUserPrefService:(PrefService*)userPrefService
                        localPrefService:(PrefService*)localPrefService
-                       syncSetupService:(SyncSetupService*)syncSetupService
-                                   mode:(GoogleServicesSettingsMode)mode {
+                       syncSetupService:(SyncSetupService*)syncSetupService {
   self = [super init];
   if (self) {
     DCHECK(userPrefService);
     DCHECK(localPrefService);
     DCHECK(syncSetupService);
-    _mode = mode;
     _syncSetupService = syncSetupService;
     _autocompleteSearchPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
@@ -194,12 +175,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   DCHECK(!self.accountItem);
   self.accountItem =
       [[TableViewAccountItem alloc] initWithType:IdentityItemType];
-  if (self.mode == GoogleServicesSettingsModeAdvancedSigninSettings) {
-    self.accountItem.mode = TableViewAccountModeNonTappable;
-  } else {
-    self.accountItem.accessoryType =
-        UITableViewCellAccessoryDisclosureIndicator;
-  }
+  self.accountItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   [model addItem:self.accountItem
       toSectionWithIdentifier:IdentitySectionIdentifier];
 }
@@ -242,11 +218,10 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   self.accountItem.image =
       [self.resizedAvatarCache resizedAvatarForIdentity:identity];
   self.accountItem.text = identity.userFullName;
-  if (self.mode == GoogleServicesSettingsModeAdvancedSigninSettings ||
-      self.isSyncSettingsConfirmed) {
-    self.accountItem.detailText = GetNSString(IDS_IOS_SYNC_SETUP_IN_PROGRESS);
-  } else {
+  if (self.syncSetupService->HasFinishedInitialSetup()) {
     self.accountItem.detailText = identity.userEmail;
+  } else {
+    self.accountItem.detailText = GetNSString(IDS_IOS_SYNC_SETUP_IN_PROGRESS);
   }
 }
 
@@ -256,7 +231,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 - (void)loadSyncSection {
   self.syncErrorItem = nil;
   self.syncChromeDataSwitchItem = nil;
-  self.manageSyncItem = nil;
   TableViewModel* model = self.consumer.tableViewModel;
   [model addSectionWithIdentifier:SyncSectionIdentifier];
   [self updateSyncSection:NO];
@@ -322,10 +296,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   BOOL hasError = NO;
   ItemType type;
 
-  if (self.isSyncDisabledByAdministrator) {
-    type = SyncDisabledByAdministratorErrorItemType;
-    hasError = YES;
-  } else if (self.isAuthenticated && self.syncSetupService->IsSyncEnabled()) {
+  if (self.isAuthenticated && self.syncSetupService->IsSyncEnabled()) {
     switch (self.syncSetupService->GetSyncServiceState()) {
       case SyncSetupService::kSyncServiceUnrecoverableError:
         type = RestartAuthenticationFlowErrorItemType;
@@ -338,12 +309,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       case SyncSetupService::kSyncServiceNeedsPassphrase:
         type = ShowPassphraseDialogErrorItemType;
         hasError = YES;
-        break;
-      case SyncSetupService::kSyncSettingsNotConfirmed:
-        if (self.mode == GoogleServicesSettingsModeSettings) {
-          type = SyncSettingsNotCofirmedErrorItemType;
-          hasError = YES;
-        }
         break;
       case SyncSetupService::kNoSyncServiceError:
       case SyncSetupService::kSyncServiceCouldNotConnect:
@@ -368,11 +333,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       return YES;
   }
   // Add the sync error item and its section.
-  if (type == SyncDisabledByAdministratorErrorItemType) {
-    self.syncErrorItem = [self createSyncDisabledByAdministratorErrorItem];
-  } else {
-    self.syncErrorItem = [self createSyncErrorItemWithItemType:type];
-  }
+  self.syncErrorItem = [self createSyncErrorItemWithItemType:type];
   [model insertItem:self.syncErrorItem
       inSectionWithIdentifier:SyncSectionIdentifier
                       atIndex:0];
@@ -383,33 +344,22 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // reloaded.
 - (BOOL)updateManageSyncItem {
   TableViewModel* model = self.consumer.tableViewModel;
-  if (self.isSyncCanBeAvailable) {
-    BOOL needsUpdate = NO;
-    if (!self.manageSyncItem) {
-      self.manageSyncItem =
-          [[TableViewImageItem alloc] initWithType:ManageSyncItemType];
-      self.manageSyncItem.accessoryType =
-          UITableViewCellAccessoryDisclosureIndicator;
-      self.manageSyncItem.title =
-          GetNSString(IDS_IOS_MANAGE_SYNC_SETTINGS_TITLE);
-      [model addItem:self.manageSyncItem
-          toSectionWithIdentifier:SyncSectionIdentifier];
-      needsUpdate = YES;
-    }
-    needsUpdate =
-        needsUpdate || self.manageSyncItem.enabled != !self.isSyncDisabled;
-    self.manageSyncItem.enabled = !self.isSyncDisabled;
-    self.manageSyncItem.textColor =
-        self.manageSyncItem.enabled
-            ? nil
-            : UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
-    return needsUpdate;
+  BOOL hasManageSyncItem = [model hasItemForItemType:ManageSyncItemType
+                                   sectionIdentifier:SyncSectionIdentifier];
+  if (self.isAuthenticated) {
+    if (hasManageSyncItem)
+      return NO;
+    SettingsMultilineDetailItem* item =
+        [[SettingsMultilineDetailItem alloc] initWithType:ManageSyncItemType];
+    item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    item.text = GetNSString(IDS_IOS_MANAGE_SYNC_SETTINGS_TITLE);
+    [model addItem:item toSectionWithIdentifier:SyncSectionIdentifier];
+    return YES;
   }
-  if (!self.manageSyncItem)
+  if (!hasManageSyncItem)
     return NO;
   [model removeItemWithType:ManageSyncItemType
       fromSectionWithIdentifier:SyncSectionIdentifier];
-  self.manageSyncItem = nil;
   return YES;
 }
 
@@ -417,29 +367,22 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // updated.
 - (BOOL)updateSyncChromeDataItem {
   TableViewModel* model = self.consumer.tableViewModel;
-  if (self.isSyncCanBeAvailable) {
-    BOOL needsUpdate = NO;
-    if (!self.syncChromeDataSwitchItem) {
-      self.syncChromeDataSwitchItem =
-          [self switchItemWithItemType:SyncChromeDataItemType
-                          textStringID:
-                              IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_CHROME_DATA
-                        detailStringID:0
-                              dataType:0];
-      [model addItem:self.syncChromeDataSwitchItem
-          toSectionWithIdentifier:SyncSectionIdentifier];
-      needsUpdate = YES;
+  if (self.isAuthenticated) {
+    if (self.syncChromeDataSwitchItem) {
+      BOOL needsUpdate = self.syncChromeDataSwitchItem.on !=
+                         self.syncSetupService->IsSyncingAllDataTypes();
+      self.syncChromeDataSwitchItem.on = self.syncSetupService->IsSyncEnabled();
+      return needsUpdate;
     }
-    // Sync is not active when |syncSetupService->IsFirstSetupComplete()| is
-    // false. Show sync being turned off in the UI in this cases.
-    BOOL isSyncEnabled =
-        self.syncSetupService->IsSyncEnabled() &&
-        (self.syncSetupService->IsFirstSetupComplete() ||
-         self.mode == GoogleServicesSettingsModeAdvancedSigninSettings);
-    needsUpdate =
-        needsUpdate || isSyncEnabled != self.syncChromeDataSwitchItem.on;
-    self.syncChromeDataSwitchItem.on = isSyncEnabled;
-    return needsUpdate;
+    self.syncChromeDataSwitchItem = [self
+        switchItemWithItemType:SyncChromeDataItemType
+                  textStringID:IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_CHROME_DATA
+                detailStringID:0
+                      dataType:0];
+    self.syncChromeDataSwitchItem.on = self.syncSetupService->IsSyncEnabled();
+    [model addItem:self.syncChromeDataSwitchItem
+        toSectionWithIdentifier:SyncSectionIdentifier];
+    return YES;
   }
   if (!self.syncChromeDataSwitchItem)
     return NO;
@@ -483,8 +426,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       case RestartAuthenticationFlowErrorItemType:
       case ReauthDialogAsSyncIsInAuthErrorItemType:
       case ShowPassphraseDialogErrorItemType:
-      case SyncDisabledByAdministratorErrorItemType:
-      case SyncSettingsNotCofirmedErrorItemType:
       case SyncChromeDataItemType:
       case ManageSyncItemType:
         NOTREACHED();
@@ -497,25 +438,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 - (BOOL)isAuthenticated {
   return self.authService->IsAuthenticated();
-}
-
-- (BOOL)isSyncSettingsConfirmed {
-  return self.syncSetupService->GetSyncServiceState() ==
-         SyncSetupService::kSyncSettingsNotConfirmed;
-}
-
-- (BOOL)isSyncDisabledByAdministrator {
-  return (self.syncService->GetDisableReasons() &
-          syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) != 0;
-}
-
-- (BOOL)isSyncDisabled {
-  return self.syncService->GetDisableReasons() !=
-         syncer::SyncService::DISABLE_REASON_NONE;
-}
-
-- (BOOL)isSyncCanBeAvailable {
-  return self.isAuthenticated && !self.isSyncDisabledByAdministrator;
 }
 
 - (ItemArray)nonPersonalizedItems {
@@ -564,17 +486,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   return switchItem;
 }
 
-// Creates an item to display the sync error. |itemType| should only be one of
-// those types:
-//   + RestartAuthenticationFlowErrorItemType
-//   + ReauthDialogAsSyncIsInAuthErrorItemType
-//   + ShowPassphraseDialogErrorItemType
-//   + SyncSettingsNotCofirmedErrorItemType
-- (TableViewItem*)createSyncErrorItemWithItemType:(NSInteger)itemType {
-  DCHECK(itemType == RestartAuthenticationFlowErrorItemType ||
-         itemType == ReauthDialogAsSyncIsInAuthErrorItemType ||
-         itemType == ShowPassphraseDialogErrorItemType ||
-         itemType == SyncSettingsNotCofirmedErrorItemType);
+// Creates a item to display the sync error.
+- (SettingsImageDetailTextItem*)createSyncErrorItemWithItemType:
+    (NSInteger)itemType {
   SettingsImageDetailTextItem* syncErrorItem =
       [[SettingsImageDetailTextItem alloc] initWithType:itemType];
   syncErrorItem.text = GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
@@ -589,19 +503,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   }
   syncErrorItem.image = [UIImage imageNamed:kGoogleServicesSyncErrorImage];
   return syncErrorItem;
-}
-
-// Returns an item to show to the user the sync cannot be turned on for an
-// enterprise policy reason.
-- (TableViewItem*)createSyncDisabledByAdministratorErrorItem {
-  TableViewImageItem* item = [[TableViewImageItem alloc]
-      initWithType:SyncDisabledByAdministratorErrorItemType];
-  item.image = [UIImage imageNamed:kGoogleServicesEnterpriseImage];
-  item.title = GetNSString(
-      IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_DISABLBED_BY_ADMINISTRATOR_TITLE);
-  item.enabled = NO;
-  item.textColor = UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
-  return item;
 }
 
 #pragma mark - GoogleServicesSettingsViewControllerModelDelegate
@@ -640,25 +541,12 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       break;
     case SyncChromeDataItemType:
       self.syncSetupService->SetSyncEnabled(value);
-      if (self.mode == GoogleServicesSettingsModeSettings &&
-          !self.syncSetupService->IsFirstSetupComplete()) {
-        // FirstSetupComplete flag needs to be turned on when the user enables
-        // sync for the first time. This flag should not be turned on in
-        // GoogleServicesSettingsModeAdvancedSigninSettings. In that mode,
-        // this flag should be turned on only when the user clicks the confirm
-        // button.
-        CHECK(value);
-        self.syncSetupService->PrepareForFirstSyncSetup();
-        self.syncSetupService->SetFirstSetupComplete();
-      }
       break;
     case IdentityItemType:
     case SignInItemType:
     case RestartAuthenticationFlowErrorItemType:
     case ReauthDialogAsSyncIsInAuthErrorItemType:
     case ShowPassphraseDialogErrorItemType:
-    case SyncDisabledByAdministratorErrorItemType:
-    case SyncSettingsNotCofirmedErrorItemType:
     case ManageSyncItemType:
       NOTREACHED();
       break;
@@ -686,8 +574,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
     case ManageSyncItemType:
       [self.commandHandler openManageSyncSettings];
       break;
-    case SyncDisabledByAdministratorErrorItemType:
-    case SyncSettingsNotCofirmedErrorItemType:
     case AutocompleteSearchesAndURLsItemType:
     case ImproveChromeItemType:
     case BetterSearchAndBrowsingItemType:

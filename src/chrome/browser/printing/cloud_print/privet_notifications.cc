@@ -295,8 +295,7 @@ void PrivetNotificationService::AddNotification(
 
   NotificationDisplayService::GetForProfile(
       Profile::FromBrowserContext(profile_))
-      ->Display(NotificationHandler::Type::TRANSIENT, notification,
-                /*metadata=*/nullptr);
+      ->Display(NotificationHandler::Type::TRANSIENT, notification);
 }
 
 void PrivetNotificationService::PrivetRemoveNotification() {

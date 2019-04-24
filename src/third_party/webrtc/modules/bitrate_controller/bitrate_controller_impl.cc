@@ -257,6 +257,8 @@ bool BitrateControllerImpl::GetNetworkParameters(uint32_t* bitrate,
   int current_bitrate;
   bandwidth_estimation_.CurrentEstimate(&current_bitrate, fraction_loss, rtt);
   *bitrate = current_bitrate;
+  *bitrate =
+      std::max<uint32_t>(*bitrate, bandwidth_estimation_.GetMinBitrate());
 
   bool new_bitrate = false;
   if (*bitrate != last_bitrate_bps_ || *fraction_loss != last_fraction_loss_ ||
@@ -284,6 +286,7 @@ bool BitrateControllerImpl::AvailableBandwidth(uint32_t* bandwidth) const {
   int64_t rtt;
   bandwidth_estimation_.CurrentEstimate(&bitrate, &fraction_loss, &rtt);
   if (bitrate > 0) {
+    bitrate = std::max(bitrate, bandwidth_estimation_.GetMinBitrate());
     *bandwidth = bitrate;
     return true;
   }

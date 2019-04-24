@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -50,7 +51,6 @@ import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -340,7 +340,7 @@ public class VrBrowserTransitionTest {
     @MediumTest
     public void testEnterVrInOverviewMode() throws InterruptedException, TimeoutException {
         final ChromeTabbedActivity activity = mTestRule.getActivity();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             ImageView tabSwitcher = (ImageView) activity.findViewById(R.id.tab_switcher_button);
             tabSwitcher.callOnClick();
         });
@@ -390,11 +390,11 @@ public class VrBrowserTransitionTest {
         // never allow the scene to reach quiescense.
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
-            TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ThreadUtils.runOnUiThreadBlocking(() -> {
                 PreferencesLauncher.launchSettingsPage(context, SingleWebsitePreferences.class);
             });
         });
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> { VrShellDelegateUtils.getDelegateInstance().acceptDoffPromptForTesting(); });
 
         CriteriaHelper.pollUiThread(
@@ -407,14 +407,14 @@ public class VrBrowserTransitionTest {
 
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApiWithDoff);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             PreferencesLauncher.launchSettingsPage(context, null);
             VrShellDelegateUtils.getDelegateInstance().acceptDoffPromptForTesting();
         });
         CriteriaHelper.pollUiThread(() -> {
             return VrShellDelegateUtils.getDelegateInstance().isShowingDoff();
         }, "DOFF screen was not shown");
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mTestRule.getActivity().onActivityResult(
                     VrShellDelegate.EXIT_VR_RESULT, Activity.RESULT_OK, null);
         });
@@ -434,7 +434,7 @@ public class VrBrowserTransitionTest {
         Activity context = mTestRule.getActivity();
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
                     context, SingleWebsitePreferences.class.getName());
             Assert.assertFalse("Starting an activity did not trigger DOFF",
@@ -488,19 +488,19 @@ public class VrBrowserTransitionTest {
         // never allow the scene to reach quiescense.
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
-            TestThreadUtils.runOnUiThreadBlocking(
+            ThreadUtils.runOnUiThreadBlocking(
                     () -> { ntp.getView().findViewById(R.id.learn_more).performClick(); });
         });
         // This is a roundabout way of ensuring that the UI that popped up was actually the DOFF
         // prompt.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> { VrShellDelegateUtils.getDelegateInstance().acceptDoffPromptForTesting(); });
         CriteriaHelper.pollUiThread(() -> {
             return VrShellDelegateUtils.getDelegateInstance().isShowingDoff();
         }, "Did not enter DOFF flow after accepting DOFF prompt");
         // Not necessary for the test, but helps avoid having to exit VR during the next test's
         // pre-test setup.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mTestRule.getActivity().onActivityResult(
                     VrShellDelegate.EXIT_VR_RESULT, Activity.RESULT_OK, null);
         });
@@ -515,7 +515,7 @@ public class VrBrowserTransitionTest {
     @MediumTest
     public void testVrUnsupportedWhenReprojectionFails() throws InterruptedException {
         AtomicBoolean failed = new AtomicBoolean(false);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
                 VrShell vrShell = new VrShell(
                         mTestRule.getActivity(), VrShellDelegateUtils.getDelegateInstance(), null) {

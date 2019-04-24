@@ -46,8 +46,7 @@ namespace blink {
 HTMLImportLoader::HTMLImportLoader(HTMLImportsController* controller)
     : controller_(controller),
       state_(kStateLoading),
-      microtask_queue_(
-          MakeGarbageCollected<V0CustomElementSyncMicrotaskQueue>()) {}
+      microtask_queue_(V0CustomElementSyncMicrotaskQueue::Create()) {}
 
 HTMLImportLoader::~HTMLImportLoader() = default;
 
@@ -74,7 +73,7 @@ void HTMLImportLoader::ResponseReceived(Resource* resource,
   SetState(StartWritingAndParsing(response));
 }
 
-void HTMLImportLoader::DataReceived(Resource* resource,
+void HTMLImportLoader::DataReceived(Resource*,
                                     const char* data,
                                     size_t length) {
   document_->Parser()->AppendBytes(data, length);

@@ -27,38 +27,35 @@ FileStreamMd5Digester::~FileStreamMd5Digester() = default;
 
 void FileStreamMd5Digester::GetMd5Digest(
     std::unique_ptr<storage::FileStreamReader> stream_reader,
-    ResultCallback callback) {
-  // Only one digest can be running at a time.
-  DCHECK(callback_.is_null());
-
-  callback_ = std::move(callback);
+    const ResultCallback& callback) {
   reader_ = std::move(stream_reader);
   base::MD5Init(&md5_context_);
 
   // Start the read/hash.
-  ReadNextChunk();
+  ReadNextChunk(callback);
 }
 
-void FileStreamMd5Digester::ReadNextChunk() {
+void FileStreamMd5Digester::ReadNextChunk(const ResultCallback& callback) {
   const int result =
       reader_->Read(buffer_.get(), kMd5DigestBufferSize,
                     base::BindOnce(&FileStreamMd5Digester::OnChunkRead,
-                                   base::Unretained(this)));
+                                   base::Unretained(this), callback));
   if (result != net::ERR_IO_PENDING)
-    OnChunkRead(result);
+    OnChunkRead(callback, result);
 }
 
-void FileStreamMd5Digester::OnChunkRead(int bytes_read) {
+void FileStreamMd5Digester::OnChunkRead(const ResultCallback& callback,
+                                        int bytes_read) {
   if (bytes_read < 0) {
     // Error - just return empty string.
-    std::move(callback_).Run("");
+    callback.Run("");
     return;
   } else if (bytes_read == 0) {
     // EOF.
     base::MD5Digest digest;
     base::MD5Final(&digest, &md5_context_);
     std::string result = base::MD5DigestToBase16(digest);
-    std::move(callback_).Run(result);
+    callback.Run(result);
     return;
   }
 
@@ -67,7 +64,7 @@ void FileStreamMd5Digester::OnChunkRead(int bytes_read) {
                   base::StringPiece(buffer_->data(), bytes_read));
 
   // Kick off the next read.
-  ReadNextChunk();
+  ReadNextChunk(callback);
 }
 
 }  // namespace util

@@ -10,14 +10,14 @@ import shutil
 import sys
 import tempfile
 
-REPOSITORY_ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
+REPOSITORY_ROOT = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..'))
 DOCLAVA_DIR = os.path.join(REPOSITORY_ROOT, 'buildtools', 'android', 'doclava')
-SDK_DIR = os.path.join(REPOSITORY_ROOT, 'third_party', 'android_sdk', 'public')
+SDK_DIR = os.path.join(REPOSITORY_ROOT, 'third_party', 'android_tools', 'sdk')
 
-sys.path.insert(0, os.path.join(REPOSITORY_ROOT, 'build/android/gyp'))
-sys.path.insert(0, os.path.join(REPOSITORY_ROOT, 'net/tools/net_docs'))
-from util import build_utils  # pylint: disable=import-error
+sys.path.append(os.path.join(REPOSITORY_ROOT, 'build/android/gyp/util'))
+sys.path.append(os.path.join(REPOSITORY_ROOT, 'net/tools/net_docs'))
+import build_utils
 import net_docs
 from markdown.postprocessors import Postprocessor
 from markdown.extensions import Extension

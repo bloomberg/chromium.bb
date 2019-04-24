@@ -1,52 +1,42 @@
-# Copyright 2019 The Chromium Authors. All rights reserved.
+# Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import exceptions
-from .common import WithIdentifier
-from .common import WithExtendedAttributes
-from .common import WithCodeGeneratorInfo
-from .common import WithOwner
+from .extended_attribute import ExtendedAttributeList
+from .utilities import assert_no_extra_args
 
 
-class Argument(WithIdentifier, WithExtendedAttributes, WithCodeGeneratorInfo,
-               WithOwner):
+class Argument(object):
+
+    def __init__(self, **kwargs):
+        self._identifier = kwargs.pop('identifier')
+        self._type = kwargs.pop('type')
+        self._is_optional = kwargs.pop('is_optional', False)
+        self._is_variadic = kwargs.pop('is_variadic', False)
+        self._default_value = kwargs.pop('default_value', None)
+        self._extended_attribute_list = kwargs.pop('extended_attribute_list', ExtendedAttributeList())
+        assert_no_extra_args(kwargs)
+
     @property
-    def idl_type(self):
-        """
-        Returns type of this argument.
-        @return IdlType
-        """
-        raise exceptions.NotImplementedError()
+    def identifier(self):
+        return self._identifier
+
+    @property
+    def type(self):
+        return self._type
 
     @property
     def is_optional(self):
-        """
-        Returns True if this argument is optional.
-        @return bool
-        """
-        raise exceptions.NotImplementedError()
+        return self._is_optional
 
     @property
     def is_variadic(self):
-        """
-        Returns True if this argument is variadic.
-        @return bool
-        """
-        raise exceptions.NotImplementedError()
+        return self._is_variadic
 
     @property
     def default_value(self):
-        """
-        Returns the default value if it is specified. Otherwise, None
-        @return DefaultValue
-        """
-        raise exceptions.NotImplementedError()
+        return self._default_value
 
     @property
-    def index(self):
-        """
-        Returns its index in an operation's arguments
-        @return int
-        """
-        raise exceptions.NotImplementedError()
+    def extended_attribute_list(self):
+        return self._extended_attribute_list

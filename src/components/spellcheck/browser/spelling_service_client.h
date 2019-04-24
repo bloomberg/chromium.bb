@@ -14,7 +14,6 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "url/gurl.h"
 
 struct SpellCheckResult;
 
@@ -69,18 +68,6 @@ class SpellingServiceClient {
     SUGGEST = 1,
     SPELLCHECK = 2,
   };
-  // An enum to classify request responses. This is only used for metrics.
-  // * REQUEST_FAILURE: The server returned an error.
-  // * SUCCESS_EMPTY: The server returned an empty list of suggestions.
-  // * SUCCESS_WITH_SUGGESTIONS: The server returned some suggestions.
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class ServiceRequestResultType : int {
-    kRequestFailure = 0,
-    kSuccessEmpty = 1,
-    kSuccessWithSuggestions = 2,
-    kMaxValue = kSuccessWithSuggestions,
-  };
   typedef base::OnceCallback<void(
       bool /* success */,
       const base::string16& /* text */,
@@ -106,9 +93,6 @@ class SpellingServiceClient {
   void SetURLLoaderFactoryForTesting(
       scoped_refptr<network::SharedURLLoaderFactory>
           url_loader_factory_for_testing);
-
-  // Builds the endpoint URL to use for the service request.
-  GURL BuildEndpointUrl(int type);
 
  protected:
   // Parses a JSON-RPC response from the Spelling service.
@@ -142,7 +126,6 @@ class SpellingServiceClient {
       std::list<std::unique_ptr<TextCheckCallbackData>>;
 
   void OnSimpleLoaderComplete(SpellCheckLoaderList::iterator it,
-                              base::TimeTicks request_start,
                               std::unique_ptr<std::string> response_body);
 
   // List of loaders in use.

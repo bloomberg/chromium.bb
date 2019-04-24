@@ -14,9 +14,6 @@ namespace app_mode {
 const char kAppShimSocketShortName[] = "Socket";
 const char kAppShimSocketSymlinkName[] = "App Shim Socket";
 
-const char kAppShimBootstrapNameFragment[] = "apps";
-const char kMojoChannelMacSignalFile[] = "apps_use_mojo_channel_mac";
-
 const char kRunningChromeVersionSymlinkName[] = "RunningChromeVersion";
 
 const char kAppListModeId[] = "app_list";

@@ -1,2 +1,0 @@
-AutomationFocusChanged on role=combobox
-ExpandCollapseExpandCollapseState changed on role=combobox

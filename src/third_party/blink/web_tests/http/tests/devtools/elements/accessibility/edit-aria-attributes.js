@@ -34,14 +34,9 @@
     treeElement._startEditing();
     treeElement._prompt._element.textContent = 'radio';
     treeElement._prompt._element.dispatchEvent(TestRunner.createKeyEvent('Enter'));
-    // Give the document lifecycle a chance to run before updating the view.
-    window.setTimeout(() => {
-      self.runtime.sharedInstance(Accessibility.AccessibilitySidebarView)
-          .doUpdate()
-          .then(() => {
-            postRoleChange();
-          });
-    }, 0);
+    self.runtime.sharedInstance(Accessibility.AccessibilitySidebarView).doUpdate().then(() => {
+      postRoleChange();
+    });
   }
 
   function postRoleChange() {

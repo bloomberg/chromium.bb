@@ -6,8 +6,10 @@
 #define COMPONENTS_NTP_SNIPPETS_CATEGORY_RANKERS_CLICK_BASED_CATEGORY_RANKER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/category.h"
@@ -71,6 +73,7 @@ class ClickBasedCategoryRanker : public CategoryRanker {
                    const base::Time& last_dismissed);
   };
 
+  base::Optional<Category> DeterminePromotedCategory();
   int GetPositionPassingMargin(
       std::vector<RankedCategory>::const_iterator category_position) const;
   void RestoreDefaultOrder();
@@ -91,6 +94,7 @@ class ClickBasedCategoryRanker : public CategoryRanker {
   std::vector<RankedCategory> ordered_categories_;
   PrefService* pref_service_;
   base::Clock* clock_;
+  base::Optional<Category> promoted_category_;
 
   DISALLOW_COPY_AND_ASSIGN(ClickBasedCategoryRanker);
 };

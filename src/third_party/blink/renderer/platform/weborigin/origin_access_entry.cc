@@ -61,8 +61,4 @@ bool OriginAccessEntry::HostIsIPAddress() const {
   return private_.host_is_ip_address();
 }
 
-String OriginAccessEntry::registrable_domain() const {
-  return String(private_.registrable_domain().c_str());
-}
-
 }  // namespace blink

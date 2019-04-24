@@ -33,7 +33,7 @@ class NGColumnLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     scoped_refptr<const NGLayoutResult> result =
         NGBlockLayoutAlgorithm(node, space).Layout();
 
-    return To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+    return ToNGPhysicalBoxFragment(result->PhysicalFragment());
   }
 
   scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(

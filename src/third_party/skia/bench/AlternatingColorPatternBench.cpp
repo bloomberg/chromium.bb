@@ -53,10 +53,10 @@ static void makebm(SkBitmap* bm, int w, int h) {
     SkPaint     paint;
 
     paint.setShader(SkGradientShader::MakeLinear(kPts0, kColors0, kPos, SK_ARRAY_COUNT(kColors0),
-                                                 SkTileMode::kClamp));
+                                                 SkShader::kClamp_TileMode));
     canvas.drawPaint(paint);
     paint.setShader(SkGradientShader::MakeLinear(kPts1, kColors1, kPos, SK_ARRAY_COUNT(kColors1),
-                                                 SkTileMode::kClamp));
+                                                 SkShader::kClamp_TileMode));
     canvas.drawPaint(paint);
 }
 
@@ -113,7 +113,9 @@ protected:
         int w = 40;
         int h = 40;
         makebm(&fBmp, w, h);
-        fBmShader = fBmp.makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat);
+        fBmShader = SkShader::MakeBitmapShader(fBmp,
+                                                 SkShader::kRepeat_TileMode,
+                                                 SkShader::kRepeat_TileMode);
         int offset = 2;
         int count = 0;
         for (int j = 0; j < NY; ++j) {

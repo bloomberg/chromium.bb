@@ -28,9 +28,6 @@ class ProgramBinaryTest : public ANGLETest
         setConfigGreenBits(8);
         setConfigBlueBits(8);
         setConfigAlphaBits(8);
-
-        // Test flakiness was noticed when reusing displays.
-        forceNewDisplay();
     }
 
     void SetUp() override
@@ -55,6 +52,7 @@ class ProgramBinaryTest : public ANGLETest
     {
         glDeleteProgram(mProgram);
         glDeleteBuffers(1, &mBuffer);
+
         ANGLETest::TearDown();
     }
 
@@ -261,12 +259,6 @@ ANGLE_INSTANTIATE_TEST(ProgramBinaryTest,
 class ProgramBinaryES3Test : public ANGLETest
 {
   protected:
-    ProgramBinaryES3Test()
-    {
-        // Test flakiness was noticed when reusing displays.
-        forceNewDisplay();
-    }
-
     void testBinaryAndUBOBlockIndexes(bool drawWithProgramFirst);
 };
 
@@ -376,9 +368,6 @@ class ProgramBinaryES31Test : public ANGLETest
         setConfigGreenBits(8);
         setConfigBlueBits(8);
         setConfigAlphaBits(8);
-
-        // Test flakiness was noticed when reusing displays.
-        forceNewDisplay();
     }
 };
 
@@ -721,8 +710,7 @@ class ProgramBinariesAcrossPlatforms : public testing::TestWithParam<PlatformsWi
     {
         EGLWindow *eglWindow =
             EGLWindow::New(param.majorVersion, param.minorVersion, param.eglParameters);
-        ConfigParameters configParams;
-        bool result = eglWindow->initializeGL(mOSWindow, mEntryPointsLib.get(), configParams);
+        bool result = eglWindow->initializeGL(mOSWindow, mEntryPointsLib.get());
         if (result == false)
         {
             EGLWindow::Delete(&eglWindow);

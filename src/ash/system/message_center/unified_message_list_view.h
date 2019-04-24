@@ -122,17 +122,8 @@ class ASH_EXPORT UnifiedMessageListView
     CLEAR_ALL_VISIBLE
   };
 
-  // Syntactic sugar to downcast.
-  static const MessageViewContainer* AsMVC(const views::View* v);
-  static MessageViewContainer* AsMVC(views::View* v);
-
-  // Returns the notification with the provided |id|.
-  const MessageViewContainer* GetNotificationById(const std::string& id) const;
-  MessageViewContainer* GetNotificationById(const std::string& id) {
-    return const_cast<MessageViewContainer*>(
-        static_cast<const UnifiedMessageListView*>(this)->GetNotificationById(
-            id));
-  }
+  MessageViewContainer* GetContainer(int index);
+  const MessageViewContainer* GetContainer(int index) const;
 
   // Returns the first removable notification from the top.
   MessageViewContainer* GetNextRemovableNotification();

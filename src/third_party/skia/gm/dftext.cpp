@@ -13,8 +13,8 @@
 #include "SkTextBlob.h"
 #include "SkTo.h"
 #include "SkTypeface.h"
-#include "ToolUtils.h"
 #include "gm.h"
+#include "sk_tool_utils.h"
 
 class DFTextGM : public skiagm::GM {
 public:
@@ -24,12 +24,14 @@ public:
 
 protected:
     void onOnceBeforeDraw() override {
-        fEmojiTypeface = ToolUtils::emoji_typeface();
-        fEmojiText     = ToolUtils::emoji_sample_text();
+        fEmojiTypeface = sk_tool_utils::emoji_typeface();
+        fEmojiText = sk_tool_utils::emoji_sample_text();
     }
 
     SkString onShortName() override {
-        return SkString("dftext");
+        SkString name("dftext");
+        name.append(sk_tool_utils::platform_font_manager());
+        return name;
     }
 
     SkISize onISize() override {
@@ -58,7 +60,7 @@ protected:
         SkPaint paint;
         paint.setAntiAlias(true);
 
-        SkFont font(ToolUtils::create_portable_typeface("serif", SkFontStyle()));
+        SkFont font(sk_tool_utils::create_portable_typeface("serif", SkFontStyle()));
         font.setSubpixel(true);
 
         const char* text = "Hamburgefons";

@@ -15,7 +15,6 @@ class CC_EXPORT PaintWorkletInput
     : public base::RefCountedThreadSafe<PaintWorkletInput> {
  public:
   virtual gfx::SizeF GetSize() const = 0;
-  virtual int WorkletId() const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<PaintWorkletInput>;

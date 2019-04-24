@@ -32,6 +32,7 @@ class SupervisedUserLoginFlow
   bool SupportsEarlyRestartToApplyFlags() override;
   bool HandleLoginFailure(const AuthFailure& failure) override;
   void HandleLoginSuccess(const UserContext& context) override;
+  bool HandlePasswordChangeDetected() override;
   void LaunchExtraSteps(Profile* profile) override;
 
   // ExtendedAuthenticator::NewAuthStatusConsumer overrides.

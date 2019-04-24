@@ -25,9 +25,13 @@ base::RepeatingClosure* GetDragEnteredCallback() {
 }  // namespace
 
 DropHelper::DropHelper(View* root_view)
-    : root_view_(root_view), target_view_(nullptr), deepest_view_(nullptr) {}
+    : root_view_(root_view),
+      target_view_(NULL),
+      deepest_view_(NULL) {
+}
 
-DropHelper::~DropHelper() = default;
+DropHelper::~DropHelper() {
+}
 
 // static
 void DropHelper::SetDragEnteredCallbackForTesting(
@@ -39,9 +43,9 @@ void DropHelper::SetDragEnteredCallbackForTesting(
 
 void DropHelper::ResetTargetViewIfEquals(View* view) {
   if (target_view_ == view)
-    target_view_ = nullptr;
+    target_view_ = NULL;
   if (deepest_view_ == view)
-    deepest_view_ = nullptr;
+    deepest_view_ = NULL;
 }
 
 int DropHelper::OnDragOver(const OSExchangeData& data,
@@ -72,14 +76,14 @@ int DropHelper::OnDragOver(const OSExchangeData& data,
 
 void DropHelper::OnDragExit() {
   NotifyDragExit();
-  deepest_view_ = target_view_ = nullptr;
+  deepest_view_ = target_view_ = NULL;
 }
 
 int DropHelper::OnDrop(const OSExchangeData& data,
                        const gfx::Point& root_view_location,
                        int drag_operation) {
   View* drop_view = target_view_;
-  deepest_view_ = target_view_ = nullptr;
+  deepest_view_ = target_view_ = NULL;
   if (!drop_view)
     return ui::DragDropTypes::DRAG_NONE;
 
@@ -101,7 +105,7 @@ View* DropHelper::CalculateTargetView(
     const OSExchangeData& data,
     bool check_can_drop) {
   return CalculateTargetViewImpl(root_view_location, data, check_can_drop,
-                                 nullptr);
+                                 NULL);
 }
 
 View* DropHelper::CalculateTargetViewImpl(

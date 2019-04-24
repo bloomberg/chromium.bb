@@ -20,7 +20,7 @@ bool DistillerJavaScriptWorldIdIsSet();
 void RunIsolatedJavaScript(
     content::RenderFrameHost* render_frame_host,
     const std::string& buffer,
-    content::RenderFrameHost::JavaScriptResultCallback callback);
+    const content::RenderFrameHost::JavaScriptResultCallback& callback);
 
 // Same as above without a callback.
 void RunIsolatedJavaScript(content::RenderFrameHost* render_frame_host,

@@ -26,7 +26,6 @@ class TouchBlocker;
 class CastContentWindowAura : public CastContentWindow,
                               public aura::WindowObserver {
  public:
-  explicit CastContentWindowAura(const CastContentWindow::CreateParams& params);
   ~CastContentWindowAura() override;
 
   // CastContentWindow implementation:
@@ -49,6 +48,11 @@ class CastContentWindowAura : public CastContentWindow,
   void OnWindowDestroyed(aura::Window* window) override;
 
  private:
+  friend class CastContentWindow;
+
+  // This class should only be instantiated by CastContentWindow::Create.
+  CastContentWindowAura(const CastContentWindow::CreateParams& params);
+
   CastContentWindow::Delegate* const delegate_;
 
   // Utility class for detecting and dispatching gestures to delegates.

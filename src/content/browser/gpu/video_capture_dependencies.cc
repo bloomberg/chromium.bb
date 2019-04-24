@@ -14,7 +14,7 @@ namespace content {
 
 // static
 void VideoCaptureDependencies::CreateJpegDecodeAccelerator(
-    media::mojom::MjpegDecodeAcceleratorRequest accelerator) {
+    media::mojom::JpegDecodeAcceleratorRequest accelerator) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
@@ -32,7 +32,6 @@ void VideoCaptureDependencies::CreateJpegDecodeAccelerator(
   }
 }
 
-#if defined(OS_CHROMEOS)
 // static
 void VideoCaptureDependencies::CreateJpegEncodeAccelerator(
     media::mojom::JpegEncodeAcceleratorRequest accelerator) {
@@ -52,6 +51,5 @@ void VideoCaptureDependencies::CreateJpegEncodeAccelerator(
     LOG(ERROR) << "No GpuProcessHost";
   }
 }
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace content

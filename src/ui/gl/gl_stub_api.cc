@@ -6,6 +6,15 @@
 
 namespace gl {
 
+namespace {
+
+void GenHelper(GLsizei count, GLuint* objects) {
+  for (GLsizei i = 0; i < count; ++i)
+    objects[i] = i + 1;
+}
+
+}  // anonymous namespace
+
 GLStubApi::GLStubApi() {}
 
 GLStubApi::~GLStubApi() = default;

@@ -37,6 +37,8 @@ class MODULES_EXPORT MediaDevices final
   USING_PRE_FINALIZER(MediaDevices, Dispose);
 
  public:
+  static MediaDevices* Create(ExecutionContext*);
+
   explicit MediaDevices(ExecutionContext*);
   ~MediaDevices() override;
 
@@ -108,8 +110,7 @@ class MODULES_EXPORT MediaDevices final
   void Dispose();
   void DevicesEnumerated(ScriptPromiseResolver*,
                          Vector<Vector<mojom::blink::MediaDeviceInfoPtr>>,
-                         Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>,
-                         Vector<mojom::blink::AudioInputDeviceCapabilitiesPtr>);
+                         Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>);
   void OnDispatcherHostConnectionError();
   const mojom::blink::MediaDevicesDispatcherHostPtr& GetDispatcherHost(
       LocalFrame*);

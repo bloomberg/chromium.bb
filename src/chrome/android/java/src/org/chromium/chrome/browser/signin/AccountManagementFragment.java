@@ -26,7 +26,6 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
-import android.support.v7.content.res.AppCompatResources;
 import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -121,7 +120,8 @@ public class AccountManagementFragment extends PreferenceFragment
 
         mProfile = Profile.getLastUsedProfile();
 
-        SigninUtils.logEvent(ProfileAccountManagementMetrics.VIEW, mGaiaServiceType);
+        AccountManagementScreenHelper.logEvent(
+                ProfileAccountManagementMetrics.VIEW, mGaiaServiceType);
 
         int avatarImageSize = getResources().getDimensionPixelSize(R.dimen.user_picture_size);
         ProfileDataCache.BadgeConfig badgeConfig = null;
@@ -230,7 +230,7 @@ public class AccountManagementFragment extends PreferenceFragment
                 if (!isVisible() || !isResumed()) return false;
 
                 if (mSignedInAccountName != null && getSignOutAllowedPreferenceValue()) {
-                    SigninUtils.logEvent(
+                    AccountManagementScreenHelper.logEvent(
                             ProfileAccountManagementMetrics.TOGGLE_SIGNOUT, mGaiaServiceType);
 
                     String managementDomain = SigninManager.get().getManagementDomain();
@@ -378,13 +378,13 @@ public class AccountManagementFragment extends PreferenceFragment
     private ChromeBasePreference createAddAccountPreference() {
         ChromeBasePreference addAccountPreference = new ChromeBasePreference(getActivity());
         addAccountPreference.setLayoutResource(R.layout.account_management_account_row);
-        addAccountPreference.setIcon(
-                AppCompatResources.getDrawable(getActivity(), R.drawable.ic_add_circle_40dp));
+        addAccountPreference.setIcon(R.drawable.add_circle_blue);
         addAccountPreference.setTitle(R.string.account_management_add_account_title);
         addAccountPreference.setOnPreferenceClickListener(preference -> {
             if (!isVisible() || !isResumed()) return false;
 
-            SigninUtils.logEvent(ProfileAccountManagementMetrics.ADD_ACCOUNT, mGaiaServiceType);
+            AccountManagementScreenHelper.logEvent(
+                    ProfileAccountManagementMetrics.ADD_ACCOUNT, mGaiaServiceType);
 
             AccountAdder.getInstance().addAccount(getActivity(), AccountAdder.ADD_ACCOUNT_RESULT);
 
@@ -453,13 +453,17 @@ public class AccountManagementFragment extends PreferenceFragment
                         }
                     }
                 });
-        SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT, mGaiaServiceType);
+        AccountManagementScreenHelper.logEvent(
+                ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT,
+                mGaiaServiceType);
     }
 
     @Override
     public void onSignOutDialogDismissed(boolean signOutClicked) {
         if (!signOutClicked) {
-            SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_CANCEL, mGaiaServiceType);
+            AccountManagementScreenHelper.logEvent(
+                    ProfileAccountManagementMetrics.SIGNOUT_CANCEL,
+                    mGaiaServiceType);
         }
     }
 

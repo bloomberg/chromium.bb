@@ -12,9 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/optional.h"
-#include "base/strings/string_piece.h"
 #include "net/base/address_family.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
@@ -35,7 +33,6 @@ class AddressList;
 class ContextHostResolver;
 class DnsClient;
 struct DnsConfigOverrides;
-class HostResolverManager;
 class NetLog;
 class NetLogWithSource;
 class URLRequestContext;
@@ -126,8 +123,6 @@ class NET_EXPORT HostResolver {
 
     size_t max_concurrent_resolves;
     size_t max_retry_attempts;
-    // TODO(crbug.com/934402): Remove once caching is fully handled and enabled
-    // at the per-context level.
     bool enable_caching;
   };
 
@@ -137,18 +132,9 @@ class NET_EXPORT HostResolver {
    public:
     virtual ~Factory() = default;
 
-    // See HostResolver::CreateResolver.
-    virtual std::unique_ptr<HostResolver> CreateResolver(
-        HostResolverManager* manager,
-        base::StringPiece host_mapping_rules,
-        bool enable_caching);
-
-    // See HostResolver::CreateStandaloneResolver.
-    virtual std::unique_ptr<HostResolver> CreateStandaloneResolver(
-        NetLog* net_log,
-        const Options& options,
-        base::StringPiece host_mapping_rules,
-        bool enable_caching);
+    // See HostResolver::CreateSystemResolver.
+    virtual std::unique_ptr<HostResolver> CreateResolver(const Options& options,
+                                                         NetLog* net_log);
   };
 
   // Parameter-grouping struct for additional optional parameters for
@@ -297,53 +283,33 @@ class NET_EXPORT HostResolver {
   // read from the system for DnsClient resolution.
   virtual void SetDnsConfigOverrides(const DnsConfigOverrides& overrides);
 
-  // Set the associated URLRequestContext, generally expected to be called by
-  // URLRequestContextBuilder on passing ownership of |this| to a context. May
-  // only be called once.
-  //
-  // TODO(crbug.com/934402): Use |request_context| for DoH resolves.
-  virtual void SetRequestContext(URLRequestContext* request_context);
+  // Sets the URLRequestContext to be used for underlying requests made at the
+  // HTTP level (e.g. DNS over HTTPS requests).
+  virtual void SetRequestContext(URLRequestContext* request_context) {}
 
   // Returns the currently configured DNS over HTTPS servers. Returns nullptr if
   // DNS over HTTPS is not enabled.
   virtual const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
   GetDnsOverHttpsServersForTesting() const;
 
-  virtual HostResolverManager* GetManagerForTesting();
-  virtual const URLRequestContext* GetContextForTesting() const;
-
-  // TODO(crbug.com/934402): Cleanup the various property-setting methods in
-  // this class.  Many only affect manager-wide properties and can probably be
-  // removed and replaced by calling equivalent methods directly on the
-  // underlying HostResolverManager (through NetworkService that generally owns
-  // that manager).
-
-  // Creates a new HostResolver. |manager| must outlive the returned resolver.
-  //
-  // If |mapping_rules| is non-empty, the mapping rules will be applied to
-  // requests.  See MappedHostResolver for details.
-  static std::unique_ptr<HostResolver> CreateResolver(
-      HostResolverManager* manager,
-      base::StringPiece host_mapping_rules = "",
-      bool enable_caching = true);
-
-  // Creates a HostResolver independent of any global HostResolverManager. Only
-  // for tests and standalone tools not part of the browser.
-  //
-  // If |mapping_rules| is non-empty, the mapping rules will be applied to
-  // requests.  See MappedHostResolver for details.
-  static std::unique_ptr<HostResolver> CreateStandaloneResolver(
-      NetLog* net_log,
-      base::Optional<Options> options = base::nullopt,
-      base::StringPiece host_mapping_rules = "",
-      bool enable_caching = true);
+  // Creates a HostResolver implementation that queries the underlying system.
+  // (Except if a unit-test has changed the global HostResolverProc using
+  // ScopedHostResolverProc to intercept requests to the system).
+  static std::unique_ptr<HostResolver> CreateSystemResolver(
+      const Options& options,
+      NetLog* net_log);
   // Same, but explicitly returns the implementing ContextHostResolver. Only
-  // used by tests and by StaleHostResolver in Cronet. No mapping rules can be
-  // applied because doing so requires wrapping the ContextHostResolver.
-  static std::unique_ptr<ContextHostResolver> CreateStandaloneContextResolver(
-      NetLog* net_log,
-      base::Optional<Options> options = base::nullopt,
-      bool enable_caching = true);
+  // used by tests.
+  static std::unique_ptr<ContextHostResolver> CreateSystemResolverImpl(
+      const Options& options,
+      NetLog* net_log);
+
+  // As above, but uses default parameters.
+  static std::unique_ptr<HostResolver> CreateDefaultResolver(NetLog* net_log);
+  // Same, but explicitly returns the implementing ContextHostResolver. Only
+  // used by tests and by StaleHostResolver in Cronet.
+  static std::unique_ptr<ContextHostResolver> CreateDefaultResolverImpl(
+      NetLog* net_log);
 
   // Helpers for interacting with HostCache and ProcResolver.
   static AddressFamily DnsQueryTypeToAddressFamily(DnsQueryType query_type);

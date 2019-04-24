@@ -64,7 +64,7 @@
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_names.h"
 #else

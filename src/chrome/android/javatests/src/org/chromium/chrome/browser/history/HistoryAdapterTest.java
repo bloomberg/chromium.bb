@@ -12,11 +12,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.ItemViewType;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +37,12 @@ public class HistoryAdapterTest {
     }
 
     private void initializeAdapter() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> mAdapter.initialize());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable(){
+            @Override
+            public void run() {
+                mAdapter.initialize();
+            }
+        });
     }
 
     @Test
@@ -213,7 +218,12 @@ public class HistoryAdapterTest {
 
         mHistoryProvider.removeItem(item1);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> mAdapter.onHistoryDeleted());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mAdapter.onHistoryDeleted();
+            }
+        });
 
         checkAdapterContents(false);
     }

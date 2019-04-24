@@ -91,7 +91,7 @@ void PrerenderURLLoaderThrottle::WillStartRequest(
     // invalid requests.  For prefetches, cancel invalid requests but keep the
     // prefetch going.
     delegate_->CancelWithError(net::ERR_ABORTED);
-    if (mode_ == DEPRECATED_FULL_PRERENDER) {
+    if (mode_ == FULL_PRERENDER) {
       canceler_getter_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(CancelPrerenderForUnsupportedMethod,
                                     std::move(canceler_getter_)));

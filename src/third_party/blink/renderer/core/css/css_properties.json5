@@ -853,7 +853,7 @@
       field_template: "external",
       include_paths: ["third_party/blink/renderer/core/style/style_filter_data.h"],
       wrapper_pointer_name: "Persistent",
-      default_value: "MakeGarbageCollected<StyleFilterData>()",
+      default_value: "StyleFilterData::Create()",
       type_name: "StyleFilterData",
       computed_style_custom_functions: ["initial", "getter","setter"],
       converter: "ConvertFilterOperations",
@@ -1626,7 +1626,7 @@
       field_template: "external",
       include_paths: ["third_party/blink/renderer/core/style/style_filter_data.h"],
       wrapper_pointer_name: "Persistent",
-      default_value: "MakeGarbageCollected<StyleFilterData>()",
+      default_value: "StyleFilterData::Create()",
       type_name: "StyleFilterData",
       computed_style_custom_functions: ["initial", "getter", "setter"],
       converter: "ConvertFilterOperations",
@@ -2040,7 +2040,6 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertQuirkyLength",
-      computed_style_custom_functions: ["setter"],
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
@@ -2053,7 +2052,6 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertQuirkyLength",
-      computed_style_custom_functions: ["setter"],
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
@@ -2066,7 +2064,6 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertQuirkyLength",
-      computed_style_custom_functions: ["setter"],
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
@@ -2079,7 +2076,6 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertQuirkyLength",
-      computed_style_custom_functions: ["setter"],
       keywords: ["auto"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
@@ -2402,7 +2398,8 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: "keyword",
       keywords: [
-        "visible", "hidden", "scroll", "auto", "overlay"
+        "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x",
+        "-webkit-paged-y"
       ],
       typedom_types: ["Keyword"],
       default_value: "visible",
@@ -2413,7 +2410,8 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_template: "keyword",
       keywords: [
-        "visible", "hidden", "scroll", "auto", "overlay",
+        "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x",
+        "-webkit-paged-y"
       ],
       typedom_types: ["Keyword"],
       default_value: "visible",
@@ -2446,7 +2444,6 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertLength",
-      computed_style_custom_functions: ["setter"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
@@ -2458,7 +2455,6 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertLength",
-      computed_style_custom_functions: ["setter"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
@@ -2470,7 +2466,6 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertLength",
-      computed_style_custom_functions: ["setter"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
@@ -2482,7 +2477,6 @@
       field_template: "<length>",
       default_value: "Length::Fixed()",
       converter: "ConvertLength",
-      computed_style_custom_functions: ["setter"],
       typedom_types: ["Keyword", "Length", "Percentage"]
     },
     {
@@ -3592,7 +3586,7 @@
       include_paths: ["third_party/blink/renderer/platform/wtf/text/atomic_string.h"],
       default_value: "g_null_atom",
       type_name: "AtomicString",
-      converter: "ConvertString<CSSValueID::kNone>",
+      converter: "ConvertString<CSSValueNone>",
     },
     {
       name: "-webkit-hyphenate-character",
@@ -3604,7 +3598,7 @@
       default_value: "AtomicString()",
       name_for_methods: "HyphenationString",
       type_name: "AtomicString",
-      converter: "ConvertString<CSSValueID::kAuto>",
+      converter: "ConvertString<CSSValueAuto>",
     },
     {
       name: "-webkit-line-break",

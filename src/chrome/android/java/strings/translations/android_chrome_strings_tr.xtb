@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
 <translation id="1006017844123154345">İnternet'te aç</translation>
+<translation id="1023450834687746199"><ph name="APP_NAME" /> uygulamasına ait verileri temizlediniz.</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> ekleniyor...</translation>
 <translation id="1041308826830691739">Web sitelerinden</translation>
 <translation id="1049743911850919806">Gizli mod</translation>
@@ -82,6 +83,7 @@
 <translation id="1553358976309200471">Chrome'u güncelle</translation>
 <translation id="1569387923882100876">Bağlı Cihaz</translation>
 <translation id="1571304935088121812">Kullanıcı adını kopyala</translation>
+<translation id="1576370611341449972">İndirme işlemleri sadece kablosuz bağlantı olduğunda yapılır</translation>
 <translation id="1612196535745283361">Chrome'un cihazları taraması için konum bilgilerine erişmesi gerekiyor. Konum bilgilerine erişim <ph name="BEGIN_LINK" />bu cihaz için kapalı<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Bu sayfanın daha fazla iletişim kutusu oluşturmasını önle</translation>
@@ -117,9 +119,9 @@
 <translation id="1883903952484604915">Dosyalarım</translation>
 <translation id="1887786770086287077">Konum erişimi bu cihaz için kapalı. Konum erişimini <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ndan açın.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> Chrome'da açılacak. Devam ederek Chrome'un <ph name="BEGIN_LINK1" />Hizmet Şartları<ph name="END_LINK1" />'nı ve <ph name="BEGIN_LINK2" />Gizlilik Uyarısı<ph name="END_LINK2" />'nı kabul etmiş olursunuz.</translation>
+<translation id="189172778771606813">Gezinme çekmecesini kapat</translation>
 <translation id="1919345977826869612">Reklamlar</translation>
 <translation id="1919950603503897840">Kişi seçin</translation>
-<translation id="1922076542920281912">Chrome'un konumunuza erişebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ında da konumu açın.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Chrome'u yeniden açın.</translation>
 <translation id="1933845786846280168">Seçili Sekme</translation>
@@ -145,11 +147,9 @@
 <translation id="2018707881002649255">Aşağıda seçtiğiniz kişiler <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> web sitesiyle paylaşılacak.</translation>
 <translation id="2021896219286479412">Tam ekran site kontrolleri</translation>
 <translation id="2038563949887743358">Masaüstü sitesi iste işlevini etkinleştir</translation>
-<translation id="2041019821020695769">Chrome'un size bildirim gönderebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ında da bildirimleri açın.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> uygulamasına ait veriler Chrome'da da mevcut</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB diğer uygulamalar</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">Dosya uzantısını değiştirmek, beklenmedik bir davranışla sonuçlanabilir ve cihazınız için zararlı olabilir.</translation>
 <translation id="2056878612599315956">Site duraklatıldı</translation>
 <translation id="2063713494490388661">Dokun ve Ara</translation>
 <translation id="2079545284768500474">Geri al</translation>
@@ -216,7 +216,6 @@
 <translation id="2536728043171574184">Bu sayfanın çevrimdışı bir kopyası görüntüleniyor</translation>
 <translation id="2546283357679194313">Çerezler ve site verileri</translation>
 <translation id="2567385386134582609">IMAGE</translation>
-<translation id="257088987046510401">Temalar</translation>
 <translation id="2570922361219980984">Konum erişimi bu cihaz için de kapalı. Konum erişimini <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ndan açın.</translation>
 <translation id="257931822824936280">Genişletildi - Daraltmak için tıklayın.</translation>
 <translation id="2581165646603367611">Bu işlem Chrome'un önemli olmadığını düşündüğü çerezleri, önbelleği ve diğer site verilerini temizleyecek.</translation>
@@ -242,15 +241,17 @@
 <translation id="271033894570825754">Yeni</translation>
 <translation id="2728754400939377704">Siteye göre sırala</translation>
 <translation id="2744248271121720757">Anında aramak veya ilgili işlemleri görmek için bir kelimeye dokunun</translation>
+<translation id="2760323196215778921">Ayrıca, Chrome için bu izni açmanız da gerekir. Ayrıntılar için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" /> konusuna bakın.</translation>
 <translation id="2762000892062317888">az önce</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> sn. kaldı</translation>
 <translation id="2779651927720337254">başarısız</translation>
 <translation id="2781151931089541271">1 sn. kaldı</translation>
+<translation id="2784212955220061919">Chrome, Basit modda sayfaları daha hızlı yükler ve yüzde 60'a kadar daha az veri kullanır. Google'ın bulut teknolojisi, ziyaret ettiğiniz sayfaları optimize eder.</translation>
+<translation id="2785336755839207516"><ph name="APP_NAME" /> uygulamasının yüklemesini kaldırdınız.</translation>
 <translation id="2803478378562657435">Kayıtlı şifreler ve şifre seçenekleri gösteriliyor</translation>
 <translation id="2810645512293415242">Veriden tasarruf etmek ve daha hızlı yüklemek için basitleştirilmiş sayfa.</translation>
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google Hesabınızdaki<ph name="END_LINK" /> kayıtlı şifrelerinizi görüntüleyin ve yönetin.</translation>
 <translation id="2818669890320396765">Yer işaretlerinizi tüm cihazlarınızda almak için oturum açın ve senkronizasyonu etkinleştirin</translation>
-<translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" /> için tüm site izinlerini sıfırlamak istediğinizden emin misiniz?</translation>
 <translation id="2836148919159985482">Tam ekrandan çıkmak için geri düğmesine dokunun.</translation>
 <translation id="2842985007712546952">Ana klasör</translation>
 <translation id="2845873210977809562">Açılan sekmeler kapatıldı</translation>
@@ -265,9 +266,10 @@
 <translation id="290376772003165898">Sayfa <ph name="LANGUAGE" /> dilinde değil mi?</translation>
 <translation id="2910701580606108292">Sitelerin korumalı içeriği oynatmasına izin verilmeden önce size sorulur</translation>
 <translation id="2913331724188855103">Sitelerin, çerez verilerini kaydetmelerine ve okumalarına izin ver (önerilir)</translation>
-<translation id="2923908459366352541">Ad geçersiz</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> depolama alanı</translation>
+<translation id="2941880727166628951">Cihazlarıma gönder</translation>
 <translation id="2956410042958133412">Bu hesap <ph name="PARENT_NAME_1" /> ve <ph name="PARENT_NAME_2" /> tarafından yönetiliyor.</translation>
+<translation id="2960796085439532066">Telif Hakkı <ph name="YEAR" /> Google Inc. Tüm hakları saklıdır.</translation>
 <translation id="2962095958535813455">Gizli mod sekmelerine geçildi</translation>
 <translation id="2968755619301702150">Sertifika görüntüleyici</translation>
 <translation id="2979025552038692506">Seçili Gizli Sekme</translation>
@@ -361,20 +363,20 @@
 <translation id="3712575778697986964">Veri Tasarrufu sıfırlansın mı?</translation>
 <translation id="3714981814255182093">Bulma Çubuğu'nu açar</translation>
 <translation id="3716182511346448902">Bu sayfa, bellekte çok fazla yer kapladığından Chrome tarafından duraklatıldı.</translation>
-<translation id="3730075448226062617">Chrome'un mikrofonunuza erişebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ında da mikrofonu açın.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> üzerinde yer işareti koyuldu</translation>
 <translation id="3744111309925758534">Diğer uygulamalar <ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">Arka plan senkronizasyonu</translation>
 <translation id="3745176700485982507">Bu sayfada favori web sitelerinize bağlantılar bulabilirsiniz</translation>
 <translation id="3771001275138982843">Güncelleme indirilemedi</translation>
 <translation id="3773755127849930740">Eşleşmeye izin vermek için <ph name="BEGIN_LINK" />Bluetooth'u açın<ph name="END_LINK" /></translation>
-<translation id="3775705724665058594">Cihazlarınıza gönderin</translation>
 <translation id="3778956594442850293">Ana ekrana eklendi</translation>
 <translation id="3781011235031427080">Yarım yükseklikte açılan, bunun gibi daha fazlası sayfası</translation>
 <translation id="3789841737615482174">Yükle</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Yönet</translation>
+<translation id="3814315701645566481"><ph name="URL" /> ile ilgili verileri silmek ister misiniz?</translation>
 <translation id="3819178904835489326">İndirilen <ph name="NUMBER_OF_DOWNLOADS" /> dosya silindi</translation>
+<translation id="3819562311292413223">Sizin için seçilmiş makaleleri indirin</translation>
 <translation id="3822502789641063741">Site depolama silinsin mi?</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3859306556332390985">İleriye doğru git</translation>
@@ -484,7 +486,6 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4634124774493850572">Şifre kullan</translation>
 <translation id="4645575059429386691">Ebeveyniniz tarafından yönetiliyor</translation>
 <translation id="4648718555153979859">Sekmeleriniz burada gruplandırılır</translation>
-<translation id="4650364565596261010">Sistem varsayılanı</translation>
 <translation id="4660011489602794167">Klavyeyi göster</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> yer işareti silindi</translation>
 <translation id="4665282149850138822"><ph name="NAME" />, Ana ekranınıza eklendi</translation>
@@ -524,7 +525,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="488187801263602086">Dosyayı yeniden adlandırın</translation>
 <translation id="4882831918239250449">Göz atma geçmişinizin Arama, reklamlar ve diğer hizmetleri kişiselleştirmek için nasıl kullanıldığını kontrol edin</translation>
 <translation id="4883379392681899581">Gizli moddan ayrıl</translation>
-<translation id="4883854917563148705">Yönetilen ayarlar sıfırlanamaz</translation>
 <translation id="4885273946141277891">Desteklenmeyen sayıda Chrome örneği var.</translation>
 <translation id="4910889077668685004">Ödeme uygulamaları</translation>
 <translation id="4913161338056004800">İstatistikleri sıfırla</translation>
@@ -536,8 +536,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ekranınızı paylaşıyor</translation>
 <translation id="4961107849584082341">Bu sayfayı istediğiniz dile çevirin</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" /> tarafından yönetilen bir hesabın oturumunu kapatıyorsunuz. Bu işlemle Chrome verileriniz bu cihazdan silinir, ancak Google Hesabınızda kalmaya devam eder.</translation>
-<translation id="4962975101802056554">Cihaz için tüm izinleri iptal eder</translation>
-<translation id="4970824347203572753">Bulunduğunuz konumda kullanılamıyor</translation>
 <translation id="497421865427891073">İlerle</translation>
 <translation id="4988210275050210843">Dosya indiriliyor (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Sayfalar</translation>
@@ -565,6 +563,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5152843274749979095">Desteklenen yüklü uygulama yok</translation>
 <translation id="5161254044473106830">Başlık gerekiyor</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 indirme işlemi başarısız oldu.}other{# indirme işlemi başarısız oldu.}}</translation>
+<translation id="5168917394043976756">Gezinme çekmecesini aç</translation>
 <translation id="5184329579814168207">Chrome'da aç</translation>
 <translation id="5199929503336119739">İş profili</translation>
 <translation id="5210286577605176222">Önceki sekmeye gider</translation>
@@ -606,7 +605,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5487521232677179737">Verileri temizle</translation>
 <translation id="5494752089476963479">Araya giren veya yanıltıcı reklamlar gösteren sitelerde reklamları engelle</translation>
 <translation id="5497272504048921382">Sekmeler açıldı</translation>
-<translation id="5500777121964041360">Bulunduğunuz ülkede kullanılamayabilir</translation>
 <translation id="550684401320795253">Chrome güncelleniyor...</translation>
 <translation id="5512137114520586844">Bu hesap <ph name="PARENT_NAME" /> tarafından yönetiliyor.</translation>
 <translation id="5514904542973294328">Bu cihazın yöneticisi tarafından devre dışı bırakıldı</translation>
@@ -675,7 +673,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5937580074298050696"><ph name="AMOUNT" /> tasarruf edildi</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
 <translation id="5942872142862698679">Arama için Google kullanılıyor</translation>
-<translation id="5944669582486359588">Chrome, Basit modda sayfaları daha hızlı yükler ve yüzde 60'a kadar daha az veri kullanır. Google'ın Cloud teknolojisi, ziyaret ettiğiniz sayfaları optimize eder.</translation>
 <translation id="5952764234151283551">Erişmeye çalıştığınız sayfanın URL'sini Google'a gönderir</translation>
 <translation id="5956665950594638604">Chrome Yardım Merkezi'ni yeni bir sekmede açar</translation>
 <translation id="5958275228015807058">Dosyalarınızı ve sayfalarınızı İndirilenler bölümünde bulabilirsiniz</translation>
@@ -706,7 +703,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="618993374665929060">Tam yükseklite açılan, bunun gibi daha fazlası sayfası</translation>
 <translation id="6192333916571137726">Dosyayı indir</translation>
 <translation id="6192792657125177640">İstisnalar</translation>
-<translation id="6194112207524046168">Chrome'un kameranıza erişebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'ında da kamerayı açın.</translation>
 <translation id="6196640612572343990">Üçüncü taraf çerezlerini engelle</translation>
 <translation id="6206551242102657620">Bağlantı güvenli. Site bilgileri</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> değil misiniz?</translation>
@@ -835,6 +831,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7031882061095297553">Şununla senkronize et</translation>
 <translation id="7032663816368481562">Adres çubuğunda Buna benzer daha fazla <ph name="ICON" /> simgesine dokunduğunuzda, ilgili sayfaların hızlı bağlantılarını gösterir. Ziyaret ettiğiniz sayfaların URL'leri Google'a gönderilir.</translation>
 <translation id="7034608350006174882">Google Pay'i kullanan kartlar ve adresler</translation>
+<translation id="7037082443972906537">Ad kullanılamıyor</translation>
 <translation id="7053983685419859001">Engelle</translation>
 <translation id="7055152154916055070">Yönlendirme engellendi:</translation>
 <translation id="7062545763355031412">Kabul et ve hesabı değiştir</translation>
@@ -860,7 +857,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> öğe seçildi</translation>
 <translation id="7253272406652746122">Cihazınızın Ayarlar uygulamasındaki Hesaplar sayfasından bir Google Hesabı ekleyin.</translation>
 <translation id="7274013316676448362">Engellenmiş site</translation>
-<translation id="7290209999329137901">Yeniden adlandırma yapılamıyor</translation>
 <translation id="7291387454912369099">Asistan'ın Başlattığı Ödeme</translation>
 <translation id="729975465115245577">Cihazınızda şifreler dosyasını depolayacak bir uygulama yok.</translation>
 <translation id="7302081693174882195">Ayrıntılar: Tasarruf edilen veri miktarına göre sıralı</translation>
@@ -891,7 +887,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7475688122056506577">SD kart bulunamadı. Bazı dosyalarınız eksik olabilir.</translation>
 <translation id="7479104141328977413">Sekme yönetimi</translation>
 <translation id="7481312909269577407">İleri</translation>
-<translation id="7482697587265222445">Sekme, cihazlarınıza gönderildi</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (<ph name="TIME_SINCE_UPDATE" /> güncellendi)</translation>
 <translation id="7494879913343971937">Şifreleri göster</translation>
 <translation id="7494974237137038751">tasarruf edilen veri miktarı</translation>
@@ -932,7 +927,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7765158879357617694">Taşı</translation>
 <translation id="7769602470925380267">Kabul et ve oturumu kapat</translation>
 <translation id="7772032839648071052">Parolayı onayla</translation>
-<translation id="7772375229873196092"><ph name="APP_NAME" /> penceresini kapat</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ve <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ödeme yöntemi daha}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ve <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ödeme yöntemi daha}}</translation>
 <translation id="7781829728241885113">Dün</translation>
 <translation id="7791543448312431591">Ekle</translation>
@@ -940,7 +934,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7810647596859435254">Birlikte aç…</translation>
 <translation id="7821588508402923572">Veri tasarruflarınız burada görünür</translation>
 <translation id="7837721118676387834">Belirli bir sitenin, sesi kapatılmış videoları otomatik olarak oynatmasına izin verin.</translation>
-<translation id="7838340937077326045">Dosya uzantısını değiştirmek istediğinizden emin misiniz?</translation>
 <translation id="7846076177841592234">Seçimi iptal et</translation>
 <translation id="784934925303690534">Zaman aralığı</translation>
 <translation id="7851858861565204677">Diğer cihazlar</translation>
@@ -972,6 +965,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8037750541064988519"><ph name="DAYS" /> gün kaldı</translation>
 <translation id="804335162455518893">SD kart bulunamadı</translation>
 <translation id="805047784848435650">Tarama geçmişinize dayalı</translation>
+<translation id="8051303708327298699">Ayrıca, Chrome için bu izinleri açmanız da gerekir. Ayrıntılar için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" /> konusuna bakın.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB kullanılabilir</translation>
 <translation id="8058746566562539958">Yeni Chrome sekmesinde aç</translation>
 <translation id="8063895661287329888">Yer işareti eklenemedi.</translation>
@@ -995,7 +989,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8200772114523450471">Sürdür</translation>
 <translation id="8209050860603202033">Resmi aç</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB indirildi</translation>
-<translation id="8224471946457685718">Size özel makaleleri kablosuz bağlantıda indirin</translation>
 <translation id="8232956427053453090">Verileri koru</translation>
 <translation id="8249310407154411074">En üste taşı</translation>
 <translation id="8250920743982581267">Dokümanlar</translation>
@@ -1048,6 +1041,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="8583805026567836021">Hesap verileri temizleniyor</translation>
 <translation id="860043288473659153">Kart sahibinin adı</translation>
 <translation id="8609465669617005112">Yukarı taşı</translation>
+<translation id="8611192991944347781">Veri yönetimi</translation>
 <translation id="8616006591992756292">Google Hesabınızın <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> adresinde başka biçimlerde tarama geçmişi olabilir.</translation>
 <translation id="8617240290563765734">İndirilen öğede belirtilen URL önerisi açılsın mı?</translation>
 <translation id="8636825310635137004">Diğer cihazlarınızdaki sekmelerinize ulaşmak için senkronizasyonu etkinleştirin.</translation>

@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/editing/visible_selection.h"
 
-using ui::mojom::ImeTextSpanThickness;
+using ws::mojom::ImeTextSpanThickness;
 
 namespace blink {
 
@@ -27,7 +27,7 @@ class TextSuggestionControllerTest : public EditingTestBase {
   }
 
   void ShowSuggestionMenu(
-      const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
+      const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
           node_suggestion_marker_pairs,
       size_t max_number_of_suggestions) {
     GetDocument().GetFrame()->GetTextSuggestionController().ShowSuggestionMenu(
@@ -169,7 +169,8 @@ TEST_F(TextSuggestionControllerTest, ApplyTextSuggestion) {
   EXPECT_EQ(6u, markers[2]->StartOffset());
   EXPECT_EQ(13u, markers[2]->EndOffset());
 
-  const auto* const suggestion_marker = To<SuggestionMarker>(markers[2].Get());
+  const SuggestionMarker* const suggestion_marker =
+      ToSuggestionMarker(markers[2]);
   EXPECT_EQ(1u, suggestion_marker->Suggestions().size());
   EXPECT_EQ(String("word2 word3"), suggestion_marker->Suggestions()[0]);
 
@@ -209,8 +210,7 @@ TEST_F(TextSuggestionControllerTest,
   // Check the tag for the marker that was just added (the current tag value is
   // not reset between test cases).
   int32_t marker_tag =
-      To<SuggestionMarker>(GetDocument().Markers().MarkersFor(*text)[0].Get())
-          ->Tag();
+      ToSuggestionMarker(GetDocument().Markers().MarkersFor(*text)[0])->Tag();
 
   // Select immediately before "mispelled".
   GetDocument().GetFrame()->Selection().SetSelectionAndEndTyping(
@@ -504,7 +504,7 @@ TEST_F(TextSuggestionControllerTest, SuggestionMarkerWithEmptySuggestion) {
   const EphemeralRangeInFlatTree& range_to_check =
       ComputeRangeSurroundingCaret(selection.Start());
 
-  const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
+  const HeapVector<std::pair<Member<Node>, Member<DocumentMarker>>>&
       node_suggestion_marker_pairs =
           GetFrame().GetDocument()->Markers().MarkersIntersectingRange(
               range_to_check, DocumentMarker::MarkerTypes::Suggestion());

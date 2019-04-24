@@ -5,10 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_FAKE_BASE_TAB_STRIP_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_FAKE_BASE_TAB_STRIP_CONTROLLER_H_
 
-#include <map>
-#include <memory>
-#include <vector>
-
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -22,9 +18,6 @@ class FakeBaseTabStripController : public TabStripController {
   void AddTab(int index, bool is_active);
   void AddPinnedTab(int index, bool is_active);
   void RemoveTab(int index);
-
-  TabGroupData* CreateTabGroup();
-  void MoveTabIntoGroup(int index, TabGroupData* new_group);
 
   ui::ListSelectionModel* selection_model() { return &selection_model_; }
 
@@ -50,12 +43,12 @@ class FakeBaseTabStripController : public TabStripController {
   int HasAvailableDragActions() const override;
   void OnDropIndexUpdate(int index, bool drop_before) override;
   bool IsCompatibleWith(TabStrip* other) const override;
+  NewTabButtonPosition GetNewTabButtonPosition() const override;
   void CreateNewTab() override;
   void CreateNewTabWithLocation(const base::string16& loc) override;
   void StackedLayoutMaybeChanged() override;
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
-  std::vector<int> ListTabsInGroup(const TabGroupData* group) const override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;
@@ -78,9 +71,6 @@ class FakeBaseTabStripController : public TabStripController {
 
   int num_tabs_ = 0;
   int active_index_ = -1;
-
-  std::vector<std::unique_ptr<TabGroupData>> groups_;
-  std::map<int, TabGroupData*> tab_to_group_;
 
   ui::ListSelectionModel selection_model_;
 

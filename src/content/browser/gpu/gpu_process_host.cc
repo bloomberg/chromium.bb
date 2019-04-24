@@ -228,7 +228,7 @@ static const char* const kSwitchNames[] = {
     switches::kSkiaResourceCacheLimitMb,
     switches::kTestGLLib,
     switches::kTraceToConsole,
-    switches::kUseFakeMjpegDecodeAccelerator,
+    switches::kUseFakeJpegDecodeAccelerator,
     switches::kUseGpuInTests,
     switches::kV,
     switches::kVModule,
@@ -622,12 +622,6 @@ void GpuProcessHost::BindInterface(
   }
   process_->child_connection()->BindInterface(interface_name,
                                               std::move(interface_pipe));
-}
-
-void GpuProcessHost::RunService(
-    const std::string& service_name,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
-  process_->GetHost()->RunService(service_name, std::move(receiver));
 }
 
 #if defined(USE_OZONE)

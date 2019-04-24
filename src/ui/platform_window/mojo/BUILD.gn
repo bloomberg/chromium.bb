@@ -32,8 +32,4 @@ mojom("interfaces") {
   sources = [
     "text_input_state.mojom",
   ]
-
-  public_deps = [
-    "//ui/base/ime/mojo",
-  ]
 }

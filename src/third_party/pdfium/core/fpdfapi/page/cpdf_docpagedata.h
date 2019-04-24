@@ -36,7 +36,7 @@ class CPDF_DocPageData {
 
   CPDF_Font* GetFont(CPDF_Dictionary* pFontDict);
   CPDF_Font* GetStandardFont(const ByteString& fontName,
-                             const CPDF_FontEncoding* pEncoding);
+                             CPDF_FontEncoding* pEncoding);
   void ReleaseFont(const CPDF_Dictionary* pFontDict);
 
   // Loads a colorspace.

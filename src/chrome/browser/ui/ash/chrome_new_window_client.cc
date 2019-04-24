@@ -9,8 +9,6 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -34,10 +32,8 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
-#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/webui_url_constants.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
@@ -101,9 +97,6 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
     return ptr;
   }
 
-  // arc::mojom::CustomTabSession override:
-  void OnOpenInChromeClicked() override { forwarded_to_normal_tab_ = true; }
-
  private:
   CustomTabSessionImpl(Profile* profile,
                        const GURL& url,
@@ -119,31 +112,7 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
     window->Show();
   }
 
-  ~CustomTabSessionImpl() override {
-    // Keep in sync with ArcCustomTabsSessionEndReason in
-    // //tools/metrics/histograms/enums.xml.
-    enum class SessionEndReason {
-      CLOSED = 0,
-      FORWARDED_TO_NORMAL_TAB = 1,
-      kMaxValue = FORWARDED_TO_NORMAL_TAB,
-    } session_end_reason = forwarded_to_normal_tab_
-                               ? SessionEndReason::FORWARDED_TO_NORMAL_TAB
-                               : SessionEndReason::CLOSED;
-    UMA_HISTOGRAM_ENUMERATION("Arc.CustomTabs.SessionEndReason",
-                              session_end_reason);
-    auto elapsed = lifetime_timer_.Elapsed();
-    UMA_HISTOGRAM_MEDIUM_TIMES("Arc.CustomTabs.SessionLifetime.All", elapsed);
-    switch (session_end_reason) {
-      case SessionEndReason::CLOSED:
-        UMA_HISTOGRAM_MEDIUM_TIMES("Arc.CustomTabs.SessionLifetime.Closed",
-                                   elapsed);
-        break;
-      case SessionEndReason::FORWARDED_TO_NORMAL_TAB:
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Arc.CustomTabs.SessionLifetime.ForwardedToNormalTab", elapsed);
-        break;
-    }
-  }
+  ~CustomTabSessionImpl() override = default;
 
   void Bind(arc::mojom::CustomTabSessionPtr* ptr) {
     binding_.Bind(mojo::MakeRequest(ptr));
@@ -193,8 +162,6 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession {
   ash::mojom::ArcCustomTabViewPtr view_;
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<views::RemoteViewProvider> remote_view_provider_;
-  base::ElapsedTimer lifetime_timer_;
-  bool forwarded_to_normal_tab_ = false;
   base::WeakPtrFactory<CustomTabSessionImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomTabSessionImpl);
@@ -468,25 +435,18 @@ void ChromeNewWindowClient::OpenArcCustomTab(
 content::WebContents* ChromeNewWindowClient::OpenUrlImpl(
     const GURL& url,
     bool from_user_interaction) {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  if ((url.SchemeIs(url::kAboutScheme) ||
+  // If the url is for system settings, show the settings in a window instead of
+  // a browser tab.
+  if (url.GetContent() == "settings" &&
+      (url.SchemeIs(url::kAboutScheme) ||
        url.SchemeIs(content::kChromeUIScheme))) {
-    // Show browser settings (e.g. chrome://settings). This may open in a window
-    // or a tab depending on feature SplitSettings.
-    if (url.host() == chrome::kChromeUISettingsHost) {
-      chrome::ShowSettingsSubPageForProfile(profile,
-                                            /*sub_page=*/std::string());
-      return nullptr;
-    }
-    // OS settings are shown in a window.
-    if (url.host() == chrome::kChromeUIOSSettingsHost) {
-      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile);
-      return nullptr;
-    }
+    chrome::ShowSettingsSubPageForProfile(
+        ProfileManager::GetActiveUserProfile(), /*sub_page=*/std::string());
+    return nullptr;
   }
 
   NavigateParams navigate_params(
-      profile, url,
+      ProfileManager::GetActiveUserProfile(), url,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                 ui::PAGE_TRANSITION_FROM_API));
 

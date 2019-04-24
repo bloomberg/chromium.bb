@@ -25,13 +25,13 @@ uint32_t GrOpList::CreateUniqueID() {
 }
 
 GrOpList::GrOpList(GrResourceProvider* resourceProvider, sk_sp<GrOpMemoryPool> opMemoryPool,
-                   sk_sp<GrSurfaceProxy> surfaceProxy, GrAuditTrail* auditTrail)
+                   GrSurfaceProxy* surfaceProxy, GrAuditTrail* auditTrail)
         : fOpMemoryPool(std::move(opMemoryPool))
         , fAuditTrail(auditTrail)
         , fUniqueID(CreateUniqueID())
         , fFlags(0) {
     SkASSERT(fOpMemoryPool);
-    fTarget.setProxy(std::move(surfaceProxy), kWrite_GrIOType);
+    fTarget.setProxy(sk_ref_sp(surfaceProxy), kWrite_GrIOType);
     fTarget.get()->setLastOpList(this);
 
     if (resourceProvider && !resourceProvider->explicitlyAllocateGPUResources()) {
@@ -54,14 +54,8 @@ GrOpList::~GrOpList() {
     }
 }
 
-// TODO: this can go away when explicit allocation has stuck
 bool GrOpList::instantiate(GrResourceProvider* resourceProvider) {
-    if (resourceProvider->explicitlyAllocateGPUResources()) {
-        SkASSERT(fTarget.get()->isInstantiated());
-        return true;
-    } else {
-        return SkToBool(fTarget.get()->instantiate(resourceProvider));
-    }
+    return SkToBool(fTarget.get()->instantiate(resourceProvider));
 }
 
 void GrOpList::endFlush() {

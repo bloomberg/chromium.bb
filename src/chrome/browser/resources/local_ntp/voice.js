@@ -7,6 +7,17 @@
 
 
 /**
+ * Alias for document.getElementById.
+ * @param {string} id The ID of the element to find.
+ * @return {HTMLElement} The found element or null if not found.
+ */
+function $(id) {
+  // eslint-disable-next-line no-restricted-properties
+  return document.getElementById(id);
+}
+
+
+/**
  * Get the preferred language for UI localization. Represents Chrome's UI
  * language, which might not coincide with the user's "preferred" language
  * in the Settings. For more details, see:
@@ -296,7 +307,7 @@ speech.usingKeyboardNavigation_ = false;
 
 /**
  * Log an event from Voice Search.
- * @param {number} eventType Event from |LOG_TYPE|.
+ * @param {!number} eventType Event from |LOG_TYPE|.
  */
 speech.logEvent = function(eventType) {
   window.chrome.embeddedSearch.newTabPage.logEvent(eventType);
@@ -306,18 +317,14 @@ speech.logEvent = function(eventType) {
 /**
  * Initialize the speech module as part of the local NTP. Adds event handlers
  * and shows the fakebox microphone icon.
- * @param {string} googleBaseUrl Base URL for sending queries to Search.
+ * @param {!string} googleBaseUrl Base URL for sending queries to Search.
  * @param {!Object} translatedStrings Dictionary of localized string messages.
- * @param {?Element} fakeboxMicrophoneElem Fakebox microphone icon element.
+ * @param {!HTMLElement} fakeboxMicrophoneElem Fakebox microphone icon element.
  * @param {!Object} searchboxApiHandle SearchBox API handle.
  */
 speech.init = function(
     googleBaseUrl, translatedStrings, fakeboxMicrophoneElem,
     searchboxApiHandle) {
-  if (!fakeboxMicrophoneElem) {
-    throw new Error('Speech button element not found.');
-  }
-
   if (speech.currentState_ != speech.State_.UNINITIALIZED) {
     throw new Error(
         'Trying to re-initialize speech when not in UNINITIALIZED state.');
@@ -363,7 +370,6 @@ speech.init = function(
     waiting: translatedStrings.waiting,
   };
   view.init(speech.onClick_);
-  view.setTitles(translatedStrings);
   speech.initWebkitSpeech_();
   speech.reset_();
 };
@@ -660,7 +666,7 @@ speech.isUserAgentMac_ = function() {
 
 /**
  * Determines, if the given KeyboardEvent |code| is a space or enter key.
- * @param {string} code A KeyboardEvent's |code| property.
+ * @param {!string} A KeyboardEvent's |code| property.
  * @return True, iff the code represents a space or enter key.
  * @private
  */
@@ -678,7 +684,7 @@ speech.isSpaceOrEnter_ = function(code) {
 
 /**
  * Determines if the given event's target id is for a button or navigation link.
- * @param {string} id An event's target id.
+ * @param {!string} An event's target id.
  * @return True, iff the id is for a button or link.
  * @private
  */
@@ -700,7 +706,7 @@ speech.isButtonOrLink_ = function(id) {
  * - <ESC> aborts voice input when the recognition interface is active.
  * - <ENTER> or <SPACE> interprets as a click if the target is a button or
  *   navigation link, otherwise it submits the speech query if there is one
- * @param {!Event} event The keydown event.
+ * @param {KeyboardEvent} event The keydown event.
  */
 speech.onKeyDown = function(event) {
   if (speech.isUiDefinitelyHidden_()) {
@@ -790,7 +796,7 @@ speech.onOmniboxFocused = function() {
 
 /**
  * Change the location of this tab to the new URL. Used for query submission.
- * @param {!URL} url The URL to navigate to.
+ * @param {!URL} The URL to navigate to.
  * @private
  */
 speech.navigateToUrl_ = function(url) {
@@ -813,11 +819,11 @@ speech.submitFinalResult_ = function() {
   // before stopping speech.
   searchParams.append('q', speech.finalResult_);
   // Add a parameter to indicate that this request is a voice search.
-  searchParams.append('gs_ivs', '1');
+  searchParams.append('gs_ivs', 1);
 
   // Build the query URL.
   const queryUrl = new URL('/search', speech.googleBaseUrl_);
-  queryUrl.search = searchParams.toString();
+  queryUrl.search = searchParams;
 
   speech.logEvent(LOG_TYPE.ACTION_QUERY_SUBMITTED);
   speech.stop();
@@ -1104,8 +1110,8 @@ text.init = function() {
 
 /**
  * Updates the text elements with new recognition results.
- * @param {string} interimText Low confidence speech recognition result text.
- * @param {string} opt_finalText High confidence speech recognition result
+ * @param {!string} interimText Low confidence speech recognition result text.
+ * @param {!string} opt_finalText High confidence speech recognition result
  *     text, defaults to an empty string.
  */
 text.updateTextArea = function(interimText, opt_finalText = '') {
@@ -1444,7 +1450,7 @@ let view = {};
 
 /**
  * ID for the close button in the speech output container.
- * @const
+ * @const @private
  */
 view.CLOSE_BUTTON_ID = 'voice-close-button';
 
@@ -1635,17 +1641,6 @@ view.init = function(onClick) {
 
 
 /**
- * Sets accessibility titles/labels for the page elements.
- * @param {!Object} translatedStrings Dictionary of localized title strings.
- */
-view.setTitles = function(translatedStrings) {
-  let closeButton = $(view.CLOSE_BUTTON_ID);
-  closeButton.title = translatedStrings.voiceCloseTooltip;
-  closeButton.setAttribute('aria-label', translatedStrings.voiceCloseTooltip);
-};
-
-
-/**
  * Displays an error message and stops animations.
  * @param {RecognitionError} error The error type.
  */
@@ -1695,7 +1690,7 @@ view.stopMicrophoneAnimations_ = function() {
 
 /**
  * Makes sure that a click anywhere closes the UI when it is active.
- * @param {!Event} event The click event.
+ * @param {!MouseEvent} event The click event.
  * @private
  */
 view.onWindowClick_ = function(event) {

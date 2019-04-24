@@ -31,7 +31,7 @@ namespace blink {
 
 using namespace html_names;
 
-HTMLTableCaptionElement::HTMLTableCaptionElement(Document& document)
+inline HTMLTableCaptionElement::HTMLTableCaptionElement(Document& document)
     : HTMLElement(kCaptionTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLTableCaptionElement)
@@ -41,10 +41,9 @@ void HTMLTableCaptionElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kAlignAttr) {
-    if (!value.IsEmpty()) {
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kCaptionSide, value);
-    }
+    if (!value.IsEmpty())
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyCaptionSide,
+                                              value);
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }

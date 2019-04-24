@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "build/build_config.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_errors.h"
@@ -32,6 +32,7 @@ class CacheCreator {
                int64_t max_bytes,
                net::CacheType type,
                net::BackendType backend_type,
+               uint32_t flags,
 #if defined(OS_ANDROID)
                base::android::ApplicationStatusListener* app_status_listener,
 #endif
@@ -59,7 +60,9 @@ class CacheCreator {
   int64_t max_bytes_;
   net::CacheType type_;
   net::BackendType backend_type_;
-#if defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
+  uint32_t flags_;
+#else
   base::android::ApplicationStatusListener* app_status_listener_;
 #endif
   std::unique_ptr<disk_cache::Backend>* backend_;
@@ -78,6 +81,7 @@ CacheCreator::CacheCreator(
     int64_t max_bytes,
     net::CacheType type,
     net::BackendType backend_type,
+    uint32_t flags,
 #if defined(OS_ANDROID)
     base::android::ApplicationStatusListener* app_status_listener,
 #endif
@@ -91,7 +95,9 @@ CacheCreator::CacheCreator(
       max_bytes_(max_bytes),
       type_(type),
       backend_type_(backend_type),
-#if defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
+      flags_(flags),
+#else
       app_status_listener_(app_status_listener),
 #endif
       backend_(backend),
@@ -128,11 +134,12 @@ net::Error CacheCreator::Run() {
 #if defined(OS_ANDROID)
   return net::ERR_FAILED;
 #else
-  disk_cache::BackendImpl* new_cache =
-      new disk_cache::BackendImpl(path_, cleanup_tracker_.get(),
-                                  /*cache_thread = */ nullptr, type_, net_log_);
+  disk_cache::BackendImpl* new_cache = new disk_cache::BackendImpl(
+      path_, cleanup_tracker_.get(), /*cache_thread = */ nullptr, net_log_);
   created_cache_.reset(new_cache);
   new_cache->SetMaxSize(max_bytes_);
+  new_cache->SetType(type_);
+  new_cache->SetFlags(flags_);
   net::Error rv = new_cache->Init(
       base::Bind(&CacheCreator::OnIOComplete, base::Unretained(this)));
   DCHECK_EQ(net::ERR_IO_PENDING, rv);
@@ -238,7 +245,7 @@ net::Error CreateCacheBackendImpl(
 
   bool had_post_cleanup_callback = !post_cleanup_callback.is_null();
   CacheCreator* creator = new CacheCreator(
-      path, force, max_bytes, type, backend_type,
+      path, force, max_bytes, type, backend_type, kNone,
 #if defined(OS_ANDROID)
       std::move(app_status_listener),
 #endif
@@ -305,7 +312,7 @@ net::Error CreateCacheBackend(net::CacheType type,
 void FlushCacheThreadForTesting() {
   // For simple backend.
   SimpleBackendImpl::FlushWorkerPoolForTesting();
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 
   // Block backend.
   BackendImpl::FlushForTesting();

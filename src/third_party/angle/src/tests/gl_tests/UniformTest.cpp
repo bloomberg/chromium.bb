@@ -677,6 +677,8 @@ class UniformTestES3 : public ANGLETest
   protected:
     UniformTestES3() : mProgram(0) {}
 
+    void SetUp() override { ANGLETest::SetUp(); }
+
     void TearDown() override
     {
         if (mProgram != 0)
@@ -684,8 +686,6 @@ class UniformTestES3 : public ANGLETest
             glDeleteProgram(mProgram);
             mProgram = 0;
         }
-
-        ANGLETest::TearDown();
     }
 
     GLuint mProgram;
@@ -1097,6 +1097,8 @@ class UniformTestES31 : public ANGLETest
   protected:
     UniformTestES31() : mProgram(0) {}
 
+    void SetUp() override { ANGLETest::SetUp(); }
+
     void TearDown() override
     {
         if (mProgram != 0)
@@ -1104,8 +1106,6 @@ class UniformTestES31 : public ANGLETest
             glDeleteProgram(mProgram);
             mProgram = 0;
         }
-
-        ANGLETest::TearDown();
     }
 
     GLuint mProgram;

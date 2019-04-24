@@ -10,7 +10,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
-class Profile;
+class Browser;
 
 namespace media_router {
 
@@ -19,7 +19,7 @@ namespace media_router {
 // after that it shows an icon that links to a help center article.
 class CastDialogNoSinksView : public views::View, public views::ButtonListener {
  public:
-  explicit CastDialogNoSinksView(Profile* profile);
+  explicit CastDialogNoSinksView(Browser* browser);
   ~CastDialogNoSinksView() override;
 
   // views::ButtonListener:
@@ -49,7 +49,7 @@ class CastDialogNoSinksView : public views::View, public views::ButtonListener {
   // a help center article.
   views::View* help_icon_view_ = nullptr;
 
-  Profile* const profile_;
+  Browser* const browser_;
 
   base::WeakPtrFactory<CastDialogNoSinksView> weak_factory_;
 

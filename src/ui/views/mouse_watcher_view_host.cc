@@ -16,12 +16,14 @@ MouseWatcherViewHost::MouseWatcherViewHost(View* view,
       hot_zone_insets_(hot_zone_insets) {
 }
 
-MouseWatcherViewHost::~MouseWatcherViewHost() = default;
+MouseWatcherViewHost::~MouseWatcherViewHost() {
+}
 
-bool MouseWatcherViewHost::Contains(const gfx::Point& screen_point,
-                                    EventType type) {
+bool MouseWatcherViewHost::Contains(
+    const gfx::Point& screen_point,
+    MouseEventType type) {
   bool in_view = IsCursorInViewZone(screen_point);
-  if (!in_view || (type == EventType::kExit && !IsMouseOverWindow()))
+  if (!in_view || (type == MOUSE_EXIT && !IsMouseOverWindow()))
     return false;
   return true;
 }

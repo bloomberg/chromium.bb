@@ -8,11 +8,9 @@
 
 namespace content {
 
-BackgroundFetchTestBrowserContext::BackgroundFetchTestBrowserContext() =
-    default;
+BackgroundFetchTestBrowserContext::BackgroundFetchTestBrowserContext() {}
 
-BackgroundFetchTestBrowserContext::~BackgroundFetchTestBrowserContext() =
-    default;
+BackgroundFetchTestBrowserContext::~BackgroundFetchTestBrowserContext() {}
 
 MockBackgroundFetchDelegate*
 BackgroundFetchTestBrowserContext::GetBackgroundFetchDelegate() {

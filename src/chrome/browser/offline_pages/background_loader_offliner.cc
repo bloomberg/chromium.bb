@@ -284,9 +284,9 @@ bool BackgroundLoaderOffliner::HandleTimeout(int64_t request_id) {
 }
 
 void BackgroundLoaderOffliner::CanDownload(
-    base::OnceCallback<void(bool)> callback) {
+    const base::Callback<void(bool)>& callback) {
   if (!pending_request_.get()) {
-    std::move(callback).Run(false);  // Shouldn't happen though...
+    callback.Run(false);  // Shouldn't happen though...
   }
 
   bool should_allow_downloads = false;
@@ -302,7 +302,7 @@ void BackgroundLoaderOffliner::CanDownload(
     final_status = Offliner::RequestStatus::DOWNLOAD_THROTTLED;
   }
 
-  std::move(callback).Run(should_allow_downloads);
+  callback.Run(should_allow_downloads);
   SavePageRequest request(*pending_request_.get());
   std::move(completion_callback_).Run(request, final_status);
   base::ThreadTaskRunnerHandle::Get()->PostTask(

@@ -35,10 +35,18 @@ class EditingStyle;
 class CORE_EXPORT InsertParagraphSeparatorCommand final
     : public CompositeEditCommand {
  public:
-  InsertParagraphSeparatorCommand(
-      Document&,
+  static InsertParagraphSeparatorCommand* Create(
+      Document& document,
       bool use_default_paragraph_element = false,
-      bool paste_blockquote_into_unquoted_area = false);
+      bool paste_blockquote_into_unquoted_area = false) {
+    return MakeGarbageCollected<InsertParagraphSeparatorCommand>(
+        document, use_default_paragraph_element,
+        paste_blockquote_into_unquoted_area);
+  }
+
+  InsertParagraphSeparatorCommand(Document&,
+                                  bool use_default_paragraph_element,
+                                  bool paste_blockquote_into_unquoted_area);
 
   void Trace(Visitor*) override;
 

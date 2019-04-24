@@ -6,9 +6,7 @@
 #define SERVICES_CONTENT_NAVIGABLE_CONTENTS_FACTORY_IMPL_H_
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 
 namespace content {
@@ -23,20 +21,18 @@ class Service;
 // all managed by the Service instance.
 class NavigableContentsFactoryImpl : public mojom::NavigableContentsFactory {
  public:
-  NavigableContentsFactoryImpl(
-      Service* service,
-      mojo::PendingReceiver<mojom::NavigableContentsFactory> receiver);
+  NavigableContentsFactoryImpl(Service* service,
+                               mojom::NavigableContentsFactoryRequest request);
   ~NavigableContentsFactoryImpl() override;
 
  private:
   // mojom::NavigableContentsFactory:
-  void CreateContents(
-      mojom::NavigableContentsParamsPtr params,
-      mojo::PendingReceiver<mojom::NavigableContents> receiver,
-      mojo::PendingRemote<mojom::NavigableContentsClient> client) override;
+  void CreateContents(mojom::NavigableContentsParamsPtr params,
+                      mojom::NavigableContentsRequest request,
+                      mojom::NavigableContentsClientPtr client) override;
 
   Service* const service_;
-  mojo::Receiver<mojom::NavigableContentsFactory> receiver_;
+  mojo::Binding<mojom::NavigableContentsFactory> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigableContentsFactoryImpl);
 };

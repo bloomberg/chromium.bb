@@ -26,11 +26,8 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
-#include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_selection_types.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
-#include "third_party/blink/renderer/platform/geometry/length_box.h"
-#include "third_party/blink/renderer/platform/geometry/length_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/color_scheme.h"
 #include "third_party/blink/renderer/platform/theme_types.h"
@@ -51,13 +48,14 @@ class LengthSize;
 class Locale;
 class Node;
 class ChromeClient;
+class Theme;
 class ThemePainter;
 
 class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   USING_FAST_MALLOC(LayoutTheme);
 
  protected:
-  LayoutTheme();
+  explicit LayoutTheme(Theme*);
 
  public:
   virtual ~LayoutTheme() = default;
@@ -103,7 +101,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // control. This will only be used if a baseline position cannot be determined
   // by examining child content.
   // Checkboxes and radio buttons are examples of controls that need to do this.
-  virtual LayoutUnit BaselinePositionAdjustment(const ComputedStyle&) const;
+  LayoutUnit BaselinePositionAdjustment(const ComputedStyle&) const;
 
   // A method for asking if a control is a container or not.  Leaf controls have
   // to have some special behavior (like the baseline position API above).
@@ -117,7 +115,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // 10.9 checkbox). Add this "visual overflow" to the object's border box rect.
   virtual void AddVisualOverflow(const Node*,
                                  const ComputedStyle&,
-                                 IntRect& border_box) {}
+                                 IntRect& border_box);
 
   // This method is called whenever a control state changes on a particular
   // themed object, e.g., the mouse becomes pressed or a control becomes
@@ -254,50 +252,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 
   virtual bool ShouldUseFallbackTheme(const ComputedStyle&) const;
 
-  // Methods used to adjust the ComputedStyles of controls.
-
-  // The font description result should have a zoomed font size.
-  virtual FontDescription ControlFont(ControlPart,
-                                      const FontDescription& font_description,
-                                      float /*zoomFactor*/) const {
-    return font_description;
-  }
-
-  // The size here is in zoomed coordinates already.  If a new size is returned,
-  // it also needs to be in zoomed coordinates.
-  virtual LengthSize GetControlSize(ControlPart,
-                                    const FontDescription&,
-                                    const LengthSize& zoomed_size,
-                                    float /*zoomFactor*/) const {
-    return zoomed_size;
-  }
-
-  // Returns the minimum size for a control in zoomed coordinates.
-  virtual LengthSize MinimumControlSize(ControlPart,
-                                        const FontDescription&,
-                                        float /*zoomFactor*/) const {
-    return LengthSize(Length::Fixed(0), Length::Fixed(0));
-  }
-
-  // Allows the theme to modify the existing padding/border.
-  virtual LengthBox ControlPadding(ControlPart,
-                                   const FontDescription&,
-                                   const Length& zoomed_box_top,
-                                   const Length& zoomed_box_right,
-                                   const Length& zoomed_box_bottom,
-                                   const Length& zoomed_box_left,
-                                   float zoom_factor) const;
-  virtual LengthBox ControlBorder(ControlPart,
-                                  const FontDescription&,
-                                  const LengthBox& zoomed_box,
-                                  float zoom_factor) const;
-
-  // Whether or not whitespace: pre should be forced on always.
-  virtual bool ControlRequiresPreWhiteSpace(ControlPart) const { return false; }
-
-  // Adjust style as per platform selection.
-  virtual void AdjustControlPartStyle(ComputedStyle&);
-
  protected:
   // The platform selection color.
   virtual Color PlatformActiveSelectionBackgroundColor() const;
@@ -332,6 +286,8 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   void AdjustCheckboxStyleUsingFallbackTheme(ComputedStyle&) const;
   void AdjustRadioStyleUsingFallbackTheme(ComputedStyle&) const;
 
+  bool HasPlatformTheme() const { return platform_theme_; }
+
  public:
   // Methods for state querying
   static ControlStates ControlStatesForNode(const Node*, const ComputedStyle&);
@@ -362,6 +318,8 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   static const RGBA32 kDefaultTapHighlightColor = 0x66000000;
 
   static const RGBA32 kDefaultCompositionBackgroundColor = 0xFFFFDD55;
+
+  Theme* platform_theme_;  // The platform-specific theme.
 };
 
 }  // namespace blink

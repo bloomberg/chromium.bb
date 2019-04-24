@@ -32,8 +32,7 @@ static viz::ResourceFormat kFboTextureFormat = viz::RGBA_8888;
 OffscreenBrowserCompositorOutputSurface::
     OffscreenBrowserCompositorOutputSurface(
         scoped_refptr<ws::ContextProviderCommandBuffer> context,
-        const viz::UpdateVSyncParametersCallback&
-            update_vsync_parameters_callback,
+        const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
         std::unique_ptr<viz::CompositorOverlayCandidateValidator>
             overlay_candidate_validator)
     : BrowserCompositorOutputSurface(std::move(context),

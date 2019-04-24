@@ -225,6 +225,7 @@ struct PaintLayerRareData {
 // be instanciated for LayoutBoxes. With the current design, it's hard to know
 // that by reading the code.
 class CORE_EXPORT PaintLayer : public DisplayItemClient {
+
  public:
   PaintLayer(LayoutBoxModelObject&);
   ~PaintLayer() override;
@@ -232,7 +233,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // DisplayItemClient methods
   String DebugName() const final;
   DOMNodeId OwnerNodeId() const final;
-  IntRect VisualRect() const final;
+  LayoutRect VisualRect() const final;
 
   LayoutBoxModelObject& GetLayoutObject() const { return layout_object_; }
   LayoutBox* GetLayoutBox() const {
@@ -243,8 +244,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PaintLayer* NextSibling() const { return next_; }
   PaintLayer* FirstChild() const { return first_; }
   PaintLayer* LastChild() const { return last_; }
-
-  const PaintLayer* CommonAncestor(const PaintLayer*) const;
 
   // TODO(wangxianzhu): Find a better name for it. 'paintContainer' might be
   // good but we can't use it for now because it conflicts with
@@ -766,9 +765,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void SetNeedsVisualOverflowRecalc();
   void SetNeedsCompositingInputsUpdate();
 
-  // This methods marks everything from this layer up to the |ancestor| argument
-  // (both included).
-  void SetChildNeedsCompositingInputsUpdateUpToAncestor(PaintLayer* ancestor);
   // Use this internal method only for cases during the descendant-dependent
   // tree walk.
   bool ChildNeedsCompositingInputsUpdate() const {
@@ -1069,7 +1065,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // for the definition of a replaced normal-flow stacking element.
   bool IsReplacedNormalFlowStacking() const;
 
-  void SetNeedsCompositingReasonsUpdate() {
+  void SetNeeedsCompositingReasonsUpdate() {
     needs_compositing_reasons_update_ = true;
   }
 

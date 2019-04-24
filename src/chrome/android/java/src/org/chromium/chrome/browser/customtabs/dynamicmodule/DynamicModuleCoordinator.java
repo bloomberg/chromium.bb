@@ -9,6 +9,7 @@ import static org.chromium.chrome.browser.customtabs.dynamicmodule.DynamicModule
 import android.content.ComponentName;
 import android.content.Context;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsService;
@@ -32,8 +33,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabTopBarDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.TabObserverRegistrar;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
+import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
@@ -64,8 +65,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     private final CustomTabIntentDataProvider mIntentDataProvider;
     private final TabObserverRegistrar mTabObserverRegistrar;
     private final CustomTabsConnection mConnection;
-    private final CustomTabActivityTabProvider mTabProvider;
-    private final CustomTabActivityNavigationController mNavigationController;
+    private final CustomTabActivityTabController mTabController;
 
     private final ChromeActivity mActivity;
 
@@ -163,20 +163,18 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
                                     CloseButtonNavigator closeButtonNavigator,
                                     TabObserverRegistrar tabObserverRegistrar,
                                     ActivityLifecycleDispatcher activityLifecycleDispatcher,
-                                    CustomTabActivityNavigationController navigationController,
                                     ActivityDelegate activityDelegate,
                                     Lazy<CustomTabTopBarDelegate> topBarDelegate,
                                     Lazy<CustomTabBottomBarDelegate> bottomBarDelegate,
                                     Lazy<ChromeFullscreenManager> fullscreenManager,
                                     Lazy<DynamicModuleToolbarController> toolbarController,
                                     CustomTabsConnection connection, ChromeActivity activity,
-                                    CustomTabActivityTabProvider tabProvider,
+                                    CustomTabActivityTabController tabController,
                                     DynamicModulePageLoadObserver pageLoadObserver) {
         mIntentDataProvider = intentDataProvider;
         mTabObserverRegistrar = tabObserverRegistrar;
-        mNavigationController = navigationController;
         mActivity = activity;
-        mTabProvider = tabProvider;
+        mTabController = tabController;
         mConnection = connection;
 
         mTabObserverRegistrar.registerTabObserver(mModuleNavigationEventObserver);
@@ -194,7 +192,6 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
 
         mPageCriteria = url -> (isModuleLoading() || isModuleLoaded()) && isModuleManagedUrl(url);
         closeButtonNavigator.setLandingPageCriteria(mPageCriteria);
-        mNavigationController.setBackHandler(this::onBackPressedAsync);
 
         activityLifecycleDispatcher.register(this);
     }
@@ -255,7 +252,8 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     }
 
     /* package */ void loadUri(Uri uri) {
-        mNavigationController.navigate(uri.toString());
+        mTabController.loadUrlInTab(new LoadUrlParams(uri.toString()),
+                SystemClock.elapsedRealtime());
     }
 
     @VisibleForTesting
@@ -287,10 +285,10 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     /**
      * @see IActivityDelegate#onBackPressedAsync
      */
-    public boolean onBackPressedAsync(Runnable defaultBackHandler) {
+    public boolean onBackPressedAsync(Runnable notHandledRunnable) {
         if (mModuleEntryPoint != null &&
                 mModuleEntryPoint.getModuleVersion() >= ON_BACK_PRESSED_ASYNC_API_VERSION) {
-            mActivityDelegate.onBackPressedAsync(defaultBackHandler);
+            mActivityDelegate.onBackPressedAsync(notHandledRunnable);
             return true;
         }
 
@@ -427,7 +425,7 @@ public class DynamicModuleCoordinator implements NativeInitObserver, Destroyable
     }
 
     private String getContentUrl() {
-        Tab tab = mTabProvider.getTab();
+        Tab tab = mTabController.getTab();
         if (tab != null && tab.getWebContents() != null && !tab.getWebContents().isDestroyed()
                 && tab.getWebContents().getLastCommittedUrl() != null) {
             return tab.getWebContents().getLastCommittedUrl();

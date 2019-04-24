@@ -16,6 +16,10 @@ class CORE_EXPORT PropertyRegistry : public GarbageCollected<PropertyRegistry> {
   using RegistrationMap =
       HeapHashMap<AtomicString, Member<PropertyRegistration>>;
 
+  static PropertyRegistry* Create() {
+    return MakeGarbageCollected<PropertyRegistry>();
+  }
+
   void RegisterProperty(const AtomicString&, PropertyRegistration&);
   const PropertyRegistration* Registration(const AtomicString&) const;
   size_t RegistrationCount() const { return registrations_.size(); }

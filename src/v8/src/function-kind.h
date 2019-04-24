@@ -142,50 +142,46 @@ inline bool IsConstructable(FunctionKind kind) {
                    FunctionKind::kDerivedConstructor);
 }
 
-inline const char* FunctionKind2String(FunctionKind kind) {
+inline std::ostream& operator<<(std::ostream& os, FunctionKind kind) {
   switch (kind) {
     case FunctionKind::kNormalFunction:
-      return "NormalFunction";
+      return os << "NormalFunction";
     case FunctionKind::kArrowFunction:
-      return "ArrowFunction";
+      return os << "ArrowFunction";
     case FunctionKind::kGeneratorFunction:
-      return "GeneratorFunction";
+      return os << "GeneratorFunction";
     case FunctionKind::kConciseMethod:
-      return "ConciseMethod";
+      return os << "ConciseMethod";
     case FunctionKind::kDerivedConstructor:
-      return "DerivedConstructor";
+      return os << "DerivedConstructor";
     case FunctionKind::kBaseConstructor:
-      return "BaseConstructor";
+      return os << "BaseConstructor";
     case FunctionKind::kGetterFunction:
-      return "GetterFunction";
+      return os << "GetterFunction";
     case FunctionKind::kSetterFunction:
-      return "SetterFunction";
+      return os << "SetterFunction";
     case FunctionKind::kAsyncFunction:
-      return "AsyncFunction";
+      return os << "AsyncFunction";
     case FunctionKind::kModule:
-      return "Module";
+      return os << "Module";
     case FunctionKind::kClassMembersInitializerFunction:
-      return "ClassMembersInitializerFunction";
+      return os << "ClassMembersInitializerFunction";
     case FunctionKind::kDefaultBaseConstructor:
-      return "DefaultBaseConstructor";
+      return os << "DefaultBaseConstructor";
     case FunctionKind::kDefaultDerivedConstructor:
-      return "DefaultDerivedConstructor";
+      return os << "DefaultDerivedConstructor";
     case FunctionKind::kAsyncArrowFunction:
-      return "AsyncArrowFunction";
+      return os << "AsyncArrowFunction";
     case FunctionKind::kAsyncConciseMethod:
-      return "AsyncConciseMethod";
+      return os << "AsyncConciseMethod";
     case FunctionKind::kConciseGeneratorMethod:
-      return "ConciseGeneratorMethod";
+      return os << "ConciseGeneratorMethod";
     case FunctionKind::kAsyncConciseGeneratorMethod:
-      return "AsyncConciseGeneratorMethod";
+      return os << "AsyncConciseGeneratorMethod";
     case FunctionKind::kAsyncGeneratorFunction:
-      return "AsyncGeneratorFunction";
+      return os << "AsyncGeneratorFunction";
   }
   UNREACHABLE();
-}
-
-inline std::ostream& operator<<(std::ostream& os, FunctionKind kind) {
-  return os << FunctionKind2String(kind);
 }
 
 }  // namespace internal

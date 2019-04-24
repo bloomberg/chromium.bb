@@ -75,12 +75,14 @@ Security.PageSecurityState = class {
    * @param {!Protocol.Security.SecurityState} securityState
    * @param {boolean} schemeIsCryptographic
    * @param {!Array<!Protocol.Security.SecurityStateExplanation>} explanations
+   * @param {?Protocol.Security.InsecureContentStatus} insecureContentStatus
    * @param {?string} summary
    */
-  constructor(securityState, schemeIsCryptographic, explanations, summary) {
+  constructor(securityState, schemeIsCryptographic, explanations, insecureContentStatus, summary) {
     this.securityState = securityState;
     this.schemeIsCryptographic = schemeIsCryptographic;
     this.explanations = explanations;
+    this.insecureContentStatus = insecureContentStatus;
     this.summary = summary;
   }
 };
@@ -103,8 +105,8 @@ Security.SecurityDispatcher = class {
    * @param {?string=} summary
    */
   securityStateChanged(securityState, schemeIsCryptographic, explanations, insecureContentStatus, summary) {
-    const pageSecurityState =
-        new Security.PageSecurityState(securityState, schemeIsCryptographic, explanations, summary || null);
+    const pageSecurityState = new Security.PageSecurityState(
+        securityState, schemeIsCryptographic, explanations, insecureContentStatus, summary || null);
     this._model.dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, pageSecurityState);
   }
 

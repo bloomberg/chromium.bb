@@ -113,7 +113,7 @@ protected:
         dawn::CommandBuffer copy = encoder.Finish();
         queue.Submit(1, &copy);
 
-        mTextureView = texture.CreateDefaultView();
+        mTextureView = texture.CreateDefaultTextureView();
     }
 
     void TestAddressModes(AddressModeTestCase u, AddressModeTestCase v, AddressModeTestCase w) {
@@ -129,6 +129,7 @@ protected:
             descriptor.lodMinClamp = kLodMin;
             descriptor.lodMaxClamp = kLodMax;
             descriptor.compareFunction = dawn::CompareFunction::Never;
+            descriptor.borderColor = dawn::BorderColor::TransparentBlack;
             sampler = device.CreateSampler(&descriptor);
         }
 
@@ -141,7 +142,7 @@ protected:
         {
             dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&mRenderPass.renderPassInfo);
             pass.SetPipeline(mPipeline);
-            pass.SetBindGroup(0, bindGroup, 0, nullptr);
+            pass.SetBindGroup(0, bindGroup);
             pass.Draw(6, 1, 0, 0);
             pass.EndPass();
         }

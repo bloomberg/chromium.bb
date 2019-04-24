@@ -157,7 +157,7 @@ class CertificateProviderServiceTest : public testing::Test {
         TestDelegate::RequestType::GET_CERTIFICATES);
 
     certificate_provider_->GetCertificates(
-        base::BindOnce(&StoreCertificates, certs));
+        base::Bind(&StoreCertificates, certs));
 
     task_runner_->RunUntilIdle();
     EXPECT_EQ(TestDelegate::RequestType::NONE,
@@ -168,8 +168,7 @@ class CertificateProviderServiceTest : public testing::Test {
   scoped_refptr<net::SSLPrivateKey> FetchIdentityPrivateKey(
       net::ClientCertIdentity* identity) {
     scoped_refptr<net::SSLPrivateKey> ssl_private_key;
-    identity->AcquirePrivateKey(
-        base::BindOnce(StorePrivateKey, &ssl_private_key));
+    identity->AcquirePrivateKey(base::Bind(StorePrivateKey, &ssl_private_key));
     task_runner_->RunUntilIdle();
     return ssl_private_key;
   }
@@ -268,7 +267,7 @@ TEST_F(CertificateProviderServiceTest, GetCertificates) {
   test_delegate_->ClearAndExpectRequest(TestDelegate::RequestType::NONE);
 
   certificate_provider_->GetCertificates(
-      base::BindOnce(&StoreCertificates, &certs));
+      base::Bind(&StoreCertificates, &certs));
 
   task_runner_->RunUntilIdle();
   // As |certs| was not empty before, this ensures that StoreCertificates() was
@@ -476,7 +475,7 @@ TEST_F(CertificateProviderServiceTest, SignRequest) {
   private_key->Sign(
       SSL_SIGN_RSA_PKCS1_SHA256,
       std::vector<uint8_t>(input.begin(), input.end()),
-      base::BindOnce(&ExpectOKAndStoreSignature, &received_signature));
+      base::Bind(&ExpectOKAndStoreSignature, &received_signature));
 
   task_runner_->RunUntilIdle();
 
@@ -513,7 +512,7 @@ TEST_F(CertificateProviderServiceTest, UnloadExtensionDuringSign) {
   net::Error error = net::OK;
   private_key->Sign(SSL_SIGN_RSA_PKCS1_SHA256,
                     std::vector<uint8_t>(input.begin(), input.end()),
-                    base::BindOnce(&ExpectEmptySignatureAndStoreError, &error));
+                    base::Bind(&ExpectEmptySignatureAndStoreError, &error));
 
   task_runner_->RunUntilIdle();
 

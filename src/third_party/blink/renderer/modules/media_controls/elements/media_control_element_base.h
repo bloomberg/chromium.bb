@@ -7,6 +7,7 @@
 
 #include "third_party/blink/public/platform/web_localized_string.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_element_type.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -43,6 +44,9 @@ class MODULES_EXPORT MediaControlElementBase : public GarbageCollectedMixin {
   // happen. It will be a no-op if the element isn't displayed in the controls.
   virtual void MaybeRecordDisplayed() = 0;
 
+  // Returns the display type of the element that is set at creation.
+  MediaControlElementType DisplayType() const;
+
   // By default, media controls elements are not added to the overflow menu.
   // Controls that can be added to the overflow menu should override this
   // function and return true.
@@ -59,6 +63,7 @@ class MODULES_EXPORT MediaControlElementBase : public GarbageCollectedMixin {
 
  protected:
   MediaControlElementBase(MediaControlsImpl&,
+                          MediaControlElementType,
                           HTMLElement*);
 
   // Hide or show based on our fits / wanted state.  We want to show
@@ -69,8 +74,11 @@ class MODULES_EXPORT MediaControlElementBase : public GarbageCollectedMixin {
 
   HTMLMediaElement& MediaElement() const;
 
+  void SetDisplayType(MediaControlElementType);
+
  private:
   Member<MediaControlsImpl> media_controls_;
+  MediaControlElementType display_type_;
   Member<HTMLElement> element_;
   bool is_wanted_ : 1;
   bool does_fit_ : 1;

@@ -28,7 +28,6 @@
 
 typedef struct TraceHeadersContext {
     CodedBitstreamContext *cbc;
-    CodedBitstreamFragment fragment;
 } TraceHeadersContext;
 
 
@@ -45,13 +44,13 @@ static int trace_headers_init(AVBSFContext *bsf)
     ctx->cbc->trace_level  = AV_LOG_INFO;
 
     if (bsf->par_in->extradata) {
-        CodedBitstreamFragment *frag = &ctx->fragment;
+        CodedBitstreamFragment ps;
 
         av_log(bsf, AV_LOG_INFO, "Extradata\n");
 
-        err = ff_cbs_read_extradata(ctx->cbc, frag, bsf->par_in);
+        err = ff_cbs_read_extradata(ctx->cbc, &ps, bsf->par_in);
 
-        ff_cbs_fragment_reset(ctx->cbc, frag);
+        ff_cbs_fragment_uninit(ctx->cbc, &ps);
     }
 
     return err;
@@ -61,14 +60,13 @@ static void trace_headers_close(AVBSFContext *bsf)
 {
     TraceHeadersContext *ctx = bsf->priv_data;
 
-    ff_cbs_fragment_free(ctx->cbc, &ctx->fragment);
     ff_cbs_close(&ctx->cbc);
 }
 
 static int trace_headers(AVBSFContext *bsf, AVPacket *pkt)
 {
     TraceHeadersContext *ctx = bsf->priv_data;
-    CodedBitstreamFragment *frag = &ctx->fragment;
+    CodedBitstreamFragment au;
     char tmp[256] = { 0 };
     int err;
 
@@ -94,9 +92,9 @@ static int trace_headers(AVBSFContext *bsf, AVPacket *pkt)
 
     av_log(bsf, AV_LOG_INFO, "Packet: %d bytes%s.\n", pkt->size, tmp);
 
-    err = ff_cbs_read_packet(ctx->cbc, frag, pkt);
+    err = ff_cbs_read_packet(ctx->cbc, &au, pkt);
 
-    ff_cbs_fragment_reset(ctx->cbc, frag);
+    ff_cbs_fragment_uninit(ctx->cbc, &au);
 
     if (err < 0)
         av_packet_unref(pkt);

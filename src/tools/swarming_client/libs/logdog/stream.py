@@ -6,13 +6,12 @@ import collections
 import contextlib
 import json
 import os
-import posixpath
 import socket
 import sys
 import threading
 import types
 
-from . import streamname, varint
+from libs.logdog import streamname, varint
 
 
 _StreamParamsBase = collections.namedtuple('_StreamParamsBase',
@@ -192,9 +191,6 @@ class StreamClient(object):
     def fd(self):
       return self._fd
 
-    def fileno(self):
-      return self._fd.fileno()
-
     def write(self, data):
       return self._fd.write(data)
 
@@ -217,8 +213,7 @@ class StreamClient(object):
       return self._fd.close()
 
 
-  def __init__(self, project=None, prefix=None, coordinator_host=None,
-               namespace=''):
+  def __init__(self, project=None, prefix=None, coordinator_host=None):
     """Constructs a new base StreamClient instance.
 
     Args:
@@ -227,12 +222,10 @@ class StreamClient(object):
       coordinator_host (str or None): If not None, the name of the Coordinator
           host that this stream client is bound to. This will be used to
           construct viewer URLs for generated streams.
-      namespace (str): The prefix to apply to all streams opened by this client.
     """
     self._project = project
     self._prefix = prefix
     self._coordinator_host = coordinator_host
-    self._namespace = namespace
 
     self._name_lock = threading.Lock()
     self._names = set()
@@ -404,7 +397,7 @@ class StreamClient(object):
         be closed when finished using its `close` method.
     """
     params = StreamParams.make(
-        name=posixpath.join(self._namespace, name),
+        name=name,
         type=StreamParams.TEXT,
         content_type=content_type,
         tags=tags,
@@ -457,7 +450,7 @@ class StreamClient(object):
         be closed when finished using its `close` method.
     """
     params = StreamParams.make(
-        name=posixpath.join(self._namespace, name),
+        name=name,
         type=StreamParams.BINARY,
         content_type=content_type,
         tags=tags,
@@ -508,7 +501,7 @@ class StreamClient(object):
         finished by using its `close` method.
     """
     params = StreamParams.make(
-        name=posixpath.join(self._namespace, name),
+        name=name,
         type=StreamParams.DATAGRAM,
         content_type=content_type,
         tags=tags,
@@ -549,9 +542,6 @@ class _UnixDomainSocketStreamClient(StreamClient):
 
     def __init__(self, fd):
       self._fd = fd
-
-    def fileno(self):
-      return self._fd
 
     def write(self, data):
       self._fd.send(data)

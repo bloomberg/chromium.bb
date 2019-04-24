@@ -29,7 +29,6 @@
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
-#include "ui/views/view_test_api.h"
 #include "ui/views/widget/widget_utils.h"
 
 using base::ASCIIToUTF16;
@@ -63,7 +62,7 @@ class TestLabelButton : public LabelButton {
 
 class LabelButtonTest : public test::WidgetTest {
  public:
-  LabelButtonTest() = default;
+  LabelButtonTest() {}
 
   // Adds a LabelButton to the test Widget with the STYLE_BUTTON platform style.
   TestLabelButton* AddStyledButton(const char* label, bool is_default) {
@@ -209,7 +208,10 @@ TEST_F(LabelButtonTest, AccessibleState) {
   EXPECT_EQ(label_text, accessible_node_data.GetString16Attribute(
                             ax::mojom::StringAttribute::kName));
   EXPECT_EQ(label_text, button_->GetText());
-  EXPECT_EQ(tooltip_text, button_->GetTooltipText(gfx::Point()));
+
+  base::string16 tooltip;
+  EXPECT_TRUE(button_->GetTooltipText(gfx::Point(), &tooltip));
+  EXPECT_EQ(tooltip_text, tooltip);
 }
 
 // Test View::GetAccessibleNodeData() for default buttons.
@@ -460,16 +462,12 @@ TEST_F(LabelButtonTest, ChangeTextSize) {
   // The button preferred size and the label size increase when the text size
   // is increased.
   button_->SetText(longer_text);
-  EXPECT_TRUE(ViewTestApi(button_).needs_layout());
-  button_->Layout();
   EXPECT_GT(button_->label()->bounds().width(), original_label_width * 2);
   EXPECT_GT(button_->GetPreferredSize().width(), original_width * 2);
 
   // The button and the label view return to its original size when the original
   // text is restored.
   button_->SetText(text);
-  EXPECT_TRUE(ViewTestApi(button_).needs_layout());
-  button_->Layout();
   EXPECT_EQ(original_label_width, button_->label()->bounds().width());
   EXPECT_EQ(original_width, button_->GetPreferredSize().width());
 }
@@ -567,7 +565,7 @@ TEST_F(LabelButtonTest, ResetColorsFromNativeTheme) {
 // Test fixture for a LabelButton that has an ink drop configured.
 class InkDropLabelButtonTest : public ViewsTestBase {
  public:
-  InkDropLabelButtonTest() = default;
+  InkDropLabelButtonTest() {}
 
   // ViewsTestBase:
   void SetUp() override {
@@ -575,7 +573,7 @@ class InkDropLabelButtonTest : public ViewsTestBase {
 
     // Create a widget so that the Button can query the hover state
     // correctly.
-    widget_ = std::make_unique<Widget>();
+    widget_.reset(new Widget);
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = gfx::Rect(0, 0, 20, 20);

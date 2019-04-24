@@ -53,7 +53,6 @@
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -213,7 +212,7 @@ Document* DOMImplementation::createHTMLDocument(const String& title) {
   if (!title.IsNull()) {
     HTMLHeadElement* head_element = d->head();
     DCHECK(head_element);
-    auto* title_element = MakeGarbageCollected<HTMLTitleElement>(*d);
+    HTMLTitleElement* title_element = HTMLTitleElement::Create(*d);
     head_element->AppendChild(title_element);
     title_element->AppendChild(d->createTextNode(title), ASSERT_NO_EXCEPTION);
   }
@@ -255,31 +254,25 @@ Document* DOMImplementation::createDocument(const String& type,
     }
   }
 
-  if (RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled() &&
-      plugin_data && plugin_data->IsMimeHandlerViewMimeType(type)) {
-    // Plugins handled by MimeHandlerView do not create a PluginDocument. They
-    // are rendered inside cross-process frames and the notion of a PluginView
-    // (which is associated with PluginDocument) is irrelevant here.
-    return HTMLDocument::Create(init);
-  }
-
   // PDF is one image type for which a plugin can override built-in support.
   // We do not want QuickTime to take over all image types, obviously.
   if ((type == "application/pdf" || type == "text/pdf") && plugin_data &&
       plugin_data->SupportsMimeType(type)) {
-    return MakeGarbageCollected<PluginDocument>(
-        init, plugin_data->PluginBackgroundColorForMimeType(type));
+    return RuntimeEnabledFeatures::MimeHandlerViewInCrossProcessFrameEnabled()
+               ? HTMLDocument::Create(init)
+               : PluginDocument::Create(
+                     init, plugin_data->PluginBackgroundColorForMimeType(type));
   }
   // multipart/x-mixed-replace is only supported for images.
   if (MIMETypeRegistry::IsSupportedImageResourceMIMEType(type) ||
       type == "multipart/x-mixed-replace") {
-    return MakeGarbageCollected<ImageDocument>(init);
+    return ImageDocument::Create(init);
   }
 
   // Check to see if the type can be played by our media player, if so create a
   // MediaDocument
   if (HTMLMediaElement::GetSupportsType(ContentType(type)))
-    return MakeGarbageCollected<MediaDocument>(init);
+    return MediaDocument::Create(init);
 
   // Everything else except text/plain can be overridden by plugins. In
   // particular, Adobe SVG Viewer should be used for SVG, if installed.
@@ -288,11 +281,11 @@ Document* DOMImplementation::createDocument(const String& type,
   // an optimization to prevent loading the plugin database in the common case.
   if (type != "text/plain" && plugin_data &&
       plugin_data->SupportsMimeType(type)) {
-    return MakeGarbageCollected<PluginDocument>(
+    return PluginDocument::Create(
         init, plugin_data->PluginBackgroundColorForMimeType(type));
   }
   if (IsTextMIMEType(type))
-    return MakeGarbageCollected<TextDocument>(init);
+    return TextDocument::Create(init);
   if (type == "image/svg+xml")
     return XMLDocument::CreateSVG(init);
   if (IsXMLMIMEType(type))

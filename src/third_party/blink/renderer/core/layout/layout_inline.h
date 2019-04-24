@@ -339,9 +339,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   LayoutUnit OffsetWidth() const final { return LinesBoundingBox().Width(); }
   LayoutUnit OffsetHeight() const final { return LinesBoundingBox().Height(); }
 
-  LayoutRect VisualRectInDocument(
-      VisualRectFlags = kDefaultVisualRectFlags) const override;
-
+  LayoutRect VisualRectInDocument() const override;
   // This method differs from visualOverflowRect in that it doesn't include the
   // rects for culled inline boxes, which aren't necessary for paint
   // invalidation.

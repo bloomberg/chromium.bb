@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/style/style_path.h"
 #include "third_party/blink/renderer/core/svg/svg_path_byte_stream.h"
 #include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -46,13 +45,9 @@ class CSSPathValue : public CSSValue {
   const PathSerializationFormat serialization_format_;
 };
 
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSPathValue, IsPathValue());
+
 }  // namespace cssvalue
-
-template <>
-struct DowncastTraits<cssvalue::CSSPathValue> {
-  static bool AllowFrom(const CSSValue& value) { return value.IsPathValue(); }
-};
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PATH_VALUE_H_

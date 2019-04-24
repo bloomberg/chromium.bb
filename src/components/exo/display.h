@@ -75,8 +75,9 @@ class Display {
   std::unique_ptr<Buffer> CreateLinuxDMABufBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format,
-      gfx::NativePixmapHandle handle,
-      bool y_invert);
+      const std::vector<gfx::NativePixmapPlane>& planes,
+      bool y_invert,
+      std::vector<base::ScopedFD>&& fds);
 #endif  // defined(USE_OZONE)
 
 #if defined(OS_CHROMEOS)

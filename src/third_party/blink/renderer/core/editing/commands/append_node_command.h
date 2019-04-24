@@ -32,6 +32,10 @@ namespace blink {
 
 class AppendNodeCommand final : public SimpleEditCommand {
  public:
+  static AppendNodeCommand* Create(ContainerNode* parent, Node* node) {
+    return MakeGarbageCollected<AppendNodeCommand>(parent, node);
+  }
+
   AppendNodeCommand(ContainerNode* parent, Node*);
 
   void Trace(Visitor*) override;

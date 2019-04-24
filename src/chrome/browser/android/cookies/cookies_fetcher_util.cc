@@ -110,13 +110,7 @@ static void JNI_CookiesFetcher_RestoreCookies(
 
   // Assume HTTPS - since the cookies are being restored from another store,
   // they have already gone through the strict secure check.
-  //
-  // Similarly, permit samesite cookies to be imported.
-  net::CookieOptions options;
-  options.set_include_httponly();
-  options.set_same_site_cookie_context(
-      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   GetCookieServiceClient()->SetCanonicalCookie(
-      *cookie, "https", options,
+      *cookie, "https", true /* modify_http_only */,
       network::mojom::CookieManager::SetCanonicalCookieCallback());
 }

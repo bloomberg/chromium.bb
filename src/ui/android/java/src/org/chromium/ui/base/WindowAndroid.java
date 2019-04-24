@@ -44,8 +44,6 @@ import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.VSyncMonitor;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
-import org.chromium.ui.touchless.CursorObserver;
-import org.chromium.ui.touchless.TouchlessEventHandler;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.ref.WeakReference;
@@ -185,23 +183,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         }
     };
 
-    private final CursorObserver mCursorObserver =
-            new CursorObserver() {
-                @Override
-                public void onCursorVisibilityChanged(boolean visible) {
-                    if (mNativeWindowAndroid != 0) {
-                        nativeOnCursorVisibilityChanged(mNativeWindowAndroid, visible);
-                    }
-                }
-
-                @Override
-                public void onFallbackCursorModeToggled(boolean isOn) {
-                    if (mNativeWindowAndroid != 0) {
-                        nativeOnFallbackCursorModeToggled(mNativeWindowAndroid, isOn);
-                    }
-                }
-            };
-
     /**
      * Extract the activity if the given Context either is or wraps one.
      * Only retrieve the base context if the supplied context is a {@link ContextWrapper} but not
@@ -278,8 +259,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
             boolean isScreenWideColorGamut = ApiHelperForO.isScreenWideColorGamut(configuration);
             display.updateIsDisplayServerWideColorGamut(isScreenWideColorGamut);
         }
-
-        TouchlessEventHandler.addCursorObserver(mCursorObserver);
     }
 
     @CalledByNative
@@ -671,8 +650,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             if (mTouchExplorationMonitor != null) mTouchExplorationMonitor.destroy();
         }
-
-        TouchlessEventHandler.removeCursorObserver(mCursorObserver);
     }
 
     /**
@@ -976,8 +953,6 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
     private native void nativeSetVSyncPaused(long nativeWindowAndroid, boolean paused);
     private native void nativeOnUpdateRefreshRate(long nativeWindowAndroid, float refreshRate);
     private native void nativeDestroy(long nativeWindowAndroid);
-    private native void nativeOnCursorVisibilityChanged(long nativeWindowAndroid, boolean visible);
-    private native void nativeOnFallbackCursorModeToggled(long nativeWindowAndroid, boolean isOn);
     private native void nativeOnSupportedRefreshRatesUpdated(
             long nativeWindowAndroid, float[] supportedRefreshRates);
 }

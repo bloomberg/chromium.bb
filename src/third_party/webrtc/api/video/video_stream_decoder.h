@@ -22,7 +22,7 @@
 
 namespace webrtc {
 // NOTE: This class is still under development and may change without notice.
-class VideoStreamDecoderInterface {
+class VideoStreamDecoder {
  public:
   class Callbacks {
    public:
@@ -41,7 +41,7 @@ class VideoStreamDecoderInterface {
                                 absl::optional<int> qp) = 0;
   };
 
-  virtual ~VideoStreamDecoderInterface() = default;
+  virtual ~VideoStreamDecoder() = default;
 
   virtual void OnFrame(std::unique_ptr<video_coding::EncodedFrame> frame) = 0;
 };

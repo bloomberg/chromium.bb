@@ -127,7 +127,6 @@ public class NewTabPageView extends HistoryNavigationLayout {
                 mRecyclerView::setTouchEnabled, closeContextMenuCallback,
                 NewTabPage.CONTEXT_MENU_USER_ACTION_PREFIX);
         mTab.getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
-        setTab(mTab);
 
         mNewTabPageLayout.initialize(manager, tab, tileGroupDelegate, searchProviderHasLogo,
                 searchProviderIsGoogle, mRecyclerView, mContextMenuManager, mUiConfig);

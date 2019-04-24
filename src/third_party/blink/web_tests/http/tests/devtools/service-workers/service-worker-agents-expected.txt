@@ -3,9 +3,6 @@ Tests the way service workers don't enable DOM agent and does enable Debugger ag
 Debugger-related command should be issued: {
     "id": "<id>",
     "method": "Debugger.enable",
-    "params": {
-        "maxScriptsCacheSize": 100000000
-    },
     "sessionId": "<id>"
 }
 Suspending targets.
@@ -13,9 +10,6 @@ Resuming targets.
 Debugger-related command should be issued: {
     "id": "<id>",
     "method": "Debugger.enable",
-    "params": {
-        "maxScriptsCacheSize": 100000000
-    },
     "sessionId": "<id>"
 }
 

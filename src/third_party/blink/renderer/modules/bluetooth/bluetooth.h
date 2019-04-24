@@ -26,6 +26,10 @@ class Bluetooth final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(Bluetooth);
 
  public:
+  static Bluetooth* Create(ExecutionContext* context) {
+    return MakeGarbageCollected<Bluetooth>(context);
+  }
+
   explicit Bluetooth(ExecutionContext*);
   ~Bluetooth() override;
 

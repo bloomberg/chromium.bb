@@ -368,17 +368,13 @@ assertEquals(undefined, fake_error.stack);
 
 // Check that overwriting the stack property during stack trace formatting
 // does not crash.
-error = new Error("foobar");
+error = new Error();
 error.__defineGetter__("name", function() { error.stack = "abc"; });
-assertTrue(error.stack.startsWith("Error"));
-assertTrue(error.stack.includes("foobar"));
+assertEquals("abc", error.stack);
 
-error = new Error("foobar");
+error = new Error();
 error.__defineGetter__("name", function() { delete error.stack; });
-// The first time, Error.stack returns the formatted stack trace,
-// not the content of the property.
-assertTrue(error.stack.startsWith("Error"));
-assertEquals(error.stack, undefined);
+assertEquals(undefined, error.stack);
 
 // Check that repeated trace collection does not crash.
 error = new Error();

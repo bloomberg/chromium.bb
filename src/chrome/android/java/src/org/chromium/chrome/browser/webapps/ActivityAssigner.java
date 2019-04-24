@@ -119,8 +119,7 @@ public class ActivityAssigner {
      * Pre-load shared prefs to avoid being blocked on the
      * disk access async task in the future.
      */
-    public static void warmUpSharedPrefs() {
-        Context context = ContextUtils.getApplicationContext();
+    public static void warmUpSharedPrefs(Context context) {
         for (int i = 0; i < ActivityAssignerNamespace.NUM_ENTRIES; ++i) {
             context.getSharedPreferences(PREF_PACKAGE[i], Context.MODE_PRIVATE);
         }

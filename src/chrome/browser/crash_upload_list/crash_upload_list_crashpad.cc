@@ -60,11 +60,6 @@ std::vector<UploadList::UploadInfo> CrashUploadListCrashpad::LoadUploadList() {
   return uploads;
 }
 
-void CrashUploadListCrashpad::ClearUploadList(const base::Time& begin,
-                                              const base::Time& end) {
-  crash_reporter::ClearReportsBetween(begin, end);
-}
-
 void CrashUploadListCrashpad::RequestSingleUpload(const std::string& local_id) {
   crash_reporter::RequestSingleCrashUpload(local_id);
 }

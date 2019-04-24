@@ -5,9 +5,6 @@
 #ifndef UI_GFX_COLOR_TRANSFORM_H_
 #define UI_GFX_COLOR_TRANSFORM_H_
 
-#include <memory>
-#include <string>
-
 #include "base/macros.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -35,10 +32,6 @@ class GFX_EXPORT ColorTransform {
   // converts a vec3 according to this transform.
   virtual bool CanGetShaderSource() const = 0;
   virtual std::string GetShaderSource() const = 0;
-
-  // Return SKSL shader sources that modifies an "inout half4 color" according
-  // to this transform. Input and output are non-premultiplied alpha.
-  virtual std::string GetSkShaderSource() const = 0;
 
   // Returns true if this transform is the identity.
   virtual bool IsIdentity() const = 0;

@@ -180,8 +180,7 @@ func getCSPScriptSrcDirectiveFromHeaders(header http.Header) string {
 	directives := strings.Split(csp, ";")
 	for _, directive := range directives {
 		directive = strings.TrimSpace(directive)
-		if strings.HasPrefix(directive, "script-src ") ||
-			strings.HasPrefix(directive, "default-src ") {
+		if strings.HasPrefix(directive, "script-src ") {
 			return directive
 		}
 	}
@@ -229,8 +228,7 @@ func transformCSPHeader(header http.Header, injectedScriptSha256 string) {
 	directives := strings.Split(csp, ";")
 	for index, directive := range directives {
 		directive = strings.TrimSpace(directive)
-		if strings.HasPrefix(directive, "script-src ") ||
-			strings.HasPrefix(directive, "default-src ") {
+		if strings.HasPrefix(directive, "script-src ") {
 			if getNonceTokenFromCSPHeaderScriptSrc(directive) != "" {
 				// If the CSP header's script-src contains a nonce, then
 				// transformCSPHeader does nothing.

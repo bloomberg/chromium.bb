@@ -80,10 +80,6 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return kOmniboxTextField;
     case UserFriendlyElementName::kOmniboxCloseButton:
       return kOmniboxCloseButton;
-    case UserFriendlyElementName::kOmniboxVoiceInputButton:
-      return kOmniboxVoiceSearchButton;
-    case UserFriendlyElementName::kVoiceInputCloseButton:
-      return kSpeechRecognitionListeningCloseButton;
     case UserFriendlyElementName::kAppButtonExitToast:
       return kWebVrExclusiveScreenToast;
     case UserFriendlyElementName::kWebXrAudioIndicator:
@@ -98,10 +94,6 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return kVideoCaptureIndicator;
     case UserFriendlyElementName::kLocationPermissionIndicator:
       return kLocationAccessIndicator;
-    case UserFriendlyElementName::kWebXrLocationPermissionIndicator:
-      return kWebVrLocationAccessIndicator;
-    case UserFriendlyElementName::kWebXrVideoPermissionIndicator:
-      return kWebVrVideoCaptureIndicator;
     default:
       NOTREACHED();
       return kNone;

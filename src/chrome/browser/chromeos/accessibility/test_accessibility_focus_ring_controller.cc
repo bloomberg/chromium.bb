@@ -32,12 +32,20 @@ TestAccessibilityFocusRingController::~TestAccessibilityFocusRingController() {
           ash::mojom::AccessibilityFocusRingController::Name_);
 }
 
+void TestAccessibilityFocusRingController::SetFocusRingColor(
+    uint32_t skcolor,
+    const std::string& caller_id) {}
+
+void TestAccessibilityFocusRingController::ResetFocusRingColor(
+    const std::string& caller_id) {}
+
 void TestAccessibilityFocusRingController::SetFocusRing(
-    const std::string& focus_ring_id,
-    ash::mojom::FocusRingPtr focus_ring) {}
+    const std::vector<gfx::Rect>& rects_in_screen,
+    ash::mojom::FocusRingBehavior focus_ring_behavior,
+    const std::string& caller_id) {}
 
 void TestAccessibilityFocusRingController::HideFocusRing(
-    const std::string& focus_ring_id) {}
+    const std::string& caller_id) {}
 
 void TestAccessibilityFocusRingController::SetHighlights(
     const std::vector<gfx::Rect>& rects_in_screen,
@@ -50,4 +58,9 @@ void TestAccessibilityFocusRingController::Bind(
   binding_.Bind(
       ash::mojom::AccessibilityFocusRingControllerRequest(std::move(handle)));
 }
+void TestAccessibilityFocusRingController::EnableDoubleFocusRing(
+    uint32_t skcolor,
+    const std::string& caller_id) {}
 
+void TestAccessibilityFocusRingController::DisableDoubleFocusRing(
+    const std::string& caller_id) {}

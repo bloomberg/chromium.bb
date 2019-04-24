@@ -165,8 +165,7 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
 
     if (!instance_) {
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kInfo,
+          kJSMessageSource, mojom::ConsoleMessageLevel::kInfo,
           "Unable to create an instance of layout class '" + name +
               "', falling back to block layout."));
       return false;
@@ -195,20 +194,18 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
       }
 
       if (index >= child_fragments.size()) {
-        GetDocument().AddConsoleMessage(
-            ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                                   mojom::ConsoleMessageLevel::kInfo,
-                                   "Chrome currently requires exactly one "
-                                   "LayoutFragment per LayoutChild, "
-                                   "falling back to block layout."));
+        GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+            kJSMessageSource, mojom::ConsoleMessageLevel::kInfo,
+            "Chrome currently requires exactly one "
+            "LayoutFragment per LayoutChild, "
+            "falling back to block layout."));
         return false;
       }
 
       CustomLayoutFragment* fragment = child_fragments[index++];
       if (!fragment->IsValid()) {
         GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kInfo,
+            kJSMessageSource, mojom::ConsoleMessageLevel::kInfo,
             "An invalid LayoutFragment was returned from the "
             "layout, falling back to block layout."));
         return false;
@@ -247,12 +244,11 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
 
     // Currently we only support exactly one LayoutFragment per LayoutChild.
     if (index != child_fragments.size()) {
-      GetDocument().AddConsoleMessage(
-          ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                                 mojom::ConsoleMessageLevel::kInfo,
-                                 "Chrome currently requires exactly one "
-                                 "LayoutFragment per LayoutChild, "
-                                 "falling back to block layout."));
+      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          kJSMessageSource, mojom::ConsoleMessageLevel::kInfo,
+          "Chrome currently requires exactly one "
+          "LayoutFragment per LayoutChild, "
+          "falling back to block layout."));
       return false;
     }
 

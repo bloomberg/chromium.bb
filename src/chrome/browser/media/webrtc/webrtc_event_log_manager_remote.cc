@@ -91,14 +91,16 @@ bool TimePointInRange(const base::Time& time_point,
 
 // Do not attempt to upload when there is no active connection.
 // Do not attempt to upload if the connection is known to be a mobile one.
+// Err on the side of caution with unknown connection types (by not uploading).
 // Note #1: A device may have multiple connections, so this is not bullet-proof.
 // Note #2: Does not attempt to recognize mobile hotspots.
 bool UploadSupportedUsingConnectionType(
     network::mojom::ConnectionType connection) {
-  return connection != network::mojom::ConnectionType::CONNECTION_NONE &&
-         connection != network::mojom::ConnectionType::CONNECTION_2G &&
-         connection != network::mojom::ConnectionType::CONNECTION_3G &&
-         connection != network::mojom::ConnectionType::CONNECTION_4G;
+  if (connection == network::mojom::ConnectionType::CONNECTION_ETHERNET ||
+      connection == network::mojom::ConnectionType::CONNECTION_WIFI) {
+    return true;
+  }
+  return false;
 }
 
 // Produce a history file for a given file.
@@ -439,28 +441,22 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     // |error_message| will have been set by AreLogParametersValid().
     DCHECK(!error_message->empty()) << "AreLogParametersValid() reported an "
                                        "error without an error message.";
-    UmaRecordWebRtcEventLoggingApi(WebRtcEventLoggingApiUma::kInvalidArguments);
     return false;
   }
 
   if (session_id.empty()) {
     *error_message = kStartRemoteLoggingFailureUnknownOrInactivePeerConnection;
-    UmaRecordWebRtcEventLoggingApi(WebRtcEventLoggingApiUma::kIllegalSessionId);
     return false;
   }
 
   if (!BrowserContextEnabled(browser_context_id)) {
     *error_message = kStartRemoteLoggingFailureGeneric;
-    UmaRecordWebRtcEventLoggingApi(
-        WebRtcEventLoggingApiUma::kDisabledBrowserContext);
     return false;
   }
 
   PeerConnectionKey key;
   if (!FindPeerConnection(render_process_id, session_id, &key)) {
     *error_message = kStartRemoteLoggingFailureUnknownOrInactivePeerConnection;
-    UmaRecordWebRtcEventLoggingApi(
-        WebRtcEventLoggingApiUma::kUnknownOrInvalidPeerConnection);
     return false;
   }
 
@@ -469,7 +465,6 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
   if (it != active_logs_.end()) {
     LOG(ERROR) << "Remote logging already underway for " << session_id << ".";
     *error_message = kStartRemoteLoggingFailureAlreadyLogging;
-    UmaRecordWebRtcEventLoggingApi(WebRtcEventLoggingApiUma::kAlreadyLogging);
     return false;
   }
 
@@ -482,8 +477,6 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     // as there being too many other peer connections on other tabs that might
     // also be logging.
     *error_message = kStartRemoteLoggingFailureGeneric;
-    UmaRecordWebRtcEventLoggingApi(
-        WebRtcEventLoggingApiUma::kNoAdditionalLogsAllowed);
     return false;
   }
 
@@ -525,8 +518,7 @@ void WebRtcRemoteEventLogManager::ClearCacheForBrowserContext(
   //    by ClearCacheForBrowserContext() could accidentally replace it.
   // 5. Explicitly consider uploading, now that things have changed.
   MaybeCancelActiveLogs(delete_begin, delete_end, browser_context_id);
-  MaybeRemovePendingLogs(delete_begin, delete_end, browser_context_id,
-                         /*is_cache_clear=*/true);
+  MaybeRemovePendingLogs(delete_begin, delete_end, browser_context_id);
   MaybeRemoveHistoryFiles(delete_begin, delete_end, browser_context_id);
   MaybeCancelUpload(delete_begin, delete_end, browser_context_id);
   ManageUploadSchedule();
@@ -732,7 +724,7 @@ WebRtcRemoteEventLogManager::CloseLogFile(LogFilesMap::iterator it,
 
   const PeerConnectionKey peer_connection = it->first;  // Copy, not reference.
 
-  const bool valid_file = it->second->Close();
+  bool valid_file = it->second->Close();  // !valid_file -> Close() deletes.
   if (valid_file) {
     if (make_pending) {
       // The current time is a good enough approximation of the file's last
@@ -750,10 +742,6 @@ WebRtcRemoteEventLogManager::CloseLogFile(LogFilesMap::iterator it,
         LOG(ERROR) << "Failed to delete " << log_file_path << ".";
       }
     }
-  } else {  // !valid_file
-    // Close() deleted the file.
-    UmaRecordWebRtcEventLoggingUpload(
-        WebRtcEventLoggingUploadUma::kLogFileWriteError);
   }
 
   it = active_logs_.erase(it);
@@ -861,15 +849,11 @@ bool WebRtcRemoteEventLogManager::LoadPendingLogInfo(
   if (base::PathExists(history_path)) {
     // Log file has associated history file, indicating an upload was started
     // for it. We should delete the original log from disk.
-    UmaRecordWebRtcEventLoggingUpload(
-        WebRtcEventLoggingUploadUma::kIncompletePastUpload);
     return false;
   }
 
   const base::Time now = base::Time::Now();
   if (last_modified + kRemoteBoundWebRtcEventLogsMaxRetention < now) {
-    UmaRecordWebRtcEventLoggingUpload(
-        WebRtcEventLoggingUploadUma::kExpiredLogFileAtChromeStart);
     return false;
   }
 
@@ -1007,8 +991,6 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
   if (base::PathExists(log_path)) {
     LOG(ERROR) << "Previously used ID selected.";
     *error_message_out = kStartRemoteLoggingFailureGeneric;
-    UmaRecordWebRtcEventLoggingApi(
-        WebRtcEventLoggingApiUma::kLogPathNotAvailable);
     return false;
   }
 
@@ -1017,8 +999,6 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
   if (base::PathExists(history_file_path)) {
     LOG(ERROR) << "Previously used ID selected.";
     *error_message_out = kStartRemoteLoggingFailureGeneric;
-    UmaRecordWebRtcEventLoggingApi(
-        WebRtcEventLoggingApiUma::kHistoryPathNotAvailable);
     return false;
   }
 
@@ -1030,8 +1010,6 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
     // TODO(crbug.com/775415): Add UMA for exact failure type.
     LOG(ERROR) << "Failed to initialize remote-bound WebRTC event log file.";
     *error_message_out = kStartRemoteLoggingFailureGeneric;
-    UmaRecordWebRtcEventLoggingApi(
-        WebRtcEventLoggingApiUma::kFileCreationError);
     return false;
   }
   const auto it = active_logs_.emplace(key, std::move(log_file));
@@ -1039,8 +1017,6 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
 
   observer_->OnRemoteLogStarted(key, it.first->second->path(),
                                 output_period_ms);
-
-  UmaRecordWebRtcEventLoggingApi(WebRtcEventLoggingApiUma::kSuccess);
 
   *log_id_out = log_id;
   return true;
@@ -1066,7 +1042,7 @@ void WebRtcRemoteEventLogManager::PrunePendingLogs(
   MaybeRemovePendingLogs(
       base::Time::Min(),
       base::Time::Now() - kRemoteBoundWebRtcEventLogsMaxRetention,
-      browser_context_id, /*is_cache_clear=*/false);
+      browser_context_id);
 }
 
 void WebRtcRemoteEventLogManager::RecurringlyPrunePendingLogs() {
@@ -1116,8 +1092,6 @@ void WebRtcRemoteEventLogManager::MaybeCancelActiveLogs(
     // Since the file is active, assume it's still being modified.
     if (MatchesFilter(it->first.browser_context_id, base::Time::Now(),
                       browser_context_id, delete_begin, delete_end)) {
-      UmaRecordWebRtcEventLoggingUpload(
-          WebRtcEventLoggingUploadUma::kActiveLogCancelledDueToCacheClear);
       it = CloseLogFile(it, /*make_pending=*/false);
     } else {
       ++it;
@@ -1128,26 +1102,18 @@ void WebRtcRemoteEventLogManager::MaybeCancelActiveLogs(
 void WebRtcRemoteEventLogManager::MaybeRemovePendingLogs(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    base::Optional<BrowserContextId> browser_context_id,
-    bool is_cache_clear) {
+    base::Optional<BrowserContextId> browser_context_id) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   for (auto it = pending_logs_.begin(); it != pending_logs_.end();) {
     if (MatchesFilter(it->browser_context_id, it->last_modified,
                       browser_context_id, delete_begin, delete_end)) {
-      UmaRecordWebRtcEventLoggingUpload(
-          is_cache_clear
-              ? WebRtcEventLoggingUploadUma::kPendingLogDeletedDueToCacheClear
-              : WebRtcEventLoggingUploadUma::kExpiredLogFileDuringSession);
-
       if (!base::DeleteFile(it->path, /*recursive=*/false)) {
         LOG(ERROR) << "Failed to delete " << it->path << ".";
       }
 
       // Produce a history file (they have longer retention) to replace the log.
-      if (is_cache_clear) {  // Will be immediately deleted otherwise.
-        CreateHistoryFile(it->path, it->last_modified);
-      }
+      CreateHistoryFile(it->path, it->last_modified);
 
       it = pending_logs_.erase(it);
     } else {

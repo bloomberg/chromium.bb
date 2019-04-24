@@ -39,7 +39,8 @@ class V8_EXPORT_PRIVATE NativesCollection {
   static Vector<const char> GetScriptsSource();
 };
 
-using ExtraNatives = NativesCollection<EXTRAS>;
+typedef NativesCollection<EXTRAS> ExtraNatives;
+
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
 // Used for reading the natives at runtime. Implementation in natives-empty.cc

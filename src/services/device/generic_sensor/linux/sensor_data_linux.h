@@ -73,8 +73,6 @@ struct SensorInfoLinux {
                   SensorPathsLinux::ReaderFunctor scaling_func,
                   std::vector<base::FilePath> iio_device_reading_files);
   ~SensorInfoLinux();
-
-  SensorInfoLinux(const SensorInfoLinux&);
 };
 
 }  // namespace device

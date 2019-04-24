@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#include <atomic>
-#include <string>
-
 #include "leveldb/db.h"
 #include "leveldb/filter_policy.h"
 #include "db/db_impl.h"
@@ -64,7 +61,7 @@ class AtomicCounter {
 void DelayMilliseconds(int millis) {
   Env::Default()->SleepForMicroseconds(millis * 1000);
 }
-}  // namespace
+}
 
 // Test Env to override default Env behavior for testing.
 class TestEnv : public EnvWrapper {
@@ -96,45 +93,45 @@ class TestEnv : public EnvWrapper {
   bool ignore_dot_files_;
 };
 
-// Special Env used to delay background operations.
+// Special Env used to delay background operations
 class SpecialEnv : public EnvWrapper {
  public:
   // sstable/log Sync() calls are blocked while this pointer is non-null.
-  std::atomic<bool> delay_data_sync_;
+  port::AtomicPointer delay_data_sync_;
 
   // sstable/log Sync() calls return an error.
-  std::atomic<bool> data_sync_error_;
+  port::AtomicPointer data_sync_error_;
 
   // Simulate no-space errors while this pointer is non-null.
-  std::atomic<bool> no_space_;
+  port::AtomicPointer no_space_;
 
   // Simulate non-writable file system while this pointer is non-null.
-  std::atomic<bool> non_writable_;
+  port::AtomicPointer non_writable_;
 
   // Force sync of manifest files to fail while this pointer is non-null.
-  std::atomic<bool> manifest_sync_error_;
+  port::AtomicPointer manifest_sync_error_;
 
   // Force write to manifest files to fail while this pointer is non-null.
-  std::atomic<bool> manifest_write_error_;
+  port::AtomicPointer manifest_write_error_;
 
   bool count_random_reads_;
   AtomicCounter random_read_counter_;
 
-  explicit SpecialEnv(Env* base) : EnvWrapper(base),
-    delay_data_sync_(false),
-    data_sync_error_(false),
-    no_space_(false),
-    non_writable_(false),
-    manifest_sync_error_(false),
-    manifest_write_error_(false),
-    count_random_reads_(false) {
+  explicit SpecialEnv(Env* base) : EnvWrapper(base) {
+    delay_data_sync_.Release_Store(nullptr);
+    data_sync_error_.Release_Store(nullptr);
+    no_space_.Release_Store(nullptr);
+    non_writable_.Release_Store(nullptr);
+    count_random_reads_ = false;
+    manifest_sync_error_.Release_Store(nullptr);
+    manifest_write_error_.Release_Store(nullptr);
   }
 
   Status NewWritableFile(const std::string& f, WritableFile** r) {
     class DataFile : public WritableFile {
      private:
-      SpecialEnv* const env_;
-      WritableFile* const base_;
+      SpecialEnv* env_;
+      WritableFile* base_;
 
      public:
       DataFile(SpecialEnv* env, WritableFile* base)
@@ -143,7 +140,7 @@ class SpecialEnv : public EnvWrapper {
       }
       ~DataFile() { delete base_; }
       Status Append(const Slice& data) {
-        if (env_->no_space_.load(std::memory_order_acquire)) {
+        if (env_->no_space_.Acquire_Load() != nullptr) {
           // Drop writes on the floor
           return Status::OK();
         } else {
@@ -153,10 +150,10 @@ class SpecialEnv : public EnvWrapper {
       Status Close() { return base_->Close(); }
       Status Flush() { return base_->Flush(); }
       Status Sync() {
-        if (env_->data_sync_error_.load(std::memory_order_acquire)) {
+        if (env_->data_sync_error_.Acquire_Load() != nullptr) {
           return Status::IOError("simulated data sync error");
         }
-        while (env_->delay_data_sync_.load(std::memory_order_acquire)) {
+        while (env_->delay_data_sync_.Acquire_Load() != nullptr) {
           DelayMilliseconds(100);
         }
         return base_->Sync();
@@ -170,7 +167,7 @@ class SpecialEnv : public EnvWrapper {
       ManifestFile(SpecialEnv* env, WritableFile* b) : env_(env), base_(b) { }
       ~ManifestFile() { delete base_; }
       Status Append(const Slice& data) {
-        if (env_->manifest_write_error_.load(std::memory_order_acquire)) {
+        if (env_->manifest_write_error_.Acquire_Load() != nullptr) {
           return Status::IOError("simulated writer error");
         } else {
           return base_->Append(data);
@@ -179,7 +176,7 @@ class SpecialEnv : public EnvWrapper {
       Status Close() { return base_->Close(); }
       Status Flush() { return base_->Flush(); }
       Status Sync() {
-        if (env_->manifest_sync_error_.load(std::memory_order_acquire)) {
+        if (env_->manifest_sync_error_.Acquire_Load() != nullptr) {
           return Status::IOError("simulated sync error");
         } else {
           return base_->Sync();
@@ -187,7 +184,7 @@ class SpecialEnv : public EnvWrapper {
       }
     };
 
-    if (non_writable_.load(std::memory_order_acquire)) {
+    if (non_writable_.Acquire_Load() != nullptr) {
       return Status::IOError("simulated write error");
     }
 
@@ -427,7 +424,7 @@ class DBTest {
     ASSERT_TRUE(
         db_->GetProperty("leveldb.num-files-at-level" + NumberToString(level),
                          &property));
-    return std::stoi(property);
+    return atoi(property.c_str());
   }
 
   int TotalTableFiles() {
@@ -473,12 +470,11 @@ class DBTest {
   }
 
   // Do n memtable compactions, each of which produces an sstable
-  // covering the range [small_key,large_key].
-  void MakeTables(int n, const std::string& small_key,
-                  const std::string& large_key) {
+  // covering the range [small,large].
+  void MakeTables(int n, const std::string& small, const std::string& large) {
     for (int i = 0; i < n; i++) {
-      Put(small_key, "begin");
-      Put(large_key, "end");
+      Put(small, "begin");
+      Put(large, "end");
       dbfull()->TEST_CompactMemTable();
     }
   }
@@ -558,26 +554,6 @@ TEST(DBTest, Empty) {
   } while (ChangeOptions());
 }
 
-TEST(DBTest, EmptyKey) {
-  do {
-    ASSERT_OK(Put("", "v1"));
-    ASSERT_EQ("v1", Get(""));
-    ASSERT_OK(Put("", "v2"));
-    ASSERT_EQ("v2", Get(""));
-  } while (ChangeOptions());
-}
-
-TEST(DBTest, EmptyValue) {
-  do {
-    ASSERT_OK(Put("key", "v1"));
-    ASSERT_EQ("v1", Get("key"));
-    ASSERT_OK(Put("key", ""));
-    ASSERT_EQ("", Get("key"));
-    ASSERT_OK(Put("key", "v2"));
-    ASSERT_EQ("v2", Get("key"));
-  } while (ChangeOptions());
-}
-
 TEST(DBTest, ReadWrite) {
   do {
     ASSERT_OK(Put("foo", "v1"));
@@ -610,13 +586,11 @@ TEST(DBTest, GetFromImmutableLayer) {
     ASSERT_OK(Put("foo", "v1"));
     ASSERT_EQ("v1", Get("foo"));
 
-    // Block sync calls.
-    env_->delay_data_sync_.store(true, std::memory_order_release);
-    Put("k1", std::string(100000, 'x'));             // Fill memtable.
-    Put("k2", std::string(100000, 'y'));             // Trigger compaction.
+    env_->delay_data_sync_.Release_Store(env_);      // Block sync calls
+    Put("k1", std::string(100000, 'x'));             // Fill memtable
+    Put("k2", std::string(100000, 'y'));             // Trigger compaction
     ASSERT_EQ("v1", Get("foo"));
-    // Release sync calls.
-    env_->delay_data_sync_.store(false, std::memory_order_release);
+    env_->delay_data_sync_.Release_Store(nullptr);   // Release sync calls
   } while (ChangeOptions());
 }
 
@@ -633,7 +607,7 @@ TEST(DBTest, GetMemUsage) {
     ASSERT_OK(Put("foo", "v1"));
     std::string val;
     ASSERT_TRUE(db_->GetProperty("leveldb.approximate-memory-usage", &val));
-    int mem_usage = std::stoi(val);
+    int mem_usage = atoi(val.c_str());
     ASSERT_GT(mem_usage, 0);
     ASSERT_LT(mem_usage, 5*1024*1024);
   } while (ChangeOptions());
@@ -1131,7 +1105,7 @@ TEST(DBTest, RepeatedWritesToSameKey) {
   for (int i = 0; i < 5 * kMaxFiles; i++) {
     Put("key", value);
     ASSERT_LE(TotalTableFiles(), kMaxFiles);
-    fprintf(stderr, "after %d: %d files\n", i + 1, TotalTableFiles());
+    fprintf(stderr, "after %d: %d files\n", int(i+1), TotalTableFiles());
   }
 }
 
@@ -1296,7 +1270,7 @@ TEST(DBTest, IteratorPinsRef) {
   // Write to force compactions
   Put("foo", "newvalue1");
   for (int i = 0; i < 100; i++) {
-    ASSERT_OK(Put(Key(i), Key(i) + std::string(100000, 'v')));  // 100K values
+    ASSERT_OK(Put(Key(i), Key(i) + std::string(100000, 'v'))); // 100K values
   }
   Put("foo", "newvalue2");
 
@@ -1484,21 +1458,21 @@ TEST(DBTest, L0_CompactionBug_Issue44_a) {
 
 TEST(DBTest, L0_CompactionBug_Issue44_b) {
   Reopen();
-  Put("", "");
+  Put("","");
   Reopen();
   Delete("e");
-  Put("", "");
+  Put("","");
   Reopen();
   Put("c", "cv");
   Reopen();
-  Put("", "");
+  Put("","");
   Reopen();
-  Put("", "");
+  Put("","");
   DelayMilliseconds(1000);  // Wait for compaction to finish
   Reopen();
-  Put("d", "dv");
+  Put("d","dv");
   Reopen();
-  Put("", "");
+  Put("","");
   Reopen();
   Delete("d");
   Delete("b");
@@ -1681,7 +1655,7 @@ TEST(DBTest, DestroyEmptyDir) {
   ASSERT_TRUE(env.FileExists(dbname));
   std::vector<std::string> children;
   ASSERT_OK(env.GetChildren(dbname, &children));
-  // The stock Env's do not filter out '.' and '..' special files.
+  // The POSIX env does not filter out '.' and '..' special files.
   ASSERT_EQ(2, children.size());
   ASSERT_OK(DestroyDB(dbname, opts));
   ASSERT_TRUE(!env.FileExists(dbname));
@@ -1736,14 +1710,13 @@ TEST(DBTest, NoSpace) {
   ASSERT_EQ("v1", Get("foo"));
   Compact("a", "z");
   const int num_files = CountFiles();
-  // Force out-of-space errors.
-  env_->no_space_.store(true, std::memory_order_release);
+  env_->no_space_.Release_Store(env_);   // Force out-of-space errors
   for (int i = 0; i < 10; i++) {
     for (int level = 0; level < config::kNumLevels-1; level++) {
       dbfull()->TEST_CompactRange(level, nullptr, nullptr);
     }
   }
-  env_->no_space_.store(false, std::memory_order_release);
+  env_->no_space_.Release_Store(nullptr);
   ASSERT_LT(CountFiles(), num_files + 3);
 }
 
@@ -1753,8 +1726,7 @@ TEST(DBTest, NonWritableFileSystem) {
   options.env = env_;
   Reopen(&options);
   ASSERT_OK(Put("foo", "v1"));
-  // Force errors for new files.
-  env_->non_writable_.store(true, std::memory_order_release);
+  env_->non_writable_.Release_Store(env_);  // Force errors for new files
   std::string big(100000, 'x');
   int errors = 0;
   for (int i = 0; i < 20; i++) {
@@ -1765,7 +1737,7 @@ TEST(DBTest, NonWritableFileSystem) {
     }
   }
   ASSERT_GT(errors, 0);
-  env_->non_writable_.store(false, std::memory_order_release);
+  env_->non_writable_.Release_Store(nullptr);
 }
 
 TEST(DBTest, WriteSyncError) {
@@ -1775,7 +1747,7 @@ TEST(DBTest, WriteSyncError) {
   Options options = CurrentOptions();
   options.env = env_;
   Reopen(&options);
-  env_->data_sync_error_.store(true, std::memory_order_release);
+  env_->data_sync_error_.Release_Store(env_);
 
   // (b) Normal write should succeed
   WriteOptions w;
@@ -1789,7 +1761,7 @@ TEST(DBTest, WriteSyncError) {
   ASSERT_EQ("NOT_FOUND", Get("k2"));
 
   // (d) make sync behave normally
-  env_->data_sync_error_.store(false, std::memory_order_release);
+  env_->data_sync_error_.Release_Store(nullptr);
 
   // (e) Do a non-sync write; should fail
   w.sync = false;
@@ -1809,7 +1781,7 @@ TEST(DBTest, ManifestWriteError) {
   // We iterate twice.  In the second iteration, everything is the
   // same except the log record never makes it to the MANIFEST file.
   for (int iter = 0; iter < 2; iter++) {
-    std::atomic<bool>* error_type = (iter == 0)
+    port::AtomicPointer* error_type = (iter == 0)
         ? &env_->manifest_sync_error_
         : &env_->manifest_write_error_;
 
@@ -1829,12 +1801,12 @@ TEST(DBTest, ManifestWriteError) {
     ASSERT_EQ(NumTableFilesAtLevel(last), 1);   // foo=>bar is now in last level
 
     // Merging compaction (will fail)
-    error_type->store(true, std::memory_order_release);
+    error_type->Release_Store(env_);
     dbfull()->TEST_CompactRange(last, nullptr, nullptr);  // Should fail
     ASSERT_EQ("bar", Get("foo"));
 
     // Recovery: should not lose data
-    error_type->store(false, std::memory_order_release);
+    error_type->Release_Store(nullptr);
     Reopen(&options);
     ASSERT_EQ("bar", Get("foo"));
   }
@@ -1905,7 +1877,7 @@ TEST(DBTest, BloomFilter) {
   dbfull()->TEST_CompactMemTable();
 
   // Prevent auto compactions triggered by seeks
-  env_->delay_data_sync_.store(true, std::memory_order_release);
+  env_->delay_data_sync_.Release_Store(env_);
 
   // Lookup present keys.  Should rarely read from small sstable.
   env_->random_read_counter_.Reset();
@@ -1926,7 +1898,7 @@ TEST(DBTest, BloomFilter) {
   fprintf(stderr, "%d missing => %d reads\n", N, reads);
   ASSERT_LE(reads, 3*N/100);
 
-  env_->delay_data_sync_.store(false, std::memory_order_release);
+  env_->delay_data_sync_.Release_Store(nullptr);
   Close();
   delete options.block_cache;
   delete options.filter_policy;
@@ -1941,9 +1913,9 @@ static const int kNumKeys = 1000;
 
 struct MTState {
   DBTest* test;
-  std::atomic<bool> stop;
-  std::atomic<int> counter[kNumThreads];
-  std::atomic<bool> thread_done[kNumThreads];
+  port::AtomicPointer stop;
+  port::AtomicPointer counter[kNumThreads];
+  port::AtomicPointer thread_done[kNumThreads];
 };
 
 struct MTThread {
@@ -1955,13 +1927,13 @@ static void MTThreadBody(void* arg) {
   MTThread* t = reinterpret_cast<MTThread*>(arg);
   int id = t->id;
   DB* db = t->state->test->db_;
-  int counter = 0;
+  uintptr_t counter = 0;
   fprintf(stderr, "... starting thread %d\n", id);
   Random rnd(1000 + id);
   std::string value;
   char valbuf[1500];
-  while (!t->state->stop.load(std::memory_order_acquire)) {
-    t->state->counter[id].store(counter, std::memory_order_release);
+  while (t->state->stop.Acquire_Load() == nullptr) {
+    t->state->counter[id].Release_Store(reinterpret_cast<void*>(counter));
 
     int key = rnd.Uniform(kNumKeys);
     char keybuf[20];
@@ -1986,13 +1958,14 @@ static void MTThreadBody(void* arg) {
         ASSERT_EQ(k, key);
         ASSERT_GE(w, 0);
         ASSERT_LT(w, kNumThreads);
-        ASSERT_LE(c, t->state->counter[w].load(std::memory_order_acquire));
+        ASSERT_LE(static_cast<uintptr_t>(c), reinterpret_cast<uintptr_t>(
+            t->state->counter[w].Acquire_Load()));
       }
     }
     counter++;
   }
-  t->state->thread_done[id].store(true, std::memory_order_release);
-  fprintf(stderr, "... stopping thread %d after %d ops\n", id, counter);
+  t->state->thread_done[id].Release_Store(t);
+  fprintf(stderr, "... stopping thread %d after %d ops\n", id, int(counter));
 }
 
 }  // namespace
@@ -2002,10 +1975,10 @@ TEST(DBTest, MultiThreaded) {
     // Initialize state
     MTState mt;
     mt.test = this;
-    mt.stop.store(false, std::memory_order_release);
+    mt.stop.Release_Store(0);
     for (int id = 0; id < kNumThreads; id++) {
-      mt.counter[id].store(false, std::memory_order_release);
-      mt.thread_done[id].store(false, std::memory_order_release);
+      mt.counter[id].Release_Store(0);
+      mt.thread_done[id].Release_Store(0);
     }
 
     // Start threads
@@ -2020,9 +1993,9 @@ TEST(DBTest, MultiThreaded) {
     DelayMilliseconds(kTestSeconds * 1000);
 
     // Stop the threads and wait for them to finish
-    mt.stop.store(true, std::memory_order_release);
+    mt.stop.Release_Store(&mt);
     for (int id = 0; id < kNumThreads; id++) {
-      while (!mt.thread_done[id].load(std::memory_order_acquire)) {
+      while (mt.thread_done[id].Acquire_Load() == nullptr) {
         DelayMilliseconds(100);
       }
     }
@@ -2126,7 +2099,6 @@ class ModelDB: public DB {
     virtual Slice key() const { return iter_->first; }
     virtual Slice value() const { return iter_->second; }
     virtual Status status() const { return Status::OK(); }
-
    private:
     const KVMap* const map_;
     const bool owned_;  // Do we own map_

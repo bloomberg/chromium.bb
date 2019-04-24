@@ -171,9 +171,7 @@ class OutOfLineRecordWrite final : public OutOfLineCode {
       __ Push(ra);
     }
 
-    if (mode_ == RecordWriteMode::kValueIsEphemeronKey) {
-      __ CallEphemeronKeyBarrier(object_, scratch1_, save_fp_mode);
-    } else if (stub_mode_ == StubCallMode::kCallWasmRuntimeStub) {
+    if (stub_mode_ == StubCallMode::kCallWasmRuntimeStub) {
       // A direct call to a wasm runtime stub defined in this module.
       // Just encode the stub index. This will be patched when the code
       // is added to the native module and copied into wasm code space.
@@ -483,8 +481,6 @@ void EmitWordLoadPoisoningIfNeeded(CodeGenerator* codegen,
     __ bind(&compareExchange);                                                 \
     __ Ll(i.TempRegister(2), MemOperand(i.TempRegister(0), 0));                \
     __ ExtractBits(i.OutputRegister(0), i.TempRegister(2), i.TempRegister(1),  \
-                   size, sign_extend);                                         \
-    __ ExtractBits(i.InputRegister(2), i.InputRegister(2), i.TempRegister(1),  \
                    size, sign_extend);                                         \
     __ BranchShort(&exit, ne, i.InputRegister(2),                              \
                    Operand(i.OutputRegister(0)));                              \

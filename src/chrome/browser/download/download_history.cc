@@ -252,10 +252,12 @@ DownloadHistory::DownloadHistory(content::DownloadManager* manager,
       initial_history_query_complete_(false),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  download::SimpleDownloadManager::DownloadVector items;
+  content::DownloadManager::DownloadVector items;
   notifier_.GetManager()->GetAllDownloads(&items);
-  for (auto* item : items)
-    OnDownloadCreated(notifier_.GetManager(), item);
+  for (content::DownloadManager::DownloadVector::const_iterator
+       it = items.begin(); it != items.end(); ++it) {
+    OnDownloadCreated(notifier_.GetManager(), *it);
+  }
   history_->QueryDownloads(base::Bind(
       &DownloadHistory::QueryCallback, weak_ptr_factory_.GetWeakPtr()));
 }
@@ -374,17 +376,13 @@ void DownloadHistory::MaybeAddToHistory(download::DownloadItem* item) {
   history::DownloadRow download_row = GetDownloadRow(item);
   if (item->GetState() == download::DownloadItem::IN_PROGRESS)
     data->set_info(download_row);
-  else
-    data->clear_info();
-  history_->CreateDownload(download_row,
-                           base::BindRepeating(&DownloadHistory::ItemAdded,
-                                               weak_ptr_factory_.GetWeakPtr(),
-                                               download_id, download_row));
+  history_->CreateDownload(
+      download_row,
+      base::BindRepeating(&DownloadHistory::ItemAdded,
+                          weak_ptr_factory_.GetWeakPtr(), download_id));
 }
 
-void DownloadHistory::ItemAdded(uint32_t download_id,
-                                const history::DownloadRow& download_row,
-                                bool success) {
+void DownloadHistory::ItemAdded(uint32_t download_id, bool success) {
   if (removed_while_adding_.find(download_id) !=
       removed_while_adding_.end()) {
     removed_while_adding_.erase(download_id);
@@ -429,7 +427,7 @@ void DownloadHistory::ItemAdded(uint32_t download_id,
   // Notify the observer about the change in the persistence state.
   if (was_persisted != IsPersisted(item)) {
     for (Observer& observer : observers_)
-      observer.OnDownloadStored(item, download_row);
+      observer.OnDownloadStored(item, *data->info());
   }
 }
 
@@ -442,10 +440,8 @@ void DownloadHistory::OnDownloadCreated(content::DownloadManager* manager,
   DownloadHistoryData* data = new DownloadHistoryData(item);
   if (item->GetId() == loading_id_)
     OnDownloadRestoredFromHistory(item);
-  if (item->GetState() == download::DownloadItem::IN_PROGRESS &&
-      NeedToUpdateDownloadHistory(item)) {
+  if (item->GetState() == download::DownloadItem::IN_PROGRESS)
     data->set_info(GetDownloadRow(item));
-  }
   MaybeAddToHistory(item);
 }
 

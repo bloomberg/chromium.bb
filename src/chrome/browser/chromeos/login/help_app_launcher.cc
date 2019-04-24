@@ -24,12 +24,8 @@ using extensions::ExtensionRegistry;
 
 namespace {
 
-// Official HelpApp extension id.
-const char kExtensionId[] = "honijodknafkokifofgiaalefdiedpko";
-
-const char kHelpAppFormat[] = "chrome-extension://%s/oobe.html?id=%d";
-
-const char* g_extension_id_for_test = nullptr;
+const char kHelpAppFormat[] =
+    "chrome-extension://honijodknafkokifofgiaalefdiedpko/oobe.html?id=%d";
 
 }  // namespace
 
@@ -49,22 +45,11 @@ void HelpAppLauncher::ShowHelpTopic(HelpTopic help_topic_id) {
   if (!registry)
     return;
 
-  const char* extension_id = kExtensionId;
-  if (g_extension_id_for_test && *g_extension_id_for_test != '\0') {
-    extension_id = g_extension_id_for_test;
-  }
-
-  GURL url(base::StringPrintf(kHelpAppFormat, extension_id,
-                              static_cast<int>(help_topic_id)));
+  GURL url(base::StringPrintf(kHelpAppFormat, static_cast<int>(help_topic_id)));
   // HelpApp component extension presents only in official builds so we can
   // show help only when the extensions is installed.
   if (registry->enabled_extensions().GetByID(url.host()))
     ShowHelpTopicDialog(profile, GURL(url));
-}
-
-// static
-void HelpAppLauncher::SetExtensionIdForTest(const char* extension_id) {
-  g_extension_id_for_test = extension_id;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

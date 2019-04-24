@@ -1,7 +1,10 @@
 <html>
 <head>
 <script>
-// Note that this test only passes in DRT. In browsers, the cross-iframe dom inspection usually causes a security exception.
+if (window.testRunner) {
+    // Note that this test only passes in DRT. In browsers, the cross-iframe dom inspection usually causes a security exception.
+    testRunner.dumpAsTextWithPixelResults();
+}
 
 function log(str) {
     var li = document.createElement("li");

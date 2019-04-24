@@ -11,13 +11,11 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -29,7 +27,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_file_watcher.h"
-#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/url_constants.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -63,9 +60,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/url_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -172,6 +167,7 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
   InfoBarService* GetInfoBarService() override;
   void RenderProcessGone(bool crashed) override {}
   void ShowCertificateViewer(const std::string& cert_chain) override {}
+
   content::WebContents* web_contents_;
   DISALLOW_COPY_AND_ASSIGN(DefaultBindingsDelegate);
 };
@@ -572,28 +568,29 @@ void DevToolsUIBindings::HandleMessageFromDevToolsFrontend(
     const std::string& message) {
   if (!frontend_host_)
     return;
-  const std::string* method = nullptr;
-  base::Value* params = nullptr;
-  base::Optional<base::Value> parsed_message = base::JSONReader::Read(message);
-  if (parsed_message && parsed_message->is_dict()) {
-    method = parsed_message->FindStringKey(kFrontendHostMethod);
-    params = parsed_message->FindKey(kFrontendHostParams);
-  }
-  if (!method || (params && !params->is_list())) {
+  std::string method;
+  base::ListValue empty_params;
+  base::ListValue* params = &empty_params;
+
+  base::DictionaryValue* dict = NULL;
+  std::unique_ptr<base::Value> parsed_message =
+      base::JSONReader::ReadDeprecated(message);
+  if (!parsed_message ||
+      !parsed_message->GetAsDictionary(&dict) ||
+      !dict->GetString(kFrontendHostMethod, &method) ||
+      (dict->HasKey(kFrontendHostParams) &&
+          !dict->GetList(kFrontendHostParams, &params))) {
     LOG(ERROR) << "Invalid message was sent to embedder: " << message;
     return;
   }
-  base::Value empty_params(base::Value::Type::LIST);
-  if (!params) {
-    params = &empty_params;
-  }
-  int id = parsed_message->FindIntKey(kFrontendHostId).value_or(0);
-  base::ListValue* params_list;
-  params->GetAsList(&params_list);
+  int id = 0;
+  dict->GetInteger(kFrontendHostId, &id);
   embedder_message_dispatcher_->Dispatch(
       base::Bind(&DevToolsUIBindings::SendMessageAck,
-                 weak_factory_.GetWeakPtr(), id),
-      *method, params_list);
+                 weak_factory_.GetWeakPtr(),
+                 id),
+      method,
+      params);
 }
 
 // content::DevToolsAgentHostClient implementation --------------------------
@@ -608,8 +605,7 @@ void DevToolsUIBindings::DispatchProtocolMessage(
     base::EscapeJSONString(message, true, &param);
     base::string16 javascript =
         base::UTF8ToUTF16("DevToolsAPI.dispatchMessage(" + param + ");");
-    web_contents_->GetMainFrame()->ExecuteJavaScript(javascript,
-                                                     base::NullCallback());
+    web_contents_->GetMainFrame()->ExecuteJavaScript(javascript);
     return;
   }
 
@@ -733,36 +729,12 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
 
   std::unique_ptr<network::mojom::URLLoaderFactory> file_url_loader_factory;
   scoped_refptr<network::SharedURLLoaderFactory> network_url_loader_factory;
-  std::unique_ptr<network::mojom::URLLoaderFactory> webui_url_loader_factory;
   network::mojom::URLLoaderFactory* url_loader_factory;
   if (gurl.SchemeIsFile()) {
     file_url_loader_factory = content::CreateFileURLLoaderFactory(
         base::FilePath() /* profile_path */,
         nullptr /* shared_cors_origin_access_list */);
     url_loader_factory = file_url_loader_factory.get();
-  } else if (content::HasWebUIScheme(gurl)) {
-#ifndef NDEBUG
-    // In debug builds, allow retrieving files from the chrome:// scheme
-    content::WebContents* target_tab =
-        DevToolsWindow::AsDevToolsWindow(web_contents_)
-            ->GetInspectedWebContents();
-    const bool allow_web_ui_scheme =
-        target_tab && content::HasWebUIScheme(target_tab->GetURL());
-#else
-    const bool allow_web_ui_scheme = false;
-#endif
-    if (allow_web_ui_scheme) {
-      std::vector<std::string> allowed_webui_hosts;
-      content::RenderFrameHost* frame_host = web_contents()->GetMainFrame();
-      webui_url_loader_factory = content::CreateWebUIURLLoader(
-          frame_host, content::kChromeUIScheme, std::move(allowed_webui_hosts));
-      url_loader_factory = webui_url_loader_factory.get();
-    } else {
-      base::DictionaryValue response;
-      response.SetInteger("statusCode", 403);
-      callback.Run(&response);
-      return;
-    }
   } else {
     auto* partition = content::BrowserContext::GetStoragePartitionForSite(
         web_contents_->GetBrowserContext(), gurl);
@@ -849,8 +821,8 @@ void DevToolsUIBindings::IndexPath(
   if (indexing_jobs_.count(index_request_id) != 0)
     return;
   std::vector<std::string> excluded_folders;
-  base::Optional<base::Value> parsed_excluded_folders =
-      base::JSONReader::Read(excluded_folders_message);
+  std::unique_ptr<base::Value> parsed_excluded_folders =
+      base::JSONReader::ReadDeprecated(excluded_folders_message);
   if (parsed_excluded_folders && parsed_excluded_folders->is_list()) {
     const std::vector<base::Value>& folder_paths =
         parsed_excluded_folders->GetList();
@@ -933,24 +905,29 @@ void DevToolsUIBindings::SetDevicesDiscoveryConfig(
     const std::string& port_forwarding_config,
     bool network_discovery_enabled,
     const std::string& network_discovery_config) {
-  base::Optional<base::Value> parsed_port_forwarding =
-      base::JSONReader::Read(port_forwarding_config);
-  if (!parsed_port_forwarding || !parsed_port_forwarding->is_dict())
+  base::DictionaryValue* port_forwarding_dict = nullptr;
+  std::unique_ptr<base::Value> parsed_port_forwarding =
+      base::JSONReader::ReadDeprecated(port_forwarding_config);
+  if (!parsed_port_forwarding ||
+      !parsed_port_forwarding->GetAsDictionary(&port_forwarding_dict)) {
     return;
-  base::Optional<base::Value> parsed_network =
-      base::JSONReader::Read(network_discovery_config);
-  if (!parsed_network || !parsed_network->is_list())
+  }
+
+  base::ListValue* network_list = nullptr;
+  std::unique_ptr<base::Value> parsed_network =
+      base::JSONReader::ReadDeprecated(network_discovery_config);
+  if (!parsed_network || !parsed_network->GetAsList(&network_list))
     return;
+
   profile_->GetPrefs()->SetBoolean(
       prefs::kDevToolsDiscoverUsbDevicesEnabled, discover_usb_devices);
   profile_->GetPrefs()->SetBoolean(
       prefs::kDevToolsPortForwardingEnabled, port_forwarding_enabled);
   profile_->GetPrefs()->Set(prefs::kDevToolsPortForwardingConfig,
-                            *parsed_port_forwarding);
+                            *port_forwarding_dict);
   profile_->GetPrefs()->SetBoolean(prefs::kDevToolsDiscoverTCPTargetsEnabled,
                                    network_discovery_enabled);
-  profile_->GetPrefs()->Set(prefs::kDevToolsTCPDiscoveryConfig,
-                            *parsed_network);
+  profile_->GetPrefs()->Set(prefs::kDevToolsTCPDiscoveryConfig, *network_list);
 }
 
 void DevToolsUIBindings::DevicesDiscoveryConfigUpdated() {
@@ -1128,19 +1105,6 @@ void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
     UMA_HISTOGRAM_EXACT_LINEAR(name, sample, boundary_value);
   else
     frontend_host_->BadMessageRecieved();
-}
-
-void DevToolsUIBindings::RecordPerformanceHistogram(const std::string& name,
-                                                    double duration) {
-  if (!frontend_host_)
-    return;
-  if (duration < 0) {
-    return;
-  }
-  // Use histogram_functions.h instead of macros as the name comes from the
-  // DevTools frontend javascript and so will always have the same call site.
-  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(duration);
-  base::UmaHistogramTimes(name, delta);
 }
 
 void DevToolsUIBindings::SendJsonRequest(const DispatchCallback& callback,
@@ -1395,7 +1359,7 @@ void DevToolsUIBindings::CallClientFunction(const std::string& function_name,
   }
   javascript.append(");");
   web_contents_->GetMainFrame()->ExecuteJavaScript(
-      base::UTF8ToUTF16(javascript), base::NullCallback());
+      base::UTF8ToUTF16(javascript));
 }
 
 void DevToolsUIBindings::ReadyToCommitNavigation(

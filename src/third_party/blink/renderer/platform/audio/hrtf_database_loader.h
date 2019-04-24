@@ -33,7 +33,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "third_party/blink/renderer/platform/audio/hrtf_database.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
@@ -46,8 +45,6 @@ class WaitableEvent;
 // thread.
 class PLATFORM_EXPORT HRTFDatabaseLoader final
     : public RefCounted<HRTFDatabaseLoader> {
-  USING_FAST_MALLOC(HRTFDatabaseLoader);
-
  public:
   // Lazily creates a HRTFDatabaseLoader (if not already created) for the given
   // sample-rate and starts loading asynchronously (when created the first

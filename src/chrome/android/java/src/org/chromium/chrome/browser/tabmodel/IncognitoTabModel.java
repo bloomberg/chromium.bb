@@ -132,15 +132,6 @@ public class IncognitoTabModel implements TabModel {
     }
 
     @Override
-    public boolean closeTab(
-            Tab tab, Tab recommendedNextTab, boolean animate, boolean uponExit, boolean canUndo) {
-        boolean retVal =
-                mDelegateModel.closeTab(tab, recommendedNextTab, animate, uponExit, canUndo);
-        destroyIncognitoIfNecessary();
-        return retVal;
-    }
-
-    @Override
     public Tab getNextTabIfClosed(int id) {
         return mDelegateModel.getNextTabIfClosed(id);
     }

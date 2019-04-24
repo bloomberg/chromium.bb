@@ -24,12 +24,11 @@ class CORE_EXPORT CustomProperty : public Variable {
   DISALLOW_NEW();
 
  public:
-  CustomProperty()
-      : CustomProperty(AtomicString(),
-                       static_cast<const PropertyRegistration*>(nullptr)) {}
+  CustomProperty() = default;
   CustomProperty(const AtomicString& name, const Document&);
   CustomProperty(const AtomicString& name, const PropertyRegistry*);
 
+  bool IsInherited() const override;
   const AtomicString& GetPropertyNameAtomicString() const override;
   CSSPropertyName GetCSSPropertyName() const override;
 
@@ -51,9 +50,6 @@ class CORE_EXPORT CustomProperty : public Variable {
   void Trace(blink::Visitor* visitor) { visitor->Trace(registration_); }
 
  private:
-  CustomProperty(const AtomicString& name,
-                 const PropertyRegistration* registration);
-
   const CSSValue* ParseUntyped(CSSParserTokenRange,
                                const CSSParserContext&,
                                const CSSParserLocalContext&) const;

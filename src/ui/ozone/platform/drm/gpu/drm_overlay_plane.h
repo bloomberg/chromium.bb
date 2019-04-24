@@ -5,7 +5,6 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_DRM_OVERLAY_PLANE_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_DRM_OVERLAY_PLANE_H_
 
-#include <memory>
 #include <vector>
 
 #include "base/bind.h"

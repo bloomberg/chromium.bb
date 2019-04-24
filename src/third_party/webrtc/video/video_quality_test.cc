@@ -17,7 +17,6 @@
 #include <vector>
 
 #include "absl/memory/memory.h"
-#include "api/task_queue/default_task_queue_factory.h"
 #include "api/video/builtin_video_bitrate_allocator_factory.h"
 #include "call/fake_network_pipe.h"
 #include "call/simulated_network.h"
@@ -36,9 +35,9 @@
 #include "modules/video_coding/codecs/vp9/include/vp9.h"
 #include "modules/video_coding/utility/ivf_file_writer.h"
 #include "rtc_base/strings/string_builder.h"
-#include "test/platform_video_capturer.h"
 #include "test/run_loop.h"
 #include "test/testsupport/file_utils.h"
+#include "test/vcm_capturer.h"
 #include "test/video_renderer.h"
 #include "video/frame_dumping_decoder.h"
 #ifdef WEBRTC_WIN
@@ -143,17 +142,18 @@ class QualityTestVideoEncoder : public VideoEncoder,
   }
   int32_t Release() override { return encoder_->Release(); }
   int32_t Encode(const VideoFrame& frame,
-                 const std::vector<VideoFrameType>* frame_types) {
+                 const CodecSpecificInfo* codec_specific_info,
+                 const std::vector<FrameType>* frame_types) {
     if (analyzer_) {
       analyzer_->PreEncodeOnFrame(frame);
     }
-    return encoder_->Encode(frame, frame_types);
+    return encoder_->Encode(frame, codec_specific_info, frame_types);
   }
-  void SetRates(const RateControlParameters& parameters) override {
+  int32_t SetRateAllocation(const VideoBitrateAllocation& allocation,
+                            uint32_t framerate) override {
     RTC_DCHECK_GT(overshoot_factor_, 0.0);
     if (overshoot_factor_ == 1.0) {
-      encoder_->SetRates(parameters);
-      return;
+      return encoder_->SetRateAllocation(allocation, framerate);
     }
 
     // Simulating encoder overshooting target bitrate, by configuring actual
@@ -162,7 +162,7 @@ class QualityTestVideoEncoder : public VideoEncoder,
     VideoBitrateAllocation overshot_allocation;
     for (size_t si = 0; si < kMaxSpatialLayers; ++si) {
       const uint32_t spatial_layer_bitrate_bps =
-          parameters.bitrate.GetSpatialLayerSum(si);
+          allocation.GetSpatialLayerSum(si);
       if (spatial_layer_bitrate_bps == 0) {
         continue;
       }
@@ -181,18 +181,16 @@ class QualityTestVideoEncoder : public VideoEncoder,
       }
 
       for (size_t ti = 0; ti < kMaxTemporalStreams; ++ti) {
-        if (parameters.bitrate.HasBitrate(si, ti)) {
+        if (allocation.HasBitrate(si, ti)) {
           overshot_allocation.SetBitrate(
               si, ti,
-              rtc::checked_cast<uint32_t>(
-                  overshoot_factor * parameters.bitrate.GetBitrate(si, ti)));
+              rtc::checked_cast<uint32_t>(overshoot_factor *
+                                          allocation.GetBitrate(si, ti)));
         }
       }
     }
 
-    return encoder_->SetRates(
-        RateControlParameters(overshot_allocation, parameters.framerate_fps,
-                              parameters.bandwidth_allocation));
+    return encoder_->SetRateAllocation(overshot_allocation, framerate);
   }
   EncoderInfo GetEncoderInfo() const override {
     EncoderInfo info = encoder_->GetEncoderInfo();
@@ -326,8 +324,6 @@ std::unique_ptr<VideoEncoder> VideoQualityTest::CreateVideoEncoder(
 VideoQualityTest::VideoQualityTest(
     std::unique_ptr<InjectionComponents> injection_components)
     : clock_(Clock::GetRealTimeClock()),
-      task_queue_factory_(CreateDefaultTaskQueueFactory()),
-      rtc_event_log_factory_(task_queue_factory_.get()),
       video_decoder_factory_([this](const SdpVideoFormat& format) {
         return this->CreateVideoDecoder(format);
       }),
@@ -767,6 +763,9 @@ void VideoQualityTest::SetupVideo(Transport* send_transport,
     video_send_configs_[video_idx].suspend_below_min_bitrate =
         params_.video[video_idx].suspend_below_min_bitrate;
 
+    video_send_configs_[video_idx].is_svc =
+        params_.ss[video_idx].streams.size() == 1;
+
     video_encoder_configs_[video_idx].number_of_streams =
         params_.ss[video_idx].streams.size();
     video_encoder_configs_[video_idx].max_bitrate_bps = 0;
@@ -1017,7 +1016,7 @@ std::unique_ptr<test::FrameGenerator> VideoQualityTest::CreateFrameGenerator(
             params_.video[video_idx].fps);
   } else {
     std::vector<std::string> slides = params_.screenshare[video_idx].slides;
-    if (slides.empty()) {
+    if (slides.size() == 0) {
       slides.push_back(test::ResourcePath("web_screenshot_1850_1110", "yuv"));
       slides.push_back(test::ResourcePath("presentation_1850_1110", "yuv"));
       slides.push_back(test::ResourcePath("photo_1850_1110", "yuv"));
@@ -1063,28 +1062,28 @@ void VideoQualityTest::CreateCapturers() {
       EXPECT_TRUE(frame_generator_capturer->Init());
       video_sources_[video_idx].reset(frame_generator_capturer);
     } else {
-      if (params_.video[video_idx].clip_path == "Generator") {
+      if (params_.video[video_idx].clip_name == "Generator") {
         video_sources_[video_idx].reset(test::FrameGeneratorCapturer::Create(
             static_cast<int>(params_.video[video_idx].width),
             static_cast<int>(params_.video[video_idx].height), absl::nullopt,
             absl::nullopt, params_.video[video_idx].fps, clock_));
-      } else if (params_.video[video_idx].clip_path == "GeneratorI420A") {
+      } else if (params_.video[video_idx].clip_name == "GeneratorI420A") {
         video_sources_[video_idx].reset(test::FrameGeneratorCapturer::Create(
             static_cast<int>(params_.video[video_idx].width),
             static_cast<int>(params_.video[video_idx].height),
             test::FrameGenerator::OutputType::I420A, absl::nullopt,
             params_.video[video_idx].fps, clock_));
-      } else if (params_.video[video_idx].clip_path == "GeneratorI010") {
+      } else if (params_.video[video_idx].clip_name == "GeneratorI010") {
         video_sources_[video_idx].reset(test::FrameGeneratorCapturer::Create(
             static_cast<int>(params_.video[video_idx].width),
             static_cast<int>(params_.video[video_idx].height),
             test::FrameGenerator::OutputType::I010, absl::nullopt,
             params_.video[video_idx].fps, clock_));
-      } else if (params_.video[video_idx].clip_path.empty()) {
-        video_sources_[video_idx] = test::CreateVideoCapturer(
+      } else if (params_.video[video_idx].clip_name.empty()) {
+        video_sources_[video_idx].reset(test::VcmCapturer::Create(
             params_.video[video_idx].width, params_.video[video_idx].height,
             params_.video[video_idx].fps,
-            params_.video[video_idx].capture_device_index);
+            params_.video[video_idx].capture_device_index));
         if (!video_sources_[video_idx]) {
           // Failed to get actual camera, use chroma generator as backup.
           video_sources_[video_idx].reset(test::FrameGeneratorCapturer::Create(
@@ -1095,13 +1094,13 @@ void VideoQualityTest::CreateCapturers() {
       } else {
         video_sources_[video_idx].reset(
             test::FrameGeneratorCapturer::CreateFromYuvFile(
-                params_.video[video_idx].clip_path,
+                test::ResourcePath(params_.video[video_idx].clip_name, "yuv"),
                 params_.video[video_idx].width, params_.video[video_idx].height,
                 params_.video[video_idx].fps, clock_));
         ASSERT_TRUE(video_sources_[video_idx])
             << "Could not create capturer for "
-            << params_.video[video_idx].clip_path
-            << ".yuv. Is this file present?";
+            << params_.video[video_idx].clip_name
+            << ".yuv. Is this resource file present?";
       }
     }
     RTC_DCHECK(video_sources_[video_idx]);
@@ -1138,7 +1137,8 @@ VideoQualityTest::CreateSendTransport() {
   }
   return absl::make_unique<test::LayerFilteringTransport>(
       &task_queue_,
-      absl::make_unique<FakeNetworkPipe>(clock_, std::move(network_behavior)),
+      absl::make_unique<FakeNetworkPipe>(Clock::GetRealTimeClock(),
+                                         std::move(network_behavior)),
       sender_call_.get(), kPayloadTypeVP8, kPayloadTypeVP9,
       params_.video[0].selected_tl, params_.ss[0].selected_sl,
       payload_type_map_, kVideoSendSsrcs[0],
@@ -1156,7 +1156,8 @@ VideoQualityTest::CreateReceiveTransport() {
   }
   return absl::make_unique<test::DirectTransport>(
       &task_queue_,
-      absl::make_unique<FakeNetworkPipe>(clock_, std::move(network_behavior)),
+      absl::make_unique<FakeNetworkPipe>(Clock::GetRealTimeClock(),
+                                         std::move(network_behavior)),
       receiver_call_.get(), payload_type_map_);
 }
 
@@ -1180,10 +1181,8 @@ void VideoQualityTest::RunWithAnalyzer(const Params& params) {
   }
 
   if (!params.logging.rtc_event_log_name.empty()) {
-    send_event_log_ = rtc_event_log_factory_.CreateRtcEventLog(
-        RtcEventLog::EncodingType::Legacy);
-    recv_event_log_ = rtc_event_log_factory_.CreateRtcEventLog(
-        RtcEventLog::EncodingType::Legacy);
+    send_event_log_ = RtcEventLog::Create(RtcEventLog::EncodingType::Legacy);
+    recv_event_log_ = RtcEventLog::Create(RtcEventLog::EncodingType::Legacy);
     std::unique_ptr<RtcEventLogOutputFile> send_output(
         absl::make_unique<RtcEventLogOutputFile>(
             params.logging.rtc_event_log_name + "_send",
@@ -1203,14 +1202,16 @@ void VideoQualityTest::RunWithAnalyzer(const Params& params) {
     recv_event_log_ = RtcEventLog::CreateNull();
   }
 
-  task_queue_.SendTask([this, &params, &send_transport, &recv_transport]() {
-    Call::Config send_call_config(send_event_log_.get());
-    Call::Config recv_call_config(recv_event_log_.get());
-    send_call_config.bitrate_config = params.call.call_bitrate_config;
-    recv_call_config.bitrate_config = params.call.call_bitrate_config;
+  Call::Config send_call_config(send_event_log_.get());
+  Call::Config recv_call_config(recv_event_log_.get());
+  send_call_config.bitrate_config = params.call.call_bitrate_config;
+  recv_call_config.bitrate_config = params.call.call_bitrate_config;
+
+  task_queue_.SendTask([this, &send_call_config, &recv_call_config,
+                        &send_transport, &recv_transport]() {
     if (params_.audio.enabled)
-      InitializeAudioDevice(&send_call_config, &recv_call_config,
-                            params_.audio.use_real_adm);
+      InitializeAudioDevice(
+          &send_call_config, &recv_call_config, params_.audio.use_real_adm);
 
     CreateCalls(send_call_config, recv_call_config);
     send_transport = CreateSendTransport();
@@ -1232,8 +1233,7 @@ void VideoQualityTest::RunWithAnalyzer(const Params& params) {
       kSendRtxSsrcs[params_.ss[0].selected_stream],
       static_cast<size_t>(params_.ss[0].selected_stream),
       params.ss[0].selected_sl, params_.video[0].selected_tl,
-      is_quick_test_enabled, clock_, params_.logging.rtp_dump_name,
-      &task_queue_);
+      is_quick_test_enabled, clock_, params_.logging.rtp_dump_name);
 
   task_queue_.SendTask([&]() {
     analyzer_->SetCall(sender_call_.get());
@@ -1302,22 +1302,21 @@ void VideoQualityTest::RunWithAnalyzer(const Params& params) {
 
 rtc::scoped_refptr<AudioDeviceModule> VideoQualityTest::CreateAudioDevice() {
 #ifdef WEBRTC_WIN
-  RTC_LOG(INFO) << "Using latest version of ADM on Windows";
-  // We must initialize the COM library on a thread before we calling any of
-  // the library functions. All COM functions in the ADM will return
-  // CO_E_NOTINITIALIZED otherwise. The legacy ADM for Windows used internal
-  // COM initialization but the new ADM requires COM to be initialized
-  // externally.
-  com_initializer_ = absl::make_unique<webrtc_win::ScopedCOMInitializer>(
-      webrtc_win::ScopedCOMInitializer::kMTA);
-  RTC_CHECK(com_initializer_->Succeeded());
-  RTC_CHECK(webrtc_win::core_audio_utility::IsSupported());
-  RTC_CHECK(webrtc_win::core_audio_utility::IsMMCSSSupported());
-  return CreateWindowsCoreAudioAudioDeviceModule(task_queue_factory_.get());
+    RTC_LOG(INFO) << "Using latest version of ADM on Windows";
+    // We must initialize the COM library on a thread before we calling any of
+    // the library functions. All COM functions in the ADM will return
+    // CO_E_NOTINITIALIZED otherwise. The legacy ADM for Windows used internal
+    // COM initialization but the new ADM requires COM to be initialized
+    // externally.
+    com_initializer_ = absl::make_unique<webrtc_win::ScopedCOMInitializer>(
+        webrtc_win::ScopedCOMInitializer::kMTA);
+    RTC_CHECK(com_initializer_->Succeeded());
+    RTC_CHECK(webrtc_win::core_audio_utility::IsSupported());
+    RTC_CHECK(webrtc_win::core_audio_utility::IsMMCSSSupported());
+    return CreateWindowsCoreAudioAudioDeviceModule();
 #else
-  // Use legacy factory method on all platforms except Windows.
-  return AudioDeviceModule::Create(AudioDeviceModule::kPlatformDefaultAudio,
-                                   task_queue_factory_.get());
+    // Use legacy factory method on all platforms except Windows.
+    return AudioDeviceModule::Create(AudioDeviceModule::kPlatformDefaultAudio);
 #endif
 }
 
@@ -1353,7 +1352,7 @@ void VideoQualityTest::InitializeAudioDevice(Call::Config* send_call_config,
   }
   // Always initialize the ADM before injecting a valid audio transport.
   RTC_CHECK(audio_device->RegisterAudioCallback(
-                send_call_config->audio_state->audio_transport()) == 0);
+            send_call_config->audio_state->audio_transport()) == 0);
 }
 
 void VideoQualityTest::SetupAudio(Transport* transport) {
@@ -1401,10 +1400,8 @@ void VideoQualityTest::RunWithRenderers(const Params& params) {
   std::vector<std::unique_ptr<test::VideoRenderer>> loopback_renderers;
 
   if (!params.logging.rtc_event_log_name.empty()) {
-    send_event_log_ = rtc_event_log_factory_.CreateRtcEventLog(
-        RtcEventLog::EncodingType::Legacy);
-    recv_event_log_ = rtc_event_log_factory_.CreateRtcEventLog(
-        RtcEventLog::EncodingType::Legacy);
+    send_event_log_ = RtcEventLog::Create(RtcEventLog::EncodingType::Legacy);
+    recv_event_log_ = RtcEventLog::Create(RtcEventLog::EncodingType::Legacy);
     std::unique_ptr<RtcEventLogOutputFile> send_output(
         absl::make_unique<RtcEventLogOutputFile>(
             params.logging.rtc_event_log_name + "_send",
@@ -1435,8 +1432,8 @@ void VideoQualityTest::RunWithRenderers(const Params& params) {
     Call::Config recv_call_config(recv_event_log_.get());
 
     if (params_.audio.enabled)
-      InitializeAudioDevice(&send_call_config, &recv_call_config,
-                            params_.audio.use_real_adm);
+      InitializeAudioDevice(
+          &send_call_config, &recv_call_config, params_.audio.use_real_adm);
 
     CreateCalls(send_call_config, recv_call_config);
 

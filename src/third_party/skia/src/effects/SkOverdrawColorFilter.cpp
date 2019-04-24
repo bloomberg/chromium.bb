@@ -6,7 +6,6 @@
  */
 
 #include "SkArenaAlloc.h"
-#include "SkEffectPriv.h"
 #include "SkOverdrawColorFilter.h"
 #include "SkRasterPipeline.h"
 #include "SkReadBuffer.h"
@@ -41,12 +40,15 @@ void main(inout half4 color) {
 )";
 #endif
 
-bool SkOverdrawColorFilter::onAppendStages(const SkStageRec& rec, bool shader_is_opaque) const {
+void SkOverdrawColorFilter::onAppendStages(SkRasterPipeline* p,
+                                           SkColorSpace* dstCS,
+                                           SkArenaAlloc* alloc,
+                                           bool shader_is_opaque) const {
     struct Ctx : public SkRasterPipeline_CallbackCtx {
         const SkPMColor* colors;
     };
     // TODO: do we care about transforming to dstCS?
-    auto ctx = rec.fAlloc->make<Ctx>();
+    auto ctx = alloc->make<Ctx>();
     ctx->colors = fColors;
     ctx->fn = [](SkRasterPipeline_CallbackCtx* arg, int active_pixels) {
         auto ctx = (Ctx*)arg;
@@ -59,8 +61,7 @@ bool SkOverdrawColorFilter::onAppendStages(const SkStageRec& rec, bool shader_is
             pixels[i] = SkPMColor4f::FromPMColor(ctx->colors[alpha]);
         }
     };
-    rec.fPipeline->append(SkRasterPipeline::callback, ctx);
-    return true;
+    p->append(SkRasterPipeline::callback, ctx);
 }
 
 void SkOverdrawColorFilter::flatten(SkWriteBuffer& buffer) const {

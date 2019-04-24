@@ -43,7 +43,10 @@ class CORE_EXPORT HTMLTokenizer {
   USING_FAST_MALLOC(HTMLTokenizer);
 
  public:
-  explicit HTMLTokenizer(const HTMLParserOptions&);
+  static std::unique_ptr<HTMLTokenizer> Create(
+      const HTMLParserOptions& options) {
+    return base::WrapUnique(new HTMLTokenizer(options));
+  }
   ~HTMLTokenizer();
 
   void Reset();
@@ -195,6 +198,8 @@ class CORE_EXPORT HTMLTokenizer {
   }
 
  private:
+  explicit HTMLTokenizer(const HTMLParserOptions&);
+
   inline bool ProcessEntity(SegmentedString&);
 
   inline void ParseError();

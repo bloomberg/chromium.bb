@@ -26,10 +26,6 @@ const LANGUAGE_SETTING_IS_SHOWN_UMA_NAME = 'Translate.LanguageSettingsIsShown';
 Polymer({
   is: 'settings-languages-page',
 
-  behaviors: [
-    PrefsBehavior,
-  ],
-
   properties: {
     /**
      * Preferences state.
@@ -54,11 +50,26 @@ Polymer({
 
     // <if expr="not is_macosx">
     /** @private */
+    spellCheckSecondaryText_: {
+      type: String,
+      value: '',
+      computed: 'getSpellCheckSecondaryText_(languages.enabled.*, ' +
+          'languages.forcedSpellCheckLanguages.*, ' +
+          'prefs.browser.enable_spellchecking.*)',
+    },
+
+    /** @private */
     spellCheckLanguages_: {
       type: Array,
       value: function() {
         return [];
       },
+    },
+
+    /** @private */
+    spellCheckDisabled_: {
+      type: Boolean,
+      value: false,
     },
     // </if>
 
@@ -90,12 +101,14 @@ Polymer({
         if (settings.routes.EDIT_DICTIONARY) {
           map.set(
               settings.routes.EDIT_DICTIONARY.path,
-              '#spellCheckSubpageTrigger');
+              '#spellCheckCollapse .subpage-arrow button');
         }
         // </if>
         // <if expr="chromeos">
         if (settings.routes.INPUT_METHODS) {
-          map.set(settings.routes.INPUT_METHODS.path, '#manageInputMethods');
+          map.set(
+              settings.routes.INPUT_METHODS.path,
+              '#inputMethodsCollapse .subpage-arrow button');
         }
         // </if>
         return map;
@@ -155,17 +168,6 @@ Polymer({
   },
 
   /**
-   * Used to determine whether to show the separator between checkbox settings
-   * and move buttons in the dialog menu.
-   * @return {boolean} True if there is currently more than one selected
-   *     language.
-   * @private
-   */
-  shouldShowDialogSeparator_: function() {
-    return this.languages != undefined && this.languages.enabled.length > 1;
-  },
-
-  /**
    * Used to determine which "Move" buttons to show for ordering enabled
    * languages.
    * @param {number} n
@@ -217,17 +219,11 @@ Polymer({
 
   /**
    * @param {string} languageCode The language code identifying a language.
-   * @param {string} translateTarget The target language.
-   * @return {string} 'target' if |languageCode| matches the target language,
-   'non-target' otherwise.
+   * @return {boolean} True iff this language is the one used when translating
+   *     pages.
    */
-  isTranslationTarget_: function(languageCode, translateTarget) {
-    if (this.languageHelper.convertLanguageCodeForTranslate(languageCode) ==
-        translateTarget) {
-      return 'target';
-    } else {
-      return 'non-target';
-    }
+  isTranslationTarget_: function(languageCode) {
+    return languageCode == this.languages.translateTarget;
   },
 
   // <if expr="chromeos">
@@ -270,7 +266,7 @@ Polymer({
     // Taps on the button are handled in onInputMethodOptionsTap_.
     // TODO(dschuyler): The row has two operations that are not clearly
     // delineated. crbug.com/740691
-    if (e.target.tagName == 'CR-ICON-BUTTON') {
+    if (e.target.tagName == 'BUTTON') {
       return;
     }
 
@@ -491,37 +487,71 @@ Polymer({
 
   // <if expr="not is_macosx">
   /**
-   * Returns the value to use as the |pref| attribute for the policy indicator
-   * of spellcheck languages, based on whether or not the language is enabled.
-   * @param {boolean} isEnabled Whether the language is enabled or not.
+   * Returns the secondary text for the spell check subsection based on the
+   * enabled spell check languages, listing at most 2 languages.
+   * @return {string}
+   * @private
    */
-  getIndicatorPrefForManagedSpellcheckLanguage_(isEnabled) {
-    return isEnabled ?
-        this.get('spellcheck.forced_dictionaries', this.prefs) :
-        this.get('spellcheck.blacklisted_dictionaries', this.prefs);
+  getSpellCheckSecondaryText_: function() {
+    if (this.languages == undefined || this.prefs == undefined) {
+      return '';
+    }
+
+    if (this.getSpellCheckDisabledByPolicy_()) {
+      return loadTimeData.getString('spellCheckDisabled');
+    }
+    const enabledSpellCheckLanguages =
+        this.getSpellCheckLanguages_().filter(function(languageState) {
+          return (languageState.spellCheckEnabled || languageState.isManaged) &&
+              languageState.language.supportsSpellcheck;
+        });
+    switch (enabledSpellCheckLanguages.length) {
+      case 0:
+        return '';
+      case 1:
+        return enabledSpellCheckLanguages[0].language.displayName;
+      case 2:
+        return loadTimeData.getStringF(
+            'spellCheckSummaryTwoLanguages',
+            enabledSpellCheckLanguages[0].language.displayName,
+            enabledSpellCheckLanguages[1].language.displayName);
+      case 3:
+        // "foo, bar, and 1 other"
+        return loadTimeData.getStringF(
+            'spellCheckSummaryThreeLanguages',
+            enabledSpellCheckLanguages[0].language.displayName,
+            enabledSpellCheckLanguages[1].language.displayName);
+      default:
+        // "foo, bar, and [N-2] others"
+        return loadTimeData.getStringF(
+            'spellCheckSummaryMultipleLanguages',
+            enabledSpellCheckLanguages[0].language.displayName,
+            enabledSpellCheckLanguages[1].language.displayName,
+            (enabledSpellCheckLanguages.length - 2).toLocaleString());
+    }
+  },
+
+  /**
+   * Returns whether spellcheck is disabled by policy or not.
+   * @return {boolean}
+   * @private
+   */
+  getSpellCheckDisabledByPolicy_: function() {
+    const pref = /** @type {!chrome.settingsPrivate.PrefObject} */ (
+        this.get('browser.enable_spellchecking', this.prefs));
+    return pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED &&
+        pref.value === false;
   },
 
   /**
    * Returns an array of enabled languages, plus spellcheck languages that are
-   * force-enabled by policy.
+   * forced by policy.
    * @return {!Array<!LanguageState|!ForcedLanguageState>}
    * @private
    */
   getSpellCheckLanguages_: function() {
-    const supportedSpellcheckLanguages =
-        /** @type {!Array<!LanguageState|!ForcedLanguageState>} */ (
-            this.languages.enabled.filter(
-                (item) => item.language.supportsSpellcheck));
-    const supportedSpellcheckLanguagesSet =
-        new Set(supportedSpellcheckLanguages.map(x => x.language.code));
-
-    this.languages.forcedSpellCheckLanguages.forEach(forcedLanguage => {
-      if (!supportedSpellcheckLanguagesSet.has(forcedLanguage.language.code)) {
-        supportedSpellcheckLanguages.push(forcedLanguage);
-      }
-    });
-
-    return supportedSpellcheckLanguages;
+    return this.languages.enabled.concat(
+        this.languages.forcedSpellCheckLanguages);
   },
 
   /** @private */
@@ -553,16 +583,12 @@ Polymer({
       return;
     }
 
-    // <if expr="_google_chrome">
-    // When spell check is disabled, automatically disable using the spelling
-    // service. This resets the spell check option to 'Use basic spell check'
-    // when spell check is turned off. This check is in an observer so that it
-    // can also correct any users who land on the Settings page and happen
-    // to have spelling service enabled but spell check disabled.
-    if (!this.getPref('browser.enable_spellchecking').value) {
-      this.setPrefValue('spellcheck.use_spelling_service', false);
+    this.set('spellCheckDisabled_', this.getSpellCheckDisabledByPolicy_());
+
+    // If the spellcheck section was expanded, close it.
+    if (this.spellCheckDisabled_) {
+      this.set('spellCheckOpened_', false);
     }
-    // </if>
   },
 
   /**
@@ -574,10 +600,10 @@ Polymer({
   },
 
   /**
-   * Handler for enabling or disabling spell check for a specific language.
+   * Handler for enabling or disabling spell check.
    * @param {!{target: Element, model: !{item: !LanguageState}}} e
    */
-  onSpellCheckLanguageChange_: function(e) {
+  onSpellCheckChange_: function(e) {
     const item = e.model.item;
     if (!item.language.supportsSpellcheck) {
       return;
@@ -605,7 +631,7 @@ Polymer({
    */
   onSpellCheckNameClick_: function(e) {
     assert(!this.isSpellCheckNameClickDisabled_(e.model.item));
-    this.onSpellCheckLanguageChange_(e);
+    this.onSpellCheckChange_(e);
   },
 
   /**
@@ -618,6 +644,14 @@ Polymer({
   isSpellCheckNameClickDisabled_: function(item) {
     return item.isManaged || !item.language.supportsSpellcheck ||
         item.downloadDictionaryFailureCount > 0;
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getSpellCheckListTwoLine_: function() {
+    return this.spellCheckSecondaryText_.length ? 'two-line' : '';
   },
   // </if>
 

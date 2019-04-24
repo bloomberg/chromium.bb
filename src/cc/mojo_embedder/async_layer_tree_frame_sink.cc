@@ -319,7 +319,7 @@ void AsyncLayerTreeFrameSink::DidReceiveCompositorFrameAck(
 
 void AsyncLayerTreeFrameSink::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& feedbacks) {
+    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
   for (const auto& pair : feedbacks) {
     client_->DidPresentCompositorFrame(pair.first, pair.second);
   }

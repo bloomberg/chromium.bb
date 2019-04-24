@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "base/time/tick_clock.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/frame_data.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
@@ -52,9 +51,6 @@ class AdsPageLoadMetricsObserver
                         bool started_in_foreground) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
                          ukm::SourceId source_id) override;
-  void OnCpuTimingUpdate(
-      content::RenderFrameHost* subframe_rfh,
-      const page_load_metrics::mojom::CpuTiming& timing) override;
   void RecordAdFrameData(FrameTreeNodeId ad_id,
                          bool is_adframe,
                          content::RenderFrameHost* ad_host,
@@ -64,13 +60,15 @@ class AdsPageLoadMetricsObserver
   void OnDidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnDidInternalNavigationAbort(
+      content::NavigationHandle* navigation_handle) override;
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnResourceDataUseObserved(
-      content::RenderFrameHost* rfh,
+      FrameTreeNodeId frame_tree_node_id,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
   void OnPageInteractive(
@@ -104,30 +102,37 @@ class AdsPageLoadMetricsObserver
   // each call in order to free up memory.
   bool DetectAds(content::NavigationHandle* navigation_handle);
 
-  // Gets the number of bytes that we may have not attributed to ad
-  // resources due to the resource being reported as an ad late.
-  int GetUnaccountedAdBytes(
-      int process_id,
-      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource) const;
-
-  // Updates page level counters for resource loads.
-  void ProcessResourceForPage(
-      int process_id,
-      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
   void ProcessResourceForFrame(
       FrameTreeNodeId frame_tree_node_id,
-      int process_id,
       const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
 
+  void AdjustAdBytesForFrame(
+      FrameTreeNodeId frame_tree_node_id,
+      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource,
+      int64_t unaccounted_ad_bytes);
+
+  // Update all of the per-resource page counters given a new resource data
+  // update. Updates |page_resources_| to reflect the new state of the resource.
+  // Called once per ResourceDataUpdate.
+  void UpdateResource(
+      FrameTreeNodeId frame_tree_node_id,
+      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
+
+  // Records size of resources by mime type.
+  void RecordResourceMimeHistograms(
+      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
+
+  // Records per-resource histograms.
+  void RecordResourceHistograms(
+      const page_load_metrics::mojom::ResourceDataUpdatePtr& resource);
   void RecordPageResourceTotalHistograms(ukm::SourceId source_id);
   void RecordHistograms(ukm::SourceId source_id);
   void RecordHistogramsForAdTagging(FrameData::FrameVisibility visibility);
-  void RecordHistogramsForCpuUsage(FrameData::FrameVisibility visibility);
 
-  // Checks to see if a resource is waiting for a navigation in the given
-  // RenderFrameHost to commit before it can be processed. If so, call
+  // Checks to see if a resource is waiting for a navigation with the given
+  // |frame_tree_node_id| to commit before it can be processed. If so, call
   // OnResourceDataUpdate for the delayed resource.
-  void ProcessOngoingNavigationResource(content::RenderFrameHost* rfh);
+  void ProcessOngoingNavigationResource(FrameTreeNodeId frame_tree_node_id);
 
   // Stores the size data of each ad frame. Pointed to by ad_frames_ so use a
   // data structure that won't move the data around.
@@ -151,6 +156,14 @@ class AdsPageLoadMetricsObserver
   std::map<FrameTreeNodeId, page_load_metrics::mojom::ResourceDataUpdatePtr>
       ongoing_navigation_resources_;
 
+  // Maps a request_id for a blink resource to the metadata for the resource
+  // load. Only contains resources that have not completed loading.
+  std::map<int, page_load_metrics::mojom::ResourceDataUpdatePtr>
+      page_resources_;
+
+  // The web contents associated with this page load.
+  content::WebContents* web_contents_ = nullptr;
+
   // Tracks byte counts only for resources loaded in the main frame.
   std::unique_ptr<FrameData> main_frame_data_;
 
@@ -163,13 +176,10 @@ class AdsPageLoadMetricsObserver
   bool process_display_state_updates_ = true;
 
   // Time the page was committed.
-  base::TimeTicks time_commit_;
+  base::Time time_commit_;
 
   // Time the page was observed to be interactive.
-  base::TimeTicks time_interactive_;
-
-  // Duration before |time_interactive_| during which the page was foregrounded.
-  base::TimeDelta pre_interactive_duration_;
+  base::Time time_interactive_;
 
   // Total ad bytes loaded by the page since it was observed to be interactive.
   size_t page_ad_bytes_at_interactive_ = 0u;
@@ -179,9 +189,6 @@ class AdsPageLoadMetricsObserver
   ScopedObserver<subresource_filter::SubresourceFilterObserverManager,
                  subresource_filter::SubresourceFilterObserver>
       subresource_observer_;
-
-  // The tick clock used to get the current time.  Can be replaced by tests.
-  const base::TickClock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserver);
 };

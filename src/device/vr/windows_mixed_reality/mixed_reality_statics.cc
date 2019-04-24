@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/scoped_hstring.h"
+#include "base/win/scoped_winrt_initializer.h"
 
 namespace device {
 
@@ -30,6 +31,8 @@ class DEVICE_VR_EXPORT MixedRealityDeviceStaticsImpl
   bool IsApiAvailable() override;
 
  private:
+  base::win::ScopedWinrtInitializer initializer_;
+
   // Adds get_IsAvailable and get_IsSupported to HolographicSpaceStatics.
   ComPtr<IHolographicSpaceStatics2> holographic_space_statics_;
 };
@@ -42,7 +45,7 @@ MixedRealityDeviceStatics::CreateInstance() {
 MixedRealityDeviceStatics::~MixedRealityDeviceStatics() {}
 
 MixedRealityDeviceStaticsImpl::MixedRealityDeviceStaticsImpl() {
-  if (FAILED(base::win::RoInitialize(RO_INIT_MULTITHREADED)) ||
+  if (!initializer_.Succeeded() ||
       !base::win::ScopedHString::ResolveCoreWinRTStringDelayload()) {
     return;
   }
@@ -60,12 +63,8 @@ MixedRealityDeviceStaticsImpl::MixedRealityDeviceStaticsImpl() {
 }
 
 MixedRealityDeviceStaticsImpl::~MixedRealityDeviceStaticsImpl() {
-  // Explicitly null this out before the COM thread is Uninitialized.
+  // Explicitly null this out before initializer_ is destroyed.
   holographic_space_statics_ = nullptr;
-
-  // TODO(http://crbug.com/943250): Investigate why we get an AV in
-  // combase!CoUninitialize in Windows.Perception.Stubs if we Uninitialize COM
-  // here.  Until then, let the system clean it up during process teardown.
 }
 
 bool MixedRealityDeviceStaticsImpl::IsHardwareAvailable() {

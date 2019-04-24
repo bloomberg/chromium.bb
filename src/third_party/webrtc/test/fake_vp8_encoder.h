@@ -13,17 +13,17 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <memory>
+#include <vector>
 
 #include "api/video/encoded_image.h"
 #include "api/video_codecs/video_codec.h"
 #include "api/video_codecs/video_encoder.h"
-#include "api/video_codecs/vp8_frame_buffer_controller.h"
 #include "api/video_codecs/vp8_temporal_layers.h"
+#include "common_types.h"  // NOLINT(build/include)
 #include "modules/include/module_common_types.h"
 #include "modules/video_coding/include/video_codec_interface.h"
-#include "rtc_base/synchronization/sequence_checker.h"
+#include "rtc_base/sequenced_task_checker.h"
 #include "rtc_base/thread_annotations.h"
 #include "system_wrappers/include/clock.h"
 #include "test/fake_encoder.h"
@@ -31,10 +31,13 @@
 namespace webrtc {
 namespace test {
 
-class FakeVP8Encoder : public FakeEncoder {
+class FakeVP8Encoder : public FakeEncoder, public EncodedImageCallback {
  public:
   explicit FakeVP8Encoder(Clock* clock);
   virtual ~FakeVP8Encoder() = default;
+
+  int32_t RegisterEncodeCompleteCallback(
+      EncodedImageCallback* callback) override;
 
   int32_t InitEncode(const VideoCodec* config,
                      int32_t number_of_cores,
@@ -42,22 +45,24 @@ class FakeVP8Encoder : public FakeEncoder {
 
   int32_t Release() override;
 
+  Result OnEncodedImage(const EncodedImage& encodedImage,
+                        const CodecSpecificInfo* codecSpecificInfo,
+                        const RTPFragmentationHeader* fragments) override;
+
   EncoderInfo GetEncoderInfo() const override;
 
  private:
+  void SetupTemporalLayers(const VideoCodec& codec);
   void PopulateCodecSpecific(CodecSpecificInfo* codec_specific,
                              size_t size_bytes,
-                             VideoFrameType frame_type,
+                             FrameType frame_type,
                              int stream_idx,
                              uint32_t timestamp);
 
-  std::unique_ptr<RTPFragmentationHeader> EncodeHook(
-      EncodedImage* encoded_image,
-      CodecSpecificInfo* codec_specific) override;
+  rtc::SequencedTaskChecker sequence_checker_;
+  EncodedImageCallback* callback_ RTC_GUARDED_BY(sequence_checker_);
 
-  SequenceChecker sequence_checker_;
-
-  std::unique_ptr<Vp8FrameBufferController> frame_buffer_controller_
+  std::vector<std::unique_ptr<Vp8TemporalLayers>> temporal_layers_
       RTC_GUARDED_BY(sequence_checker_);
 };
 

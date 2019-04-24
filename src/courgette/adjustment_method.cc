@@ -61,13 +61,10 @@ class LabelInfo {
   // Just a no-argument constructor and copy constructor.  Actual LabelInfo
   // objects are allocated in std::pair structs in a std::map.
   LabelInfo()
-      : label_(nullptr),
-        is_model_(false),
-        debug_index_(0),
-        refs_(0),
-        assignment_(nullptr),
-        next_addr_(nullptr),
-        prev_addr_(nullptr) {}
+      : label_(NULL), is_model_(false), debug_index_(0), refs_(0),
+        assignment_(NULL),
+        next_addr_(NULL),
+        prev_addr_(NULL) {}
 
  private:
   void operator=(const LabelInfo*);  // Disallow assignment only.
@@ -208,11 +205,13 @@ typedef std::set<Node*, OrderNodeByWeightDecreasing> NodeQueue;
 
 class AssignmentProblem {
  public:
-  AssignmentProblem(const Trace& model, const Trace& problem)
+  AssignmentProblem(const Trace& model,
+                    const Trace& problem)
       : m_trace_(model),
         p_trace_(problem),
-        m_root_(nullptr),
-        p_root_(nullptr) {}
+        m_root_(NULL),
+        p_root_(NULL) {
+  }
 
   ~AssignmentProblem() {
     for (size_t i = 0;  i < all_nodes_.size();  ++i)
@@ -280,7 +279,7 @@ class AssignmentProblem {
 
     Node* m_node = FindModelNode(p_node);
 
-    if (m_node == nullptr) {
+    if (m_node == NULL) {
       VLOG(2) << "Can't find model node";
       unsolved_.insert(p_node);
       return;
@@ -432,7 +431,7 @@ class AssignmentProblem {
       LabelInfo* m_info = m_trace_[m_pos];
 
       // To match, either (1) both are assigned or (2) both are unassigned.
-      if ((p_info->assignment_ == nullptr) != (m_info->assignment_ == nullptr))
+      if ((p_info->assignment_ == NULL) != (m_info->assignment_ == NULL))
         break;
 
       // If they are assigned, it needs to be consistent (same index).
@@ -470,7 +469,7 @@ class AssignmentProblem {
       LabelInfo* p_info = p_trace_[p_pos];
       LabelInfo* m_info = m_trace_[m_pos];
 
-      if ((p_info->assignment_ == nullptr) != (m_info->assignment_ == nullptr))
+      if ((p_info->assignment_ == NULL) != (m_info->assignment_ == NULL))
         break;
 
       if (p_info->assignment_ && m_info->assignment_) {
@@ -496,34 +495,34 @@ class AssignmentProblem {
   }
 
   Node* FindModelNode(Node* node) {
-    if (node->prev_ == nullptr)
+    if (node->prev_ == NULL)
       return m_root_;
 
     Node* m_parent = FindModelNode(node->prev_);
-    if (m_parent == nullptr) {
-      return nullptr;
+    if (m_parent == NULL) {
+      return NULL;
     }
 
     ExtendNode(m_parent, m_trace_);
 
     LabelInfo* p_label = node->in_edge_;
     LabelInfo* m_label = p_label->assignment_;
-    if (m_label == nullptr) {
+    if (m_label == NULL) {
       VLOG(2) << "Expected assigned prefix";
-      return nullptr;
+      return NULL;
     }
 
     Node::Edges::iterator e = m_parent->edges_.find(m_label);
     if (e == m_parent->edges_.end()) {
       VLOG(3) << "Expected defined edge in parent";
-      return nullptr;
+      return NULL;
     }
 
     return e->second;
   }
 
   Node* MakeRootNode(const Trace& trace) {
-    Node* node = new Node(nullptr, nullptr);
+    Node* node = new Node(NULL, NULL);
     all_nodes_.push_back(node);
     for (uint32_t i = 0; i < trace.size(); ++i) {
       ++node->count_;
@@ -541,7 +540,7 @@ class AssignmentProblem {
       if (index < trace.size()) {
         LabelInfo* item = trace.at(index);
         Node*& slot = node->edges_[item];
-        if (slot == nullptr) {
+        if (slot == NULL) {
           slot = new Node(item, node);
           all_nodes_.push_back(slot);
           node->edges_in_frequency_order.push_back(slot);
@@ -569,7 +568,9 @@ class AssignmentProblem {
 class GraphAdjuster : public AdjustmentMethod {
  public:
   GraphAdjuster()
-      : prog_(nullptr), model_(nullptr), debug_label_index_gen_(0) {}
+      : prog_(NULL),
+        model_(NULL),
+        debug_label_index_gen_(0) {}
   ~GraphAdjuster() = default;
 
   bool Adjust(const AssemblyProgram& model, AssemblyProgram* program) {
@@ -617,7 +618,7 @@ class GraphAdjuster : public AdjustmentMethod {
     Ordered ordered;
     for (Trace::const_iterator p = trace.begin();  p != trace.end();  ++p)
       ordered.insert(*p);
-    LabelInfo* prev = nullptr;
+    LabelInfo* prev = NULL;
     for (Ordered::iterator p = ordered.begin();  p != ordered.end();  ++p) {
       LabelInfo* curr = *p;
       if (prev) prev->next_addr_ = curr;
@@ -636,7 +637,7 @@ class GraphAdjuster : public AdjustmentMethod {
 
   LabelInfo* MakeLabelInfo(Label* label, bool is_model, uint32_t position) {
     LabelInfo& slot = label_infos_[label];
-    if (slot.label_ == nullptr) {
+    if (slot.label_ == NULL) {
       slot.label_ = label;
       slot.is_model_ = is_model;
       slot.debug_index_ = ++debug_label_index_gen_;

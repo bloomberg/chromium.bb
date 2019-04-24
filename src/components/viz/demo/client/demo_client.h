@@ -10,7 +10,6 @@
 
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -89,7 +88,8 @@ class DemoClient : public viz::mojom::CompositorFrameSinkClient {
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args,
-                    const viz::PresentationFeedbackMap& feedbacks) override;
+                    const base::flat_map<uint32_t, gfx::PresentationFeedback>&
+                        feedbacks) override;
   void OnBeginFramePausedChanged(bool paused) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;

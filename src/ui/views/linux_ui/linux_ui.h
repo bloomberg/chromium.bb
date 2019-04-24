@@ -64,23 +64,25 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
  public:
   // Describes the window management actions that could be taken in response to
   // a middle click in the non client area.
-  enum class WindowFrameAction {
-    kNone,
-    kLower,
-    kMinimize,
-    kToggleMaximize,
-    kMenu,
+  enum NonClientWindowFrameAction {
+    WINDOW_FRAME_ACTION_NONE,
+    WINDOW_FRAME_ACTION_LOWER,
+    WINDOW_FRAME_ACTION_MINIMIZE,
+    WINDOW_FRAME_ACTION_TOGGLE_MAXIMIZE,
+    WINDOW_FRAME_ACTION_MENU,
   };
 
-  // The types of clicks that might invoke a WindowFrameAction.
-  enum class WindowFrameActionSource {
-    kDoubleClick,
-    kMiddleClick,
-    kRightClick,
+  // The types of clicks that might invoke a NonClientWindowFrameAction.
+  enum NonClientWindowFrameActionSourceType {
+    WINDOW_FRAME_ACTION_SOURCE_DOUBLE_CLICK = 0,
+    WINDOW_FRAME_ACTION_SOURCE_MIDDLE_CLICK,
+    WINDOW_FRAME_ACTION_SOURCE_RIGHT_CLICK,
+
+    WINDOW_FRAME_ACTION_SOURCE_LAST
   };
 
-  using NativeThemeGetter =
-      base::RepeatingCallback<ui::NativeTheme*(aura::Window* window)>;
+  typedef base::Callback<ui::NativeTheme*(aura::Window* window)>
+      NativeThemeGetter;
 
   ~LinuxUI() override {}
 
@@ -114,7 +116,7 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   virtual ui::NativeTheme* GetNativeTheme(aura::Window* window) const = 0;
 
   // Used to set an override NativeTheme.
-  virtual void SetNativeThemeOverride(NativeThemeGetter callback) = 0;
+  virtual void SetNativeThemeOverride(const NativeThemeGetter& callback) = 0;
 
   // Returns whether we should be using the native theme provided by this
   // object by default.
@@ -158,8 +160,8 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
 
   // What action we should take when the user clicks on the non-client area.
   // |source| describes the type of click.
-  virtual WindowFrameAction GetWindowFrameAction(
-      WindowFrameActionSource source) = 0;
+  virtual NonClientWindowFrameAction GetNonClientWindowFrameAction(
+      NonClientWindowFrameActionSourceType source) = 0;
 
   // Notifies the window manager that start up has completed.
   // This needs to be called explicitly both on the primary and the "remote"

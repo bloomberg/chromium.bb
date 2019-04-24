@@ -53,7 +53,8 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob {
   bool GetCharset(std::string* charset) override;
   void GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
   bool NeedsAuth() override;
-  std::unique_ptr<net::AuthChallengeInfo> GetAuthChallengeInfo() override;
+  void GetAuthChallengeInfo(
+      scoped_refptr<net::AuthChallengeInfo>* auth_info) override;
 
   void SetAuth(const net::AuthCredentials& credentials) override;
   void CancelAuth() override;
@@ -116,7 +117,7 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob {
                         const net::CookieStatusList& excluded_cookies);
 
   // Callbacks from SubRequest.
-  void OnSubRequestAuthRequired(const net::AuthChallengeInfo& auth_info);
+  void OnSubRequestAuthRequired(net::AuthChallengeInfo* auth_info);
   void OnSubRequestRedirectReceived(const net::URLRequest& request,
                                     const net::RedirectInfo& redirectinfo,
                                     bool* defer_redirect);
@@ -151,7 +152,7 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob {
   std::unique_ptr<MockResponseDetails> mock_response_details_;
   std::unique_ptr<net::RedirectInfo> redirect_;
   WaitingForUserResponse waiting_for_user_response_;
-  std::unique_ptr<net::AuthChallengeInfo> auth_info_;
+  scoped_refptr<net::AuthChallengeInfo> auth_info_;
 
   const std::string interception_id_;
   const intptr_t owning_entry_id_;

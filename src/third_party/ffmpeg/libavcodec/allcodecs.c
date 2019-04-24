@@ -35,7 +35,6 @@ extern AVCodec ff_aasc_decoder;
 extern AVCodec ff_aic_decoder;
 extern AVCodec ff_alias_pix_encoder;
 extern AVCodec ff_alias_pix_decoder;
-extern AVCodec ff_agm_decoder;
 extern AVCodec ff_amv_encoder;
 extern AVCodec ff_amv_decoder;
 extern AVCodec ff_anm_decoder;

@@ -10,8 +10,6 @@
 # win tool. The script assumes that the root build directory is the current dir
 # and the files will be written to the current directory.
 
-from __future__ import print_function
-
 import errno
 import json
 import os
@@ -82,7 +80,7 @@ def _LoadEnvFromBat(args):
   variables, _ = popen.communicate()
   if popen.returncode != 0:
     raise Exception('"%s" failed with error %d' % (args, popen.returncode))
-  return variables.decode(errors='ignore')
+  return variables
 
 
 def _LoadToolchainEnv(cpu, sdk_dir, target_store):
@@ -161,7 +159,7 @@ def _FormatAsEnvironmentBlock(envvar_dict):
   CreateProcess documentation for more details."""
   block = ''
   nul = '\0'
-  for key, value in envvar_dict.items():
+  for key, value in envvar_dict.iteritems():
     block += key + '=' + value + nul
   block += nul
   return block
@@ -243,7 +241,7 @@ def main():
 
       # Make include path relative to builddir when cwd and sdk in same drive.
       try:
-        include = list(map(os.path.relpath, include))
+        include = map(os.path.relpath, include)
       except ValueError:
         pass
 
@@ -262,29 +260,29 @@ def main():
 
       if (environment_block_name != ''):
         env_block = _FormatAsEnvironmentBlock(env)
-        with open(environment_block_name, 'w') as f:
+        with open(environment_block_name, 'wb') as f:
           f.write(env_block)
 
   assert vc_bin_dir
-  print('vc_bin_dir = ' + gn_helpers.ToGNString(vc_bin_dir))
+  print 'vc_bin_dir = ' + gn_helpers.ToGNString(vc_bin_dir)
   assert include_I
-  print('include_flags_I = ' + gn_helpers.ToGNString(include_I))
+  print 'include_flags_I = ' + gn_helpers.ToGNString(include_I)
   assert include_imsvc
-  print('include_flags_imsvc = ' + gn_helpers.ToGNString(include_imsvc))
+  print 'include_flags_imsvc = ' + gn_helpers.ToGNString(include_imsvc)
   assert vc_lib_path
-  print('vc_lib_path = ' + gn_helpers.ToGNString(vc_lib_path))
+  print 'vc_lib_path = ' + gn_helpers.ToGNString(vc_lib_path)
   if (target_store != True):
     # Path is assumed not to exist for desktop applications
     assert vc_lib_atlmfc_path
   # Possible atlmfc library path gets introduced in the future for store thus
   # output result if a result exists.
   if (vc_lib_atlmfc_path != ''):
-    print('vc_lib_atlmfc_path = ' + gn_helpers.ToGNString(vc_lib_atlmfc_path))
+    print 'vc_lib_atlmfc_path = ' + gn_helpers.ToGNString(vc_lib_atlmfc_path)
   assert vc_lib_um_path
-  print('vc_lib_um_path = ' + gn_helpers.ToGNString(vc_lib_um_path))
-  print('paths = ' + gn_helpers.ToGNString(env['PATH']))
+  print 'vc_lib_um_path = ' + gn_helpers.ToGNString(vc_lib_um_path)
+  print 'paths = ' + gn_helpers.ToGNString(env['PATH'])
   assert libpath_flags
-  print('libpath_flags = ' + gn_helpers.ToGNString(libpath_flags))
+  print 'libpath_flags = ' + gn_helpers.ToGNString(libpath_flags)
 
 
 if __name__ == '__main__':

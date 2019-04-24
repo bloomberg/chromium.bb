@@ -35,9 +35,10 @@ int64_t TimeToUnixUsec(base::Time time) {
 class HistoryDeleteDirectivesEqualityChecker
     : public SingleClientStatusChangeChecker {
  public:
-  HistoryDeleteDirectivesEqualityChecker(syncer::ProfileSyncService* service,
-                                         fake_server::FakeServer* fake_server,
-                                         size_t num_expected_directives)
+  HistoryDeleteDirectivesEqualityChecker(
+      browser_sync::ProfileSyncService* service,
+      fake_server::FakeServer* fake_server,
+      size_t num_expected_directives)
       : SingleClientStatusChangeChecker(service),
         fake_server_(fake_server),
         num_expected_directives_(num_expected_directives) {}

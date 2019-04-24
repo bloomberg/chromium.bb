@@ -4,6 +4,7 @@
 
 // Custom binding for the platformKeys API.
 
+var binding = apiBridge || require('binding').Binding.create('platformKeys');
 var SubtleCrypto = require('platformKeys.SubtleCrypto').SubtleCrypto;
 var getPublicKey = require('platformKeys.getPublicKey').getPublicKey;
 var internalAPI = require('platformKeys.internalAPI');
@@ -23,7 +24,7 @@ function createPrivateKey(publicKeySpki, algorithm) {
                  false /* not extractable */);
 }
 
-apiBridge.registerCustomHook(function(api) {
+binding.registerCustomHook(function(api) {
   var apiFunctions = api.apiFunctions;
   var subtleCrypto = new SubtleCrypto('' /* tokenId */);
 
@@ -61,3 +62,6 @@ apiBridge.registerCustomHook(function(api) {
         });
       });
 });
+
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

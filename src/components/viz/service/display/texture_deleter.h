@@ -16,7 +16,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace gpu {
-struct Mailbox;
 struct SyncToken;
 }
 
@@ -41,7 +40,7 @@ class VIZ_SERVICE_EXPORT TextureDeleter {
   // ContextProvider.
   std::unique_ptr<SingleReleaseCallback> GetReleaseCallback(
       scoped_refptr<ContextProvider> context_provider,
-      const gpu::Mailbox& mailbox);
+      unsigned texture_id);
 
  private:
   // Runs the |impl_callback| to delete the texture and removes the callback

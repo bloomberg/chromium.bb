@@ -42,6 +42,7 @@
 
 namespace blink {
 
+class FloatRect;
 class DoubleRect;
 
 class PLATFORM_EXPORT LayoutRect {
@@ -56,25 +57,20 @@ class PLATFORM_EXPORT LayoutRect {
                        LayoutUnit width,
                        LayoutUnit height)
       : location_(LayoutPoint(x, y)), size_(LayoutSize(width, height)) {}
-  constexpr LayoutRect(int x, int y, int width, int height)
+  LayoutRect(int x, int y, int width, int height)
       : location_(LayoutPoint(x, y)), size_(LayoutSize(width, height)) {}
-  constexpr LayoutRect(const FloatPoint& location, const FloatSize& size)
+  LayoutRect(const FloatPoint& location, const FloatSize& size)
       : location_(location), size_(size) {}
-  constexpr LayoutRect(const DoublePoint& location, const DoubleSize& size)
+  LayoutRect(const DoublePoint& location, const DoubleSize& size)
       : location_(location), size_(size) {}
-  constexpr LayoutRect(const IntPoint& location, const IntSize& size)
+  LayoutRect(const IntPoint& location, const IntSize& size)
       : location_(location), size_(size) {}
-  constexpr explicit LayoutRect(const IntRect& rect)
+  explicit LayoutRect(const IntRect& rect)
       : location_(rect.Location()), size_(rect.Size()) {}
 
   // Don't do these implicitly since they are lossy.
-  constexpr explicit LayoutRect(const FloatRect& r)
-      : location_(r.Location()), size_(r.Size()) {}
+  explicit LayoutRect(const FloatRect&);
   explicit LayoutRect(const DoubleRect&);
-
-  constexpr explicit operator FloatRect() const {
-    return FloatRect(X(), Y(), Width(), Height());
-  }
 
   constexpr LayoutPoint Location() const { return location_; }
   constexpr LayoutSize Size() const { return size_; }
@@ -177,24 +173,19 @@ class PLATFORM_EXPORT LayoutRect {
     SetHeight((Height() + delta).ClampNegativeToZero());
   }
 
-  // Typically top left.
-  constexpr LayoutPoint MinXMinYCorner() const { return location_; }
-
-  // Typically top right.
+  constexpr LayoutPoint MinXMinYCorner() const {
+    return location_;
+  }  // typically topLeft
   LayoutPoint MaxXMinYCorner() const {
     return LayoutPoint(location_.X() + size_.Width(), location_.Y());
-  }
-
-  // Typically bottom left.
+  }  // typically topRight
   LayoutPoint MinXMaxYCorner() const {
     return LayoutPoint(location_.X(), location_.Y() + size_.Height());
-  }
-
-  // Typically bottom right.
+  }  // typically bottomLeft
   LayoutPoint MaxXMaxYCorner() const {
     return LayoutPoint(location_.X() + size_.Width(),
                        location_.Y() + size_.Height());
-  }
+  }  // typically bottomRight
 
   bool Intersects(const LayoutRect&) const;
   bool Contains(const LayoutRect&) const;
@@ -207,26 +198,6 @@ class PLATFORM_EXPORT LayoutRect {
   }
   bool Contains(const LayoutPoint& point) const {
     return Contains(point.X(), point.Y());
-  }
-
-  // Whether all edges of the rect are at full-pixel boundaries.
-  // i.e.: EnclosingIntRect(this)) == this
-  bool EdgesOnPixelBoundaries() const {
-    return !location_.X().HasFraction() && !location_.Y().HasFraction() &&
-           !size_.Width().HasFraction() && !size_.Height().HasFraction();
-  }
-
-  // Expand each edge outwards to the next full-pixel boundary.
-  // i.e.: this = LayoutRect(EnclosingIntRect(this))
-  void ExpandEdgesToPixelBoundaries() {
-    int x = X().Floor();
-    int y = Y().Floor();
-    int max_x = MaxX().Ceil();
-    int max_y = MaxY().Ceil();
-    location_.SetX(LayoutUnit(x));
-    location_.SetY(LayoutUnit(y));
-    size_.SetWidth(LayoutUnit(max_x - x));
-    size_.SetHeight(LayoutUnit(max_y - y));
   }
 
   void Intersect(const LayoutRect&);

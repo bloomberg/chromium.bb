@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "absl/algorithm/container.h"
 #include "modules/utility/include/process_thread.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/location.h"
@@ -101,7 +100,7 @@ CallStats::CallStats(Clock* clock, ProcessThread* process_thread)
       process_thread_(process_thread),
       process_thread_running_(false) {
   RTC_DCHECK(process_thread_);
-  process_thread_checker_.Detach();
+  process_thread_checker_.DetachFromThread();
 }
 
 CallStats::~CallStats() {
@@ -151,7 +150,7 @@ void CallStats::ProcessThreadAttached(ProcessThread* process_thread) {
   // |process_thread_checker_| so that it can be used to protect variables
   // in either the process thread when it starts again, or UpdateHistograms()
   // (mutually exclusive).
-  process_thread_checker_.Detach();
+  process_thread_checker_.DetachFromThread();
 }
 
 void CallStats::RegisterStatsObserver(CallStatsObserver* observer) {
@@ -159,7 +158,8 @@ void CallStats::RegisterStatsObserver(CallStatsObserver* observer) {
   TemporaryDeregistration deregister(this, process_thread_,
                                      process_thread_running_);
 
-  if (!absl::c_linear_search(observers_, observer))
+  auto it = std::find(observers_.begin(), observers_.end(), observer);
+  if (it == observers_.end())
     observers_.push_back(observer);
 }
 

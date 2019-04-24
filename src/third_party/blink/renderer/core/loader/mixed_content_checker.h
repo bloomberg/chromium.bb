@@ -69,6 +69,7 @@ class CORE_EXPORT MixedContentChecker final {
  public:
   static bool ShouldBlockFetch(LocalFrame*,
                                mojom::RequestContextType,
+                               network::mojom::RequestContextFrameType,
                                ResourceRequest::RedirectStatus,
                                const KURL&,
                                SecurityViolationReportingPolicy =
@@ -103,6 +104,12 @@ class CORE_EXPORT MixedContentChecker final {
       LocalFrame*,
       const ResourceRequest&);
 
+  // Returns the frame that should be considered the effective frame
+  // for a mixed content check for the given frame type.
+  static Frame* EffectiveFrameForFrameType(
+      LocalFrame*,
+      network::mojom::RequestContextFrameType);
+
   static void HandleCertificateError(LocalFrame*,
                                      const ResourceResponse&,
                                      mojom::RequestContextType);
@@ -127,7 +134,11 @@ class CORE_EXPORT MixedContentChecker final {
  private:
   FRIEND_TEST_ALL_PREFIXES(MixedContentCheckerTest, HandleCertificateError);
 
-  static Frame* InWhichFrameIsContentMixed(LocalFrame*, const KURL&);
+  static Frame* InWhichFrameIsContentMixed(
+      Frame*,
+      network::mojom::RequestContextFrameType,
+      const KURL&,
+      const LocalFrame*);
 
   static ConsoleMessage* CreateConsoleMessageAboutFetch(
       const KURL&,

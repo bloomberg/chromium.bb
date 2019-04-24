@@ -6,8 +6,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
-
 namespace blink {
 
 struct SmallCapsTestRun {
@@ -28,11 +26,10 @@ struct SmallCapsExpectedRun {
 class SmallCapsIteratorTest : public testing::Test {
  protected:
   void CheckRuns(const Vector<SmallCapsTestRun>& runs) {
-    StringBuilder text;
-    text.Ensure16Bit();
+    String text(g_empty_string16_bit);
     Vector<SmallCapsExpectedRun> expect;
     for (auto& run : runs) {
-      text.Append(String::FromUTF8(run.text));
+      text.append(String::FromUTF8(run.text));
       expect.push_back(SmallCapsExpectedRun(text.length(), run.code));
     }
     SmallCapsIterator small_caps_iterator(text.Characters16(), text.length());
@@ -43,7 +40,7 @@ class SmallCapsIteratorTest : public testing::Test {
                   const Vector<SmallCapsExpectedRun>& expect) {
     unsigned limit;
     SmallCapsIterator::SmallCapsBehavior small_caps_behavior;
-    size_t run_count = 0;
+    unsigned long run_count = 0;
     while (small_caps_iterator->Consume(&limit, &small_caps_behavior)) {
       ASSERT_LT(run_count, expect.size());
       ASSERT_EQ(expect[run_count].limit, limit);

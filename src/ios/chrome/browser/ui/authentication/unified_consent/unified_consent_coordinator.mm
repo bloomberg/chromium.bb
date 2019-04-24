@@ -28,10 +28,19 @@
 // Identity chooser coordinator.
 @property(nonatomic, strong)
     IdentityChooserCoordinator* identityChooserCoordinator;
+// YES if the user choose an identity (or accept the default identity selected).
+@property(nonatomic, assign) BOOL identitySelectedByUser;
 
 @end
 
 @implementation UnifiedConsentCoordinator
+
+@synthesize delegate = _delegate;
+@synthesize unifiedConsentMediator = _unifiedConsentMediator;
+@synthesize unifiedConsentViewController = _unifiedConsentViewController;
+@synthesize settingsLinkWasTapped = _settingsLinkWasTapped;
+@synthesize identityChooserCoordinator = _identityChooserCoordinator;
+@synthesize identitySelectedByUser = _identitySelectedByUser;
 
 - (instancetype)init {
   self = [super init];
@@ -48,21 +57,12 @@
   [self.unifiedConsentMediator start];
 }
 
-- (void)scrollToBottom {
-  [self.unifiedConsentViewController scrollToBottom];
-}
-
-- (void)resetSettingLinkTapped {
-  self.settingsLinkWasTapped = NO;
-}
-
-#pragma mark - Properties
-
 - (ChromeIdentity*)selectedIdentity {
   return self.unifiedConsentMediator.selectedIdentity;
 }
 
 - (void)setSelectedIdentity:(ChromeIdentity*)selectedIdentity {
+  self.identitySelectedByUser = YES;
   self.unifiedConsentMediator.selectedIdentity = selectedIdentity;
 }
 
@@ -76,6 +76,10 @@
 
 - (const std::vector<int>&)consentStringIds {
   return [self.unifiedConsentViewController consentStringIds];
+}
+
+- (void)scrollToBottom {
+  [self.unifiedConsentViewController scrollToBottom];
 }
 
 - (BOOL)isScrolledToBottom {
@@ -98,9 +102,10 @@
 
 - (void)unifiedConsentViewControllerViewDidAppear:
     (UnifiedConsentViewController*)controller {
-  if (!self.autoOpenIdentityPicker)
+  // Only opens automatically the identity chooser dialog if the user didn't
+  // select an identity.
+  if (self.identitySelectedByUser)
     return;
-
   CGFloat midX = CGRectGetMidX(self.unifiedConsentViewController.view.bounds);
   CGFloat midY = CGRectGetMidY(self.unifiedConsentViewController.view.bounds);
   CGPoint point = CGPointMake(midX, midY);

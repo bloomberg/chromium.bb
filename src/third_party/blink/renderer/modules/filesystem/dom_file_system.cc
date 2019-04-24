@@ -38,12 +38,10 @@
 #include "third_party/blink/renderer/modules/filesystem/directory_entry.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_path.h"
 #include "third_party/blink/renderer/modules/filesystem/file_entry.h"
-#include "third_party/blink/renderer/modules/filesystem/file_system_base_handle.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_dispatcher.h"
 #include "third_party/blink/renderer/modules/filesystem/file_writer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -62,6 +60,14 @@ void RunCallback(ExecutionContext* execution_context,
 }
 
 }  // namespace
+
+// static
+DOMFileSystem* DOMFileSystem::Create(ExecutionContext* context,
+                                     const String& name,
+                                     mojom::blink::FileSystemType type,
+                                     const KURL& root_url) {
+  return MakeGarbageCollected<DOMFileSystem>(context, name, type, root_url);
+}
 
 DOMFileSystem* DOMFileSystem::CreateIsolatedFileSystem(
     ExecutionContext* context,
@@ -86,9 +92,9 @@ DOMFileSystem* DOMFileSystem::CreateIsolatedFileSystem(
   root_url.Append(filesystem_id);
   root_url.Append('/');
 
-  return MakeGarbageCollected<DOMFileSystem>(
-      context, filesystem_name.ToString(),
-      mojom::blink::FileSystemType::kIsolated, KURL(root_url.ToString()));
+  return DOMFileSystem::Create(context, filesystem_name.ToString(),
+                               mojom::blink::FileSystemType::kIsolated,
+                               KURL(root_url.ToString()));
 }
 
 DOMFileSystem::DOMFileSystem(ExecutionContext* context,
@@ -98,15 +104,10 @@ DOMFileSystem::DOMFileSystem(ExecutionContext* context,
     : DOMFileSystemBase(context, name, type, root_url),
       ContextClient(context),
       number_of_pending_callbacks_(0),
-      root_entry_(
-          MakeGarbageCollected<DirectoryEntry>(this, DOMFilePath::kRoot)) {}
+      root_entry_(DirectoryEntry::Create(this, DOMFilePath::kRoot)) {}
 
 DirectoryEntry* DOMFileSystem::root() const {
   return root_entry_.Get();
-}
-
-FileSystemBaseHandle* DOMFileSystem::asFileSystemHandle() const {
-  return root()->asFileSystemHandle();
 }
 
 void DOMFileSystem::AddPendingCallbacks() {
@@ -123,45 +124,44 @@ bool DOMFileSystem::HasPendingActivity() const {
   return number_of_pending_callbacks_;
 }
 
-void DOMFileSystem::ReportError(ErrorCallback error_callback,
+void DOMFileSystem::ReportError(ErrorCallbackBase* error_callback,
                                 base::File::Error error) {
-  ReportError(GetExecutionContext(), std::move(error_callback), error);
+  ReportError(GetExecutionContext(), error_callback, error);
 }
 
 void DOMFileSystem::ReportError(ExecutionContext* execution_context,
-                                ErrorCallback error_callback,
+                                ErrorCallbackBase* error_callback,
                                 base::File::Error error) {
   if (!error_callback)
     return;
   ScheduleCallback(execution_context,
-                   WTF::Bind(std::move(error_callback), error));
+                   WTF::Bind(&ErrorCallbackBase::Invoke,
+                             WrapPersistent(error_callback), error));
 }
 
 void DOMFileSystem::CreateWriter(
     const FileEntry* file_entry,
-    FileWriterCallbacks::SuccessCallback success_callback,
-    FileWriterCallbacks::ErrorCallback error_callback) {
+    FileWriterCallbacks::OnDidCreateFileWriterCallback* success_callback,
+    ErrorCallbackBase* error_callback) {
   DCHECK(file_entry);
 
-  auto* file_writer = MakeGarbageCollected<FileWriter>(GetExecutionContext());
-  auto callbacks = std::make_unique<FileWriterCallbacks>(
-      file_writer, std::move(success_callback), std::move(error_callback),
-      context_);
+  FileWriter* file_writer = FileWriter::Create(GetExecutionContext());
+  std::unique_ptr<FileWriterCallbacks> callbacks = FileWriterCallbacks::Create(
+      file_writer, success_callback, error_callback, context_);
   FileSystemDispatcher::From(context_).InitializeFileWriter(
       CreateFileSystemURL(file_entry), std::move(callbacks));
 }
 
 void DOMFileSystem::CreateFile(
     const FileEntry* file_entry,
-    SnapshotFileCallback::SuccessCallback success_callback,
-    SnapshotFileCallback::ErrorCallback error_callback) {
+    SnapshotFileCallback::OnDidCreateSnapshotFileCallback* success_callback,
+    ErrorCallbackBase* error_callback) {
   KURL file_system_url = CreateFileSystemURL(file_entry);
 
   FileSystemDispatcher::From(context_).CreateSnapshotFile(
       file_system_url,
-      std::make_unique<SnapshotFileCallback>(
-          this, file_entry->name(), file_system_url,
-          std::move(success_callback), std::move(error_callback), context_));
+      SnapshotFileCallback::Create(this, file_entry->name(), file_system_url,
+                                   success_callback, error_callback, context_));
 }
 
 void DOMFileSystem::ScheduleCallback(ExecutionContext* execution_context,

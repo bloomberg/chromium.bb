@@ -18,20 +18,18 @@
 #endif
 
 #include "absl/memory/memory.h"
-#include "api/task_queue/task_queue_factory.h"
 #include "rtc_base/logging.h"
 
 namespace webrtc {
 
-rtc::scoped_refptr<AudioDeviceModule> CreateWindowsCoreAudioAudioDeviceModule(
-    TaskQueueFactory* task_queue_factory) {
+rtc::scoped_refptr<AudioDeviceModule>
+CreateWindowsCoreAudioAudioDeviceModule() {
   RTC_DLOG(INFO) << __FUNCTION__;
-  return CreateWindowsCoreAudioAudioDeviceModuleForTest(task_queue_factory);
+  return CreateWindowsCoreAudioAudioDeviceModuleForTest();
 }
 
 rtc::scoped_refptr<AudioDeviceModuleForTest>
-CreateWindowsCoreAudioAudioDeviceModuleForTest(
-    TaskQueueFactory* task_queue_factory) {
+CreateWindowsCoreAudioAudioDeviceModuleForTest() {
   RTC_DLOG(INFO) << __FUNCTION__;
   // Returns NULL if Core Audio is not supported or if COM has not been
   // initialized correctly using webrtc_win::ScopedCOMInitializer.
@@ -42,7 +40,7 @@ CreateWindowsCoreAudioAudioDeviceModuleForTest(
   }
   return CreateWindowsCoreAudioAudioDeviceModuleFromInputAndOutput(
       absl::make_unique<webrtc_win::CoreAudioInput>(),
-      absl::make_unique<webrtc_win::CoreAudioOutput>(), task_queue_factory);
+      absl::make_unique<webrtc_win::CoreAudioOutput>());
 }
 
 }  // namespace webrtc

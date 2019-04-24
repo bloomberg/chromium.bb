@@ -22,19 +22,9 @@
 
 .profile-isolate-item > div {
     flex-shrink: 0;
-    margin-right: 12px;
+    margin-left: 9px;
 }
 
 .profile-isolate-item-heap {
-    width: 60px;
-    text-align: right;
-}
-
-.profile-isolate-item-trend {
-    width: 80px;
-    color: green;
-}
-
-.profile-isolate-item-trend.increasing {
-    color: red;
+    width: 120px;
 }

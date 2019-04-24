@@ -19,6 +19,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -37,7 +38,6 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -77,22 +77,25 @@ public class SiteSettingsPreferencesTest {
         final Preferences preferenceActivity =
                 startSiteSettingsCategory(SiteSettingsCategory.Type.DEVICE_LOCATION);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SingleCategoryPreferences websitePreferences =
-                    (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
-            ChromeSwitchPreference location =
-                    (ChromeSwitchPreference) websitePreferences.findPreference(
-                            SingleCategoryPreferences.BINARY_TOGGLE_KEY);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SingleCategoryPreferences websitePreferences = (SingleCategoryPreferences)
+                        preferenceActivity.getFragmentForTest();
+                ChromeSwitchPreference location =
+                        (ChromeSwitchPreference) websitePreferences.findPreference(
+                                SingleCategoryPreferences.BINARY_TOGGLE_KEY);
 
-            websitePreferences.onPreferenceChange(location, enabled);
-            Assert.assertEquals("Location should be " + (enabled ? "allowed" : "blocked"), enabled,
-                    LocationSettings.getInstance().areAllLocationSettingsEnabled());
-            preferenceActivity.finish();
+                websitePreferences.onPreferenceChange(location, enabled);
+                Assert.assertEquals("Location should be " + (enabled ? "allowed" : "blocked"),
+                        enabled, LocationSettings.getInstance().areAllLocationSettingsEnabled());
+                preferenceActivity.finish();
+            }
         });
     }
 
     private InfoBarTestAnimationListener setInfoBarAnimationListener() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
+        return ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<InfoBarTestAnimationListener>() {
                     @Override
                     public InfoBarTestAnimationListener call() throws Exception {
@@ -174,7 +177,7 @@ public class SiteSettingsPreferencesTest {
     }
 
     private void setCookiesEnabled(final Preferences preferenceActivity, final boolean enabled) {
-        TestThreadUtils.runOnUiThreadBlocking(new Runnable() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 final SingleCategoryPreferences websitePreferences =
@@ -203,17 +206,20 @@ public class SiteSettingsPreferencesTest {
 
     private void setThirdPartyCookiesEnabled(final Preferences preferenceActivity,
             final boolean enabled) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            final SingleCategoryPreferences websitePreferences =
-                    (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
-            final ChromeBaseCheckBoxPreference thirdPartyCookies =
-                    (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
-                            SingleCategoryPreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                final SingleCategoryPreferences websitePreferences =
+                        (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
+                final ChromeBaseCheckBoxPreference thirdPartyCookies =
+                        (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
+                                SingleCategoryPreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY);
 
-            websitePreferences.onPreferenceChange(thirdPartyCookies, enabled);
-            Assert.assertEquals(
-                    "Third-party cookies should be " + (enabled ? "allowed" : "blocked"),
-                    PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled(), enabled);
+                websitePreferences.onPreferenceChange(thirdPartyCookies, enabled);
+                Assert.assertEquals(
+                        "Third-party cookies should be " + (enabled ? "allowed" : "blocked"),
+                        PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled(), enabled);
+            }
         });
     }
 
@@ -221,12 +227,15 @@ public class SiteSettingsPreferencesTest {
             final @SiteSettingsCategory.Type int type, final boolean enabled) {
         final Preferences preferenceActivity = startSiteSettingsCategory(type);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SingleCategoryPreferences preferences =
-                    (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
-            ChromeSwitchPreference toggle = (ChromeSwitchPreference) preferences.findPreference(
-                    SingleCategoryPreferences.BINARY_TOGGLE_KEY);
-            preferences.onPreferenceChange(toggle, enabled);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SingleCategoryPreferences preferences =
+                        (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
+                ChromeSwitchPreference toggle = (ChromeSwitchPreference) preferences.findPreference(
+                        SingleCategoryPreferences.BINARY_TOGGLE_KEY);
+                preferences.onPreferenceChange(toggle, enabled);
+            }
         });
         preferenceActivity.finish();
     }
@@ -234,20 +243,28 @@ public class SiteSettingsPreferencesTest {
     private void setEnablePopups(final boolean enabled) {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.POPUPS, enabled);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals("Popups should be " + (enabled ? "allowed" : "blocked"), enabled,
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertEquals("Popups should be " + (enabled ? "allowed" : "blocked"),
+                        enabled,
+                        PrefServiceBridge.getInstance().isCategoryEnabled(
+                                ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS));
+            }
         });
     }
 
     private void setEnableCamera(final boolean enabled) {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.CAMERA, enabled);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals("Camera should be " + (enabled ? "allowed" : "blocked"), enabled,
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertEquals("Camera should be " + (enabled ? "allowed" : "blocked"),
+                        enabled,
+                        PrefServiceBridge.getInstance().isCategoryEnabled(
+                                ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
+            }
         });
     }
 
@@ -262,24 +279,27 @@ public class SiteSettingsPreferencesTest {
             final @SiteSettingsCategory.Type int type, String[] expectedKeys) {
         final Preferences preferenceActivity = startSiteSettingsCategory(type);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PreferenceFragment preferenceFragment =
-                    (PreferenceFragment) preferenceActivity.getFragmentForTest();
-            PreferenceScreen preferenceScreen = preferenceFragment.getPreferenceScreen();
-            int preferenceCount = preferenceScreen.getPreferenceCount();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PreferenceFragment preferenceFragment =
+                        (PreferenceFragment) preferenceActivity.getFragmentForTest();
+                PreferenceScreen preferenceScreen = preferenceFragment.getPreferenceScreen();
+                int preferenceCount = preferenceScreen.getPreferenceCount();
 
-            ArrayList<String> actualKeys = new ArrayList<>();
-            for (int index = 0; index < preferenceCount; index++) {
-                Preference preference = preferenceScreen.getPreference(index);
-                String key = preference.getKey();
-                // Not all Preferences have keys. For example, the list of websites below the
-                // toggles, which are dynamically added. Ignore those.
-                if (key != null) actualKeys.add(key);
+                ArrayList<String> actualKeys = new ArrayList<>();
+                for (int index = 0; index < preferenceCount; index++) {
+                    Preference preference = preferenceScreen.getPreference(index);
+                    String key = preference.getKey();
+                    // Not all Preferences have keys. For example, the list of websites below the
+                    // toggles, which are dynamically added. Ignore those.
+                    if (key != null) actualKeys.add(key);
+                }
+
+                Assert.assertTrue(
+                        actualKeys.toString() + " should match " + Arrays.toString(expectedKeys),
+                        Arrays.equals(actualKeys.toArray(), expectedKeys));
             }
-
-            Assert.assertTrue(
-                    actualKeys.toString() + " should match " + Arrays.toString(expectedKeys),
-                    Arrays.equals(actualKeys.toArray(), expectedKeys));
         });
         preferenceActivity.finish();
     }
@@ -404,7 +424,7 @@ public class SiteSettingsPreferencesTest {
     private void resetSite(WebsiteAddress address) {
         Website website = new Website(address, address);
         final Preferences preferenceActivity = startSingleWebsitePreferences(website);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             SingleWebsitePreferences websitePreferences =
                     (SingleWebsitePreferences) preferenceActivity.getFragmentForTest();
             websitePreferences.resetSite();
@@ -468,25 +488,32 @@ public class SiteSettingsPreferencesTest {
     public void testMediaMenu() throws Exception {
         final Preferences preferenceActivity =
                 startSiteSettingsMenu(SiteSettingsPreferences.MEDIA_KEY);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SiteSettingsPreferences siteSettings =
-                    (SiteSettingsPreferences) preferenceActivity.getFragmentForTest();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                SiteSettingsPreferences siteSettings = (SiteSettingsPreferences)
+                        preferenceActivity.getFragmentForTest();
 
-            SiteSettingsPreference allSites = (SiteSettingsPreference) siteSettings.findPreference(
-                    SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.ALL_SITES));
-            Assert.assertEquals(null, allSites);
+                SiteSettingsPreference allSites =
+                        (SiteSettingsPreference) siteSettings.findPreference(
+                                SiteSettingsCategory.preferenceKey(
+                                        SiteSettingsCategory.Type.ALL_SITES));
+                Assert.assertEquals(null, allSites);
 
-            SiteSettingsPreference autoplay = (SiteSettingsPreference) siteSettings.findPreference(
-                    SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.AUTOPLAY));
-            Assert.assertFalse(autoplay == null);
+                SiteSettingsPreference autoplay =
+                        (SiteSettingsPreference) siteSettings.findPreference(
+                                SiteSettingsCategory.preferenceKey(
+                                        SiteSettingsCategory.Type.AUTOPLAY));
+                Assert.assertFalse(autoplay == null);
 
-            SiteSettingsPreference protectedContent =
-                    (SiteSettingsPreference) siteSettings.findPreference(
-                            SiteSettingsCategory.preferenceKey(
-                                    SiteSettingsCategory.Type.PROTECTED_MEDIA));
-            Assert.assertFalse(protectedContent == null);
+                SiteSettingsPreference protectedContent =
+                        (SiteSettingsPreference) siteSettings.findPreference(
+                                SiteSettingsCategory.preferenceKey(
+                                        SiteSettingsCategory.Type.PROTECTED_MEDIA));
+                Assert.assertFalse(protectedContent == null);
 
-            preferenceActivity.finish();
+                preferenceActivity.finish();
+            }
         });
     }
 
@@ -551,10 +578,13 @@ public class SiteSettingsPreferencesTest {
     public void testMicBlocked() throws Exception {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.MICROPHONE, false);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertFalse("Mic should be blocked",
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertFalse("Mic should be blocked",
+                        PrefServiceBridge.getInstance().isCategoryEnabled(
+                                ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
+            }
         });
 
         // Test that the microphone permission doesn't get requested.
@@ -624,11 +654,15 @@ public class SiteSettingsPreferencesTest {
      */
     private void doTestBackgroundSyncPermission(final boolean enabled) {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.BACKGROUND_SYNC, enabled);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals("Background Sync should be " + (enabled ? "enabled" : "disabled"),
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC),
-                    enabled);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertEquals(
+                        "Background Sync should be " + (enabled ? "enabled" : "disabled"),
+                        PrefServiceBridge.getInstance().isCategoryEnabled(
+                                ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC),
+                        enabled);
+            }
         });
     }
 
@@ -652,11 +686,14 @@ public class SiteSettingsPreferencesTest {
      */
     private void doTestUsbGuardPermission(final boolean enabled) {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.USB, enabled);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals("USB should be " + (enabled ? "enabled" : "disabled"),
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD),
-                    enabled);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertEquals("USB should be " + (enabled ? "enabled" : "disabled"),
+                        PrefServiceBridge.getInstance().isCategoryEnabled(
+                                ContentSettingsType.CONTENT_SETTINGS_TYPE_USB_GUARD),
+                        enabled);
+            }
         });
     }
 
@@ -681,12 +718,15 @@ public class SiteSettingsPreferencesTest {
      */
     private void doTestAutomaticDownloadsPermission(final boolean enabled) {
         setGlobalToggleForCategory(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS, enabled);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(
-                    "Automatic Downloads should be " + (enabled ? "enabled" : "disabled"),
-                    PrefServiceBridge.getInstance().isCategoryEnabled(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS),
-                    enabled);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                Assert.assertEquals(
+                        "Automatic Downloads should be " + (enabled ? "enabled" : "disabled"),
+                        PrefServiceBridge.getInstance().isCategoryEnabled(
+                                ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS),
+                        enabled);
+            }
         });
     }
 
@@ -705,7 +745,7 @@ public class SiteSettingsPreferencesTest {
     }
 
     private int getTabCount() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(
+        return ThreadUtils.runOnUiThreadBlockingNoException(
                 () -> mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
     }
 }

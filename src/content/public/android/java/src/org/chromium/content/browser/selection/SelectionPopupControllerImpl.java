@@ -1219,7 +1219,6 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         nativeSetTextHandlesTemporarilyHidden(mNativeSelectionPopupController, hide);
     }
 
-    @CalledByNative
     public void restoreSelectionPopupsIfNecessary() {
         if (hasSelection() && !isActionModeValid()) {
             showActionModeOrClearOnFailure();

@@ -47,6 +47,8 @@ class UndoStack final : public GarbageCollected<UndoStack> {
   using UndoStepStack = HeapDeque<Member<UndoStep>>;
 
  public:
+  static UndoStack* Create();
+
   UndoStack();
 
   void RegisterUndoStep(UndoStep*);

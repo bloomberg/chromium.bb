@@ -18,7 +18,6 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
 #include "content/browser/renderer_host/display_util.h"
-#include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -80,7 +79,7 @@ RenderWidgetHostImpl* RenderWidgetHostViewBase::GetFocusedWidget() const {
              : nullptr;
 }
 
-RenderWidgetHost* RenderWidgetHostViewBase::GetRenderWidgetHost() {
+RenderWidgetHost* RenderWidgetHostViewBase::GetRenderWidgetHost() const {
   return host();
 }
 
@@ -118,7 +117,7 @@ void RenderWidgetHostViewBase::StopFlingingIfNecessary(
       event.GetType() == blink::WebInputEvent::kGestureScrollUpdate &&
       event.data.scroll_update.inertial_phase ==
           blink::WebGestureEvent::kMomentumPhase &&
-      event.SourceDevice() != blink::WebGestureDevice::kSyntheticAutoscroll) {
+      event.SourceDevice() != blink::kWebGestureDeviceSyntheticAutoscroll) {
     StopFling();
     view_stopped_flinging_for_test_ = true;
   }
@@ -141,7 +140,7 @@ void RenderWidgetHostViewBase::OnLocalSurfaceIdChanged(
 void RenderWidgetHostViewBase::UpdateIntrinsicSizingInfo(
     const blink::WebIntrinsicSizingInfo& sizing_info) {}
 
-gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() {
+gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() const {
   return gfx::ScaleToCeiledSize(GetRequestedRendererSize(),
                                 GetDeviceScaleFactor());
 }
@@ -174,7 +173,7 @@ void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,
     GetTextInputManager()->SelectionChanged(this, text, offset, range);
 }
 
-gfx::Size RenderWidgetHostViewBase::GetRequestedRendererSize() {
+gfx::Size RenderWidgetHostViewBase::GetRequestedRendererSize() const {
   return GetViewBounds().size();
 }
 
@@ -201,7 +200,7 @@ viz::FrameSinkId RenderWidgetHostViewBase::GetRootFrameSinkId() {
   return viz::FrameSinkId();
 }
 
-bool RenderWidgetHostViewBase::IsSurfaceAvailableForCopy() {
+bool RenderWidgetHostViewBase::IsSurfaceAvailableForCopy() const {
   return false;
 }
 
@@ -330,7 +329,7 @@ void RenderWidgetHostViewBase::SetBackgroundColor(SkColor color) {
   }
 }
 
-base::Optional<SkColor> RenderWidgetHostViewBase::GetBackgroundColor() {
+base::Optional<SkColor> RenderWidgetHostViewBase::GetBackgroundColor() const {
   if (content_background_color_)
     return content_background_color_;
   return default_background_color_;
@@ -381,19 +380,6 @@ void RenderWidgetHostViewBase::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
 }
-
-bool RenderWidgetHostViewBase::OnUnconsumedKeyboardEventAck(
-    const NativeWebKeyboardEventWithLatencyInfo& event) {
-  return false;
-}
-
-void RenderWidgetHostViewBase::FallbackCursorModeLockCursor(bool left,
-                                                            bool right,
-                                                            bool up,
-                                                            bool down) {}
-
-void RenderWidgetHostViewBase::FallbackCursorModeSetCursorVisibility(
-    bool visible) {}
 
 void RenderWidgetHostViewBase::ForwardTouchpadZoomEventIfNecessary(
     const blink::WebGestureEvent& event,
@@ -551,7 +537,7 @@ void RenderWidgetHostViewBase::DisableAutoResize(const gfx::Size& new_size) {
   host()->SynchronizeVisualProperties();
 }
 
-bool RenderWidgetHostViewBase::IsScrollOffsetAtTop() {
+bool RenderWidgetHostViewBase::IsScrollOffsetAtTop() const {
   return is_scroll_offset_at_top_;
 }
 
@@ -575,11 +561,11 @@ void RenderWidgetHostViewBase::FocusedNodeTouched(
   DVLOG(1) << "FocusedNodeTouched: " << editable;
 }
 
-void RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) {
+void RenderWidgetHostViewBase::GetScreenInfo(ScreenInfo* screen_info) const {
   DisplayUtil::GetNativeViewScreenInfo(screen_info, GetNativeView());
 }
 
-float RenderWidgetHostViewBase::GetDeviceScaleFactor() {
+float RenderWidgetHostViewBase::GetDeviceScaleFactor() const {
   ScreenInfo screen_info;
   GetScreenInfo(&screen_info);
   return screen_info.device_scale_factor;
@@ -601,7 +587,7 @@ void RenderWidgetHostViewBase::OnAutoscrollStart() {
   GetMouseWheelPhaseHandler()->DispatchPendingWheelEndEvent();
 }
 
-gfx::Size RenderWidgetHostViewBase::GetVisibleViewportSize() {
+gfx::Size RenderWidgetHostViewBase::GetVisibleViewportSize() const {
   return GetViewBounds().size();
 }
 
@@ -761,10 +747,6 @@ void RenderWidgetHostViewBase::Destroy() {
   }
 }
 
-bool RenderWidgetHostViewBase::CanSynchronizeVisualProperties() {
-  return true;
-}
-
 void RenderWidgetHostViewBase::TextInputStateChanged(
     const TextInputState& text_input_state) {
   if (GetTextInputManager())
@@ -827,17 +809,6 @@ void RenderWidgetHostViewBase::RemoveObserver(
 TouchSelectionControllerClientManager*
 RenderWidgetHostViewBase::GetTouchSelectionControllerClientManager() {
   return nullptr;
-}
-
-void RenderWidgetHostViewBase::SetLastTabChangeStartTime(
-    base::TimeTicks start_time) {
-  last_tab_switch_start_time_ = start_time;
-}
-
-base::TimeTicks RenderWidgetHostViewBase::GetAndResetLastTabChangeStartTime() {
-  auto stored_time = last_tab_switch_start_time_;
-  last_tab_switch_start_time_ = base::TimeTicks();
-  return stored_time;
 }
 
 #if defined(USE_AURA)
@@ -912,6 +883,8 @@ RenderWidgetHostViewBase::GetWindowTreeClientFromRenderer() {
 bool RenderWidgetHostViewBase::ShouldContinueToPauseForFrame() {
   return false;
 }
+
+void RenderWidgetHostViewBase::SetParentUiLayer(ui::Layer* parent_ui_layer) {}
 #endif
 
 void RenderWidgetHostViewBase::DidNavigate() {

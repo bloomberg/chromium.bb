@@ -42,8 +42,7 @@ for cert in $certs; do
     -out "out/key_usage_${cert}.pem" \
     -text
 
-  try /bin/sh -c "cat out/key_usage_${key}.key out/key_usage_${cert}.pem \
-      > ../certificates/key_usage_${cert}.pem"
+  try cp "out/key_usage_${cert}.pem" ../certificates
 done
 
 try cp "out/key_usage_rsa.key" ../certificates

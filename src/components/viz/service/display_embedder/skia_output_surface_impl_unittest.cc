@@ -15,8 +15,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/pixel_test_utils.h"
-#include "components/viz/common/display/renderer_settings.h"
-#include "components/viz/common/display/update_vsync_parameters_callback.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
@@ -33,13 +31,10 @@
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/vulkan/init/vulkan_factory.h"
-#include "gpu/vulkan/tests/native_window.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #endif
 
 namespace viz {
-
-const gfx::Rect kSurfaceRect(0, 0, 100, 100);
 
 static void ExpectEquals(SkBitmap actual, SkBitmap expected) {
   EXPECT_EQ(actual.dimensions(), expected.dimensions());
@@ -48,7 +43,7 @@ static void ExpectEquals(SkBitmap actual, SkBitmap expected) {
   EXPECT_TRUE(actual_url == expected_url);
 }
 
-class SkiaOutputSurfaceImplTest : public testing::TestWithParam<bool> {
+class SkiaOutputSurfaceImplTest : public testing::Test {
  public:
   void CheckSyncTokenOnGpuThread(const gpu::SyncToken& sync_token);
   void CopyRequestCallbackOnGpuThread(const SkColor output_color,
@@ -60,8 +55,7 @@ class SkiaOutputSurfaceImplTest : public testing::TestWithParam<bool> {
   SkiaOutputSurfaceImplTest()
       : output_surface_client_(std::make_unique<cc::FakeOutputSurfaceClient>()),
         wait_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-              base::WaitableEvent::InitialState::NOT_SIGNALED),
-        on_screen_(GetParam()) {}
+              base::WaitableEvent::InitialState::NOT_SIGNALED) {}
   inline void SetUp() override { SetUpSkiaOutputSurfaceImpl(); }
   void TearDown() override;
   void BlockMainThread();
@@ -88,11 +82,10 @@ class SkiaOutputSurfaceImplTest : public testing::TestWithParam<bool> {
 #endif
 
   std::unique_ptr<base::Thread> io_thread_;
-  std::unique_ptr<gpu::CommandBufferTaskExecutor> task_executor_;
+  scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor_;
   std::unique_ptr<cc::FakeOutputSurfaceClient> output_surface_client_;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   base::WaitableEvent wait_;
-  const bool on_screen_;
 };
 
 void SkiaOutputSurfaceImplTest::BlockMainThread() {
@@ -114,8 +107,7 @@ void SkiaOutputSurfaceImplTest::SetUpGpuServiceOnGpuThread() {
 #if BUILDFLAG(ENABLE_VULKAN)
     vulkan_implementation_ = gpu::CreateVulkanImplementation();
     if (!vulkan_implementation_ ||
-        !vulkan_implementation_->InitializeVulkanInstance(
-            !gpu_preferences.disable_vulkan_surface)) {
+        !vulkan_implementation_->InitializeVulkanInstance()) {
       LOG(FATAL) << "Failed to create and initialize Vulkan implementation.";
     }
 #else
@@ -144,7 +136,7 @@ void SkiaOutputSurfaceImplTest::SetUpGpuServiceOnGpuThread() {
       gl::init::CreateOffscreenGLSurface(gfx::Size()),
       nullptr /* sync_point_manager */, nullptr /* shared_image_manager */,
       nullptr /* shutdown_event */);
-  task_executor_ = std::make_unique<gpu::GpuInProcessThreadService>(
+  task_executor_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
       gpu_thread_->task_runner(), gpu_service_->scheduler(),
       gpu_service_->sync_point_manager(), gpu_service_->mailbox_manager(),
       gpu_service_->share_group(),
@@ -159,7 +151,7 @@ void SkiaOutputSurfaceImplTest::SetUpGpuServiceOnGpuThread() {
 }
 
 void SkiaOutputSurfaceImplTest::TearDownGpuServiceOnGpuThread() {
-  task_executor_.reset();
+  task_executor_ = nullptr;
   gpu_service_ = nullptr;
   UnblockMainThread();
 }
@@ -183,7 +175,7 @@ void SkiaOutputSurfaceImplTest::TearDown() {
 
 void SkiaOutputSurfaceImplTest::SetUpSkiaOutputSurfaceImpl() {
   // SkiaOutputSurfaceImplOnGpu requires UseSkiaRenderer.
-  const char enable_features[] = "VizDisplayCompositor,UseSkiaRenderer";
+  const char enable_features[] = "UseSkiaRenderer";
   const char disable_features[] = "";
   scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list_->InitFromCommandLine(enable_features, disable_features);
@@ -201,18 +193,10 @@ void SkiaOutputSurfaceImplTest::SetUpSkiaOutputSurfaceImpl() {
   BlockMainThread();
 
   // Set up the SkiaOutputSurfaceImpl.
-  gpu::SurfaceHandle surface_handle_ = gpu::kNullSurfaceHandle;
-  if (on_screen_) {
-#if BUILDFLAG(ENABLE_VULKAN) && defined(USE_X11)
-    surface_handle_ = gpu::CreateNativeWindow(kSurfaceRect);
-#else
-    // TODO(backer): Support other platforms.
-    NOTREACHED();
-#endif
-  }
   output_surface_ = std::make_unique<SkiaOutputSurfaceImpl>(
-      gpu_service_.get(), surface_handle_, UpdateVSyncParametersCallback(),
-      RendererSettings());
+      gpu_service_.get(), gpu::kNullSurfaceHandle,
+      nullptr /* synthetic_begin_frame_source */,
+      false /*show_overdraw_feedback*/);
   output_surface_->BindToClient(output_surface_client_.get());
 }
 
@@ -246,18 +230,10 @@ void SkiaOutputSurfaceImplTest::CopyRequestCallbackOnGpuThread(
   UnblockMainThread();
 }
 
-INSTANTIATE_TEST_SUITE_P(SkiaOutputSurfaceImplTest,
-                         SkiaOutputSurfaceImplTest,
-#if BUILDFLAG(ENABLE_VULKAN) && defined(USE_X11)
-                         ::testing::Values(false, true)
-#else
-                         ::testing::Values(false)
-#endif
-);
-
-TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
-  output_surface_->Reshape(kSurfaceRect.size(), 1, gfx::ColorSpace(),
-                           false /* has_alpha */, false /* use_stencil */);
+TEST_F(SkiaOutputSurfaceImplTest, SubmitPaint) {
+  const gfx::Rect surface_rect(0, 0, 100, 100);
+  output_surface_->Reshape(surface_rect.size(), 1, gfx::ColorSpace(), true,
+                           false);
   SkCanvas* root_canvas = output_surface_->BeginPaintCurrentFrame();
   SkPaint paint;
   const SkColor output_color = SK_ColorRED;
@@ -288,9 +264,9 @@ TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
                      color_space));
   request->set_result_task_runner(gpu_thread_->task_runner());
   copy_output::RenderPassGeometry geometry;
-  geometry.result_bounds = kSurfaceRect;
+  geometry.result_bounds = surface_rect;
   geometry.result_selection = output_rect;
-  geometry.sampling_bounds = kSurfaceRect;
+  geometry.sampling_bounds = surface_rect;
 
   if (is_vulkan_enabled()) {
     // No flipping because Skia handles all co-ordinate transformation on the

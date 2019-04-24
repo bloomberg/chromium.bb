@@ -63,6 +63,10 @@ class CORE_EXPORT FontFaceSetWorker final
   bool ResolveFontStyle(const String&, Font&) override;
 
  private:
+  static FontFaceSetWorker* Create(WorkerGlobalScope& worker) {
+    return MakeGarbageCollected<FontFaceSetWorker>(worker);
+  }
+
   void FireDoneEventIfPossible() override;
   DISALLOW_COPY_AND_ASSIGN(FontFaceSetWorker);
 };

@@ -69,9 +69,8 @@ class SamplingAllocatorShimsTest : public base::MultiProcessTest {
     base::allocator::InitializeAllocatorShim();
 #endif  // defined(OS_MACOSX)
     crash_reporter::InitializeCrashKeys();
-    InstallAllocatorHooks(AllocatorState::kMaxMetadata,
-                          AllocatorState::kMaxMetadata,
-                          AllocatorState::kMaxSlots, kSamplingFrequency);
+    InstallAllocatorHooks(AllocatorState::kGpaMaxPages,
+                          AllocatorState::kGpaMaxPages, kSamplingFrequency);
   }
 
  protected:
@@ -298,20 +297,20 @@ TEST_F(SamplingAllocatorShimsTest, AlignedRealloc) {
 MULTIPROCESS_TEST_MAIN_WITH_SETUP(
     BatchFree,
     SamplingAllocatorShimsTest::multiprocessTestSetup) {
-  void* ptrs[AllocatorState::kMaxMetadata + 1];
-  for (size_t i = 0; i < AllocatorState::kMaxMetadata; i++) {
+  void* ptrs[AllocatorState::kGpaMaxPages + 1];
+  for (size_t i = 0; i < AllocatorState::kGpaMaxPages; i++) {
     ptrs[i] = GetGpaForTesting().Allocate(16);
     CHECK(ptrs[i]);
   }
   // Check that all GPA allocations were consumed.
   CHECK_EQ(GetGpaForTesting().Allocate(16), nullptr);
 
-  ptrs[AllocatorState::kMaxMetadata] =
+  ptrs[AllocatorState::kGpaMaxPages] =
       malloc_zone_malloc(malloc_default_zone(), 16);
-  CHECK(ptrs[AllocatorState::kMaxMetadata]);
+  CHECK(ptrs[AllocatorState::kGpaMaxPages]);
 
   malloc_zone_batch_free(malloc_default_zone(), ptrs,
-                         AllocatorState::kMaxMetadata + 1);
+                         AllocatorState::kGpaMaxPages + 1);
 
   // Check that GPA allocations were freed.
   CHECK(GetGpaForTesting().Allocate(16));

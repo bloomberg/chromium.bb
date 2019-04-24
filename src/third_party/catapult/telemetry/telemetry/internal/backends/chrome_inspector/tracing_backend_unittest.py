@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
 import timeit
 import unittest
 
 from telemetry.internal.backends.chrome_inspector import tracing_backend
+from telemetry.internal.backends.chrome_inspector.tracing_backend import _DevToolsStreamReader
 from telemetry.testing import fakes
 from telemetry.timeline import tracing_config
 from tracing.trace_data import trace_data
@@ -20,6 +20,14 @@ class TracingBackendUnittest(unittest.TestCase):
   def tearDown(self):
     self._fake_timer.Restore()
 
+  def _GetRawChromeTracesFor(self, trace_data_builder):
+    data = trace_data_builder.AsData().GetTracesFor(
+        trace_data.CHROME_TRACE_PART)
+    traces = []
+    for d in data:
+      traces.append(d)
+    return traces
+
   def testCollectTracingDataTimeout(self):
     self._inspector_socket.AddEvent(
         'Tracing.dataCollected', {'value': {'traceEvents': [{'ph': 'B'}]}}, 9)
@@ -28,13 +36,12 @@ class TracingBackendUnittest(unittest.TestCase):
     self._inspector_socket.AddEvent('Tracing.tracingComplete', {}, 35)
     backend = tracing_backend.TracingBackend(self._inspector_socket)
 
-    with trace_data.TraceDataBuilder() as builder:
-      # The third response is 16 seconds after the second response, so we expect
-      # a TracingTimeoutException.
-      with self.assertRaises(tracing_backend.TracingTimeoutException):
-        backend._CollectTracingData(builder, 10)
-      traces = builder.AsData().GetTracesFor(trace_data.CHROME_TRACE_PART)
-
+    trace_data_builder = trace_data.TraceDataBuilder()
+    # The third response is 16 seconds after the second response, so we expect
+    # a TracingTimeoutException.
+    with self.assertRaises(tracing_backend.TracingTimeoutException):
+      backend._CollectTracingData(trace_data_builder, 10)
+    traces = self._GetRawChromeTracesFor(trace_data_builder)
     self.assertEqual(2, len(traces))
     self.assertEqual(1, len(traces[0].get('traceEvents', [])))
     self.assertEqual(1, len(traces[1].get('traceEvents', [])))
@@ -47,11 +54,9 @@ class TracingBackendUnittest(unittest.TestCase):
         'Tracing.dataCollected', {'value': {'traceEvents': [{'ph': 'E'}]}}, 14)
     self._inspector_socket.AddEvent('Tracing.tracingComplete', {}, 19)
     backend = tracing_backend.TracingBackend(self._inspector_socket)
-
-    with trace_data.TraceDataBuilder() as builder:
-      backend._CollectTracingData(builder, 10)
-      traces = builder.AsData().GetTracesFor(trace_data.CHROME_TRACE_PART)
-
+    trace_data_builder = trace_data.TraceDataBuilder()
+    backend._CollectTracingData(trace_data_builder, 10)
+    traces = self._GetRawChromeTracesFor(trace_data_builder)
     self.assertEqual(2, len(traces))
     self.assertEqual(1, len(traces[0].get('traceEvents', [])))
     self.assertEqual(1, len(traces[1].get('traceEvents', [])))
@@ -65,12 +70,11 @@ class TracingBackendUnittest(unittest.TestCase):
     self._inspector_socket.AddAsyncResponse(
         'IO.read', {'data': '},{},{}]}', 'eof': True}, 3)
     backend = tracing_backend.TracingBackend(self._inspector_socket)
-
-    with trace_data.TraceDataBuilder() as builder:
-      backend._CollectTracingData(builder, 10)
-      trace = builder.AsData().GetTraceFor(trace_data.CHROME_TRACE_PART)
-
-    self.assertEqual(5, len(trace['traceEvents']))
+    trace_data_builder = trace_data.TraceDataBuilder()
+    backend._CollectTracingData(trace_data_builder, 10)
+    trace_events = self._GetRawChromeTracesFor(trace_data_builder)[0].get(
+        'traceEvents', [])
+    self.assertEqual(5, len(trace_events))
     self.assertTrue(backend._has_received_all_tracing_data)
 
   def testCollectTracingDataFromStreamJSONContainer(self):
@@ -83,13 +87,12 @@ class TracingBackendUnittest(unittest.TestCase):
     self._inspector_socket.AddAsyncResponse(
         'IO.read', {'data': '}', 'eof': True}, 4)
     backend = tracing_backend.TracingBackend(self._inspector_socket)
+    trace_data_builder = trace_data.TraceDataBuilder()
+    backend._CollectTracingData(trace_data_builder, 10)
+    chrome_trace = self._GetRawChromeTracesFor(trace_data_builder)[0]
 
-    with trace_data.TraceDataBuilder() as builder:
-      backend._CollectTracingData(builder, 10)
-      trace = builder.AsData().GetTraceFor(trace_data.CHROME_TRACE_PART)
-
-    self.assertEqual(3, len(trace['traceEvents']))
-    self.assertEqual(dict, type(trace.get('metadata')))
+    self.assertEqual(3, len(chrome_trace.get('traceEvents', [])))
+    self.assertEqual(dict, type(chrome_trace.get('metadata')))
     self.assertTrue(backend._has_received_all_tracing_data)
 
   def testDumpMemorySuccess(self):
@@ -152,25 +155,24 @@ class DevToolsStreamPerformanceTest(unittest.TestCase):
     start_clock = timeit.default_timer()
 
     done = {'done': False}
-    def MarkDone():
+    def MarkDone(data):
+      del data  # unused
       done['done'] = True
 
-    with open(os.devnull, 'wb') as trace_handle:
-      reader = tracing_backend._DevToolsStreamReader(
-          self._inspector_socket, 'dummy', trace_handle)
-      reader.Read(MarkDone)
-      while not done['done']:
-        fake_time += 1
-        if count > 0:
-          self._inspector_socket.AddAsyncResponse(
-              'IO.read', {'data': payload},
-              fake_time)
-        elif count == 0:
-          self._inspector_socket.AddAsyncResponse(
-              'IO.read',
-              {'data': payload + ']', 'eof': True}, fake_time)
-        count -= 1
-        self._inspector_socket.DispatchNotifications(10)
+    reader = _DevToolsStreamReader(self._inspector_socket, 'dummy')
+    reader.Read(MarkDone)
+    while not done['done']:
+      fake_time += 1
+      if count > 0:
+        self._inspector_socket.AddAsyncResponse(
+            'IO.read', {'data': payload},
+            fake_time)
+      elif count == 0:
+        self._inspector_socket.AddAsyncResponse(
+            'IO.read',
+            {'data': payload + ']', 'eof': True}, fake_time)
+      count -= 1
+      self._inspector_socket.DispatchNotifications(10)
     return timeit.default_timer() - start_clock
 
   def testReadTime(self):

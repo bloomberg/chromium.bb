@@ -14,10 +14,12 @@
 // wrapper.
 // The Token object holds the token id and the SubtleCrypto member.
 
+var binding =
+    apiBridge || require('binding').Binding.create('enterprise.platformKeys');
 var Token = require('enterprise.platformKeys.Token').Token;
 var internalAPI = require('enterprise.platformKeys.internalAPI');
 
-apiBridge.registerCustomHook(function(api) {
+binding.registerCustomHook(function(api) {
   var apiFunctions = api.apiFunctions;
 
   var ret = apiFunctions.setHandleRequest('getTokens', function(callback) {
@@ -27,3 +29,6 @@ apiBridge.registerCustomHook(function(api) {
     });
   });
 });
+
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

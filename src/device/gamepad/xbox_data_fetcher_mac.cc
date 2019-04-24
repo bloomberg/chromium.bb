@@ -144,9 +144,12 @@ void XboxDataFetcher::PendingControllerBecameAvailable(
     PendingController* pending) {
   // Destroying the PendingController object unregisters our interest
   // notification.
-  auto it = pending_controllers_.find(pending);
-  if (it != pending_controllers_.end()) {
-    pending_controllers_.erase(it);
+  for (auto it = pending_controllers_.begin(); it != pending_controllers_.end();
+       ++it) {
+    if (pending == it->get()) {
+      pending_controllers_.erase(it);
+      break;
+    }
   }
   TryOpenDevice(service);
 }

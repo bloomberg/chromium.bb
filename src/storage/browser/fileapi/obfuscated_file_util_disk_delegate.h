@@ -22,7 +22,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) ObfuscatedFileUtilDiskDelegate
   ~ObfuscatedFileUtilDiskDelegate() override;
 
   bool DirectoryExists(const base::FilePath& path) override;
-  size_t ComputeDirectorySize(const base::FilePath& path) override;
   bool DeleteFileOrDirectory(const base::FilePath& path,
                              bool recursive) override;
   bool IsLink(const base::FilePath& file_path) override;

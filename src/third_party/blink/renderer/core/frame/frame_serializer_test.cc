@@ -96,7 +96,7 @@ class FrameSerializerTest : public testing::Test,
     ResourceError error = ResourceError::Failure(NullURL());
 
     WebURLResponse response;
-    response.SetMimeType("text/html");
+    response.SetMIMEType("text/html");
     response.SetHttpStatusCode(status_code);
 
     platform_->GetURLLoaderMockFactory()->RegisterErrorURL(

@@ -14,10 +14,12 @@
 namespace chromeos {
 
 class SupervisionTransitionScreenView;
+class BaseScreenDelegate;
 
 class SupervisionTransitionScreen : public BaseScreen {
  public:
-  SupervisionTransitionScreen(SupervisionTransitionScreenView* view,
+  SupervisionTransitionScreen(BaseScreenDelegate* base_screen_delegate,
+                              SupervisionTransitionScreenView* view,
                               const base::RepeatingClosure& exit_callback);
   ~SupervisionTransitionScreen() override;
 

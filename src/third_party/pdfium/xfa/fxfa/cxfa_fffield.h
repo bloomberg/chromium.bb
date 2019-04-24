@@ -21,16 +21,14 @@ class CXFA_Node;
 
 class CXFA_FFField : public CXFA_FFWidget, public IFWL_WidgetDelegate {
  public:
-  enum ShapeOption { kSquareShape = 0, kRoundShape };
-
   explicit CXFA_FFField(CXFA_Node* pNode);
   ~CXFA_FFField() override;
 
   // CXFA_FFWidget
-  CFX_RectF GetBBox(FocusOption focus) override;
+  CFX_RectF GetBBox(uint32_t dwStatus, FocusOption focus) override;
   void RenderWidget(CXFA_Graphics* pGS,
                     const CFX_Matrix& matrix,
-                    HighlightOption highlight) override;
+                    uint32_t dwStatus) override;
   bool IsLoaded() override;
   bool LoadWidget() override;
   bool PerformLayout() override;
@@ -84,8 +82,8 @@ class CXFA_FFField : public CXFA_FFWidget, public IFWL_WidgetDelegate {
   virtual bool IsDataChanged();
   void DrawHighlight(CXFA_Graphics* pGS,
                      CFX_Matrix* pMatrix,
-                     HighlightOption highlight,
-                     ShapeOption shape);
+                     uint32_t dwStatus,
+                     bool bEllipse);
   void DrawFocus(CXFA_Graphics* pGS, CFX_Matrix* pMatrix);
   void TranslateFWLMessage(CFWL_Message* pMessage);
   void CapPlacement();

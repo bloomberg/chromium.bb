@@ -21,7 +21,7 @@
 #include "GrRecordingContext.h"
 #include "GrRecordingContextPriv.h"
 #include "SkGr.h"
-#include "effects/generated/GrConstColorProcessor.h"
+#include "effects/GrConstColorProcessor.h"
 #include "glsl/GrGLSLFragmentProcessor.h"
 #include "glsl/GrGLSLFragmentShaderBuilder.h"
 #include "glsl/GrGLSLProgramDataManager.h"

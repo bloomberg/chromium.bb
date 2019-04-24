@@ -25,11 +25,12 @@ class Operator;
 // Marks are used during traversal of the graph to distinguish states of nodes.
 // Each node has a mark which is a monotonically increasing integer, and a
 // {NodeMarker} has a range of values that indicate states of a node.
-using Mark = uint32_t;
+typedef uint32_t Mark;
+
 
 // NodeIds are identifying numbers for nodes that can be used to index auxiliary
 // out-of-line data associated with each node.
-using NodeId = uint32_t;
+typedef uint32_t NodeId;
 
 class V8_EXPORT_PRIVATE Graph final : public NON_EXPORTED_BASE(ZoneObject) {
  public:

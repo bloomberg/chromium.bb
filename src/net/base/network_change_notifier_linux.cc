@@ -9,73 +9,83 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
-#include "base/task/task_traits.h"
 #include "base/threading/thread.h"
 #include "net/base/address_tracker_linux.h"
-#include "net/dns/dns_config_service_posix.h"
+#include "net/dns/dns_config_service.h"
 
 namespace net {
 
-// A collection of objects that live on blocking threads.
-class NetworkChangeNotifierLinux::BlockingThreadObjects {
+class NetworkChangeNotifierLinux::Thread : public base::Thread {
  public:
-  explicit BlockingThreadObjects(
-      const std::unordered_set<std::string>& ignored_interfaces);
+  explicit Thread(const std::unordered_set<std::string>& ignored_interfaces);
+  ~Thread() override;
 
   // Plumbing for NetworkChangeNotifier::GetCurrentConnectionType.
   // Safe to call from any thread.
   NetworkChangeNotifier::ConnectionType GetCurrentConnectionType() {
-    return address_tracker_.GetCurrentConnectionType();
+    return address_tracker_->GetCurrentConnectionType();
   }
 
   const internal::AddressTrackerLinux* address_tracker() const {
-    return &address_tracker_;
+    return address_tracker_.get();
   }
 
-  // Begin watching for DNS and netlink changes.
-  void Init();
+ protected:
+  // base::Thread
+  void Init() override;
+  void CleanUp() override;
 
  private:
   void OnIPAddressChanged();
   void OnLinkChanged();
-  internal::DnsConfigServicePosix dns_config_service_;
+  std::unique_ptr<DnsConfigService> dns_config_service_;
   // Used to detect online/offline state and IP address changes.
-  internal::AddressTrackerLinux address_tracker_;
+  std::unique_ptr<internal::AddressTrackerLinux> address_tracker_;
   NetworkChangeNotifier::ConnectionType last_type_;
 
-  DISALLOW_COPY_AND_ASSIGN(BlockingThreadObjects);
+  DISALLOW_COPY_AND_ASSIGN(Thread);
 };
 
-NetworkChangeNotifierLinux::BlockingThreadObjects::BlockingThreadObjects(
+NetworkChangeNotifierLinux::Thread::Thread(
     const std::unordered_set<std::string>& ignored_interfaces)
-    : address_tracker_(
-          base::BindRepeating(&NetworkChangeNotifierLinux::
-                                  BlockingThreadObjects::OnIPAddressChanged,
-                              base::Unretained(this)),
-          base::BindRepeating(
-              &NetworkChangeNotifierLinux::BlockingThreadObjects::OnLinkChanged,
-              base::Unretained(this)),
+    : base::Thread("NetworkChangeNotifier"),
+      address_tracker_(new internal::AddressTrackerLinux(
+          base::Bind(&NetworkChangeNotifierLinux::Thread::OnIPAddressChanged,
+                     base::Unretained(this)),
+          base::Bind(&NetworkChangeNotifierLinux::Thread::OnLinkChanged,
+                     base::Unretained(this)),
           base::DoNothing(),
-          ignored_interfaces),
+          ignored_interfaces)),
       last_type_(NetworkChangeNotifier::CONNECTION_NONE) {}
 
-void NetworkChangeNotifierLinux::BlockingThreadObjects::Init() {
-  address_tracker_.Init();
+NetworkChangeNotifierLinux::Thread::~Thread() {
+  DCHECK(!Thread::IsRunning());
+}
+
+void NetworkChangeNotifierLinux::Thread::Init() {
+  address_tracker_->Init();
   last_type_ = GetCurrentConnectionType();
-  dns_config_service_.WatchConfig(
+  dns_config_service_ = DnsConfigService::CreateSystemService();
+  dns_config_service_->WatchConfig(
       base::Bind(&NetworkChangeNotifier::SetDnsConfig));
 }
 
-void NetworkChangeNotifierLinux::BlockingThreadObjects::OnIPAddressChanged() {
+void NetworkChangeNotifierLinux::Thread::CleanUp() {
+  // Delete AddressTrackerLinux before MessageLoop gets deleted as
+  // AddressTrackerLinux's FileDescriptorWatcher holds a pointer to the
+  // MessageLoop.
+  address_tracker_.reset();
+  dns_config_service_.reset();
+}
+
+void NetworkChangeNotifierLinux::Thread::OnIPAddressChanged() {
   NetworkChangeNotifier::NotifyObserversOfIPAddressChange();
   // When the IP address of a network interface is added/deleted, the
   // connection type may have changed.
   OnLinkChanged();
 }
 
-void NetworkChangeNotifierLinux::BlockingThreadObjects::OnLinkChanged() {
+void NetworkChangeNotifierLinux::Thread::OnLinkChanged() {
   if (last_type_ != GetCurrentConnectionType()) {
     NetworkChangeNotifier::NotifyObserversOfConnectionTypeChange();
     last_type_ = GetCurrentConnectionType();
@@ -90,24 +100,19 @@ void NetworkChangeNotifierLinux::BlockingThreadObjects::OnLinkChanged() {
 NetworkChangeNotifierLinux::NetworkChangeNotifierLinux(
     const std::unordered_set<std::string>& ignored_interfaces)
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsLinux()),
-      blocking_thread_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
-      blocking_thread_objects_(
-          new BlockingThreadObjects(ignored_interfaces),
-          // Ensure |blocking_thread_objects_| lives on
-          // |blocking_thread_runner_| to prevent races where
-          // NetworkChangeNotifierLinux outlives
-          // ScopedTaskEnvironment. https://crbug.com/938126
-          base::OnTaskRunnerDeleter(blocking_thread_runner_)) {
-  blocking_thread_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&NetworkChangeNotifierLinux::BlockingThreadObjects::Init,
-                     // The Unretained pointer is safe here because it's
-                     // posted before the deleter can post.
-                     base::Unretained(blocking_thread_objects_.get())));
+      notifier_thread_(new Thread(ignored_interfaces)) {
+  // We create this notifier thread because the notification implementation
+  // needs a MessageLoopForIO, and there's no guarantee that
+  // MessageLoopCurrent::Get() meets that criterion.
+  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+  notifier_thread_->StartWithOptions(thread_options);
 }
 
-NetworkChangeNotifierLinux::~NetworkChangeNotifierLinux() = default;
+NetworkChangeNotifierLinux::~NetworkChangeNotifierLinux() {
+  // Stopping from here allows us to sanity- check that the notifier
+  // thread shut down properly.
+  notifier_thread_->Stop();
+}
 
 // static
 NetworkChangeNotifier::NetworkChangeCalculatorParams
@@ -125,12 +130,12 @@ NetworkChangeNotifierLinux::NetworkChangeCalculatorParamsLinux() {
 
 NetworkChangeNotifier::ConnectionType
 NetworkChangeNotifierLinux::GetCurrentConnectionType() const {
-  return blocking_thread_objects_->GetCurrentConnectionType();
+  return notifier_thread_->GetCurrentConnectionType();
 }
 
 const internal::AddressTrackerLinux*
 NetworkChangeNotifierLinux::GetAddressTrackerInternal() const {
-  return blocking_thread_objects_->address_tracker();
+  return notifier_thread_->address_tracker();
 }
 
 }  // namespace net

@@ -19,7 +19,6 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -405,9 +404,8 @@ TEST_F(NonClientFrameViewAshTest, MinimizedWindowsInTabletMode) {
 
 TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInOverviewMode) {
   auto* delegate = new NonClientFrameViewAshTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget =
-      CreateTestWidget(delegate, desks_util::GetActiveDeskContainerId(),
-                       gfx::Rect(0, 0, 400, 500));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      delegate, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 400, 500));
 
   // Verify the header is not painted in overview mode and painted when not in
   // overview mode.
@@ -515,9 +513,8 @@ TEST_F(NonClientFrameViewAshTest, BackButton) {
   TestButtonModel* model_ptr = model.get();
 
   auto* delegate = new NonClientFrameViewAshTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget =
-      CreateTestWidget(delegate, desks_util::GetActiveDeskContainerId(),
-                       gfx::Rect(0, 0, 400, 500));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      delegate, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 400, 500));
 
   ui::Accelerator accelerator_back_press(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
   accelerator_back_press.set_key_state(ui::Accelerator::KeyState::PRESSED);
@@ -575,7 +572,7 @@ TEST_F(NonClientFrameViewAshTest, FrameVisibility) {
       new NonClientFrameViewAshTestWidgetDelegate;
   gfx::Rect window_bounds(10, 10, 200, 100);
   std::unique_ptr<views::Widget> widget = CreateTestWidget(
-      delegate, desks_util::GetActiveDeskContainerId(), window_bounds);
+      delegate, kShellWindowId_DefaultContainer, window_bounds);
 
   // The height is smaller by the top border height.
   gfx::Size client_bounds(200, 68);
@@ -680,9 +677,8 @@ TEST_F(NonClientFrameViewAshTest, CustomButtonModel) {
 
 TEST_F(NonClientFrameViewAshTest, WideFrame) {
   auto* delegate = new NonClientFrameViewAshTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget =
-      CreateTestWidget(delegate, desks_util::GetActiveDeskContainerId(),
-                       gfx::Rect(100, 0, 400, 500));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      delegate, kShellWindowId_DefaultContainer, gfx::Rect(100, 0, 400, 500));
 
   NonClientFrameViewAsh* non_client_frame_view =
       delegate->non_client_frame_view();
@@ -762,9 +758,8 @@ TEST_F(NonClientFrameViewAshTest, WideFrame) {
 
 TEST_F(NonClientFrameViewAshTest, WideFrameButton) {
   auto* delegate = new NonClientFrameViewAshTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget =
-      CreateTestWidget(delegate, desks_util::GetActiveDeskContainerId(),
-                       gfx::Rect(100, 0, 400, 500));
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      delegate, kShellWindowId_DefaultContainer, gfx::Rect(100, 0, 400, 500));
 
   std::unique_ptr<WideFrameView> wide_frame_view =
       std::make_unique<WideFrameView>(widget.get());

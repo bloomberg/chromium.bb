@@ -34,21 +34,14 @@ class SwitchAccessInterface {
 
   /**
    * Return a list of the names of all user commands.
-   * @return {!Array<!SAConstants.Command>}
+   * @return {!Array<string>}
    */
   getCommands() {}
 
   /**
-   * Checks if the given string is a valid Switch Access command.
-   * @param {string} command
-   * @return {boolean}
-   */
-  hasCommand(command) {}
-
-  /**
    * Return the default key code for a command.
    *
-   * @param {!SAConstants.Command} command
+   * @param {string} command
    * @return {number}
    */
   getDefaultKeyCodeFor(command) {}
@@ -66,7 +59,7 @@ class SwitchAccessInterface {
 
   /**
    * Run the function binding for the specified command.
-   * @param {!SAConstants.Command} command
+   * @param {string} command
    */
   runCommand(command) {}
 
@@ -77,19 +70,13 @@ class SwitchAccessInterface {
   performedUserAction() {}
 
   /**
-   * Handle a change in user preferences.
-   * @param {!Object} changes
-   */
-  onPreferencesChanged(changes) {}
-
-  /**
    * Set the value of the preference |key| to |value| in chrome.storage.sync.
-   * The behavior is not updated until the storage update is complete.
+   * this.prefs_ is not set until handleStorageChange_.
    *
    * @param {string} key
    * @param {boolean|string|number} value
    */
-  setPreference(key, value) {}
+  setPref(key, value) {}
 
   /**
    * Get the value of type 'boolean' of the preference |key|. Will throw a type
@@ -98,7 +85,7 @@ class SwitchAccessInterface {
    * @param  {string} key
    * @return {boolean}
    */
-  getBooleanPreference(key) {}
+  getBooleanPref(key) {}
 
   /**
    * Get the value of type 'number' of the preference |key|. Will throw a type
@@ -107,7 +94,16 @@ class SwitchAccessInterface {
    * @param  {string} key
    * @return {number}
    */
-  getNumberPreference(key) {}
+  getNumberPref(key) {}
+
+  /**
+   * Get the value of type 'string' of the preference |key|. Will throw a type
+   * error if the value of |key| is not 'string'.
+   *
+   * @param  {string} key
+   * @return {string}
+   */
+  getStringPref(key) {}
 
   /**
    * Returns true if |keyCode| is already used to run a command from the

@@ -105,7 +105,7 @@ TestRenderWidgetHostView::~TestRenderWidgetHostView() {
     manager->InvalidateFrameSinkId(frame_sink_id_);
 }
 
-gfx::NativeView TestRenderWidgetHostView::GetNativeView() {
+gfx::NativeView TestRenderWidgetHostView::GetNativeView() const {
 #if defined(USE_AURA)
   return window_.get();
 #else
@@ -121,7 +121,7 @@ ui::TextInputClient* TestRenderWidgetHostView::GetTextInputClient() {
   return &text_input_client_;
 }
 
-bool TestRenderWidgetHostView::HasFocus() {
+bool TestRenderWidgetHostView::HasFocus() const {
   return true;
 }
 
@@ -153,7 +153,7 @@ void TestRenderWidgetHostView::RenderProcessGone(base::TerminationStatus status,
 
 void TestRenderWidgetHostView::Destroy() { delete this; }
 
-gfx::Rect TestRenderWidgetHostView::GetViewBounds() {
+gfx::Rect TestRenderWidgetHostView::GetViewBounds() const {
   return gfx::Rect();
 }
 
@@ -292,7 +292,7 @@ bool TestRenderViewHost::CreateRenderView(
   return true;
 }
 
-MockRenderProcessHost* TestRenderViewHost::GetProcess() {
+MockRenderProcessHost* TestRenderViewHost::GetProcess() const {
   return static_cast<MockRenderProcessHost*>(RenderViewHostImpl::GetProcess());
 }
 
@@ -312,10 +312,6 @@ void TestRenderViewHost::OnWebkitPreferencesChanged() {
   RenderViewHostImpl::OnWebkitPreferencesChanged();
   if (webkit_preferences_changed_counter_)
     ++*webkit_preferences_changed_counter_;
-}
-
-bool TestRenderViewHost::IsTestRenderViewHost() const {
-  return true;
 }
 
 void TestRenderViewHost::TestOnStartDragging(

@@ -15,7 +15,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/default_tick_clock.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
@@ -37,6 +36,16 @@ namespace chromeos {
 
 namespace {
 
+constexpr const char kContextKeyEstimatedTimeLeftSec[] = "time-left-sec";
+constexpr const char kContextKeyShowEstimatedTimeLeft[] = "show-time-left";
+constexpr const char kContextKeyUpdateCompleted[] = "update-completed";
+constexpr const char kContextKeyShowCurtain[] = "show-curtain";
+constexpr const char kContextKeyShowProgressMessage[] = "show-progress-msg";
+constexpr const char kContextKeyProgress[] = "progress";
+constexpr const char kContextKeyProgressMessage[] = "progress-msg";
+constexpr const char kContextKeyRequiresPermissionForCelluar[] =
+    "requires-permission-for-cellular";
+
 constexpr const char kUserActionAcceptUpdateOverCellular[] =
     "update-accept-cellular";
 constexpr const char kUserActionRejectUpdateOverCellular[] =
@@ -44,6 +53,8 @@ constexpr const char kUserActionRejectUpdateOverCellular[] =
 
 #if !defined(OFFICIAL_BUILD)
 constexpr const char kUserActionCancelUpdateShortcut[] = "cancel-update";
+constexpr const char kContextKeyCancelUpdateShortcutEnabled[] =
+    "cancel-update-enabled";
 #endif
 
 // If reboot didn't happen, ask user to reboot device manually.
@@ -94,14 +105,10 @@ UpdateScreen* UpdateScreen::Get(ScreenManager* manager) {
 
 UpdateScreen::UpdateScreen(BaseScreenDelegate* base_screen_delegate,
                            UpdateView* view,
-                           ErrorScreen* error_screen,
                            const ScreenExitCallback& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_OOBE_UPDATE),
-      tick_clock_(base::DefaultTickClock::GetInstance()),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_OOBE_UPDATE),
       reboot_check_delay_(kWaitForRebootTimeSec),
-      base_screen_delegate_(base_screen_delegate),
       view_(view),
-      error_screen_(error_screen),
       exit_callback_(exit_callback),
       histogram_helper_(new ErrorScreensHistogramHelper("Update")),
       weak_factory_(this) {
@@ -168,20 +175,19 @@ void UpdateScreen::UpdateStatusChanged(
       break;
     case UpdateEngineClient::UPDATE_STATUS_UPDATE_AVAILABLE:
       MakeSureScreenIsShown();
-      if (view_) {
-        view_->SetProgress(kBeforeDownloadProgress);
-        view_->SetShowEstimatedTimeLeft(false);
-      }
+      GetContextEditor()
+          .SetInteger(kContextKeyProgress, kBeforeDownloadProgress)
+          .SetBoolean(kContextKeyShowEstimatedTimeLeft, false);
       if (!HasCriticalUpdate()) {
         VLOG(1) << "Noncritical update available: " << status.new_version;
         ExitUpdate(Result::UPDATE_NOT_REQUIRED);
       } else {
         VLOG(1) << "Critical update available: " << status.new_version;
-        if (view_) {
-          view_->SetProgressMessage(
-              l10n_util::GetStringUTF16(IDS_UPDATE_AVAILABLE));
-          view_->SetShowCurtain(false);
-        }
+        GetContextEditor()
+            .SetString(kContextKeyProgressMessage,
+                       l10n_util::GetStringUTF16(IDS_UPDATE_AVAILABLE))
+            .SetBoolean(kContextKeyShowProgressMessage, true)
+            .SetBoolean(kContextKeyShowCurtain, false);
       }
       break;
     case UpdateEngineClient::UPDATE_STATUS_DOWNLOADING:
@@ -190,7 +196,7 @@ void UpdateScreen::UpdateStatusChanged(
         // Because update engine doesn't send UPDATE_STATUS_UPDATE_AVAILABLE
         // we need to is update critical on first downloading notification.
         is_downloading_update_ = true;
-        download_start_time_ = download_last_time_ = tick_clock_->NowTicks();
+        download_start_time_ = download_last_time_ = base::Time::Now();
         download_start_progress_ = status.download_progress;
         download_last_progress_ = status.download_progress;
         is_download_average_speed_computed_ = false;
@@ -200,40 +206,38 @@ void UpdateScreen::UpdateStatusChanged(
           ExitUpdate(Result::UPDATE_NOT_REQUIRED);
         } else {
           VLOG(1) << "Critical update available: " << status.new_version;
-          if (view_) {
-            view_->SetProgressMessage(
-                l10n_util::GetStringUTF16(IDS_INSTALLING_UPDATE));
-            view_->SetShowCurtain(false);
-          }
+          GetContextEditor()
+              .SetString(kContextKeyProgressMessage,
+                         l10n_util::GetStringUTF16(IDS_INSTALLING_UPDATE))
+              .SetBoolean(kContextKeyShowProgressMessage, true)
+              .SetBoolean(kContextKeyShowCurtain, false);
         }
       }
       UpdateDownloadingStats(status);
       break;
     case UpdateEngineClient::UPDATE_STATUS_VERIFYING:
       MakeSureScreenIsShown();
-      if (view_) {
-        view_->SetProgress(kBeforeVerifyingProgress);
-        view_->SetProgressMessage(
-            l10n_util::GetStringUTF16(IDS_UPDATE_VERIFYING));
-      }
+      GetContextEditor()
+          .SetInteger(kContextKeyProgress, kBeforeVerifyingProgress)
+          .SetString(kContextKeyProgressMessage,
+                     l10n_util::GetStringUTF16(IDS_UPDATE_VERIFYING))
+          .SetBoolean(kContextKeyShowProgressMessage, true);
       break;
     case UpdateEngineClient::UPDATE_STATUS_FINALIZING:
       MakeSureScreenIsShown();
-      if (view_) {
-        view_->SetProgress(kBeforeFinalizingProgress);
-        view_->SetProgressMessage(
-            l10n_util::GetStringUTF16(IDS_UPDATE_FINALIZING));
-      }
+      GetContextEditor()
+          .SetInteger(kContextKeyProgress, kBeforeFinalizingProgress)
+          .SetString(kContextKeyProgressMessage,
+                     l10n_util::GetStringUTF16(IDS_UPDATE_FINALIZING))
+          .SetBoolean(kContextKeyShowProgressMessage, true);
       break;
     case UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT:
       MakeSureScreenIsShown();
-      if (view_) {
-        view_->SetProgress(kProgressComplete);
-        view_->SetShowEstimatedTimeLeft(false);
-      }
+      GetContextEditor()
+          .SetInteger(kContextKeyProgress, kProgressComplete)
+          .SetBoolean(kContextKeyShowEstimatedTimeLeft, false);
       if (HasCriticalUpdate()) {
-        if (view_)
-          view_->SetShowCurtain(false);
+        GetContextEditor().SetBoolean(kContextKeyShowCurtain, false);
         VLOG(1) << "Initiate reboot after update";
         DBusThreadManager::Get()->GetUpdateEngineClient()->RebootAfterUpdate();
         reboot_timer_.Start(FROM_HERE,
@@ -252,10 +256,9 @@ void UpdateScreen::UpdateStatusChanged(
       DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
 
       MakeSureScreenIsShown();
-      if (view_) {
-        view_->SetRequiresPermissionForCellular(true);
-        view_->SetShowCurtain(false);
-      }
+      GetContextEditor()
+          .SetBoolean(kContextKeyRequiresPermissionForCelluar, true)
+          .SetBoolean(kContextKeyShowCurtain, false);
       break;
     case UpdateEngineClient::UPDATE_STATUS_ATTEMPTING_ROLLBACK:
       VLOG(1) << "Attempting rollback";
@@ -338,27 +341,24 @@ void UpdateScreen::CancelUpdate() {
   ExitUpdate(Result::UPDATE_NOT_REQUIRED);
 }
 
-base::OneShotTimer* UpdateScreen::GetErrorMessageTimerForTesting() {
-  return &error_message_timer_;
-}
-
-base::OneShotTimer* UpdateScreen::GetRebootTimerForTesting() {
-  return &reboot_timer_;
+// TODO(jdufault): This should return a pointer. See crbug.com/672142.
+base::OneShotTimer& UpdateScreen::GetErrorMessageTimerForTesting() {
+  return error_message_timer_;
 }
 
 void UpdateScreen::Show() {
   is_shown_ = true;
   histogram_helper_->OnScreenShow();
 
-  if (view_) {
 #if !defined(OFFICIAL_BUILD)
-    view_->SetCancelUpdateShortcutEnabled(true);
+  GetContextEditor().SetBoolean(kContextKeyCancelUpdateShortcutEnabled, true);
 #endif
-    view_->SetProgress(kBeforeUpdateCheckProgress);
-    view_->SetRequiresPermissionForCellular(false);
+  GetContextEditor()
+      .SetInteger(kContextKeyProgress, kBeforeUpdateCheckProgress)
+      .SetBoolean(kContextKeyRequiresPermissionForCelluar, false);
 
+  if (view_)
     view_->Show();
-  }
 }
 
 void UpdateScreen::Hide() {
@@ -384,10 +384,9 @@ void UpdateScreen::OnUserAction(const std::string& action_id) {
   } else if (action_id == kUserActionRejectUpdateOverCellular) {
     // Reset UI context to show curtain again when the user goes back to the
     // update screen.
-    if (view_) {
-      view_->SetShowCurtain(true);
-      view_->SetRequiresPermissionForCellular(false);
-    }
+    GetContextEditor()
+        .SetBoolean(kContextKeyShowCurtain, true)
+        .SetBoolean(kContextKeyRequiresPermissionForCelluar, false);
     ExitUpdate(Result::UPDATE_ERROR);
   } else {
     BaseScreen::OnUserAction(action_id);
@@ -397,23 +396,22 @@ void UpdateScreen::OnUserAction(const std::string& action_id) {
 void UpdateScreen::RetryUpdateWithUpdateOverCellularPermissionSet(
     bool success) {
   if (success) {
-    if (view_)
-      view_->SetRequiresPermissionForCellular(false);
+    GetContextEditor().SetBoolean(kContextKeyRequiresPermissionForCelluar,
+                                  false);
     StartUpdateCheck();
   } else {
     // Reset UI context to show curtain again when the user goes back to the
     // update screen.
-    if (view_) {
-      view_->SetShowCurtain(true);
-      view_->SetRequiresPermissionForCellular(false);
-    }
+    GetContextEditor()
+        .SetBoolean(kContextKeyShowCurtain, true)
+        .SetBoolean(kContextKeyRequiresPermissionForCelluar, false);
     ExitUpdate(Result::UPDATE_ERROR);
   }
 }
 
 void UpdateScreen::UpdateDownloadingStats(
     const UpdateEngineClient::Status& status) {
-  base::TimeTicks download_current_time = tick_clock_->NowTicks();
+  base::Time download_current_time = base::Time::Now();
   if (download_current_time >=
       download_last_time_ +
           base::TimeDelta::FromSeconds(kMinTimeStepInSeconds)) {
@@ -443,27 +441,25 @@ void UpdateScreen::UpdateDownloadingStats(
           (status.download_progress - download_start_progress_) / time_delta;
     }
     double work_left = progress_left * status.new_size;
-    // time_left is in seconds.
     double time_left = work_left / download_average_speed_;
     // |time_left| may be large enough or even +infinity. So we must
     // |bound possible estimations.
     time_left = std::min(time_left, kMaxTimeLeft);
 
-    if (view_) {
-      view_->SetShowEstimatedTimeLeft(true);
-      view_->SetEstimatedTimeLeft(static_cast<int>(time_left));
-    }
+    GetContextEditor()
+        .SetBoolean(kContextKeyShowEstimatedTimeLeft, true)
+        .SetInteger(kContextKeyEstimatedTimeLeftSec,
+                    static_cast<int>(time_left));
   }
 
-  if (view_) {
-    int download_progress =
-        static_cast<int>(status.download_progress * kDownloadProgressIncrement);
-    view_->SetProgress(kBeforeDownloadProgress + download_progress);
-  }
+  int download_progress =
+      static_cast<int>(status.download_progress * kDownloadProgressIncrement);
+  GetContextEditor().SetInteger(kContextKeyProgress,
+                                kBeforeDownloadProgress + download_progress);
 }
 
 bool UpdateScreen::HasCriticalUpdate() {
-  if (ignore_update_deadlines_)
+  if (is_ignore_update_deadlines_)
     return true;
 
   std::string deadline;
@@ -484,19 +480,21 @@ bool UpdateScreen::HasCriticalUpdate() {
 void UpdateScreen::OnWaitForRebootTimeElapsed() {
   LOG(ERROR) << "Unable to reboot - asking user for a manual reboot.";
   MakeSureScreenIsShown();
-  if (view_)
-    view_->SetUpdateCompleted(true);
+  GetContextEditor().SetBoolean(kContextKeyUpdateCompleted, true);
 }
 
 void UpdateScreen::MakeSureScreenIsShown() {
-  if (!is_shown_) {
-    base_screen_delegate_->ShowCurrentScreen();
-  }
+  if (!is_shown_)
+    get_base_screen_delegate()->ShowCurrentScreen();
+}
+
+ErrorScreen* UpdateScreen::GetErrorScreen() {
+  return get_base_screen_delegate()->GetErrorScreen();
 }
 
 void UpdateScreen::StartUpdateCheck() {
   error_message_timer_.Stop();
-  error_screen_->HideCaptivePortal();
+  GetErrorScreen()->HideCaptivePortal();
 
   network_portal_detector::GetInstance()->RemoveObserver(this);
   connect_request_subscription_.reset();
@@ -519,22 +517,18 @@ void UpdateScreen::ShowErrorMessage() {
 
   error_message_timer_.Stop();
 
-  is_shown_ = false;
   state_ = State::STATE_ERROR;
   connect_request_subscription_ =
-      error_screen_->RegisterConnectRequestCallback(base::BindRepeating(
+      GetErrorScreen()->RegisterConnectRequestCallback(base::Bind(
           &UpdateScreen::OnConnectRequested, base::Unretained(this)));
-  error_screen_->SetUIState(NetworkError::UI_STATE_UPDATE);
-  error_screen_->SetParentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
-  error_screen_->SetHideCallback(base::BindRepeating(
-      &UpdateScreen::OnErrorScreenHidden, weak_factory_.GetWeakPtr()));
-  error_screen_->Show();
-  histogram_helper_->OnErrorShow(error_screen_->GetErrorState());
+  GetErrorScreen()->SetUIState(NetworkError::UI_STATE_UPDATE);
+  get_base_screen_delegate()->ShowErrorScreen();
+  histogram_helper_->OnErrorShow(GetErrorScreen()->GetErrorState());
 }
 
 void UpdateScreen::HideErrorMessage() {
   LOG(WARNING) << "UpdateScreen::HideErrorMessage()";
-  error_screen_->Hide();
+  get_base_screen_delegate()->HideErrorScreen(this);
   histogram_helper_->OnErrorHide();
 }
 
@@ -547,21 +541,21 @@ void UpdateScreen::UpdateErrorMessage(
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN:
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
-      error_screen_->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,
-                                   std::string());
+      GetErrorScreen()->SetErrorState(NetworkError::ERROR_STATE_OFFLINE,
+                                      std::string());
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
       DCHECK(network);
-      error_screen_->SetErrorState(NetworkError::ERROR_STATE_PORTAL,
-                                   network->name());
+      GetErrorScreen()->SetErrorState(NetworkError::ERROR_STATE_PORTAL,
+                                      network->name());
       if (is_first_portal_notification_) {
         is_first_portal_notification_ = false;
-        error_screen_->FixCaptivePortal();
+        GetErrorScreen()->FixCaptivePortal();
       }
       break;
     case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
-      error_screen_->SetErrorState(NetworkError::ERROR_STATE_PROXY,
-                                   std::string());
+      GetErrorScreen()->SetErrorState(NetworkError::ERROR_STATE_PROXY,
+                                      std::string());
       break;
     default:
       NOTREACHED();
@@ -591,11 +585,6 @@ void UpdateScreen::OnConnectRequested() {
     LOG(WARNING) << "Hiding error message since AP was reselected";
     StartUpdateCheck();
   }
-}
-
-void UpdateScreen::OnErrorScreenHidden() {
-  error_screen_->SetParentScreen(OobeScreen::SCREEN_UNKNOWN);
-  Show();
 }
 
 }  // namespace chromeos

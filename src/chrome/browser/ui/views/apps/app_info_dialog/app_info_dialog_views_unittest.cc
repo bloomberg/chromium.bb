@@ -134,8 +134,9 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
     widget_ = views::DialogDelegate::CreateDialogWidget(
         new views::DialogDelegateView(), GetContext(), nullptr);
     widget_->AddObserver(this);
-    dialog_ = widget_->GetContentsView()->AddChildView(
-        std::make_unique<AppInfoDialog>(profile, extension));
+    dialog_ = new AppInfoDialog(profile, extension);
+
+    widget_->GetContentsView()->AddChildView(dialog_);
     widget_->Show();
   }
 

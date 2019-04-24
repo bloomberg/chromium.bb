@@ -79,9 +79,7 @@ void LoginManagerTest::TearDownOnMainThread() {
 }
 
 void LoginManagerTest::SetUpCommandLine(base::CommandLine* command_line) {
-  if (force_webui_login_) {
-    command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
-  }
+  command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
 

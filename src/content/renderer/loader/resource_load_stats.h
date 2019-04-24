@@ -6,7 +6,6 @@
 #define CONTENT_RENDERER_LOADER_RESOURCE_LOAD_STATS_H_
 
 #include "build/build_config.h"
-#include "content/public/common/previews_state.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
 
@@ -51,8 +50,7 @@ void NotifyResourceRedirectReceived(
 void NotifyResourceResponseReceived(
     int render_frame_id,
     mojom::ResourceLoadInfo* resource_load_info,
-    const network::ResourceResponseHead& response_head,
-    PreviewsState previews_state);
+    const network::ResourceResponseHead& response_head);
 
 void NotifyResourceTransferSizeUpdated(
     int render_frame_id,

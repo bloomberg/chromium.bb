@@ -804,7 +804,9 @@ UniquePtr<DC> DC::Parse(CRYPTO_BUFFER *in, uint8_t *out_alert) {
 
 // ssl_can_serve_dc returns true if the host has configured a DC that it can
 // serve in the handshake. Specifically, it checks that a DC has been
-// configured and that the DC signature algorithm is supported by the peer.
+// configured, that the DC protocol version is the same as the negotiated
+// protocol version, and that the DC signature algorithm is supported by the
+// peer.
 static bool ssl_can_serve_dc(const SSL_HANDSHAKE *hs) {
   // Check that a DC has been configured.
   const CERT *cert = hs->config->cert.get();

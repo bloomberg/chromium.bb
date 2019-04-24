@@ -10,14 +10,14 @@
 
 // Please make sure the code below declares a single string variable
 // kASanDefaultSuppressions which contains ASan suppressions delimited by
-// newlines. Entries should look, for example, like:
-//
-//   // http://crbug.com/178677
-//   "interceptor_via_lib:libsqlite3.so\n"
+// newlines.
 char kASanDefaultSuppressions[] =
+// http://crbug.com/178677
+"interceptor_via_lib:libsqlite3.so\n"
 
-    // End of suppressions.
-    // PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
-    "";  // Please keep this semicolon.
+// PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
+
+// End of suppressions.
+;  // Please keep this semicolon.
 
 #endif  // ADDRESS_SANITIZER

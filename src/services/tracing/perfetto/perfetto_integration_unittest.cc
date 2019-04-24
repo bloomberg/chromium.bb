@@ -20,10 +20,6 @@ namespace tracing {
 
 namespace {
 
-const char kPerfettoTestDataSourceName[] =
-    "org.chromium.chrome_integration_unittest";
-const char kPerfettoProducerName[] = "chrome_producer_test";
-
 class PerfettoIntegrationTest : public testing::Test {
  public:
   void SetUp() override {
@@ -48,9 +44,8 @@ TEST_F(PerfettoIntegrationTest, ProducerDatasourceInitialized) {
 
   base::RunLoop producer_initialized_runloop;
   auto new_producer = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), dummy_client.get(),
-      producer_initialized_runloop.QuitClosure());
+      kPerfettoTestDataSourceName, perfetto_service()->GetService(),
+      dummy_client.get(), producer_initialized_runloop.QuitClosure());
 
   producer_initialized_runloop.Run();
 
@@ -73,8 +68,8 @@ TEST_F(PerfettoIntegrationTest, ClientEnabledAndDisabled) {
       client_disabled_callback.QuitClosure());
 
   auto producer = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), client.get());
+      kPerfettoTestDataSourceName, perfetto_service()->GetService(),
+      client.get());
   client_enabled_callback.Run();
 
   RunUntilIdle();
@@ -99,8 +94,8 @@ TEST_F(PerfettoIntegrationTest, PacketsEndToEndProducerFirst) {
       client_disabled_callback.QuitClosure());
 
   auto producer = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), client.get());
+      kPerfettoTestDataSourceName, perfetto_service()->GetService(),
+      client.get());
 
   base::RunLoop no_more_packets_runloop;
   MockConsumer consumer(kPerfettoTestDataSourceName,
@@ -142,8 +137,8 @@ TEST_F(PerfettoIntegrationTest, PacketsEndToEndConsumerFirst) {
       kNumPackets, client_enabled_callback.QuitClosure());
 
   auto new_producer = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), client.get());
+      kPerfettoTestDataSourceName, perfetto_service()->GetService(),
+      client.get());
 
   client_enabled_callback.Run();
 
@@ -173,13 +168,13 @@ TEST_F(PerfettoIntegrationTest, CommitDataRequestIsMaybeComplete) {
   auto client = std::make_unique<MockProducerClient>(
       kNumPackets, client_enabled_callback.QuitClosure());
   auto new_producer = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), client.get());
+      kPerfettoTestDataSourceName, perfetto_service()->GetService(),
+      client.get());
 
   client_enabled_callback.Run();
 
   base::RunLoop wait_for_packet_write;
-  client->GetTaskRunner()->task_runner()->PostTaskAndReply(
+  client->GetTaskRunner()->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&TestDataSource::WritePacketBigly,
                      base::Unretained(client->data_source())),
@@ -215,8 +210,8 @@ TEST_F(PerfettoIntegrationTest, TracingRestarted) {
       kNumPackets, client_enabled_callback.QuitClosure());
 
   auto new_producer = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), client.get());
+      kPerfettoTestDataSourceName, perfetto_service()->GetService(),
+      client.get());
 
   client_enabled_callback.Run();
 
@@ -263,8 +258,7 @@ TEST_F(PerfettoIntegrationTest, NoPacketsReceivedOnWrongSourceName) {
 
   base::RunLoop producer_initialized_runloop;
   auto new_producer = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, "fake_data_source",
-      perfetto_service()->GetService(), client.get());
+      "fake_data_source", perfetto_service()->GetService(), client.get());
 
   base::RunLoop no_more_packets_runloop;
   MockConsumer consumer(kPerfettoTestDataSourceName,
@@ -295,12 +289,12 @@ TEST_F(PerfettoIntegrationTest,
       0 /* send_packet_count */, client2_enabled_callback.QuitClosure());
 
   auto producer1 = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), client1.get());
+      kPerfettoTestDataSourceName, perfetto_service()->GetService(),
+      client1.get());
 
   auto producer2 = std::make_unique<MockProducerHost>(
-      kPerfettoProducerName, kPerfettoTestDataSourceName,
-      perfetto_service()->GetService(), client2.get());
+      kPerfettoTestDataSourceName, perfetto_service()->GetService(),
+      client2.get());
 
   MockConsumer consumer(kPerfettoTestDataSourceName,
                         perfetto_service()->GetService(), nullptr);

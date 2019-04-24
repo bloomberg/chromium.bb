@@ -82,7 +82,7 @@ public:
         this->drawPath(src, paint, nullptr, false, !isHairline, customBlitter);
     }
 
-    void paintPaths(SkSpan<const SkPathPos> pathsAndPositions,
+    void paintPaths(SkSpan<const SkGlyphRunListPainter::PathAndPos> pathsAndPositions,
                     SkScalar scale,
                     const SkPaint& paint) const override;
 

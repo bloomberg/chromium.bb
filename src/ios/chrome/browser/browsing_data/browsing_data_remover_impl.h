@@ -88,6 +88,7 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
 
   // Removes the browsing data stored in WKWebsiteDataStore if needed.
   void RemoveDataFromWKWebsiteDataStore(base::Time delete_begin,
+                                        base::Time delete_end,
                                         BrowsingDataRemoveMask mask);
 
   // Invokes the current task callback that the removal has completed.

@@ -26,9 +26,14 @@ class DrmOverlayManager : public OverlayManagerOzone {
   DrmOverlayManager();
   ~DrmOverlayManager() override;
 
+  void set_supports_overlays(bool supports_overlays) {
+    supports_overlays_ = supports_overlays;
+  }
+
   // OverlayManagerOzone:
   std::unique_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
       gfx::AcceleratedWidget w) override;
+  bool SupportsOverlays() const override;
 
   // Resets the cache of OverlaySurfaceCandidates and if they can be displayed
   // as an overlay. For use when display configuration changes.
@@ -53,7 +58,6 @@ class DrmOverlayManager : public OverlayManagerOzone {
   // Updates the MRU cache for overlay configuration |candidates| with |status|.
   void UpdateCacheForOverlayCandidates(
       const std::vector<OverlaySurfaceCandidate>& candidates,
-      const gfx::AcceleratedWidget widget,
       const std::vector<OverlayStatus>& status);
 
  private:
@@ -70,14 +74,14 @@ class DrmOverlayManager : public OverlayManagerOzone {
     std::vector<OverlayStatus> status;
   };
 
-  using OverlayCandidatesListCache =
-      base::MRUCache<std::vector<OverlaySurfaceCandidate>,
-                     OverlayValidationCacheValue>;
+  // Whether we have DRM atomic capabilities and can support HW overlays.
+  bool supports_overlays_ = false;
 
-  // Map of each widget to the cache of list of all OverlaySurfaceCandidate
-  // instances which have been requested for validation and/or validated.
-  std::map<gfx::AcceleratedWidget, OverlayCandidatesListCache>
-      widget_cache_map_;
+  // List of all OverlaySurfaceCandidate instances which have been requested
+  // for validation and/or validated.
+  base::MRUCache<std::vector<OverlaySurfaceCandidate>,
+                 OverlayValidationCacheValue>
+      cache_;
 
   THREAD_CHECKER(thread_checker_);
 

@@ -87,7 +87,6 @@
 #include "third_party/blink/renderer/modules/media_controls/media_controls_orientation_lock_delegate.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_rotate_to_fullscreen_delegate.h"
-#include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
 #include "third_party/blink/renderer/modules/remoteplayback/remote_playback.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -415,9 +414,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       volume_slider_wanted_timer_(
           media_element.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
-          &MediaControlsImpl::VolumeSliderWantedTimerFired),
-      text_track_manager_(
-          MakeGarbageCollected<MediaControlsTextTrackManager>(media_element)) {
+          &MediaControlsImpl::VolumeSliderWantedTimerFired) {
   // On touch devices, start with the assumption that the user will interact via
   // touch events.
   Settings* settings = media_element.GetDocument().GetSettings();
@@ -942,7 +939,9 @@ void MediaControlsImpl::Reset() {
 
   UpdatePlayState();
 
-  UpdateTimeIndicators();
+  UpdateCurrentTimeDisplay();
+
+  timeline_->SetPosition(MediaElement().currentTime());
 
   OnVolumeChange();
   OnTextTracksAddedOrRemoved();
@@ -955,11 +954,6 @@ void MediaControlsImpl::Reset() {
   UpdateCSSClassFromState();
   UpdateSizingCSSClass();
   OnControlsListUpdated();
-}
-
-void MediaControlsImpl::UpdateTimeIndicators() {
-  timeline_->SetPosition(MediaElement().currentTime());
-  UpdateCurrentTimeDisplay();
 }
 
 void MediaControlsImpl::OnControlsListUpdated() {
@@ -1132,9 +1126,6 @@ bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
   if (panel_->KeepDisplayedForAccessibility())
     return false;
 
-  if (MediaElement().seeking())
-    return false;
-
   return true;
 }
 
@@ -1211,12 +1202,46 @@ void MediaControlsImpl::ToggleTextTrackList() {
   text_track_list_->SetIsWanted(!text_track_list_->IsWanted());
 }
 
+void MediaControlsImpl::ShowTextTrackAtIndex(unsigned index_to_enable) {
+  TextTrackList* track_list = MediaElement().textTracks();
+  if (index_to_enable >= track_list->length())
+    return;
+  TextTrack* track = track_list->AnonymousIndexedGetter(index_to_enable);
+  if (track && track->CanBeRendered())
+    track->setMode(TextTrack::ShowingKeyword());
+}
+
+void MediaControlsImpl::DisableShowingTextTracks() {
+  TextTrackList* track_list = MediaElement().textTracks();
+  for (unsigned i = 0; i < track_list->length(); ++i) {
+    TextTrack* track = track_list->AnonymousIndexedGetter(i);
+    if (track->mode() == TextTrack::ShowingKeyword())
+      track->setMode(TextTrack::DisabledKeyword());
+  }
+}
+
 bool MediaControlsImpl::TextTrackListIsWanted() {
   return text_track_list_->IsWanted();
 }
 
-MediaControlsTextTrackManager& MediaControlsImpl::GetTextTrackManager() {
-  return *text_track_manager_;
+String MediaControlsImpl::GetTextTrackLabel(TextTrack* track) const {
+  if (!track) {
+    return MediaElement().GetLocale().QueryString(
+        WebLocalizedString::kTextTracksOff);
+  }
+
+  String track_label = track->label();
+
+  if (track_label.IsEmpty())
+    track_label = track->language();
+
+  if (track_label.IsEmpty()) {
+    track_label = String(MediaElement().GetLocale().QueryString(
+        WebLocalizedString::kTextTracksNoLabel,
+        String::Number(track->TrackIndex() + 1)));
+  }
+
+  return track_label;
 }
 
 void MediaControlsImpl::RefreshCastButtonVisibility() {
@@ -1434,7 +1459,7 @@ void MediaControlsImpl::UpdateOverflowMenuItemCSSClass() const {
 
     // We don't care if the hidden element still have animated-* CSS class
     if (inline_style &&
-        inline_style->GetPropertyValue(CSSPropertyID::kDisplay) == "none")
+        inline_style->GetPropertyValue(CSSPropertyDisplay) == "none")
       continue;
 
     AtomicString css_class =
@@ -1596,7 +1621,8 @@ void MediaControlsImpl::HandlePointerEvent(Event* event) {
       is_mouse_over_controls_ = true;
       if (!MediaElement().paused()) {
         MakeOpaqueFromPointerEvent();
-        StartHideMediaControlsIfNecessary();
+        if (ShouldHideMediaControls())
+          StartHideMediaControlsTimer();
       }
     }
   } else if (event->type() == event_type_names::kPointerout) {
@@ -1782,11 +1808,6 @@ void MediaControlsImpl::HideMediaControlsTimerFired(TimerBase*) {
   overlay_cast_button_->SetIsWanted(false);
 }
 
-void MediaControlsImpl::StartHideMediaControlsIfNecessary() {
-  if (ShouldHideMediaControls())
-    StartHideMediaControlsTimer();
-}
-
 void MediaControlsImpl::StartHideMediaControlsTimer() {
   hide_media_controls_timer_.StartOneShot(
       GetTimeWithoutMouseMovementBeforeHidingMediaControls(), FROM_HERE);
@@ -1804,11 +1825,11 @@ void MediaControlsImpl::ResetHideMediaControlsTimer() {
 }
 
 void MediaControlsImpl::HideCursor() {
-  SetInlineStyleProperty(CSSPropertyID::kCursor, "none", false);
+  SetInlineStyleProperty(CSSPropertyCursor, "none", false);
 }
 
 void MediaControlsImpl::ShowCursor() {
-  RemoveInlineStyleProperty(CSSPropertyID::kCursor);
+  RemoveInlineStyleProperty(CSSPropertyCursor);
 }
 
 bool MediaControlsImpl::ContainsRelatedTarget(Event* event) {
@@ -1860,7 +1881,8 @@ void MediaControlsImpl::OnFocusIn() {
 }
 
 void MediaControlsImpl::OnTimeUpdate() {
-  UpdateTimeIndicators();
+  timeline_->SetPosition(MediaElement().currentTime());
+  UpdateCurrentTimeDisplay();
 
   // 'timeupdate' might be called in a paused state. The controls should not
   // become transparent in that case.
@@ -1902,7 +1924,8 @@ void MediaControlsImpl::OnDurationChange() {
 
 void MediaControlsImpl::OnPlay() {
   UpdatePlayState();
-  UpdateTimeIndicators();
+  timeline_->SetPosition(MediaElement().currentTime());
+  UpdateCurrentTimeDisplay();
   UpdateCSSClassFromState();
 }
 
@@ -1915,37 +1938,12 @@ void MediaControlsImpl::OnPlaying() {
 
 void MediaControlsImpl::OnPause() {
   UpdatePlayState();
-  UpdateTimeIndicators();
+  timeline_->SetPosition(MediaElement().currentTime());
+  UpdateCurrentTimeDisplay();
   MakeOpaque();
 
   StopHideMediaControlsTimer();
 
-  UpdateCSSClassFromState();
-}
-
-void MediaControlsImpl::OnSeeking() {
-  UpdateTimeIndicators();
-  if (!is_scrubbing_) {
-    is_scrubbing_ = true;
-    UpdateCSSClassFromState();
-  }
-
-  // Don't try to show the controls if the seek was caused by the video being
-  // looped.
-  if (MediaElement().Loop() && MediaElement().currentTime() == 0)
-    return;
-
-  if (!MediaElement().ShouldShowControls())
-    return;
-
-  MaybeShow();
-  StopHideMediaControlsTimer();
-}
-
-void MediaControlsImpl::OnSeeked() {
-  StartHideMediaControlsIfNecessary();
-
-  is_scrubbing_ = false;
   UpdateCSSClassFromState();
 }
 
@@ -1989,7 +1987,6 @@ void MediaControlsImpl::OnExitedFullscreen() {
   if (display_cutout_fullscreen_button_)
     display_cutout_fullscreen_button_->SetIsWanted(false);
 
-  HidePopupMenu();
   StopHideMediaControlsTimer();
   StartHideMediaControlsTimer();
 }
@@ -2204,11 +2201,6 @@ MediaControlsImpl::CurrentTimeDisplay() const {
   return *current_time_display_;
 }
 
-const MediaControlRemainingTimeDisplayElement&
-MediaControlsImpl::RemainingTimeDisplay() const {
-  return *duration_display_;
-}
-
 MediaControlToggleClosedCaptionsButtonElement&
 MediaControlsImpl::ToggleClosedCaptions() {
   return *toggle_closed_captions_button_;
@@ -2398,7 +2390,6 @@ void MediaControlsImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(loading_panel_);
   visitor->Trace(display_cutout_fullscreen_button_);
   visitor->Trace(volume_control_container_);
-  visitor->Trace(text_track_manager_);
   MediaControls::Trace(visitor);
   HTMLDivElement::Trace(visitor);
 }

@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_PAINTED_OVERLAY_SCROLLBAR_LAYER_H_
 #define CC_LAYERS_PAINTED_OVERLAY_SCROLLBAR_LAYER_H_
 
+#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/input/scrollbar.h"
 #include "cc/layers/layer.h"
@@ -19,9 +20,6 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerInterface,
  public:
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
 
-  PaintedOverlayScrollbarLayer(const PaintedOverlayScrollbarLayer&) = delete;
-  PaintedOverlayScrollbarLayer& operator=(const PaintedOverlayScrollbarLayer&) =
-      delete;
   static scoped_refptr<PaintedOverlayScrollbarLayer> Create(
       std::unique_ptr<Scrollbar> scrollbar,
       ElementId scroll_element_id = ElementId());
@@ -68,6 +66,8 @@ class CC_EXPORT PaintedOverlayScrollbarLayer : public ScrollbarLayerInterface,
 
   std::unique_ptr<ScopedUIResource> thumb_resource_;
   std::unique_ptr<ScopedUIResource> track_resource_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintedOverlayScrollbarLayer);
 };
 
 }  // namespace cc

@@ -981,16 +981,13 @@ Runner.prototype = {
    * @param {boolean} Whether to reset colors.
    */
   invert: function(reset) {
-    let htmlEl = document.firstElementChild;
-
     if (reset) {
-      htmlEl.classList.toggle(Runner.classes.INVERTED,
-          false);
+      document.body.classList.toggle(Runner.classes.INVERTED, false);
       this.invertTimer = 0;
       this.inverted = false;
     } else {
-      this.inverted = htmlEl.classList.toggle(
-          Runner.classes.INVERTED, this.invertTrigger);
+      this.inverted = document.body.classList.toggle(Runner.classes.INVERTED,
+          this.invertTrigger);
     }
   }
 };

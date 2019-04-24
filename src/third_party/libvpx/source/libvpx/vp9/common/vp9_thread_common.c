@@ -8,7 +8,6 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include <assert.h>
 #include <limits.h>
 #include "./vpx_config.h"
 #include "vpx_dsp/vpx_dsp_common.h"
@@ -93,7 +92,7 @@ static INLINE void thread_loop_filter_rows(
     int y_only, VP9LfSync *const lf_sync) {
   const int num_planes = y_only ? 1 : MAX_MB_PLANE;
   const int sb_cols = mi_cols_aligned_to_sb(cm->mi_cols) >> MI_BLOCK_SIZE_LOG2;
-  const int num_active_workers = lf_sync->num_active_workers;
+  const int num_active_workers = VPXMIN(lf_sync->num_workers, lf_sync->rows);
   int mi_row, mi_col;
   enum lf_path path;
   if (y_only)
@@ -104,8 +103,6 @@ static INLINE void thread_loop_filter_rows(
     path = LF_PATH_444;
   else
     path = LF_PATH_SLOW;
-
-  assert(num_active_workers > 0);
 
   for (mi_row = start; mi_row < stop;
        mi_row += num_active_workers * MI_BLOCK_SIZE) {
@@ -175,7 +172,6 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, VP9_COMMON *cm,
     vp9_loop_filter_dealloc(lf_sync);
     vp9_loop_filter_alloc(lf_sync, cm, sb_rows, cm->width, num_workers);
   }
-  lf_sync->num_active_workers = num_workers;
 
   // Initialize cur_sb_col to -1 for all SB rows.
   memset(lf_sync->cur_sb_col, -1, sizeof(*lf_sync->cur_sb_col) * sb_rows);
@@ -323,7 +319,6 @@ void vp9_loop_filter_alloc(VP9LfSync *lf_sync, VP9_COMMON *cm, int rows,
   CHECK_MEM_ERROR(cm, lf_sync->lfdata,
                   vpx_malloc(num_workers * sizeof(*lf_sync->lfdata)));
   lf_sync->num_workers = num_workers;
-  lf_sync->num_active_workers = lf_sync->num_workers;
 
   CHECK_MEM_ERROR(cm, lf_sync->cur_sb_col,
                   vpx_malloc(sizeof(*lf_sync->cur_sb_col) * rows));

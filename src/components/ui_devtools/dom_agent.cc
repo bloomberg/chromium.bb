@@ -71,8 +71,6 @@ void DOMAgent::OnUIElementAdded(UIElement* parent, UIElement* child) {
                                 BuildTreeForUIElement(child));
 
   child->set_is_updating(false);
-  for (auto& observer : observers_)
-    observer.OnElementAdded(child);
 }
 
 void DOMAgent::OnUIElementReordered(UIElement* parent, UIElement* child) {

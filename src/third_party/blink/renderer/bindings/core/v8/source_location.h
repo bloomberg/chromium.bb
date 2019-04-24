@@ -40,11 +40,12 @@ class CORE_EXPORT SourceLocation {
   // Forces full stack trace.
   static std::unique_ptr<SourceLocation> CaptureWithFullStackTrace();
 
-  SourceLocation(const String& url,
-                 unsigned line_number,
-                 unsigned column_number,
-                 std::unique_ptr<v8_inspector::V8StackTrace>,
-                 int script_id = 0);
+  static std::unique_ptr<SourceLocation> Create(
+      const String& url,
+      unsigned line_number,
+      unsigned column_number,
+      std::unique_ptr<v8_inspector::V8StackTrace>,
+      int script_id = 0);
   ~SourceLocation();
 
   bool IsUnknown() const {
@@ -72,6 +73,11 @@ class CORE_EXPORT SourceLocation {
   BuildInspectorObject() const;
 
  private:
+  SourceLocation(const String& url,
+                 unsigned line_number,
+                 unsigned column_number,
+                 std::unique_ptr<v8_inspector::V8StackTrace>,
+                 int script_id);
   static std::unique_ptr<SourceLocation> CreateFromNonEmptyV8StackTrace(
       std::unique_ptr<v8_inspector::V8StackTrace>,
       int script_id);

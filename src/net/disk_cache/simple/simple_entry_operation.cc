@@ -21,21 +21,23 @@ SimpleEntryOperation::~SimpleEntryOperation() = default;
 // static
 SimpleEntryOperation SimpleEntryOperation::OpenOperation(
     SimpleEntryImpl* entry,
+    OpenEntryIndexEnum index_state,
     net::CompletionOnceCallback callback,
     Entry** out_entry) {
-  return SimpleEntryOperation(entry, nullptr, std::move(callback), out_entry,
-                              nullptr, 0, 0, 0, nullptr, TYPE_OPEN,
-                              INDEX_NOEXIST, 0, false, false);
+  return SimpleEntryOperation(entry, NULL, std::move(callback), out_entry,
+                              nullptr, 0, 0, 0, NULL, TYPE_OPEN, index_state, 0,
+                              false, false);
 }
 
 // static
 SimpleEntryOperation SimpleEntryOperation::CreateOperation(
     SimpleEntryImpl* entry,
+    OpenEntryIndexEnum index_state,
     net::CompletionOnceCallback callback,
     Entry** out_entry) {
-  return SimpleEntryOperation(entry, nullptr, std::move(callback), out_entry,
-                              nullptr, 0, 0, 0, nullptr, TYPE_CREATE,
-                              INDEX_NOEXIST, 0, false, false);
+  return SimpleEntryOperation(entry, NULL, std::move(callback), out_entry,
+                              nullptr, 0, 0, 0, NULL, TYPE_CREATE, index_state,
+                              0, false, false);
 }
 
 // static
@@ -44,17 +46,17 @@ SimpleEntryOperation SimpleEntryOperation::OpenOrCreateOperation(
     OpenEntryIndexEnum index_state,
     net::CompletionOnceCallback callback,
     EntryWithOpened* entry_struct) {
-  return SimpleEntryOperation(
-      entry, nullptr, std::move(callback), nullptr, entry_struct, 0, 0, 0,
-      nullptr, TYPE_OPEN_OR_CREATE, index_state, 0, false, false);
+  return SimpleEntryOperation(entry, NULL, std::move(callback), nullptr,
+                              entry_struct, 0, 0, 0, NULL, TYPE_OPEN_OR_CREATE,
+                              index_state, 0, false, false);
 }
 
 // static
 SimpleEntryOperation SimpleEntryOperation::CloseOperation(
     SimpleEntryImpl* entry) {
-  return SimpleEntryOperation(entry, nullptr, CompletionOnceCallback(), nullptr,
-                              nullptr, 0, 0, 0, nullptr, TYPE_CLOSE,
-                              INDEX_NOEXIST, 0, false, false);
+  return SimpleEntryOperation(entry, NULL, CompletionOnceCallback(), nullptr,
+                              nullptr, 0, 0, 0, NULL, TYPE_CLOSE, INDEX_NOEXIST,
+                              0, false, false);
 }
 
 // static
@@ -66,8 +68,8 @@ SimpleEntryOperation SimpleEntryOperation::ReadOperation(
     net::IOBuffer* buf,
     CompletionOnceCallback callback) {
   return SimpleEntryOperation(entry, buf, std::move(callback), nullptr, nullptr,
-                              offset, 0, length, nullptr, TYPE_READ,
-                              INDEX_NOEXIST, index, false, false);
+                              offset, 0, length, NULL, TYPE_READ, INDEX_NOEXIST,
+                              index, false, false);
 }
 
 // static
@@ -81,7 +83,7 @@ SimpleEntryOperation SimpleEntryOperation::WriteOperation(
     bool optimistic,
     CompletionOnceCallback callback) {
   return SimpleEntryOperation(entry, buf, std::move(callback), nullptr, nullptr,
-                              offset, 0, length, nullptr, TYPE_WRITE,
+                              offset, 0, length, NULL, TYPE_WRITE,
                               INDEX_NOEXIST, index, truncate, optimistic);
 }
 
@@ -93,8 +95,8 @@ SimpleEntryOperation SimpleEntryOperation::ReadSparseOperation(
     net::IOBuffer* buf,
     CompletionOnceCallback callback) {
   return SimpleEntryOperation(entry, buf, std::move(callback), nullptr, nullptr,
-                              0, sparse_offset, length, nullptr,
-                              TYPE_READ_SPARSE, INDEX_NOEXIST, 0, false, false);
+                              0, sparse_offset, length, NULL, TYPE_READ_SPARSE,
+                              INDEX_NOEXIST, 0, false, false);
 }
 
 // static
@@ -104,9 +106,9 @@ SimpleEntryOperation SimpleEntryOperation::WriteSparseOperation(
     int length,
     net::IOBuffer* buf,
     CompletionOnceCallback callback) {
-  return SimpleEntryOperation(
-      entry, buf, std::move(callback), nullptr, nullptr, 0, sparse_offset,
-      length, nullptr, TYPE_WRITE_SPARSE, INDEX_NOEXIST, 0, false, false);
+  return SimpleEntryOperation(entry, buf, std::move(callback), nullptr, nullptr,
+                              0, sparse_offset, length, NULL, TYPE_WRITE_SPARSE,
+                              INDEX_NOEXIST, 0, false, false);
 }
 
 // static
@@ -116,7 +118,7 @@ SimpleEntryOperation SimpleEntryOperation::GetAvailableRangeOperation(
     int length,
     int64_t* out_start,
     CompletionOnceCallback callback) {
-  return SimpleEntryOperation(entry, nullptr, std::move(callback), nullptr,
+  return SimpleEntryOperation(entry, NULL, std::move(callback), nullptr,
                               nullptr, 0, sparse_offset, length, out_start,
                               TYPE_GET_AVAILABLE_RANGE, INDEX_NOEXIST, 0, false,
                               false);
@@ -126,13 +128,13 @@ SimpleEntryOperation SimpleEntryOperation::GetAvailableRangeOperation(
 SimpleEntryOperation SimpleEntryOperation::DoomOperation(
     SimpleEntryImpl* entry,
     net::CompletionOnceCallback callback) {
-  net::IOBuffer* const buf = nullptr;
-  Entry** const out_entry = nullptr;
+  net::IOBuffer* const buf = NULL;
+  Entry** const out_entry = NULL;
   EntryWithOpened* out_entry_struct = nullptr;
   const int offset = 0;
   const int64_t sparse_offset = 0;
   const int length = 0;
-  int64_t* const out_start = nullptr;
+  int64_t* const out_start = NULL;
   const OpenEntryIndexEnum index_state = INDEX_NOEXIST;
   const int index = 0;
   const bool truncate = false;

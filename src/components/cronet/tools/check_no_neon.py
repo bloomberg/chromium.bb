@@ -9,11 +9,11 @@ import argparse
 import os
 import sys
 
-REPOSITORY_ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
+REPOSITORY_ROOT = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..'))
 
-sys.path.insert(0, os.path.join(REPOSITORY_ROOT, 'build/android/gyp'))
-from util import build_utils  # pylint: disable=import-error
+sys.path.append(os.path.join(REPOSITORY_ROOT, 'build/android/gyp/util'))
+import build_utils
 
 
 def main(args):

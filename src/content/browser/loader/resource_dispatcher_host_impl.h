@@ -77,6 +77,7 @@ class ResourceHandler;
 class ResourceMessageDelegate;
 class ResourceRequesterInfo;
 class ResourceRequestInfoImpl;
+class ServiceWorkerNavigationHandleCore;
 struct NavigationRequestInfo;
 struct Referrer;
 struct ResourceRequest;
@@ -234,6 +235,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       std::unique_ptr<NavigationUIData> navigation_ui_data,
       network::mojom::URLLoaderClientPtr url_loader_client,
       network::mojom::URLLoaderRequest url_loader_request,
+      ServiceWorkerNavigationHandleCore* service_worker_handle_core,
       AppCacheNavigationHandleCore* appcache_handle_core,
       uint32_t url_loader_options,
       net::RequestPriority net_priority,
@@ -393,7 +395,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // ResourceLoaderDelegate implementation:
   std::unique_ptr<LoginDelegate> CreateLoginDelegate(
       ResourceLoader* loader,
-      const net::AuthChallengeInfo& auth_info) override;
+      net::AuthChallengeInfo* auth_info) override;
   bool HandleExternalProtocol(ResourceLoader* loader, const GURL& url) override;
   void DidStartRequest(ResourceLoader* loader) override;
   void DidReceiveRedirect(ResourceLoader* loader,

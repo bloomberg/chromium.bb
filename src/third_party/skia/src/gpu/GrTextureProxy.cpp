@@ -76,15 +76,13 @@ GrTextureProxy::~GrTextureProxy() {
     }
 }
 
-bool GrTextureProxy::instantiate(GrResourceProvider* resourceProvider,
-                                 bool dontForceNoPendingIO) {
+bool GrTextureProxy::instantiate(GrResourceProvider* resourceProvider) {
     if (LazyState::kNot != this->lazyInstantiationState()) {
         return false;
     }
     if (!this->instantiateImpl(resourceProvider, 1, /* needsStencil = */ false,
                                kNone_GrSurfaceFlags, fMipMapped,
-                               fUniqueKey.isValid() ? &fUniqueKey : nullptr,
-                               dontForceNoPendingIO)) {
+                               fUniqueKey.isValid() ? &fUniqueKey : nullptr)) {
         return false;
     }
 
@@ -94,12 +92,10 @@ bool GrTextureProxy::instantiate(GrResourceProvider* resourceProvider,
 }
 
 sk_sp<GrSurface> GrTextureProxy::createSurface(GrResourceProvider* resourceProvider) const {
-    SkASSERT(resourceProvider->explicitlyAllocateGPUResources());
-
-    sk_sp<GrSurface> surface = this->createSurfaceImpl(resourceProvider, 1,
-                                                       /* needsStencil = */ false,
-                                                       kNone_GrSurfaceFlags,
-                                                       fMipMapped, true);
+    sk_sp<GrSurface> surface= this->createSurfaceImpl(resourceProvider, 1,
+                                                      /* needsStencil = */ false,
+                                                      kNone_GrSurfaceFlags,
+                                                      fMipMapped);
     if (!surface) {
         return nullptr;
     }
@@ -154,7 +150,7 @@ void GrTextureProxy::setUniqueKey(GrProxyProvider* proxyProvider, const GrUnique
     SkASSERT(key.isValid());
     SkASSERT(!fUniqueKey.isValid()); // proxies can only ever get one uniqueKey
 
-    if (fTarget && fSyncTargetKey) {
+    if (fTarget) {
         if (!fTarget->getUniqueKey().isValid()) {
             fTarget->resourcePriv().setUniqueKey(key);
         }

@@ -60,7 +60,6 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
-#include "third_party/blink/renderer/core/events/current_input_event.h"
 #include "third_party/blink/renderer/core/events/hash_change_event.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
@@ -94,7 +93,6 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/create_window.h"
-#include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
@@ -201,7 +199,7 @@ static void UntrackAllBeforeUnloadEventListeners(LocalDOMWindow* dom_window) {
 
 LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : DOMWindow(frame),
-      visualViewport_(MakeGarbageCollected<DOMVisualViewport>(this)),
+      visualViewport_(DOMVisualViewport::Create(this)),
       unused_preloads_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                              this,
                              &LocalDOMWindow::WarnUnusedPreloads),
@@ -226,10 +224,8 @@ void LocalDOMWindow::AcceptLanguagesChanged() {
 }
 
 TrustedTypePolicyFactory* LocalDOMWindow::trustedTypes() const {
-  if (!trusted_types_) {
-    trusted_types_ =
-        MakeGarbageCollected<TrustedTypePolicyFactory>(GetExecutionContext());
-  }
+  if (!trusted_types_)
+    trusted_types_ = TrustedTypePolicyFactory::Create(GetExecutionContext());
   return trusted_types_.Get();
 }
 
@@ -245,9 +241,8 @@ Document* LocalDOMWindow::CreateDocument(const String& mime_type,
     document = DOMImplementation::createDocument(
         mime_type, init,
         init.GetFrame() ? init.GetFrame()->InViewSourceMode() : false);
-    if (document->IsPluginDocument() &&
-        document->IsSandboxed(WebSandboxFlags::kPlugins))
-      document = MakeGarbageCollected<SinkDocument>(init);
+    if (document->IsPluginDocument() && document->IsSandboxed(kSandboxPlugins))
+      document = SinkDocument::Create(init);
   }
 
   return document;
@@ -466,55 +461,49 @@ int LocalDOMWindow::orientation() const {
 
 Screen* LocalDOMWindow::screen() const {
   if (!screen_)
-    screen_ = MakeGarbageCollected<Screen>(GetFrame());
+    screen_ = Screen::Create(GetFrame());
   return screen_.Get();
 }
 
 History* LocalDOMWindow::history() const {
   if (!history_)
-    history_ = MakeGarbageCollected<History>(GetFrame());
+    history_ = History::Create(GetFrame());
   return history_.Get();
 }
 
 BarProp* LocalDOMWindow::locationbar() const {
-  if (!locationbar_) {
-    locationbar_ =
-        MakeGarbageCollected<BarProp>(GetFrame(), BarProp::kLocationbar);
-  }
+  if (!locationbar_)
+    locationbar_ = BarProp::Create(GetFrame(), BarProp::kLocationbar);
   return locationbar_.Get();
 }
 
 BarProp* LocalDOMWindow::menubar() const {
   if (!menubar_)
-    menubar_ = MakeGarbageCollected<BarProp>(GetFrame(), BarProp::kMenubar);
+    menubar_ = BarProp::Create(GetFrame(), BarProp::kMenubar);
   return menubar_.Get();
 }
 
 BarProp* LocalDOMWindow::personalbar() const {
-  if (!personalbar_) {
-    personalbar_ =
-        MakeGarbageCollected<BarProp>(GetFrame(), BarProp::kPersonalbar);
-  }
+  if (!personalbar_)
+    personalbar_ = BarProp::Create(GetFrame(), BarProp::kPersonalbar);
   return personalbar_.Get();
 }
 
 BarProp* LocalDOMWindow::scrollbars() const {
-  if (!scrollbars_) {
-    scrollbars_ =
-        MakeGarbageCollected<BarProp>(GetFrame(), BarProp::kScrollbars);
-  }
+  if (!scrollbars_)
+    scrollbars_ = BarProp::Create(GetFrame(), BarProp::kScrollbars);
   return scrollbars_.Get();
 }
 
 BarProp* LocalDOMWindow::statusbar() const {
   if (!statusbar_)
-    statusbar_ = MakeGarbageCollected<BarProp>(GetFrame(), BarProp::kStatusbar);
+    statusbar_ = BarProp::Create(GetFrame(), BarProp::kStatusbar);
   return statusbar_.Get();
 }
 
 BarProp* LocalDOMWindow::toolbar() const {
   if (!toolbar_)
-    toolbar_ = MakeGarbageCollected<BarProp>(GetFrame(), BarProp::kToolbar);
+    toolbar_ = BarProp::Create(GetFrame(), BarProp::kToolbar);
   return toolbar_.Get();
 }
 
@@ -529,16 +518,16 @@ ApplicationCache* LocalDOMWindow::applicationCache() const {
     return nullptr;
   if (!isSecureContext()) {
     Deprecation::CountDeprecation(
-        document(), WebFeature::kApplicationCacheAPIInsecureOrigin);
+        GetFrame(), WebFeature::kApplicationCacheAPIInsecureOrigin);
   }
   if (!application_cache_)
-    application_cache_ = MakeGarbageCollected<ApplicationCache>(GetFrame());
+    application_cache_ = ApplicationCache::Create(GetFrame());
   return application_cache_.Get();
 }
 
 Navigator* LocalDOMWindow::navigator() const {
   if (!navigator_)
-    navigator_ = MakeGarbageCollected<Navigator>(GetFrame());
+    navigator_ = Navigator::Create(GetFrame());
   return navigator_.Get();
 }
 
@@ -599,8 +588,8 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
               "') does not match the recipient window's origin ('" +
               document()->GetSecurityOrigin()->ToString() + "').");
       ConsoleMessage* console_message = ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kSecurity,
-          mojom::ConsoleMessageLevel::kError, message, std::move(location));
+          kSecurityMessageSource, mojom::ConsoleMessageLevel::kError, message,
+          std::move(location));
       GetFrameConsole()->AddMessage(console_message);
       return;
     }
@@ -668,11 +657,10 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
   if (!GetFrame())
     return;
 
-  if (document()->IsSandboxed(WebSandboxFlags::kModals)) {
+  if (document()->IsSandboxed(kSandboxModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
         "Ignored call to 'alert()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return;
@@ -698,11 +686,10 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
   if (!GetFrame())
     return false;
 
-  if (document()->IsSandboxed(WebSandboxFlags::kModals)) {
+  if (document()->IsSandboxed(kSandboxModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
         "Ignored call to 'confirm()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return false;
@@ -730,11 +717,10 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
   if (!GetFrame())
     return String();
 
-  if (document()->IsSandboxed(WebSandboxFlags::kModals)) {
+  if (document()->IsSandboxed(kSandboxModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
         "Ignored call to 'prompt()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return String();
@@ -773,7 +759,7 @@ bool LocalDOMWindow::find(const String& string,
 
   // Up-to-date, clean tree is required for finding text in page, since it
   // relies on TextIterator to look over the text.
-  document()->UpdateStyleAndLayout();
+  document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // FIXME (13016): Support searchInFrames and showDialog
   FindOptions options =
@@ -836,13 +822,14 @@ IntSize LocalDOMWindow::GetViewportSize() const {
   // after a layout, perform one now so queries during page load will use the
   // up to date viewport.
   if (page->GetSettings().GetViewportEnabled() && GetFrame()->IsMainFrame())
-    document()->UpdateStyleAndLayout();
+    document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // FIXME: This is potentially too much work. We really only need to know the
   // dimensions of the parent frame's layoutObject.
   if (Frame* parent = GetFrame()->Tree().Parent()) {
     if (auto* parent_local_frame = DynamicTo<LocalFrame>(parent))
-      parent_local_frame->GetDocument()->UpdateStyleAndLayout();
+      parent_local_frame->GetDocument()
+          ->UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
 
   return document()->View()->Size();
@@ -908,7 +895,7 @@ double LocalDOMWindow::scrollX() const {
   if (!view)
     return 0;
 
-  document()->UpdateStyleAndLayout();
+  document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // TODO(bokan): This is wrong when the document.rootScroller is non-default.
   // crbug.com/505516.
@@ -925,7 +912,7 @@ double LocalDOMWindow::scrollY() const {
   if (!view)
     return 0;
 
-  document()->UpdateStyleAndLayout();
+  document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // TODO(bokan): This is wrong when the document.rootScroller is non-default.
   // crbug.com/505516.
@@ -970,7 +957,7 @@ Document* LocalDOMWindow::document() const {
 
 StyleMedia* LocalDOMWindow::styleMedia() const {
   if (!media_)
-    media_ = MakeGarbageCollected<StyleMedia>(GetFrame());
+    media_ = StyleMedia::Create(GetFrame());
   return media_.Get();
 }
 
@@ -978,16 +965,15 @@ CSSStyleDeclaration* LocalDOMWindow::getComputedStyle(
     Element* elt,
     const String& pseudo_elt) const {
   DCHECK(elt);
-  return MakeGarbageCollected<CSSComputedStyleDeclaration>(elt, false,
-                                                           pseudo_elt);
+  return CSSComputedStyleDeclaration::Create(elt, false, pseudo_elt);
 }
 
 ScriptPromise LocalDOMWindow::getComputedAccessibleNode(
     ScriptState* script_state,
     Element* element) {
   DCHECK(element);
-  auto* resolver = MakeGarbageCollected<ComputedAccessibleNodePromiseResolver>(
-      script_state, *element);
+  ComputedAccessibleNodePromiseResolver* resolver =
+      ComputedAccessibleNodePromiseResolver::Create(script_state, *element);
   ScriptPromise promise = resolver->Promise();
   resolver->ComputeAccessibleNode();
   return promise;
@@ -1018,7 +1004,7 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
-  document()->UpdateStyleAndLayout();
+  document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   LocalFrameView* view = GetFrame()->View();
   if (!view)
@@ -1081,7 +1067,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
   // clamped, which is never the case for (0, 0).
   if (!scroll_to_options->hasLeft() || !scroll_to_options->hasTop() ||
       scroll_to_options->left() || scroll_to_options->top()) {
-    document()->UpdateStyleAndLayout();
+    document()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
 
   double scaled_x = 0.0;
@@ -1185,9 +1171,8 @@ void LocalDOMWindow::resizeTo(int width, int height) const {
 }
 
 int LocalDOMWindow::requestAnimationFrame(V8FrameRequestCallback* callback) {
-  auto* frame_callback =
-      MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
-          callback);
+  FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
+      FrameRequestCallbackCollection::V8FrameCallback::Create(callback);
   frame_callback->SetUseLegacyTimeBase(false);
   if (Document* doc = document())
     return doc->RequestAnimationFrame(frame_callback);
@@ -1196,9 +1181,8 @@ int LocalDOMWindow::requestAnimationFrame(V8FrameRequestCallback* callback) {
 
 int LocalDOMWindow::webkitRequestAnimationFrame(
     V8FrameRequestCallback* callback) {
-  auto* frame_callback =
-      MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
-          callback);
+  FrameRequestCallbackCollection::V8FrameCallback* frame_callback =
+      FrameRequestCallbackCollection::V8FrameCallback::Create(callback);
   frame_callback->SetUseLegacyTimeBase(true);
   if (Document* document = this->document())
     return document->RequestAnimationFrame(frame_callback);
@@ -1319,18 +1303,20 @@ void LocalDOMWindow::RemovedEventListener(
 }
 
 void LocalDOMWindow::WarnUnusedPreloads(TimerBase* base) {
-  if (!document() || !document()->Fetcher())
+  if (!GetFrame() || !GetFrame()->Loader().GetDocumentLoader())
     return;
-  Vector<KURL> urls = document()->Fetcher()->GetUrlsOfUnusedPreloads();
+  ResourceFetcher* fetcher =
+      GetFrame()->Loader().GetDocumentLoader()->Fetcher();
+  DCHECK(fetcher);
+  Vector<KURL> urls = fetcher->GetUrlsOfUnusedPreloads();
   for (const KURL& url : urls) {
     String message =
         "The resource " + url.GetString() + " was preloaded using link " +
         "preload but not used within a few seconds from the window's load " +
         "event. Please make sure it has an appropriate `as` value and it is " +
         "preloaded intentionally.";
-    GetFrameConsole()->AddMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning, message));
+    GetFrameConsole()->AddMessage(ConsoleMessage::Create(
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
   }
 }
 
@@ -1344,11 +1330,12 @@ void LocalDOMWindow::DispatchLoadEvent() {
     timing.MarkLoadEventStart();
     DispatchEvent(load_event, document());
     timing.MarkLoadEventEnd();
+    DCHECK(document_loader->Fetcher());
     // If fetcher->countPreloads() is not empty here, it's full of link
     // preloads, as speculatove preloads were cleared at DCL.
     if (GetFrame() &&
         document_loader == GetFrame()->Loader().GetDocumentLoader() &&
-        document()->Fetcher()->CountPreloads()) {
+        document_loader->Fetcher()->CountPreloads()) {
       unused_preloads_timer_.StartOneShot(kUnusedPreloadTimeout, FROM_HERE);
     }
   } else {
@@ -1418,9 +1405,8 @@ void LocalDOMWindow::PrintErrorMessage(const String& message) const {
   if (message.IsEmpty())
     return;
 
-  GetFrameConsole()->AddMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                             mojom::ConsoleMessageLevel::kError, message));
+  GetFrameConsole()->AddMessage(ConsoleMessage::Create(
+      kJSMessageSource, mojom::ConsoleMessageLevel::kError, message));
 }
 
 DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
@@ -1462,87 +1448,42 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   if (!features.IsEmpty())
     UseCounter::Count(*active_document, WebFeature::kDOMWindowOpenFeatures);
 
-  KURL completed_url =
-      url_string.IsEmpty()
-          ? KURL(g_empty_string)
-          : entered_window_frame->GetDocument()->CompleteURL(url_string);
-  if (!completed_url.IsEmpty() && !completed_url.IsValid()) {
-    UseCounter::Count(active_document, WebFeature::kWindowOpenWithInvalidURL);
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kSyntaxError,
-        "Unable to open a window with invalid URL '" +
-            completed_url.GetString() + "'.\n");
-    return nullptr;
-  }
-
-  WebWindowFeatures window_features = GetWindowFeaturesFromString(features);
-
-  FrameLoadRequest frame_request(active_document,
-                                 ResourceRequest(completed_url),
-                                 target.IsEmpty() ? "_blank" : target);
-  frame_request.SetFeaturesForWindowOpen(window_features);
-
-  // Normally, FrameLoader would take care of setting the referrer for a
-  // navigation that is triggered from javascript. However, creating a window
-  // goes through sufficient processing that it eventually enters FrameLoader as
-  // an embedder-initiated navigation.  FrameLoader assumes no responsibility
-  // for generating an embedder-initiated navigation's referrer, so we need to
-  // ensure the proper referrer is set now.
-  // TODO(domfarolino): Stop setting ResourceRequest's HTTP Referrer and store
-  // this is a separate member. See https://crbug.com/850813.
-  frame_request.GetResourceRequest().SetHttpReferrer(
-      SecurityPolicy::GenerateReferrer(
-          active_document->GetReferrerPolicy(), completed_url,
-          window_features.noreferrer ? Referrer::NoReferrer()
-                                     : active_document->OutgoingReferrer()));
-
-  frame_request.GetResourceRequest().SetHasUserGesture(
-      LocalFrame::HasTransientUserActivation(GetFrame()));
-  GetFrame()->MaybeLogAdClickNavigation();
-
-  if (const WebInputEvent* input_event = CurrentInputEvent::Get())
-    frame_request.SetInputStartTime(input_event->TimeStamp());
-
-  FrameTree::FindResult result =
-      GetFrame()->Tree().FindOrCreateFrameForNavigation(frame_request);
-  if (!result.frame)
-    return nullptr;
-
-  if (!result.new_window) {
-    Page* target_page = result.frame->GetPage();
-    if (target_page == GetFrame()->GetPage())
-      target_page->GetFocusController().SetFocusedFrame(result.frame);
+  // Get the target frame for the special cases of _top and _parent.
+  // In those cases, we schedule a location change right now and return early.
+  Frame* target_frame = nullptr;
+  if (EqualIgnoringASCIICase(target, "_top")) {
+    target_frame = &GetFrame()->Tree().Top();
+  } else if (EqualIgnoringASCIICase(target, "_parent")) {
+    if (Frame* parent = GetFrame()->Tree().Parent())
+      target_frame = parent;
     else
-      target_page->GetChromeClient().Focus(GetFrame());
-    // Focusing can fire onblur, so check for detach.
-    if (!result.frame->GetPage())
+      target_frame = GetFrame();
+  }
+
+  if (target_frame) {
+    if (!active_document->GetFrame() ||
+        !active_document->GetFrame()->CanNavigate(*target_frame)) {
       return nullptr;
+    }
+
+    KURL completed_url =
+        entered_window_frame->GetDocument()->CompleteURL(url_string);
+
+    if (target_frame->DomWindow()->IsInsecureScriptAccess(*incumbent_window,
+                                                          completed_url))
+      return target_frame->DomWindow();
+
+    if (url_string.IsEmpty())
+      return target_frame->DomWindow();
+
+    target_frame->ScheduleNavigation(*active_document, completed_url,
+                                     WebFrameLoadType::kStandard,
+                                     UserGestureStatus::kNone);
+    return target_frame->DomWindow();
   }
 
-  if ((!completed_url.IsEmpty() || result.new_window) &&
-      !result.frame->DomWindow()->IsInsecureScriptAccess(*incumbent_window,
-                                                         completed_url)) {
-    frame_request.SetFrameName("_self");
-    frame_request.SetNavigationPolicy(kNavigationPolicyCurrentTab);
-    result.frame->Navigate(frame_request, WebFrameLoadType::kStandard);
-  }
-
-  // TODO(japhet): window-open-noopener.html?_top and several tests in
-  // html/browsers/windows/browsing-context-names/ appear to require that
-  // the special case target names (_top, _parent, _self) ignore opener
-  // policy (by always returning a non-null window, and by never overriding
-  // the opener). The spec doesn't mention this.
-  if (EqualIgnoringASCIICase(target, "_top") ||
-      EqualIgnoringASCIICase(target, "_parent") ||
-      EqualIgnoringASCIICase(target, "_self")) {
-    return result.frame->DomWindow();
-  }
-
-  if (window_features.noopener)
-    return nullptr;
-  if (!result.new_window)
-    result.frame->Client()->SetOpener(GetFrame());
-  return result.frame->DomWindow();
+  return CreateWindow(url_string, target, features, *incumbent_window,
+                      *entered_window_frame, *GetFrame(), exception_state);
 }
 
 void LocalDOMWindow::Trace(blink::Visitor* visitor) {

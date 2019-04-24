@@ -6,59 +6,47 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_OOBE_SCREEN_WAITER_H_
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 
-namespace base {
-class RunLoop;
+namespace content {
+class MessageLoopRunner;
 }
 
 namespace chromeos {
 
-class OobeUI;
-
-// A waiter that blocks until the target oobe screen is reached.
+// A waiter that blocks until the expected oobe screen is reached.
 class OobeScreenWaiter : public OobeUI::Observer,
                          public test::TestConditionWaiter {
  public:
-  explicit OobeScreenWaiter(OobeScreen target_screen);
+  explicit OobeScreenWaiter(OobeScreen expected_screen);
   ~OobeScreenWaiter() override;
 
-  void set_no_assert_last_screen() { assert_last_screen_ = false; }
-  void set_assert_next_screen() { assert_next_screen_ = true; }
+
+  // Run message loop to wait for the expected_screen to be fully initialized.
+  void WaitForInitialization();
+
+  // Similar to Wait() but does not assert the current screen is
+  // expected_screen on exit. Use this when there are multiple screen changes
+  // during the wait and the screen to be waited is not the final one.
+  void WaitNoAssertCurrentScreen();
 
   // OobeUI::Observer implementation:
   void OnCurrentScreenChanged(OobeScreen current_screen,
                               OobeScreen new_screen) override;
-  void OnDestroyingOobeUI() override;
+  void OnScreenInitialized(OobeScreen screen) override;
 
   // TestConditionWaiter;
   void Wait() override;
 
  private:
-  enum class State { IDLE, WAITING_FOR_SCREEN, DONE };
-
   OobeUI* GetOobeUI();
-  void EndWait();
 
-  const OobeScreen target_screen_;
-
-  State state_ = State::IDLE;
-
-  // If set, waiter will assert that the OOBE UI does not transition to any
-  // other screen after the transition to the target screen.
-  // This applies to the time period Wait() is running only.
-  bool assert_last_screen_ = true;
-
-  // If set, the watier will assert OOBE UI does not transition to any other
-  // screen before transisioning to the target screen.
-  bool assert_next_screen_ = false;
-
-  ScopedObserver<OobeUI, OobeScreenWaiter> oobe_ui_observer_{this};
-
-  std::unique_ptr<base::RunLoop> run_loop_;
+  bool waiting_for_screen_init_ = false;
+  bool waiting_for_screen_ = false;
+  OobeScreen expected_screen_ = OobeScreen::SCREEN_UNKNOWN;
+  scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeScreenWaiter);
 };

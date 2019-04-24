@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "gpu/vulkan/vulkan_export.h"
-#include "gpu/vulkan/vulkan_fence_helper.h"
 
 namespace gpu {
 
@@ -75,7 +74,7 @@ class VULKAN_EXPORT VulkanCommandBuffer {
   VulkanDeviceQueue* device_queue_;
   VulkanCommandPool* command_pool_;
   VkCommandBuffer command_buffer_ = VK_NULL_HANDLE;
-  VulkanFenceHelper::FenceHandle submission_fence_;
+  VkFence submission_fence_ = VK_NULL_HANDLE;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanCommandBuffer);
 };

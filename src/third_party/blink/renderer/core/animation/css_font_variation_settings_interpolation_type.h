@@ -13,8 +13,7 @@ class CSSFontVariationSettingsInterpolationType : public CSSInterpolationType {
  public:
   CSSFontVariationSettingsInterpolationType(PropertyHandle property)
       : CSSInterpolationType(property) {
-    DCHECK_EQ(CssProperty().PropertyID(),
-              CSSPropertyID::kFontVariationSettings);
+    DCHECK_EQ(CssProperty().PropertyID(), CSSPropertyFontVariationSettings);
   }
 
   InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(

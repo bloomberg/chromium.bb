@@ -595,13 +595,13 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ClosableAfterNavigation) {
   // Navigate it elsewhere.
   content::TestNavigationObserver nav_observer(popup);
   popup->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16("location.href = '/empty.html'"), base::NullCallback());
+      base::UTF8ToUTF16("location.href = '/empty.html'"));
   nav_observer.Wait();
 
   // Have it close itself.
   CloseObserver close_observer(popup);
   popup->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16("window.close()"), base::NullCallback());
+      base::UTF8ToUTF16("window.close()"));
   close_observer.Wait();
 }
 

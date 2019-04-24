@@ -7,7 +7,7 @@
 namespace views {
 
 // static
-WindowButtonOrderProvider* WindowButtonOrderProvider::instance_ = nullptr;
+WindowButtonOrderProvider* WindowButtonOrderProvider::instance_ = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 // WindowButtonOrderProvider, public:
@@ -28,7 +28,8 @@ WindowButtonOrderProvider::WindowButtonOrderProvider() {
   trailing_buttons_.push_back(views::FRAME_BUTTON_CLOSE);
 }
 
-WindowButtonOrderProvider::~WindowButtonOrderProvider() = default;
+WindowButtonOrderProvider::~WindowButtonOrderProvider() {
+}
 
 void WindowButtonOrderProvider::SetWindowButtonOrder(
     const std::vector<views::FrameButton>& leading_buttons,

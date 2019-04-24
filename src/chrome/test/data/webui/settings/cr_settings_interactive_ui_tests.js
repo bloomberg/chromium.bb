@@ -57,13 +57,7 @@ CrSettingsSyncPageTest.prototype = {
   ]),
 };
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrSettingsSyncPageTest', 'MAYBE_All', function() {
+TEST_F('CrSettingsSyncPageTest', 'All', function() {
   mocha.run();
 });
 
@@ -85,12 +79,6 @@ CrSettingsAnimatedPagesTest.prototype = {
   ]),
 };
 
-// Web UI interactive tests are flaky on Win10, see https://crbug.com/711256
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-TEST_F('CrSettingsAnimatedPagesTest', 'MAYBE_All', function() {
+TEST_F('CrSettingsAnimatedPagesTest', 'All', function() {
   mocha.run();
 });

@@ -265,8 +265,6 @@ bool PhoneNumbersMatch(const base::string16& number_a,
                        const base::string16& number_b,
                        const std::string& raw_region,
                        const std::string& app_locale) {
-  // TODO(crbug.com/953678): Maybe return true if two empty strings are given.
-
   // Sanitize the provided |raw_region| before trying to use it for parsing.
   const std::string region = SanitizeRegion(raw_region, app_locale);
 

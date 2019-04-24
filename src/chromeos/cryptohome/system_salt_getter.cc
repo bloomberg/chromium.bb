@@ -14,7 +14,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
 namespace {
@@ -36,7 +37,7 @@ void SystemSaltGetter::GetSystemSalt(
     return;
   }
 
-  CryptohomeClient::Get()->WaitForServiceToBeAvailable(
+  DBusThreadManager::Get()->GetCryptohomeClient()->WaitForServiceToBeAvailable(
       base::BindOnce(&SystemSaltGetter::DidWaitForServiceToBeAvailable,
                      weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -67,7 +68,7 @@ void SystemSaltGetter::DidWaitForServiceToBeAvailable(
     callback.Run(std::string());
     return;
   }
-  CryptohomeClient::Get()->GetSystemSalt(
+  DBusThreadManager::Get()->GetCryptohomeClient()->GetSystemSalt(
       base::BindOnce(&SystemSaltGetter::DidGetSystemSalt,
                      weak_ptr_factory_.GetWeakPtr(), callback));
 }

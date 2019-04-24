@@ -12,7 +12,6 @@
 #include "src/heap/heap-inl.h"
 #include "src/objects/hash-table-inl.h"
 #include "src/objects/js-collection.h"
-#include "src/objects/ordered-hash-table.h"
 #include "torque-generated/builtins-base-from-dsl-gen.h"
 #include "torque-generated/builtins-collections-from-dsl-gen.h"
 
@@ -760,9 +759,8 @@ Node* CollectionsBuiltinsAssembler::CallGetOrCreateHashRaw(Node* const key) {
   MachineType type_ptr = MachineType::Pointer();
   MachineType type_tagged = MachineType::AnyTagged();
 
-  Node* const result = CallCFunction(function_addr, type_tagged,
-                                     std::make_pair(type_ptr, isolate_ptr),
-                                     std::make_pair(type_tagged, key));
+  Node* const result = CallCFunction2(type_tagged, type_ptr, type_tagged,
+                                      function_addr, isolate_ptr, key);
 
   return result;
 }
@@ -776,10 +774,8 @@ Node* CollectionsBuiltinsAssembler::CallGetHashRaw(Node* const key) {
   MachineType type_ptr = MachineType::Pointer();
   MachineType type_tagged = MachineType::AnyTagged();
 
-  Node* const result = CallCFunction(function_addr, type_tagged,
-                                     std::make_pair(type_ptr, isolate_ptr),
-                                     std::make_pair(type_tagged, key));
-
+  Node* const result = CallCFunction2(type_tagged, type_ptr, type_tagged,
+                                      function_addr, isolate_ptr, key);
   return SmiUntag(result);
 }
 
@@ -2345,8 +2341,7 @@ void WeakCollectionsBuiltinsAssembler::AddEntry(
     TNode<Object> key, TNode<Object> value, TNode<IntPtrT> number_of_elements) {
   // See EphemeronHashTable::AddEntry().
   TNode<IntPtrT> value_index = ValueIndexFromKeyIndex(key_index);
-  UnsafeStoreFixedArrayElement(table, key_index, key,
-                               UPDATE_EPHEMERON_KEY_WRITE_BARRIER);
+  UnsafeStoreFixedArrayElement(table, key_index, key);
   UnsafeStoreFixedArrayElement(table, value_index, value);
 
   // See HashTableBase::ElementAdded().
@@ -2394,9 +2389,8 @@ TNode<Smi> WeakCollectionsBuiltinsAssembler::CreateIdentityHash(
   MachineType type_ptr = MachineType::Pointer();
   MachineType type_tagged = MachineType::AnyTagged();
 
-  return CAST(CallCFunction(function_addr, type_tagged,
-                            std::make_pair(type_ptr, isolate_ptr),
-                            std::make_pair(type_tagged, key)));
+  return CAST(CallCFunction2(type_tagged, type_ptr, type_tagged, function_addr,
+                             isolate_ptr, key));
 }
 
 TNode<IntPtrT> WeakCollectionsBuiltinsAssembler::EntryMask(
@@ -2617,7 +2611,7 @@ TF_BUILTIN(WeakMapGet, WeakCollectionsBuiltinsAssembler) {
   Return(UndefinedConstant());
 }
 
-TF_BUILTIN(WeakMapPrototypeHas, WeakCollectionsBuiltinsAssembler) {
+TF_BUILTIN(WeakMapHas, WeakCollectionsBuiltinsAssembler) {
   Node* const receiver = Parameter(Descriptor::kReceiver);
   Node* const key = Parameter(Descriptor::kKey);
   Node* const context = Parameter(Descriptor::kContext);
@@ -2781,7 +2775,7 @@ TF_BUILTIN(WeakSetPrototypeDelete, CodeStubAssembler) {
       CallBuiltin(Builtins::kWeakCollectionDelete, context, receiver, value));
 }
 
-TF_BUILTIN(WeakSetPrototypeHas, WeakCollectionsBuiltinsAssembler) {
+TF_BUILTIN(WeakSetHas, WeakCollectionsBuiltinsAssembler) {
   Node* const receiver = Parameter(Descriptor::kReceiver);
   Node* const key = Parameter(Descriptor::kKey);
   Node* const context = Parameter(Descriptor::kContext);

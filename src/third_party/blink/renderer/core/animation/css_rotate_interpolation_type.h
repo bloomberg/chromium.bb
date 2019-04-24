@@ -13,7 +13,7 @@ class CSSRotateInterpolationType : public CSSInterpolationType {
  public:
   CSSRotateInterpolationType(PropertyHandle property)
       : CSSInterpolationType(property) {
-    DCHECK_EQ(CssProperty().PropertyID(), CSSPropertyID::kRotate);
+    DCHECK_EQ(CssProperty().PropertyID(), CSSPropertyRotate);
   }
 
   InterpolationValue MaybeConvertStandardPropertyUnderlyingValue(

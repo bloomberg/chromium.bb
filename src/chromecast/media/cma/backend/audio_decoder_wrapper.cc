@@ -5,7 +5,6 @@
 #include "chromecast/media/cma/backend/audio_decoder_wrapper.h"
 
 #include <algorithm>
-#include <utility>
 
 #include "base/logging.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
@@ -125,12 +124,7 @@ CmaBackend::BufferStatus ActiveAudioDecoderWrapper::PushBuffer(
       }
     }
   }
-
-  // Retain the buffer. Backend expects pipeline to hold the buffer until
-  // Decoder::Delegate::OnBufferComplete is called.
-  // TODO: Release the buffer at a proper time.
-  pushed_buffer_ = std::move(buffer);
-  return decoder_.PushBuffer(pushed_buffer_.get());
+  return decoder_.PushBuffer(buffer.get());
 }
 
 bool ActiveAudioDecoderWrapper::SetConfig(const AudioConfig& config) {

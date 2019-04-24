@@ -11,8 +11,7 @@ namespace v8 {
 namespace internal {
 
 // A light-weight assembler for the Irregexp byte code.
-class V8_EXPORT_PRIVATE RegExpMacroAssemblerIrregexp
-    : public RegExpMacroAssembler {
+class RegExpMacroAssemblerIrregexp: public RegExpMacroAssembler {
  public:
   // Create an assembler. Instructions and relocation information are emitted
   // into a buffer, with the instructions starting from the beginning and the

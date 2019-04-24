@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/quick_unlock/pin_storage_prefs.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
@@ -23,9 +22,7 @@ class PinStoragePrefsUnitTest : public testing::Test {
   ~PinStoragePrefsUnitTest() override = default;
 
   // testing::Test:
-  void SetUp() override { quick_unlock::EnabledForTesting(true); }
-
-  void TearDown() override { quick_unlock::EnabledForTesting(false); }
+  void SetUp() override { quick_unlock::EnableForTesting(); }
 
   quick_unlock::PinStoragePrefs* PinStoragePrefs() const {
     return quick_unlock::QuickUnlockFactory::GetForProfile(profile_.get())

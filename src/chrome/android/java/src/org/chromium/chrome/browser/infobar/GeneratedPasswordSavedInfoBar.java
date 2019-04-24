@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.infobar;
 import android.text.SpannableString;
 import android.text.Spanned;
 
-import org.chromium.chrome.R;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 
 /**
@@ -31,8 +30,7 @@ public class GeneratedPasswordSavedInfoBar extends ConfirmInfoBar {
     public GeneratedPasswordSavedInfoBar(int iconDrawableId, String messageText,
             String detailsMessageText, int inlineLinkRangeStart, int inlineLinkRangeEnd,
             String buttonLabel) {
-        super(iconDrawableId, R.color.infobar_icon_drawable_color, null, messageText, null,
-                buttonLabel, null);
+        super(iconDrawableId, null, messageText, null, buttonLabel, null);
         mDetailsMessage = detailsMessageText;
         mInlineLinkRangeStart = inlineLinkRangeStart;
         mInlineLinkRangeEnd = inlineLinkRangeEnd;

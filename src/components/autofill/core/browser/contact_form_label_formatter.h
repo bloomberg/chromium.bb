@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_CONTACT_FORM_LABEL_FORMATTER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_CONTACT_FORM_LABEL_FORMATTER_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -21,23 +22,26 @@ class ContactFormLabelFormatter : public LabelFormatter {
  public:
   ContactFormLabelFormatter(const std::string& app_locale,
                             ServerFieldType focused_field_type,
-                            uint32_t groups,
-                            const std::vector<ServerFieldType>& field_types);
+                            const std::vector<ServerFieldType>& field_types,
+                            const std::set<FieldTypeGroup>& field_type_groups);
 
   ~ContactFormLabelFormatter() override;
 
-  base::string16 GetLabelForProfile(
-      const AutofillProfile& profile,
-      FieldTypeGroup focused_group) const override;
+  std::vector<base::string16> GetLabels(
+      const std::vector<AutofillProfile*>& profiles) const override;
 
  private:
-  // Returns |profile|'s email address if |profile| has a valid email address
-  // and if this formatter's associated form has an email field.
-  base::string16 MaybeGetEmail(const AutofillProfile& profile) const;
+  // A collection of field types that can be used to make labels. This
+  // collection excludes the focused_field_type_.
+  std::vector<ServerFieldType> field_types_for_labels_;
 
-  // Returns |profile|'s phone number if |profile| has a phone number and if
-  // this formatter's associated form has a phone field.
-  base::string16 MaybeGetPhone(const AutofillProfile& profile) const;
+  // A collection of meaningful FieldTypeGroups in the form with which the user
+  // is interacting.
+  std::set<FieldTypeGroup> field_type_groups_;
+
+  // A collection of meaningful FieldTypeGroups in the form with which the user
+  // is interacting minus the focused field's corresponding FieldTypeGroup.
+  std::set<FieldTypeGroup> filtered_field_type_groups_;
 };
 
 }  // namespace autofill

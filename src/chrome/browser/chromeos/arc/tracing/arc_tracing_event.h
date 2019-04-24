@@ -29,7 +29,7 @@ class ArcTracingEvent {
     kOverlap,  // event overlaps with compared event.
   };
 
-  explicit ArcTracingEvent(base::Value dictionary);
+  explicit ArcTracingEvent(std::unique_ptr<base::Value> dictionary);
   ~ArcTracingEvent();
 
   // Gets process id of the event. Returns 0 if not set.
@@ -117,7 +117,7 @@ class ArcTracingEvent {
 
  private:
   std::vector<std::unique_ptr<ArcTracingEvent>> children_;
-  base::Value dictionary_;
+  std::unique_ptr<base::Value> dictionary_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcTracingEvent);
 };

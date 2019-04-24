@@ -42,7 +42,7 @@ namespace blink {
 
 using namespace html_names;
 
-HTMLBodyElement::HTMLBodyElement(Document& document)
+inline HTMLBodyElement::HTMLBodyElement(Document& document)
     : HTMLElement(kBodyTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLBodyElement)
@@ -73,15 +73,15 @@ void HTMLBodyElement::CollectStyleForPresentationAttribute(
           CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));
     }
   } else if (name == kMarginwidthAttr || name == kLeftmarginAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginRight, value);
-    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginLeft, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginRight, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginLeft, value);
   } else if (name == kMarginheightAttr || name == kTopmarginAttr) {
-    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginBottom, value);
-    AddHTMLLengthToStyle(style, CSSPropertyID::kMarginTop, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginBottom, value);
+    AddHTMLLengthToStyle(style, CSSPropertyMarginTop, value);
   } else if (name == kBgcolorAttr) {
-    AddHTMLColorToStyle(style, CSSPropertyID::kBackgroundColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
   } else if (name == kTextAttr) {
-    AddHTMLColorToStyle(style, CSSPropertyID::kColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyColor, value);
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }

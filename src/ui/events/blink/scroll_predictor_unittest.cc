@@ -52,7 +52,7 @@ class ScrollPredictorTest : public testing::Test {
         WebInputEvent::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
         WebInputEvent::GetStaticTimeStampForTests() +
             base::TimeDelta::FromMillisecondsD(time_delta_in_milliseconds),
-        blink::WebGestureDevice::kTouchscreen);
+        blink::kWebGestureDeviceTouchscreen);
     gesture.data.scroll_update.delta_x = delta_x;
     gesture.data.scroll_update.delta_y = delta_y;
     gesture.data.scroll_update.inertial_phase = phase;
@@ -72,24 +72,18 @@ class ScrollPredictorTest : public testing::Test {
     WebGestureEvent gesture_begin(WebInputEvent::kGestureScrollBegin,
                                   WebInputEvent::kNoModifiers,
                                   WebInputEvent::GetStaticTimeStampForTests(),
-                                  blink::WebGestureDevice::kTouchscreen);
+                                  blink::kWebGestureDeviceTouchscreen);
     scroll_predictor_->ResetOnGestureScrollBegin(gesture_begin);
   }
 
   void HandleResampleScrollEvents(WebScopedInputEvent& event,
                                   double time_delta_in_milliseconds = 0) {
-    std::unique_ptr<EventWithCallback> event_with_callback =
-        std::make_unique<EventWithCallback>(std::move(event), LatencyInfo(),
-                                            base::TimeTicks(),
-                                            base::NullCallback());
-    event_with_callback->original_events() = std::move(original_events_);
-
-    event_with_callback = scroll_predictor_->ResampleScrollEvents(
-        std::move(event_with_callback),
+    scroll_predictor_->ResampleScrollEvents(
+        original_events_,
         WebInputEvent::GetStaticTimeStampForTests() +
-            base::TimeDelta::FromMillisecondsD(time_delta_in_milliseconds));
-
-    event = WebInputEventTraits::Clone(event_with_callback->event());
+            base::TimeDelta::FromMillisecondsD(time_delta_in_milliseconds),
+        event.get());
+    original_events_.clear();
   }
 
   bool PredictionAvailable(ui::InputPredictor::InputData* result,
@@ -172,7 +166,7 @@ TEST_F(ScrollPredictorTest, ScrollResamplingStates) {
   WebGestureEvent gesture_end(WebInputEvent::kGestureScrollEnd,
                               WebInputEvent::kNoModifiers,
                               WebInputEvent::GetStaticTimeStampForTests(),
-                              blink::WebGestureDevice::kTouchscreen);
+                              blink::kWebGestureDeviceTouchscreen);
   WebScopedInputEvent event = WebInputEventTraits::Clone(gesture_end);
   HandleResampleScrollEvents(event);
   EXPECT_FALSE(GetResamplingState());

@@ -80,6 +80,7 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/page/drag_data.h"
@@ -173,9 +174,9 @@ bool Editor::HandleTextEvent(TextEvent* event) {
   if (event->IsIncrementalInsertion())
     return false;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  frame_->GetDocument()->UpdateStyleAndLayout();
+  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (event->IsPaste()) {
     if (event->PastingFragment()) {
@@ -236,7 +237,7 @@ bool Editor::CanCopy() const {
   FrameSelection& selection = GetFrameSelection();
   if (!selection.IsAvailable())
     return false;
-  frame_->GetDocument()->UpdateStyleAndLayout();
+  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   const VisibleSelectionInFlatTree& visible_selection =
       selection.ComputeVisibleSelectionInFlatTree();
   return visible_selection.IsRange() &&
@@ -310,8 +311,8 @@ void Editor::ReplaceSelectionWithFragment(DocumentFragment* fragment,
   if (match_style)
     options |= ReplaceSelectionCommand::kMatchStyle;
   DCHECK(GetFrame().GetDocument());
-  MakeGarbageCollected<ReplaceSelectionCommand>(*GetFrame().GetDocument(),
-                                                fragment, options, input_type)
+  ReplaceSelectionCommand::Create(*GetFrame().GetDocument(), fragment, options,
+                                  input_type)
       ->Apply();
   RevealSelectionAfterEditingOperation();
 }
@@ -336,9 +337,8 @@ void Editor::ReplaceSelectionAfterDragging(DocumentFragment* fragment,
   if (drag_source_type == DragSourceType::kPlainTextSource)
     options |= ReplaceSelectionCommand::kMatchStyle;
   DCHECK(GetFrame().GetDocument());
-  MakeGarbageCollected<ReplaceSelectionCommand>(
-      *GetFrame().GetDocument(), fragment, options,
-      InputEvent::InputType::kInsertFromDrop)
+  ReplaceSelectionCommand::Create(*GetFrame().GetDocument(), fragment, options,
+                                  InputEvent::InputType::kInsertFromDrop)
       ->Apply();
 }
 
@@ -432,9 +432,9 @@ void Editor::ApplyParagraphStyle(CSSPropertyValueSet* style,
       !style)
     return;
   DCHECK(GetFrame().GetDocument());
-  MakeGarbageCollected<ApplyStyleCommand>(
-      *GetFrame().GetDocument(), MakeGarbageCollected<EditingStyle>(style),
-      input_type, ApplyStyleCommand::kForceBlockProperties)
+  ApplyStyleCommand::Create(*GetFrame().GetDocument(),
+                            EditingStyle::Create(style), input_type,
+                            ApplyStyleCommand::kForceBlockProperties)
       ->Apply();
 }
 
@@ -446,9 +446,13 @@ void Editor::ApplyParagraphStyleToSelection(CSSPropertyValueSet* style,
   ApplyParagraphStyle(style, input_type);
 }
 
+Editor* Editor::Create(LocalFrame& frame) {
+  return MakeGarbageCollected<Editor>(frame);
+}
+
 Editor::Editor(LocalFrame& frame)
     : frame_(&frame),
-      undo_stack_(MakeGarbageCollected<UndoStack>()),
+      undo_stack_(UndoStack::Create()),
       prevent_reveal_selection_(0),
       should_start_new_kill_ring_sequence_(false),
       // This is off by default, since most editors want this behavior (this
@@ -646,7 +650,7 @@ void Editor::SetBaseWritingDirection(WritingDirection direction) {
   MutableCSSPropertyValueSet* style =
       MutableCSSPropertyValueSet::Create(kHTMLQuirksMode);
   style->SetProperty(
-      CSSPropertyID::kDirection,
+      CSSPropertyDirection,
       direction == WritingDirection::kLeftToRight
           ? "ltr"
           : direction == WritingDirection::kRightToLeft ? "rtl" : "inherit",
@@ -713,7 +717,7 @@ void Editor::ComputeAndSetTypingStyle(CSSPropertyValueSet* style,
   if (typing_style_)
     typing_style_->OverrideWithStyle(style);
   else
-    typing_style_ = MakeGarbageCollected<EditingStyle>(style);
+    typing_style_ = EditingStyle::Create(style);
 
   typing_style_->PrepareToApplyAt(
       GetFrame()
@@ -727,8 +731,8 @@ void Editor::ComputeAndSetTypingStyle(CSSPropertyValueSet* style,
   EditingStyle* block_style = typing_style_->ExtractAndRemoveBlockProperties();
   if (!block_style->IsEmpty()) {
     DCHECK(GetFrame().GetDocument());
-    MakeGarbageCollected<ApplyStyleCommand>(*GetFrame().GetDocument(),
-                                            block_style, input_type)
+    ApplyStyleCommand::Create(*GetFrame().GetDocument(), block_style,
+                              input_type)
         ->Apply();
   }
 }

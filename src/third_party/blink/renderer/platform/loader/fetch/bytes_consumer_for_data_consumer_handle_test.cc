@@ -28,7 +28,7 @@ class BytesConsumerForDataConsumerHandleTest : public testing::Test {
  protected:
   using Command = ReplayingWebDataConsumerHandle::Command;
   ~BytesConsumerForDataConsumerHandleTest() override {
-    ThreadState::Current()->CollectAllGarbageForTesting();
+    ThreadState::Current()->CollectAllGarbage();
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {

@@ -216,7 +216,7 @@ std::string GetTestPublicKeyId() {
 }
 
 void GetX509CertSCT(scoped_refptr<SignedCertificateTimestamp>* sct_ref) {
-  CHECK(sct_ref != nullptr);
+  CHECK(sct_ref != NULL);
   *sct_ref = new SignedCertificateTimestamp();
   SignedCertificateTimestamp *const sct(sct_ref->get());
   sct->version = ct::SignedCertificateTimestamp::V1;
@@ -233,7 +233,7 @@ void GetX509CertSCT(scoped_refptr<SignedCertificateTimestamp>* sct_ref) {
 }
 
 void GetPrecertSCT(scoped_refptr<SignedCertificateTimestamp>* sct_ref) {
-  CHECK(sct_ref != nullptr);
+  CHECK(sct_ref != NULL);
   *sct_ref = new SignedCertificateTimestamp();
   SignedCertificateTimestamp *const sct(sct_ref->get());
   sct->version = ct::SignedCertificateTimestamp::V1;

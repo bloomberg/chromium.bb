@@ -5,7 +5,6 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 
 #include "base/bind_helpers.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/discardable_handle.h"
 #include "gpu/command_buffer/service/decoder_client.h"
@@ -1299,7 +1298,8 @@ error::Error GLES2DecoderPassthroughImpl::DoFramebufferTextureLayer(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoFramebufferTextureMultiviewOVR(
+error::Error
+GLES2DecoderPassthroughImpl::DoFramebufferTextureMultiviewLayeredANGLE(
     GLenum target,
     GLenum attachment,
     GLuint texture,
@@ -1311,7 +1311,7 @@ error::Error GLES2DecoderPassthroughImpl::DoFramebufferTextureMultiviewOVR(
                 "Cannot change the attachments of the default framebuffer.");
     return error::kNoError;
   }
-  api()->glFramebufferTextureMultiviewOVRFn(
+  api()->glFramebufferTextureMultiviewLayeredANGLEFn(
       target, attachment,
       GetTextureServiceID(api(), texture, resources_, false), level,
       base_view_index, num_views);
@@ -2224,8 +2224,6 @@ error::Error GLES2DecoderPassthroughImpl::DoLineWidth(GLfloat width) {
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoLinkProgram(GLuint program) {
-  TRACE_EVENT0("gpu", "GLES2DecoderPassthroughImpl::DoLinkProgram");
-  SCOPED_UMA_HISTOGRAM_TIMER("GPU.PassthroughDoLinkProgramTime");
   api()->glLinkProgramFn(GetProgramServiceID(program, resources_));
 
   // Program linking can be very slow.  Exit command processing to allow for
@@ -3575,7 +3573,7 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers(uint64_t swap_id,
     return error::kNoError;
   }
 
-  client()->OnSwapBuffers(swap_id, flags);
+  client_->OnSwapBuffers(swap_id, flags);
   return CheckSwapBuffersResult(surface_->SwapBuffers(base::DoNothing()),
                                 "SwapBuffers");
 }
@@ -4157,7 +4155,7 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffersWithBoundsCHROMIUM(
                           rects[i * 4 + 3]);
   }
 
-  client()->OnSwapBuffers(swap_id, flags);
+  client_->OnSwapBuffers(swap_id, flags);
   return CheckSwapBuffersResult(
       surface_->SwapBuffersWithBounds(bounds, base::DoNothing()),
       "SwapBuffersWithBounds");
@@ -4176,7 +4174,7 @@ error::Error GLES2DecoderPassthroughImpl::DoPostSubBufferCHROMIUM(
     return error::kNoError;
   }
 
-  client()->OnSwapBuffers(swap_id, flags);
+  client_->OnSwapBuffers(swap_id, flags);
   return CheckSwapBuffersResult(
       surface_->PostSubBuffer(x, y, width, height, base::DoNothing()),
       "PostSubBuffer");
@@ -4433,8 +4431,14 @@ error::Error GLES2DecoderPassthroughImpl::DoDescheduleUntilFinishedCHROMIUM() {
 
   TRACE_EVENT_ASYNC_BEGIN0(
       "cc", "GLES2DecoderPassthroughImpl::DescheduleUntilFinished", this);
-  client()->OnDescheduleUntilFinished();
+  client_->OnDescheduleUntilFinished();
   return error::kDeferLaterCommands;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoInsertFenceSyncCHROMIUM(
+    GLuint64 release_count) {
+  client_->OnFenceSyncRelease(release_count);
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoDrawBuffersEXT(
@@ -4584,7 +4588,7 @@ error::Error GLES2DecoderPassthroughImpl::DoCommitOverlayPlanesCHROMIUM(
     return error::kNoError;
   }
 
-  client()->OnSwapBuffers(swap_id, flags);
+  client_->OnSwapBuffers(swap_id, flags);
   return CheckSwapBuffersResult(
       surface_->CommitOverlayPlanes(base::DoNothing()), "CommitOverlayPlanes");
 }
@@ -5145,8 +5149,8 @@ error::Error GLES2DecoderPassthroughImpl::DoUnlockDiscardableTextureCHROMIUM(
 error::Error
 GLES2DecoderPassthroughImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
     GLuint texture_client_id,
-    GLenum internalformat,
-    const volatile GLbyte* mailbox) {
+    const volatile GLbyte* mailbox,
+    GLenum internalformat) {
   // RGB emulation is not needed here.
   if (internalformat != GL_NONE) {
     InsertError(GL_INVALID_ENUM, "internal format not supported.");

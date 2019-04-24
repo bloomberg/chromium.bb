@@ -16,7 +16,6 @@
 #define VK_IMAGE_VIEW_HPP_
 
 #include "VkDebug.hpp"
-#include "VkFormat.h"
 #include "VkObject.hpp"
 #include "VkImage.hpp"
 
@@ -34,30 +33,24 @@ public:
 
 	void clear(const VkClearValue& clearValues, VkImageAspectFlags aspectMask, const VkRect2D& renderArea);
 	void clear(const VkClearValue& clearValue, VkImageAspectFlags aspectMask, const VkClearRect& renderArea);
-	void resolve(ImageView* resolveAttachment);
 
-	VkImageViewType getType() const { return viewType; }
-	Format getFormat() const { return format; }
+	VkFormat getFormat() const { return format; }
 	int getSampleCount() const { return image->getSampleCountFlagBits(); }
-	int rowPitchBytes(VkImageAspectFlagBits aspect, uint32_t mipLevel) const { return image->rowPitchBytes(aspect, subresourceRange.baseMipLevel + mipLevel); }
-	int slicePitchBytes(VkImageAspectFlagBits aspect, uint32_t mipLevel) const { return image->slicePitchBytes(aspect, subresourceRange.baseMipLevel + mipLevel); }
-	VkExtent3D getMipLevelExtent(uint32_t mipLevel) const { return image->getMipLevelExtent(subresourceRange.baseMipLevel + mipLevel); }
+	int rowPitchBytes(VkImageAspectFlagBits aspect) const { return image->rowPitchBytes(aspect, subresourceRange.baseMipLevel); }
+	int slicePitchBytes(VkImageAspectFlagBits aspect) const { return image->slicePitchBytes(aspect, subresourceRange.baseMipLevel); }
 
 	void *getOffsetPointer(const VkOffset3D& offset, VkImageAspectFlagBits aspect) const;
 	bool hasDepthAspect() const { return (subresourceRange.aspectMask & VK_IMAGE_ASPECT_DEPTH_BIT) != 0; }
 	bool hasStencilAspect() const { return (subresourceRange.aspectMask & VK_IMAGE_ASPECT_STENCIL_BIT) != 0; }
 
-	const VkComponentMapping &getComponentMapping() const { return components; }
-	const VkImageSubresourceRange &getSubresourceRange() const { return subresourceRange; }
-
 private:
-	bool                          imageTypesMatch(VkImageType imageType) const;
+	bool                       imageTypesMatch(VkImageType imageType) const;
 
-	Image *const                  image = nullptr;
-	const VkImageViewType         viewType = VK_IMAGE_VIEW_TYPE_2D;
-	const Format                  format;
-	const VkComponentMapping      components = {};
-	const VkImageSubresourceRange subresourceRange = {};
+	Image*                     image = nullptr;
+	VkImageViewType            viewType = VK_IMAGE_VIEW_TYPE_2D;
+	VkFormat                   format = VK_FORMAT_UNDEFINED;
+	VkComponentMapping         components = {};
+	VkImageSubresourceRange    subresourceRange = {};
 };
 
 static inline ImageView* Cast(VkImageView object)

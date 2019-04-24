@@ -8,10 +8,15 @@
 #include "ui/gfx/geometry/rect.h"
 
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_EXPORT, ash::wm::WindowState*)
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(ASH_EXPORT, ash::WidgetCreationType)
 
 namespace ash {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kLockedToRootKey, false)
+
+DEFINE_UI_CLASS_PROPERTY_KEY(WidgetCreationType,
+                             kWidgetCreationTypeKey,
+                             WidgetCreationType::INTERNAL)
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowIsJanky, false)
 

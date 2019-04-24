@@ -74,11 +74,6 @@ const int64_t kMinimunPendingStateDurationMs = 300;
 // Internal padding between the title and image in the "More" button.
 const CGFloat kMoreButtonPadding = 5.0f;
 
-// The maximum size for th unified consent embedded view on regular width and
-// regular height layout.
-const CGFloat kUCEmbeddedViewMaxWidthForRegularLayout = 600;
-const CGFloat kUCEmbeddedViewMaxHeightForRegularLayout = 600;
-
 struct AuthenticationViewConstants {
   CGFloat PrimaryFontSize;
   CGFloat SecondaryFontSize;
@@ -104,9 +99,9 @@ const AuthenticationViewConstants kRegularConstants = {
     1.5 * kCompactConstants.SecondaryFontSize,
     kCompactConstants.GradientHeight,
     1.5 * kCompactConstants.ButtonHeight,
-    32,  // ButtonHorizontalPadding
-    32,  // ButtonTopPadding
-    32,  // ButtonBottomPadding
+    32,
+    32,
+    32,
 };
 
 enum AuthenticationState {
@@ -282,7 +277,7 @@ enum AuthenticationState {
                                     : [self acceptSigninButtonStringId];
   std::string account_id =
       IdentityManagerFactory::GetForBrowserState(_browserState)
-          ->PickAccountIdForAccount(
+          ->LegacyPickAccountIdForAccount(
               base::SysNSStringToUTF8([_selectedIdentity gaiaID]),
               base::SysNSStringToUTF8([_selectedIdentity userEmail]));
 
@@ -317,12 +312,7 @@ enum AuthenticationState {
   if (unifiedConsentService)
     unifiedConsentService->SetUrlKeyedAnonymizedDataCollectionEnabled(true);
   if (!_unifiedConsentCoordinator.settingsLinkWasTapped) {
-    // FirstSetupComplete flag should be only turned on when the user agrees
-    // to start Sync.
-    SyncSetupService* syncSetupService =
-        SyncSetupServiceFactory::GetForBrowserState(_browserState);
-    syncSetupService->SetFirstSetupComplete();
-    syncSetupService->CommitSyncChanges();
+    SyncSetupServiceFactory::GetForBrowserState(_browserState)->CommitChanges();
   }
   [self acceptSignInAndShowAccountsSettings:_unifiedConsentCoordinator
                                                 .settingsLinkWasTapped];
@@ -331,8 +321,7 @@ enum AuthenticationState {
 - (void)acceptSignInAndCommitSyncChanges {
   DCHECK(_didSignIn);
   DCHECK(!_unifiedConsentEnabled);
-  SyncSetupServiceFactory::GetForBrowserState(_browserState)
-      ->PreUnityCommitChanges();
+  SyncSetupServiceFactory::GetForBrowserState(_browserState)->CommitChanges();
   [self acceptSignInAndShowAccountsSettings:NO];
 }
 
@@ -406,43 +395,22 @@ enum AuthenticationState {
 }
 
 - (void)updateLayout {
-  BOOL isRegularSizeClass = IsRegularXRegularSizeClass(self.traitCollection);
-  AuthenticationViewConstants constants =
-      isRegularSizeClass ? kRegularConstants : kCompactConstants;
+  AuthenticationViewConstants constants;
+  if ([self.traitCollection horizontalSizeClass] ==
+      UIUserInterfaceSizeClassRegular) {
+    constants = kRegularConstants;
+  } else {
+    constants = kCompactConstants;
+  }
 
   [self layoutButtons:constants];
 
-  // Layout |_embeddedView|.
   CGSize viewSize = self.view.bounds.size;
-  CGPoint contentViewOrigin = CGPointZero;
-  CGSize collectionViewSize =
-      CGSizeMake(viewSize.width,
-                 _primaryButton.frame.origin.y - constants.ButtonTopPadding);
-  if (_unifiedConsentEnabled) {
-    if (isRegularSizeClass &&
-        !UIContentSizeCategoryIsAccessibilityCategory(
-            self.traitCollection.preferredContentSizeCategory)) {
-      // Constraint the size to (|kUCEmbeddedViewMaxWidthForRegularLayout| x
-      // |kUCEmbeddedViewMaxHeightForRegularLayout|) on regular layout. This is
-      // required to avoid having a lot of empty space between |_embeddedView|
-      // and the buttons.
-      if (collectionViewSize.width > kUCEmbeddedViewMaxWidthForRegularLayout) {
-        contentViewOrigin.x = floorf((collectionViewSize.width -
-                                      kUCEmbeddedViewMaxWidthForRegularLayout) /
-                                     2);
-        collectionViewSize.width = kUCEmbeddedViewMaxWidthForRegularLayout;
-      }
-      if (collectionViewSize.height >
-          kUCEmbeddedViewMaxHeightForRegularLayout) {
-        contentViewOrigin.y =
-            floorf((collectionViewSize.height -
-                    kUCEmbeddedViewMaxHeightForRegularLayout) /
-                   2);
-        collectionViewSize.height = kUCEmbeddedViewMaxHeightForRegularLayout;
-      }
-    }
-  }
-  [_embeddedView setFrame:CGRect{contentViewOrigin, collectionViewSize}];
+  CGFloat collectionViewHeight =
+      _primaryButton.frame.origin.y - constants.ButtonTopPadding;
+  CGRect collectionViewFrame =
+      CGRectMake(0, 0, viewSize.width, collectionViewHeight);
+  [_embeddedView setFrame:collectionViewFrame];
 
   // Layout the gradient view right above the buttons.
   CGFloat gradientOriginY = _primaryButton.frame.origin.y -
@@ -591,7 +559,6 @@ enum AuthenticationState {
     }
   } else {
     [self changeToState:IDENTITY_PICKER_STATE];
-    [_unifiedConsentCoordinator resetSettingLinkTapped];
   }
 }
 
@@ -713,8 +680,6 @@ enum AuthenticationState {
       _unifiedConsentCoordinator.delegate = self;
       if (_selectedIdentity)
         _unifiedConsentCoordinator.selectedIdentity = _selectedIdentity;
-      _unifiedConsentCoordinator.autoOpenIdentityPicker =
-          _promoAction == signin_metrics::PromoAction::PROMO_ACTION_NOT_DEFAULT;
       [_unifiedConsentCoordinator start];
       [self
           showEmbeddedViewController:_unifiedConsentCoordinator.viewController];

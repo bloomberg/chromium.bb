@@ -134,11 +134,8 @@ inline bool roundsAtMidpoint(int roundingMode) {
 /**
  * Computes the number of fraction digits in a double. Used for computing maxFrac for an increment.
  * Calls into the DoubleToStringConverter library to do so.
- *
- * @param singleDigit An output parameter; set to a number if that is the
- *        only digit in the double, or -1 if there is more than one digit.
  */
-digits_t doubleFractionLength(double input, int8_t* singleDigit);
+digits_t doubleFractionLength(double input);
 
 } // namespace roundingutils
 

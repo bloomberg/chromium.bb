@@ -15,7 +15,7 @@
 #endif
 
 @interface AutofillEditTableViewController () <AutofillEditAccessoryDelegate> {
-  TableViewTextEditCell* _currentEditingCell;
+  AutofillEditCell* _currentEditingCell;
   AutofillEditAccessoryView* _accessoryView;
 }
 @end
@@ -37,7 +37,7 @@
 - (void)viewDidLoad {
   [super viewDidLoad];
   [self setShouldHideDoneButton:YES];
-  [self updateUIForEditState];
+  [self updateEditButton];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -70,14 +70,14 @@
 #pragma mark - UITextFieldDelegate
 
 - (void)textFieldDidBeginEditing:(UITextField*)textField {
-  TableViewTextEditCell* cell = [self autofillEditCellForTextField:textField];
+  AutofillEditCell* cell = [self autofillEditCellForTextField:textField];
   _currentEditingCell = cell;
   [textField setInputAccessoryView:_accessoryView];
   [self updateAccessoryViewButtonState];
 }
 
 - (void)textFieldDidEndEditing:(UITextField*)textField {
-  TableViewTextEditCell* cell = [self autofillEditCellForTextField:textField];
+  AutofillEditCell* cell = [self autofillEditCellForTextField:textField];
   DCHECK(_currentEditingCell == cell);
   [textField setInputAccessoryView:nil];
   _currentEditingCell = nil;
@@ -106,11 +106,10 @@
 #pragma mark - Helper methods
 
 // Returns the cell containing |textField|.
-- (TableViewTextEditCell*)autofillEditCellForTextField:(UITextField*)textField {
-  TableViewTextEditCell* settingsCell = nil;
+- (AutofillEditCell*)autofillEditCellForTextField:(UITextField*)textField {
+  AutofillEditCell* settingsCell = nil;
   for (UIView* view = textField; view; view = [view superview]) {
-    TableViewTextEditCell* cell =
-        base::mac::ObjCCast<TableViewTextEditCell>(view);
+    AutofillEditCell* cell = base::mac::ObjCCast<AutofillEditCell>(view);
     if (cell) {
       settingsCell = cell;
       break;
@@ -156,9 +155,8 @@
   if (!nextCellPath) {
     [[_currentEditingCell textField] resignFirstResponder];
   } else {
-    TableViewTextEditCell* nextCell =
-        base::mac::ObjCCastStrict<TableViewTextEditCell>(
-            [self.tableView cellForRowAtIndexPath:nextCellPath]);
+    AutofillEditCell* nextCell = base::mac::ObjCCastStrict<AutofillEditCell>(
+        [self.tableView cellForRowAtIndexPath:nextCellPath]);
     [nextCell.textField becomeFirstResponder];
   }
 }

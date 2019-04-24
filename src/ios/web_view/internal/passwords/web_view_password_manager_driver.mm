@@ -14,6 +14,7 @@
 #endif
 
 using password_manager::PasswordAutofillManager;
+using password_manager::PasswordGenerationManager;
 using password_manager::PasswordManager;
 
 namespace ios_web_view {
@@ -61,8 +62,8 @@ void WebViewPasswordManagerDriver::ClearPreviewedForm() {
   NOTIMPLEMENTED();
 }
 
-password_manager::PasswordGenerationFrameHelper*
-WebViewPasswordManagerDriver::GetPasswordGenerationHelper() {
+PasswordGenerationManager*
+WebViewPasswordManagerDriver::GetPasswordGenerationManager() {
   return nullptr;
 }
 

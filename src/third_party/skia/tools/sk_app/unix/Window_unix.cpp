@@ -333,8 +333,6 @@ void Window_unix::show() {
 }
 
 bool Window_unix::attach(BackendType attachType) {
-    fBackend = attachType;
-
     this->initWindow(fDisplay);
 
     window_context_factory::XlibWindowInfo winInfo;
@@ -384,23 +382,6 @@ void Window_unix::onInval() {
     event.xexpose.count = 0;
 
     XSendEvent(fDisplay, fWindow, False, 0, &event);
-}
-
-void Window_unix::setRequestedDisplayParams(const DisplayParams& params, bool allowReattach) {
-#if defined(SK_VULKAN)
-    // Vulkan on unix crashes if we try to reinitialize the vulkan context without remaking the
-    // window.
-    if (fBackend == kVulkan_BackendType && allowReattach) {
-        // Need to change these early, so attach() creates the window context correctly
-        fRequestedDisplayParams = params;
-
-        this->detach();
-        this->attach(fBackend);
-        return;
-    }
-#endif
-
-    INHERITED::setRequestedDisplayParams(params, allowReattach);
 }
 
 }   // namespace sk_app

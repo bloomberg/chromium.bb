@@ -32,7 +32,6 @@
 
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -244,8 +243,7 @@ SVGLengthTearOff::SVGLengthTearOff(SVGLength* target,
     : SVGPropertyTearOff<SVGLength>(target, binding, property_is_anim_val) {}
 
 SVGLengthTearOff* SVGLengthTearOff::CreateDetached() {
-  return MakeGarbageCollected<SVGLengthTearOff>(
-      MakeGarbageCollected<SVGLength>(), nullptr, kPropertyIsNotAnimVal);
+  return Create(SVGLength::Create(), nullptr, kPropertyIsNotAnimVal);
 }
 
 }  // namespace blink

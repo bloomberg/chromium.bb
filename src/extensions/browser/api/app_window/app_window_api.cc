@@ -175,10 +175,10 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
       create_params.window_key = *options->id;
 
       if (options->singleton && *options->singleton == false) {
-        WriteToConsole(blink::mojom::ConsoleMessageLevel::kWarning,
-                       "The 'singleton' option in chrome.apps.window.create() "
-                       "is deprecated!"
-                       " Change your code to no longer rely on this.");
+        WriteToConsole(
+          content::CONSOLE_MESSAGE_LEVEL_WARNING,
+          "The 'singleton' option in chrome.apps.window.create() is deprecated!"
+          " Change your code to no longer rely on this.");
       }
 
       if (!options->singleton || *options->singleton) {
@@ -190,7 +190,8 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
           content::RenderFrameHost* existing_frame =
               existing_window->web_contents()->GetMainFrame();
           int frame_id = MSG_ROUTING_NONE;
-          if (source_process_id() == existing_frame->GetProcess()->GetID()) {
+          if (render_frame_host()->GetProcess()->GetID() ==
+              existing_frame->GetProcess()->GetID()) {
             frame_id = existing_frame->GetRoutingID();
           }
 
@@ -216,7 +217,7 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
       return RespondNow(Error(error));
 
     if (options->type == app_window::WINDOW_TYPE_PANEL) {
-      WriteToConsole(blink::mojom::ConsoleMessageLevel::kWarning,
+      WriteToConsole(content::CONSOLE_MESSAGE_LEVEL_WARNING,
                      "Panels are no longer supported.");
     }
 
@@ -373,7 +374,8 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
     create_params.show_on_lock_screen = true;
   }
 
-  create_params.creator_process_id = source_process_id();
+  create_params.creator_process_id =
+      render_frame_host()->GetProcess()->GetID();
 
   AppWindow* app_window = nullptr;
   if (action_type == api::app_runtime::ACTION_TYPE_NONE) {

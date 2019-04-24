@@ -13,12 +13,9 @@
 #include "components/sync/model/model_type_store_service.h"
 #include "components/version_info/channel.h"
 
-namespace history {
-class HistoryService;
-}  // namespace history
-
 namespace syncer {
 class ModelTypeControllerDelegate;
+class LocalDeviceInfoProvider;
 }  // namespace syncer
 
 namespace send_tab_to_self {
@@ -30,15 +27,14 @@ class SendTabToSelfSyncService : public KeyedService {
  public:
   SendTabToSelfSyncService(
       version_info::Channel channel,
-      syncer::OnceModelTypeStoreFactory create_store_callback,
-      history::HistoryService* history_service);
+      syncer::LocalDeviceInfoProvider* local_device_info_provider,
+      syncer::OnceModelTypeStoreFactory create_store_callback);
   ~SendTabToSelfSyncService() override;
 
   virtual SendTabToSelfModel* GetSendTabToSelfModel();
 
   // For ProfileSyncService to initialize the controller.
-  virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetControllerDelegate();
+  base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate();
 
  protected:
   // Default constructor for unit tests

@@ -125,7 +125,6 @@
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
-#include "ui/events/blink/blink_features.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -140,8 +139,6 @@
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -448,19 +445,19 @@ class TestInterstitialDelegate : public InterstitialPageDelegate {
 };
 
 bool ConvertJSONToPoint(const std::string& str, gfx::PointF* point) {
-  base::Optional<base::Value> value = base::JSONReader::Read(str);
-  if (!value.has_value())
+  std::unique_ptr<base::Value> value = base::JSONReader::ReadDeprecated(str);
+  if (!value)
     return false;
-  if (!value->is_dict())
+  base::DictionaryValue* root;
+  if (!value->GetAsDictionary(&root))
     return false;
-  base::Optional<double> x = value->FindDoubleKey("x");
-  base::Optional<double> y = value->FindDoubleKey("y");
-  if (!x.has_value())
+  double x, y;
+  if (!root->GetDouble("x", &x))
     return false;
-  if (!y.has_value())
+  if (!root->GetDouble("y", &y))
     return false;
-  point->set_x(x.value());
-  point->set_y(y.value());
+  point->set_x(x);
+  point->set_y(y);
   return true;
 }
 
@@ -582,7 +579,7 @@ void GenerateTapDownGesture(RenderWidgetHost* rwh) {
       blink::WebGestureEvent::kGestureTapDown,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::WebGestureDevice::kTouchscreen);
+      blink::kWebGestureDeviceTouchscreen);
   gesture_tap_down.is_source_touch_event_set_non_blocking = true;
   rwh->ForwardGestureEvent(gesture_tap_down);
 }
@@ -604,9 +601,7 @@ class UpdateViewportIntersectionMessageFilter
 
   gfx::Rect GetCompositingRect() const { return compositing_rect_; }
   gfx::Rect GetViewportIntersection() const { return viewport_intersection_; }
-  blink::FrameOcclusionState GetOcclusionState() const {
-    return occlusion_state_;
-  }
+  bool GetOccludedOrObscured() const { return occluded_or_obscured_; }
 
   void Wait() {
     DCHECK(!run_loop_);
@@ -626,10 +621,9 @@ class UpdateViewportIntersectionMessageFilter
  private:
   ~UpdateViewportIntersectionMessageFilter() override {}
 
-  void OnUpdateViewportIntersection(
-      const gfx::Rect& viewport_intersection,
-      const gfx::Rect& compositing_rect,
-      blink::FrameOcclusionState occlusion_state) {
+  void OnUpdateViewportIntersection(const gfx::Rect& viewport_intersection,
+                                    const gfx::Rect& compositing_rect,
+                                    bool occluded_or_obscured) {
     // The message is going to be posted to UI thread after
     // OnUpdateViewportIntersection returns. This additional post on the IO
     // thread guarantees that by the time OnUpdateViewportIntersectionOnUI runs,
@@ -639,26 +633,25 @@ class UpdateViewportIntersectionMessageFilter
         base::BindOnce(&UpdateViewportIntersectionMessageFilter::
                            OnUpdateViewportIntersectionPostOnIO,
                        this, viewport_intersection, compositing_rect,
-                       occlusion_state));
+                       occluded_or_obscured));
   }
   void OnUpdateViewportIntersectionPostOnIO(
       const gfx::Rect& viewport_intersection,
       const gfx::Rect& compositing_rect,
-      blink::FrameOcclusionState occlusion_state) {
+      bool occluded_or_obscured) {
     base::PostTaskWithTraits(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&UpdateViewportIntersectionMessageFilter::
                            OnUpdateViewportIntersectionOnUI,
                        this, viewport_intersection, compositing_rect,
-                       occlusion_state));
+                       occluded_or_obscured));
   }
-  void OnUpdateViewportIntersectionOnUI(
-      const gfx::Rect& viewport_intersection,
-      const gfx::Rect& compositing_rect,
-      blink::FrameOcclusionState occlusion_state) {
+  void OnUpdateViewportIntersectionOnUI(const gfx::Rect& viewport_intersection,
+                                        const gfx::Rect& compositing_rect,
+                                        bool occluded_or_obscured) {
     viewport_intersection_ = viewport_intersection;
     compositing_rect_ = compositing_rect;
-    occlusion_state_ = occlusion_state;
+    occluded_or_obscured_ = occluded_or_obscured;
     msg_received_ = true;
     if (run_loop_)
       run_loop_->Quit();
@@ -667,9 +660,23 @@ class UpdateViewportIntersectionMessageFilter
   bool msg_received_;
   gfx::Rect compositing_rect_;
   gfx::Rect viewport_intersection_;
-  blink::FrameOcclusionState occlusion_state_ =
-      blink::FrameOcclusionState::kUnknown;
+  bool occluded_or_obscured_ = false;
   DISALLOW_COPY_AND_ASSIGN(UpdateViewportIntersectionMessageFilter);
+};
+
+// Observes navigation start.
+class DidStartNavigationObserver : public WebContentsObserver {
+ public:
+  explicit DidStartNavigationObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+  void DidStartNavigation(NavigationHandle* navigation_handle) override {
+    observed_ = true;
+  }
+  bool observed() { return observed_; }
+
+ private:
+  bool observed_ = false;
+  DISALLOW_COPY_AND_ASSIGN(DidStartNavigationObserver);
 };
 
 }  // namespace
@@ -986,11 +993,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   test_screen->CreateHostForPrimaryDisplay();
   test_screen->SetDeviceScaleFactor(expected_dip_scale);
 
-  // This forces |expected_dip_scale| to be applied to the aura::WindowTreeHost
-  // and aura::Window.
-  aura::WindowTreeHost* window_tree_host = shell()->window()->GetHost();
-  window_tree_host->SetBoundsInPixels(window_tree_host->GetBoundsInPixels());
-
   double device_scale_factor = 0;
   // Wait until dppx becomes 2 if the frame's dpr hasn't beeen updated
   // to 2 yet.
@@ -1306,8 +1308,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ViewBoundsInNestedFrameTest) {
   // relative offset of its direct parent within the root frame.
   gfx::Rect bounds = rwhv_nested->GetViewBounds();
 
-  auto filter =
-      base::MakeRefCounted<SynchronizeVisualPropertiesMessageFilter>();
+  scoped_refptr<SynchronizeVisualPropertiesMessageFilter> filter =
+      new SynchronizeVisualPropertiesMessageFilter();
   root->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
   // Scroll the parent frame downward to verify that the child rect gets updated
@@ -1369,7 +1371,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       blink::WebGestureEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::WebGestureDevice::kTouchscreen);
+      blink::kWebGestureDeviceTouchscreen);
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
       blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
@@ -1381,7 +1383,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       blink::WebGestureEvent::kGestureScrollUpdate,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::WebGestureDevice::kTouchscreen);
+      blink::kWebGestureDeviceTouchscreen);
   gesture_scroll_update.data.scroll_update.delta_units =
       blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
   gesture_scroll_update.data.scroll_update.delta_x = 0.f;
@@ -1394,7 +1396,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       blink::WebGestureEvent::kGestureFlingStart,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::WebGestureDevice::kTouchscreen);
+      blink::kWebGestureDeviceTouchscreen);
   gesture_fling_start.data.fling_start.velocity_x = 0.f;
   gesture_fling_start.data.fling_start.velocity_y = 5.f;
 
@@ -1427,8 +1429,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   // SynchronizeVisualPropertiesMessageFilter catches updates to the position in
   // order to avoid busy waiting. It gets created early to catch the initial
   // rects from the navigation.
-  auto filter =
-      base::MakeRefCounted<SynchronizeVisualPropertiesMessageFilter>();
+  scoped_refptr<SynchronizeVisualPropertiesMessageFilter> filter =
+      new SynchronizeVisualPropertiesMessageFilter();
   parent_iframe_node->current_frame_host()->GetProcess()->AddFilter(
       filter.get());
 
@@ -1575,7 +1577,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
       blink::WebGestureEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests(),
-      blink::WebGestureDevice::kTouchpad);
+      blink::kWebGestureDeviceTouchpad);
   gesture_event.SetPositionInWidget(gfx::PointF(1, 1));
   gesture_event.data.scroll_begin.delta_x_hint = 0.0f;
   gesture_event.data.scroll_begin.delta_y_hint = 6.0f;
@@ -1585,7 +1587,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
       blink::WebGestureEvent(blink::WebGestureEvent::kGestureScrollUpdate,
                              blink::WebInputEvent::kNoModifiers,
                              blink::WebInputEvent::GetStaticTimeStampForTests(),
-                             blink::WebGestureDevice::kTouchpad);
+                             blink::kWebGestureDeviceTouchpad);
   gesture_event.SetPositionInWidget(gfx::PointF(1, 1));
   gesture_event.data.scroll_update.delta_x = 0.0f;
   gesture_event.data.scroll_update.delta_y = 6.0f;
@@ -1597,7 +1599,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
       blink::WebGestureEvent(blink::WebGestureEvent::kGestureScrollEnd,
                              blink::WebInputEvent::kNoModifiers,
                              blink::WebInputEvent::GetStaticTimeStampForTests(),
-                             blink::WebGestureDevice::kTouchpad);
+                             blink::kWebGestureDeviceTouchpad);
   gesture_event.SetPositionInWidget(gfx::PointF(1, 1));
   rwhv_nested->GetRenderWidgetHost()->ForwardGestureEvent(gesture_event);
 
@@ -1724,7 +1726,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       blink::WebGestureEvent::kGestureScrollBegin,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
-  gesture_scroll_begin.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
+  gesture_scroll_begin.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
   gesture_scroll_begin.data.scroll_begin.delta_hint_units =
       blink::WebGestureEvent::ScrollUnits::kPrecisePixels;
   gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
@@ -1740,7 +1742,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       blink::WebGestureEvent::kGestureFlingStart,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
-  gesture_fling_start.SetSourceDevice(blink::WebGestureDevice::kTouchscreen);
+  gesture_fling_start.SetSourceDevice(blink::kWebGestureDeviceTouchscreen);
   gesture_fling_start.data.fling_start.velocity_x = 0.f;
   gesture_fling_start.data.fling_start.velocity_y = 50.f;
   child_rwh->ForwardGestureEvent(gesture_fling_start);
@@ -1785,7 +1787,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TouchpadGestureFlingStart) {
       blink::WebGestureEvent::kGestureFlingStart,
       blink::WebInputEvent::kNoModifiers,
       blink::WebInputEvent::GetStaticTimeStampForTests());
-  gesture_fling_start.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
+  gesture_fling_start.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
   gesture_fling_start.data.fling_start.velocity_x = 0.f;
   gesture_fling_start.data.fling_start.velocity_y = 50.f;
   child_rwh->ForwardGestureEvent(gesture_fling_start);
@@ -3408,7 +3410,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CreateProxiesForNewFrames) {
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        DISABLED_CrossSiteIframeRedirectOnce) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(https_server.Start());
 
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
@@ -3527,7 +3529,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        DISABLED_CrossSiteIframeRedirectTwice) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
   ASSERT_TRUE(https_server.Start());
 
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
@@ -5989,7 +5991,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   int frame_routing_id =
       node->render_manager()->speculative_frame_host()->GetRoutingID();
-  int previous_routing_id =
+  int proxy_routing_id =
       node->render_manager()->GetProxyToParent()->GetRoutingID();
 
   // Now go to c.com so the navigation to a.com is cancelled and send an IPC
@@ -6006,7 +6008,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
         &params->interface_bundle->document_interface_broker_content);
     mojo::MakeRequest(
         &params->interface_bundle->document_interface_broker_blink);
-    params->previous_routing_id = previous_routing_id;
+    params->proxy_routing_id = proxy_routing_id;
     params->opener_routing_id = IPC::mojom::kRoutingIdNone;
     params->parent_routing_id =
         shell()->web_contents()->GetMainFrame()->GetRoutingID();
@@ -6077,7 +6079,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
         &params->interface_bundle->document_interface_broker_content);
     mojo::MakeRequest(
         &params->interface_bundle->document_interface_broker_blink);
-    params->previous_routing_id = IPC::mojom::kRoutingIdNone;
+    params->proxy_routing_id = IPC::mojom::kRoutingIdNone;
     params->opener_routing_id = IPC::mojom::kRoutingIdNone;
     params->parent_routing_id = parent_routing_id;
     params->previous_sibling_routing_id = IPC::mojom::kRoutingIdNone;
@@ -6695,7 +6697,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
                        MAYBE_PassiveMixedContentInIframe) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
   SetupCrossSiteRedirector(&https_server);
   ASSERT_TRUE(https_server.Start());
 
@@ -6733,7 +6735,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
 IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
                        PassiveMixedContentInIframeWithStrictBlocking) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
   SetupCrossSiteRedirector(&https_server);
   ASSERT_TRUE(https_server.Start());
 
@@ -6777,7 +6779,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
 IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
                        PassiveMixedContentInIframeWithUpgrade) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
   SetupCrossSiteRedirector(&https_server);
   ASSERT_TRUE(https_server.Start());
 
@@ -6823,7 +6825,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
 IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
                        ActiveMixedContentInIframe) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
   SetupCrossSiteRedirector(&https_server);
   ASSERT_TRUE(https_server.Start());
 
@@ -6848,7 +6850,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
 IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
                        SubresourceWithCertificateErrors) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
   SetupCrossSiteRedirector(&https_server);
   ASSERT_TRUE(https_server.Start());
 
@@ -10706,11 +10708,7 @@ class TouchEventObserver : public RenderWidgetHost::InputEventObserver {
 // child first, then the main frame. In this scenario, we expect the touch
 // events sent to the main-frame to ack first, which will be problematic if
 // the events are acked to the GestureRecognizer out of order.
-//
-// This test is disabled due to flakiness on all platforms, but especially on
-// Android.  See https://crbug.com/945025.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       DISABLED_TouchEventAckQueueOrdering) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TouchEventAckQueueOrdering) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -10865,17 +10863,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   RenderFrameSubmissionObserver observer_c(child_c);
   RenderFrameSubmissionObserver observer_d(child_d);
 
-  // Monitor visual sync messages coming from the mainframe to make sure
-  // |is_pinch_gesture_active| goes true during the pinch gesture.
-  auto filter_mainframe =
-      base::MakeRefCounted<SynchronizeVisualPropertiesMessageFilter>();
-  root->current_frame_host()->GetProcess()->AddFilter(filter_mainframe.get());
-  // Monitor frame sync messages coming from child_b as it will need to
-  // relay them to child_d.
-  auto filter_child_b =
-      base::MakeRefCounted<SynchronizeVisualPropertiesMessageFilter>();
-  child_b->current_frame_host()->GetProcess()->AddFilter(filter_child_b.get());
-
   // We need to observe a root frame submission to pick up the initial page
   // scale factor.
   observer_a.WaitForAnyFrameSubmission();
@@ -10919,17 +10906,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   observer_b.WaitForExternalPageScaleFactor(target_page_scale, kScaleTolerance);
   observer_c.WaitForExternalPageScaleFactor(target_page_scale, kScaleTolerance);
   observer_d.WaitForExternalPageScaleFactor(target_page_scale, kScaleTolerance);
-
-  // The change in |is_pinch_gesture_active| that signals the end of the pinch
-  // gesture will occur sometime after the ack for GesturePinchEnd, so we need
-  // to wait for it from each renderer. If it's never seen, the test fails by
-  // timing out.
-  filter_mainframe->WaitForPinchGestureEnd();
-  EXPECT_TRUE(filter_mainframe->pinch_gesture_active_set());
-  EXPECT_TRUE(filter_mainframe->pinch_gesture_active_cleared());
-  filter_child_b->WaitForPinchGestureEnd();
-  EXPECT_TRUE(filter_child_b->pinch_gesture_active_set());
-  EXPECT_TRUE(filter_child_b->pinch_gesture_active_cleared());
 }
 
 // Verify that sandbox flags specified by a CSP header are properly inherited by
@@ -12476,9 +12452,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
  public:
-  SitePerProcessBrowserTouchActionTest()
-      : compositor_touch_action_enabled_(
-            base::FeatureList::IsEnabled(features::kCompositorTouchAction)) {}
+  SitePerProcessBrowserTouchActionTest() = default;
 
   // Computes the effective and white-listed touch action for |rwhv_child| by
   // dispatching a touch to it through |rwhv_root|. |rwhv_root| is the root
@@ -12515,9 +12489,6 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
     router->RouteTouchEvent(rwhv_root, &touch_event,
                             ui::LatencyInfo(ui::SourceEventType::TOUCH));
     ack_observer.Wait();
-    // Reset them to get the new value.
-    effective_touch_action.reset();
-    whitelisted_touch_action.reset();
     effective_touch_action =
         input_router->touch_action_filter_.allowed_touch_action_;
     // Effective touch action are sent from a separate IPC
@@ -12525,14 +12496,10 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
     // touch start arrived because the ACK is from the main thread.
     whitelisted_touch_action =
         input_router->touch_action_filter_.white_listed_touch_action_;
-    // When flag is enabled, we may not have the value for the effective touch
-    // action when ack is received.
-    if (!compositor_touch_action_enabled_) {
-      while (!effective_touch_action.has_value()) {
-        GiveItSomeTime(TestTimeouts::tiny_timeout());
-        effective_touch_action =
-            input_router->touch_action_filter_.allowed_touch_action_;
-      }
+    while (!effective_touch_action.has_value()) {
+      GiveItSomeTime(TestTimeouts::tiny_timeout());
+      effective_touch_action =
+          input_router->touch_action_filter_.allowed_touch_action_;
     }
 
     // Send a touch move and touch end to complete the sequence, this also
@@ -12576,15 +12543,10 @@ class SitePerProcessBrowserTouchActionTest : public SitePerProcessBrowserTest {
     // thread, upon return it should have handled any touch action update.
     root_thread_observer->Wait();
   }
-
- protected:
-  const bool compositor_touch_action_enabled_;
 };
 
-// Flaky on every platform, failing most of the time on Android.
-// See https://crbug.com/945734
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
-                       DISABLED_EffectiveTouchActionPropagatesAcrossFrames) {
+                       EffectiveTouchActionPropagatesAcrossFrames) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -12632,11 +12594,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   // kTouchActionAuto in iframe's child.
   GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
                           effective_touch_action, whitelisted_touch_action);
-  if (!compositor_touch_action_enabled_) {
-    EXPECT_EQ(expected_touch_action, effective_touch_action.has_value()
-                                         ? effective_touch_action.value()
-                                         : cc::kTouchActionAuto);
-  }
+  EXPECT_EQ(expected_touch_action, effective_touch_action.has_value()
+                                       ? effective_touch_action.value()
+                                       : cc::kTouchActionAuto);
   if (whitelisted_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 
@@ -12647,26 +12607,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   expected_touch_action = cc::kTouchActionAuto;
   GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
                           effective_touch_action, whitelisted_touch_action);
-  if (compositor_touch_action_enabled_) {
-    EXPECT_EQ(expected_touch_action, effective_touch_action.has_value()
-                                         ? effective_touch_action.value()
-                                         : cc::kTouchActionAuto);
-  }
+  EXPECT_EQ(expected_touch_action, effective_touch_action.has_value()
+                                       ? effective_touch_action.value()
+                                       : cc::kTouchActionAuto);
   if (whitelisted_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 }
 
-// Flaky on Android. http://crbug.com/951513
-#if defined(OS_ANDROID)
-#define MAYBE_EffectiveTouchActionPropagatesAcrossNestedFrames \
-  DISABLED_EffectiveTouchActionPropagatesAcrossNestedFrames
-#else
-#define MAYBE_EffectiveTouchActionPropagatesAcrossNestedFrames \
-  EffectiveTouchActionPropagatesAcrossNestedFrames
-#endif
-
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
-                       MAYBE_EffectiveTouchActionPropagatesAcrossNestedFrames) {
+                       EffectiveTouchActionPropagatesAcrossNestedFrames) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -12727,14 +12676,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
                                          : cc::kTouchActionAuto;
   // TouchAction might have not been propagated to child frames yet, loop until
   // we get the expected touch action value.
-  if (!compositor_touch_action_enabled_) {
-    while (expected_touch_action != effective_touch_action_result) {
-      GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
-                              effective_touch_action, whitelisted_touch_action);
-      effective_touch_action_result = effective_touch_action.has_value()
-                                          ? effective_touch_action.value()
-                                          : cc::kTouchActionAuto;
-    }
+  while (expected_touch_action != effective_touch_action_result) {
+    GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
+                            effective_touch_action, whitelisted_touch_action);
+    effective_touch_action_result = effective_touch_action.has_value()
+                                        ? effective_touch_action.value()
+                                        : cc::kTouchActionAuto;
   }
   if (whitelisted_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
@@ -12752,14 +12699,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   effective_touch_action_result = effective_touch_action.has_value()
                                       ? effective_touch_action.value()
                                       : cc::kTouchActionAuto;
-  if (!compositor_touch_action_enabled_) {
-    while (expected_touch_action != effective_touch_action_result) {
-      GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
-                              effective_touch_action, whitelisted_touch_action);
-      effective_touch_action_result = effective_touch_action.has_value()
-                                          ? effective_touch_action.value()
-                                          : cc::kTouchActionAuto;
-    }
+  while (expected_touch_action != effective_touch_action_result) {
+    GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
+                            effective_touch_action, whitelisted_touch_action);
+    effective_touch_action_result = effective_touch_action.has_value()
+                                        ? effective_touch_action.value()
+                                        : cc::kTouchActionAuto;
   }
   if (whitelisted_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
@@ -12776,14 +12721,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   effective_touch_action_result = effective_touch_action.has_value()
                                       ? effective_touch_action.value()
                                       : cc::kTouchActionAuto;
-  if (!compositor_touch_action_enabled_) {
-    while (expected_touch_action != effective_touch_action_result) {
-      GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
-                              effective_touch_action, whitelisted_touch_action);
-      effective_touch_action_result = effective_touch_action.has_value()
-                                          ? effective_touch_action.value()
-                                          : cc::kTouchActionAuto;
-    }
+  while (expected_touch_action != effective_touch_action_result) {
+    GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
+                            effective_touch_action, whitelisted_touch_action);
+    effective_touch_action_result = effective_touch_action.has_value()
+                                        ? effective_touch_action.value()
+                                        : cc::kTouchActionAuto;
   }
   if (whitelisted_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
@@ -12840,11 +12783,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
   cc::TouchAction expected_touch_action = cc::kTouchActionPan;
   GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
                           effective_touch_action, whitelisted_touch_action);
-  if (!compositor_touch_action_enabled_) {
-    EXPECT_EQ(expected_touch_action, effective_touch_action.has_value()
-                                         ? effective_touch_action.value()
-                                         : cc::kTouchActionAuto);
-  }
+  EXPECT_EQ(expected_touch_action, effective_touch_action.has_value()
+                                       ? effective_touch_action.value()
+                                       : cc::kTouchActionAuto);
   if (whitelisted_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 
@@ -12868,11 +12809,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
                             child_thread_observer.get());
   GetTouchActionsForChild(router, rwhv_root, rwhv_child, point_inside_child,
                           effective_touch_action, whitelisted_touch_action);
-  if (!compositor_touch_action_enabled_) {
-    EXPECT_EQ(expected_touch_action, effective_touch_action.has_value()
-                                         ? effective_touch_action.value()
-                                         : cc::kTouchActionAuto);
-  }
+  EXPECT_EQ(expected_touch_action, effective_touch_action.has_value()
+                                       ? effective_touch_action.value()
+                                       : cc::kTouchActionAuto);
   if (whitelisted_touch_action.has_value())
     EXPECT_EQ(expected_touch_action, whitelisted_touch_action.value());
 }
@@ -13742,10 +13681,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDoubleTapZoomBrowserTest,
       base::StringPrintf(actions_template.c_str(), tap_position.x(),
                          tap_position.y(), tap_position.x(), tap_position.y());
   base::JSONReader json_reader;
-  base::Optional<base::Value> params =
-      json_reader.ReadToValue(double_tap_actions_json);
-  ASSERT_TRUE(params.has_value()) << json_reader.GetErrorMessage();
-  ActionsParser actions_parser(std::move(params.value()));
+  std::unique_ptr<base::Value> params =
+      json_reader.ReadToValueDeprecated(double_tap_actions_json);
+  ASSERT_TRUE(params.get()) << json_reader.GetErrorMessage();
+  ActionsParser actions_parser(params.get());
 
   ASSERT_TRUE(actions_parser.ParsePointerActionSequence());
   auto synthetic_gesture_doubletap =
@@ -14433,10 +14372,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       scroll_start_location_in_screen.y(), scroll_end_location_in_screen.x(),
       scroll_end_location_in_screen.y());
   base::JSONReader json_reader;
-  base::Optional<base::Value> touch_params =
-      json_reader.ReadToValue(touch_move_sequence_json);
-  ASSERT_TRUE(touch_params.has_value()) << json_reader.GetErrorMessage();
-  ActionsParser actions_parser(std::move(touch_params.value()));
+  std::unique_ptr<base::Value> touch_params =
+      json_reader.ReadToValueDeprecated(touch_move_sequence_json);
+  ASSERT_TRUE(touch_params.get()) << json_reader.GetErrorMessage();
+  ActionsParser actions_parser(touch_params.get());
 
   ASSERT_TRUE(actions_parser.ParsePointerActionSequence());
   auto synthetic_scroll_gesture =
@@ -14590,9 +14529,9 @@ class InnerWebContentsAttachTest
       // Need user gesture for 'beforeunload' to fire.
       PrepContentsForBeforeUnloadTest(web_contents);
       // Simulate user choosing to stay on the page after beforeunload fired.
-      SetShouldProceedOnBeforeUnload(Shell::FromWebContents(web_contents),
-                                     true /* always_proceed */,
-                                     proceed_through_beforeunload);
+      SetShouldProceedOnBeforeUnload(
+          Shell::FromRenderViewHost(web_contents->GetRenderViewHost()),
+          true /* always_proceed */, proceed_through_beforeunload);
       RenderFrameHost::PrepareForInnerWebContentsAttachCallback callback =
           base::BindOnce(&PrepareFrameJob::OnPrepare, base::Unretained(this));
       original_render_frame_host->PrepareForInnerWebContentsAttach(

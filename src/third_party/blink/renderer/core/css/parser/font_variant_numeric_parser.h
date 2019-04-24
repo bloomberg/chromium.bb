@@ -28,30 +28,30 @@ class FontVariantNumericParser {
   ParseResult ConsumeNumeric(CSSParserTokenRange& range) {
     CSSValueID value_id = range.Peek().Id();
     switch (value_id) {
-      case CSSValueID::kLiningNums:
-      case CSSValueID::kOldstyleNums:
+      case CSSValueLiningNums:
+      case CSSValueOldstyleNums:
         if (saw_numeric_figure_value_)
           return ParseResult::kDisallowedValue;
         saw_numeric_figure_value_ = true;
         break;
-      case CSSValueID::kProportionalNums:
-      case CSSValueID::kTabularNums:
+      case CSSValueProportionalNums:
+      case CSSValueTabularNums:
         if (saw_numeric_spacing_value_)
           return ParseResult::kDisallowedValue;
         saw_numeric_spacing_value_ = true;
         break;
-      case CSSValueID::kDiagonalFractions:
-      case CSSValueID::kStackedFractions:
+      case CSSValueDiagonalFractions:
+      case CSSValueStackedFractions:
         if (saw_numeric_fraction_value_)
           return ParseResult::kDisallowedValue;
         saw_numeric_fraction_value_ = true;
         break;
-      case CSSValueID::kOrdinal:
+      case CSSValueOrdinal:
         if (saw_ordinal_value_)
           return ParseResult::kDisallowedValue;
         saw_ordinal_value_ = true;
         break;
-      case CSSValueID::kSlashedZero:
+      case CSSValueSlashedZero:
         if (saw_slashed_zero_value_)
           return ParseResult::kDisallowedValue;
         saw_slashed_zero_value_ = true;
@@ -65,7 +65,7 @@ class FontVariantNumericParser {
 
   CSSValue* FinalizeValue() {
     if (!result_->length())
-      return CSSIdentifierValue::Create(CSSValueID::kNormal);
+      return CSSIdentifierValue::Create(CSSValueNormal);
     return result_.Release();
   }
 

@@ -32,11 +32,6 @@ enum class FidoReturnCode : uint8_t {
   kAuthenticatorRemovedDuringPINEntry,
   kSoftPINBlock,
   kHardPINBlock,
-  kAuthenticatorMissingResidentKeys,
-  // TODO(agl): kAuthenticatorMissingUserVerification can also be returned when
-  // the authenticator supports UV, but there's no UI support for collecting
-  // a PIN. This could be clearer.
-  kAuthenticatorMissingUserVerification,
 };
 
 enum class ProtocolVersion {
@@ -351,6 +346,11 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kDeviceTimeout;
 // Wait time before polling device for U2F register/sign operation again when
 // device times out waiting for user presence.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kU2fRetryDelay;
+
+// Interval wait time before retrying reading on HID connection when
+// CTAPHID_KEEPALIVE message has been received.
+// https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#ctaphid_keepalive-0x3b
+COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kHidKeepAliveDelay;
 
 // String key values for attestation object as a response to MakeCredential
 // request.

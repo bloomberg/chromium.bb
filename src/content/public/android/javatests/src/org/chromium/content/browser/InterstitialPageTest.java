@@ -12,6 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -21,7 +22,6 @@ import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.test.InterstitialPageDelegateAndroid;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
@@ -48,14 +48,12 @@ public class InterstitialPageTest {
         }
 
         public boolean isInterstitialShowing() throws ExecutionException {
-            return TestThreadUtils
-                    .runOnUiThreadBlocking(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            return mInterstitialShowing;
-                        }
-                    })
-                    .booleanValue();
+            return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return mInterstitialShowing;
+                }
+            }).booleanValue();
         }
 
         @Override
@@ -116,8 +114,8 @@ public class InterstitialPageTest {
                 proceed();
             }
         };
-        TestWebContentsObserver observer =
-                TestThreadUtils.runOnUiThreadBlocking(new Callable<TestWebContentsObserver>() {
+        TestWebContentsObserver observer = ThreadUtils.runOnUiThreadBlocking(
+                new Callable<TestWebContentsObserver>() {
                     @Override
                     public TestWebContentsObserver call() throws Exception {
                         delegate.showInterstitialPage(URL, mActivityTestRule.getWebContents());

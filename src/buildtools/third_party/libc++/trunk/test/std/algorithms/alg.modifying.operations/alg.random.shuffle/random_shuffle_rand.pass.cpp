@@ -15,8 +15,6 @@
 //   void
 //   random_shuffle(Iter first, Iter last, Rand&& rand);
 
-#define _LIBCPP_DISABLE_DEPRECATION_WARNINGS
-
 #include <algorithm>
 #include <cassert>
 #include <cstddef>

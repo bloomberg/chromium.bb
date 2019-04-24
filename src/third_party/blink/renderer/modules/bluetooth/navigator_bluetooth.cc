@@ -32,7 +32,7 @@ Bluetooth* NavigatorBluetooth::bluetooth() {
   if (!GetSupplementable()->GetFrame())
     return nullptr;
 
-  bluetooth_ = MakeGarbageCollected<Bluetooth>(
+  bluetooth_ = Bluetooth::Create(
       GetSupplementable()->GetFrame()->GetDocument()->GetExecutionContext());
   return bluetooth_.Get();
 }

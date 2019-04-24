@@ -7,16 +7,11 @@
 
 #include <memory>
 
-#include "base/observer_list.h"
 #include "base/scoped_observer.h"
-#include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_service.h"
-
-namespace base {
-class ElapsedTimer;
-}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -56,8 +51,8 @@ class SessionDurationUpdater
     virtual void OnSessionEnded(base::TimeDelta total_session_time) = 0;
   };
 
-  SessionDurationUpdater(PrefService* pref_service,
-                         const char* observed_session_time_pref_key);
+  explicit SessionDurationUpdater(PrefService* pref_service,
+                                  const char* observed_session_time_pref_key);
   ~SessionDurationUpdater() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -65,11 +60,11 @@ class SessionDurationUpdater
   // Returns the total amount of observed active session time of the current
   // session plus the previously recorded observed session time. The resulting
   // value should be cumulative session time across all Chrome restarts.
-  base::TimeDelta GetCumulativeElapsedSessionTime() const;
+  base::TimeDelta GetCumulativeElapsedSessionTime();
 
   // Gets the recorded observed session time which is cumulative for all
   // previous sessions.
-  base::TimeDelta GetRecordedObservedSessionTime() const;
+  base::TimeDelta GetRecordedObservedSessionTime();
 
   // For observing the status of the session tracker.
   void AddObserver(Observer* observer);
@@ -80,11 +75,12 @@ class SessionDurationUpdater
   void OnSessionEnded(base::TimeDelta delta) override;
 
  private:
+  // Adds the DesktopSessionDurationTracker observer.
   void AddDurationTrackerObserver();
+  // Removes the DesktopSessionDurationTracker observer.
   void RemoveDurationTrackerObserver();
-
   // Returns the pref service associated with this SessionDurationUpdater.
-  PrefService* GetPrefs();
+  virtual PrefService* GetPrefs();
 
   // Observes the DesktopSessionDurationTracker and notifies when a desktop
   // session starts and ends.
@@ -95,9 +91,9 @@ class SessionDurationUpdater
   // Owned by Profile manager.
   PrefService* const pref_service_;
 
-  // The profile dict key of |kObservedSessionTime| that tracks the observed
-  // session time for an In-Product Help feature. Needs to outlive this class.
-  const char* const observed_session_time_dict_key_;
+  // The profile dict key of kObservedSessionTime that tracks the observed
+  // session time for an In-Product Help feature.
+  const char* observed_session_time_dict_key_;
 
   // Tracks the elapsed active session time while the browser is open.
   std::unique_ptr<base::ElapsedTimer> current_session_timer_;

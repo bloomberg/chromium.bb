@@ -108,8 +108,7 @@ void ShowSupervisionTransitionNotification(Profile* profile) {
           new NotificationDelegate(profile), ash::kNotificationFamilyLinkIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   NotificationDisplayService::GetForProfile(profile)->Display(
-      NotificationHandler::Type::TRANSIENT, *notification,
-      /*metadata=*/nullptr);
+      NotificationHandler::Type::TRANSIENT, *notification);
 }
 
 }  // namespace arc

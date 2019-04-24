@@ -4,33 +4,36 @@
 
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
-#include <utility>
-
 #include "base/posix/eintr_wrapper.h"
 
 namespace gfx {
 
 NativePixmapDmaBuf::NativePixmapDmaBuf(const gfx::Size& size,
                                        gfx::BufferFormat format,
-                                       gfx::NativePixmapHandle handle)
-    : size_(size), format_(format), planes_(std::move(handle.planes)) {}
+                                       const gfx::NativePixmapHandle& handle)
+    : size_(size), format_(format), planes_(handle.planes) {
+  DCHECK_EQ(handle.planes.size(), handle.fds.size());
+  for (auto& fd : handle.fds) {
+    fds_.emplace_back(fd.fd);
+  }
+}
 
 NativePixmapDmaBuf::~NativePixmapDmaBuf() {}
 
 bool NativePixmapDmaBuf::AreDmaBufFdsValid() const {
-  if (planes_.empty())
+  if (fds_.empty())
     return false;
 
-  for (const auto& plane : planes_) {
-    if (!plane.fd.is_valid())
+  for (const auto& fd : fds_) {
+    if (!fd.is_valid())
       return false;
   }
   return true;
 }
 
 int NativePixmapDmaBuf::GetDmaBufFd(size_t plane) const {
-  DCHECK_LT(plane, planes_.size());
-  return planes_[plane].fd.get();
+  DCHECK_LT(plane, fds_.size());
+  return fds_[plane].get();
 }
 
 int NativePixmapDmaBuf::GetDmaBufPitch(size_t plane) const {

@@ -29,7 +29,7 @@ namespace android_webview {
 class AwHttpAuthHandler : public content::LoginDelegate,
                           public content::WebContentsObserver {
  public:
-  AwHttpAuthHandler(const net::AuthChallengeInfo& auth_info,
+  AwHttpAuthHandler(net::AuthChallengeInfo* auth_info,
                     content::WebContents* web_contents,
                     bool first_auth_attempt,
                     LoginAuthRequiredCallback callback);

@@ -91,7 +91,7 @@ void ThreadedMessagingProxyBase::CountDeprecation(WebFeature feature) {
 }
 
 void ThreadedMessagingProxyBase::ReportConsoleMessage(
-    mojom::ConsoleMessageSource source,
+    MessageSource source,
     mojom::ConsoleMessageLevel level,
     const String& message,
     std::unique_ptr<SourceLocation> location) {

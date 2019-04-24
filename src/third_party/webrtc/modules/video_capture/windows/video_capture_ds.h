@@ -11,7 +11,6 @@
 #ifndef MODULES_VIDEO_CAPTURE_MAIN_SOURCE_WINDOWS_VIDEO_CAPTURE_DS_H_
 #define MODULES_VIDEO_CAPTURE_MAIN_SOURCE_WINDOWS_VIDEO_CAPTURE_DS_H_
 
-#include "api/scoped_refptr.h"
 #include "modules/video_capture/video_capture_impl.h"
 #include "modules/video_capture/windows/device_info_ds.h"
 
@@ -60,7 +59,7 @@ class VideoCaptureDS : public VideoCaptureImpl {
   IBaseFilter* _captureFilter;
   IGraphBuilder* _graphBuilder;
   IMediaControl* _mediaControl;
-  rtc::scoped_refptr<CaptureSinkFilter> sink_filter_;
+  CaptureSinkFilter* _sinkFilter;
   IPin* _inputSendPin;
   IPin* _outputCapturePin;
 

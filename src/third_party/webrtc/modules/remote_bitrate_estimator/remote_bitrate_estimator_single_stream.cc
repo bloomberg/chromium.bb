@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "absl/types/optional.h"
+#include "common_types.h"  // NOLINT(build/include)
 #include "modules/remote_bitrate_estimator/aimd_rate_control.h"
 #include "modules/remote_bitrate_estimator/include/bwe_defines.h"
 #include "modules/remote_bitrate_estimator/inter_arrival.h"
@@ -43,14 +44,13 @@ static const double kTimestampToMs = 1.0 / 90.0;
 struct RemoteBitrateEstimatorSingleStream::Detector {
   explicit Detector(int64_t last_packet_time_ms,
                     const OverUseDetectorOptions& options,
-                    bool enable_burst_grouping,
-                    const WebRtcKeyValueConfig* key_value_config)
+                    bool enable_burst_grouping)
       : last_packet_time_ms(last_packet_time_ms),
         inter_arrival(90 * kTimestampGroupLengthMs,
                       kTimestampToMs,
                       enable_burst_grouping),
         estimator(options),
-        detector(key_value_config) {}
+        detector() {}
   int64_t last_packet_time_ms;
   InterArrival inter_arrival;
   OveruseEstimator estimator;
@@ -63,7 +63,7 @@ RemoteBitrateEstimatorSingleStream::RemoteBitrateEstimatorSingleStream(
     : clock_(clock),
       incoming_bitrate_(kBitrateWindowMs, 8000),
       last_valid_incoming_bitrate_(0),
-      remote_rate_(new AimdRateControl(&field_trials_)),
+      remote_rate_(new AimdRateControl()),
       observer_(observer),
       last_process_time_(-1),
       process_interval_ms_(kProcessIntervalMs),
@@ -104,9 +104,8 @@ void RemoteBitrateEstimatorSingleStream::IncomingPacket(
     // automatically cleaned up when we have one RemoteBitrateEstimator per REMB
     // group.
     std::pair<SsrcOveruseEstimatorMap::iterator, bool> insert_result =
-        overuse_detectors_.insert(
-            std::make_pair(ssrc, new Detector(now_ms, OverUseDetectorOptions(),
-                                              true, &field_trials_)));
+        overuse_detectors_.insert(std::make_pair(
+            ssrc, new Detector(now_ms, OverUseDetectorOptions(), true)));
     it = insert_result.first;
   }
   Detector* estimator = it->second;
@@ -257,7 +256,7 @@ void RemoteBitrateEstimatorSingleStream::GetSsrcs(
 
 AimdRateControl* RemoteBitrateEstimatorSingleStream::GetRemoteRate() {
   if (!remote_rate_)
-    remote_rate_.reset(new AimdRateControl(&field_trials_));
+    remote_rate_.reset(new AimdRateControl());
   return remote_rate_.get();
 }
 

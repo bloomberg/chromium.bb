@@ -24,12 +24,11 @@ class Handle;
 class Isolate;
 
 template <typename Derived, typename Shape>
-class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) Dictionary
-    : public HashTable<Derived, Shape> {
-  using DerivedHashTable = HashTable<Derived, Shape>;
+class Dictionary : public HashTable<Derived, Shape> {
+  typedef HashTable<Derived, Shape> DerivedHashTable;
 
  public:
-  using Key = typename Shape::Key;
+  typedef typename Shape::Key Key;
   // Returns the value at entry.
   Object ValueAt(int entry) {
     return this->get(DerivedHashTable::EntryToIndex(entry) + 1);
@@ -126,9 +125,8 @@ class NameDictionaryShape : public BaseDictionaryShape<Handle<Name>> {
 };
 
 template <typename Derived, typename Shape>
-class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) BaseNameDictionary
-    : public Dictionary<Derived, Shape> {
-  using Key = typename Shape::Key;
+class BaseNameDictionary : public Dictionary<Derived, Shape> {
+  typedef typename Shape::Key Key;
 
  public:
   static const int kNextEnumerationIndexIndex =
@@ -161,7 +159,7 @@ class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) BaseNameDictionary
   // Creates a new dictionary.
   V8_WARN_UNUSED_RESULT static Handle<Derived> New(
       Isolate* isolate, int at_least_space_for,
-      AllocationType allocation = AllocationType::kYoung,
+      PretenureFlag pretenure = NOT_TENURED,
       MinimumCapacity capacity_option = USE_DEFAULT_MINIMUM_CAPACITY);
 
   // Collect the keys into the given KeyAccumulator, in ascending chronological
@@ -194,12 +192,7 @@ class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) BaseNameDictionary
   OBJECT_CONSTRUCTORS(BaseNameDictionary, Dictionary<Derived, Shape>);
 };
 
-class NameDictionary;
-
-extern template class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE)
-    BaseNameDictionary<NameDictionary, NameDictionaryShape>;
-
-class V8_EXPORT_PRIVATE NameDictionary
+class NameDictionary
     : public BaseNameDictionary<NameDictionary, NameDictionaryShape> {
  public:
   DECL_CAST(NameDictionary)
@@ -235,12 +228,7 @@ class GlobalDictionaryShape : public NameDictionaryShape {
   static inline RootIndex GetMapRootIndex();
 };
 
-class GlobalDictionary;
-
-extern template class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE)
-    BaseNameDictionary<GlobalDictionary, GlobalDictionaryShape>;
-
-class V8_EXPORT_PRIVATE GlobalDictionary
+class GlobalDictionary
     : public BaseNameDictionary<GlobalDictionary, GlobalDictionaryShape> {
  public:
   DECL_CAST(GlobalDictionary)

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-class AuthenticatorRequestDialogModel;
 class AuthenticatorRequestDialogView;
 class AuthenticatorRequestSheetView;
 
@@ -19,14 +18,13 @@ namespace test {
 
 class AuthenticatorRequestDialogViewTestApi {
  public:
-  // Returns a non-owning pointer to an AuthenticatorRequestDialogView for
-  // testing.
-  static AuthenticatorRequestDialogView* CreateDialogView(
-      std::unique_ptr<AuthenticatorRequestDialogModel> dialog_model,
-      content::WebContents* web_contents);
+  // Shows a prepared |dialog| for testing; instead of automatically
+  // constructing it based on a given model.
+  static void Show(content::WebContents* web_contents,
+                   std::unique_ptr<AuthenticatorRequestDialogView> dialog);
 
   // Replaces the current sheet on |dialog| with |new_sheet|.
-  static void ShowWithSheet(
+  static void ReplaceCurrentSheet(
       AuthenticatorRequestDialogView* dialog,
       std::unique_ptr<AuthenticatorRequestSheetView> new_sheet);
 };

@@ -32,14 +32,13 @@
 
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 SVGInteger::SVGInteger(int value) : value_(value) {}
 
 SVGInteger* SVGInteger::Clone() const {
-  return MakeGarbageCollected<SVGInteger>(value_);
+  return Create(value_);
 }
 
 String SVGInteger::ValueAsString() const {

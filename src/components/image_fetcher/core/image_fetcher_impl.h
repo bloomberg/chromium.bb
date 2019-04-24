@@ -89,8 +89,6 @@ class ImageFetcherImpl : public ImageFetcher {
   // url, fetcher, pending callbacks).
   ImageRequestMap pending_net_requests_;
 
-  base::WeakPtrFactory<ImageFetcherImpl> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(ImageFetcherImpl);
 };
 

@@ -13,7 +13,6 @@
 #include "unicode/utypes.h"
 
 #if !UCONFIG_NO_FORMATTING
-#ifndef U_HIDE_DRAFT_API
 
 #include "unicode/measunit.h"
 
@@ -24,6 +23,7 @@
 
 U_NAMESPACE_BEGIN
 
+#ifndef U_HIDE_DRAFT_API
 /**
  * Dimensionless unit for percent and permille.
  * @see NumberFormatter
@@ -100,10 +100,10 @@ private:
     NoUnit(const char* subtype);
 
 };
+#endif  /* U_HIDE_DRAFT_API */
 
 U_NAMESPACE_END
 
-#endif  /* U_HIDE_DRAFT_API */
 #endif /* #if !UCONFIG_NO_FORMATTING */
 
 #endif // __NOUNIT_H__

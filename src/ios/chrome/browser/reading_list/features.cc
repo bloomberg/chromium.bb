@@ -4,8 +4,7 @@
 
 #include "ios/chrome/browser/reading_list/features.h"
 
-#include "ios/chrome/browser/web/features.h"
-#include "ios/web/common/features.h"
+#include "ios/web/public/features.h"
 
 namespace reading_list {
 
@@ -13,8 +12,7 @@ const base::Feature kOfflineVersionWithoutNativeContent{
     "OfflineVersionWithoutNativeContent", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsOfflinePageWithoutNativeContentEnabled() {
-  return base::FeatureList::IsEnabled(kOfflineVersionWithoutNativeContent) ||
-         base::FeatureList::IsEnabled(web::features::kSlimNavigationManager);
+  return base::FeatureList::IsEnabled(kOfflineVersionWithoutNativeContent);
 }
 
 }  // namespace reading_list

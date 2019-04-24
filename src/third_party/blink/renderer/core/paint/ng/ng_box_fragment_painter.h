@@ -89,6 +89,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                               const PaintInfo&);
   void PaintBlockFlowContents(const PaintInfo&,
                               const LayoutPoint& paint_offset);
+  void PaintInlineChild(const NGPaintFragment&,
+                        const PaintInfo&,
+                        const LayoutPoint& paint_offset);
   void PaintAtomicInlineChild(const NGPaintFragment&, const PaintInfo&);
   void PaintTextChild(const NGPaintFragment&,
                       const PaintInfo&,
@@ -163,20 +166,10 @@ class NGBoxFragmentPainter : public BoxPainterBase {
       const LayoutPoint& offset);
 
   const NGPhysicalBoxFragment& PhysicalFragment() const;
-  const NGBorderEdges& BorderEdges() const;
 
   const NGPaintFragment& box_fragment_;
-  mutable base::Optional<NGBorderEdges> border_edges_;
+  NGBorderEdges border_edges_;
 };
-
-inline NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
-    : BoxPainterBase(&box.GetLayoutObject()->GetDocument(),
-                     box.Style(),
-                     box.GetLayoutObject()->GeneratingNode()),
-      box_fragment_(box) {
-  DCHECK(box.PhysicalFragment().IsBox() ||
-         box.PhysicalFragment().IsRenderedLegend());
-}
 
 }  // namespace blink
 

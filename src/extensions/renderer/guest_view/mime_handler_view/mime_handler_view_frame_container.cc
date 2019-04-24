@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "base/containers/flat_set.h"
+#include "base/pickle.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -21,8 +23,8 @@ namespace extensions {
 class MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver
     : public content::RenderFrameObserver {
  public:
-  RenderFrameLifetimeObserver(MimeHandlerViewFrameContainer* container,
-                              content::RenderFrame* render_frame);
+  RenderFrameLifetimeObserver(content::RenderFrame* render_frame,
+                              MimeHandlerViewFrameContainer* container);
   ~RenderFrameLifetimeObserver() override;
 
   // content:RenderFrameObserver override.
@@ -33,8 +35,8 @@ class MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver
 };
 
 MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver::
-    RenderFrameLifetimeObserver(MimeHandlerViewFrameContainer* container,
-                                content::RenderFrame* render_frame)
+    RenderFrameLifetimeObserver(content::RenderFrame* render_frame,
+                                MimeHandlerViewFrameContainer* container)
     : content::RenderFrameObserver(render_frame), container_(container) {}
 
 MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver::
@@ -42,6 +44,13 @@ MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver::
 
 void MimeHandlerViewFrameContainer::RenderFrameLifetimeObserver::OnDestruct() {
   container_->DestroyFrameContainer();
+}
+
+// static.
+bool MimeHandlerViewFrameContainer::IsSupportedMimeType(
+    const std::string& mime_type) {
+  return mime_type == "text/pdf" || mime_type == "application/pdf" ||
+         mime_type == "text/csv";
 }
 
 // static
@@ -57,6 +66,8 @@ bool MimeHandlerViewFrameContainer::Create(
     return false;
   }
 
+  if (!IsSupportedMimeType(mime_type))
+    return false;
   // Life time is managed by the class itself: when the MimeHandlerViewGuest
   // is destroyed an IPC is sent to renderer to cleanup this instance.
   return new MimeHandlerViewFrameContainer(plugin_element, resource_url,
@@ -66,16 +77,18 @@ bool MimeHandlerViewFrameContainer::Create(
 v8::Local<v8::Object> MimeHandlerViewFrameContainer::GetScriptableObject(
     const blink::WebElement& plugin_element,
     v8::Isolate* isolate) {
-  auto containers = FromRenderFrame(content::RenderFrame::FromWebFrame(
-      plugin_element.GetDocument().GetFrame()));
-  for (auto* container : containers) {
-    auto* frame_container =
-        static_cast<MimeHandlerViewFrameContainer*>(container);
-    if (frame_container->plugin_element_ != plugin_element)
-      continue;
-    return frame_container->GetScriptableObjectInternal(isolate);
-  }
+  // TODO(ekaramad): Implement.
   return v8::Local<v8::Object>();
+}
+
+// static
+void MimeHandlerViewFrameContainer::CreateWithFrame(
+    blink::WebLocalFrame* web_frame,
+    const GURL& resource_url,
+    const std::string& mime_type,
+    const std::string& view_id) {
+  new MimeHandlerViewFrameContainer(web_frame, resource_url, mime_type,
+                                    view_id);
 }
 
 MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
@@ -91,11 +104,28 @@ MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
       plugin_element_(plugin_element),
       element_instance_id_(content::RenderThread::Get()->GenerateRoutingID()),
       render_frame_lifetime_observer_(
-          new RenderFrameLifetimeObserver(this, GetEmbedderRenderFrame())) {
-  RecordInteraction(
-      MimeHandlerViewUMATypes::Type::kDidCreateMimeHandlerViewContainerBase);
+          new RenderFrameLifetimeObserver(GetEmbedderRenderFrame(), this)) {
   is_embedded_ = true;
   SendResourceRequest();
+}
+
+MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
+    blink::WebLocalFrame* web_local_frame,
+    const GURL& resource_url,
+    const std::string& mime_type,
+    const std::string& view_id)
+    : MimeHandlerViewContainerBase(
+          content::RenderFrame::FromWebFrame(
+              web_local_frame->Parent()->ToWebLocalFrame()),
+          content::WebPluginInfo(),
+          mime_type,
+          resource_url),
+      element_instance_id_(content::RenderThread::Get()->GenerateRoutingID()) {
+  is_embedded_ = false;
+  view_id_ = view_id;
+  plugin_frame_routing_id_ =
+      content::RenderFrame::FromWebFrame(web_local_frame)->GetRoutingID();
+  MimeHandlerViewContainerBase::CreateMimeHandlerViewGuestIfNecessary();
 }
 
 MimeHandlerViewFrameContainer::~MimeHandlerViewFrameContainer() {}
@@ -138,8 +168,17 @@ gfx::Size MimeHandlerViewFrameContainer::GetElementSize() const {
 }
 
 blink::WebFrame* MimeHandlerViewFrameContainer::GetContentFrame() const {
-  DCHECK(is_embedded_);
-  return blink::WebFrame::FromFrameOwnerElement(plugin_element_);
+  if (is_embedded_)
+    return blink::WebFrame::FromFrameOwnerElement(plugin_element_);
+
+  return GetEmbedderRenderFrame()->GetWebFrame()->FirstChild();
+}
+
+// mime_handler::BeforeUnloadControl implementation.
+void MimeHandlerViewFrameContainer::SetShowBeforeUnloadDialog(
+    bool show_dialog,
+    SetShowBeforeUnloadDialogCallback callback) {
+  // TODO(ekaramad): Implement.
 }
 
 }  // namespace extensions

@@ -381,9 +381,6 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     DISALLOW_COPY_AND_ASSIGN(Cursor);
   };
-
-  enum class Mode { kInMemory, kOnDisk };
-
   // Schedule an immediate blob journal cleanup if we reach this number of
   // requests.
   static constexpr const int kMaxJournalCleanRequests = 50;
@@ -395,8 +392,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
   static constexpr const base::TimeDelta kInitialJournalCleaningWindowTime =
       base::TimeDelta::FromSeconds(2);
 
-  IndexedDBBackingStore(Mode backing_store_mode,
-                        IndexedDBFactory* indexed_db_factory,
+  IndexedDBBackingStore(IndexedDBFactory* indexed_db_factory,
                         const url::Origin& origin,
                         const base::FilePath& blob_path,
                         std::unique_ptr<LevelDBDatabase> db,
@@ -573,7 +569,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
   // an otherwise healthy backing store.
   leveldb::Status RevertSchemaToV2();
 
-  bool is_incognito() const { return backing_store_mode_ == Mode::kInMemory; }
+  bool is_incognito() const { return !indexed_db_factory_; }
 
   base::WeakPtr<IndexedDBBackingStore> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -641,7 +637,6 @@ class CONTENT_EXPORT IndexedDBBackingStore
   // Can run a journal cleaning job if one is pending.
   void DidCommitTransaction();
 
-  Mode backing_store_mode_;
   IndexedDBFactory* indexed_db_factory_;
   const url::Origin origin_;
   base::FilePath blob_path_;

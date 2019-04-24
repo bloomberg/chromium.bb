@@ -11,8 +11,6 @@ namespace features {
 
 // Enables the allowActivationDelegation attribute on iframes.
 // https://www.chromestatus.com/features/6025124331388928
-//
-// TODO(mustaq): Deprecated, see kUserActivationPostMessageTransfer.
 const base::Feature kAllowActivationDelegationAttr{
     "AllowActivationDelegationAttr", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -64,6 +62,10 @@ const base::Feature kBackForwardCache{"BackForwardCache",
 const base::Feature kBlinkHeapIncrementalMarking{
     "BlinkHeapIncrementalMarking", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable unified garbage collection in Blink.
+const base::Feature kBlinkHeapUnifiedGarbageCollection{
+    "BlinkHeapUnifiedGarbageCollection", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enable bloated renderer detection.
 const base::Feature kBloatedRendererDetection{
     "BloatedRendererDetection", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -104,6 +106,11 @@ const base::Feature kCanvas2DImageChromium {
 #endif
 };
 
+// When CollectLiveNonNodeWrappers is enabled, live non-Node wrappers that are
+// re-creatable will get collected by V8's minor garbage collector.
+const base::Feature kCollectLiveNonNodeWrappers{
+    "CollectLiveNonNodeWrappers", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the compositing of fixed position content that is opaque and can
 // preserve LCD text.
 const base::Feature kCompositeOpaqueFixedPosition{
@@ -133,10 +140,9 @@ const base::Feature kDataSaverHoldback{"DataSaverHoldback",
 const base::Feature kDesktopCaptureChangeSource{
     "DesktopCaptureChangeSource", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// When a screen reader is detected, allow users the option of letting
-// Google provide descriptions for unlabeled images.
+// Enables additional image label features that haven't launched yet.
 const base::Feature kExperimentalAccessibilityLabels{
-    "ExperimentalAccessibilityLabels", base::FEATURE_ENABLED_BY_DEFAULT};
+    "ExperimentalAccessibilityLabels", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Throttle tasks in Blink background timer queues based on CPU budgets
 // for the background tab. Bug: https://crbug.com/639852.
@@ -163,6 +169,13 @@ const base::Feature kFontCacheScaling{"FontCacheScaling",
 const base::Feature kFontSrcLocalMatching{"FontSrcLocalMatching",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables a security restriction on iframes navigating their top frame.
+// When enabled, the navigation will only be permitted if the iframe is
+// same-origin to the top frame, or if a user gesture is being processed.
+const base::Feature kFramebustingNeedsSameOriginOrUserGesture{
+    "FramebustingNeedsSameOriginOrUserGesture",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables freezing frame support based on feature policies.
 const base::Feature kFreezeFramesOnVisibility{
     "FreezeFramesOnVisibility", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -172,6 +185,12 @@ const base::Feature kFreezeFramesOnVisibility{
 // set by the experiment (regardless of the actual quality).
 const base::Feature kNetworkQualityEstimatorWebHoldback{
     "NetworkQualityEstimatorWebHoldback", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When WebXR Device API is enabled, exposes VR controllers as Gamepads and
+// enables additional Gamepad attributes for use with WebXR Device API. Each
+// XRInputSource will have a corresponding Gamepad instance.
+const base::Feature kWebXrGamepadSupport{"WebXRGamepadSupport",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Causes the implementations of guests (inner WebContents) to use
 // out-of-process iframes.
@@ -186,13 +205,7 @@ const base::Feature kHeapCompaction{"HeapCompaction",
 // If a page does a client side redirect or adds to the history without a user
 // gesture, then skip it on back/forward UI.
 const base::Feature kHistoryManipulationIntervention{
-    "HistoryManipulationIntervention", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// This is intended as a kill switch for the Idle Detection feature. To enable
-// this feature,the experimental web platform features flag should be set,
-// or the site should obtain an Origin Trial token.
-const base::Feature kIdleDetection{"IdleDetection",
-                                   base::FEATURE_ENABLED_BY_DEFAULT};
+    "HistoryManipulationIntervention", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // This flag is used to set field parameters to choose predictor we use when
 // kResamplingInputEvents is disabled. It's used for gatherig accuracy metrics
@@ -221,30 +234,15 @@ const base::Feature kBuiltInModuleInfra{"BuiltInModuleInfra",
 const base::Feature kLazyFrameLoading{"LazyFrameLoading",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kLazyFrameVisibleLoadTimeMetrics{
-  "LazyFrameVisibleLoadTimeMetrics",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+    "LazyFrameVisibleLoadTimeMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kLazyImageLoading{"LazyImageLoading",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kLazyImageVisibleLoadTimeMetrics{
-  "LazyImageVisibleLoadTimeMetrics",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+    "LazyImageVisibleLoadTimeMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable lazy initialization of the media controls.
 const base::Feature kLazyInitializeMediaControls{
     "LazyInitializeMediaControls", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kLogJsConsoleMessages{"LogJsConsoleMessages",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables lowering the priority of the resources in iframes.
 const base::Feature kLowPriorityIframes{"LowPriorityIframes",
@@ -270,8 +268,7 @@ const base::Feature kMimeHandlerViewInCrossProcessFrame{
 // Enables/disables the video capture service.
 const base::Feature kMojoVideoCapture {
   "MojoVideoCapture",
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_CHROMEOS) || \
-    defined(OS_ANDROID)
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_CHROMEOS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -288,12 +285,6 @@ const base::Feature kMojoVideoCaptureSecondary{
 // If the network service is enabled, runs it in process.
 const base::Feature kNetworkServiceInProcess{"NetworkServiceInProcess",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Turns on / off the new accessibility selection code which uses a more
-// predictable algorithm for mapping between positions in the DOM and the
-// accessibility trees.
-const base::Feature kNewAccessibilitySelection{
-    "NewAccessibilitySelection", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for Web Notification content images.
 const base::Feature kNotificationContentImage{"NotificationContentImage",
@@ -345,7 +336,7 @@ const base::Feature kPaymentRequestHasEnrolledInstrument = {
 
 // Whether PDF files should be rendered in diffent processes based on origin.
 const base::Feature kPdfIsolation = {"PdfIsolation",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Whether we should use the navigation_client mojo interface for navigations.
 const base::Feature kPerNavigationMojoInterface = {
@@ -372,26 +363,25 @@ const base::Feature kProcessSharingWithStrictSiteInstances{
 // is used by various modules to determine whether special scheduling
 // arrangements need to be made to prioritize certain tasks.
 const base::Feature kPrioritizeBootstrapTasks = {
-    "PrioritizeBootstrapTasks", base::FEATURE_ENABLED_BY_DEFAULT};
+    "PrioritizeBootstrapTasks", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables Purge+Throttle on platforms except Android and MacOS.
+// (Android) Purge+Throttle depends on TabManager, but TabManager doesn't
+// support Android. Enable after Android is supported.
+// (MacOS X) Enable after Purge+Throttle handles memory pressure signals
+// send by OS correctly.
+const base::Feature kPurgeAndSuspend {
+  "PurgeAndSuspend",
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Enable raster-inducing scroll.
 const base::Feature kRasterInducingScroll{"RasterInducingScroll",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
-// RenderDocument:
-//
-// Currently, a RenderFrameHost represents neither a frame nor a document, but a
-// frame in a given process. A new one is created after a different-process
-// navigation. The goal of RenderDocument is to get a new one for each document
-// instead.
-
-// Enable using the RenderDocument on main frame navigations.
-const base::Feature kRenderDocumentForMainFrame{
-    "RenderDocumentForMainFrame", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enable using the RenderDocument on subframe navigations.
-const base::Feature kRenderDocumentForSubframe{
-    "RenderDocumentForSubframe", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Throttle Blink's rendering pipeline based on frame visibility.
 const base::Feature kRenderingPipelineThrottling{
@@ -420,10 +410,13 @@ const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
     "SendBeaconThrowForBlobWithNonSimpleType",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSecMetadata{"SecMetadata",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Keep processes with service workers controlling clients from other
 // processes at foreground priority. (crbug.com/928904)
 const base::Feature kServiceWorkerForegroundPriority{
-    "ServiceWorkerForegroundPriority", base::FEATURE_ENABLED_BY_DEFAULT};
+    "ServiceWorkerForegroundPriority", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables long running message dispatch for service workers.
 // This is a temporary addition only to be used for the Android Messages
@@ -452,19 +445,10 @@ const base::Feature kSharedArrayBuffer {
 const base::Feature kSignedExchangeReportingForDistributors{
     "SignedExchangeReportingForDistributors", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Subresource prefetching+loading via Signed HTTP Exchange
-// https://www.chromestatus.com/features/5126805474246656
-const base::Feature kSignedExchangeSubresourcePrefetch{
-    "SignedExchangeSubresourcePrefetch", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Origin-Signed HTTP Exchanges (for WebPackage Loading)
 // https://www.chromestatus.com/features/5745285984681984
 const base::Feature kSignedHTTPExchange{"SignedHTTPExchange",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Whether to send a ping to the inner URL upon navigation or not.
-const base::Feature kSignedHTTPExchangePingValidity{
-    "SignedHTTPExchangePingValidity", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls whether SpareRenderProcessHostManager tries to always have a warm
 // spare renderer process around for the most recently requested BrowserContext.
@@ -500,11 +484,6 @@ const base::Feature kSkipBrowserTouchFilter{"SkipBrowserTouchFilter",
 const char kSkipBrowserTouchFilterTypeParamName[] = "type";
 const char kSkipBrowserTouchFilterTypeParamValueDiscrete[] = "discrete";
 const char kSkipBrowserTouchFilterTypeParamValueAll[] = "all";
-
-// Allows developers transfer user activation state to any target window in the
-// frame tree.
-const base::Feature kUserActivationPostMessageTransfer{
-    "UserActivationPostMessageTransfer", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows user activation propagation to all frames having the same origin as
 // the activation notifier frame.  This is an intermediate measure before we

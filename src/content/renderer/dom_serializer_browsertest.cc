@@ -164,18 +164,14 @@ class MAYBE_DomSerializerTests : public ContentBrowserTest,
 
   // Serialize DOM belonging to a frame with the specified |frame_url|.
   void SerializeDomForURL(const GURL& frame_url) {
-    SerializeDomForURL(frame_url, false);
-  }
-
-  void SerializeDomForURL(const GURL& frame_url, bool save_with_empty_url) {
     // Find corresponding WebFrame according to frame_url.
     WebFrame* web_frame = FindSubFrameByURL(frame_url);
     ASSERT_TRUE(web_frame != nullptr);
     WebString file_path = WebString::FromUTF8("c:\\dummy.htm");
     SingleLinkRewritingDelegate delegate(frame_url, file_path);
     // Start serializing DOM.
-    bool result = WebFrameSerializer::Serialize(
-        web_frame->ToWebLocalFrame(), this, &delegate, save_with_empty_url);
+    bool result = WebFrameSerializer::Serialize(web_frame->ToWebLocalFrame(),
+                                                this, &delegate);
     ASSERT_TRUE(result);
   }
 
@@ -225,20 +221,17 @@ class MAYBE_DomSerializerTests : public ContentBrowserTest,
   }
 
   void SerializeHTMLDOMWithAddingMOTWOnRenderer(
-      const GURL& file_url,
-      const std::string& original_contents,
-      bool save_with_empty_url) {
+      const GURL& file_url, const std::string& original_contents) {
     // Make sure original contents does not have MOTW;
-    GURL frame_url = save_with_empty_url ? GURL("about:internet") : file_url;
     std::string motw_declaration =
-        WebFrameSerializer::GenerateMarkOfTheWebDeclaration(frame_url).Utf8();
+        WebFrameSerializer::GenerateMarkOfTheWebDeclaration(file_url).Utf8();
     ASSERT_FALSE(motw_declaration.empty());
     // The encoding of original contents is ISO-8859-1, so we convert the MOTW
     // declaration to ASCII and search whether original contents has it or not.
     ASSERT_TRUE(std::string::npos == original_contents.find(motw_declaration));
 
     // Do serialization.
-    SerializeDomForURL(file_url, save_with_empty_url);
+    SerializeDomForURL(file_url);
     // Make sure the serialized contents have MOTW ;
     ASSERT_TRUE(serialization_reported_end_of_data_);
     ASSERT_FALSE(std::string::npos ==
@@ -713,32 +706,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
 
   PostTaskToInProcessRendererAndWait(base::Bind(
       &MAYBE_DomSerializerTests::SerializeHTMLDOMWithAddingMOTWOnRenderer,
-      base::Unretained(this), file_url, original_contents, false));
-}
-
-// When serializing DOM, we add MOTW declaration before html tag.
-IN_PROC_BROWSER_TEST_F(MAYBE_DomSerializerTests,
-                       SerializeOffTheRecordHTMLDOMWithAddingMOTW) {
-  base::FilePath page_file_path =
-      GetTestFilePath("dom_serializer", "youtube_2.htm");
-
-  std::string original_contents;
-  {
-    // Read original contents for later comparison .
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    ASSERT_TRUE(base::ReadFileToString(page_file_path, &original_contents));
-  }
-
-  // Get file URL.
-  GURL file_url = net::FilePathToFileURL(page_file_path);
-  ASSERT_TRUE(file_url.SchemeIsFile());
-
-  // Load the test file.
-  NavigateToURL(shell(), file_url);
-
-  PostTaskToInProcessRendererAndWait(base::BindRepeating(
-      &MAYBE_DomSerializerTests::SerializeHTMLDOMWithAddingMOTWOnRenderer,
-      base::Unretained(this), file_url, original_contents, true));
+      base::Unretained(this), file_url, original_contents));
 }
 
 // When serializing DOM, we will add the META which have correct charset

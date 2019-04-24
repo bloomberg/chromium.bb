@@ -3,36 +3,18 @@
  * found in the LICENSE file. */
 
 body {
-  height: 585px;
-  margin-bottom: 32px;
-  margin-inline-end: 32px;
-  margin-inline-start: 32px;
-  margin-top: 20px;
+  padding-inline-end: 4em;
+  padding-inline-start: 4em;
 }
 
 h1 {
   font-family: 'Google Sans', Helvetica, Roboto, sans-serif;
   font-weight: normal;
-  margin-bottom: 16px;
-  margin-top: 28px;
 }
 
 p {
-  font-family: Roboto, sans-serif;
-  line-height: 1.5;
+  font-family: 'Google Sans', Helvetica, Roboto, sans-serif;
   white-space: pre-line;
-}
-
-a {
-  color: var(--cr-link-color);
-  text-decoration: none;
-}
-
-#content {
-  height: 100%;
-  padding-inline-end: 32px;
-  padding-inline-start: 32px;
-  position: relative;
 }
 
 #google-logo {
@@ -44,7 +26,10 @@ a {
   display: block;
   margin-inline-end: auto;
   margin-inline-start: auto;
-  margin-top: 60px;
+}
+
+#ok-button-container {
+  position: relative;
 }
 
 #ok-button {

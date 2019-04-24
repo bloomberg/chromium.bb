@@ -5,44 +5,12 @@
 'use strict';
 tr.exportTo('cp', () => {
   class MemoryComponents extends cp.ElementBase {
-    static get template() {
-      return Polymer.html`
-        <style>
-          :host {
-            display: flex;
-          }
-
-          .column {
-            border-bottom: 1px solid var(--primary-color-dark, blue);
-            margin-bottom: 4px;
-            max-height: 143px;
-            overflow-y: auto;
-          }
-        </style>
-
-        <template is="dom-repeat" items="[[columns]]" as="column"
-                                  index-as="columnIndex">
-          <div class="column">
-            <option-group
-                state-path="[[statePath]].columns.[[columnIndex]]"
-                root-state-path="[[statePath]].columns.[[columnIndex]]"
-                on-option-select="onColumnSelect_">
-            </option-group>
-          </div>
-        </template>
-      `;
-    }
-
     async onColumnSelect_(event) {
       await this.dispatch('onColumnSelect', this.statePath);
       this.dispatchEvent(new CustomEvent('option-select', {
         bubbles: true,
         composed: true,
       }));
-    }
-
-    async observeOptions_(options, selectedOptions) {
-      this.dispatch('buildColumns', this.statePath);
     }
   }
 
@@ -60,32 +28,17 @@ tr.exportTo('cp', () => {
     ...cp.buildProperties('state', MemoryComponents.State),
   };
 
-  MemoryComponents.observers = [
-    'observeOptions_(options, selectedOptions)',
-  ];
-
   MemoryComponents.actions = {
-    buildColumns: statePath => async(dispatch, getState) => {
-      if (!Polymer.Path.get(getState(), statePath)) return;
-      dispatch({
-        type: MemoryComponents.reducers.buildColumns.name,
-        statePath,
-      });
-    },
-
-    onColumnSelect: statePath => async(dispatch, getState) => {
-      dispatch({
-        type: MemoryComponents.reducers.onColumnSelect.name,
-        statePath,
-      });
-    },
+    onColumnSelect: statePath =>
+      async(dispatch, getState) => {
+        dispatch({
+          type: MemoryComponents.reducers.onColumnSelect.name,
+          statePath,
+        });
+      },
   };
 
   MemoryComponents.buildColumns = (options, selectedOptions) => {
-    if (!options || !options.length ||
-        !selectedOptions || !selectedOptions.length) {
-      return [];
-    }
     const columnOptions = [];
     for (const option of options) {
       for (const name of cp.OptionGroup.getValuesFromOption(option)) {
@@ -105,7 +58,6 @@ tr.exportTo('cp', () => {
     }
     for (const name of selectedOptions) {
       const columns = MemoryComponents.parseColumns(name);
-      if (columns.length > selectedColumns.length) return [];
       for (let i = 0; i < columns.length; ++i) {
         selectedColumns[i].add(columns[i]);
       }
@@ -120,15 +72,6 @@ tr.exportTo('cp', () => {
   };
 
   MemoryComponents.reducers = {
-    buildColumns: (state, action, rootState) => {
-      if (!state) return state;
-      return {
-        ...state,
-        columns: MemoryComponents.buildColumns(
-            state.options, state.selectedOptions),
-      };
-    },
-
     onColumnSelect: (state, action, rootState) => {
       // Remove all memory measurements from state.selectedOptions
       const selectedOptions = state.selectedOptions.filter(v =>

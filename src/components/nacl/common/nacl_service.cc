@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "build/build_config.h"
 #include "content/public/common/service_names.mojom.h"
 #include "ipc/ipc.mojom.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
@@ -27,11 +26,6 @@
 #include "services/service_manager/embedder/descriptors.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "base/mac/mach_port_rendezvous.h"
-#include "mojo/public/cpp/platform/features.h"
-#endif
-
 namespace {
 
 mojo::IncomingInvitation EstablishMojoConnection() {
@@ -40,22 +34,10 @@ mojo::IncomingInvitation EstablishMojoConnection() {
   endpoint = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
       *base::CommandLine::ForCurrentProcess());
 #else
-#if defined(OS_MACOSX)
-  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
-    auto* client = base::MachPortRendezvousClient::GetInstance();
-    if (client) {
-      endpoint = mojo::PlatformChannelEndpoint(
-          mojo::PlatformHandle(client->TakeReceiveRight('mojo')));
-    }
-  } else {
-#endif  // defined(OS_MACOSX)
-    endpoint = mojo::PlatformChannelEndpoint(mojo::PlatformHandle(
-        base::ScopedFD(base::GlobalDescriptors::GetInstance()->Get(
-            service_manager::kMojoIPCChannel))));
-#if defined(OS_MACOSX)
-  }
-#endif  // defined(OS_MACOSX)
-#endif  // !defined(OS_WIN)
+  endpoint = mojo::PlatformChannelEndpoint(mojo::PlatformHandle(
+      base::ScopedFD(base::GlobalDescriptors::GetInstance()->Get(
+          service_manager::kMojoIPCChannel))));
+#endif
   DCHECK(endpoint.is_valid());
   return mojo::IncomingInvitation::Accept(std::move(endpoint));
 }

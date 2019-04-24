@@ -22,8 +22,6 @@ class Connector;
 
 namespace ws {
 
-class ContextProviderCommandBuffer;
-
 class Gpu : public gpu::GpuChannelEstablishFactory {
  public:
   // The Gpu has to be initialized in the main thread before establishing
@@ -39,11 +37,11 @@ class Gpu : public gpu::GpuChannelEstablishFactory {
     return gpu_memory_buffer_manager_.get();
   }
 
-  scoped_refptr<ws::ContextProviderCommandBuffer> CreateContextProvider(
+  scoped_refptr<viz::ContextProvider> CreateContextProvider(
       scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
   void CreateJpegDecodeAccelerator(
-      media::mojom::MjpegDecodeAcceleratorRequest jda_request);
+      media::mojom::JpegDecodeAcceleratorRequest jda_request);
   void CreateVideoEncodeAcceleratorProvider(
       media::mojom::VideoEncodeAcceleratorProviderRequest vea_provider_request);
 

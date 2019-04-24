@@ -18,7 +18,6 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "ui/base/theme_provider.h"
 
@@ -28,11 +27,9 @@ class BrowserNonClientFrameViewBrowserTest
   BrowserNonClientFrameViewBrowserTest() = default;
   ~BrowserNonClientFrameViewBrowserTest() override = default;
 
-  void SetUp() override {
+  void SetUpOnMainThread() override {
+    ExtensionBrowserTest::SetUpOnMainThread();
     scoped_feature_list_.InitAndEnableFeature(features::kDesktopPWAWindowing);
-    ASSERT_TRUE(embedded_test_server()->Start());
-
-    extensions::ExtensionBrowserTest::SetUp();
   }
 
   // Note: A "bookmark app" is a type of hosted app. All of these tests apply
@@ -48,11 +45,11 @@ class BrowserNonClientFrameViewBrowserTest
     const extensions::Extension* app =
         extensions::browsertest_util::InstallBookmarkApp(browser()->profile(),
                                                          web_app_info);
+    content::TestNavigationObserver navigation_observer(GetAppURL());
+    navigation_observer.StartWatchingNewWebContents();
     app_browser_ = extensions::browsertest_util::LaunchAppBrowser(
         browser()->profile(), app);
-    web_contents_ = app_browser_->tab_strip_model()->GetActiveWebContents();
-    // Ensure the main page has loaded and is ready for ExecJs DOM manipulation.
-    ASSERT_TRUE(content::NavigateToURL(web_contents_, GetAppURL()));
+    navigation_observer.WaitForNavigationFinished();
 
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForBrowser(app_browser_);
@@ -62,11 +59,10 @@ class BrowserNonClientFrameViewBrowserTest
  protected:
   base::Optional<SkColor> app_theme_color_ = SK_ColorBLUE;
   Browser* app_browser_ = nullptr;
-  content::WebContents* web_contents_ = nullptr;
   BrowserNonClientFrameView* app_frame_view_ = nullptr;
 
  private:
-  GURL GetAppURL() { return embedded_test_server()->GetURL("/empty.html"); }
+  GURL GetAppURL() { return GURL("https://test.org"); }
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -166,8 +162,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   InstallAndLaunchBookmarkApp();
   EXPECT_GT(app_frame_view_->GetTopInset(false), 0);
 
+  content::WebContents* web_contents =
+      app_frame_view_->browser_view()->GetActiveWebContents();
   static_cast<content::WebContentsDelegate*>(app_browser_)
-      ->EnterFullscreenModeForTab(web_contents_, web_contents_->GetURL(), {});
+      ->EnterFullscreenModeForTab(web_contents, web_contents->GetURL(), {});
 
   EXPECT_EQ(app_frame_view_->GetTopInset(false), 0);
 }
@@ -177,30 +175,14 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
                        CustomTabBarIsVisibleInFullscreen) {
   InstallAndLaunchBookmarkApp();
 
+  content::WebContents* web_contents =
+      app_frame_view_->browser_view()->GetActiveWebContents();
+
   ui_test_utils::NavigateToURL(app_browser_, GURL("http://example.com"));
 
   static_cast<content::WebContentsDelegate*>(app_browser_)
-      ->EnterFullscreenModeForTab(web_contents_, web_contents_->GetURL(), {});
+      ->EnterFullscreenModeForTab(web_contents, web_contents->GetURL(), {});
 
   EXPECT_TRUE(
       app_frame_view_->browser_view()->toolbar()->custom_tab_bar()->IsDrawn());
-}
-
-// Tests that hosted app frames reflect the theme color set by HTML meta tags.
-IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
-                       HTMLMetaThemeColorOverridesManifest) {
-  // Ensure we're not using the system theme on Linux.
-  ThemeService* theme_service =
-      ThemeServiceFactory::GetForProfile(browser()->profile());
-  theme_service->UseDefaultTheme();
-
-  InstallAndLaunchBookmarkApp();
-  EXPECT_EQ(app_frame_view_->GetFrameColor(), *app_theme_color_);
-
-  EXPECT_TRUE(content::ExecJs(web_contents_, R"(
-      document.documentElement.innerHTML =
-          '<meta name="theme-color" content="yellow">';
-  )"));
-  EXPECT_EQ(app_frame_view_->GetFrameColor(), SK_ColorYELLOW);
-  DCHECK_NE(*app_theme_color_, SK_ColorYELLOW);
 }

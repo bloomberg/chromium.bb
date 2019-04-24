@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -78,6 +77,10 @@ bool IsAmbiguousBoundaryCharacter(UChar character) {
 }
 
 }  // namespace
+
+SpellChecker* SpellChecker::Create(LocalFrame& frame) {
+  return MakeGarbageCollected<SpellChecker>(frame);
+}
 
 static WebSpellCheckPanelHostClient& GetEmptySpellCheckPanelHostClient() {
   DEFINE_STATIC_LOCAL(EmptySpellCheckPanelHostClient, client, ());
@@ -101,7 +104,7 @@ WebTextCheckClient* SpellChecker::GetTextCheckerClient() const {
 
 SpellChecker::SpellChecker(LocalFrame& frame)
     : frame_(&frame),
-      spell_check_requester_(MakeGarbageCollected<SpellCheckRequester>(frame)),
+      spell_check_requester_(SpellCheckRequester::Create(frame)),
       idle_spell_check_controller_(IdleSpellCheckController::Create(frame)) {}
 
 bool SpellChecker::IsSpellCheckingEnabled() const {
@@ -264,21 +267,20 @@ static void AddMarker(Document* document,
   if (!SpellChecker::IsSpellCheckingEnabledAt(range_to_mark.EndPosition()))
     return;
 
-  StringBuilder description;
+  String description;
   for (wtf_size_t i = 0; i < descriptions.size(); ++i) {
     if (i != 0)
-      description.Append('\n');
-    description.Append(descriptions[i]);
+      description.append('\n');
+    description.append(descriptions[i]);
   }
 
   if (type == DocumentMarker::kSpelling) {
-    document->Markers().AddSpellingMarker(range_to_mark,
-                                          description.ToString());
+    document->Markers().AddSpellingMarker(range_to_mark, description);
     return;
   }
 
   DCHECK_EQ(type, DocumentMarker::kGrammar);
-  document->Markers().AddGrammarMarker(range_to_mark, description.ToString());
+  document->Markers().AddGrammarMarker(range_to_mark, description);
 }
 
 void SpellChecker::MarkAndReplaceFor(
@@ -299,9 +301,9 @@ void SpellChecker::MarkAndReplaceFor(
     return;
   }
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame().GetDocument()->UpdateStyleAndLayout();
+  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       GetFrame().GetDocument()->Lifecycle());
@@ -438,7 +440,7 @@ SpellChecker::GetSpellCheckMarkerUnderSelection() const {
     return {};
 
   return std::make_pair(selection_range.StartPosition().ComputeContainerNode(),
-                        To<SpellCheckMarker>(marker));
+                        ToSpellCheckMarker(marker));
 }
 
 std::pair<String, String> SpellChecker::SelectMisspellingAsync() {
@@ -485,9 +487,9 @@ void SpellChecker::ReplaceMisspelledRange(const String& text) {
 
   Document& current_document = *GetFrame().GetDocument();
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  current_document.UpdateStyleAndLayout();
+  current_document.UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // Dispatch 'beforeinput'.
   Element* const target = FindEventTargetFrom(
@@ -505,9 +507,9 @@ void SpellChecker::ReplaceMisspelledRange(const String& text) {
   if (current_document != GetFrame().GetDocument())
     return;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetFrame().GetDocument()->UpdateStyleAndLayout();
+  GetFrame().GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (cancel)
     return;

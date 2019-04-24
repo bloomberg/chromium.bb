@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 <style>
 p::first-letter {
   font-size: 200%;
@@ -9,7 +10,7 @@ p::first-letter {
 <h1 id="heading">Test heading</h1>
 <p id="text">Test text</p>
 <script>
-test(function () {
+test_after_layout_and_paint(function () {
   if (!window.accessibilityController) {
     assert_unreached("This test requires accessibilityController.");
     return;

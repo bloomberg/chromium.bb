@@ -1,15 +1,3 @@
-/**
- * `t` should be a function that takes at least three arguments:
- *
- * - the name of the test;
- * - the expected error (to be passed to `assert_throws` or similar);
- * - a function that takes a `WasmModuleBuilder` and initializes it;
- * - (optionally) an options object.
- *
- * The function is expected to create a test that checks if instantiating a
- * module with the result of the `WasmModuleBuilder` and the options object
- * (if any) yields the correct error.
- */
 function test_bad_imports(t) {
   for (const value of [null, true, "", Symbol(), 1, 0.1, NaN]) {
     t(`Non-object imports argument: ${format_value(value)}`,
@@ -27,7 +15,7 @@ function test_bad_imports(t) {
       builder => {
         builder.addImport("module", "fn", kSig_v_v);
       },
-      imports);
+      value);
   }
 
   t(`Missing imports argument`,

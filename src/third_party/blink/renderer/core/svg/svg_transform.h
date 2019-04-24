@@ -63,8 +63,7 @@ class SVGTransform final : public SVGPropertyBase {
   }
 
   SVGTransform();
-  explicit SVGTransform(SVGTransformType,
-                        ConstructionMode = kConstructIdentityTransform);
+  SVGTransform(SVGTransformType, ConstructionMode);
   explicit SVGTransform(const AffineTransform&);
   SVGTransform(SVGTransformType,
                float,

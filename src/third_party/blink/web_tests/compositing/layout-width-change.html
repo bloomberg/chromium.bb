@@ -23,17 +23,27 @@
     transform: translateZ(0);
   }
   </style>
-  <script src="../resources/run-after-layout-and-paint.js"></script>
   <script type="text/javascript" charset="utf-8">
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        testRunner.dumpAsTextWithPixelResults();
+    }
     function doTest()
     {
       var container = document.getElementById("container");
       var panel = document.getElementById("panel");
 
-      runAfterLayoutAndPaint(function() {
+      // Delay is needed after switching between compositing and non-compositing
+      // mode to allow for another render to happen.
+      window.setTimeout(function() {
          panel.className += " composited"
          container.style.height = "300";
-      }, true);
+         if (window.testRunner) {
+            window.setTimeout(function() {
+                testRunner.notifyDone();
+            }, 20);
+         }
+      }, 20);
     }
 
     window.addEventListener('load', doTest, false);

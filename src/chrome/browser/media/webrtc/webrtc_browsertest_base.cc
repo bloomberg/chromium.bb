@@ -582,10 +582,10 @@ double WebRtcTestBase::MeasureGetStatsPerformance(
   return ms;
 }
 
-std::vector<std::string> WebRtcTestBase::GetMandatoryStatsTypes(
+std::vector<std::string> WebRtcTestBase::GetWhitelistedStatsTypes(
     content::WebContents* tab) const {
   return JsonArrayToVectorOfStrings(
-      ExecuteJavascript("getMandatoryStatsTypes()", tab));
+      ExecuteJavascript("getWhitelistedStatsTypes()", tab));
 }
 
 void WebRtcTestBase::SetDefaultAudioCodec(

@@ -17,7 +17,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -129,6 +128,14 @@ gfx::Image CreateFavicon(const gfx::VectorIcon& icon) {
       gfx::CreateVectorIcon(icon, 16,
                             native_theme->GetSystemColor(
                                 ui::NativeTheme::kColorId_DefaultIconColor)));
+}
+
+// TODO(https://crbug.com/935593): Use a centralized method when it's available.
+gfx::Image GetDefaultFavicon() {
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      native_theme->SystemDarkModeEnabled() ? IDR_DEFAULT_FAVICON_DARK
+                                            : IDR_DEFAULT_FAVICON);
 }
 
 }  // namespace
@@ -583,7 +590,7 @@ void RecentTabsSubMenuModel::AddTabFavicon(int command_id, const GURL& url) {
 
   // Otherwise, start to fetch the favicon from local history asynchronously.
   // Set default icon first.
-  SetIcon(index_in_menu, favicon::GetDefaultFavicon());
+  SetIcon(index_in_menu, GetDefaultFavicon());
   // Start request to fetch actual icon if possible.
   favicon::FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(browser_->profile(),

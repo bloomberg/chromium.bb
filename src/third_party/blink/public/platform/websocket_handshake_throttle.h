@@ -15,8 +15,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEBSOCKET_HANDSHAKE_THROTTLE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEBSOCKET_HANDSHAKE_THROTTLE_H_
 
-#include "base/callback.h"
-#include "base/optional.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
 
 namespace blink {
 
@@ -30,15 +29,14 @@ class WebSocketHandshakeThrottle {
   // should be cleaned up if possible.
   virtual ~WebSocketHandshakeThrottle() = default;
 
-  // The closure callback OnCompletion should be called asynchronously
-  // to permit Javascript to use the connection or not. On error, a message
-  // should be passed to be displayed on the console indicating why the
-  // handshake was blocked. This object will be destroyed synchronously inside
-  // the callback. Callback must not be called after this object has been
+  // The WebCallbacks OnSuccess or OnError should be called asychronously to
+  // permit Javascript to use the connection or not. OnError should be passed
+  // a message to be displayed on the console indicating why the handshake was
+  // blocked. This object will be destroyed synchronously inside the
+  // callbacks. Callbacks must not be called after this object has been
   // destroyed.
-  using OnCompletion =
-      base::OnceCallback<void(const base::Optional<WebString>& error)>;
-  virtual void ThrottleHandshake(const WebURL&, OnCompletion) = 0;
+  virtual void ThrottleHandshake(const WebURL&,
+                                 WebCallbacks<void, const WebString&>*) = 0;
 };
 
 }  // namespace blink

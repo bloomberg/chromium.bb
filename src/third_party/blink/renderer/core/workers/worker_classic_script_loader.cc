@@ -109,7 +109,7 @@ void WorkerClassicScriptLoader::LoadSynchronously(
   fetch_client_settings_object_fetcher_ = fetch_client_settings_object_fetcher;
 
   ResourceRequest request(url);
-  request.SetHttpMethod(http_names::kGET);
+  request.SetHTTPMethod(http_names::kGET);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       creation_address_space);
   request.SetRequestContext(request_context);
@@ -148,7 +148,7 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
   is_worker_global_scope_ = execution_context.IsWorkerGlobalScope();
 
   ResourceRequest request(url);
-  request.SetHttpMethod(http_names::kGET);
+  request.SetHTTPMethod(http_names::kGET);
   request.SetExternalRequestStateFromRequestorAddressSpace(
       creation_address_space);
   request.SetRequestContext(request_context);
@@ -170,7 +170,7 @@ const KURL& WorkerClassicScriptLoader::ResponseURL() const {
 }
 
 void WorkerClassicScriptLoader::DidReceiveResponse(
-    uint64_t identifier,
+    unsigned long identifier,
     const ResourceResponse& response) {
   if (response.HttpStatusCode() / 100 != 2 && response.HttpStatusCode()) {
     NotifyError();
@@ -178,7 +178,7 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
   }
   if (!AllowedByNosniff::MimeTypeAsScript(
           fetch_client_settings_object_fetcher_->Context(),
-          &fetch_client_settings_object_fetcher_->GetConsoleLogger(), response,
+          fetch_client_settings_object_fetcher_->GetConsoleLogger(), response,
           fetch_client_settings_object_fetcher_->GetProperties()
               .GetFetchClientSettingsObject()
               .MimeTypeCheckForClassicWorkerScript(),
@@ -191,8 +191,7 @@ void WorkerClassicScriptLoader::DidReceiveResponse(
     String error = CheckSameOriginEnforcement(url_, response);
     if (!error.IsNull()) {
       fetch_client_settings_object_fetcher_->GetConsoleLogger()
-          .AddConsoleMessage(mojom::ConsoleMessageSource::kSecurity,
-                             mojom::ConsoleMessageLevel::kError, error);
+          ->AddErrorMessage(ConsoleLogger::Source::kSecurity, error);
       NotifyError();
       return;
     }
@@ -224,7 +223,7 @@ void WorkerClassicScriptLoader::DidReceiveData(const char* data, unsigned len) {
     return;
 
   if (!decoder_) {
-    decoder_ = std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
+    decoder_ = TextResourceDecoder::Create(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent,
         response_encoding_.IsEmpty() ? UTF8Encoding()
                                      : WTF::TextEncoding(response_encoding_)));
@@ -242,7 +241,7 @@ void WorkerClassicScriptLoader::DidReceiveCachedMetadata(const char* data,
   memcpy(cached_metadata_->data(), data, size);
 }
 
-void WorkerClassicScriptLoader::DidFinishLoading(uint64_t identifier) {
+void WorkerClassicScriptLoader::DidFinishLoading(unsigned long identifier) {
   need_to_cancel_ = false;
   if (!failed_ && decoder_)
     source_text_.Append(decoder_->Flush());
@@ -310,7 +309,7 @@ void WorkerClassicScriptLoader::ProcessContentSecurityPolicy(
   if (!response.CurrentRequestUrl().ProtocolIs("blob") &&
       !response.CurrentRequestUrl().ProtocolIs("file") &&
       !response.CurrentRequestUrl().ProtocolIs("filesystem")) {
-    content_security_policy_ = MakeGarbageCollected<ContentSecurityPolicy>();
+    content_security_policy_ = ContentSecurityPolicy::Create();
     content_security_policy_->SetOverrideURLForSelf(
         response.CurrentRequestUrl());
     content_security_policy_->DidReceiveHeaders(

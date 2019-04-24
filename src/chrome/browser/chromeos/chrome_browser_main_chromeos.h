@@ -27,10 +27,6 @@ class ArcServiceLauncher;
 class VoiceInteractionControllerClient;
 }  // namespace arc
 
-namespace policy {
-class LockToSingleUserManager;
-}  // namespace policy
-
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
 class AssistantClient;
 #endif
@@ -40,7 +36,7 @@ namespace chromeos {
 class ArcKioskAppManager;
 class CrosUsbDetector;
 class DemoModeResourcesRemover;
-class DiagnosticsdManager;
+class DiagnosticsdBridge;
 class DiscoverManager;
 class EventRewriterDelegateImpl;
 class FastTransitionObserver;
@@ -161,16 +157,14 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
   std::unique_ptr<DemoModeResourcesRemover> demo_mode_resources_remover_;
   std::unique_ptr<crostini::CrosvmMetrics> crosvm_metrics_;
   std::unique_ptr<DiscoverManager> discover_manager_;
+  std::unique_ptr<DiagnosticsdBridge> diagnosticsd_bridge_;
   std::unique_ptr<SchedulerConfigurationManager>
       scheduler_configuration_manager_;
 
   std::unique_ptr<CrosUsbDetector> cros_usb_detector_;
-  std::unique_ptr<DiagnosticsdManager> diagnosticsd_manager_;
 
   std::unique_ptr<chromeos::system::DarkResumeController>
       dark_resume_controller_;
-
-  std::unique_ptr<policy::LockToSingleUserManager> lock_to_single_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

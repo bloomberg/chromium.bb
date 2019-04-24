@@ -45,8 +45,8 @@ class MockResource final : public Resource {
   static MockResource* Fetch(FetchParameters&,
                              ResourceFetcher*,
                              ResourceClient*);
-  explicit MockResource(const KURL&);
-  explicit MockResource(const ResourceRequest&);
+  static MockResource* Create(const ResourceRequest&);
+  static MockResource* Create(const KURL&);
   MockResource(const ResourceRequest&, const ResourceLoaderOptions&);
 
   CachedMetadataHandler* CreateCachedMetadataHandler(

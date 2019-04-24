@@ -18,10 +18,6 @@ vi{
             "AFN",
             "Afghani Afghanistan",
         }
-        ALK{
-            "ALK",
-            "ALK",
-        }
         ALL{
             "ALL",
             "Lek Albania",
@@ -266,10 +262,6 @@ vi{
             "CNH",
             "Nhân dân tệ (hải ngoại)",
         }
-        CNX{
-            "CNX",
-            "CNX",
-        }
         CNY{
             "CN¥",
             "Nhân dân tệ",
@@ -490,10 +482,6 @@ vi{
             "ILP",
             "Pao Ixraen",
         }
-        ILR{
-            "ILR",
-            "ILR",
-        }
         ILS{
             "₪",
             "Sheqel Israel mới",
@@ -509,10 +497,6 @@ vi{
         IRR{
             "IRR",
             "Rial Iran",
-        }
-        ISJ{
-            "ISJ",
-            "ISJ",
         }
         ISK{
             "ISK",
@@ -701,10 +685,6 @@ vi{
         MUR{
             "MUR",
             "Rupee Mauritius",
-        }
-        MVP{
-            "MVP",
-            "MVP",
         }
         MVR{
             "MVR",
@@ -1034,10 +1014,6 @@ vi{
             "UYU",
             "Peso Uruguay",
         }
-        UYW{
-            "UYW",
-            "UYW",
-        }
         UZS{
             "UZS",
             "Som Uzbekistan",
@@ -1138,17 +1114,9 @@ vi{
             "XRE",
             "Quỹ RINET",
         }
-        XSU{
-            "XSU",
-            "XSU",
-        }
         XTS{
             "XTS",
             "Mã Tiền tệ Kiểm tra",
-        }
-        XUA{
-            "XUA",
-            "XUA",
         }
         XXX{
             "XXX",
@@ -1216,34 +1184,104 @@ vi{
         }
     }
     Currencies%narrow{
+        AOA{"Kz"}
         ARS{"$"}
+        AUD{"$"}
+        BAM{"KM"}
         BBD{"$"}
+        BDT{"৳"}
         BMD{"$"}
+        BND{"$"}
+        BOB{"Bs"}
+        BRL{"R$"}
         BSD{"$"}
+        BWP{"P"}
         BYN{"р."}
         BZD{"$"}
         CAD{"$"}
+        CLP{"$"}
+        CNY{"¥"}
+        COP{"$"}
         CRC{"₡"}
         CUC{"$"}
         CUP{"$"}
+        CZK{"Kč"}
+        DKK{"kr"}
         DOP{"$"}
-        ESP{"₧"}
+        EGP{"E£"}
+        EUR{"€"}
+        FJD{"$"}
+        FKP{"£"}
+        GBP{"£"}
+        GEL{"₾"}
+        GIP{"£"}
+        GNF{"FG"}
         GTQ{"Q"}
+        GYD{"$"}
+        HKD{"$"}
         HNL{"L"}
+        HRK{"kn"}
+        HUF{"Ft"}
+        IDR{"Rp"}
+        ILS{"₪"}
+        INR{"₹"}
+        ISK{"kr"}
         JMD{"$"}
+        JPY{"¥"}
+        KHR{"៛"}
+        KMF{"CF"}
+        KPW{"₩"}
+        KRW{"₩"}
         KYD{"$"}
-        LTL{"Lt"}
-        LVL{"Ls"}
+        KZT{"₸"}
+        LAK{"₭"}
+        LBP{"L£"}
+        LKR{"Rs"}
+        LRD{"$"}
+        MGA{"Ar"}
+        MMK{"K"}
+        MNT{"₮"}
+        MUR{"Rs"}
         MXN{"$"}
+        MYR{"RM"}
+        NAD{"$"}
+        NGN{"₦"}
         NIO{"C$"}
-        RUR{"р."}
+        NOK{"kr"}
+        NPR{"Rs"}
+        NZD{"$"}
+        PHP{"₱"}
+        PKR{"Rs"}
+        PLN{"zł"}
+        PYG{"₲"}
+        RON{"lei"}
+        RUB{"₽"}
+        RWF{"RF"}
+        SBD{"$"}
+        SEK{"kr"}
+        SGD{"$"}
+        SHP{"£"}
+        SRD{"$"}
+        SSP{"£"}
+        STN{"Db"}
+        SYP{"£"}
+        THB{"฿"}
+        TOP{"T$"}
+        TRY{"₺"}
         TTD{"$"}
         TWD{"NT$"}
+        UAH{"₴"}
         USD{"$"}
+        UYU{"$"}
+        VEF{"Bs"}
+        VND{"₫"}
         XCD{"$"}
+        ZAR{"R"}
+        ZMW{"ZK"}
     }
     Currencies%variant{
         GEL{"₾"}
+        TRY{"TL"}
     }
     CurrencyPlurals{
         AED{
@@ -1739,5 +1777,5 @@ vi{
     CurrencyUnitPatterns{
         other{"{0} {1}"}
     }
-    Version{"2.1.49.82"}
+    Version{"2.1.43.65"}
 }

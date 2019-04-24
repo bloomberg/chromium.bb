@@ -22,6 +22,7 @@
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/common/spellcheck_result.h"
+#include "components/spellcheck/common/spellcheck_switches.h"
 #include "components/spellcheck/renderer/spellcheck_language.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
 #include "components/spellcheck/spellcheck_buildflags.h"

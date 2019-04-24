@@ -67,7 +67,6 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
  public:
   static HTMLAnchorElement* Create(Document&);
 
-  HTMLAnchorElement(Document& document);
   HTMLAnchorElement(const QualifiedName&, Document&);
   ~HTMLAnchorElement() override;
 
@@ -128,7 +127,7 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
 
   unsigned link_relations_ : 31;
   mutable LinkHash cached_visited_link_hash_;
-  Member<RelList> rel_list_;
+  TraceWrapperMember<RelList> rel_list_;
 };
 
 inline LinkHash HTMLAnchorElement::VisitedLinkHash() const {

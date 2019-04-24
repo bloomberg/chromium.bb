@@ -109,8 +109,6 @@ struct PersistentNodeSlots final {
 template <ThreadAffinity affinity,
           WeaknessPersistentConfiguration weakness_configuration>
 class PersistentNodePtr {
-  STACK_ALLOCATED();
-
  public:
   PersistentNode* Get() const { return ptr_; }
   bool IsInitialized() const { return ptr_; }
@@ -130,8 +128,6 @@ class PersistentNodePtr {
 // but can be polled to see whether it is initialized without the mutex.
 template <WeaknessPersistentConfiguration weakness_configuration>
 class CrossThreadPersistentNodePtr {
-  STACK_ALLOCATED();
-
  public:
   PersistentNode* Get() const {
 #if DCHECK_IS_ON()

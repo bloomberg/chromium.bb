@@ -8,15 +8,11 @@ import time
 
 from mozlog import get_default_logger, handlers, proxy
 
-from .wptlogging import LogLevelRewriter
+from wptlogging import LogLevelRewriter
+from wptserve.handlers import StringHandler
 
 here = os.path.split(__file__)[0]
 repo_root = os.path.abspath(os.path.join(here, os.pardir, os.pardir, os.pardir))
-
-sys.path.insert(0, repo_root)
-from tools import localpaths  # noqa: flake8
-
-from wptserve.handlers import StringHandler
 
 serve = None
 

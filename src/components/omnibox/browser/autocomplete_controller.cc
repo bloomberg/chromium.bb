@@ -664,9 +664,7 @@ void AutocompleteController::UpdateKeywordDescriptions(
       i->description.clear();
       i->description_class.clear();
       DCHECK(!i->keyword.empty());
-      if (show_suffix_on_all_search_suggestions ||
-          (i->keyword != last_keyword &&
-           !ShouldCurbKeywordDescriptions(i->keyword))) {
+      if (i->keyword != last_keyword || show_suffix_on_all_search_suggestions) {
         const TemplateURL* template_url =
             i->GetTemplateURL(template_url_service_, false);
         if (template_url) {
@@ -790,12 +788,6 @@ void AutocompleteController::StopHelper(bool clear_result,
     // touch the edit... this is all a mess and should be cleaned up :(
     NotifyChanged(false);
   }
-}
-
-bool AutocompleteController::ShouldCurbKeywordDescriptions(
-    const base::string16& keyword) {
-  return AutocompleteProvider::InExplicitExperimentalKeywordMode(input_,
-                                                                 keyword);
 }
 
 bool AutocompleteController::OnMemoryDump(

@@ -7,8 +7,6 @@
 #include <dwmapi.h>
 #include <shellapi.h>
 
-#include <utility>
-
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/win/windows_version.h"
@@ -155,7 +153,7 @@ views::NativeWidget* ChromeViewsDelegate::CreateNativeWidget(
 }
 
 int ChromeViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
-                                                base::OnceClosure callback) {
+                                                const base::Closure& callback) {
   // Initialize the map with EDGE_BOTTOM. This is important, as if we return an
   // initial value of 0 (no auto-hide edges) then we'll go fullscreen and
   // windows will automatically remove WS_EX_TOPMOST from the appbar resulting
@@ -173,22 +171,23 @@ int ChromeViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
     // https://crbug.com/662122
     base::PostTaskWithTraitsAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-        base::BindOnce(&GetAppbarAutohideEdgesOnWorkerThread, monitor),
-        base::BindOnce(&ChromeViewsDelegate::OnGotAppbarAutohideEdges,
-                       weak_factory_.GetWeakPtr(), std::move(callback), monitor,
-                       appbar_autohide_edge_map_[monitor]));
+        base::Bind(&GetAppbarAutohideEdgesOnWorkerThread, monitor),
+        base::Bind(&ChromeViewsDelegate::OnGotAppbarAutohideEdges,
+                   weak_factory_.GetWeakPtr(), callback, monitor,
+                   appbar_autohide_edge_map_[monitor]));
   }
   return appbar_autohide_edge_map_[monitor];
 }
 
-void ChromeViewsDelegate::OnGotAppbarAutohideEdges(base::OnceClosure callback,
-                                                   HMONITOR monitor,
-                                                   int returned_edges,
-                                                   int edges) {
+void ChromeViewsDelegate::OnGotAppbarAutohideEdges(
+    const base::Closure& callback,
+    HMONITOR monitor,
+    int returned_edges,
+    int edges) {
   appbar_autohide_edge_map_[monitor] = edges;
   if (returned_edges == edges)
     return;
 
   base::AutoReset<bool> in_callback_setter(&in_autohide_edges_callback_, true);
-  std::move(callback).Run();
+  callback.Run();
 }

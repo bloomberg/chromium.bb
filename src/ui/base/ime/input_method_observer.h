@@ -5,14 +5,14 @@
 #ifndef UI_BASE_IME_INPUT_METHOD_OBSERVER_H_
 #define UI_BASE_IME_INPUT_METHOD_OBSERVER_H_
 
-#include "base/component_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 namespace ui {
 
 class InputMethod;
 class TextInputClient;
 
-class COMPONENT_EXPORT(UI_BASE_IME) InputMethodObserver {
+class UI_BASE_IME_EXPORT InputMethodObserver {
  public:
   virtual ~InputMethodObserver() {}
 

@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/inspector/add_string_to_digestor.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_css_agent.h"
@@ -82,11 +83,24 @@ void InspectorAnimationAgent::DidCommitLoadForLocalFrame(LocalFrame* frame) {
 }
 
 static std::unique_ptr<protocol::Animation::AnimationEffect>
-BuildObjectForAnimationEffect(KeyframeEffect* effect) {
+BuildObjectForAnimationEffect(KeyframeEffect* effect, bool is_transition) {
   ComputedEffectTiming* computed_timing = effect->getComputedTiming();
   double delay = computed_timing->delay();
   double duration = computed_timing->duration().GetAsUnrestrictedDouble();
   String easing = effect->SpecifiedTiming().timing_function->ToString();
+
+  if (is_transition) {
+    // Obtain keyframes and convert keyframes back to delay
+    DCHECK(effect->Model()->IsKeyframeEffectModel());
+    const KeyframeVector& keyframes = effect->Model()->GetFrames();
+    if (keyframes.size() == 3) {
+      delay = keyframes.at(1)->CheckedOffset() * duration;
+      duration -= delay;
+      easing = keyframes.at(1)->Easing().ToString();
+    } else {
+      easing = keyframes.at(0)->Easing().ToString();
+    }
+  }
 
   std::unique_ptr<protocol::Animation::AnimationEffect> animation_object =
       protocol::Animation::AnimationEffect::create()
@@ -109,7 +123,8 @@ BuildObjectForAnimationEffect(KeyframeEffect* effect) {
 static std::unique_ptr<protocol::Animation::KeyframeStyle>
 BuildObjectForStringKeyframe(const StringKeyframe* keyframe,
                              double computed_offset) {
-  String offset = String::NumberToStringECMAScript(computed_offset * 100) + "%";
+  String offset = String::NumberToStringECMAScript(computed_offset * 100);
+  offset.append('%');
 
   std::unique_ptr<protocol::Animation::KeyframeStyle> keyframe_object =
       protocol::Animation::KeyframeStyle::create()
@@ -173,8 +188,9 @@ InspectorAnimationAgent::BuildObjectForAnimation(blink::Animation& animation) {
       }
     }
 
-    animation_effect_object =
-        BuildObjectForAnimationEffect(ToKeyframeEffect(animation.effect()));
+    animation_effect_object = BuildObjectForAnimationEffect(
+        ToKeyframeEffect(animation.effect()),
+        animation_type == AnimationType::CSSTransition);
     animation_effect_object->setKeyframesRule(std::move(keyframe_rule));
   }
 
@@ -423,9 +439,10 @@ String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
   Element* element = effect->target();
   HeapVector<Member<CSSStyleDeclaration>> styles =
       css_agent_->MatchingStyles(element);
-  Digestor digestor(kHashAlgorithmSha1);
-  digestor.UpdateUtf8(type);
-  digestor.UpdateUtf8(animation.id());
+  std::unique_ptr<WebCryptoDigestor> digestor =
+      CreateDigestor(kHashAlgorithmSha1);
+  AddStringToDigestor(digestor.get(), type);
+  AddStringToDigestor(digestor.get(), animation.id());
   for (const CSSProperty* property : css_properties) {
     CSSStyleDeclaration* style =
         css_agent_->FindEffectiveDeclaration(*property, styles);
@@ -433,13 +450,14 @@ String InspectorAnimationAgent::CreateCSSId(blink::Animation& animation) {
     if (!style || !style->ParentStyleSheet() || !style->parentRule() ||
         style->parentRule()->type() != CSSRule::kStyleRule)
       continue;
-    digestor.UpdateUtf8(property->GetPropertyNameString());
-    digestor.UpdateUtf8(css_agent_->StyleSheetId(style->ParentStyleSheet()));
-    digestor.UpdateUtf8(To<CSSStyleRule>(style->parentRule())->selectorText());
+    AddStringToDigestor(digestor.get(), property->GetPropertyNameString());
+    AddStringToDigestor(digestor.get(),
+                        css_agent_->StyleSheetId(style->ParentStyleSheet()));
+    AddStringToDigestor(digestor.get(),
+                        To<CSSStyleRule>(style->parentRule())->selectorText());
   }
   DigestValue digest_result;
-  digestor.Finish(digest_result);
-  DCHECK(!digestor.has_failed());
+  FinishDigestor(digestor.get(), digest_result);
   return Base64Encode(reinterpret_cast<const char*>(digest_result.data()), 10);
 }
 

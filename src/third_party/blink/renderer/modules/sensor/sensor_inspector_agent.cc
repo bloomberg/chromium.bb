@@ -79,8 +79,8 @@ void SensorInspectorAgent::SetOrientationSensorOverride(double alpha,
     Document* document = provider_->GetSupplementable();
     if (document) {
       ConsoleMessage* console_message = ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kInfo, kInspectorConsoleMessage);
+          kJSMessageSource, mojom::ConsoleMessageLevel::kInfo,
+          kInspectorConsoleMessage);
       document->AddConsoleMessage(console_message);
     }
     provider_->set_inspector_mode(true);

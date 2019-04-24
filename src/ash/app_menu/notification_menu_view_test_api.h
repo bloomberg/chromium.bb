@@ -10,6 +10,7 @@
 
 namespace ash {
 
+class NotificationItemView;
 class NotificationMenuView;
 class NotificationOverflowView;
 
@@ -25,6 +26,9 @@ class NotificationMenuViewTestAPI {
 
   // Returns the number of NotificationItemViews.
   int GetItemViewCount() const;
+
+  // Returns the NotificationItemView currently being displayed.
+  NotificationItemView* GetDisplayedNotificationItemView() const;
 
   // Returns the NotificationOverflowView if it is being shown.
   NotificationOverflowView* GetOverflowView() const;

@@ -406,7 +406,7 @@ TEST_F(PrioritizedDispatcherTest, Evict) {
 TEST_F(PrioritizedDispatcherTest, EvictFromEmpty) {
   PrioritizedDispatcher::Limits limits(NUM_PRIORITIES, 1);
   Prepare(limits);
-  EXPECT_TRUE(dispatcher_->EvictOldestLowest() == nullptr);
+  EXPECT_TRUE(dispatcher_->EvictOldestLowest() == NULL);
 }
 
 TEST_F(PrioritizedDispatcherTest, AddWhileZeroLimits) {

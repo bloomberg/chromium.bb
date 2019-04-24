@@ -186,6 +186,8 @@ bool ChildAccountService::SetActive(bool active) {
     signin_util::SetUserSignoutAllowedForProfile(profile_, false);
 #endif
 
+    // TODO(treib): Maybe store the last update time in a pref, so we don't
+    // have to re-fetch on every start.
     StartFetchingFamilyInfo();
 
     SupervisedUserService* service =
@@ -219,8 +221,6 @@ bool ChildAccountService::SetActive(bool active) {
 
   // Trigger a sync reconfig to enable/disable the right SU data types.
   // The logic to do this lives in the SupervisedUserSyncDataTypeController.
-  // TODO(crbug.com/946473): Get rid of this hack and instead call
-  // ReadyForStartChanged from the controller.
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service->GetUserSettings()->IsFirstSetupComplete()) {

@@ -27,8 +27,14 @@ const base::Feature kOfflinePreviews{"OfflinePreviews",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the Client Lo-Fi previews.
-const base::Feature kClientLoFi{"ClientLoFi",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kClientLoFi {
+  "ClientLoFi",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else   // !defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(OS_ANDROID)
+};
 
 // Enables the NoScript previews for Android.
 const base::Feature kNoScriptPreviews {
@@ -84,7 +90,7 @@ const base::Feature kLitePageServerPreviews{"LitePageServerPreviews",
 // Shows a Previews icon and string in the Android Omnibox instead of an Infobar
 // when enabled. Only works and is honored on Android..
 const base::Feature kAndroidOmniboxPreviewsBadge{
-    "AndroidOmniboxPreviewsBadge", base::FEATURE_ENABLED_BY_DEFAULT};
+    "AndroidOmniboxPreviewsBadge", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Provides slow page triggering parameters.
 const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
@@ -104,9 +110,9 @@ const base::Feature kDataSaverLiteModeRebranding{
 const base::Feature kPreviewsReloadsAreSoftOptOuts{
     "PreviewsReloadsAreSoftOptOuts", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables fetching optimization hints from a remote Optimization Guide Service.
-const base::Feature kOptimizationHintsFetching{
-    "OptimizationHintsFetching", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enables using the OnePlatform Client Hints requests.
+const base::Feature kPreviewsOnePlatformHints{
+    "PreviewsOnePlatformHints", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace previews

@@ -35,10 +35,6 @@ class RootWindow;
 class Window;
 }  // namespace aura
 
-namespace dbus {
-class Bus;
-}
-
 namespace display {
 class DisplayChangeObserver;
 class DisplayConfigurator;
@@ -82,6 +78,7 @@ class AcceleratorFilter;
 class ActivationClient;
 class CompoundEventFilter;
 class FocusController;
+class FocusRules;
 class ShadowController;
 class VisibilityController;
 class WindowModalityController;
@@ -98,10 +95,8 @@ class AccessibilityController;
 class AccessibilityDelegate;
 class AccessibilityFocusRingController;
 class ArcCustomTabController;
-class AshDBusHelper;
 class AshDBusServices;
 class AshDisplayController;
-class AshFocusRules;
 class AppListControllerImpl;
 class NativeCursorManagerAsh;
 class AshTouchTransformController;
@@ -135,7 +130,6 @@ class HighContrastController;
 class HighlighterController;
 class HomeScreenController;
 class ImeController;
-class ImeEngineFactoryRegistry;
 class ImeFocusHandler;
 class ImmersiveContext;
 class KeyAccessibilityEnabler;
@@ -323,6 +317,13 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Called when dictation is ended.
   void OnDictationEnded();
 
+  // Enables the keyboard and associate it with the primary root window
+  // controller.
+  void EnableKeyboard();
+
+  // Hides and disables the virtual keyboard.
+  void DisableKeyboard();
+
   // Test if TabletModeWindowManager is not enabled, and if
   // TabletModeController is not currently setting a display rotation. Or if
   // the |resolution_notification_controller_| is not showing its confirmation
@@ -411,7 +412,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   FirstRunHelper* first_run_helper() { return first_run_helper_.get(); }
   ::wm::FocusController* focus_controller() { return focus_controller_.get(); }
-  AshFocusRules* focus_rules() { return focus_rules_; }
+  ::wm::FocusRules* focus_rules() { return focus_rules_; }
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
   HighlighterController* highlighter_controller() {
     return highlighter_controller_.get();
@@ -420,9 +421,6 @@ class ASH_EXPORT Shell : public SessionObserver,
     return high_contrast_controller_.get();
   }
   ImeController* ime_controller() { return ime_controller_.get(); }
-  ImeEngineFactoryRegistry* ime_engine_factory_registry() {
-    return ime_engine_factory_registry_.get();
-  }
   ImmersiveContext* immersive_context() { return immersive_context_.get(); }
   KeyAccessibilityEnabler* key_accessibility_enabler() {
     return key_accessibility_enabler_.get();
@@ -606,9 +604,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   void ShowContextMenu(const gfx::Point& location_in_screen,
                        ui::MenuSourceType source_type);
 
-  // Removes the AppListController.
-  void RemoveAppListController();
-
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 
@@ -626,17 +621,12 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Notifies observers that split view mode has ended.
   void NotifySplitViewModeEnded();
 
-  // Notifies observers that fullscreen mode has changed for |container|.
-  // |container| is always the active desk container.
+  // Notifies observers that fullscreen mode has changed for |root_window|.
   void NotifyFullscreenStateChanged(bool is_fullscreen,
-                                    aura::Window* container);
+                                    aura::Window* root_window);
 
   // Notifies observers that |pinned_window| changed its pinned window state.
   void NotifyPinnedStateChanged(aura::Window* pinned_window);
-
-  // Notifies observers that |root_window|'s user work area insets have changed.
-  // This notification is not fired when shelf bounds changed.
-  void NotifyUserWorkAreaInsetsChanged(aura::Window* root_window);
 
   // Notifies observers that |root_window|'s shelf changed alignment.
   // TODO(jamescook): Move to Shelf.
@@ -668,8 +658,7 @@ class ASH_EXPORT Shell : public SessionObserver,
             ui::ContextFactoryPrivate* context_factory_private,
             std::unique_ptr<base::Value> initial_display_prefs,
             std::unique_ptr<ws::GpuInterfaceProvider> gpu_interface_provider,
-            std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory,
-            scoped_refptr<dbus::Bus> dbus_bus);
+            std::unique_ptr<keyboard::KeyboardUIFactory> keyboard_ui_factory);
 
   // Initializes the display manager and related components.
   void InitializeDisplayManager();
@@ -728,7 +717,6 @@ class ASH_EXPORT Shell : public SessionObserver,
       accessibility_focus_ring_controller_;
   std::unique_ptr<AppListControllerImpl> app_list_controller_;
   std::unique_ptr<ArcCustomTabController> arc_custom_tab_controller_;
-  std::unique_ptr<AshDBusHelper> ash_dbus_helper_;
   std::unique_ptr<AshDBusServices> ash_dbus_services_;
   std::unique_ptr<AshDisplayController> ash_display_controller_;
   std::unique_ptr<AssistantController> assistant_controller_;
@@ -747,7 +735,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<HomeScreenController> home_screen_controller_;
   std::unique_ptr<ImeController> ime_controller_;
-  std::unique_ptr<ImeEngineFactoryRegistry> ime_engine_factory_registry_;
   std::unique_ptr<ImeFocusHandler> ime_focus_handler_;
   std::unique_ptr<ImmersiveContext> immersive_context_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>
@@ -787,7 +774,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<OverviewController> overview_controller_;
   // Owned by |focus_controller_|.
-  AshFocusRules* focus_rules_ = nullptr;
+  ::wm::FocusRules* focus_rules_ = nullptr;
   std::unique_ptr<::wm::ShadowController> shadow_controller_;
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;

@@ -16,7 +16,6 @@
 #include "VkCommandBuffer.hpp"
 #include "VkDestroy.h"
 #include <algorithm>
-#include <new>
 
 namespace vk
 {
@@ -24,10 +23,7 @@ namespace vk
 CommandPool::CommandPool(const VkCommandPoolCreateInfo* pCreateInfo, void* mem)
 {
 	// FIXME (b/119409619): use an allocator here so we can control all memory allocations
-	void* deviceMemory = vk::allocate(sizeof(std::set<VkCommandBuffer>), REQUIRED_MEMORY_ALIGNMENT,
-	                                  DEVICE_MEMORY, GetAllocationScope());
-	ASSERT(deviceMemory);
-	commandBuffers = new (deviceMemory) std::set<VkCommandBuffer>();
+	commandBuffers = new std::set<VkCommandBuffer>();
 }
 
 void CommandPool::destroy(const VkAllocationCallbacks* pAllocator)
@@ -39,7 +35,7 @@ void CommandPool::destroy(const VkAllocationCallbacks* pAllocator)
 	}
 
 	// FIXME (b/119409619): use an allocator here so we can control all memory allocations
-	vk::deallocate(commandBuffers, DEVICE_MEMORY);
+	delete commandBuffers;
 }
 
 size_t CommandPool::ComputeRequiredAllocationSize(const VkCommandPoolCreateInfo* pCreateInfo)
@@ -51,11 +47,7 @@ VkResult CommandPool::allocateCommandBuffers(VkCommandBufferLevel level, uint32_
 {
 	for(uint32_t i = 0; i < commandBufferCount; i++)
 	{
-		// FIXME (b/119409619): use an allocator here so we can control all memory allocations
-		void* deviceMemory = vk::allocate(sizeof(DispatchableCommandBuffer), REQUIRED_MEMORY_ALIGNMENT,
-		                                  DEVICE_MEMORY, DispatchableCommandBuffer::GetAllocationScope());
-		ASSERT(deviceMemory);
-		DispatchableCommandBuffer* commandBuffer = new (deviceMemory) DispatchableCommandBuffer(level);
+		DispatchableCommandBuffer* commandBuffer = new (DEVICE_MEMORY) DispatchableCommandBuffer(level);
 		if(commandBuffer)
 		{
 			pCommandBuffers[i] = *commandBuffer;

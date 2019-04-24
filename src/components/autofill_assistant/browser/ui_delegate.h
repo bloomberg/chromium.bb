@@ -34,6 +34,10 @@ class UiDelegate {
   // detected. This should cause rerun of preconditions check.
   virtual void OnUserInteractionInsideTouchableArea() = 0;
 
+  // Returns a string describing the current execution context. This is useful
+  // when analyzing feedback forms and for debugging in general.
+  virtual std::string GetDebugContext() = 0;
+
   // Returns the current status message.
   virtual std::string GetStatusMessage() const = 0;
 
@@ -66,26 +70,10 @@ class UiDelegate {
   // field contains a non-null options describing the request.
   virtual const PaymentRequestOptions* GetPaymentRequestOptions() const = 0;
 
-  // Sets shipping address, in response to the current payment request options.
-  virtual void SetShippingAddress(
-      std::unique_ptr<autofill::AutofillProfile> address) = 0;
-
-  // Sets billing address, in response to the current payment request options.
-  virtual void SetBillingAddress(
-      std::unique_ptr<autofill::AutofillProfile> address) = 0;
-
-  // Sets contact info, in response to the current payment request options.
-  virtual void SetContactInfo(std::string name,
-                              std::string phone,
-                              std::string email) = 0;
-
-  // Sets credit card, in response to the current payment request options.
-  virtual void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) = 0;
-
-  // Sets terms and conditions, in response to the current payment request
+  // Sets payment information, in response to the current payment request
   // options.
-  virtual void SetTermsAndConditions(
-      TermsAndConditionsState terms_and_conditions) = 0;
+  virtual void SetPaymentInformation(
+      std::unique_ptr<PaymentInformation> payment_information) = 0;
 
   // Adds the rectangles that correspond to the current touchable area to the
   // given vector.

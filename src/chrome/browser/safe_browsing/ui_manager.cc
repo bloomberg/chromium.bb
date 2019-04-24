@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread.h"
@@ -24,7 +23,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/ping_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
@@ -47,7 +45,7 @@ namespace safe_browsing {
 
 SafeBrowsingUIManager::SafeBrowsingUIManager(
     const scoped_refptr<SafeBrowsingService>& service)
-    : BaseUIManager(), sb_service_(service) {}
+    : sb_service_(service) {}
 
 SafeBrowsingUIManager::~SafeBrowsingUIManager() {}
 
@@ -106,10 +104,6 @@ void SafeBrowsingUIManager::ShowBlockingPageForResource(
   SafeBrowsingBlockingPage::ShowBlockingPage(this, resource);
 }
 
-bool SafeBrowsingUIManager::SafeBrowsingInterstitialsAreCommittedNavigations() {
-  return base::FeatureList::IsEnabled(kCommittedSBInterstitials);
-}
-
 // static
 bool SafeBrowsingUIManager::ShouldSendHitReport(const HitReport& hit_report,
                                                 WebContents* web_contents) {
@@ -156,6 +150,26 @@ void SafeBrowsingUIManager::AddObserver(Observer* observer) {
 void SafeBrowsingUIManager::RemoveObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observer_list_.RemoveObserver(observer);
+}
+
+void SafeBrowsingUIManager::AddUnsafeResource(
+    GURL url,
+    security_interstitials::UnsafeResource resource) {
+  unsafe_resources_.push_back(std::make_pair(url, resource));
+}
+
+bool SafeBrowsingUIManager::PopUnsafeResourceForURL(
+    GURL url,
+    security_interstitials::UnsafeResource* resource) {
+  for (auto it = unsafe_resources_.begin(); it != unsafe_resources_.end();
+       it++) {
+    if (it->first == url) {
+      *resource = it->second;
+      unsafe_resources_.erase(it);
+      return true;
+    }
+  }
+  return false;
 }
 
 const std::string SafeBrowsingUIManager::app_locale() const {

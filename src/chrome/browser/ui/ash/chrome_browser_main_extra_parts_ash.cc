@@ -275,7 +275,6 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
   g_browser_process->platform_part()->InitializeDeviceDisablingManager();
 
   media_client_ = std::make_unique<MediaClient>();
-  media_client_->Init();
 
   // Instantiate DisplaySettingsHandler after CrosSettings has been
   // initialized.

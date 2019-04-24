@@ -11,15 +11,13 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/credentialmanager/credential_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/gc_object_liveness_observer.h"
-#include "third_party/blink/renderer/core/testing/test_document_interface_broker.h"
-#include "third_party/blink/renderer/modules/credentialmanager/credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential_manager_proxy.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential_request_options.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
@@ -85,28 +83,6 @@ class MockCredentialManager : public mojom::blink::CredentialManager {
   DISALLOW_COPY_AND_ASSIGN(MockCredentialManager);
 };
 
-class MockCredentialManagerDocumentInterfaceBroker
-    : public TestDocumentInterfaceBroker {
- public:
-  MockCredentialManagerDocumentInterfaceBroker(
-      mojom::blink::DocumentInterfaceBroker* document_interface_broker,
-      mojom::blink::DocumentInterfaceBrokerRequest request,
-      MockCredentialManager* mock_credential_manager)
-      : TestDocumentInterfaceBroker(document_interface_broker,
-                                    std::move(request)),
-        mock_credential_manager_(mock_credential_manager) {}
-
-  void GetCredentialManager(
-      mojom::blink::CredentialManagerRequest request) override {
-    mock_credential_manager_->Bind(std::move(request));
-  }
-
-  void GetAuthenticator(mojom::blink::AuthenticatorRequest request) override {}
-
- private:
-  MockCredentialManager* mock_credential_manager_;
-};
-
 class CredentialManagerTestingContext {
   STACK_ALLOCATED();
 
@@ -117,12 +93,18 @@ class CredentialManagerTestingContext {
         SecurityOrigin::CreateFromString("https://example.test"));
     dummy_context_.GetDocument().SetSecureContextStateForTesting(
         SecureContextState::kSecure);
-    mojom::blink::DocumentInterfaceBrokerPtr doc;
-    broker_ = std::make_unique<MockCredentialManagerDocumentInterfaceBroker>(
-        &dummy_context_.GetFrame().GetDocumentInterfaceBroker(),
-        mojo::MakeRequest(&doc), mock_credential_manager);
-    dummy_context_.GetFrame().SetDocumentInterfaceBrokerForTesting(
-        doc.PassInterface().PassHandle());
+    service_manager::InterfaceProvider::TestApi test_api(
+        &dummy_context_.GetFrame().GetInterfaceProvider());
+    test_api.SetBinderForName(
+        ::blink::mojom::blink::CredentialManager::Name_,
+        WTF::BindRepeating(
+            [](MockCredentialManager* mock_credential_manager,
+               mojo::ScopedMessagePipeHandle handle) {
+              mock_credential_manager->Bind(
+                  ::blink::mojom::blink::CredentialManagerRequest(
+                      std::move(handle)));
+            },
+            WTF::Unretained(mock_credential_manager)));
   }
 
   Document* GetDocument() { return &dummy_context_.GetDocument(); }
@@ -131,16 +113,9 @@ class CredentialManagerTestingContext {
 
  private:
   V8TestingScope dummy_context_;
-  std::unique_ptr<MockCredentialManagerDocumentInterfaceBroker> broker_;
 };
 
 }  // namespace
-
-class MockPublicKeyCredential : public Credential {
- public:
-  MockPublicKeyCredential() : Credential("test", "public-key") {}
-  bool IsPublicKeyCredential() const override { return true; }
-};
 
 // The completion callbacks for pending mojom::CredentialManager calls each own
 // a persistent handle to a ScriptPromiseResolver instance. Ensure that if the
@@ -152,15 +127,15 @@ TEST(CredentialsContainerTest, PendingGetRequest_NoGCCycles) {
   {
     CredentialManagerTestingContext context(&mock_credential_manager);
     document_observer.Observe(context.GetDocument());
-    MakeGarbageCollected<CredentialsContainer>()->get(
-        context.GetScriptState(), CredentialRequestOptions::Create());
+    CredentialsContainer::Create()->get(context.GetScriptState(),
+                                        CredentialRequestOptions::Create());
     mock_credential_manager.WaitForCallToGet();
   }
 
   V8GCController::CollectAllGarbageForTesting(
       v8::Isolate::GetCurrent(),
       v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
-  ThreadState::Current()->CollectAllGarbageForTesting();
+  ThreadState::Current()->CollectAllGarbage();
 
   ASSERT_TRUE(document_observer.WasCollected());
 
@@ -176,7 +151,7 @@ TEST(CredentialsContainerTest,
   CredentialManagerTestingContext context(&mock_credential_manager);
 
   auto* proxy = CredentialManagerProxy::From(*context.GetDocument());
-  auto promise = MakeGarbageCollected<CredentialsContainer>()->get(
+  auto promise = CredentialsContainer::Create()->get(
       context.GetScriptState(), CredentialRequestOptions::Create());
   mock_credential_manager.WaitForCallToGet();
 
@@ -186,18 +161,6 @@ TEST(CredentialsContainerTest,
   proxy->FlushCredentialManagerConnectionForTesting();
 
   EXPECT_EQ(v8::Promise::kPending,
-            promise.V8Value().As<v8::Promise>()->State());
-}
-
-TEST(CredentialsContainerTest, RejectPublicKeyCredentialStoreOperation) {
-  MockCredentialManager mock_credential_manager;
-  CredentialManagerTestingContext context(&mock_credential_manager);
-
-  auto promise = MakeGarbageCollected<CredentialsContainer>()->store(
-      context.GetScriptState(),
-      MakeGarbageCollected<MockPublicKeyCredential>());
-
-  EXPECT_EQ(v8::Promise::kRejected,
             promise.V8Value().As<v8::Promise>()->State());
 }
 

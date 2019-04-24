@@ -42,7 +42,7 @@ void TrayContainer::ChildVisibilityChanged(View* child) {
 }
 
 void TrayContainer::ViewHierarchyChanged(
-    const views::ViewHierarchyChangedDetails& details) {
+    const ViewHierarchyChangedDetails& details) {
   if (details.parent == this)
     PreferredSizeChanged();
 }

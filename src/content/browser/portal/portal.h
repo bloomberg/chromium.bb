@@ -6,14 +6,11 @@
 #define CONTENT_BROWSER_PORTAL_PORTAL_H_
 
 #include <memory>
-#include <string>
 
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
-#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "third_party/blink/public/common/messaging/transferable_message.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom.h"
 
 namespace content {
@@ -30,20 +27,17 @@ class WebContentsImpl;
 // The Portal is owned by its mojo binding, so it is kept alive as long as the
 // other end of the pipe (typically in the renderer) exists.
 class CONTENT_EXPORT Portal : public blink::mojom::Portal,
-                              public WebContentsObserver,
-                              public WebContentsDelegate {
+                              public WebContentsObserver {
  public:
   ~Portal() override;
 
   static bool IsEnabled();
 
-  static Portal* FromToken(const base::UnguessableToken& portal_token);
-
   // Creates a Portal and binds it to the pipe specified in the |request|. This
   // function creates a strong binding, so the ownership of the Portal is
   // delegated to the binding.
   static Portal* Create(RenderFrameHostImpl* owner_render_frame_host,
-                        blink::mojom::PortalAssociatedRequest request);
+                        blink::mojom::PortalRequest request);
 
   // Creates a portal without binding it to any pipe. Only used in tests.
   static std::unique_ptr<Portal> CreateForTesting(
@@ -55,17 +49,11 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
 
   // blink::mojom::Portal implementation.
   void Navigate(const GURL& url) override;
-  void Activate(blink::TransferableMessage data,
-                base::OnceCallback<void()> callback) override;
-  void PostMessage(const blink::TransferableMessage message,
-                   const base::Optional<url::Origin>& target_origin) override;
+  void Activate(base::OnceCallback<void()> callback) override;
 
   // WebContentsObserver overrides.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   void WebContentsDestroyed() override;
-
-  // WebContentsDelegate overrides.
-  void PortalWebContentsCreated(WebContents* portal_web_contents) override;
 
   // Returns the token which uniquely identifies this Portal.
   const base::UnguessableToken& portal_token() const { return portal_token_; }
@@ -73,22 +61,15 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   // Returns the Portal's WebContents.
   WebContentsImpl* GetPortalContents();
 
-  RenderFrameHostImpl* owner_render_frame_host() {
-    return owner_render_frame_host_;
-  }
-
   // Gets/sets the mojo binding. Only used in tests.
-  mojo::StrongAssociatedBindingPtr<blink::mojom::Portal>
-  GetBindingForTesting() {
+  mojo::StrongBindingPtr<blink::mojom::Portal> GetBindingForTesting() {
     return binding_;
   }
   void SetBindingForTesting(
-      mojo::StrongAssociatedBindingPtr<blink::mojom::Portal> binding);
+      mojo::StrongBindingPtr<blink::mojom::Portal> binding);
 
  private:
   explicit Portal(RenderFrameHostImpl* owner_render_frame_host);
-
-  void SetPortalContents(std::unique_ptr<WebContents> web_contents);
 
   RenderFrameHostImpl* owner_render_frame_host_;
 
@@ -97,7 +78,7 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   const base::UnguessableToken portal_token_;
 
   // WeakPtr to StrongBinding.
-  mojo::StrongAssociatedBindingPtr<blink::mojom::Portal> binding_;
+  mojo::StrongBindingPtr<blink::mojom::Portal> binding_;
 
   // When the portal is not attached, the Portal owns its WebContents.
   std::unique_ptr<WebContents> portal_contents_;

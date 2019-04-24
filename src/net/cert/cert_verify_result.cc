@@ -19,7 +19,7 @@ CertVerifyResult::CertVerifyResult(const CertVerifyResult& other) = default;
 CertVerifyResult::~CertVerifyResult() = default;
 
 void CertVerifyResult::Reset() {
-  verified_cert = nullptr;
+  verified_cert = NULL;
   cert_status = 0;
   has_md2 = false;
   has_md4 = false;

@@ -154,7 +154,8 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     web_frame = parent->web_frame()->CreateRemoteChild(
         replicated_state.scope,
         blink::WebString::FromUTF8(replicated_state.name),
-        replicated_state.frame_policy,
+        replicated_state.frame_policy.sandbox_flags,
+        replicated_state.frame_policy.container_policy,
         replicated_state.frame_owner_element_type, proxy.get(), opener);
     proxy->unique_name_ = replicated_state.unique_name;
     render_view = parent->render_view();
@@ -222,7 +223,8 @@ RenderFrameProxy::RenderFrameProxy(int routing_id)
       // TODO(samans): Investigate if it is safe to delay creation of this
       // object until a FrameSinkId is provided.
       parent_local_surface_id_allocator_(
-          std::make_unique<viz::ParentLocalSurfaceIdAllocator>()) {
+          std::make_unique<viz::ParentLocalSurfaceIdAllocator>()),
+      last_occlusion_state_(blink::kUnknownOcclusionState) {
   std::pair<RoutingIDProxyMap::iterator, bool> result =
       g_routing_id_proxy_map.Get().insert(std::make_pair(routing_id_, this));
   CHECK(result.second) << "Inserting a duplicate item.";
@@ -310,10 +312,8 @@ void RenderFrameProxy::OnZoomLevelChanged(double zoom_level) {
   SynchronizeVisualProperties();
 }
 
-void RenderFrameProxy::OnPageScaleFactorChanged(float page_scale_factor,
-                                                bool is_pinch_gesture_active) {
+void RenderFrameProxy::OnPageScaleFactorChanged(float page_scale_factor) {
   pending_visual_properties_.page_scale_factor = page_scale_factor;
-  pending_visual_properties_.is_pinch_gesture_active = is_pinch_gesture_active;
   SynchronizeVisualProperties();
 }
 
@@ -383,7 +383,8 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
 void RenderFrameProxy::OnDidUpdateFramePolicy(
     const blink::FramePolicy& frame_policy) {
   DCHECK(web_frame()->Parent());
-  web_frame_->SetFrameOwnerPolicy(frame_policy);
+  web_frame_->SetFrameOwnerPolicy(frame_policy.sandbox_flags,
+                                  frame_policy.container_policy);
 }
 
 // Update the proxy's SecurityContext with new sandbox flags or feature policy
@@ -687,8 +688,6 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
           pending_visual_properties_.zoom_level ||
       sent_visual_properties_->page_scale_factor !=
           pending_visual_properties_.page_scale_factor ||
-      sent_visual_properties_->is_pinch_gesture_active !=
-          pending_visual_properties_.is_pinch_gesture_active ||
       capture_sequence_number_changed;
 
   if (synchronized_props_changed) {
@@ -832,14 +831,11 @@ void RenderFrameProxy::ForwardPostMessage(
   Send(new FrameHostMsg_RouteMessageEvent(routing_id_, params));
 }
 
-void RenderFrameProxy::Navigate(
-    const blink::WebURLRequest& request,
-    bool should_replace_current_entry,
-    bool is_opener_navigation,
-    bool has_download_sandbox_flag,
-    bool blocking_downloads_in_sandbox_without_user_activation_enabled,
-    bool initiator_frame_is_ad,
-    mojo::ScopedMessagePipeHandle blob_url_token) {
+void RenderFrameProxy::Navigate(const blink::WebURLRequest& request,
+                                bool should_replace_current_entry,
+                                bool is_opener_navigation,
+                                bool prevent_sandboxed_download,
+                                mojo::ScopedMessagePipeHandle blob_url_token) {
   // The request must always have a valid initiator origin.
   DCHECK(!request.RequestorOrigin().IsNull());
 
@@ -860,15 +856,11 @@ void RenderFrameProxy::Navigate(
   params.triggering_event_info = blink::WebTriggeringEventInfo::kUnknown;
   params.blob_url_token = blob_url_token.release();
 
-  // Note: For the AdFrame download policy here it only covers the case where
-  // the navigation initiator frame is ad.
-  // TODO(yaoxia): Also cover the case where the navigating frame is ad.
-  RenderFrameImpl::MaybeSetDownloadFramePolicy(
-      is_opener_navigation, request, web_frame_->GetSecurityOrigin(),
-      has_download_sandbox_flag,
-      blocking_downloads_in_sandbox_without_user_activation_enabled,
-      initiator_frame_is_ad, &params.download_policy);
-
+  params.download_policy =
+      prevent_sandboxed_download
+          ? NavigationDownloadPolicy::kDisallowSandbox
+          : RenderFrameImpl::GetOpenerDownloadPolicy(
+                is_opener_navigation, request, web_frame_->GetSecurityOrigin());
   Send(new FrameHostMsg_OpenURL(routing_id_, params));
 }
 

@@ -1,8 +1,8 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_ANIMATION_OBSERVER_HELPER_H_
-#define UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_ANIMATION_OBSERVER_HELPER_H_
+#ifndef UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_ANIMATION_OBSERVER_H_
+#define UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_ANIMATION_OBSERVER_H_
 
 #include <algorithm>
 
@@ -19,11 +19,13 @@ template <typename ContextType>
 class TestInkDropAnimationObserverHelper {
  public:
   TestInkDropAnimationObserverHelper()
-      : last_animation_started_context_(),
+      : last_animation_started_ordinal_(-1),
+        last_animation_started_context_(),
+        last_animation_ended_ordinal_(-1),
+        last_animation_ended_context_(),
+        last_animation_ended_reason_(InkDropAnimationEndedReason::SUCCESS) {}
 
-        last_animation_ended_context_() {}
-
-  virtual ~TestInkDropAnimationObserverHelper() = default;
+  virtual ~TestInkDropAnimationObserverHelper() {}
 
   int last_animation_started_ordinal() const {
     return last_animation_started_ordinal_;
@@ -164,7 +166,7 @@ class TestInkDropAnimationObserverHelper {
   }
 
   // The ordinal time of the last AnimationStarted() call.
-  int last_animation_started_ordinal_ = -1;
+  int last_animation_started_ordinal_;
 
   // List of contexts for which animation is started.
   std::vector<ContextType> animation_started_contexts_;
@@ -173,7 +175,7 @@ class TestInkDropAnimationObserverHelper {
   ContextType last_animation_started_context_;
 
   // The ordinal time of the last AnimationEnded() call.
-  int last_animation_ended_ordinal_ = -1;
+  int last_animation_ended_ordinal_;
 
   // List of contexts for which animation is ended.
   std::vector<ContextType> animation_ended_contexts_;
@@ -181,8 +183,7 @@ class TestInkDropAnimationObserverHelper {
   // The |context| passed to the last call to AnimationEnded().
   ContextType last_animation_ended_context_;
 
-  InkDropAnimationEndedReason last_animation_ended_reason_ =
-      InkDropAnimationEndedReason::SUCCESS;
+  InkDropAnimationEndedReason last_animation_ended_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInkDropAnimationObserverHelper);
 };
@@ -190,4 +191,4 @@ class TestInkDropAnimationObserverHelper {
 }  // namespace test
 }  // namespace views
 
-#endif  // UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_ANIMATION_OBSERVER_HELPER_H_
+#endif  // UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_ANIMATION_OBSERVER_H_

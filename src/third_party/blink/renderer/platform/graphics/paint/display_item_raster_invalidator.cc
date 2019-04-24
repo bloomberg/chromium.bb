@@ -10,8 +10,8 @@ namespace blink {
 
 void DisplayItemRasterInvalidator::Generate() {
   struct OldAndNewDisplayItems {
-    const IntRect* old_visual_rect = nullptr;
-    const IntRect* new_visual_rect = nullptr;
+    const FloatRect* old_visual_rect = nullptr;
+    const FloatRect* new_visual_rect = nullptr;
     PaintInvalidationReason reason = PaintInvalidationReason::kNone;
   };
   // If there are multiple display items changed for a client, the map will
@@ -129,7 +129,7 @@ size_t DisplayItemRasterInvalidator::MatchNewDisplayItemInOldChunk(
 
 void DisplayItemRasterInvalidator::AddRasterInvalidation(
     const DisplayItemClient& client,
-    const IntRect& rect,
+    const FloatRect& rect,
     PaintInvalidationReason reason,
     RasterInvalidator::ClientIsOldOrNew old_or_new) {
   IntRect r = invalidator_.ClipByLayerBounds(mapper_.MapVisualRect(rect));
@@ -141,8 +141,8 @@ void DisplayItemRasterInvalidator::AddRasterInvalidation(
 
 void DisplayItemRasterInvalidator::GenerateRasterInvalidation(
     const DisplayItemClient& client,
-    const IntRect* old_visual_rect,
-    const IntRect* new_visual_rect,
+    const FloatRect* old_visual_rect,
+    const FloatRect* new_visual_rect,
     PaintInvalidationReason reason) {
   if (!new_visual_rect || new_visual_rect->IsEmpty()) {
     if (old_visual_rect && !old_visual_rect->IsEmpty()) {
@@ -178,48 +178,50 @@ void DisplayItemRasterInvalidator::GenerateRasterInvalidation(
   GenerateIncrementalRasterInvalidation(client, *old_visual_rect,
                                         *new_visual_rect);
 
-  IntRect partial_rect = client.PartialInvalidationVisualRect();
-  if (!partial_rect.IsEmpty())
-    AddRasterInvalidation(client, partial_rect, reason, kClientIsNew);
+  LayoutRect partial_rect = client.PartialInvalidationVisualRect();
+  if (!partial_rect.IsEmpty()) {
+    AddRasterInvalidation(client, FloatRect(partial_rect), reason,
+                          kClientIsNew);
+  }
 }
 
-static IntRect ComputeRightDelta(const IntPoint& location,
-                                 const IntSize& old_size,
-                                 const IntSize& new_size) {
-  int delta = new_size.Width() - old_size.Width();
+static FloatRect ComputeRightDelta(const FloatPoint& location,
+                                   const FloatSize& old_size,
+                                   const FloatSize& new_size) {
+  float delta = new_size.Width() - old_size.Width();
   if (delta > 0) {
-    return IntRect(location.X() + old_size.Width(), location.Y(), delta,
-                   new_size.Height());
+    return FloatRect(location.X() + old_size.Width(), location.Y(), delta,
+                     new_size.Height());
   }
   if (delta < 0) {
-    return IntRect(location.X() + new_size.Width(), location.Y(), -delta,
-                   old_size.Height());
+    return FloatRect(location.X() + new_size.Width(), location.Y(), -delta,
+                     old_size.Height());
   }
-  return IntRect();
+  return FloatRect();
 }
 
-static IntRect ComputeBottomDelta(const IntPoint& location,
-                                  const IntSize& old_size,
-                                  const IntSize& new_size) {
-  int delta = new_size.Height() - old_size.Height();
+static FloatRect ComputeBottomDelta(const FloatPoint& location,
+                                    const FloatSize& old_size,
+                                    const FloatSize& new_size) {
+  float delta = new_size.Height() - old_size.Height();
   if (delta > 0) {
-    return IntRect(location.X(), location.Y() + old_size.Height(),
-                   new_size.Width(), delta);
+    return FloatRect(location.X(), location.Y() + old_size.Height(),
+                     new_size.Width(), delta);
   }
   if (delta < 0) {
-    return IntRect(location.X(), location.Y() + new_size.Height(),
-                   old_size.Width(), -delta);
+    return FloatRect(location.X(), location.Y() + new_size.Height(),
+                     old_size.Width(), -delta);
   }
-  return IntRect();
+  return FloatRect();
 }
 
 void DisplayItemRasterInvalidator::GenerateIncrementalRasterInvalidation(
     const DisplayItemClient& client,
-    const IntRect& old_visual_rect,
-    const IntRect& new_visual_rect) {
+    const FloatRect& old_visual_rect,
+    const FloatRect& new_visual_rect) {
   DCHECK(old_visual_rect.Location() == new_visual_rect.Location());
 
-  IntRect right_delta =
+  FloatRect right_delta =
       ComputeRightDelta(new_visual_rect.Location(), old_visual_rect.Size(),
                         new_visual_rect.Size());
   if (!right_delta.IsEmpty()) {
@@ -227,7 +229,7 @@ void DisplayItemRasterInvalidator::GenerateIncrementalRasterInvalidation(
                           PaintInvalidationReason::kIncremental, kClientIsNew);
   }
 
-  IntRect bottom_delta =
+  FloatRect bottom_delta =
       ComputeBottomDelta(new_visual_rect.Location(), old_visual_rect.Size(),
                          new_visual_rect.Size());
   if (!bottom_delta.IsEmpty()) {
@@ -238,8 +240,8 @@ void DisplayItemRasterInvalidator::GenerateIncrementalRasterInvalidation(
 
 void DisplayItemRasterInvalidator::GenerateFullRasterInvalidation(
     const DisplayItemClient& client,
-    const IntRect& old_visual_rect,
-    const IntRect& new_visual_rect,
+    const FloatRect& old_visual_rect,
+    const FloatRect& new_visual_rect,
     PaintInvalidationReason reason) {
   if (!new_visual_rect.Contains(old_visual_rect)) {
     AddRasterInvalidation(client, old_visual_rect, reason, kClientIsNew);

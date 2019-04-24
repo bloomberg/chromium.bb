@@ -5,10 +5,9 @@
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 
 #include "base/logging.h"
-#import "ios/web/common/crw_content_view.h"
-#import "ios/web/common/crw_web_view_content_view.h"
-#include "ios/web/common/features.h"
+#import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
+#import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -134,7 +133,6 @@
   if (self.transientContentView) {
     if (!self.transientContentView.superview)
       [self addSubview:self.transientContentView];
-    [self bringSubviewToFront:self.transientContentView];
     self.transientContentView.frame = self.bounds;
   }
 }
@@ -142,33 +140,6 @@
 - (BOOL)isViewAlive {
   return self.webViewContentView || self.transientContentView ||
          [self.nativeController isViewAlive];
-}
-
-- (void)willMoveToWindow:(UIWindow*)newWindow {
-  [super willMoveToWindow:newWindow];
-  [self updateWebViewContentViewForContainerWindow:newWindow];
-}
-
-- (void)updateWebViewContentViewForContainerWindow:(UIWindow*)containerWindow {
-  if (!base::FeatureList::IsEnabled(web::features::kKeepsRenderProcessAlive))
-    return;
-
-  if (!self.webViewContentView)
-    return;
-
-  // If there's a containerWindow or |webViewContentView| is inactive, put it
-  // back where it belongs.
-  if (containerWindow ||
-      ![_delegate shouldKeepRenderProcessAliveForContainerView:self]) {
-    if (self.webViewContentView.superview != self) {
-      [_webViewContentView setFrame:self.bounds];
-      [self addSubview:_webViewContentView];
-    }
-    return;
-  }
-
-  // There's no window and |webViewContentView| is active, stash it.
-  [_delegate containerView:self storeWebViewInWindow:self.webViewContentView];
 }
 
 #pragma mark Content Setters
@@ -186,7 +157,6 @@
   self.nativeController = nil;
   self.transientContentView = nil;
   self.contentViewProxy.contentView = self.webViewContentView;
-  [self updateWebViewContentViewForContainerWindow:self.window];
   [self setNeedsLayout];
 }
 

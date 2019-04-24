@@ -646,8 +646,7 @@ TEST(ShrinkPageToHighWaterMarkFreeSpaceEnd) {
 
   // Prepare page that only contains a single object and a trailing FreeSpace
   // filler.
-  Handle<FixedArray> array =
-      isolate->factory()->NewFixedArray(128, AllocationType::kOld);
+  Handle<FixedArray> array = isolate->factory()->NewFixedArray(128, TENURED);
   Page* page = Page::FromHeapObject(*array);
 
   // Reset space so high water mark is consistent.

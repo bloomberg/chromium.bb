@@ -12,6 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -21,9 +22,9 @@ import org.chromium.chrome.browser.ntp.cards.AllDismissedItem.ViewHolder;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.RenderTestRule;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.IOException;
+
 
 /**
  * Tests for the appearance and behaviour of AllDismissedItem.
@@ -44,7 +45,7 @@ public class AllDismissedItemTest {
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mContentView = new FrameLayout(mActivityTestRule.getActivity());
             mActivityTestRule.getActivity().setContentView(mContentView);
         });
@@ -74,12 +75,12 @@ public class AllDismissedItemTest {
     private void renderAtHour(ViewHolder viewHolder, int hour, String renderId) throws IOException {
         // TODO(peconn): Extract common code between this and ArticleSnippetsTest for rendering
         // views in isolation.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             viewHolder.onBindViewHolder(hour);
             mContentView.addView(viewHolder.itemView);
         });
         mRenderTestRule.render(viewHolder.itemView, renderId);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             mContentView.removeView(viewHolder.itemView);
             viewHolder.recycle();
         });

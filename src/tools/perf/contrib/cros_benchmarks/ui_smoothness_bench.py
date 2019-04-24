@@ -22,8 +22,5 @@ class CrosUiSmoothnessBenchmark(perf_benchmark.PerfBenchmark):
   def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()
     options = timeline_based_measurement.Options(category_filter)
-    options.config.chrome_trace_config.EnableUMAHistograms(
-        'Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4',
-        'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4')
-    options.SetTimelineBasedMetrics(['renderingMetric', 'umaMetric'])
+    options.SetTimelineBasedMetrics(['renderingMetric'])
     return options

@@ -27,8 +27,8 @@ TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedBlock) {
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
   // Force LayoutText to see that the reattach works.
-  text->SetLayoutObject(text->CreateTextLayoutObject(
-      GetDocument().body()->ComputedStyleRef(), LegacyLayout::kAuto));
+  text->SetLayoutObject(
+      text->CreateTextLayoutObject(GetDocument().body()->ComputedStyleRef()));
 
   WhitespaceAttacher attacher;
   attacher.DidVisitText(text);
@@ -71,7 +71,7 @@ TEST_F(WhitespaceAttacherTest, WhitespaceAfterReattachedWhitespace) {
 
   // Force LayoutText on the second whitespace to see that the reattach works.
   second_whitespace->SetLayoutObject(second_whitespace->CreateTextLayoutObject(
-      GetDocument().body()->ComputedStyleRef(), LegacyLayout::kAuto));
+      GetDocument().body()->ComputedStyleRef()));
 
   WhitespaceAttacher attacher;
   attacher.DidVisitText(second_whitespace);
@@ -160,8 +160,8 @@ TEST_F(WhitespaceAttacherTest, ReattachWhitespaceInsideBlockExitingScope) {
     EXPECT_FALSE(text->GetLayoutObject());
 
     // Force LayoutText to see that the reattach works.
-    text->SetLayoutObject(text->CreateTextLayoutObject(div->ComputedStyleRef(),
-                                                       LegacyLayout::kAuto));
+    text->SetLayoutObject(
+        text->CreateTextLayoutObject(div->ComputedStyleRef()));
   }
   EXPECT_FALSE(text->GetLayoutObject());
 }
@@ -204,8 +204,7 @@ TEST_F(WhitespaceAttacherTest, SlottedWhitespaceAfterReattachedBlock) {
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
   // Force LayoutText to see that the reattach works.
-  text->SetLayoutObject(text->CreateTextLayoutObject(host->ComputedStyleRef(),
-                                                     LegacyLayout::kAuto));
+  text->SetLayoutObject(text->CreateTextLayoutObject(host->ComputedStyleRef()));
 
   WhitespaceAttacher attacher;
   attacher.DidVisitText(text);
@@ -257,8 +256,8 @@ TEST_F(WhitespaceAttacherTest,
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
   // Force LayoutText to see that the reattach works.
-  text->SetLayoutObject(text->CreateTextLayoutObject(
-      contents->ComputedStyleRef(), LegacyLayout::kAuto));
+  text->SetLayoutObject(
+      text->CreateTextLayoutObject(contents->ComputedStyleRef()));
 
   WhitespaceAttacher attacher;
   attacher.DidVisitElement(contents);
@@ -308,8 +307,8 @@ TEST_F(WhitespaceAttacherTest,
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
   // Force LayoutText to see that the reattach works.
-  text->SetLayoutObject(text->CreateTextLayoutObject(
-      contents->ComputedStyleRef(), LegacyLayout::kAuto));
+  text->SetLayoutObject(
+      text->CreateTextLayoutObject(contents->ComputedStyleRef()));
 
   WhitespaceAttacher attacher;
   attacher.DidVisitText(text);
@@ -336,8 +335,8 @@ TEST_F(WhitespaceAttacherTest,
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
   // Force LayoutText to see that the reattach works.
-  text->SetLayoutObject(text->CreateTextLayoutObject(
-      contents->ComputedStyleRef(), LegacyLayout::kAuto));
+  text->SetLayoutObject(
+      text->CreateTextLayoutObject(contents->ComputedStyleRef()));
 
   WhitespaceAttacher attacher;
   attacher.DidVisitText(text);

@@ -42,6 +42,10 @@ class HTMLSpanElement;
 // ReplaceElementWithSpanPreservingChildrenAndAttributesCommand
 class ReplaceNodeWithSpanCommand final : public SimpleEditCommand {
  public:
+  static ReplaceNodeWithSpanCommand* Create(HTMLElement* element) {
+    return MakeGarbageCollected<ReplaceNodeWithSpanCommand>(element);
+  }
+
   explicit ReplaceNodeWithSpanCommand(HTMLElement*);
 
   HTMLSpanElement* SpanElement() { return span_element_.Get(); }

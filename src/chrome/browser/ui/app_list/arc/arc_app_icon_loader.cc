@@ -10,9 +10,9 @@
 #include "ui/gfx/image/image_skia_operations.h"
 
 ArcAppIconLoader::ArcAppIconLoader(Profile* profile,
-                                   int icon_size_in_dip,
+                                   int icon_size,
                                    AppIconLoaderDelegate* delegate)
-    : AppIconLoader(profile, icon_size_in_dip, delegate),
+    : AppIconLoader(profile, icon_size, delegate),
       arc_prefs_(ArcAppListPrefs::Get(profile)) {
   DCHECK(arc_prefs_);
   arc_prefs_->AddObserver(this);
@@ -32,10 +32,10 @@ void ArcAppIconLoader::FetchImage(const std::string& app_id) {
   if (icon_map_.find(app_id) != icon_map_.end())
     return;  // Already loading the image.
 
-  // Note, ARC icon is available only for 48x48 dips. In case
-  // |icon_size_in_dip_| differs from this size, re-scale is required.
+  // Note, ARC icon is available only for 48x48 dips. In case |icon_size_|
+  // differs from this size, re-scale is required.
   std::unique_ptr<ArcAppIcon> icon =
-      std::make_unique<ArcAppIcon>(profile(), app_id, icon_size_in_dip(), this);
+      std::make_unique<ArcAppIcon>(profile(), app_id, icon_size(), this);
   icon->image_skia().EnsureRepsForSupportedScales();
   icon_map_[app_id] = std::move(icon);
   UpdateImage(app_id);
@@ -51,8 +51,8 @@ void ArcAppIconLoader::UpdateImage(const std::string& app_id) {
     return;
 
   gfx::ImageSkia image = it->second->image_skia();
-  DCHECK_EQ(icon_size_in_dip(), image.width());
-  DCHECK_EQ(icon_size_in_dip(), image.height());
+  DCHECK_EQ(icon_size(), image.width());
+  DCHECK_EQ(icon_size(), image.height());
 
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       arc_prefs_->GetApp(app_id);
@@ -81,7 +81,7 @@ void ArcAppIconLoader::OnAppStatesChanged(
 void ArcAppIconLoader::OnAppIconUpdated(
     const std::string& app_id,
     const ArcAppIconDescriptor& descriptor) {
-  if (descriptor.dip_size != icon_size_in_dip())
+  if (descriptor.dip_size != icon_size())
     return;
   AppIDToIconMap::const_iterator it = icon_map_.find(app_id);
   if (it == icon_map_.end())

@@ -21,10 +21,7 @@ class BrowserTabStripModelDelegate : public TabStripModelDelegate {
 
  private:
   // Overridden from TabStripModelDelegate:
-  void AddTabAt(const GURL& url,
-                int index,
-                bool foreground,
-                const TabGroupData* group) override;
+  void AddTabAt(const GURL& url, int index, bool foreground) override;
   Browser* CreateNewStripWithContents(std::vector<NewStripContents> contentses,
                                       const gfx::Rect& window_bounds,
                                       bool maximize) override;

@@ -21,7 +21,7 @@ WebSocketDeflater::WebSocketDeflater(ContextTakeOverMode mode)
 WebSocketDeflater::~WebSocketDeflater() {
   if (stream_) {
     deflateEnd(stream_.get());
-    stream_.reset(nullptr);
+    stream_.reset(NULL);
   }
 }
 
@@ -92,7 +92,7 @@ bool WebSocketDeflater::Finish() {
     ResetContext();
     return true;
   }
-  stream_->next_in = nullptr;
+  stream_->next_in = NULL;
   stream_->avail_in = 0;
 
   int result = Deflate(Z_SYNC_FLUSH);

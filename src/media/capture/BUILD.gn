@@ -167,10 +167,7 @@ jumbo_component("capture_lib") {
       "video/mac/video_capture_device_mac.h",
       "video/mac/video_capture_device_mac.mm",
     ]
-    deps += [
-      "//services/video_capture/public/uma",
-      "//third_party/decklink",
-    ]
+    deps += [ "//third_party/decklink" ]
     libs = [
       "AVFoundation.framework",
       "CoreFoundation.framework",
@@ -265,8 +262,6 @@ jumbo_component("capture_lib") {
       "video/chromeos/display_rotation_observer.h",
       "video/chromeos/pixel_format_utils.cc",
       "video/chromeos/pixel_format_utils.h",
-      "video/chromeos/renderer_facing_cros_image_capture.cc",
-      "video/chromeos/renderer_facing_cros_image_capture.h",
       "video/chromeos/reprocess_manager.cc",
       "video/chromeos/reprocess_manager.h",
       "video/chromeos/request_builder.cc",
@@ -283,8 +278,7 @@ jumbo_component("capture_lib") {
     public_deps += [ "//media/capture/video/chromeos/public" ]
     deps += [
       "//build/config/linux/libdrm",
-      "//chromeos/dbus/power",
-      "//components/chromeos_camera/common",
+      "//chromeos/dbus",
       "//media/capture/video/chromeos/mojo:cros_camera",
       "//third_party/libsync",
     ]
@@ -409,7 +403,7 @@ test("capture_unittests") {
     ]
     deps += [
       "//build/config/linux/libdrm",
-      "//chromeos/dbus/power",
+      "//chromeos/dbus:test_support",
       "//media/capture/video/chromeos/mojo:cros_camera",
       "//media/capture/video/chromeos/public",
       "//mojo/core/embedder",

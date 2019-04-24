@@ -64,8 +64,10 @@ class CONTENT_EXPORT MediaRecorderHandler final
   void Stop() override;
   void Pause() override;
   void Resume() override;
-  void EncodingInfo(const blink::WebMediaConfiguration& configuration,
-                    OnMediaCapabilitiesEncodingInfoCallback cb) override;
+  void EncodingInfo(
+      const blink::WebMediaConfiguration& configuration,
+      std::unique_ptr<blink::WebMediaCapabilitiesEncodingInfoCallbacks> cb)
+      override;
   blink::WebString ActualMimeType() override;
 
  private:

@@ -183,7 +183,7 @@ sv{
         MF{"Saint-Martin"}
         MG{"Madagaskar"}
         MH{"Marshallöarna"}
-        MK{"Nordmakedonien"}
+        MK{"f.d. jugoslaviska republiken Makedonien"}
         ML{"Mali"}
         MM{"Myanmar (Burma)"}
         MN{"Mongoliet"}
@@ -287,8 +287,6 @@ sv{
         VU{"Vanuatu"}
         WF{"Wallis- och Futunaöarna"}
         WS{"Samoa"}
-        XA{"fejkade accenter (för test)"}
-        XB{"fejkad bidi (för test)"}
         XK{"Kosovo"}
         YE{"Jemen"}
         YT{"Mayotte"}
@@ -308,5 +306,5 @@ sv{
         CI{"Côte d’Ivoire"}
         TL{"Timor-Leste"}
     }
-    Version{"2.1.48.90"}
+    Version{"2.1.43.94"}
 }

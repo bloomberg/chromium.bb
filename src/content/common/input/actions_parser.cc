@@ -4,8 +4,6 @@
 
 #include "content/common/input/actions_parser.h"
 
-#include <utility>
-
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -77,25 +75,28 @@ int ToKeyModifiers(std::string key) {
 
 }  // namespace
 
-ActionsParser::ActionsParser(base::Value pointer_actions_value)
+ActionsParser::ActionsParser(base::Value* pointer_actions_value)
     : longest_action_sequence_(0),
-      pointer_actions_value_(std::move(pointer_actions_value)),
+      pointer_actions_value_(pointer_actions_value),
       action_index_(0) {}
 
 ActionsParser::~ActionsParser() {}
 
 bool ActionsParser::ParsePointerActionSequence() {
-  if (!pointer_actions_value_.is_list()) {
-    error_message_ = std::string("provided value is not a list");
+  const base::ListValue* pointer_list;
+  if (!pointer_actions_value_ ||
+      !pointer_actions_value_->GetAsList(&pointer_list)) {
+    error_message_ = std::string("pointer_list is missing or not a list");
     return false;
   }
 
-  for (const auto& pointer_actions : pointer_actions_value_.GetList()) {
-    if (!pointer_actions.is_dict()) {
+  for (const auto& pointer_value : *pointer_list) {
+    const base::DictionaryValue* pointer_actions;
+    if (!pointer_value.GetAsDictionary(&pointer_actions)) {
       error_message_ =
           std::string("pointer actions is missing or not a dictionary");
       return false;
-    } else if (!ParsePointerActions(pointer_actions)) {
+    } else if (!ParsePointerActions(*pointer_actions)) {
       return false;
     }
     action_index_++;
@@ -138,21 +139,19 @@ bool ActionsParser::ParsePointerActionSequence() {
   return true;
 }
 
-bool ActionsParser::ParsePointerActions(const base::Value& pointer) {
+bool ActionsParser::ParsePointerActions(const base::DictionaryValue& pointer) {
   int pointer_id = -1;
   // If the json format of each pointer has "type" element, it is from the new
   // Action API, otherwise it is from gpuBenchmarking.pointerActionSequence
   // API. We have to keep both formats for now, but later on once we switch to
   // the new Action API in all tests, we will remove the old format.
-  const base::Value* type_key = pointer.FindKey("type");
-  if (type_key) {
-    if (!type_key->is_string()) {
+  if (pointer.HasKey("type")) {
+    std::string source_type;
+    if (!pointer.GetString("type", &source_type)) {
       error_message_ =
           std::string("action sequence type is missing or not a string");
       return false;
-    }
-    std::string source_type = type_key->GetString();
-    if (source_type == "") {
+    } else if (source_type == "") {
       error_message_ = std::string("action sequence type cannot be empty");
       return false;
     } else if (source_type == "key") {
@@ -165,100 +164,97 @@ bool ActionsParser::ParsePointerActions(const base::Value& pointer) {
       if (source_type_.empty())
         source_type_ = source_type;
 
-      const base::Value* parameters = pointer.FindKey("parameters");
-      if (source_type_ == "pointer" && !parameters) {
+      if (source_type_ == "pointer" && !pointer.HasKey("parameters")) {
         error_message_ = std::string(
             "action sequence parameters is missing for pointer type");
         return false;
       }
 
-      if (!parameters->is_dict()) {
+      const base::DictionaryValue* parameters;
+      std::string pointer_type;
+      if (!pointer.GetDictionary("parameters", &parameters)) {
         error_message_ =
             std::string("action sequence parameters is not a dictionary");
         return false;
       }
 
-      const std::string* pointer_type =
-          parameters->FindStringKey("pointerType");
-      if (!pointer_type) {
+      if (!parameters->GetString("pointerType", &pointer_type)) {
         error_message_ = std::string(
             "action sequence pointer type is missing or not a string");
         return false;
-      } else if (*pointer_type != "touch" && *pointer_type != "mouse" &&
-                 *pointer_type != "pen") {
+      } else if (pointer_type != "touch" && pointer_type != "mouse" &&
+                 pointer_type != "pen") {
         error_message_ = std::string(
             "action sequence pointer type is an unsupported input type");
         return false;
       }
 
       if (pointer_type_.empty()) {
-        pointer_type_ = *pointer_type;
+        pointer_type_ = pointer_type;
       }
 
-      if (pointer_type_ != *pointer_type) {
+      if (pointer_type_ != pointer_type) {
         error_message_ = std::string(
             "currently multiple action sequence pointer type are not "
             "supported");
         return false;
       }
 
-      if (*pointer_type != "touch" && action_index_ > 0) {
+      if (pointer_type != "touch" && action_index_ > 0) {
         error_message_ = std::string(
             "for input type of mouse and pen, we only support one device");
         return false;
       }
 
-      const std::string* pointer_name = pointer.FindStringKey("id");
-      if (!pointer_name) {
+      std::string pointer_name;
+      if (!pointer.GetString("id", &pointer_name)) {
         error_message_ = std::string("pointer name is missing or not a string");
         return false;
       }
 
-      if (pointer_name_set_.find(*pointer_name) != pointer_name_set_.end()) {
+      if (pointer_name_set_.find(pointer_name) != pointer_name_set_.end()) {
         error_message_ = std::string("pointer name already exists");
         return false;
       }
 
-      pointer_name_set_.insert(*pointer_name);
+      pointer_name_set_.insert(pointer_name);
       pointer_id_set_.insert(action_index_);
     }
     pointer_id = action_index_;
   } else {
-    const std::string* pointer_type = pointer.FindStringKey("source");
-    if (!pointer_type) {
+    std::string pointer_type;
+    if (!pointer.GetString("source", &pointer_type)) {
       error_message_ = std::string("source type is missing or not a string");
       return false;
-    } else if (*pointer_type != "touch" && *pointer_type != "mouse" &&
-               *pointer_type != "pen") {
+    } else if (pointer_type != "touch" && pointer_type != "mouse" &&
+               pointer_type != "pen") {
       error_message_ =
           std::string("source type is an unsupported input source");
       return false;
     }
 
     if (pointer_type_.empty()) {
-      pointer_type_ = *pointer_type;
+      pointer_type_ = pointer_type;
     }
 
-    if (pointer_type_ != *pointer_type) {
+    if (pointer_type_ != pointer_type) {
       error_message_ =
           std::string("currently multiple input sources are not not supported");
       return false;
     }
 
-    if (*pointer_type != "touch" && action_index_ > 0) {
+    if (pointer_type != "touch" && action_index_ > 0) {
       error_message_ = std::string(
           "for input source type of mouse and pen, we only support one device "
           "in one sequence");
       return false;
     }
 
-    const base::Value* id_key = pointer.FindKey("id");
-    if (id_key) {
-      if (!id_key->is_int()) {
+    if (pointer.HasKey("id")) {
+      if (!pointer.GetInteger("id", &pointer_id)) {
         error_message_ = std::string("pointer id is not an integer");
         return false;
       }
-      pointer_id = id_key->GetInt();
 
       if (pointer_id < 0) {
         error_message_ = std::string("pointer id can not be negative");
@@ -286,9 +282,8 @@ bool ActionsParser::ParsePointerActions(const base::Value& pointer) {
     }
   }
 
-  const base::Value* actions =
-      pointer.FindKeyOfType("actions", base::Value::Type::LIST);
-  if (!actions) {
+  const base::ListValue* actions;
+  if (!pointer.GetList("actions", &actions)) {
     error_message_ = base::StringPrintf(
         "pointer[%d].actions is missing or not a list", action_index_);
     return false;
@@ -300,14 +295,16 @@ bool ActionsParser::ParsePointerActions(const base::Value& pointer) {
   return true;
 }
 
-bool ActionsParser::ParseActions(const base::Value& actions, int pointer_id) {
+bool ActionsParser::ParseActions(const base::ListValue& actions,
+                                 int pointer_id) {
   SyntheticPointerActionListParams::ParamList param_list;
-  for (const auto& action : actions.GetList()) {
-    if (!action.is_dict()) {
+  for (const auto& action_value : actions) {
+    const base::DictionaryValue* action;
+    if (!action_value.GetAsDictionary(&action)) {
       error_message_ = base::StringPrintf(
           "actions[%d].actions is missing or not a dictionary", action_index_);
       return false;
-    } else if (!ParseAction(action, param_list, pointer_id)) {
+    } else if (!ParseAction(*action, param_list, pointer_id)) {
       return false;
     }
   }
@@ -320,28 +317,24 @@ bool ActionsParser::ParseActions(const base::Value& actions, int pointer_id) {
 }
 
 bool ActionsParser::ParseAction(
-    const base::Value& action,
+    const base::DictionaryValue& action,
     SyntheticPointerActionListParams::ParamList& param_list,
     int pointer_id) {
   SyntheticPointerActionParams::PointerActionType pointer_action_type =
       SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED;
   std::string type;
-  const base::Value* type_key = action.FindKey("type");
-  if (type_key) {
-    if (!type_key->is_string()) {
+  if (action.HasKey("type")) {
+    if (!action.GetString("type", &type)) {
       error_message_ = base::StringPrintf(
           "actions[%d].actions.name is missing or not a string", action_index_);
       return false;
     }
-    type = type_key->GetString();
   } else {
-    const std::string* name_key = action.FindStringKey("name");
-    if (!name_key) {
+    if (!action.GetString("name", &type)) {
       error_message_ = base::StringPrintf(
           "actions[%d].actions.name is missing or not a string", action_index_);
       return false;
     }
-    type = *name_key;
   }
 
   pointer_action_type = ToSyntheticPointerActionType(type);
@@ -355,37 +348,24 @@ bool ActionsParser::ParseAction(
 
   double position_x = 0;
   double position_y = 0;
-  const base::Value* position_x_key = action.FindKey("x");
-  const base::Value* position_y_key = action.FindKey("y");
-  if (position_x_key) {
-    if (!position_x_key->is_int() && !position_x_key->is_double()) {
-      error_message_ = base::StringPrintf(
-          "actions[%d].actions.x is not a number", action_index_);
-      return false;
-    }
-    position_x = position_x_key->GetDouble();
+  if (action.HasKey("x") && !action.GetDouble("x", &position_x)) {
+    error_message_ = base::StringPrintf("actions[%d].actions.x is not a number",
+                                        action_index_);
+    return false;
   }
 
-  if (position_y_key) {
-    if (!position_y_key->is_int() && !position_y_key->is_double()) {
-      error_message_ = base::StringPrintf(
-          "actions[%d].actions.y is not a number", action_index_);
-      return false;
-    }
-    position_y = position_y_key->GetDouble();
+  if (action.HasKey("y") && !action.GetDouble("y", &position_y)) {
+    error_message_ = base::StringPrintf("actions[%d].actions.y is not a number",
+                                        action_index_);
+    return false;
   }
 
   int button_id = 0;
-  const base::Value* button_id_key = action.FindKey("button");
-  if (button_id_key) {
-    if (!button_id_key->is_int()) {
-      error_message_ = base::StringPrintf(
-          "actions[%d].actions.button is not a string", action_index_);
-      return false;
-    }
-    button_id = button_id_key->GetInt();
-  }
-  if (button_id < 0 || button_id > 4) {
+  if (action.HasKey("button") && !action.GetInteger("button", &button_id)) {
+    error_message_ = base::StringPrintf(
+        "actions[%d].actions.button is not a string", action_index_);
+    return false;
+  } else if (button_id < 0 || button_id > 4) {
     error_message_ = base::StringPrintf(
         "actions[%d].actions.button is an unsupported button", action_index_);
     return false;
@@ -393,18 +373,13 @@ bool ActionsParser::ParseAction(
   SyntheticPointerActionParams::Button button =
       ToSyntheticMouseButton(button_id);
 
-  std::string keys;
-  const base::Value* keys_key = action.FindKey("keys");
-  if (keys_key) {
-    if (!keys_key->is_string()) {
-      error_message_ = base::StringPrintf(
-          "actions[%d].actions.key is not a string", action_index_);
-      return false;
-    }
-    keys = keys_key->GetString();
-  }
-
   int key_modifiers = 0;
+  std::string keys;
+  if (action.HasKey("keys") && !action.GetString("keys", &keys)) {
+    error_message_ = base::StringPrintf(
+        "actions[%d].actions.key is not a string", action_index_);
+    return false;
+  }
   std::vector<std::string> key_list =
       base::SplitString(keys, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (std::string& key : key_list) {
@@ -420,14 +395,11 @@ bool ActionsParser::ParseAction(
   int duration = viz::BeginFrameArgs::DefaultInterval().InMilliseconds();
   if (pointer_action_type ==
       SyntheticPointerActionParams::PointerActionType::IDLE) {
-    const base::Value* duration_key = action.FindKey("duration");
-    if (duration_key) {
-      if (!duration_key->is_double() && !duration_key->is_int()) {
-        error_message_ = base::StringPrintf(
-            "actions[%d].actions.duration is not a number", action_index_);
-        return false;
-      }
-      duration = duration_key->GetDouble();
+    if (action.HasKey("duration") &&
+        !action.GetInteger("duration", &duration)) {
+      error_message_ = base::StringPrintf(
+          "actions[%d].actions.duration is not a number", action_index_);
+      return false;
     }
     if (duration < 0) {
       error_message_ = base::StringPrintf(

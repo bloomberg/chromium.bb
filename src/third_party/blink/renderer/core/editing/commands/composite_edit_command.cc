@@ -81,7 +81,6 @@
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -104,9 +103,9 @@ CompositeEditCommand::~CompositeEditCommand() {
 
 VisibleSelection CompositeEditCommand::EndingVisibleSelection() const {
   // TODO(editing-dev): The use of
-  // |Document::UpdateStyleAndLayout()|
+  // |Document::UpdateStyleAndLayoutIgnorePendingStylesheets()|
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   return CreateVisibleSelection(ending_selection_);
 }
 
@@ -146,7 +145,7 @@ bool CompositeEditCommand::Apply() {
   // operations, like RemoveNodeCommand, don't require a layout because the high
   // level operations that use them perform one if one is necessary (like for
   // the creation of VisiblePositions).
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   LocalFrame* frame = GetDocument().GetFrame();
   DCHECK(frame);
@@ -171,8 +170,8 @@ UndoStep* CompositeEditCommand::EnsureUndoStep() {
   while (command && command->Parent())
     command = command->Parent();
   if (!command->undo_step_) {
-    command->undo_step_ = MakeGarbageCollected<UndoStep>(
-        &GetDocument(), StartingSelection(), EndingSelection(), GetInputType());
+    command->undo_step_ = UndoStep::Create(&GetDocument(), StartingSelection(),
+                                           EndingSelection(), GetInputType());
   }
   return command->undo_step_.Get();
 }
@@ -211,9 +210,9 @@ void CompositeEditCommand::ApplyCommandToComposite(
     command->SetParent(nullptr);
     return;
   }
-  if (auto* simple_edit_command = DynamicTo<SimpleEditCommand>(command)) {
+  if (command->IsSimpleEditCommand()) {
     command->SetParent(nullptr);
-    EnsureUndoStep()->Append(simple_edit_command);
+    EnsureUndoStep()->Append(ToSimpleEditCommand(command));
   }
   commands_.push_back(command);
 }
@@ -229,8 +228,8 @@ void CompositeEditCommand::AppendCommandToUndoStep(
 void CompositeEditCommand::ApplyStyle(const EditingStyle* style,
                                       EditingState* editing_state) {
   ApplyCommandToComposite(
-      MakeGarbageCollected<ApplyStyleCommand>(GetDocument(), style,
-                                              InputEvent::InputType::kNone),
+      ApplyStyleCommand::Create(GetDocument(), style,
+                                InputEvent::InputType::kNone),
       editing_state);
 }
 
@@ -239,27 +238,27 @@ void CompositeEditCommand::ApplyStyle(const EditingStyle* style,
                                       const Position& end,
                                       EditingState* editing_state) {
   ApplyCommandToComposite(
-      MakeGarbageCollected<ApplyStyleCommand>(GetDocument(), style, start, end),
+      ApplyStyleCommand::Create(GetDocument(), style, start, end),
       editing_state);
 }
 
 void CompositeEditCommand::ApplyStyledElement(Element* element,
                                               EditingState* editing_state) {
-  ApplyCommandToComposite(
-      MakeGarbageCollected<ApplyStyleCommand>(element, false), editing_state);
+  ApplyCommandToComposite(ApplyStyleCommand::Create(element, false),
+                          editing_state);
 }
 
 void CompositeEditCommand::RemoveStyledElement(Element* element,
                                                EditingState* editing_state) {
-  ApplyCommandToComposite(
-      MakeGarbageCollected<ApplyStyleCommand>(element, true), editing_state);
+  ApplyCommandToComposite(ApplyStyleCommand::Create(element, true),
+                          editing_state);
 }
 
 void CompositeEditCommand::InsertParagraphSeparator(
     EditingState* editing_state,
     bool use_default_paragraph_element,
     bool paste_blockqutoe_into_unquoted_area) {
-  ApplyCommandToComposite(MakeGarbageCollected<InsertParagraphSeparatorCommand>(
+  ApplyCommandToComposite(InsertParagraphSeparatorCommand::Create(
                               GetDocument(), use_default_paragraph_element,
                               paste_blockqutoe_into_unquoted_area),
                           editing_state);
@@ -289,14 +288,14 @@ void CompositeEditCommand::InsertNodeBefore(
         should_assume_content_is_always_editable) {
   ABORT_EDITING_COMMAND_IF(GetDocument().body() == ref_child);
   ABORT_EDITING_COMMAND_IF(!ref_child->parentNode());
-  // TODO(editing-dev): Use of UpdateStyleAndLayout
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   ABORT_EDITING_COMMAND_IF(!HasEditableStyle(*ref_child->parentNode()) &&
                            ref_child->parentNode()->InActiveDocument());
   ApplyCommandToComposite(
-      MakeGarbageCollected<InsertNodeBeforeCommand>(
-          insert_child, ref_child, should_assume_content_is_always_editable),
+      InsertNodeBeforeCommand::Create(insert_child, ref_child,
+                                      should_assume_content_is_always_editable),
       editing_state);
 }
 
@@ -321,7 +320,7 @@ void CompositeEditCommand::InsertNodeAfter(Node* insert_child,
 void CompositeEditCommand::InsertNodeAt(Node* insert_child,
                                         const Position& editing_position,
                                         EditingState* editing_state) {
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   ABORT_EDITING_COMMAND_IF(!IsEditablePosition(editing_position));
   // For editing positions like [table, 0], insert before the table,
   // likewise for replaced elements, brs, etc.
@@ -369,7 +368,7 @@ void CompositeEditCommand::AppendNode(Node* node,
                              ToElement(parent)->TagQName() == kObjectTag));
   ABORT_EDITING_COMMAND_IF(!HasEditableStyle(*parent) &&
                            parent->InActiveDocument());
-  ApplyCommandToComposite(MakeGarbageCollected<AppendNodeCommand>(parent, node),
+  ApplyCommandToComposite(AppendNodeCommand::Create(parent, node),
                           editing_state);
 }
 
@@ -398,9 +397,9 @@ void CompositeEditCommand::RemoveNode(
   if (!node || !node->NonShadowBoundaryParentNode())
     return;
   ABORT_EDITING_COMMAND_IF(!node->GetDocument().GetFrame());
-  ApplyCommandToComposite(MakeGarbageCollected<RemoveNodeCommand>(
-                              node, should_assume_content_is_always_editable),
-                          editing_state);
+  ApplyCommandToComposite(
+      RemoveNodeCommand::Create(node, should_assume_content_is_always_editable),
+      editing_state);
 }
 
 void CompositeEditCommand::RemoveNodePreservingChildren(
@@ -409,10 +408,9 @@ void CompositeEditCommand::RemoveNodePreservingChildren(
     ShouldAssumeContentIsAlwaysEditable
         should_assume_content_is_always_editable) {
   ABORT_EDITING_COMMAND_IF(!node->GetDocument().GetFrame());
-  ApplyCommandToComposite(
-      MakeGarbageCollected<RemoveNodePreservingChildrenCommand>(
-          node, should_assume_content_is_always_editable),
-      editing_state);
+  ApplyCommandToComposite(RemoveNodePreservingChildrenCommand::Create(
+                              node, should_assume_content_is_always_editable),
+                          editing_state);
 }
 
 void CompositeEditCommand::RemoveNodeAndPruneAncestors(
@@ -465,7 +463,8 @@ CompositeEditCommand::ReplaceElementWithSpanPreservingChildrenAndAttributes(
   // It would also be possible to implement all of ReplaceNodeWithSpanCommand
   // as a series of existing smaller edit commands.  Someone who wanted to
   // reduce the number of edit commands could do so here.
-  auto* command = MakeGarbageCollected<ReplaceNodeWithSpanCommand>(node);
+  ReplaceNodeWithSpanCommand* command =
+      ReplaceNodeWithSpanCommand::Create(node);
   // ReplaceNodeWithSpanCommand is never aborted.
   ApplyCommandToComposite(command, ASSERT_NO_EDITING_ABORT);
   // Returning a raw pointer here is OK because the command is retained by
@@ -485,16 +484,14 @@ void CompositeEditCommand::Prune(Node* node,
 
 void CompositeEditCommand::SplitTextNode(Text* node, unsigned offset) {
   // SplitTextNodeCommand is never aborted.
-  ApplyCommandToComposite(
-      MakeGarbageCollected<SplitTextNodeCommand>(node, offset),
-      ASSERT_NO_EDITING_ABORT);
+  ApplyCommandToComposite(SplitTextNodeCommand::Create(node, offset),
+                          ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::SplitElement(Element* element, Node* at_child) {
   // SplitElementCommand is never aborted.
-  ApplyCommandToComposite(
-      MakeGarbageCollected<SplitElementCommand>(element, at_child),
-      ASSERT_NO_EDITING_ABORT);
+  ApplyCommandToComposite(SplitElementCommand::Create(element, at_child),
+                          ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::MergeIdenticalElements(Element* first,
@@ -510,23 +507,21 @@ void CompositeEditCommand::MergeIdenticalElements(Element* first,
     if (editing_state->IsAborted())
       return;
   }
-  ApplyCommandToComposite(
-      MakeGarbageCollected<MergeIdenticalElementsCommand>(first, second),
-      editing_state);
+  ApplyCommandToComposite(MergeIdenticalElementsCommand::Create(first, second),
+                          editing_state);
 }
 
 void CompositeEditCommand::WrapContentsInDummySpan(Element* element) {
   // WrapContentsInDummySpanCommand is never aborted.
-  ApplyCommandToComposite(
-      MakeGarbageCollected<WrapContentsInDummySpanCommand>(element),
-      ASSERT_NO_EDITING_ABORT);
+  ApplyCommandToComposite(WrapContentsInDummySpanCommand::Create(element),
+                          ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::SplitTextNodeContainingElement(Text* text,
                                                           unsigned offset) {
   // SplitTextNodeContainingElementCommand is never aborted.
   ApplyCommandToComposite(
-      MakeGarbageCollected<SplitTextNodeContainingElementCommand>(text, offset),
+      SplitTextNodeContainingElementCommand::Create(text, offset),
       ASSERT_NO_EDITING_ABORT);
 }
 
@@ -536,7 +531,7 @@ void CompositeEditCommand::InsertTextIntoNode(Text* node,
   // InsertIntoTextNodeCommand is never aborted.
   if (!text.IsEmpty())
     ApplyCommandToComposite(
-        MakeGarbageCollected<InsertIntoTextNodeCommand>(node, offset, text),
+        InsertIntoTextNodeCommand::Create(node, offset, text),
         ASSERT_NO_EDITING_ABORT);
 }
 
@@ -545,7 +540,7 @@ void CompositeEditCommand::DeleteTextFromNode(Text* node,
                                               unsigned count) {
   // DeleteFromTextNodeCommand is never aborted.
   ApplyCommandToComposite(
-      MakeGarbageCollected<DeleteFromTextNodeCommand>(node, offset, count),
+      DeleteFromTextNodeCommand::Create(node, offset, count),
       ASSERT_NO_EDITING_ABORT);
 }
 
@@ -554,9 +549,9 @@ void CompositeEditCommand::ReplaceTextInNode(Text* node,
                                              unsigned count,
                                              const String& replacement_text) {
   // SetCharacterDataCommand is never aborted.
-  ApplyCommandToComposite(MakeGarbageCollected<SetCharacterDataCommand>(
-                              node, offset, count, replacement_text),
-                          ASSERT_NO_EDITING_ABORT);
+  ApplyCommandToComposite(
+      SetCharacterDataCommand::Create(node, offset, count, replacement_text),
+      ASSERT_NO_EDITING_ABORT);
 }
 
 Position CompositeEditCommand::ReplaceSelectedTextInNode(const String& text) {
@@ -595,9 +590,9 @@ Position CompositeEditCommand::PositionOutsideTabSpan(const Position& pos) {
   HTMLSpanElement* tab_span = TabSpanElement(pos.ComputeContainerNode());
   DCHECK(tab_span);
 
-  // TODO(editing-dev): Hoist this UpdateStyleAndLayout
+  // TODO(editing-dev): Hoist this UpdateStyleAndLayoutIgnorePendingStylesheets
   // to the callers. See crbug.com/590369 for details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   if (pos.OffsetInContainerNode() <= CaretMinOffset(pos.ComputeContainerNode()))
     return Position::InParentBeforeNode(*tab_span);
@@ -639,9 +634,9 @@ bool CompositeEditCommand::DeleteSelection(
 void CompositeEditCommand::RemoveCSSProperty(Element* element,
                                              CSSPropertyID property) {
   // RemoveCSSPropertyCommand is never aborted.
-  ApplyCommandToComposite(MakeGarbageCollected<RemoveCSSPropertyCommand>(
-                              GetDocument(), element, property),
-                          ASSERT_NO_EDITING_ABORT);
+  ApplyCommandToComposite(
+      RemoveCSSPropertyCommand::Create(GetDocument(), element, property),
+      ASSERT_NO_EDITING_ABORT);
 }
 
 void CompositeEditCommand::RemoveElementAttribute(
@@ -655,14 +650,14 @@ void CompositeEditCommand::SetNodeAttribute(Element* element,
                                             const AtomicString& value) {
   // SetNodeAttributeCommand is never aborted.
   ApplyCommandToComposite(
-      MakeGarbageCollected<SetNodeAttributeCommand>(element, attribute, value),
+      SetNodeAttributeCommand::Create(element, attribute, value),
       ASSERT_NO_EDITING_ABORT);
 }
 
 bool CompositeEditCommand::CanRebalance(const Position& position) const {
-  // TODO(editing-dev): Use of UpdateStyleAndLayout()
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets()
   // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   Node* node = position.ComputeContainerNode();
   if (!position.IsOffsetInAnchor() || !node || !node->IsTextNode() ||
@@ -722,7 +717,7 @@ void CompositeEditCommand::RebalanceWhitespaceOnTextSubstring(Text* text_node,
   if (!length)
     return;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   VisiblePosition visible_upstream_pos =
       CreateVisiblePosition(Position(text_node, upstream));
   VisiblePosition visible_downstream_pos =
@@ -770,14 +765,14 @@ void CompositeEditCommand::PrepareWhitespaceAtPositionForSplit(
   Position upstream_pos = MostBackwardCaretPosition(position);
   DeleteInsignificantText(upstream_pos, MostForwardCaretPosition(position));
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   position = MostForwardCaretPosition(upstream_pos);
   VisiblePosition visible_pos = CreateVisiblePosition(position);
   VisiblePosition previous_visible_pos = PreviousPositionOf(visible_pos);
   ReplaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(
       previous_visible_pos);
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   ReplaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(
       CreateVisiblePosition(position));
 }
@@ -932,13 +927,13 @@ HTMLBRElement* CompositeEditCommand::AppendBlockPlaceholder(
   if (!container)
     return nullptr;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // Should assert isLayoutBlockFlow || isInlineFlow when deletion improves. See
   // 4244964.
   DCHECK(container->GetLayoutObject()) << container;
 
-  auto* placeholder = MakeGarbageCollected<HTMLBRElement>(GetDocument());
+  HTMLBRElement* placeholder = HTMLBRElement::Create(GetDocument());
   AppendNode(placeholder, container, editing_state);
   if (editing_state->IsAborted())
     return nullptr;
@@ -955,7 +950,7 @@ HTMLBRElement* CompositeEditCommand::InsertBlockPlaceholder(
   // 4244964.
   DCHECK(pos.AnchorNode()->GetLayoutObject()) << pos;
 
-  auto* placeholder = MakeGarbageCollected<HTMLBRElement>(GetDocument());
+  HTMLBRElement* placeholder = HTMLBRElement::Create(GetDocument());
   InsertNodeAt(placeholder, pos, editing_state);
   if (editing_state->IsAborted())
     return nullptr;
@@ -968,14 +963,15 @@ HTMLBRElement* CompositeEditCommand::AddBlockPlaceholderIfNeeded(
   if (!container)
     return nullptr;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  auto* block = DynamicTo<LayoutBlockFlow>(container->GetLayoutObject());
-  if (!block)
+  LayoutObject* layout_object = container->GetLayoutObject();
+  if (!layout_object || !layout_object->IsLayoutBlockFlow())
     return nullptr;
 
   // append the placeholder to make sure it follows
   // any unrendered blocks
+  LayoutBlockFlow* block = ToLayoutBlockFlow(layout_object);
   if (block->Size().Height() == 0 ||
       (block->IsListItem() && ToLayoutListItem(block)->IsEmpty()))
     return AppendBlockPlaceholder(container, editing_state);
@@ -1003,8 +999,7 @@ HTMLElement* CompositeEditCommand::InsertNewDefaultParagraphElementAt(
     const Position& position,
     EditingState* editing_state) {
   HTMLElement* paragraph_element = CreateDefaultParagraphElement(GetDocument());
-  paragraph_element->AppendChild(
-      MakeGarbageCollected<HTMLBRElement>(GetDocument()));
+  paragraph_element->AppendChild(HTMLBRElement::Create(GetDocument()));
   InsertNodeAt(paragraph_element, position, editing_state);
   if (editing_state->IsAborted())
     return nullptr;
@@ -1083,7 +1078,7 @@ HTMLElement* CompositeEditCommand::MoveParagraphContentsToNewBlockIfNecessary(
 
   // Inserting default paragraph element can change visible position. We
   // should update visible positions before use them.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   const VisiblePosition& destination =
       VisiblePosition::FirstPositionInNode(*new_block);
   if (destination.IsNull()) {
@@ -1239,7 +1234,7 @@ void CompositeEditCommand::CleanupAfterDeletion(EditingState* editing_state) {
 
 void CompositeEditCommand::CleanupAfterDeletion(EditingState* editing_state,
                                                 VisiblePosition destination) {
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   VisiblePosition caret_after_delete = EndingVisibleSelection().VisibleStart();
   Node* destination_node = destination.DeepEquivalent().AnchorNode();
@@ -1341,7 +1336,7 @@ void CompositeEditCommand::MoveParagraphWithClones(
   if (editing_state->IsAborted())
     return;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // Add a br if pruning an empty block level element caused a collapse.  For
   // example:
@@ -1364,7 +1359,7 @@ void CompositeEditCommand::MoveParagraphWithClones(
        before_paragraph.DeepEquivalent() == after_paragraph.DeepEquivalent())) {
     // FIXME: Trim text between beforeParagraph and afterParagraph if they
     // aren't equal.
-    InsertNodeAt(MakeGarbageCollected<HTMLBRElement>(GetDocument()),
+    InsertNodeAt(HTMLBRElement::Create(GetDocument()),
                  before_paragraph.DeepEquivalent(), editing_state);
   }
 }
@@ -1494,8 +1489,8 @@ void CompositeEditCommand::MoveParagraphs(
   if (start_of_paragraph_to_move.DeepEquivalent() ==
           end_of_paragraph_to_move.DeepEquivalent() &&
       should_preserve_style == kPreserveStyle) {
-    style_in_empty_paragraph = MakeGarbageCollected<EditingStyle>(
-        start_of_paragraph_to_move.DeepEquivalent());
+    style_in_empty_paragraph =
+        EditingStyle::Create(start_of_paragraph_to_move.DeepEquivalent());
     style_in_empty_paragraph->MergeTypingStyle(&GetDocument());
     // The moved paragraph should assume the block style of the destination.
     style_in_empty_paragraph->RemoveBlockProperties();
@@ -1521,7 +1516,7 @@ void CompositeEditCommand::MoveParagraphs(
     return;
   DCHECK(destination.DeepEquivalent().IsConnected()) << destination;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // Add a br if pruning an empty block level element caused a collapse. For
   // example:
@@ -1542,14 +1537,14 @@ void CompositeEditCommand::MoveParagraphs(
        before_paragraph.DeepEquivalent() == after_paragraph.DeepEquivalent())) {
     // FIXME: Trim text between beforeParagraph and afterParagraph if they
     // aren't equal.
-    InsertNodeAt(MakeGarbageCollected<HTMLBRElement>(GetDocument()),
+    InsertNodeAt(HTMLBRElement::Create(GetDocument()),
                  before_paragraph.DeepEquivalent(), editing_state);
     if (editing_state->IsAborted())
       return;
   }
 
   // TextIterator::rangeLength requires clean layout.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   destination_index = TextIterator::RangeLength(
       Position::FirstPositionInNode(*GetDocument().documentElement()),
@@ -1572,14 +1567,14 @@ void CompositeEditCommand::MoveParagraphs(
       ReplaceSelectionCommand::kMovingParagraph;
   if (should_preserve_style == kDoNotPreserveStyle)
     options |= ReplaceSelectionCommand::kMatchStyle;
-  ApplyCommandToComposite(MakeGarbageCollected<ReplaceSelectionCommand>(
-                              GetDocument(), fragment, options),
-                          editing_state);
+  ApplyCommandToComposite(
+      ReplaceSelectionCommand::Create(GetDocument(), fragment, options),
+      editing_state);
   if (editing_state->IsAborted())
     return;
   ABORT_EDITING_COMMAND_IF(!EndingSelection().IsValidFor(GetDocument()));
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // If the selection is in an empty paragraph, restore styles from the old
   // empty paragraph to the new empty paragraph.
@@ -1600,7 +1595,7 @@ void CompositeEditCommand::MoveParagraphs(
     return;
 
   // We need clean layout in order to compute plain-text ranges below.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // Fragment creation (using createMarkup) incorrectly uses regular spaces
   // instead of nbsps for some spaces that were rendered (11475), which causes
@@ -1633,8 +1628,7 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
   if (!empty_list_item)
     return false;
 
-  EditingStyle* style =
-      MakeGarbageCollected<EditingStyle>(EndingSelection().Start());
+  EditingStyle* style = EditingStyle::Create(EndingSelection().Start());
   style->MergeTypingStyle(&GetDocument());
 
   ContainerNode* list_node = empty_list_item->parentNode();
@@ -1671,13 +1665,13 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
         RemoveNodePreservingChildren(list_node->parentNode(), editing_state);
         if (editing_state->IsAborted())
           return false;
-        new_block = MakeGarbageCollected<HTMLLIElement>(GetDocument());
+        new_block = HTMLLIElement::Create(GetDocument());
       }
       // If listNode does NOT appear at the end of the outer list item, then
       // behave as if in a regular paragraph.
     } else if (IsHTMLOListElement(*block_enclosing_list) ||
                IsHTMLUListElement(*block_enclosing_list)) {
-      new_block = MakeGarbageCollected<HTMLLIElement>(GetDocument());
+      new_block = HTMLLIElement::Create(GetDocument());
     }
   }
   if (!new_block)
@@ -1749,7 +1743,7 @@ bool CompositeEditCommand::BreakOutOfEmptyMailBlockquotedParagraph(
   if (!EndingSelection().IsCaret())
     return false;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   VisiblePosition caret = EndingVisibleSelection().VisibleStart();
   HTMLQuoteElement* highest_blockquote =
@@ -1769,25 +1763,24 @@ bool CompositeEditCommand::BreakOutOfEmptyMailBlockquotedParagraph(
                           &IsMailHTMLBlockquoteElement))
     return false;
 
-  auto* br = MakeGarbageCollected<HTMLBRElement>(GetDocument());
+  HTMLBRElement* br = HTMLBRElement::Create(GetDocument());
   // We want to replace this quoted paragraph with an unquoted one, so insert a
   // br to hold the caret before the highest blockquote.
   InsertNodeBefore(br, highest_blockquote, editing_state);
   if (editing_state->IsAborted())
     return false;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   VisiblePosition at_br = VisiblePosition::BeforeNode(*br);
   // If the br we inserted collapsed, for example:
   //   foo<br><blockquote>...</blockquote>
   // insert a second one.
   if (!IsStartOfParagraph(at_br)) {
-    InsertNodeBefore(MakeGarbageCollected<HTMLBRElement>(GetDocument()), br,
-                     editing_state);
+    InsertNodeBefore(HTMLBRElement::Create(GetDocument()), br, editing_state);
     if (editing_state->IsAborted())
       return false;
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
   SetEndingSelection(SelectionForUndoStep::From(
       SelectionInDOMTree::Builder()
@@ -1836,7 +1829,7 @@ Position CompositeEditCommand::PositionAvoidingSpecialElementBoundary(
   if (original.IsNull())
     return original;
 
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   VisiblePosition visible_pos = CreateVisiblePosition(original);
   Element* enclosing_anchor = EnclosingAnchorElement(original);
   Position result = original;
@@ -1866,7 +1859,7 @@ Position CompositeEditCommand::PositionAvoidingSpecialElementBoundary(
           return original;
       }
 
-      GetDocument().UpdateStyleAndLayout();
+      GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
       // Don't insert outside an anchor if doing so would skip over a line
       // break.  It would probably be safe to move the line break so that we
@@ -1928,7 +1921,7 @@ Node* CompositeEditCommand::SplitTreeToNode(Node* start,
     if (!parent_element)
       break;
 
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
     // Do not split a node when doing so introduces an empty node.
     VisiblePosition position_in_parent =

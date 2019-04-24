@@ -123,7 +123,8 @@ class CastExtensionURLRequestJob : public net::URLRequestJob,
   bool CopyFragmentOnRedirect(const GURL& location) const override;
   bool IsSafeRedirect(const GURL& location) override;
   bool NeedsAuth() override;
-  std::unique_ptr<net::AuthChallengeInfo> GetAuthChallengeInfo() override;
+  void GetAuthChallengeInfo(
+      scoped_refptr<net::AuthChallengeInfo>* auth_info) override;
   void SetAuth(const net::AuthCredentials& credentials) override;
   void CancelAuth() override;
   void ContinueWithCertificate(
@@ -136,7 +137,7 @@ class CastExtensionURLRequestJob : public net::URLRequestJob,
                           const net::RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
   void OnAuthRequired(net::URLRequest* request,
-                      const net::AuthChallengeInfo& auth_info) override;
+                      net::AuthChallengeInfo* auth_info) override;
   void OnCertificateRequested(
       net::URLRequest* request,
       net::SSLCertRequestInfo* cert_request_info) override;
@@ -280,10 +281,8 @@ bool CastExtensionURLRequestJob::NeedsAuth() {
   return false;
 }
 
-std::unique_ptr<net::AuthChallengeInfo>
-CastExtensionURLRequestJob::GetAuthChallengeInfo() {
-  return nullptr;
-}
+void CastExtensionURLRequestJob::GetAuthChallengeInfo(
+    scoped_refptr<net::AuthChallengeInfo>* auth_info) {}
 
 void CastExtensionURLRequestJob::SetAuth(
     const net::AuthCredentials& credentials) {
@@ -314,7 +313,7 @@ void CastExtensionURLRequestJob::OnReceivedRedirect(
 
 void CastExtensionURLRequestJob::OnAuthRequired(
     net::URLRequest* request,
-    const net::AuthChallengeInfo& auth_info) {
+    net::AuthChallengeInfo* auth_info) {
   net::URLRequest::Delegate::OnAuthRequired(request, auth_info);
 }
 

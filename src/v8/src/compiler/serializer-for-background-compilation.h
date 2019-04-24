@@ -6,7 +6,6 @@
 #define V8_COMPILER_SERIALIZER_FOR_BACKGROUND_COMPILATION_H_
 
 #include "src/base/optional.h"
-#include "src/compiler/access-info.h"
 #include "src/handles.h"
 #include "src/maybe-handles.h"
 #include "src/utils.h"
@@ -35,11 +34,11 @@ namespace compiler {
   V(CallRuntime)                  \
   V(CallRuntimeForPair)           \
   V(CreateBlockContext)           \
-  V(CreateEvalContext)            \
   V(CreateFunctionContext)        \
+  V(CreateEvalContext)            \
   V(Debugger)                     \
-  V(PopContext)                   \
   V(PushContext)                  \
+  V(PopContext)                   \
   V(ResumeGenerator)              \
   V(ReThrow)                      \
   V(StaContextSlot)               \
@@ -49,74 +48,18 @@ namespace compiler {
   V(Throw)
 
 #define CLEAR_ACCUMULATOR_LIST(V)   \
-  V(Add)                            \
-  V(AddSmi)                         \
-  V(BitwiseAnd)                     \
-  V(BitwiseAndSmi)                  \
-  V(BitwiseNot)                     \
-  V(BitwiseOr)                      \
-  V(BitwiseOrSmi)                   \
-  V(BitwiseXor)                     \
-  V(BitwiseXorSmi)                  \
-  V(CloneObject)                    \
-  V(CreateArrayFromIterable)        \
-  V(CreateArrayLiteral)             \
-  V(CreateEmptyArrayLiteral)        \
   V(CreateEmptyObjectLiteral)       \
   V(CreateMappedArguments)          \
-  V(CreateObjectLiteral)            \
   V(CreateRestParameter)            \
   V(CreateUnmappedArguments)        \
-  V(Dec)                            \
-  V(DeletePropertySloppy)           \
-  V(DeletePropertyStrict)           \
-  V(Div)                            \
-  V(DivSmi)                         \
-  V(Exp)                            \
-  V(ExpSmi)                         \
-  V(ForInContinue)                  \
-  V(ForInEnumerate)                 \
-  V(ForInNext)                      \
-  V(ForInStep)                      \
-  V(GetTemplateObject)              \
-  V(Inc)                            \
   V(LdaContextSlot)                 \
   V(LdaCurrentContextSlot)          \
+  V(LdaGlobal)                      \
+  V(LdaGlobalInsideTypeof)          \
   V(LdaImmutableContextSlot)        \
   V(LdaImmutableCurrentContextSlot) \
-  V(LogicalNot)                     \
-  V(Mod)                            \
-  V(ModSmi)                         \
-  V(Mul)                            \
-  V(MulSmi)                         \
-  V(Negate)                         \
-  V(SetPendingMessage)              \
-  V(ShiftLeft)                      \
-  V(ShiftLeftSmi)                   \
-  V(ShiftRight)                     \
-  V(ShiftRightLogical)              \
-  V(ShiftRightLogicalSmi)           \
-  V(ShiftRightSmi)                  \
-  V(Sub)                            \
-  V(SubSmi)                         \
-  V(TestEqual)                      \
-  V(TestEqualStrict)                \
-  V(TestGreaterThan)                \
-  V(TestGreaterThanOrEqual)         \
-  V(TestInstanceOf)                 \
-  V(TestLessThan)                   \
-  V(TestLessThanOrEqual)            \
-  V(TestNull)                       \
-  V(TestReferenceEqual)             \
-  V(TestTypeOf)                     \
-  V(TestUndefined)                  \
-  V(TestUndetectable)               \
-  V(ToBooleanLogicalNot)            \
-  V(ToName)                         \
-  V(ToNumber)                       \
-  V(ToNumeric)                      \
-  V(ToString)                       \
-  V(TypeOf)
+  V(LdaNamedProperty)               \
+  V(LdaNamedPropertyNoFeedback)
 
 #define UNCONDITIONAL_JUMPS_LIST(V) \
   V(Jump)                           \
@@ -134,70 +77,69 @@ namespace compiler {
   V(JumpIfNotUndefinedConstant)   \
   V(JumpIfNull)                   \
   V(JumpIfNullConstant)           \
-  V(JumpIfToBooleanFalse)         \
+  V(JumpIfToBooleanTrueConstant)  \
   V(JumpIfToBooleanFalseConstant) \
   V(JumpIfToBooleanTrue)          \
-  V(JumpIfToBooleanTrueConstant)  \
+  V(JumpIfToBooleanFalse)         \
   V(JumpIfTrue)                   \
   V(JumpIfTrueConstant)           \
   V(JumpIfUndefined)              \
   V(JumpIfUndefinedConstant)
 
-#define IGNORED_BYTECODE_LIST(V)      \
-  V(CallNoFeedback)                   \
-  V(LdaNamedPropertyNoFeedback)       \
-  V(StackCheck)                       \
-  V(StaNamedPropertyNoFeedback)       \
-  V(ThrowReferenceErrorIfHole)        \
-  V(ThrowSuperAlreadyCalledIfNotHole) \
-  V(ThrowSuperNotCalledIfHole)
+#define INGORED_BYTECODE_LIST(V) \
+  V(TestEqual)                   \
+  V(TestEqualStrict)             \
+  V(TestLessThan)                \
+  V(TestGreaterThan)             \
+  V(TestLessThanOrEqual)         \
+  V(TestGreaterThanOrEqual)      \
+  V(TestReferenceEqual)          \
+  V(TestInstanceOf)              \
+  V(TestIn)                      \
+  V(TestUndetectable)            \
+  V(TestNull)                    \
+  V(TestUndefined)               \
+  V(TestTypeOf)                  \
+  V(ThrowReferenceErrorIfHole)   \
+  V(ThrowSuperNotCalledIfHole)   \
+  V(ThrowSuperAlreadyCalledIfNotHole)
 
-#define SUPPORTED_BYTECODE_LIST(V)   \
-  V(CallAnyReceiver)                 \
-  V(CallProperty)                    \
-  V(CallProperty0)                   \
-  V(CallProperty1)                   \
-  V(CallProperty2)                   \
-  V(CallUndefinedReceiver)           \
-  V(CallUndefinedReceiver0)          \
-  V(CallUndefinedReceiver1)          \
-  V(CallUndefinedReceiver2)          \
-  V(CallWithSpread)                  \
-  V(Construct)                       \
-  V(ConstructWithSpread)             \
-  V(CreateClosure)                   \
-  V(ExtraWide)                       \
-  V(GetSuperConstructor)             \
-  V(Illegal)                         \
-  V(LdaConstant)                     \
-  V(LdaFalse)                        \
-  V(LdaGlobal)                       \
-  V(LdaGlobalInsideTypeof)           \
-  V(LdaKeyedProperty)                \
-  V(LdaLookupGlobalSlot)             \
-  V(LdaLookupGlobalSlotInsideTypeof) \
-  V(LdaNamedProperty)                \
-  V(LdaNull)                         \
-  V(Ldar)                            \
-  V(LdaSmi)                          \
-  V(LdaTheHole)                      \
-  V(LdaTrue)                         \
-  V(LdaUndefined)                    \
-  V(LdaZero)                         \
-  V(Mov)                             \
-  V(Return)                          \
-  V(StaGlobal)                       \
-  V(StaInArrayLiteral)               \
-  V(StaKeyedProperty)                \
-  V(StaNamedProperty)                \
-  V(Star)                            \
-  V(TestIn)                          \
-  V(Wide)                            \
-  CLEAR_ENVIRONMENT_LIST(V)          \
-  CLEAR_ACCUMULATOR_LIST(V)          \
-  CONDITIONAL_JUMPS_LIST(V)          \
-  UNCONDITIONAL_JUMPS_LIST(V)        \
-  IGNORED_BYTECODE_LIST(V)
+#define SUPPORTED_BYTECODE_LIST(V) \
+  V(CallAnyReceiver)               \
+  V(CallNoFeedback)                \
+  V(CallProperty)                  \
+  V(CallProperty0)                 \
+  V(CallProperty1)                 \
+  V(CallProperty2)                 \
+  V(CallUndefinedReceiver)         \
+  V(CallUndefinedReceiver0)        \
+  V(CallUndefinedReceiver1)        \
+  V(CallUndefinedReceiver2)        \
+  V(CallWithSpread)                \
+  V(Construct)                     \
+  V(ConstructWithSpread)           \
+  V(CreateClosure)                 \
+  V(ExtraWide)                     \
+  V(Illegal)                       \
+  V(LdaConstant)                   \
+  V(LdaKeyedProperty)              \
+  V(LdaNull)                       \
+  V(Ldar)                          \
+  V(LdaSmi)                        \
+  V(LdaUndefined)                  \
+  V(LdaZero)                       \
+  V(Mov)                           \
+  V(Return)                        \
+  V(StackCheck)                    \
+  V(StaInArrayLiteral)             \
+  V(StaKeyedProperty)              \
+  V(Star)                          \
+  V(Wide)                          \
+  CLEAR_ENVIRONMENT_LIST(V)        \
+  CLEAR_ACCUMULATOR_LIST(V)        \
+  CONDITIONAL_JUMPS_LIST(V)        \
+  UNCONDITIONAL_JUMPS_LIST(V)      \
+  INGORED_BYTECODE_LIST(V)
 
 class JSHeapBroker;
 
@@ -236,9 +178,9 @@ class CompilationSubject {
   MaybeHandle<JSFunction> closure_;
 };
 
-using ConstantsSet = ZoneSet<Handle<Object>, HandleComparator<Object>>;
-using MapsSet = ZoneSet<Handle<Map>, HandleComparator<Map>>;
-using BlueprintsSet = ZoneSet<FunctionBlueprint>;
+typedef ZoneSet<Handle<Object>, HandleComparator<Object>> ConstantsSet;
+typedef ZoneSet<Handle<Map>, HandleComparator<Map>> MapsSet;
+typedef ZoneSet<FunctionBlueprint> BlueprintsSet;
 
 class Hints {
  public:
@@ -263,7 +205,7 @@ class Hints {
   BlueprintsSet function_blueprints_;
 };
 
-using HintsVector = ZoneVector<Hints>;
+typedef ZoneVector<Hints> HintsVector;
 
 // The SerializerForBackgroundCompilation makes sure that the relevant function
 // data such as bytecode, SharedFunctionInfo and FeedbackVector, used by later
@@ -295,27 +237,15 @@ class SerializerForBackgroundCompilation {
   void ProcessCallVarArgs(interpreter::BytecodeArrayIterator* iterator,
                           ConvertReceiverMode receiver_mode,
                           bool with_spread = false);
-
   void ProcessJump(interpreter::BytecodeArrayIterator* iterator);
   void MergeAfterJump(interpreter::BytecodeArrayIterator* iterator);
-
-  void ProcessKeyedPropertyAccess(Hints const& receiver, Hints const& key,
-                                  FeedbackSlot slot, AccessMode mode);
-  void ProcessNamedPropertyAccess(interpreter::BytecodeArrayIterator* iterator,
-                                  AccessMode mode);
-  void ProcessNamedPropertyAccess(Hints const& receiver, NameRef const& name,
-                                  FeedbackSlot slot, AccessMode mode);
-
-  GlobalAccessFeedback const* ProcessFeedbackForGlobalAccess(FeedbackSlot slot);
-  void ProcessFeedbackForKeyedPropertyAccess(FeedbackSlot slot,
-                                             AccessMode mode);
-  void ProcessFeedbackForNamedPropertyAccess(FeedbackSlot slot,
-                                             NameRef const& name);
-  void ProcessMapForNamedPropertyAccess(MapRef const& map, NameRef const& name);
 
   Hints RunChildSerializer(CompilationSubject function,
                            base::Optional<Hints> new_target,
                            const HintsVector& arguments, bool with_spread);
+
+  void ProcessFeedbackForKeyedPropertyAccess(
+      interpreter::BytecodeArrayIterator* iterator);
 
   JSHeapBroker* broker() const { return broker_; }
   Zone* zone() const { return zone_; }

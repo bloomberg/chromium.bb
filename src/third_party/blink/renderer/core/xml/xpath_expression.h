@@ -46,6 +46,10 @@ class XPathExpression : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static XPathExpression* Create() {
+    return MakeGarbageCollected<XPathExpression>();
+  }
+
   static XPathExpression* CreateExpression(const String& expression,
                                            XPathNSResolver*,
                                            ExceptionState&);

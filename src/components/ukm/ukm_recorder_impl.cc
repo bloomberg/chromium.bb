@@ -7,7 +7,6 @@
 #include <limits>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <utility>
 
 #include "base/feature_list.h"
@@ -229,8 +228,7 @@ void UkmRecorderImpl::PageSampling::Set(uint64_t event_id, bool sampled_in) {
 }
 
 bool UkmRecorderImpl::PageSampling::Find(uint64_t event_id,
-                                         bool* out_sampled_in) {
-  modified_ = true;
+                                         bool* out_sampled_in) const {
   auto found = event_sampling_.find(event_id);
   if (found == event_sampling_.end())
     return false;
@@ -267,11 +265,6 @@ void UkmRecorderImpl::DisableRecording() {
 
 void UkmRecorderImpl::DisableSamplingForTesting() {
   sampling_enabled_ = false;
-}
-
-bool UkmRecorderImpl::IsSamplingEnabled() const {
-  return sampling_enabled_ &&
-         base::FeatureList::IsEnabled(kUkmSamplingRateFeature);
 }
 
 void UkmRecorderImpl::Purge() {
@@ -599,33 +592,30 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
     return;
   }
 
-  if (IsSamplingEnabled()) {
-    if (default_sampling_rate_ == 0) {
-      LoadExperimentSamplingInfo();
-    }
+  if (default_sampling_rate_ == 0)
+    LoadExperimentSamplingInfo();
 
-    bool sampled_in = true;  // Overwritten by Find(...) if it returns True.
-    PageSampling* page_sampling = &source_event_sampling_[entry->source_id];
-    if (!page_sampling->Find(entry->event_hash, &sampled_in)) {
-      auto found = event_sampling_rates_.find(entry->event_hash);
-      int sampling_rate = (found != event_sampling_rates_.end())
-                              ? found->second
-                              : default_sampling_rate_;
-      sampled_in = IsSampledIn(sampling_rate);
+  bool sampled_in = true;  // Overwritten by Find(...) if it returns True.
+  PageSampling* page_sampling = &source_event_sampling_[entry->source_id];
+  if (!page_sampling->Find(entry->event_hash, &sampled_in)) {
+    auto found = event_sampling_rates_.find(entry->event_hash);
+    int sampling_rate = (found != event_sampling_rates_.end())
+                            ? found->second
+                            : default_sampling_rate_;
+    sampled_in = IsSampledIn(sampling_rate);
 
-      // Remember the decision for this event for this page so all such events
-      // on this page are sampled-in or sampled-out together making it possible
-      // to correlate between events and within a page.
-      page_sampling->Set(entry->event_hash, sampled_in);
-    }
+    // Remember the decision for this event for this page so all such events
+    // on this page are sampled-in or sampled-out together making it possible
+    // to correlate between events and within a page.
+    page_sampling->Set(entry->event_hash, sampled_in);
+  }
 
-    if (!sampled_in) {
-      RecordDroppedEntry(DroppedDataReason::SAMPLED_OUT);
-      event_aggregate.dropped_due_to_sampling++;
-      for (auto& metric : entry->metrics)
-        event_aggregate.metrics[metric.first].dropped_due_to_sampling++;
-      return;
-    }
+  if (!sampled_in && sampling_enabled_) {
+    RecordDroppedEntry(DroppedDataReason::SAMPLED_OUT);
+    event_aggregate.dropped_due_to_sampling++;
+    for (auto& metric : entry->metrics)
+      event_aggregate.metrics[metric.first].dropped_due_to_sampling++;
+    return;
   }
 
   if (recordings_.entries.size() >= GetMaxEntries()) {
@@ -641,41 +631,37 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
 
 void UkmRecorderImpl::LoadExperimentSamplingInfo() {
   DCHECK_EQ(0, default_sampling_rate_);
-
-  // Default rate must be > 0 to indicate that load is complete.
-  default_sampling_rate_ = 1;
-
-  // If we don't have the feature, no parameters to load.
-  if (!base::FeatureList::IsEnabled(kUkmSamplingRateFeature)) {
-    return;
-  }
-
-  // Check the parameters for sampling controls.
   std::map<std::string, std::string> params;
-  if (base::GetFieldTrialParamsByFeature(kUkmSamplingRateFeature, &params)) {
-    for (const auto& kv : params) {
-      const std::string& key = kv.first;
-      if (key.length() == 0)
-        continue;
 
-      // Keys starting with an underscore are global configuration.
-      if (key.at(0) == '_') {
-        if (key == "_default_sampling") {
-          int sampling;
-          // We only load positive global sampling rates. If the global sampling
-          // is 0, then we stick to the default rate of '1' (unsampled).
-          if (base::StringToInt(kv.second, &sampling) && sampling > 0)
-            default_sampling_rate_ = sampling;
+  if (base::FeatureList::IsEnabled(kUkmSamplingRateFeature)) {
+    // Enabled may have various parameters to control sampling.
+    if (base::GetFieldTrialParamsByFeature(kUkmSamplingRateFeature, &params)) {
+      for (const auto& kv : params) {
+        const std::string& key = kv.first;
+        if (key.length() == 0)
+          continue;
+
+        // Keys starting with an underscore are global configuration.
+        if (key.at(0) == '_') {
+          if (key == "_default_sampling") {
+            int sampling;
+            if (base::StringToInt(kv.second, &sampling) && sampling >= 0)
+              default_sampling_rate_ = sampling;
+          }
+          continue;
         }
-        continue;
-      }
 
-      // Anything else is an event name.
-      int sampling;
-      if (base::StringToInt(kv.second, &sampling) && sampling >= 0)
-        event_sampling_rates_[base::HashMetricName(key)] = sampling;
+        // Anything else is an event name.
+        int sampling;
+        if (base::StringToInt(kv.second, &sampling) && sampling >= 0)
+          event_sampling_rates_[base::HashMetricName(key)] = sampling;
+      }
     }
   }
+
+  // Default rate must be >0 to indicate that load is complete.
+  if (default_sampling_rate_ == 0)
+    default_sampling_rate_ = 1;
 }
 
 int UkmRecorderImpl::RandInt(int begin, int end) {

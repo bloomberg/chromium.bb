@@ -6,23 +6,24 @@
 
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/views/controls/scrollbar/scroll_bar.h"
+#include "ui/views/controls/scrollbar/base_scroll_bar.h"
 
 namespace {
 // The distance the mouse can be dragged outside the bounds of the thumb during
 // dragging before the scrollbar will snap back to its regular position.
-static constexpr int kScrollThumbDragOutSnap = 100;
+static const int kScrollThumbDragOutSnap = 100;
 }
 
 namespace views {
 
-BaseScrollBarThumb::BaseScrollBarThumb(ScrollBar* scroll_bar)
+BaseScrollBarThumb::BaseScrollBarThumb(BaseScrollBar* scroll_bar)
     : scroll_bar_(scroll_bar),
       drag_start_position_(-1),
       mouse_offset_(-1),
       state_(Button::STATE_NORMAL) {}
 
-BaseScrollBarThumb::~BaseScrollBarThumb() = default;
+BaseScrollBarThumb::~BaseScrollBarThumb() {
+}
 
 void BaseScrollBarThumb::SetLength(int length) {
   // Make sure the thumb is never sized smaller than its minimum possible

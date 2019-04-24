@@ -203,29 +203,27 @@ GURL LocalPolicyTestServer::GetServiceURL() const {
   return GetURL("device_management");
 }
 
-base::Optional<std::vector<base::FilePath>>
-LocalPolicyTestServer::GetPythonPath() const {
+bool LocalPolicyTestServer::SetPythonPath() const {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::Optional<std::vector<base::FilePath>> ret =
-      net::LocalTestServer::GetPythonPath();
-  if (!ret)
-    return base::nullopt;
+  if (!net::LocalTestServer::SetPythonPath())
+    return false;
 
   // Add the net/tools/testserver directory to the path.
   base::FilePath net_testserver_path;
   if (!LocalTestServer::GetTestServerPath(&net_testserver_path)) {
     LOG(ERROR) << "Failed to get net testserver path.";
-    return base::nullopt;
+    return false;
   }
-  ret->push_back(net_testserver_path.DirName());
+  AppendToPythonPath(net_testserver_path.DirName());
 
   // We need protobuf python bindings.
   base::FilePath third_party_dir;
   if (!base::PathService::Get(base::DIR_SOURCE_ROOT, &third_party_dir)) {
     LOG(ERROR) << "Failed to get DIR_SOURCE_ROOT";
-    return base::nullopt;
+    return false;
   }
-  ret->push_back(third_party_dir.AppendASCII("third_party")
+  AppendToPythonPath(third_party_dir
+                     .AppendASCII("third_party")
                      .AppendASCII("protobuf")
                      .AppendASCII("python"));
 
@@ -233,21 +231,23 @@ LocalPolicyTestServer::GetPythonPath() const {
   base::FilePath pyproto_dir;
   if (!GetPyProtoPath(&pyproto_dir)) {
     LOG(ERROR) << "Cannot find pyproto dir for generated code.";
-    return base::nullopt;
+    return false;
   }
 
-  ret->push_back(pyproto_dir.AppendASCII("components")
+  AppendToPythonPath(pyproto_dir
+                     .AppendASCII("components")
                      .AppendASCII("policy")
                      .AppendASCII("proto"));
 #if defined(OS_CHROMEOS)
-  ret->push_back(pyproto_dir.AppendASCII("chrome")
+  AppendToPythonPath(pyproto_dir
+                     .AppendASCII("chrome")
                      .AppendASCII("browser")
                      .AppendASCII("chromeos")
                      .AppendASCII("policy")
                      .AppendASCII("proto"));
 #endif
 
-  return ret;
+  return true;
 }
 
 bool LocalPolicyTestServer::GetTestServerPath(

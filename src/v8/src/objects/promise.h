@@ -33,8 +33,18 @@ class PromiseReactionJobTask : public Microtask {
   // a PromiseCapability (general case), or undefined (in case of await).
   DECL_ACCESSORS(promise_or_capability, HeapObject)
 
-  DEFINE_FIELD_OFFSET_CONSTANTS(
-      Microtask::kHeaderSize, TORQUE_GENERATED_PROMISE_REACTION_JOB_TASK_FIELDS)
+// Layout description.
+#define PROMISE_REACTION_JOB_FIELDS(V)       \
+  V(kArgumentOffset, kTaggedSize)            \
+  V(kContextOffset, kTaggedSize)             \
+  V(kHandlerOffset, kTaggedSize)             \
+  V(kPromiseOrCapabilityOffset, kTaggedSize) \
+  /* Total size. */                          \
+  V(kSize, 0)
+
+  DEFINE_FIELD_OFFSET_CONSTANTS(Microtask::kHeaderSize,
+                                PROMISE_REACTION_JOB_FIELDS)
+#undef PROMISE_REACTION_JOB_FIELDS
 
   // Dispatched behavior.
   DECL_CAST(PromiseReactionJobTask)
@@ -73,9 +83,18 @@ class PromiseResolveThenableJobTask : public Microtask {
   DECL_ACCESSORS(then, JSReceiver)
   DECL_ACCESSORS(thenable, JSReceiver)
 
-  DEFINE_FIELD_OFFSET_CONSTANTS(
-      Microtask::kHeaderSize,
-      TORQUE_GENERATED_PROMISE_RESOLVE_THENABLE_JOB_TASK_FIELDS)
+// Layout description.
+#define PROMISE_RESOLVE_THENABLE_JOB_FIELDS(V) \
+  V(kContextOffset, kTaggedSize)               \
+  V(kPromiseToResolveOffset, kTaggedSize)      \
+  V(kThenOffset, kTaggedSize)                  \
+  V(kThenableOffset, kTaggedSize)              \
+  /* Total size. */                            \
+  V(kSize, 0)
+
+  DEFINE_FIELD_OFFSET_CONSTANTS(Microtask::kHeaderSize,
+                                PROMISE_RESOLVE_THENABLE_JOB_FIELDS)
+#undef PROMISE_RESOLVE_THENABLE_JOB_FIELDS
 
   // Dispatched behavior.
   DECL_CAST(PromiseResolveThenableJobTask)

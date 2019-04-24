@@ -27,8 +27,8 @@
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_database.h"
 
 #include "third_party/blink/renderer/modules/webdatabase/database_authorizer.h"
-#include "third_party/blink/renderer/modules/webdatabase/sqlite/sandboxed_vfs.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_log.h"
+#include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_file_system.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_statement.h"
 #include "third_party/sqlite/sqlite3.h"
 
@@ -60,20 +60,14 @@ SQLiteDatabase::~SQLiteDatabase() {
 bool SQLiteDatabase::Open(const String& filename) {
   Close();
 
-  std::tie(open_error_, db_) =
-      SandboxedVfs::GetInstance().OpenDatabase(filename);
+  open_error_ = SQLiteFileSystem::OpenDatabase(filename, &db_);
   if (open_error_ != SQLITE_OK) {
-    DCHECK_EQ(db_, nullptr);
-
     open_error_message_ =
         db_ ? sqlite3_errmsg(db_) : "sqlite_open returned null";
     DLOG(ERROR) << "SQLite database failed to load from " << filename
                 << "\nCause - " << open_error_message_.data();
-    return false;
-  }
-
-  if (!db_) {
-    open_error_message_ = "sqlite_open returned null";
+    sqlite3_close(db_);
+    db_ = nullptr;
     return false;
   }
 
@@ -100,7 +94,10 @@ bool SQLiteDatabase::Open(const String& filename) {
     return false;
   }
 
-  opening_thread_ = CurrentThread();
+  if (IsOpen())
+    opening_thread_ = CurrentThread();
+  else
+    open_error_message_ = "sqlite_open returned null";
 
   if (!SQLiteStatement(*this, "PRAGMA temp_store = MEMORY;").ExecuteCommand())
     DLOG(ERROR) << "SQLite database could not set temp_store to memory";
@@ -110,7 +107,7 @@ bool SQLiteDatabase::Open(const String& filename) {
   if (!SQLiteStatement(*this, "PRAGMA foreign_keys = OFF;").ExecuteCommand())
     DLOG(ERROR) << "SQLite database could not turn off foreign_keys";
 
-  return true;
+  return IsOpen();
 }
 
 void SQLiteDatabase::Close() {
@@ -210,7 +207,7 @@ bool SQLiteDatabase::ExecuteCommand(const String& sql) {
 }
 
 bool SQLiteDatabase::TableExists(const String& tablename) {
-  if (!db_)
+  if (!IsOpen())
     return false;
 
   String statement =
@@ -351,7 +348,7 @@ int SQLiteDatabase::AuthorizerFunction(void* user_data,
   return kSQLAuthDeny;
 }
 
-void SQLiteDatabase::SetAuthorizer(DatabaseAuthorizer* authorizer) {
+void SQLiteDatabase::SetAuthorizer(DatabaseAuthorizer* auth) {
   if (!db_) {
     NOTREACHED() << "Attempt to set an authorizer on a non-open SQL database";
     return;
@@ -359,18 +356,17 @@ void SQLiteDatabase::SetAuthorizer(DatabaseAuthorizer* authorizer) {
 
   MutexLocker locker(authorizer_lock_);
 
-  authorizer_ = authorizer;
+  authorizer_ = auth;
 
   EnableAuthorizer(true);
 }
 
 void SQLiteDatabase::EnableAuthorizer(bool enable) {
-  if (authorizer_ && enable) {
-    sqlite3_set_authorizer(db_, &SQLiteDatabase::AuthorizerFunction,
-                           authorizer_);
-  } else {
+  if (authorizer_ && enable)
+    sqlite3_set_authorizer(db_, SQLiteDatabase::AuthorizerFunction,
+                           authorizer_.Get());
+  else
     sqlite3_set_authorizer(db_, nullptr, nullptr);
-  }
 }
 
 bool SQLiteDatabase::IsAutoCommitOn() const {

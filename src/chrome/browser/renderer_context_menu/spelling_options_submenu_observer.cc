@@ -78,21 +78,18 @@ void SpellingOptionsSubMenuObserver::InitMenu(
                                      IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);
   submenu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 
-  if (dictionaries_.size() > 0) {
-    // Add a 'Use basic spell check' item in the sub menu.
+  if (num_selected_dictionaries_ > 0) {
+    // Add a 'Check spelling while typing' item in the sub menu.
     submenu_model_.AddCheckItem(
         IDC_CHECK_SPELLING_WHILE_TYPING,
         l10n_util::GetStringUTF16(
             IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING));
-
-    // Add a check item 'Use enhanced spell check'. This item is handled in
-    // SpellingMenuObserver.
-    Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());
-    RenderViewContextMenu::AddSpellCheckServiceItem(
-        &submenu_model_,
-        profile->GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable) &&
-            use_spelling_service_.GetValue());
   }
+
+  // Add a check item 'Ask Google for spelling suggestions'. This item is
+  // handled in SpellingMenuObserver.
+  RenderViewContextMenu::AddSpellCheckServiceItem(
+      &submenu_model_, use_spelling_service_.GetValue());
 
   proxy_->AddSubMenu(
       IDC_SPELLCHECK_MENU,
@@ -135,13 +132,11 @@ bool SpellingOptionsSubMenuObserver::IsCommandIdChecked(int command_id) {
     return dictionaries_[dictionary_index].used_for_spellcheck;
   }
 
-  // Check box for 'Use basic spell check'.
+  // Check box for 'Check Spelling while typing'.
   if (command_id == IDC_CHECK_SPELLING_WHILE_TYPING) {
     Profile* profile = Profile::FromBrowserContext(proxy_->GetBrowserContext());
     return profile->GetPrefs()->GetBoolean(
-               spellcheck::prefs::kSpellCheckEnable) &&
-           !profile->GetPrefs()->GetBoolean(
-               spellcheck::prefs::kSpellCheckUseSpellingService);
+        spellcheck::prefs::kSpellCheckEnable);
   }
 
   return false;
@@ -191,31 +186,14 @@ void SpellingOptionsSubMenuObserver::ExecuteCommand(int command_id) {
   }
 
   switch (command_id) {
-    case IDC_CHECK_SPELLING_WHILE_TYPING: {
-      bool spellCheckEnabled =
-          profile->GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable);
-      bool enhancedSpellCheckEnabled = profile->GetPrefs()->GetBoolean(
-          spellcheck::prefs::kSpellCheckUseSpellingService);
-
-      if (spellCheckEnabled && !enhancedSpellCheckEnabled) {
-        // User is turning off spell check
-        profile->GetPrefs()->SetBoolean(spellcheck::prefs::kSpellCheckEnable,
-                                        false);
-      } else if (enhancedSpellCheckEnabled) {
-        // Use is choosing 'basic' over 'enhanced'
-        profile->GetPrefs()->SetBoolean(spellcheck::prefs::kSpellCheckEnable,
-                                        true);
-        profile->GetPrefs()->SetBoolean(
-            spellcheck::prefs::kSpellCheckUseSpellingService, false);
-      } else {
-        // User is turning on spell check
-        profile->GetPrefs()->SetBoolean(spellcheck::prefs::kSpellCheckEnable,
-                                        true);
-      }
+    case IDC_CHECK_SPELLING_WHILE_TYPING:
+      profile->GetPrefs()->SetBoolean(
+          spellcheck::prefs::kSpellCheckEnable,
+          !profile->GetPrefs()->GetBoolean(
+              spellcheck::prefs::kSpellCheckEnable));
       break;
-    }
 
-    case IDC_SPELLCHECK_MULTI_LINGUAL: {
+    case IDC_SPELLCHECK_MULTI_LINGUAL:
       StringListPrefMember dictionaries_pref;
       dictionaries_pref.Init(spellcheck::prefs::kSpellCheckDictionaries,
                              profile->GetPrefs());
@@ -224,6 +202,5 @@ void SpellingOptionsSubMenuObserver::ExecuteCommand(int command_id) {
         all_languages.push_back(dictionary.language);
       dictionaries_pref.SetValue(all_languages);
       break;
-    }
   }
 }

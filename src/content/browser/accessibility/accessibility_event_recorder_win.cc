@@ -136,15 +136,15 @@ std::unique_ptr<AccessibilityEventRecorder> AccessibilityEventRecorder::Create(
       manager, pid, application_name_match_pattern);
 }
 
-std::vector<AccessibilityEventRecorder::TestPass>
+std::vector<AccessibilityEventRecorder::EventRecorderFactory>
 AccessibilityEventRecorder::GetTestPasses() {
   // In addition to the 'Blink' pass, Windows includes two accessibility APIs
   // that need to be tested independently (MSAA & UIA); the Blink pass uses the
   // same recorder as the MSAA pass.
   return {
-      {"blink", &AccessibilityEventRecorder::Create},
-      {"win", &AccessibilityEventRecorder::Create},
-      {"uia", &AccessibilityEventRecorderUia::CreateUia},
+      &AccessibilityEventRecorder::Create,
+      &AccessibilityEventRecorder::Create,
+      &AccessibilityEventRecorderUia::CreateUia,
   };
 }
 

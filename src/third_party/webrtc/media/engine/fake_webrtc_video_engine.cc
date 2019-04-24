@@ -57,6 +57,7 @@ int32_t FakeWebRtcVideoDecoder::InitDecode(const webrtc::VideoCodec*, int32_t) {
 
 int32_t FakeWebRtcVideoDecoder::Decode(const webrtc::EncodedImage&,
                                        bool,
+                                       const webrtc::CodecSpecificInfo*,
                                        int64_t) {
   num_frames_received_++;
   return WEBRTC_VIDEO_CODEC_OK;
@@ -149,7 +150,8 @@ int32_t FakeWebRtcVideoEncoder::InitEncode(
 
 int32_t FakeWebRtcVideoEncoder::Encode(
     const webrtc::VideoFrame& inputImage,
-    const std::vector<webrtc::VideoFrameType>* frame_types) {
+    const webrtc::CodecSpecificInfo* codecSpecificInfo,
+    const std::vector<webrtc::FrameType>* frame_types) {
   rtc::CritScope lock(&crit_);
   ++num_frames_encoded_;
   init_encode_event_.Set();
@@ -165,7 +167,10 @@ int32_t FakeWebRtcVideoEncoder::Release() {
   return WEBRTC_VIDEO_CODEC_OK;
 }
 
-void FakeWebRtcVideoEncoder::SetRates(const RateControlParameters& parameters) {
+int32_t FakeWebRtcVideoEncoder::SetRateAllocation(
+    const webrtc::VideoBitrateAllocation& allocation,
+    uint32_t framerate) {
+  return WEBRTC_VIDEO_CODEC_OK;
 }
 
 webrtc::VideoEncoder::EncoderInfo FakeWebRtcVideoEncoder::GetEncoderInfo()

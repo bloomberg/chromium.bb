@@ -12,8 +12,7 @@
 namespace v8 {
 namespace internal {
 
-class V8_EXPORT_PRIVATE RegExpMacroAssemblerPPC
-    : public NativeRegExpMacroAssembler {
+class RegExpMacroAssemblerPPC : public NativeRegExpMacroAssembler {
  public:
   RegExpMacroAssemblerPPC(Isolate* isolate, Zone* zone, Mode mode,
                           int registers_to_save);

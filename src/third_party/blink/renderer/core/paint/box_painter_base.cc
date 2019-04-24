@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_border_painter.h"
-#include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -23,7 +22,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -549,19 +547,10 @@ inline bool PaintFastBottomLayer(Node* node,
   if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
     if (info.image && info.image->IsImageResource()) {
       PaintTimingDetector::NotifyBackgroundImagePaint(
-          node, image, info.image,
+          node, image,
           paint_info.context.GetPaintController()
               .CurrentPaintChunkProperties());
     }
-  }
-  if (node &&
-      RuntimeEnabledFeatures::ElementTimingEnabled(&node->GetDocument()) &&
-      info.image && info.image->IsImageResource()) {
-    LocalDOMWindow* window = node->GetDocument().domWindow();
-    DCHECK(window);
-    ImageElementTiming::From(*window).NotifyBackgroundImagePainted(
-        node, info.image,
-        context.GetPaintController().CurrentPaintChunkProperties());
   }
   return true;
 }
@@ -682,18 +671,9 @@ void PaintFillLayerBackground(GraphicsContext& context,
     if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
       if (info.image && info.image->IsImageResource()) {
         PaintTimingDetector::NotifyBackgroundImagePaint(
-            node, image, info.image,
+            node, image,
             context.GetPaintController().CurrentPaintChunkProperties());
       }
-    }
-    if (node &&
-        RuntimeEnabledFeatures::ElementTimingEnabled(&node->GetDocument()) &&
-        info.image && info.image->IsImageResource()) {
-      LocalDOMWindow* window = node->GetDocument().domWindow();
-      DCHECK(window);
-      ImageElementTiming::From(*window).NotifyBackgroundImagePainted(
-          node, info.image,
-          context.GetPaintController().CurrentPaintChunkProperties());
     }
   }
 }

@@ -33,7 +33,7 @@ SystemNotificationHelper::~SystemNotificationHelper() {
 void SystemNotificationHelper::Display(
     const message_center::Notification& notification) {
   GetSystemService()->Display(NotificationHandler::Type::TRANSIENT,
-                              notification, /*metadata=*/nullptr);
+                              notification);
 }
 
 void SystemNotificationHelper::Close(const std::string& notification_id) {

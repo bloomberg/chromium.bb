@@ -532,7 +532,7 @@ blink::WebGestureEvent WebGestureEventBuilder::Build(NSEvent* event,
   result.SetModifiers(ModifiersFromEvent(event));
   result.SetTimeStamp(ui::EventTimeStampFromSeconds([event timestamp]));
 
-  result.SetSourceDevice(blink::WebGestureDevice::kTouchpad);
+  result.SetSourceDevice(blink::kWebGestureDeviceTouchpad);
 
   switch ([event type]) {
     case NSEventTypeMagnify:

@@ -55,7 +55,6 @@
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
-#include "content/renderer/media/webrtc/transmission_encoding_info_handler.h"
 #include "content/renderer/media_capture_from_element/canvas_capture_handler.h"
 #include "content/renderer/media_capture_from_element/html_audio_element_capturer_source.h"
 #include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
@@ -108,7 +107,6 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/sqlite/sqlite3.h"
-#include "ui/gl/buildflags.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)
@@ -139,8 +137,8 @@ using blink::WebMediaStreamCenter;
 using blink::WebMediaStreamTrack;
 using blink::WebRTCPeerConnectionHandler;
 using blink::WebRTCPeerConnectionHandlerClient;
-using blink::WebSize;
 using blink::WebStorageNamespace;
+using blink::WebSize;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebVector;
@@ -370,12 +368,13 @@ bool RendererBlinkPlatformImpl::sandboxEnabled() {
       switches::kSingleProcess);
 }
 
-uint64_t RendererBlinkPlatformImpl::VisitedLinkHash(const char* canonical_url,
-                                                    size_t length) {
+unsigned long long RendererBlinkPlatformImpl::VisitedLinkHash(
+    const char* canonical_url,
+    size_t length) {
   return GetContentClient()->renderer()->VisitedLinkHash(canonical_url, length);
 }
 
-bool RendererBlinkPlatformImpl::IsLinkVisited(uint64_t link_hash) {
+bool RendererBlinkPlatformImpl::IsLinkVisited(unsigned long long link_hash) {
   return GetContentClient()->renderer()->IsLinkVisited(link_hash);
 }
 
@@ -525,12 +524,12 @@ WebString RendererBlinkPlatformImpl::FileSystemCreateOriginIdentifier(
 
 //------------------------------------------------------------------------------
 
-base::File RendererBlinkPlatformImpl::DatabaseOpenFile(
+Platform::FileHandle RendererBlinkPlatformImpl::DatabaseOpenFile(
     const WebString& vfs_file_name,
     int desired_flags) {
   base::File file;
   GetWebDatabaseHost().OpenFile(vfs_file_name.Utf16(), desired_flags, &file);
-  return file;
+  return file.TakePlatformFile();
 }
 
 int RendererBlinkPlatformImpl::DatabaseDeleteFile(
@@ -541,21 +540,21 @@ int RendererBlinkPlatformImpl::DatabaseDeleteFile(
   return rv;
 }
 
-int32_t RendererBlinkPlatformImpl::DatabaseGetFileAttributes(
+long RendererBlinkPlatformImpl::DatabaseGetFileAttributes(
     const WebString& vfs_file_name) {
   int32_t rv = -1;
   GetWebDatabaseHost().GetFileAttributes(vfs_file_name.Utf16(), &rv);
   return rv;
 }
 
-int64_t RendererBlinkPlatformImpl::DatabaseGetFileSize(
+long long RendererBlinkPlatformImpl::DatabaseGetFileSize(
     const WebString& vfs_file_name) {
   int64_t rv = 0LL;
   GetWebDatabaseHost().GetFileSize(vfs_file_name.Utf16(), &rv);
   return rv;
 }
 
-int64_t RendererBlinkPlatformImpl::DatabaseGetSpaceAvailableForOrigin(
+long long RendererBlinkPlatformImpl::DatabaseGetSpaceAvailableForOrigin(
     const blink::WebSecurityOrigin& origin) {
   int64_t rv = 0LL;
   GetWebDatabaseHost().GetSpaceAvailable(origin, &rv);
@@ -564,7 +563,7 @@ int64_t RendererBlinkPlatformImpl::DatabaseGetSpaceAvailableForOrigin(
 
 bool RendererBlinkPlatformImpl::DatabaseSetFileSize(
     const WebString& vfs_file_name,
-    int64_t size) {
+    long long size) {
   bool rv = false;
   GetWebDatabaseHost().SetFileSize(vfs_file_name.Utf16(), size, &rv);
   return rv;
@@ -775,15 +774,14 @@ void RendererBlinkPlatformImpl::CreateHTMLVideoElementCapturer(
   AddVideoTrackToMediaStream(
       HtmlVideoElementCapturerSource::CreateFromWebMediaPlayerImpl(
           web_media_player, content::RenderThread::Get()->GetIOTaskRunner(),
-          std::move(task_runner)),
+          task_runner),
       false,  // is_remote
       web_media_stream);
 }
 
 void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
     WebMediaStream* web_media_stream,
-    WebMediaPlayer* web_media_player,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    WebMediaPlayer* web_media_player) {
   DCHECK(web_media_stream);
   DCHECK(web_media_player);
 
@@ -798,7 +796,7 @@ void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
 
   blink::MediaStreamAudioSource* const media_stream_source =
       HtmlAudioElementCapturerSource::CreateFromWebMediaPlayerImpl(
-          web_media_player, std::move(task_runner));
+          web_media_player);
 
   // Takes ownership of |media_stream_source|.
   web_media_stream_source.SetPlatformSource(
@@ -851,19 +849,6 @@ RendererBlinkPlatformImpl::GetRtpReceiverCapabilities(
 void RendererBlinkPlatformImpl::UpdateWebRTCAPICount(
     blink::WebRTCAPIName api_name) {
   UpdateWebRTCMethodCount(api_name);
-}
-
-base::Optional<double>
-RendererBlinkPlatformImpl::GetWebRtcMaxCaptureFrameRate() {
-  const std::string max_fps_str =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kWebRtcMaxCaptureFramerate);
-  if (!max_fps_str.empty()) {
-    double value;
-    if (base::StringToDouble(max_fps_str, &value) && value >= 0.0)
-      return value;
-  }
-  return base::nullopt;
 }
 
 //------------------------------------------------------------------------------
@@ -931,10 +916,8 @@ RendererBlinkPlatformImpl::CreateOffscreenGraphicsContext3DProvider(
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
   attributes.enable_raster_interface = web_attributes.enable_raster_interface;
-
-  attributes.gpu_preference = web_attributes.prefer_integrated_gpu
-                                  ? gl::PreferIntegratedGpu
-                                  : gl::PreferDiscreteGpu;
+  // Prefer discrete GPU for WebGL.
+  attributes.gpu_preference = gl::PreferDiscreteGpu;
 
   attributes.fail_if_major_perf_caveat =
       web_attributes.fail_if_major_performance_caveat;
@@ -987,15 +970,11 @@ std::unique_ptr<blink::WebGraphicsContext3DProvider>
 RendererBlinkPlatformImpl::CreateWebGPUGraphicsContext3DProvider(
     const blink::WebURL& top_document_web_url,
     blink::Platform::GraphicsInfo* gl_info) {
-#if !BUILDFLAG(USE_DAWN)
-  return nullptr;
-#else
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
       RenderThreadImpl::current()->EstablishGpuChannelSync());
   if (!gpu_channel_host) {
     std::string error_message(
-        "WebGPUGraphicsContext3DProvider creation failed, GpuChannelHost "
-        "creation failed");
+        "OffscreenContext Creation failed, GpuChannelHost creation failed");
     gl_info->error_message = WebString::FromUTF8(error_message);
     return nullptr;
   }
@@ -1018,11 +997,10 @@ RendererBlinkPlatformImpl::CreateWebGPUGraphicsContext3DProvider(
           kGpuStreamIdDefault, kGpuStreamPriorityDefault,
           gpu::kNullSurfaceHandle, GURL(top_document_web_url),
           automatic_flushes, support_locking, support_grcontext,
-          gpu::SharedMemoryLimits::ForWebGPUContext(), attributes,
+          gpu::SharedMemoryLimits(), attributes,
           ws::command_buffer_metrics::ContextType::WEBGPU));
   return std::make_unique<WebGraphicsContext3DProviderImpl>(
       std::move(provider));
-#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1068,17 +1046,6 @@ blink::WebPushProvider* RendererBlinkPlatformImpl::PushProvider() {
 
 //------------------------------------------------------------------------------
 
-blink::WebTransmissionEncodingInfoHandler*
-RendererBlinkPlatformImpl::TransmissionEncodingInfoHandler() {
-  if (!web_transmission_encoding_info_handler_) {
-    web_transmission_encoding_info_handler_.reset(
-        new content::TransmissionEncodingInfoHandler());
-  }
-  return web_transmission_encoding_info_handler_.get();
-}
-
-//------------------------------------------------------------------------------
-
 std::unique_ptr<blink::WebDedicatedWorkerHostFactoryClient>
 RendererBlinkPlatformImpl::CreateDedicatedWorkerHostFactoryClient(
     blink::WebDedicatedWorker* worker,
@@ -1099,16 +1066,6 @@ void RendererBlinkPlatformImpl::WorkerContextCreated(
     const v8::Local<v8::Context>& worker) {
   GetContentClient()->renderer()->DidInitializeWorkerContextOnWorkerThread(
       worker);
-}
-
-//------------------------------------------------------------------------------
-
-void RendererBlinkPlatformImpl::RecordMetricsForBackgroundedRendererPurge() {
-  auto* render_thread = RenderThreadImpl::current();
-  // RenderThreadImpl is null in some tests.
-  if (!render_thread)
-    return;
-  render_thread->RecordMetricsForBackgroundedRendererPurge();
 }
 
 //------------------------------------------------------------------------------

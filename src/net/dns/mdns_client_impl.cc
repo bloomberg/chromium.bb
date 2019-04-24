@@ -136,7 +136,7 @@ MDnsConnection::MDnsConnection(MDnsConnection::Delegate* delegate)
 
 MDnsConnection::~MDnsConnection() = default;
 
-int MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
+bool MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
   std::vector<std::unique_ptr<DatagramServerSocket>> sockets;
   socket_factory->CreateSockets(&sockets);
 
@@ -148,11 +148,9 @@ int MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
   // All unbound sockets need to be bound before processing untrusted input.
   // This is done for security reasons, so that an attacker can't get an unbound
   // socket.
-  int last_failure = ERR_FAILED;
   for (size_t i = 0; i < socket_handlers_.size();) {
     int rv = socket_handlers_[i]->Start();
     if (rv != OK) {
-      last_failure = rv;
       socket_handlers_.erase(socket_handlers_.begin() + i);
       VLOG(1) << "Start failed, socket=" << i << ", error=" << rv;
     } else {
@@ -160,8 +158,7 @@ int MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
     }
   }
   VLOG(1) << "Sockets ready:" << socket_handlers_.size();
-  DCHECK_NE(ERR_IO_PENDING, last_failure);
-  return socket_handlers_.empty() ? last_failure : OK;
+  return !socket_handlers_.empty();
 }
 
 void MDnsConnection::Send(const scoped_refptr<IOBuffer>& buffer,
@@ -206,7 +203,7 @@ MDnsClientImpl::Core::Core(base::Clock* clock, base::OneShotTimer* timer)
 
 MDnsClientImpl::Core::~Core() = default;
 
-int MDnsClientImpl::Core::Init(MDnsSocketFactory* socket_factory) {
+bool MDnsClientImpl::Core::Init(MDnsSocketFactory* socket_factory) {
   return connection_->Init(socket_factory);
 }
 
@@ -375,10 +372,6 @@ void MDnsClientImpl::Core::CleanupObserverList(const ListenerKey& key) {
 }
 
 void MDnsClientImpl::Core::ScheduleCleanup(base::Time cleanup) {
-  // If cache is overfilled. Force an immediate cleanup.
-  if (cache_.IsCacheOverfilled())
-    cleanup = clock_->Now();
-
   // Cleanup is already scheduled, no need to do anything.
   if (cleanup == scheduled_cleanup_) {
     return;
@@ -427,15 +420,14 @@ MDnsClientImpl::MDnsClientImpl(base::Clock* clock,
 
 MDnsClientImpl::~MDnsClientImpl() = default;
 
-int MDnsClientImpl::StartListening(MDnsSocketFactory* socket_factory) {
+bool MDnsClientImpl::StartListening(MDnsSocketFactory* socket_factory) {
   DCHECK(!core_.get());
   core_.reset(new Core(clock_, cleanup_timer_.get()));
-  int rv = core_->Init(socket_factory);
-  if (rv != OK) {
-    DCHECK_NE(ERR_IO_PENDING, rv);
+  if (!core_->Init(socket_factory)) {
     core_.reset();
+    return false;
   }
-  return rv;
+  return true;
 }
 
 void MDnsClientImpl::StopListening() {
@@ -443,7 +435,7 @@ void MDnsClientImpl::StopListening() {
 }
 
 bool MDnsClientImpl::IsListening() const {
-  return core_.get() != nullptr;
+  return core_.get() != NULL;
 }
 
 std::unique_ptr<MDnsListener> MDnsClientImpl::CreateListener(
@@ -683,9 +675,9 @@ void MDnsTransactionImpl::OnRecordUpdate(MDnsListener::UpdateType update,
 void MDnsTransactionImpl::SignalTransactionOver() {
   DCHECK(started_);
   if (flags_ & MDnsTransaction::SINGLE_RESULT) {
-    TriggerCallback(MDnsTransaction::RESULT_NO_RESULTS, nullptr);
+    TriggerCallback(MDnsTransaction::RESULT_NO_RESULTS, NULL);
   } else {
-    TriggerCallback(MDnsTransaction::RESULT_DONE, nullptr);
+    TriggerCallback(MDnsTransaction::RESULT_DONE, NULL);
   }
 }
 
@@ -708,7 +700,7 @@ void MDnsTransactionImpl::ServeRecordsFromCache() {
             records.front()->rdata<NsecRecordRdata>();
         DCHECK(rdata);
         if (!rdata->GetBit(rrtype_))
-          weak_this->TriggerCallback(MDnsTransaction::RESULT_NSEC, nullptr);
+          weak_this->TriggerCallback(MDnsTransaction::RESULT_NSEC, NULL);
       }
     }
 #endif
@@ -733,7 +725,7 @@ bool MDnsTransactionImpl::QueryAndListen() {
 }
 
 void MDnsTransactionImpl::OnNsecRecord(const std::string& name, unsigned type) {
-  TriggerCallback(RESULT_NSEC, nullptr);
+  TriggerCallback(RESULT_NSEC, NULL);
 }
 
 void MDnsTransactionImpl::OnCachePurged() {

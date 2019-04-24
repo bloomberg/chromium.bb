@@ -78,9 +78,7 @@ class OfflineContentAggregator : public OfflineContentProvider,
                          VisualsCallback callback) override;
   void GetShareInfoForItem(const ContentId& id,
                            ShareCallback callback) override;
-  void RenameItem(const ContentId& id,
-                  const std::string& name,
-                  RenameCallback callback) override;
+
   void AddObserver(OfflineContentProvider::Observer* observer) override;
   void RemoveObserver(OfflineContentProvider::Observer* observer) override;
 

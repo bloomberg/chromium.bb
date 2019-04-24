@@ -82,6 +82,9 @@ class MixerInput {
   };
 
   MixerInput(Source* source,
+             int output_samples_per_second,
+             int read_size,
+             RenderingDelay initial_rendering_delay,
              FilterGroup* filter_group);
   ~MixerInput();
 

@@ -31,8 +31,9 @@ ClientMemory* FakeScriptExecutorDelegate::GetClientMemory() {
   return &memory_;
 }
 
-TriggerContext* FakeScriptExecutorDelegate::GetTriggerContext() {
-  return &trigger_context_;
+const std::map<std::string, std::string>&
+FakeScriptExecutorDelegate::GetParameters() {
+  return parameters_;
 }
 
 autofill::PersonalDataManager*
@@ -85,19 +86,6 @@ void FakeScriptExecutorDelegate::SetPaymentRequestOptions(
   payment_request_options_ = std::move(options);
 }
 
-bool FakeScriptExecutorDelegate::HasNavigationError() {
-  return navigation_error_;
-}
+void FakeScriptExecutorDelegate::CancelPaymentRequest() {}
 
-bool FakeScriptExecutorDelegate::IsNavigatingToNewDocument() {
-  return navigating_to_new_document_;
-}
-
-void FakeScriptExecutorDelegate::AddListener(Listener* listener) {
-  listeners_.insert(listener);
-}
-
-void FakeScriptExecutorDelegate::RemoveListener(Listener* listener) {
-  listeners_.erase(listener);
-}
 }  // namespace autofill_assistant

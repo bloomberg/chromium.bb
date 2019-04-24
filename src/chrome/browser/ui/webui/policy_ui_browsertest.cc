@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -58,7 +59,8 @@ class PolicySchemaAvailableWaiter : public policy::SchemaRegistry::Observer {
  public:
   PolicySchemaAvailableWaiter(Profile* profile,
                               const policy::PolicyNamespace& policy_namespace)
-      : registry_(profile->GetPolicySchemaRegistryService()->registry()),
+      : registry_(policy::SchemaRegistryServiceFactory::GetForContext(profile)
+                      ->registry()),
         policy_namespace_(policy_namespace) {}
 
   ~PolicySchemaAvailableWaiter() override { registry_->RemoveObserver(this); }
@@ -325,7 +327,7 @@ void PolicyUITest::VerifyExportingPolicies(
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(content::ExecuteScript(contents, javascript));
 
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::TaskScheduler::GetInstance()->FlushForTesting();
   // Open the created file.
   base::ScopedAllowBlockingForTesting allow_blocking;
   std::string file_contents;

@@ -132,7 +132,7 @@ struct OperandAsKeyLess {
 // Assessments associated with a basic block.
 class BlockAssessments : public ZoneObject {
  public:
-  using OperandMap = ZoneMap<InstructionOperand, Assessment*, OperandAsKeyLess>;
+  typedef ZoneMap<InstructionOperand, Assessment*, OperandAsKeyLess> OperandMap;
   explicit BlockAssessments(Zone* zone)
       : map_(zone), map_for_moves_(zone), zone_(zone) {}
   void Drop(InstructionOperand operand) { map_.erase(operand); }
@@ -208,7 +208,7 @@ class RegisterAllocatorVerifier final : public ZoneObject {
     OperandConstraint* operand_constraints_;
   };
 
-  using Constraints = ZoneVector<InstructionConstraint>;
+  typedef ZoneVector<InstructionConstraint> Constraints;
 
   class DelayedAssessments : public ZoneObject {
    public:

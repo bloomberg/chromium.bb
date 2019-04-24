@@ -341,8 +341,7 @@
 
     if (!binding.ReadableStreamDefaultControllerCanCloseOrEnqueue(
             readableController)) {
-      throw binding.getReadableStreamEnqueueError(stream[_readable],
-                                                  readableController);
+      throw binding.getReadableStreamEnqueueError(stream[_readable]);
     }
 
     try {

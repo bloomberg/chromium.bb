@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
-#include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/html/html_br_element.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -74,7 +73,6 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/svg/svg_image_element.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -412,24 +410,6 @@ bool HasRichlyEditableStyle(const Node& node) {
   return HasEditableLevel(node, kRichlyEditable);
 }
 
-// This method is copied from WebElement::IsEditable.
-// TODO(dglazkov): Remove. Consumers of this code should use
-// Node:hasEditableStyle.  http://crbug.com/612560
-bool IsEditableElement(const Node& node) {
-  if (HasEditableStyle(node))
-    return true;
-
-  if (auto* text_control = ToTextControlOrNull(&node)) {
-    if (!text_control->IsDisabledOrReadOnly())
-      return true;
-  }
-
-  if (auto* element = ToElementOrNull(const_cast<Node*>(&node)))
-    return EqualIgnoringASCIICase(element->getAttribute(kRoleAttr), "textbox");
-
-  return false;
-}
-
 bool IsRootEditableElement(const Node& node) {
   return HasEditableStyle(node) && node.IsElementNode() &&
          (!node.parentNode() || !HasEditableStyle(*node.parentNode()) ||
@@ -448,11 +428,14 @@ Element* RootEditableElement(const Node& node) {
   return ToElement(const_cast<Node*>(result));
 }
 
-ContainerNode* HighestEditableRoot(const Position& position) {
+ContainerNode* HighestEditableRoot(
+    const Position& position,
+    Element* (*root_editable_element_of)(const Position&),
+    bool (*has_editable_style)(const Node&)) {
   if (position.IsNull())
     return nullptr;
 
-  ContainerNode* highest_root = RootEditableElementOf(position);
+  ContainerNode* highest_root = root_editable_element_of(position);
   if (!highest_root)
     return nullptr;
 
@@ -461,7 +444,7 @@ ContainerNode* HighestEditableRoot(const Position& position) {
 
   ContainerNode* node = highest_root->parentNode();
   while (node) {
-    if (HasEditableStyle(*node))
+    if (has_editable_style(*node))
       highest_root = node;
     if (IsHTMLBodyElement(*node))
       break;
@@ -1002,6 +985,19 @@ Element* EnclosingBlockFlowElement(const Node& node) {
   return nullptr;
 }
 
+EUserSelect UsedValueOfUserSelect(const Node& node) {
+  if (node.IsHTMLElement() && ToHTMLElement(node).IsTextControl())
+    return EUserSelect::kText;
+  if (!node.GetLayoutObject())
+    return EUserSelect::kNone;
+
+  const ComputedStyle* style = node.GetLayoutObject()->Style();
+  if (style->UserModify() != EUserModify::kReadOnly)
+    return EUserSelect::kText;
+
+  return style->UserSelect();
+}
+
 template <typename Strategy>
 TextDirection DirectionOfEnclosingBlockOfAlgorithm(
     const PositionTemplate<Strategy>& position) {
@@ -1258,7 +1254,7 @@ HTMLElement* CreateDefaultParagraphElement(Document& document) {
     case EditorParagraphSeparator::kIsDiv:
       return HTMLDivElement::Create(document);
     case EditorParagraphSeparator::kIsP:
-      return MakeGarbageCollected<HTMLParagraphElement>(document);
+      return HTMLParagraphElement::Create(document);
   }
 
   NOTREACHED();
@@ -1565,9 +1561,9 @@ FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect& caret_rect) {
 }
 
 const StaticRangeVector* TargetRangesForInputEvent(const Node& node) {
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited. see http://crbug.com/590369 for more details.
-  node.GetDocument().UpdateStyleAndLayout();
+  node.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (!HasRichlyEditableStyle(node))
     return nullptr;
   const EphemeralRange& range =
@@ -1720,7 +1716,6 @@ void WriteImageNodeToClipboard(const Node& node, const String& title) {
       StripLeadingAndTrailingHTMLSpaces(GetUrlStringFromNode(node)));
   SystemClipboard::GetInstance().WriteImageWithTag(image.get(), url_string,
                                                    title);
-  SystemClipboard::GetInstance().CommitWrite();
 }
 
 Element* FindEventTargetFrom(LocalFrame& frame,

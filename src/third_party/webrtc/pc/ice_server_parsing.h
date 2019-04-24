@@ -17,7 +17,6 @@
 #include "api/rtc_error.h"
 #include "p2p/base/port.h"
 #include "p2p/base/port_allocator.h"
-#include "rtc_base/system/rtc_export.h"
 
 namespace webrtc {
 
@@ -27,10 +26,10 @@ namespace webrtc {
 //
 // Intended to be used to convert/validate the servers passed into a
 // PeerConnection through RTCConfiguration.
-RTC_EXPORT RTCErrorType
-ParseIceServers(const PeerConnectionInterface::IceServers& servers,
-                cricket::ServerAddresses* stun_servers,
-                std::vector<cricket::RelayServerConfig>* turn_servers);
+RTCErrorType ParseIceServers(
+    const PeerConnectionInterface::IceServers& servers,
+    cricket::ServerAddresses* stun_servers,
+    std::vector<cricket::RelayServerConfig>* turn_servers);
 
 }  // namespace webrtc
 

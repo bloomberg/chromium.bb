@@ -22,17 +22,15 @@
 
 #include "third_party/blink/renderer/core/svg/svg_animated_point_list.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
 SVGPolyElement::SVGPolyElement(const QualifiedName& tag_name,
                                Document& document)
     : SVGGeometryElement(tag_name, document),
-      points_(MakeGarbageCollected<SVGAnimatedPointList>(
-          this,
-          svg_names::kPointsAttr,
-          MakeGarbageCollected<SVGPointList>())) {
+      points_(SVGAnimatedPointList::Create(this,
+                                           svg_names::kPointsAttr,
+                                           SVGPointList::Create())) {
   AddToPropertyMap(points_);
 }
 

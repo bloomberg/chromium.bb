@@ -46,6 +46,10 @@ AudioNodeInput::~AudioNodeInput() {
   AudioNodeWiring::WillBeDestroyed(*this);
 }
 
+std::unique_ptr<AudioNodeInput> AudioNodeInput::Create(AudioHandler& handler) {
+  return base::WrapUnique(new AudioNodeInput(handler));
+}
+
 void AudioNodeInput::DidUpdate() {
   Handler().CheckNumberOfChannelsForInput(this);
 }

@@ -16,7 +16,8 @@
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
-#include "chromeos/dbus/permission_broker/permission_broker_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/permission_broker_client.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace device {
@@ -48,9 +49,8 @@ void SerialIoHandler::Open(const mojom::SerialConnectionOptions& options,
   MergeConnectionOptions(options);
 
 #if defined(OS_CHROMEOS)
-  // Note: dbus clients are destroyed in PostDestroyThreads so passing |client|
-  // as unretained is safe.
-  auto* client = chromeos::PermissionBrokerClient::Get();
+  chromeos::PermissionBrokerClient* client =
+      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
   DCHECK(client) << "Could not get permission_broker client.";
   // PermissionBrokerClient should be called on the UI thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =

@@ -113,12 +113,13 @@ AllocationResult HeapTester::AllocateMapForTest(Isolate* isolate) {
 // This is the same as Factory::NewFixedArray, except it doesn't retry
 // on allocation failure.
 AllocationResult HeapTester::AllocateFixedArrayForTest(
-    Heap* heap, int length, AllocationType allocation) {
+    Heap* heap, int length, PretenureFlag pretenure) {
   DCHECK(length >= 0 && length <= FixedArray::kMaxLength);
   int size = FixedArray::SizeFor(length);
+  AllocationSpace space = heap->SelectSpace(pretenure);
   HeapObject obj;
   {
-    AllocationResult result = heap->AllocateRaw(size, allocation);
+    AllocationResult result = heap->AllocateRaw(size, Heap::SelectType(space));
     if (!result.To(&obj)) return result;
   }
   obj->set_map_after_allocation(ReadOnlyRoots(heap).fixed_array_map(),
@@ -148,12 +149,10 @@ HEAP_TEST(MarkCompactCollector) {
   const int arraysize = 100;
   AllocationResult allocation;
   do {
-    allocation =
-        AllocateFixedArrayForTest(heap, arraysize, AllocationType::kYoung);
+    allocation = AllocateFixedArrayForTest(heap, arraysize, NOT_TENURED);
   } while (!allocation.IsRetry());
   CcTest::CollectGarbage(NEW_SPACE);
-  AllocateFixedArrayForTest(heap, arraysize, AllocationType::kYoung)
-      .ToObjectChecked();
+  AllocateFixedArrayForTest(heap, arraysize, NOT_TENURED).ToObjectChecked();
 
   // keep allocating maps until it fails
   do {
@@ -358,8 +357,7 @@ TEST(Regress5829) {
   }
   CHECK(marking->IsMarking());
   marking->StartBlackAllocationForTesting();
-  Handle<FixedArray> array =
-      isolate->factory()->NewFixedArray(10, AllocationType::kOld);
+  Handle<FixedArray> array = isolate->factory()->NewFixedArray(10, TENURED);
   Address old_end = array->address() + array->Size();
   // Right trim the array without clearing the mark bits.
   array->set_length(9);

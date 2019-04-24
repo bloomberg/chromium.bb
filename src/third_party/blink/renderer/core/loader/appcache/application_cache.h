@@ -44,6 +44,10 @@ class ApplicationCache final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(ApplicationCache);
 
  public:
+  static ApplicationCache* Create(LocalFrame* frame) {
+    return MakeGarbageCollected<ApplicationCache>(frame);
+  }
+
   explicit ApplicationCache(LocalFrame*);
   ~ApplicationCache() override = default;
 

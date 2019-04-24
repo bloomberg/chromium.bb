@@ -34,7 +34,7 @@ namespace blink {
 
 using namespace html_names;
 
-HTMLTitleElement::HTMLTitleElement(Document& document)
+inline HTMLTitleElement::HTMLTitleElement(Document& document)
     : HTMLElement(kTitleTag, document),
       ignore_title_updates_when_children_change_(false) {}
 

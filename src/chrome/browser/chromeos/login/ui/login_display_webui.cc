@@ -178,6 +178,11 @@ void LoginDisplayWebUI::ShowWhitelistCheckFailedError() {
     webui_handler_->ShowWhitelistCheckFailedError();
 }
 
+void LoginDisplayWebUI::ShowUnrecoverableCrypthomeErrorDialog() {
+  if (webui_handler_)
+    webui_handler_->ShowUnrecoverableCrypthomeErrorDialog();
+}
+
 // LoginDisplayWebUI, NativeWindowDelegate implementation: ---------------------
 gfx::NativeWindow LoginDisplayWebUI::GetNativeWindow() const {
   return parent_window();

@@ -7,17 +7,18 @@
 
 #include <jni.h>
 #include "base/android/scoped_java_ref.h"
-#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_install_utils.h"
+
+namespace device {
+class ArCoreDevice;
+}
 
 namespace vr {
 
 class ArCoreJavaUtils : public ArCoreInstallUtils {
  public:
-  explicit ArCoreJavaUtils(
-      base::RepeatingCallback<void(bool)> ar_module_installation_callback,
-      base::RepeatingCallback<void(bool)> ar_core_installation_callback);
+  explicit ArCoreJavaUtils(device::ArCoreDevice* arcore_device);
   ~ArCoreJavaUtils() override;
   bool ShouldRequestInstallArModule() override;
   bool CanRequestInstallArModule() override;
@@ -45,9 +46,7 @@ class ArCoreJavaUtils : public ArCoreInstallUtils {
       int render_process_id,
       int render_frame_id);
 
-  base::RepeatingCallback<void(bool)> ar_module_installation_callback_;
-  base::RepeatingCallback<void(bool)> ar_core_installation_callback_;
-
+  device::ArCoreDevice* arcore_device_;
   base::android::ScopedJavaGlobalRef<jobject> j_arcore_java_utils_;
 };
 

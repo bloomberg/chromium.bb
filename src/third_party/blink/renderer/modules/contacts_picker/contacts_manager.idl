@@ -7,7 +7,7 @@
 [
     Exposed=Window,
     SecureContext,
-    RuntimeEnabled=ContactsManager
+    OriginTrialEnabled=ContactsManager
 ] interface ContactsManager {
     [CallWith=ScriptState] Promise<sequence<ContactInfo>> select(ContactsSelectOptions options);
 };

@@ -25,7 +25,7 @@ namespace base {
 // Not thread-safe.
 class V8_BASE_EXPORT RegionAllocator final {
  public:
-  using Address = uintptr_t;
+  typedef uintptr_t Address;
 
   static constexpr Address kAllocationFailure = static_cast<Address>(-1);
 
@@ -121,7 +121,7 @@ class V8_BASE_EXPORT RegionAllocator final {
     }
   };
   // All regions ordered by addresses.
-  using AllRegionsSet = std::set<Region*, AddressEndOrder>;
+  typedef std::set<Region*, AddressEndOrder> AllRegionsSet;
   AllRegionsSet all_regions_;
 
   struct SizeAddressOrder {

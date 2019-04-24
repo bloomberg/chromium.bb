@@ -65,7 +65,6 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -737,7 +736,8 @@ void AutofillManager::FillOrPreviewProfileForm(
         profile, *form_structure, *autofill_field, sync_state_);
 
     // Set up the information needed for an eventual refill of this form.
-    if (!form_structure->GetIdentifierForRefill().empty()) {
+    if (base::FeatureList::IsEnabled(features::kAutofillDynamicForms) &&
+        !form_structure->GetIdentifierForRefill().empty()) {
       auto& entry =
           filling_contexts_map_[form_structure->GetIdentifierForRefill()];
       auto filling_context = std::make_unique<FillingContext>();
@@ -1402,6 +1402,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
   if (itr != filling_contexts_map_.end())
     filling_context = itr->second.get();
   bool could_attempt_refill =
+      base::FeatureList::IsEnabled(features::kAutofillDynamicForms) &&
       filling_context != nullptr && !filling_context->attempted_refill &&
       !is_refill && !is_credit_card;
 
@@ -1511,12 +1512,8 @@ std::unique_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
 
   auto submitted_form = std::make_unique<FormStructure>(form);
   submitted_form->RetrieveFromCache(*cached_submitted_form,
-                                    /*should_keep_cached_value=*/false,
+                                    /*apply_is_autofilled=*/false,
                                     /*only_server_and_autofill_state=*/false);
-  if (value_from_dynamic_change_form_) {
-    submitted_form->set_value_from_dynamic_change_form(true);
-  }
-
   return submitted_form;
 }
 
@@ -2017,6 +2014,9 @@ void AutofillManager::FillFieldWithValue(AutofillField* autofill_field,
 }
 
 bool AutofillManager::ShouldTriggerRefill(const FormStructure& form_structure) {
+  if (!base::FeatureList::IsEnabled(features::kAutofillDynamicForms))
+    return false;
+
   // Should not refill if a form with the same name has not been filled before.
   auto itr =
       filling_contexts_map_.find(form_structure.GetIdentifierForRefill());

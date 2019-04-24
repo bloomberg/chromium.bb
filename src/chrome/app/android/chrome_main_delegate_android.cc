@@ -14,13 +14,10 @@
 #include "chrome/browser/android/chrome_startup_flags.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "components/policy/core/browser/android/android_combined_policy_provider.h"
-#include "components/startup_metric_utils/browser/startup_metric_utils.h"
-#include "content/public/browser/browser_main_runner.h"
-
-#if defined(SAFE_BROWSING_DB_REMOTE)
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
-#endif
+#include "components/startup_metric_utils/browser/startup_metric_utils.h"
+#include "content/public/browser/browser_main_runner.h"
 
 using safe_browsing::SafeBrowsingApiHandler;
 
@@ -35,11 +32,9 @@ ChromeMainDelegateAndroid::~ChromeMainDelegateAndroid() {
 }
 
 bool ChromeMainDelegateAndroid::BasicStartupComplete(int* exit_code) {
-#if defined(SAFE_BROWSING_DB_REMOTE)
   safe_browsing_api_handler_.reset(
       new safe_browsing::SafeBrowsingApiHandlerBridge());
   SafeBrowsingApiHandler::SetInstance(safe_browsing_api_handler_.get());
-#endif
 
   policy::android::AndroidCombinedPolicyProvider::SetShouldWaitForPolicy(true);
   SetChromeSpecificCommandLineFlags();
@@ -95,7 +90,5 @@ int ChromeMainDelegateAndroid::RunProcess(
 
 void ChromeMainDelegateAndroid::ProcessExiting(
     const std::string& process_type) {
-#if defined(SAFE_BROWSING_DB_REMOTE)
   SafeBrowsingApiHandler::SetInstance(nullptr);
-#endif
 }

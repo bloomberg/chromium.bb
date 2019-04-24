@@ -9,7 +9,6 @@
 
 #include <memory>
 #include <ostream>
-#include <string>
 #include <vector>
 
 #include "build/build_config.h"
@@ -19,7 +18,7 @@
 namespace ui {
 
 class AXTableInfo;
-struct AXLanguageInfo;
+class AXLanguageInfo;
 
 // One node in an AXTree.
 class AX_EXPORT AXNode final {
@@ -39,7 +38,6 @@ class AX_EXPORT AXNode final {
                                 const AXNode* ordered_set) = 0;
     virtual int32_t GetSetSize(const AXNode& node,
                                const AXNode* ordered_set) = 0;
-    virtual bool GetTreeUpdateInProgressState() const = 0;
   };
 
   // The constructor requires a parent, id, and index in parent, but
@@ -70,11 +68,7 @@ class AX_EXPORT AXNode final {
   int GetUnignoredIndexInParent() const;
 
   // Returns true if the node has any of the text related roles.
-  bool IsText() const;
-
-  // Returns true if the node has any line break related roles or is the child a
-  // node with line break related roles.
-  bool IsLineBreak() const;
+  bool IsTextNode() const;
 
   // Set the node's accessibility data. This may be done during initialization
   // or later when the node data changes.
@@ -282,23 +276,6 @@ class AX_EXPORT AXNode final {
   void GetTableCellColHeaders(std::vector<AXNode*>* col_headers) const;
   void GetTableCellRowHeaders(std::vector<AXNode*>* row_headers) const;
 
-  // Helper methods to check if a cell is an ARIA-1.1+ 'cell' or 'gridcell'
-  bool IsCellOrHeaderOfARIATable() const;
-  bool IsCellOrHeaderOfARIAGrid() const;
-
-  // Return an object containing information about the languages used.
-  // Callers should not retain this pointer, instead they should request it
-  // every time it is needed.
-  //
-  // Clients likely want to use GetLanguage instead.
-  //
-  // Returns nullptr if the node has no language info.
-  AXLanguageInfo* GetLanguageInfo();
-
-  // This should only be called by the LabelLanguageForSubtree and is used as
-  // part of the language detection feature.
-  void SetLanguageInfo(AXLanguageInfo* lang_info);
-
  private:
   // Computes the text offset where each line starts by traversing all child
   // leaf nodes.
@@ -318,6 +295,15 @@ class AX_EXPORT AXNode final {
   AXNodeData data_;
 
   std::unique_ptr<AXLanguageInfo> language_info_;
+
+  // Return an object containing information about the languages used.
+  // Will walk up tree if needed to determine language.
+  //
+  // Clients should not retain this pointer, instead they should request it
+  // every time it is needed.
+  //
+  // Returns nullptr if the node has no detectable language.
+  const AXLanguageInfo* GetLanguageInfo();
 };
 
 AX_EXPORT std::ostream& operator<<(std::ostream& stream, const AXNode& node);

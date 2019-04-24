@@ -45,10 +45,30 @@ public:
         to add an array of uniforms. */
     UniformHandle addUniform(uint32_t visibility,
                              GrSLType type,
+                             GrSLPrecision precision,
                              const char* name,
                              const char** outName = nullptr) {
         SkASSERT(!GrSLTypeIsCombinedSamplerType(type));
-        return this->addUniformArray(visibility, type, name, 0, outName);
+        return this->addUniformArray(visibility, type, precision, name, 0, outName);
+    }
+
+    UniformHandle addUniform(uint32_t visibility,
+                             GrSLType type,
+                             const char* name,
+                             const char** outName = nullptr) {
+        return this->addUniform(visibility, type, kDefault_GrSLPrecision, name, outName);
+    }
+
+    UniformHandle addUniformArray(uint32_t visibility,
+                                  GrSLType type,
+                                  GrSLPrecision precision,
+                                  const char* name,
+                                  int arrayCount,
+                                  const char** outName = nullptr) {
+        SkASSERT(!GrSLTypeIsCombinedSamplerType(type));
+        bool mangle = strncmp(name, GR_NO_MANGLE_PREFIX, strlen(GR_NO_MANGLE_PREFIX));
+        return this->internalAddUniformArray(visibility, type, precision, name, mangle, arrayCount,
+                                             outName);
     }
 
     UniformHandle addUniformArray(uint32_t visibility,
@@ -58,7 +78,8 @@ public:
                                   const char** outName = nullptr) {
         SkASSERT(!GrSLTypeIsCombinedSamplerType(type));
         bool mangle = strncmp(name, GR_NO_MANGLE_PREFIX, strlen(GR_NO_MANGLE_PREFIX));
-        return this->internalAddUniformArray(visibility, type, name, mangle, arrayCount, outName);
+        return this->internalAddUniformArray(visibility, type, kDefault_GrSLPrecision, name, mangle,
+                                             arrayCount, outName);
     }
 
     virtual const GrShaderVar& getUniformVariable(UniformHandle u) const = 0;
@@ -83,6 +104,7 @@ private:
 
     virtual UniformHandle internalAddUniformArray(uint32_t visibility,
                                                   GrSLType type,
+                                                  GrSLPrecision precision,
                                                   const char* name,
                                                   bool mangleName,
                                                   int arrayCount,

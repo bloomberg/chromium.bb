@@ -108,8 +108,6 @@ uint32_t ClientImageTransferCacheEntry::Id() const {
 
 bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
   DCHECK_GE(data.size(), SerializedSize());
-  DCHECK_GT(pixmap_->width(), 0);
-  DCHECK_GT(pixmap_->height(), 0);
 
   // We don't need to populate the SerializeOptions here since the writer is
   // only used for serializing primitives.
@@ -155,7 +153,7 @@ bool ServiceImageTransferCacheEntry::BuildFromDecodedData(
   size_ = image_info.computeByteSize(row_bytes);
   if (size_ == SIZE_MAX)
     return false;
-  DCHECK_LE(size_, decoded_image.size());
+  DCHECK_EQ(size_, decoded_image.size());
 
   uint32_t width;
   uint32_t height;
@@ -183,14 +181,8 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   PaintOp::DeserializeOptions options(nullptr, nullptr, nullptr,
                                       &scratch_buffer);
   PaintOpReader reader(data.data(), data.size(), options);
-  SkColorType color_type = kUnknown_SkColorType;
+  SkColorType color_type;
   reader.Read(&color_type);
-
-  if (color_type == kUnknown_SkColorType ||
-      color_type == kRGB_101010x_SkColorType ||
-      color_type > kLastEnum_SkColorType)
-    return false;
-
   uint32_t width;
   reader.Read(&width);
   uint32_t height;
@@ -200,6 +192,7 @@ bool ServiceImageTransferCacheEntry::Deserialize(
   has_mips_ = needs_mips;
   size_t pixel_size;
   reader.ReadSize(&pixel_size);
+  size_ = data.size();
   sk_sp<SkColorSpace> pixmap_color_space;
   reader.Read(&pixmap_color_space);
   sk_sp<SkColorSpace> target_color_space;
@@ -220,13 +213,6 @@ bool ServiceImageTransferCacheEntry::Deserialize(
     return false;
 
   DCHECK(SkIsAlign4(reinterpret_cast<uintptr_t>(pixel_data)));
-
-  if (width == 0 || height == 0)
-    return false;
-
-  // Match GrTexture::onGpuMemorySize so that memory traces agree.
-  auto gr_mips = has_mips_ ? GrMipMapped::kYes : GrMipMapped::kNo;
-  size_ = GrContext::ComputeTextureSize(color_type, width, height, gr_mips);
 
   // Const-cast away the "volatile" on |pixel_data|. We specifically understand
   // that a malicious caller may change our pixels under us, and are OK with

@@ -21,6 +21,8 @@ class MockDisplayClient : public mojom::DisplayClient {
   mojom::DisplayClientPtr BindInterfacePtr();
 
   // mojom::DisplayClient implementation.
+  MOCK_METHOD1(DidSwapAfterSnapshotRequestReceived,
+               void(const std::vector<ui::LatencyInfo>&));
 #if defined(OS_MACOSX)
   MOCK_METHOD1(OnDisplayReceivedCALayerParams, void(const gfx::CALayerParams&));
 #endif

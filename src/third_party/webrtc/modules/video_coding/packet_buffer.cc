@@ -17,6 +17,7 @@
 
 #include "absl/types/variant.h"
 #include "api/video/encoded_frame.h"
+#include "common_types.h"  // NOLINT(build/include)
 #include "common_video/h264/h264_common.h"
 #include "modules/rtp_rtcp/source/rtp_video_header.h"
 #include "modules/video_coding/codecs/h264/include/h264_globals.h"
@@ -125,7 +126,7 @@ bool PacketBuffer::InsertPacket(VCMPacket* packet) {
 
     int64_t now_ms = clock_->TimeInMilliseconds();
     last_received_packet_ms_ = now_ms;
-    if (packet->frameType == VideoFrameType::kVideoFrameKey)
+    if (packet->frameType == kVideoFrameKey)
       last_received_keyframe_packet_ms_ = now_ms;
 
     found_frames = FindFrames(seq_num);
@@ -377,11 +378,9 @@ std::vector<std::unique_ptr<RtpFrameObject>> PacketBuffer::FindFrames(
         const size_t first_packet_index = start_seq_num % size_;
         RTC_CHECK_LT(first_packet_index, size_);
         if (is_h264_keyframe) {
-          data_buffer_[first_packet_index].frameType =
-              VideoFrameType::kVideoFrameKey;
+          data_buffer_[first_packet_index].frameType = kVideoFrameKey;
         } else {
-          data_buffer_[first_packet_index].frameType =
-              VideoFrameType::kVideoFrameDelta;
+          data_buffer_[first_packet_index].frameType = kVideoFrameDelta;
         }
 
         // If this is not a keyframe, make sure there are no gaps in the

@@ -148,7 +148,7 @@ void URLRequestThrottlerEntry::DisableBackoffThrottling() {
 }
 
 void URLRequestThrottlerEntry::DetachManager() {
-  manager_ = nullptr;
+  manager_ = NULL;
 }
 
 bool URLRequestThrottlerEntry::ShouldRejectRequest(

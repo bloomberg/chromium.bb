@@ -6,35 +6,31 @@
 // format is:
 //  {BUG#} {MODIFIERS} : {TEST_NAME} = {PASS,FAIL,FLAKY,TIMEOUT,SKIP}
 //
-// MODIFIERS can be a combination of the below list, combined with a logical AND:
-//  WIN XP VISTA WIN7 WIN8 WIN10
-//  MAC LEOPARD SNOWLEOPARD LION MOUNTAINLION MAVERICKS YOSEMITE ELCAPITAN SIERRA HIGHSIERRA MOJAVE
-//  LINUX CHROMEOS ANDROID
+// MODIFIERS can be a combination of the below list:
+//  WIN XP VISTA WIN7 MAC LEOPARD SNOWLEOPARD LION LINUX CHROMEOS MOUNTAINLION
+//  MAVERICKS
 //  NVIDIA AMD INTEL
+//  0xabcd - GPU PCI device ID. Specifying a PCI id requires a vendor.
 //  DEBUG RELEASE
-//  D3D9 D3D11 OPENGL GLES VULKAN
-//  NEXUS5X PIXEL2
-//  QUADROP400
-//
+// TODO(jmadill): Add ANGLE Renderer selection modifiers
 //
 // TEST_NAME can be a specific test name, or have a '*' in the end, which
 // indicates a prefix matching.
 //
 // Examples:
-// fails on both windows and mac (crash)
-//  91530 WIN : context_lost_restored = SKIP
-//  91530 MAC : context_lost_restored = SKIP
-// fails on windows using NVIDIA GPUs
-//  91533 WIN NVIDIA : gl_min_uniforms = FAIL
-// fails on Nexus5X with GLES backend (hangs)
-//  91531 NEXUS5X GLES : conformance_more_* = SKIP
+//  91530 MAC WIN LINUX : context_lost_restored = TIMEOUT
+//  91533 WIN : gl_min_uniforms = FAIL
+//  91531 MAC WIN LINUX : conformance_more_* = SKIP
+//  91532 MAC NVIDIA 0x0640 : tex_image_and_sub_image_2d_with_video = PASS FAIL
 
 // Don't run these tests for faster turnover
-1101 : dEQP-GLES3.functional.flush_finish.* = SKIP
+998 DEBUG RELEASE : dEQP-GLES3.performance.* = SKIP
+998 DEBUG RELEASE : dEQP-GLES3.stress.* = SKIP
+1101 DEBUG RELEASE : dEQP-GLES3.functional.flush_finish.* = SKIP
 
 // Figure out why this caused this regression in Chrome:
 // https://bugs.chromium.org/p/chromium/issues/detail?id=833809#
-2321 : dEQP-GLES3.functional.state_query.fbo.framebuffer_unspecified_attachment_x_size_rbo = FAIL
+2321 DEBUG RELEASE : dEQP-GLES3.functional.state_query.fbo.framebuffer_unspecified_attachment_x_size_rbo = FAIL
 
 // TODO(jmadill): Figure out why these fail on the bots, but not locally.
 1108 WIN D3D11 : dEQP-GLES3.functional.shaders.struct.local.dynamic_loop_struct_array_fragment = FAIL
@@ -62,11 +58,6 @@
 2428 D3D11 NVIDIA : dEQP-GLES3.functional.fbo.invalidate.default.bind_all = SKIP
 2428 D3D11 NVIDIA : dEQP-GLES3.functional.polygon_offset.default_render_with_units = SKIP
 
-// Tests were being hidden by flakiness (anglebug.com/3271)
-3329 D3D11 NVIDIA : dEQP-GLES3.functional.transform_feedback.interpolation.flat.* = FAIL
-3329 D3D11 NVIDIA : dEQP-GLES3.functional.transform_feedback.basic_types.interleaved.triangles.* = FAIL
-3329 D3D11 NVIDIA : dEQP-GLES3.functional.transform_feedback.basic_types.separate.triangles.* = FAIL
-
 // Missing the SampleCmp instruction in vertex shaders.
 1435 WIN D3D11 : dEQP-GLES3.functional.shaders.texture_functions.texturelod.sampler2dshadow_vertex = FAIL
 1435 WIN D3D11 : dEQP-GLES3.functional.shaders.texture_functions.texturelodoffset.sampler2dshadow_vertex = FAIL
@@ -91,9 +82,6 @@
 1436 WIN D3D11 : dEQP-GLES3.functional.shaders.texture_functions.textureprojgradoffset.sampler2dshadow_vertex = FAIL
 1436 WIN D3D11 : dEQP-GLES3.functional.shaders.texture_functions.textureprojgradoffset.sampler2dshadow_fragment = FAIL
 
-// DrawBuffers test failing on D3D11.
-3298 WIN D3D11 : dEQP-GLES3.functional.shaders.fragdata.draw_buffers = FAIL
-
 // TODO(jmadill, cwallez): triage the failures below into permanent and temporary failures
 
 // Quadro P400
@@ -108,17 +96,16 @@
 2222 D3D11 NVIDIA : dEQP-GLES3.functional.texture.mipmap.cube.min_lod.nearest_nearest = FAIL
 
 // Failing everywhere
-2322 : dEQP-GLES3.functional.shaders.metamorphic.* = FAIL
-
-// Bind aliasing is not working currently
-3252 : dEQP-GLES3.functional.attribute_location.bind_aliasing.cond* = FAIL
-3252 : dEQP-GLES3.functional.attribute_location.bind_aliasing.max_cond* = FAIL
+2322 DEBUG RELEASE : dEQP-GLES3.functional.shaders.metamorphic.* = FAIL
 
 // Windows and Linux failures
-1095 WIN : dEQP-GLES3.functional.texture.mipmap.2d.projected.* = FAIL
-1095 LINUX : dEQP-GLES3.functional.texture.mipmap.2d.projected.* = FAIL
+1095 WIN LINUX : dEQP-GLES3.functional.texture.mipmap.2d.projected.* = FAIL
 
 // Windows only failure
+1092 WIN D3D11 : dEQP-GLES3.functional.shaders.texture_functions.textureoffset.sampler3d_fixed_fragment = FAIL
+1092 WIN D3D11 : dEQP-GLES3.functional.shaders.texture_functions.textureoffset.sampler3d_float_fragment = FAIL
+1092 WIN D3D11 : dEQP-GLES3.functional.shaders.texture_functions.textureprojoffset.sampler3d_fixed_fragment = FAIL
+1092 WIN D3D11 : dEQP-GLES3.functional.shaders.texture_functions.textureprojoffset.sampler3d_float_fragment = FAIL
 1096 WIN D3D11 : dEQP-GLES3.functional.fragment_ops.depth_stencil.stencil_depth_funcs.stencil_* = FAIL
 1096 WIN D3D11 : dEQP-GLES3.functional.fragment_ops.depth_stencil.stencil_ops.* = FAIL
 1096 WIN D3D11 : dEQP-GLES3.functional.fragment_ops.depth_stencil.write_mask.* = FAIL
@@ -184,19 +171,6 @@
 // Very small threshold issue. Could upstream a higher tolerance to dEQP.
 2323 WIN D3D11 : dEQP-GLES3.functional.texture.units.2_units.only_cube.7 = FAIL
 
-// Blit related failures on D3D11
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_dst_x = FAIL
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_dst_y = FAIL
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_src_x = FAIL
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_src_y = FAIL
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.out_of_bounds_linear = FAIL
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.out_of_bounds_reverse_dst_x_linear = FAIL
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.out_of_bounds_reverse_dst_y_linear = FAIL
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.out_of_bounds_reverse_src_dst_x_linear = FAIL
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.out_of_bounds_reverse_src_dst_y_linear = FAIL
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.out_of_bounds_reverse_src_x_linear = FAIL
-3297 WIN D3D11 : dEQP-GLES3.functional.fbo.blit.rect.out_of_bounds_reverse_src_y_linear = FAIL
-
 // Windows AMD specific failures
 1633 WIN D3D11 AMD : dEQP-GLES3.functional.fbo.blit.depth_stencil.depth24_stencil8_scale = FAIL
 1633 WIN D3D11 AMD : dEQP-GLES3.functional.fbo.blit.depth_stencil.depth24_stencil8_stencil_only = FAIL
@@ -255,8 +229,7 @@
 2349 D3D11 INTEL : dEQP-GLES3.functional.rasterization.fbo.rbo_multisample_max.interpolation.lines = FAIL
 
 // Failing Tests on Windows and Mac on Intel HD 630
-2137 WIN INTEL : dEQP-GLES3.functional.fbo.color.repeated_clear.sample.tex2d.* = FAIL
-2137 MAC INTEL : dEQP-GLES3.functional.fbo.color.repeated_clear.sample.tex2d.* = FAIL
+2137 WIN MAC INTEL : dEQP-GLES3.functional.fbo.color.repeated_clear.sample.tex2d.* = FAIL
 
 // Linux only failures
 
@@ -268,6 +241,12 @@
 1323 LINUX OPENGL : dEQP-GLES3.functional.fbo.depth.depth_write_clamp.depth_component32f = FAIL
 1323 LINUX OPENGL : dEQP-GLES3.functional.fbo.depth.depth_write_clamp.depth32f_stencil8 = FAIL
 1323 LINUX OPENGL : dEQP-GLES3.functional.rasterization.fbo.rbo_multisample_max.primitives.points = FAIL
+1323 LINUX OPENGL : dEQP-GLES3.functional.texture.mipmap.2d.projected.linear_linear_clamp = FAIL
+1323 LINUX OPENGL : dEQP-GLES3.functional.texture.mipmap.2d.projected.linear_linear_mirror = FAIL
+1323 LINUX OPENGL : dEQP-GLES3.functional.texture.mipmap.2d.projected.linear_linear_repeat = FAIL
+1323 LINUX OPENGL : dEQP-GLES3.functional.texture.mipmap.2d.projected.nearest_linear_clamp = FAIL
+1323 LINUX OPENGL : dEQP-GLES3.functional.texture.mipmap.2d.projected.nearest_linear_mirror = FAIL
+1323 LINUX OPENGL : dEQP-GLES3.functional.texture.mipmap.2d.projected.nearest_linear_repeat = FAIL
 
 // While loops with 'continue' seem flaky on Linux. (Possibly all GL renderers)
 1324 LINUX OPENGL : dEQP-GLES3.functional.shaders.loops.while_constant_iterations.conditional_continue_vertex = FAIL
@@ -331,13 +310,6 @@
 1324 LINUX OPENGL : dEQP-GLES3.functional.shaders.loops.do_while_dynamic_iterations.mixed_break_continue_vertex = FAIL
 1324 LINUX OPENGL : dEQP-GLES3.functional.shaders.loops.do_while_dynamic_iterations.mixed_break_continue_fragment = FAIL
 
-// Polygon offset failures
-3304 LINUX OPENGL : dEQP-GLES3.functional.polygon_offset.float32_factor_1_slope = FAIL
-3304 LINUX OPENGL : dEQP-GLES3.functional.polygon_offset.float32_result_depth_clamp = FAIL
-
-// Flaky test
-3305 LINUX OPENGL : dEQP-GLES3.functional.shaders.builtin_functions.common.uintbitstofloat.uint_highp_vertex = FAIL
-
 // Linux Intel specific
 2349 LINUX OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.default_framebuffer* = FAIL
 
@@ -363,7 +335,6 @@
 2137 MAC OPENGL : dEQP-GLES3.functional.shaders.arrays.complex_expression.or_short_circuits_* = FAIL
 2137 MAC OPENGL : dEQP-GLES3.functional.shaders.fragdata.valid_static_index = FAIL
 2137 MAC OPENGL : dEQP-GLES3.functional.shaders.loops.short_circuit.* = FAIL
-3317 MAC OPENGL : dEQP-GLES3.functional.fbo.blit.rect.out_of_bounds_linear = FAIL
 
 // Mac AMD failures
 2137 MAC OPENGL AMD : dEQP-GLES3.functional.clipping.point.wide_point_clip = FAIL
@@ -373,10 +344,6 @@
 2137 MAC OPENGL AMD : dEQP-GLES3.functional.shaders.builtin_functions.precision.tanh.highp_* = FAIL
 2137 MAC OPENGL AMD : dEQP-GLES3.functional.texture.mipmap.2d.projected.* = FAIL
 2137 MAC OPENGL AMD : dEQP-GLES3.functional.transform_feedback.* = FAIL
-
-3317 MAC OPENGL AMD : dEQP-GLES3.functional.shaders.builtin_functions.precision.ceil.* = FAIL
-3317 MAC OPENGL AMD : dEQP-GLES3.functional.shaders.texture_functions.textureprojlod.isampler3d_vertex = FAIL
-3317 MAC OPENGL AMD : dEQP-GLES3.functional.shaders.texture_functions.textureprojlod.usampler3d_vertex = FAIL
 
 // Mac Intel crashes
 2137 MAC OPENGL INTEL : dEQP-GLES3.functional.shaders.discard.function_static_loop_never = SKIP
@@ -424,29 +391,6 @@
 2137 MAC OPENGL INTEL : dEQP-GLES3.functional.texture.specification.texsubimage3d_* = FAIL
 2137 MAC OPENGL INTEL : dEQP-GLES3.functional.ubo.* = FAIL
 2137 MAC OPENGL INTEL : dEQP-GLES3.functional.shaders.texture_functions.texelfetchoffset.* = FAIL
-
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_mag = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_mag_reverse_src_x = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_mag_reverse_dst_x = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_mag_reverse_src_dst_x = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_min = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_min_reverse_src_x = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_min_reverse_dst_x = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_min_reverse_src_dst_x = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_src_x = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_dst_x = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_src_dst_x = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.fbo.blit.rect.nearest_consistency_out_of_bounds_mag_reverse_src_dst_y = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.texture.filtering.2d_array.combinations.linear_nearest_* = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.texture.filtering.2d.combinations.linear_nearest_* = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.texture.filtering.3d.combinations.linear_nearest_* = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.texture.filtering.cube.combinations.linear_nearest_* = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.texture.mipmap.cube.max_level.linear_nearest = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.texture.vertex.2d_array.filtering.linear_nearest_* = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.texture.vertex.2d.filtering.linear_nearest_* = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.texture.vertex.3d.filtering.linear_nearest_* = FAIL
-3317 MAC OPENGL INTEL : dEQP-GLES3.functional.texture.vertex.cube.filtering.linear_nearest_* = FAIL
 
 // Android only failures
 1487 ANDROID GLES : dEQP-GLES3.functional.fbo.completeness.renderable.texture.color0.red_half_float_oes = FAIL
@@ -501,13 +445,6 @@
 2567 ANDROID GLES : dEQP-GLES3.functional.fbo.completeness.renderable.texture.depth.rg_unsigned_byte = FAIL
 2567 ANDROID GLES : dEQP-GLES3.functional.fbo.completeness.renderable.texture.stencil.red_unsigned_byte = FAIL
 2567 ANDROID GLES : dEQP-GLES3.functional.fbo.completeness.renderable.texture.stencil.rg_unsigned_byte = FAIL
-
-// Nexus 5x failures
-3308 NEXUS5X GLES : dEQP-GLES3.functional.polygon_offset.default_result_depth_clamp = FAIL
-3308 NEXUS5X GLES : dEQP-GLES3.functional.polygon_offset.fixed24_result_depth_clamp = FAIL
-3308 NEXUS5X GLES : dEQP-GLES3.functional.transform_feedback.random.interleaved.lines.3 = FAIL
-3308 NEXUS5X GLES : dEQP-GLES3.functional.transform_feedback.random.interleaved.triangles.8 = FAIL
-3308 NEXUS5X GLES : dEQP-GLES3.functional.transform_feedback.random.interleaved.triangles.10 = FAIL
 
 // Seems to fail on all desktop GL
 2960 OPENGL : dEQP-GLES3.functional.fbo.blit.default_framebuffer.srgb8_alpha8 = FAIL
@@ -596,7 +533,6 @@
 2950 VULKAN : dEQP-GLES3.functional.fragment_out.* = SKIP
 
 // Formats:
-2950 VULKAN : dEQP-GLES3.functional.fbo.completeness.renderable.renderbuffer.color0.rgba32f = FAIL
 2950 VULKAN : dEQP-GLES3.functional.fbo.completeness.renderable.texture.color0.rgba32f = FAIL
 2950 VULKAN : dEQP-GLES3.functional.fbo.completeness.renderable.texture.depth.depth_component_unsigned_int = FAIL
 
@@ -688,6 +624,9 @@
 2950 VULKAN : dEQP-GLES3.functional.state_query.integers.max_samples_get* = FAIL
 2950 VULKAN : dEQP-GLES3.functional.state_query.integers.min_program_texel_offset_get* = FAIL
 2950 VULKAN : dEQP-GLES3.functional.state_query.integers.compressed_texture_formats_get* = FAIL
+2950 VULKAN : dEQP-GLES3.functional.state_query.integers.max_uniform_block_size_get* = FAIL
+2950 VULKAN : dEQP-GLES3.functional.state_query.integers.max_combined_vertex_uniform_components_get* = FAIL
+2950 VULKAN : dEQP-GLES3.functional.state_query.integers.max_combined_fragment_uniform_components_get* = FAIL
 2950 VULKAN : dEQP-GLES3.functional.state_query.indexed.uniform_buffer* = FAIL
 2950 VULKAN : dEQP-GLES3.functional.state_query.integers64.max_uniform_block_size_get* = FAIL
 2950 VULKAN : dEQP-GLES3.functional.state_query.integers64.max_combined_vertex_uniform_components_get* = FAIL
@@ -701,11 +640,3 @@
 2950 VULKAN : dEQP-GLES3.functional.state_query.shader.program_active_uniform_blocks = FAIL
 2950 VULKAN : dEQP-GLES3.functional.state_query.shader.uniform_value_uint = FAIL
 2950 VULKAN : dEQP-GLES3.functional.lifetime.* = SKIP
-
-// Android Vulkan failures
-2950 ANDROID VULKAN : dEQP-GLES3.functional.implementation_limits.max_combined_texture_image_units = FAIL
-2950 ANDROID VULKAN : dEQP-GLES3.functional.implementation_limits.max_combined_uniform_blocks = FAIL
-2950 ANDROID VULKAN : dEQP-GLES3.functional.state_query.integers.max_combined_texture_image_units_getfloat = FAIL
-2950 ANDROID VULKAN : dEQP-GLES3.functional.state_query.integers.max_combined_texture_image_units_getinteger64 = FAIL
-2950 ANDROID VULKAN : dEQP-GLES3.functional.state_query.integers.max_combined_uniform_blocks_getfloat = FAIL
-2950 ANDROID VULKAN : dEQP-GLES3.functional.state_query.integers.max_combined_uniform_blocks_getinteger64 = FAIL

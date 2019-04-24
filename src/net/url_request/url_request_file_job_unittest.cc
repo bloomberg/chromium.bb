@@ -324,15 +324,15 @@ TEST_F(URLRequestFileJobEventsTest, ZeroByteFile) {
 }
 
 TEST_F(URLRequestFileJobEventsTest, TinyFile) {
-  RunSuccessfulRequestWithString(std::string("hello world"), nullptr);
+  RunSuccessfulRequestWithString(std::string("hello world"), NULL);
 }
 
 TEST_F(URLRequestFileJobEventsTest, SmallFile) {
-  RunSuccessfulRequestWithString(MakeContentOfSize(17 * 1024), nullptr);
+  RunSuccessfulRequestWithString(MakeContentOfSize(17 * 1024), NULL);
 }
 
 TEST_F(URLRequestFileJobEventsTest, BigFile) {
-  RunSuccessfulRequestWithString(MakeContentOfSize(3 * 1024 * 1024), nullptr);
+  RunSuccessfulRequestWithString(MakeContentOfSize(3 * 1024 * 1024), NULL);
 }
 
 TEST_F(URLRequestFileJobEventsTest, Range) {

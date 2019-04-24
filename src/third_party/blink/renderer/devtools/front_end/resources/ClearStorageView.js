@@ -29,7 +29,9 @@ Resources.ClearStorageView = class extends UI.ThrottledWidget {
     this._securityOrigin = null;
 
     this._settings = new Map();
-    for (const type of Resources.ClearStorageView.AllStorageTypes)
+    for (const type of
+             [types.Appcache, types.Cache_storage, types.Cookies, types.Indexeddb, types.Local_storage,
+              types.Service_workers, types.Websql])
       this._settings.set(type, Common.settings.createSetting('clear-storage-' + type, true));
 
     const quota = this._reportView.appendSection(Common.UIString('Usage'));
@@ -86,8 +88,7 @@ Resources.ClearStorageView = class extends UI.ThrottledWidget {
       return;
     this._target = target;
     const securityOriginManager = target.model(SDK.SecurityOriginManager);
-    this._updateOrigin(
-        securityOriginManager.mainSecurityOrigin(), securityOriginManager.unreachableMainSecurityOrigin());
+    this._updateOrigin(securityOriginManager.mainSecurityOrigin());
     securityOriginManager.addEventListener(
         SDK.SecurityOriginManager.Events.MainSecurityOriginChanged, this._originChanged, this);
   }
@@ -108,60 +109,41 @@ Resources.ClearStorageView = class extends UI.ThrottledWidget {
    * @param {!Common.Event} event
    */
   _originChanged(event) {
-    const mainOrigin = /** *@type {string} */ (event.data.mainSecurityOrigin);
-    const unreachableMainOrigin = /** @type {string} */ (event.data.unreachableMainSecurityOrigin);
-    this._updateOrigin(mainOrigin, unreachableMainOrigin);
+    const origin = /** *@type {string} */ (event.data);
+    this._updateOrigin(origin);
   }
 
   /**
-   * @param {string} mainOrigin
-   * @param {string} unreachableMainOrigin
+   * @param {string} url
    */
-  _updateOrigin(mainOrigin, unreachableMainOrigin) {
-    if (unreachableMainOrigin) {
-      this._securityOrigin = unreachableMainOrigin;
-      this._reportView.setSubtitle(ls`${unreachableMainOrigin} (failed to load)`);
+  _updateOrigin(url) {
+    const parsedURL = new Common.ParsedURL(url);
+    if (!parsedURL.isValid) {
+      this._clearButton.disabled = true;
+      this._securityOrigin = '';
     } else {
-      this._securityOrigin = mainOrigin;
-      this._reportView.setSubtitle(mainOrigin);
+      this._clearButton.disabled = false;
+      this._securityOrigin = parsedURL.securityOrigin();
     }
-
+    this._reportView.setSubtitle(this._securityOrigin);
     this.doUpdate();
   }
 
   _clear() {
     if (!this._securityOrigin)
       return;
-    const selectedStorageTypes = [];
+    const storageTypes = [];
     for (const type of this._settings.keys()) {
       if (this._settings.get(type).get())
-        selectedStorageTypes.push(type);
+        storageTypes.push(type);
     }
 
-    if (this._target)
-      Resources.ClearStorageView.clear(this._target, this._securityOrigin, selectedStorageTypes);
+    this._target.storageAgent().clearDataForOrigin(this._securityOrigin, storageTypes.join(','));
 
-    this._clearButton.disabled = true;
-    const label = this._clearButton.textContent;
-    this._clearButton.textContent = Common.UIString('Clearing...');
-    setTimeout(() => {
-      this._clearButton.disabled = false;
-      this._clearButton.textContent = label;
-    }, 500);
-  }
-
-  /**
-   * @param {!SDK.Target} target
-   * @param {string} securityOrigin
-   * @param {!Array<string>} selectedStorageTypes
-   */
-  static clear(target, securityOrigin, selectedStorageTypes) {
-    target.storageAgent().clearDataForOrigin(securityOrigin, selectedStorageTypes.join(','));
-
-    const set = new Set(selectedStorageTypes);
+    const set = new Set(storageTypes);
     const hasAll = set.has(Protocol.Storage.StorageType.All);
     if (set.has(Protocol.Storage.StorageType.Cookies) || hasAll) {
-      const cookieModel = target.model(SDK.CookieModel);
+      const cookieModel = this._target.model(SDK.CookieModel);
       if (cookieModel)
         cookieModel.clear();
     }
@@ -170,18 +152,18 @@ Resources.ClearStorageView = class extends UI.ThrottledWidget {
       for (const target of SDK.targetManager.targets()) {
         const indexedDBModel = target.model(Resources.IndexedDBModel);
         if (indexedDBModel)
-          indexedDBModel.clearForOrigin(securityOrigin);
+          indexedDBModel.clearForOrigin(this._securityOrigin);
       }
     }
 
     if (set.has(Protocol.Storage.StorageType.Local_storage) || hasAll) {
-      const storageModel = target.model(Resources.DOMStorageModel);
+      const storageModel = this._target.model(Resources.DOMStorageModel);
       if (storageModel)
-        storageModel.clearForOrigin(securityOrigin);
+        storageModel.clearForOrigin(this._securityOrigin);
     }
 
     if (set.has(Protocol.Storage.StorageType.Websql) || hasAll) {
-      const databaseModel = target.model(Resources.DatabaseModel);
+      const databaseModel = this._target.model(Resources.DatabaseModel);
       if (databaseModel) {
         databaseModel.disable();
         databaseModel.enable();
@@ -192,14 +174,22 @@ Resources.ClearStorageView = class extends UI.ThrottledWidget {
       const target = SDK.targetManager.mainTarget();
       const model = target && target.model(SDK.ServiceWorkerCacheModel);
       if (model)
-        model.clearForOrigin(securityOrigin);
+        model.clearForOrigin(this._securityOrigin);
     }
 
     if (set.has(Protocol.Storage.StorageType.Appcache) || hasAll) {
-      const appcacheModel = target.model(Resources.ApplicationCacheModel);
+      const appcacheModel = this._target.model(Resources.ApplicationCacheModel);
       if (appcacheModel)
         appcacheModel.reset();
     }
+
+    this._clearButton.disabled = true;
+    const label = this._clearButton.textContent;
+    this._clearButton.textContent = Common.UIString('Clearing...');
+    setTimeout(() => {
+      this._clearButton.disabled = false;
+      this._clearButton.textContent = label;
+    }, 500);
   }
 
   /**
@@ -218,12 +208,7 @@ Resources.ClearStorageView = class extends UI.ThrottledWidget {
       return;
     }
     this._quotaRow.textContent = Common.UIString(
-        '%s used out of %s storage quota.\u00a0', Number.bytesToString(response.usage),
-        Number.bytesToString(response.quota));
-    if (response.quota < 125829120) {  // 120 MB
-      this._quotaRow.title = ls`Storage quota is limited in Incognito mode`;
-      this._quotaRow.appendChild(UI.Icon.create('smallicon-info'));
-    }
+        '%s used out of %s storage quota', Number.bytesToString(response.usage), Number.bytesToString(response.quota));
 
     if (!this._quotaUsage || this._quotaUsage !== response.usage) {
       this._quotaUsage = response.usage;
@@ -283,49 +268,5 @@ Resources.ClearStorageView = class extends UI.ThrottledWidget {
    * @param {!Array<!Protocol.Storage.UsageForType>} usageBreakdown
    */
   _usageUpdatedForTest(usage, quota, usageBreakdown) {
-  }
-};
-
-Resources.ClearStorageView.AllStorageTypes = [
-  Protocol.Storage.StorageType.Appcache, Protocol.Storage.StorageType.Cache_storage,
-  Protocol.Storage.StorageType.Cookies, Protocol.Storage.StorageType.Indexeddb,
-  Protocol.Storage.StorageType.Local_storage, Protocol.Storage.StorageType.Service_workers,
-  Protocol.Storage.StorageType.Websql
-];
-
-/**
- * @implements {UI.ActionDelegate}
- */
-Resources.ClearStorageView.ActionDelegate = class {
-  /**
-   * @override
-   * @param {!UI.Context} context
-   * @param {string} actionId
-   * @return {boolean}
-   */
-  handleAction(context, actionId) {
-    switch (actionId) {
-      case 'resources.clear':
-        return this._handleClear();
-    }
-    return false;
-  }
-
-  /**
-   * @return {boolean}
-   */
-  _handleClear() {
-    const target = SDK.targetManager.mainTarget();
-    if (!target)
-      return false;
-    const resourceTreeModel = target.model(SDK.ResourceTreeModel);
-    if (!resourceTreeModel)
-      return false;
-    const securityOrigin = resourceTreeModel.getMainSecurityOrigin();
-    if (!securityOrigin)
-      return false;
-
-    Resources.ClearStorageView.clear(target, securityOrigin, Resources.ClearStorageView.AllStorageTypes);
-    return true;
   }
 };

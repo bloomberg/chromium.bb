@@ -9,24 +9,23 @@
 #include "base/strings/stringize_macros.h"
 #include "build/build_config.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
 namespace {
 
 // Returns string that represents system in UserAgent.
-std::string GetSystemString() {
+std::string GetSystemString(bool is_tablet) {
   std::string system;
 #if defined(OS_CHROMEOS)
   system = "CROS ";
 #elif defined(OS_ANDROID)
-  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+  if (is_tablet) {
     system = "ANDROID-TABLET ";
   } else {
     system = "ANDROID-PHONE ";
   }
 #elif defined(OS_IOS)
-  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+  if (is_tablet) {
     system = "IOS-TABLET ";
   } else {
     system = "IOS-PHONE ";
@@ -104,8 +103,10 @@ GURL GetSyncServiceURL(const base::CommandLine& command_line,
   return result;
 }
 
-std::string MakeUserAgentForSync(version_info::Channel channel) {
-  return internal::FormatUserAgentForSync(GetSystemString(), channel);
+std::string MakeUserAgentForSync(version_info::Channel channel,
+                                 bool is_tablet) {
+  std::string system = GetSystemString(is_tablet);
+  return internal::FormatUserAgentForSync(system, channel);
 }
 
 }  // namespace syncer

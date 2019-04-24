@@ -5,11 +5,8 @@
 #ifndef V8_OBJECTS_BODY_DESCRIPTORS_INL_H_
 #define V8_OBJECTS_BODY_DESCRIPTORS_INL_H_
 
-#include "src/objects-body-descriptors.h"
-
-#include <algorithm>
-
 #include "src/feedback-vector.h"
+#include "src/objects-body-descriptors.h"
 #include "src/objects/cell.h"
 #include "src/objects/data-handler.h"
 #include "src/objects/foreign-inl.h"
@@ -17,7 +14,7 @@
 #include "src/objects/js-collection.h"
 #include "src/objects/js-weak-refs.h"
 #include "src/objects/oddball.h"
-#include "src/objects/ordered-hash-table.h"
+#include "src/objects/slots.h"
 #include "src/reloc-info.h"
 #include "src/transitions.h"
 #include "src/wasm/wasm-objects-inl.h"
@@ -80,7 +77,8 @@ void BodyDescriptorBase::IterateJSObjectBodyImpl(Map map, HeapObject obj,
   int inobject_fields_offset = map->GetInObjectPropertyOffset(0);
   // We are always requested to process header and embedder fields.
   DCHECK_LE(inobject_fields_offset, end_offset);
-  // Embedder fields are located between header and inobject properties.
+  // Embedder fields are located between header rouned up to the system pointer
+  // size and inobject properties.
   if (header_size < inobject_fields_offset) {
     // There are embedder fields.
     IteratePointers(obj, start_offset, header_size, v);
@@ -122,49 +120,40 @@ DISABLE_CFI_PERF void BodyDescriptorBase::IteratePointers(HeapObject obj,
                                                           int start_offset,
                                                           int end_offset,
                                                           ObjectVisitor* v) {
-  v->VisitPointers(obj, obj.RawField(start_offset), obj.RawField(end_offset));
+  v->VisitPointers(obj, HeapObject::RawField(obj, start_offset),
+                   HeapObject::RawField(obj, end_offset));
 }
 
 template <typename ObjectVisitor>
 void BodyDescriptorBase::IteratePointer(HeapObject obj, int offset,
                                         ObjectVisitor* v) {
-  v->VisitPointer(obj, obj.RawField(offset));
+  v->VisitPointer(obj, HeapObject::RawField(obj, offset));
 }
 
 template <typename ObjectVisitor>
 DISABLE_CFI_PERF void BodyDescriptorBase::IterateMaybeWeakPointers(
     HeapObject obj, int start_offset, int end_offset, ObjectVisitor* v) {
-  v->VisitPointers(obj, obj.RawMaybeWeakField(start_offset),
-                   obj.RawMaybeWeakField(end_offset));
+  v->VisitPointers(obj, HeapObject::RawMaybeWeakField(obj, start_offset),
+                   HeapObject::RawMaybeWeakField(obj, end_offset));
 }
 
 template <typename ObjectVisitor>
 void BodyDescriptorBase::IterateMaybeWeakPointer(HeapObject obj, int offset,
                                                  ObjectVisitor* v) {
-  v->VisitPointer(obj, obj.RawMaybeWeakField(offset));
+  v->VisitPointer(obj, HeapObject::RawMaybeWeakField(obj, offset));
 }
 
 template <typename ObjectVisitor>
 DISABLE_CFI_PERF void BodyDescriptorBase::IterateCustomWeakPointers(
     HeapObject obj, int start_offset, int end_offset, ObjectVisitor* v) {
-  v->VisitCustomWeakPointers(obj, obj.RawField(start_offset),
-                             obj.RawField(end_offset));
-}
-
-template <typename ObjectVisitor>
-DISABLE_CFI_PERF void BodyDescriptorBase::IterateEphemeron(HeapObject obj,
-                                                           int index,
-                                                           int key_offset,
-                                                           int value_offset,
-                                                           ObjectVisitor* v) {
-  v->VisitEphemeron(obj, index, obj.RawField(key_offset),
-                    obj.RawField(value_offset));
+  v->VisitCustomWeakPointers(obj, HeapObject::RawField(obj, start_offset),
+                             HeapObject::RawField(obj, end_offset));
 }
 
 template <typename ObjectVisitor>
 void BodyDescriptorBase::IterateCustomWeakPointer(HeapObject obj, int offset,
                                                   ObjectVisitor* v) {
-  v->VisitCustomWeakPointer(obj, obj.RawField(offset));
+  v->VisitCustomWeakPointer(obj, HeapObject::RawField(obj, offset));
 }
 
 class JSObject::BodyDescriptor final : public BodyDescriptorBase {
@@ -350,7 +339,7 @@ class JSArrayBufferView::BodyDescriptor final : public BodyDescriptorBase {
 };
 
 template <typename Derived>
-class V8_EXPORT_PRIVATE SmallOrderedHashTable<Derived>::BodyDescriptor final
+class SmallOrderedHashTable<Derived>::BodyDescriptor final
     : public BodyDescriptorBase {
  public:
   static bool IsValidSlot(Map map, HeapObject obj, int offset) {
@@ -471,9 +460,7 @@ class FeedbackVector::BodyDescriptor final : public BodyDescriptorBase {
  public:
   static bool IsValidSlot(Map map, HeapObject obj, int offset) {
     return offset == kSharedFunctionInfoOffset ||
-           offset == kOptimizedCodeOffset ||
-           offset == kClosureFeedbackCellArrayOffset ||
-           offset >= kFeedbackSlotsOffset;
+           offset == kOptimizedCodeOffset || offset >= kFeedbackSlotsOffset;
   }
 
   template <typename ObjectVisitor>
@@ -481,7 +468,6 @@ class FeedbackVector::BodyDescriptor final : public BodyDescriptorBase {
                                  ObjectVisitor* v) {
     IteratePointer(obj, kSharedFunctionInfoOffset, v);
     IterateMaybeWeakPointer(obj, kOptimizedCodeOffset, v);
-    IteratePointer(obj, kClosureFeedbackCellArrayOffset, v);
     IterateMaybeWeakPointers(obj, kFeedbackSlotsOffset, object_size, v);
   }
 
@@ -557,8 +543,9 @@ class Foreign::BodyDescriptor final : public BodyDescriptorBase {
   static inline void IterateBody(Map map, HeapObject obj, int object_size,
                                  ObjectVisitor* v) {
     v->VisitExternalReference(
-        Foreign::cast(obj), reinterpret_cast<Address*>(
-                                obj.RawField(kForeignAddressOffset).address()));
+        Foreign::cast(obj),
+        reinterpret_cast<Address*>(
+            HeapObject::RawField(obj, kForeignAddressOffset).address()));
   }
 
   static inline int SizeOf(Map map, HeapObject object) { return kSize; }
@@ -662,25 +649,15 @@ class SeqTwoByteString::BodyDescriptor final : public BodyDescriptorBase {
 class WasmInstanceObject::BodyDescriptor final : public BodyDescriptorBase {
  public:
   static bool IsValidSlot(Map map, HeapObject obj, int offset) {
-    SLOW_DCHECK(std::is_sorted(std::begin(kTaggedFieldOffsets),
-                               std::end(kTaggedFieldOffsets)));
-    STATIC_ASSERT(sizeof(*kTaggedFieldOffsets) == sizeof(uint16_t));
-    if (offset < int{8 * sizeof(*kTaggedFieldOffsets)} &&
-        std::binary_search(std::begin(kTaggedFieldOffsets),
-                           std::end(kTaggedFieldOffsets),
-                           static_cast<uint16_t>(offset))) {
-      return true;
-    }
+    if (offset < kMemoryStartOffset) return true;
+    if (offset < kModuleObjectOffset) return false;
     return IsValidJSObjectSlotImpl(map, obj, offset);
   }
 
   template <typename ObjectVisitor>
   static inline void IterateBody(Map map, HeapObject obj, int object_size,
                                  ObjectVisitor* v) {
-    IteratePointers(obj, kPropertiesOrHashOffset, JSObject::kHeaderSize, v);
-    for (uint16_t offset : kTaggedFieldOffsets) {
-      IteratePointer(obj, offset, v);
-    }
+    IteratePointers(obj, kPropertiesOrHashOffset, kEndOfTaggedFieldsOffset, v);
     IterateJSObjectBodyImpl(map, obj, kSize, object_size, v);
   }
 
@@ -846,7 +823,6 @@ ReturnType BodyDescriptorApply(InstanceType type, T1 p1, T2 p2, T3 p3, T4 p4) {
                                                                    p4);
     case FIXED_ARRAY_TYPE:
     case OBJECT_BOILERPLATE_DESCRIPTION_TYPE:
-    case CLOSURE_FEEDBACK_CELL_ARRAY_TYPE:
     case HASH_TABLE_TYPE:
     case ORDERED_HASH_MAP_TYPE:
     case ORDERED_HASH_SET_TYPE:
@@ -856,12 +832,10 @@ ReturnType BodyDescriptorApply(InstanceType type, T1 p1, T2 p2, T3 p3, T4 p4) {
     case NUMBER_DICTIONARY_TYPE:
     case SIMPLE_NUMBER_DICTIONARY_TYPE:
     case STRING_TABLE_TYPE:
+    case EPHEMERON_HASH_TABLE_TYPE:
     case SCOPE_INFO_TYPE:
     case SCRIPT_CONTEXT_TABLE_TYPE:
       return Op::template apply<FixedArray::BodyDescriptor>(p1, p2, p3, p4);
-    case EPHEMERON_HASH_TABLE_TYPE:
-      return Op::template apply<EphemeronHashTable::BodyDescriptor>(p1, p2, p3,
-                                                                    p4);
     case AWAIT_CONTEXT_TYPE:
     case BLOCK_CONTEXT_TYPE:
     case CATCH_CONTEXT_TYPE:
@@ -1075,34 +1049,6 @@ void HeapObject::IterateBodyFast(Map map, int object_size, ObjectVisitor* v) {
   BodyDescriptorApply<CallIterateBody, void>(map->instance_type(), map, *this,
                                              object_size, v);
 }
-
-class EphemeronHashTable::BodyDescriptor final : public BodyDescriptorBase {
- public:
-  static bool IsValidSlot(Map map, HeapObject obj, int offset) {
-    return (offset >= EphemeronHashTable::kHeaderSize);
-  }
-
-  template <typename ObjectVisitor>
-  static inline void IterateBody(Map map, HeapObject obj, int object_size,
-                                 ObjectVisitor* v) {
-    int entries_start = EphemeronHashTable::kHeaderSize +
-                        EphemeronHashTable::kElementsStartIndex * kTaggedSize;
-    IteratePointers(obj, EphemeronHashTable::kHeaderSize, entries_start, v);
-    EphemeronHashTable table = EphemeronHashTable::unchecked_cast(obj);
-    int entries = table.Capacity();
-    for (int i = 0; i < entries; ++i) {
-      const int key_index = EphemeronHashTable::EntryToIndex(i);
-      const int value_index = EphemeronHashTable::EntryToValueIndex(i);
-      IterateEphemeron(obj, i, OffsetOfElementAt(key_index),
-                       OffsetOfElementAt(value_index), v);
-    }
-  }
-
-  static inline int SizeOf(Map map, HeapObject object) {
-    return object->SizeFromMap(map);
-  }
-};
-
 }  // namespace internal
 }  // namespace v8
 

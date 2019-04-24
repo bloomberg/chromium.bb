@@ -65,7 +65,6 @@
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -162,10 +161,9 @@ bool PropertyMissingOrEqualToNone(CSSPropertyValueSet* style,
   const CSSValue* value = style->GetPropertyCSSValue(property_id);
   if (!value)
     return true;
-  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (!identifier_value)
+  if (!value->IsIdentifierValue())
     return false;
-  return identifier_value->GetValueID() == CSSValueID::kNone;
+  return ToCSSIdentifierValue(value)->GetValueID() == CSSValueNone;
 }
 
 template <typename Strategy>
@@ -339,7 +337,7 @@ DocumentFragment* CreateFragmentFromMarkup(
     ParserContentPolicy parser_content_policy) {
   // We use a fake body element here to trick the HTML parser to using the
   // InBody insertion mode.
-  auto* fake_body = MakeGarbageCollected<HTMLBodyElement>(document);
+  HTMLBodyElement* fake_body = HTMLBodyElement::Create(document);
   DocumentFragment* fragment = DocumentFragment::Create(document);
 
   fragment->ParseHTML(markup, fake_body, parser_content_policy);
@@ -469,7 +467,7 @@ static void FillContainerFromString(ContainerNode* paragraph,
   Document& document = paragraph->GetDocument();
 
   if (string.IsEmpty()) {
-    paragraph->AppendChild(MakeGarbageCollected<HTMLBRElement>(document));
+    paragraph->AppendChild(HTMLBRElement::Create(document));
     return;
   }
 
@@ -558,7 +556,7 @@ DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
       ShouldPreserveNewline(context)) {
     fragment->AppendChild(document.createTextNode(string));
     if (string.EndsWith('\n')) {
-      auto* element = MakeGarbageCollected<HTMLBRElement>(document);
+      HTMLBRElement* element = HTMLBRElement::Create(document);
       element->setAttribute(kClassAttr, AppleInterchangeNewline);
       fragment->AppendChild(element);
     }
@@ -588,7 +586,7 @@ DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
     Element* element = nullptr;
     if (s.IsEmpty() && i + 1 == num_lines) {
       // For last line, use the "magic BR" rather than a P.
-      element = MakeGarbageCollected<HTMLBRElement>(document);
+      element = HTMLBRElement::Create(document);
       element->setAttribute(kClassAttr, AppleInterchangeNewline);
     } else {
       if (use_clones_of_enclosing_block)
@@ -646,7 +644,7 @@ DocumentFragment* CreateFragmentForTransformToFragment(
     // Unfortunately, that's an implementation detail of the parser. We achieve
     // that effect here by passing in a fake body element as context for the
     // fragment.
-    auto* fake_body = MakeGarbageCollected<HTMLBodyElement>(output_doc);
+    HTMLBodyElement* fake_body = HTMLBodyElement::Create(output_doc);
     fragment->ParseHTML(source_string, fake_body);
   } else if (source_mime_type == "text/plain") {
     fragment->ParserAppendChild(Text::Create(output_doc, source_string));

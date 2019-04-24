@@ -74,12 +74,7 @@ ErrorRetryCommand ErrorRetryStateMachine::DidFailProvisionalNavigation(
     case ErrorRetryState::kDisplayingNativeErrorForFailedNavigation:
     // Retry of a previous failure still fails.
     case ErrorRetryState::kDisplayingWebErrorForFailedNavigation:
-      if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-        state_ = ErrorRetryState::kLoadingPlaceholder;
-        return ErrorRetryCommand::kLoadPlaceholder;
-      } else {
-        return BackForwardOrReloadFailed(web_view_url, error_url);
-      }
+      return BackForwardOrReloadFailed(web_view_url, error_url);
 
     case ErrorRetryState::kLoadingPlaceholder:
     case ErrorRetryState::kReadyToDisplayErrorForFailedNavigation:

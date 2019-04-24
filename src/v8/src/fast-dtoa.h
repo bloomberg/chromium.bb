@@ -50,9 +50,12 @@ const int kFastDtoaMaximalLength = 17;
 //     If there are two values that are equally close, then FastDtoa returns
 //     false.
 // For both modes the buffer must be large enough to hold the result.
-V8_EXPORT_PRIVATE bool FastDtoa(double d, FastDtoaMode mode,
-                                int requested_digits, Vector<char> buffer,
-                                int* length, int* decimal_point);
+bool FastDtoa(double d,
+              FastDtoaMode mode,
+              int requested_digits,
+              Vector<char> buffer,
+              int* length,
+              int* decimal_point);
 
 }  // namespace internal
 }  // namespace v8

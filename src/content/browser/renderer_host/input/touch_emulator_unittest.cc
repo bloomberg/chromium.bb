@@ -250,7 +250,11 @@ class TouchEmulatorTest : public testing::Test,
 
   void DisableSynchronousTouchAck() { ack_touches_synchronously_ = false; }
 
-  float GetCursorScaleFactor() { return cursor_.info().image_scale_factor; }
+  float GetCursorScaleFactor() {
+    CursorInfo info;
+    cursor_.GetCursorInfo(&info);
+    return info.image_scale_factor;
+  }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;

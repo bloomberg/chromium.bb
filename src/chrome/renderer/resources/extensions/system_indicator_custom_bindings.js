@@ -6,15 +6,25 @@
 // TODO(dewittj) Refactor custom binding to reduce redundancy between the
 // extension action APIs.
 
-var setIcon = require('setIcon').setIcon;
+var binding =
+    apiBridge || require('binding').Binding.create('systemIndicator');
 
-apiBridge.registerCustomHook(function(bindingsAPI) {
+var setIcon = require('setIcon').setIcon;
+var sendRequest = bindingUtil ?
+    $Function.bind(bindingUtil.sendRequest, bindingUtil) :
+    require('sendRequest').sendRequest;
+
+binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('setIcon', function(details, callback) {
     setIcon(details, $Function.bind(function(args) {
-      bindingUtil.sendRequest('systemIndicator.setIcon', [args, callback],
-                              undefined);
+      sendRequest('systemIndicator.setIcon', [args, callback],
+                  bindingUtil ? undefined : this.definition.parameters,
+                  undefined);
     }, this));
   });
 });
+
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 
-#include "base/stl_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
@@ -102,18 +101,23 @@ class PasswordStoreObserverBridge
 #pragma mark - SavePasswordsConsumerDelegate
 
 - (void)onGetPasswordStoreResults:
-    (std::vector<std::unique_ptr<autofill::PasswordForm>>)results {
+    (std::vector<std::unique_ptr<autofill::PasswordForm>>&)result {
   // For Manual Fallback we filter out the android and the blacklisted
   // passwords.
-  base::EraseIf(results, [](const auto& form) {
-    return form->blacklisted_by_user ||
-           password_manager::IsValidAndroidFacetURI(form->signon_realm);
-  });
+  result.erase(
+      std::remove_if(result.begin(), result.end(),
+                     [](std::unique_ptr<autofill::PasswordForm>& form) {
+                       const auto is_android_uri =
+                           password_manager::IsValidAndroidFacetURI(
+                               form->signon_realm);
+                       return form->blacklisted_by_user || is_android_uri;
+                     }),
+      result.end());
 
   password_manager::DuplicatesMap savedPasswordDuplicates;
-  password_manager::SortEntriesAndHideDuplicates(&results,
+  password_manager::SortEntriesAndHideDuplicates(&result,
                                                  &savedPasswordDuplicates);
-  [self.delegate passwordFetcher:self didFetchPasswords:std::move(results)];
+  [self.delegate passwordFetcher:self didFetchPasswords:result];
 }
 
 #pragma mark - PasswordStoreObserver

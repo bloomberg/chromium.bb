@@ -5,7 +5,6 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_RECEIVER_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_RECEIVER_H_
 
-#include <memory>
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -26,8 +25,8 @@ namespace mojo {
 // implementation of Interface. Every Receiver object is permanently linked to
 // an implementation of Interface at construction time. The Receiver begins
 // receiving and scheduling method calls to the implementation once it becomes
-// bound either by consuming a PendingReceiver (at construction time or via
-// |Bind()|) or by calling |BindNewPipeAndPassRemote()|.
+// bound by consuming a PendingReceiver, either at construction time or by
+// calling |Bind()|.
 //
 // Receiver is NOT thread- or sequence- safe and must be used from a single
 // (but otherwise arbitrary) sequence. All bound Receiver objects are associated
@@ -50,8 +49,8 @@ class Receiver {
 
   // Constructs an unbound Receiver linked to |impl| for the duration of the
   // Receive's lifetime. The Receiver can be bound later by calling |Bind()| or
-  // |BindNewPipeAndPassRemote()|. An unbound Receiver does not schedule any
-  // asynchronous tasks.
+  // |BindNewRemote()|. An unbound Receiver does not schedule any asynchronous
+  // tasks.
   explicit Receiver(ImplPointerType impl) : internal_state_(std::move(impl)) {}
 
   // Constructs a bound Receiver by consuming |pending_receiver|. The Receiver
@@ -105,19 +104,19 @@ class Receiver {
   // notifications on the default SequencedTaskRunner (i.e.
   // base::SequencedTaskRunnerHandle::Get() at the time of this call). Must only
   // be called on an unbound Receiver.
-  PendingRemote<Interface> BindNewPipeAndPassRemote() WARN_UNUSED_RESULT {
-    return BindNewPipeAndPassRemote(nullptr);
+  PendingRemote<Interface> BindNewRemote() WARN_UNUSED_RESULT {
+    return BindNewRemote(nullptr);
   }
 
   // Like above, but the Receiver will schedule incoming |impl| method calls and
   // disconnection notifications on |task_runner| rather than on the default
   // SequencedTaskRunner. Must only be called on an unbound Receiver.
   // |task_runner| must run tasks on the same sequence that owns this Receiver.
-  PendingRemote<Interface> BindNewPipeAndPassRemote(
+  PendingRemote<Interface> BindNewRemote(
       scoped_refptr<base::SequencedTaskRunner> task_runner) WARN_UNUSED_RESULT {
     DCHECK(!is_bound()) << "Receiver is already bound";
     PendingRemote<Interface> remote;
-    Bind(remote.InitWithNewPipeAndPassReceiver(), std::move(task_runner));
+    Bind(remote.MakeReceiver(), std::move(task_runner));
     return remote;
   }
 
@@ -139,7 +138,7 @@ class Receiver {
   // Receiver.
   void Bind(PendingReceiver<Interface> pending_receiver,
             scoped_refptr<base::SequencedTaskRunner> task_runner) {
-    internal_state_.Bind(pending_receiver.PassPipe(), std::move(task_runner));
+    internal_state_.Bind(pending_receiver.TakePipe(), std::move(task_runner));
   }
 
   // Unbinds this Receiver, preventing any further |impl| method calls or
@@ -160,14 +159,6 @@ class Receiver {
     CHECK(!internal_state_.HasAssociatedInterfaces());
     return PendingReceiver<Interface>(
         internal_state_.Unbind().PassMessagePipe());
-  }
-
-  // Adds a message filter to be notified of each incoming message before
-  // dispatch. If a filter returns |false| from Accept(), the message is not
-  // dispatched and the pipe is closed. Filters cannot be removed once added.
-  void AddFilter(std::unique_ptr<MessageReceiver> filter) {
-    DCHECK(is_bound());
-    internal_state_.AddFilter(std::move(filter));
   }
 
  private:

@@ -26,7 +26,8 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+//
+// Author: wan@google.com (Zhanyong Wan)
 //
 // Tests that Google Test manipulates the premature-exit-detection
 // file correctly.
@@ -56,7 +57,7 @@ class PrematureExitTest : public Test {
     premature_exit_file_path_ = GetEnv("TEST_PREMATURE_EXIT_FILE");
 
     // Normalize NULL to "" for ease of handling.
-    if (premature_exit_file_path_ == nullptr) {
+    if (premature_exit_file_path_ == NULL) {
       premature_exit_file_path_ = "";
     }
   }
@@ -113,7 +114,7 @@ int main(int argc, char **argv) {
   // Test that the premature-exit file is deleted upon return from
   // RUN_ALL_TESTS().
   const char* const filepath = GetEnv("TEST_PREMATURE_EXIT_FILE");
-  if (filepath != nullptr && *filepath != '\0') {
+  if (filepath != NULL && *filepath != '\0') {
     if (PrematureExitTest::FileExists(filepath)) {
       printf(
           "File %s shouldn't exist after the test program finishes, but does.",

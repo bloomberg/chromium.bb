@@ -52,7 +52,7 @@ bool ParsedNumber::seenNumber() const {
     return !quantity.bogus || 0 != (flags & FLAG_NAN) || 0 != (flags & FLAG_INFINITY);
 }
 
-double ParsedNumber::getDouble(UErrorCode& status) const {
+double ParsedNumber::getDouble() const {
     bool sawNaN = 0 != (flags & FLAG_NAN);
     bool sawInfinity = 0 != (flags & FLAG_INFINITY);
 
@@ -69,10 +69,7 @@ double ParsedNumber::getDouble(UErrorCode& status) const {
             return INFINITY;
         }
     }
-    if (quantity.bogus) {
-        status = U_INVALID_STATE_ERROR;
-        return 0.0;
-    }
+    U_ASSERT(!quantity.bogus);
     if (quantity.isZero() && quantity.isNegative()) {
         return -0.0;
     }

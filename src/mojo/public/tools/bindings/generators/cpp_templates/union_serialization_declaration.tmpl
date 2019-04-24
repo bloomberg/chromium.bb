@@ -18,6 +18,8 @@ struct Serializer<{{data_view}}, MaybeConstUserType> {
          writer->data()->set_null();
       return;
     }
+    void* custom_context = CustomContextHelper<Traits>::SetUp(input, context);
+
     if (!inlined)
       writer->Allocate(buffer);
 
@@ -26,15 +28,16 @@ struct Serializer<{{data_view}}, MaybeConstUserType> {
     // TODO(azani): Handle unknown and objects.
     // Set the not-null flag.
     result->size = kUnionDataSize;
-    result->tag = Traits::GetTag(input);
+    result->tag = CallWithContext(Traits::GetTag, input, custom_context);
     switch (result->tag) {
 {%- for field in union.fields %}
 {%-   set name = field.name %}
 {%-   set kind = field.kind %}
 {%-   set serializer_type = kind|unmapped_type_for_serializer %}
       case {{data_view}}::Tag::{{field.name|upper}}: {
-        decltype(Traits::{{name}}(input))
-            in_{{name}} = Traits::{{name}}(input);
+        decltype(CallWithContext(Traits::{{name}}, input, custom_context))
+            in_{{name}} = CallWithContext(Traits::{{name}}, input,
+                                          custom_context);
 {%-   if kind|is_object_kind %}
         typename decltype(result->data.f_{{name}})::BaseType::BufferWriter
             value_writer;
@@ -85,6 +88,8 @@ struct Serializer<{{data_view}}, MaybeConstUserType> {
       }
 {%- endfor %}
     }
+
+    CustomContextHelper<Traits>::TearDown(input, custom_context);
   }
 
   static bool Deserialize({{data_type}}* input,

@@ -142,9 +142,6 @@ public class CustomTabToolbar
     // Whether dark tint should be applied to icons and text.
     private boolean mUseDarkColors;
 
-    private final ColorStateList mDarkModeTint;
-    private final ColorStateList mLightModeTint;
-
     private ValueAnimator mBrandColorTransitionAnimation;
     private boolean mBrandColorTransitionActive;
 
@@ -166,9 +163,6 @@ public class CustomTabToolbar
      */
     public CustomTabToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        mDarkModeTint = ColorUtils.getThemedToolbarIconTint(context, false);
-        mLightModeTint = ColorUtils.getThemedToolbarIconTint(context, true);
     }
 
     @Override
@@ -498,7 +492,7 @@ public class CustomTabToolbar
 
         mTitleBar.setTextColor(ApiCompatibilityUtils.getColor(resources,
                 mUseDarkColors ? R.color.default_text_color_dark
-                               : R.color.default_text_color_light));
+                               : R.color.url_emphasis_light_default_text));
 
         if (getProgressBar() != null) {
             if (!ColorUtils.isUsingDefaultToolbarColor(

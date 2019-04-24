@@ -27,16 +27,13 @@ using CompositingReasons = uint64_t;
   V(ActiveOpacityAnimation)                                                   \
   V(ActiveFilterAnimation)                                                    \
   V(ActiveBackdropFilterAnimation)                                            \
+  V(TransitionProperty)                                                       \
   V(ScrollDependentPosition)                                                  \
   V(OverflowScrollingTouch)                                                   \
   V(OverflowScrollingParent)                                                  \
   V(OutOfFlowClipping)                                                        \
   V(VideoOverlay)                                                             \
-  V(WillChangeTransform)                                                      \
-  V(WillChangeOpacity)                                                        \
-  /* This flag is needed only when neither kWillChangeTransform nor           \
-     kWillChangeOpacity is set */                                             \
-  V(WillChangeOther)                                                          \
+  V(WillChangeCompositingHint)                                                \
   V(BackdropFilter)                                                           \
   V(RootScroller)                                                             \
   V(ScrollTimelineTarget)                                                     \
@@ -124,8 +121,7 @@ class PLATFORM_EXPORT CompositingReason {
 
     kComboAllDirectStyleDeterminedReasons =
         k3DTransform | kBackfaceVisibilityHidden | kComboActiveAnimation |
-        kWillChangeTransform | kWillChangeOpacity | kWillChangeOther |
-        kBackdropFilter,
+        kTransitionProperty | kWillChangeCompositingHint | kBackdropFilter,
 
     kComboAllDirectNonStyleDeterminedReasons =
         kVideo | kCanvas | kPlugin | kIFrame | kOverflowScrollingParent |
@@ -155,13 +151,17 @@ class PLATFORM_EXPORT CompositingReason {
         kOverlap | kAssumedOverlap | kOverflowScrollingParent,
 
     kDirectReasonsForTransformProperty =
-        k3DTransform | kWillChangeTransform | kWillChangeOther |
+        k3DTransform | kWillChangeCompositingHint |
         kPerspectiveWith3DDescendants | kPreserve3DWith3DDescendants |
-        kActiveTransformAnimation,
-    kDirectReasonsForEffectProperty = kActiveOpacityAnimation |
-                                      kWillChangeOpacity |
-                                      kActiveBackdropFilterAnimation,
-    kDirectReasonsForFilterProperty = kActiveFilterAnimation,
+        // Currently, we create transform/effect/filter nodes for an element
+        // whenever any property is being animated so that the existence of the
+        // effect node implies the existence of all nodes.
+        // TODO(flackr): Check for nodes for each KeyframeModel target property
+        // instead of creating all nodes and only create a transform/effect/
+        // filter node if needed, https://crbug.com/900241
+        kComboActiveAnimation,
+    kDirectReasonsForEffectProperty = kComboActiveAnimation,
+    kDirectReasonsForFilterProperty = kComboActiveAnimation,
   };
 };
 

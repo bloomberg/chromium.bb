@@ -4,7 +4,7 @@
 
 #include "base/fuchsia/filtered_service_directory.h"
 
-#include <lib/fdio/directory.h>
+#include <lib/fdio/util.h>
 #include <utility>
 
 #include "base/bind.h"

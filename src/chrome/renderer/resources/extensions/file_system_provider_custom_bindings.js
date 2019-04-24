@@ -4,7 +4,16 @@
 
 // Custom binding for the fileSystemProvider API.
 
-var fileSystemProviderInternal = getInternalApi('fileSystemProviderInternal');
+var binding =
+    apiBridge || require('binding').Binding.create('fileSystemProvider');
+var fileSystemProviderInternal =
+    getInternalApi ?
+        getInternalApi('fileSystemProviderInternal') :
+        require('binding').Binding.create('fileSystemProviderInternal')
+            .generate();
+var registerArgumentMassager = bindingUtil ?
+    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
+    require('event_bindings').registerArgumentMassager;
 
 /**
  * Maximum size of the thumbnail in bytes.
@@ -176,11 +185,11 @@ function massageArgumentsDefault(args, dispatch) {
   dispatch([options, onSuccessCallback, onErrorCallback]);
 }
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onUnmountRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onGetMetadataRequested',
     function(args, dispatch) {
       var executionStart = Date.now();
@@ -211,7 +220,7 @@ bindingUtil.registerEventArgumentMassager(
       dispatch([options, onSuccessCallback, onErrorCallback]);
     });
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onGetActionsRequested',
     function(args, dispatch) {
       var executionStart = Date.now();
@@ -235,7 +244,7 @@ bindingUtil.registerEventArgumentMassager(
       dispatch([options, onSuccessCallback, onErrorCallback]);
     });
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onReadDirectoryRequested',
     function(args, dispatch) {
       var executionStart = Date.now();
@@ -272,15 +281,15 @@ bindingUtil.registerEventArgumentMassager(
       dispatch([options, onSuccessCallback, onErrorCallback]);
     });
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onOpenFileRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onCloseFileRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onReadFileRequested',
     function(args, dispatch) {
       var executionStart = Date.now();
@@ -300,63 +309,63 @@ bindingUtil.registerEventArgumentMassager(
       dispatch([options, onSuccessCallback, onErrorCallback]);
     });
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onCreateDirectoryRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onDeleteEntryRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onCreateFileRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onCopyEntryRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onMoveEntryRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onTruncateRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onWriteFileRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onAbortRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onObserveDirectoryRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onUnobserveEntryRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onAddWatcherRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onRemoveWatcherRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onConfigureRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onExecuteActionRequested',
     massageArgumentsDefault);
 
-bindingUtil.registerEventArgumentMassager(
+registerArgumentMassager(
     'fileSystemProvider.onMountRequested',
     function(args, dispatch) {
       var onSuccessCallback = function() {
@@ -373,3 +382,6 @@ bindingUtil.registerEventArgumentMassager(
       }
       dispatch([onSuccessCallback, onErrorCallback]);
     });
+
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

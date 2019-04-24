@@ -21,7 +21,6 @@ class SharedURLLoaderFactory;
 }
 
 namespace policy {
-class ConfigurationPolicyProvider;
 class MachineLevelUserCloudPolicyManager;
 class MachineLevelUserCloudPolicyFetcher;
 class MachineLevelUserCloudPolicyRegisterWatcher;
@@ -66,7 +65,7 @@ class MachineLevelUserCloudPolicyController {
   virtual ~MachineLevelUserCloudPolicyController();
 
   static std::unique_ptr<MachineLevelUserCloudPolicyManager>
-  CreatePolicyManager(ConfigurationPolicyProvider* platform_provider);
+  CreatePolicyManager();
 
   void Init(PrefService* local_state,
             scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);

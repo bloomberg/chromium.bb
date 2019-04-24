@@ -212,16 +212,19 @@ IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest, MAYBE_CorrectRenovationsRun) {
   content::RunThisRunLoop(run_loop_.get());
 
   // Check that correct modifications were made to the page.
-  base::Value fooResult =
+  std::unique_ptr<base::Value> fooResult =
       content::ExecuteScriptAndGetValue(render_frame_, kCheckFooScript);
-  base::Value barResult =
+  std::unique_ptr<base::Value> barResult =
       content::ExecuteScriptAndGetValue(render_frame_, kCheckBarScript);
-  base::Value alwaysResult =
+  std::unique_ptr<base::Value> alwaysResult =
       content::ExecuteScriptAndGetValue(render_frame_, kCheckAlwaysScript);
 
-  EXPECT_TRUE(fooResult.GetBool());
-  EXPECT_FALSE(barResult.GetBool());
-  EXPECT_TRUE(alwaysResult.GetBool());
+  ASSERT_TRUE(fooResult != nullptr);
+  ASSERT_TRUE(barResult != nullptr);
+  ASSERT_TRUE(alwaysResult != nullptr);
+  EXPECT_TRUE(fooResult->GetBool());
+  EXPECT_FALSE(barResult->GetBool());
+  EXPECT_TRUE(alwaysResult->GetBool());
 }
 
 #if defined(OS_WIN)
@@ -237,13 +240,16 @@ IN_PROC_BROWSER_TEST_F(PageRenovatorBrowserTest,
       &PageRenovatorBrowserTest::QuitRunLoop, base::Unretained(this)));
   content::RunThisRunLoop(run_loop_.get());
 
-  base::Value unfoldBlockResult =
+  std::unique_ptr<base::Value> unfoldBlockResult =
       content::ExecuteScriptAndGetValue(render_frame_, kCheckUnfoldBlockScript);
-  base::Value unfoldHeadingResult = content::ExecuteScriptAndGetValue(
-      render_frame_, kCheckUnfoldHeadingScript);
+  std::unique_ptr<base::Value> unfoldHeadingResult =
+      content::ExecuteScriptAndGetValue(render_frame_,
+                                        kCheckUnfoldHeadingScript);
 
-  EXPECT_TRUE(unfoldBlockResult.GetBool());
-  EXPECT_TRUE(unfoldHeadingResult.GetBool());
+  ASSERT_TRUE(unfoldBlockResult != nullptr);
+  ASSERT_TRUE(unfoldHeadingResult != nullptr);
+  EXPECT_TRUE(unfoldBlockResult->GetBool());
+  EXPECT_TRUE(unfoldHeadingResult->GetBool());
 }
 
 }  // namespace offline_pages

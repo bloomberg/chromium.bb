@@ -79,15 +79,9 @@ std::string GetSizePasses() {
   return GetListOfPassesAsString(optimizer);
 }
 
-std::string GetVulkanToWebGPUPasses() {
+std::string GetWebGPUPasses() {
   spvtools::Optimizer optimizer(SPV_ENV_WEBGPU_0);
-  optimizer.RegisterVulkanToWebGPUPasses();
-  return GetListOfPassesAsString(optimizer);
-}
-
-std::string GetWebGPUToVulkanPasses() {
-  spvtools::Optimizer optimizer(SPV_ENV_VULKAN_1_1);
-  optimizer.RegisterWebGPUToVulkanPasses();
+  optimizer.RegisterWebGPUPasses();
   return GetListOfPassesAsString(optimizer);
 }
 
@@ -105,119 +99,91 @@ standard output.
 
 NOTE: The optimizer is a work in progress.
 
-Options (in lexicographical order):)",
-      program, program);
-  printf(R"(
+Options (in lexicographical order):
   --ccp
                Apply the conditional constant propagation transform.  This will
                propagate constant values throughout the program, and simplify
                expressions and conditional jumps with known predicate
                values.  Performed on entry point call tree functions and
-               exported functions.)");
-  printf(R"(
+               exported functions.
   --cfg-cleanup
                Cleanup the control flow graph. This will remove any unnecessary
                code from the CFG like unreachable code. Performed on entry
-               point call tree functions and exported functions.)");
-  printf(R"(
+               point call tree functions and exported functions.
   --combine-access-chains
                Combines chained access chains to produce a single instruction
-               where possible.)");
-  printf(R"(
+               where possible.
   --compact-ids
                Remap result ids to a compact range starting from %%1 and without
-               any gaps.)");
-  printf(R"(
+               any gaps.
   --convert-local-access-chains
                Convert constant index access chain loads/stores into
                equivalent load/stores with inserts and extracts. Performed
                on function scope variables referenced only with load, store,
                and constant index access chains in entry point call tree
-               functions.)");
-  printf(R"(
+               functions.
   --copy-propagate-arrays
                Does propagation of memory references when an array is a copy of
                another.  It will only propagate an array if the source is never
-               written to, and the only store to the target is the copy.)");
-  printf(R"(
+               written to, and the only store to the target is the copy.
   --eliminate-common-uniform
                Perform load/load elimination for duplicate uniform values.
                Converts any constant index access chain uniform loads into
                its equivalent load and extract. Some loads will be moved
                to facilitate sharing. Performed only on entry point
-               call tree functions.)");
-  printf(R"(
+               call tree functions.
   --eliminate-dead-branches
                Convert conditional branches with constant condition to the
                indicated unconditional brranch. Delete all resulting dead
-               code. Performed only on entry point call tree functions.)");
-  printf(R"(
+               code. Performed only on entry point call tree functions.
   --eliminate-dead-code-aggressive
                Delete instructions which do not contribute to a function's
-               output. Performed only on entry point call tree functions.)");
-  printf(R"(
+               output. Performed only on entry point call tree functions.
   --eliminate-dead-const
-               Eliminate dead constants.)");
-  printf(R"(
+               Eliminate dead constants.
   --eliminate-dead-functions
                Deletes functions that cannot be reached from entry points or
-               exported functions.)");
-  printf(R"(
+               exported functions.
   --eliminate-dead-inserts
                Deletes unreferenced inserts into composites, most notably
                unused stores to vector components, that are not removed by
-               aggressive dead code elimination.)");
-  printf(R"(
+               aggressive dead code elimination.
   --eliminate-dead-variables
-               Deletes module scope variables that are not referenced.)");
-  printf(R"(
+               Deletes module scope variables that are not referenced.
   --eliminate-insert-extract
                DEPRECATED.  This pass has been replaced by the simplification
                pass, and that pass will be run instead.
-               See --simplify-instructions.)");
-  printf(R"(
+               See --simplify-instructions.
   --eliminate-local-multi-store
                Replace stores and loads of function scope variables that are
                stored multiple times. Performed on variables referenceed only
                with loads and stores. Performed only on entry point call tree
-               functions.)");
-  printf(R"(
+               functions.
   --eliminate-local-single-block
                Perform single-block store/load and load/load elimination.
                Performed only on function scope variables in entry point
-               call tree functions.)");
-  printf(R"(
+               call tree functions.
   --eliminate-local-single-store
                Replace stores and loads of function scope variables that are
                only stored once. Performed on variables referenceed only with
                loads and stores. Performed only on entry point call tree
-               functions.)");
-  printf(R"(
+               functions.
   --flatten-decorations
                Replace decoration groups with repeated OpDecorate and
-               OpMemberDecorate instructions.)");
-  printf(R"(
+               OpMemberDecorate instructions.
   --fold-spec-const-op-composite
                Fold the spec constants defined by OpSpecConstantOp or
                OpSpecConstantComposite instructions to front-end constants
-               when possible.)");
-  printf(R"(
+               when possible.
   --freeze-spec-const
                Freeze the values of specialization constants to their default
-               values.)");
-  printf(R"(
-  --generate-webgpu-initializers
-               Adds initial values to OpVariable instructions that are missing
-               them, due to their storage type requiring them for WebGPU.)");
-  printf(R"(
+               values.
   --if-conversion
-               Convert if-then-else like assignments into OpSelect.)");
-  printf(R"(
+               Convert if-then-else like assignments into OpSelect.
   --inline-entry-points-exhaustive
                Exhaustively inline all function calls in entry point call tree
                functions. Currently does not inline calls to functions with
-               early return in a loop.)");
-  printf(R"(
+               early return in a loop.
   --legalize-hlsl
                Runs a series of optimizations that attempts to take SPIR-V
                generated by an HLSL front-end and generates legal Vulkan SPIR-V.
@@ -225,58 +191,46 @@ Options (in lexicographical order):)",
                %s
 
                Note this does not guarantee legal code. This option passes the
-               option --relax-logical-pointer to the validator.)",
-         GetLegalizationPasses().c_str());
-  printf(R"(
+               option --relax-logical-pointer to the validator.
   --local-redundancy-elimination
                Looks for instructions in the same basic block that compute the
-               same value, and deletes the redundant ones.)");
-  printf(R"(
+               same value, and deletes the redundant ones.
   --loop-fission
                Splits any top level loops in which the register pressure has
                exceeded a given threshold. The threshold must follow the use of
-               this flag and must be a positive integer value.)");
-  printf(R"(
+               this flag and must be a positive integer value.
   --loop-fusion
                Identifies adjacent loops with the same lower and upper bound.
                If this is legal, then merge the loops into a single loop.
                Includes heuristics to ensure it does not increase number of
                registers too much, while reducing the number of loads from
                memory. Takes an additional positive integer argument to set
-               the maximum number of registers.)");
-  printf(R"(
+               the maximum number of registers.
   --loop-invariant-code-motion
                Identifies code in loops that has the same value for every
-               iteration of the loop, and move it to the loop pre-header.)");
-  printf(R"(
+               iteration of the loop, and move it to the loop pre-header.
   --loop-unroll
-               Fully unrolls loops marked with the Unroll flag)");
-  printf(R"(
+               Fully unrolls loops marked with the Unroll flag
   --loop-unroll-partial
                Partially unrolls loops marked with the Unroll flag. Takes an
                additional non-0 integer argument to set the unroll factor, or
-               how many times a loop body should be duplicated)");
-  printf(R"(
+               how many times a loop body should be duplicated
   --loop-peeling
                Execute few first (respectively last) iterations before
-               (respectively after) the loop if it can elide some branches.)");
-  printf(R"(
+               (respectively after) the loop if it can elide some branches.
   --loop-peeling-threshold
                Takes a non-0 integer argument to set the loop peeling code size
                growth threshold. The threshold prevents the loop peeling
                from happening if the code size increase created by
-               the optimization is above the threshold.)");
-  printf(R"(
+               the optimization is above the threshold.
   --max-id-bound=<n>
                Sets the maximum value for the id bound for the moudle.  The
                default is the minimum value for this limit, 0x3FFFFF.  See
-               section 2.17 of the Spir-V specification.)");
-  printf(R"(
+               section 2.17 of the Spir-V specification.
   --merge-blocks
                Join two blocks into a single block if the second has the
                first as its only predecessor. Performed only on entry point
-               call tree functions.)");
-  printf(R"(
+               call tree functions.
   --merge-return
                Changes functions that have multiple return statements so they
                have a single return statement.
@@ -290,21 +244,17 @@ Options (in lexicographical order):)",
                label and an OpBranch to the header, nothing else.
 
                These conditions are guaranteed to be met after running
-               dead-branch elimination.)");
-  printf(R"(
+               dead-branch elimination.
   --loop-unswitch
                Hoists loop-invariant conditionals out of loops by duplicating
                the loop on each branch of the conditional and adjusting each
-               copy of the loop.)");
-  printf(R"(
+               copy of the loop.
   -O
                Optimize for performance. Apply a sequence of transformations
                in an attempt to improve the performance of the generated
                code. For this version of the optimizer, this flag is equivalent
                to specifying the following optimization code names:
-               %s)",
-         GetOptimizationPasses().c_str());
-  printf(R"(
+               %s
   -Os
                Optimize for size. Apply a sequence of transformations in an
                attempt to minimize the size of the generated code. For this
@@ -313,9 +263,7 @@ Options (in lexicographical order):)",
                %s
 
                NOTE: The specific transformations done by -O and -Os change
-                     from release to release.)",
-         GetSizePasses().c_str());
-  printf(R"(
+                     from release to release.
   -Oconfig=<file>
                Apply the sequence of transformations indicated in <file>.
                This file contains a sequence of strings separated by whitespace
@@ -343,148 +291,105 @@ Options (in lexicographical order):)",
                that position in the command line. For example, the invocation
                'spirv-opt --merge-blocks -O ...' applies the transformation
                --merge-blocks followed by all the transformations implied by
-               -O.)");
-  printf(R"(
+               -O.
   --print-all
                Print SPIR-V assembly to standard error output before each pass
-               and after the last pass.)");
-  printf(R"(
+               and after the last pass.
   --private-to-local
                Change the scope of private variables that are used in a single
-               function to that function.)");
-  printf(R"(
+               function to that function.
   --reduce-load-size
                Replaces loads of composite objects where not every component is
-               used by loads of just the elements that are used.)");
-  printf(R"(
+               used by loads of just the elements that are used.
   --redundancy-elimination
                Looks for instructions in the same function that compute the
-               same value, and deletes the redundant ones.)");
-  printf(R"(
+               same value, and deletes the redundant ones.
   --relax-struct-store
                Allow store from one struct type to a different type with
                compatible layout and members. This option is forwarded to the
-               validator.)");
-  printf(R"(
+               validator.
   --remove-duplicates
                Removes duplicate types, decorations, capabilities and extension
-               instructions.)");
-  printf(R"(
+               instructions.
   --replace-invalid-opcode
                Replaces instructions whose opcode is valid for shader modules,
                but not for the current shader stage.  To have an effect, all
-               entry points must have the same execution model.)");
-  printf(R"(
+               entry points must have the same execution model.
   --ssa-rewrite
                Replace loads and stores to function local variables with
-               operations on SSA IDs.)");
-  printf(R"(
+               operations on SSA IDs.
   --scalar-replacement[=<n>]
                Replace aggregate function scope variables that are only accessed
                via their elements with new function variables representing each
                element.  <n> is a limit on the size of the aggragates that will
                be replaced.  0 means there is no limit.  The default value is
-               100.)");
-  printf(R"(
+               100.
   --set-spec-const-default-value "<spec id>:<default value> ..."
                Set the default values of the specialization constants with
                <spec id>:<default value> pairs specified in a double-quoted
                string. <spec id>:<default value> pairs must be separated by
                blank spaces, and in each pair, spec id and default value must
                be separated with colon ':' without any blank spaces in between.
-               e.g.: --set-spec-const-default-value "1:100 2:400")");
-  printf(R"(
+               e.g.: --set-spec-const-default-value "1:100 2:400"
   --simplify-instructions
                Will simplify all instructions in the function as much as
-               possible.)");
-  printf(R"(
+               possible.
   --skip-validation
                Will not validate the SPIR-V before optimizing.  If the SPIR-V
                is invalid, the optimizer may fail or generate incorrect code.
-               This options should be used rarely, and with caution.)");
-  printf(R"(
+               This options should be used rarely, and with caution.
   --strength-reduction
-               Replaces instructions with equivalent and less expensive ones.)");
-  printf(R"(
-  --strip-atomic-counter-memory
-               Removes AtomicCountMemory bit from memory semantics values.)");
-  printf(R"(
+               Replaces instructions with equivalent and less expensive ones.
   --strip-debug
-               Remove all debug instructions.)");
-  printf(R"(
+               Remove all debug instructions.
   --strip-reflect
                Remove all reflection information.  For now, this covers
-               reflection information defined by SPV_GOOGLE_hlsl_functionality1.)");
-  printf(R"(
+               reflection information defined by SPV_GOOGLE_hlsl_functionality1.
   --target-env=<env>
                Set the target environment. Without this flag the target
                enviroment defaults to spv1.3.
                <env> must be one of vulkan1.0, vulkan1.1, opencl2.2, spv1.0,
-               spv1.1, spv1.2, spv1.3, or webgpu0.)");
-  printf(R"(
+               spv1.1, spv1.2, spv1.3, or webgpu0.
   --time-report
                Print the resource utilization of each pass (e.g., CPU time,
                RSS) to standard error output. Currently it supports only Unix
                systems. This option is the same as -ftime-report in GCC. It
                prints CPU/WALL/USR/SYS time (and RSS if possible), but note that
                USR/SYS time are returned by getrusage() and can have a small
-               error.)");
-  printf(R"(
+               error.
   --upgrade-memory-model
                Upgrades the Logical GLSL450 memory model to Logical VulkanKHR.
                Transforms memory, image, atomic and barrier operations to conform
-               to that model's requirements.)");
-  printf(R"(
+               to that model's requirements.
   --vector-dce
                This pass looks for components of vectors that are unused, and
                removes them from the vector.  Note this would still leave around
-               lots of dead code that a pass of ADCE will be able to remove.)");
-  printf(R"(
-  --vulkan-to-webgpu
-               Turns on the prescribed passes for converting from Vulkan to
-               WebGPU and sets the target environment to webgpu0. Other passes
-               may be turned on via additional flags, but such combinations are
-               not tested.
+               lots of dead code that a pass of ADCE will be able to remove.
+  --webgpu-mode
+               Turns on the prescribed passes for WebGPU and sets the target
+               environmet to webgpu0. Other passes may be turned on via
+               additional flags, but such combinations are not tested.
                Using --target-env with this flag is not allowed.
 
                This flag is the equivalent of passing in --target-env=webgpu0
                and specifying the following optimization code names:
                %s
 
-               NOTE: This flag is a WIP and its behaviour is subject to change.)",
-         GetVulkanToWebGPUPasses().c_str());
-  printf(R"(
-  --webgpu-to-vulkan
-               Turns on the prescribed passes for converting from WebGPU to
-               Vulkan and sets the target environment to vulkan1.1. Other passes
-               may be turned on via additional flags, but such combinations are
-               not tested.
-               Using --target-env with this flag is not allowed.
-
-               This flag is the equivalent of passing in --target-env=vulkan1.1
-               and specifying the following optimization code names:
-               %s
-
-               NOTE: This flag is a WIP and its behaviour is subject to change.)",
-         GetWebGPUToVulkanPasses().c_str());
-  printf(R"(
+               NOTE: This flag is a WIP and its behaviour is subject to change.
   --workaround-1209
                Rewrites instructions for which there are known driver bugs to
                avoid triggering those bugs.
-               Current workarounds: Avoid OpUnreachable in loops.)");
-  printf(R"(
+               Current workarounds: Avoid OpUnreachable in loops.
   --unify-const
-               Remove the duplicated constants.)");
-  printf(R"(
-  --validate-after-all
-               Validate the module after each pass is performed.)");
-  printf(R"(
+               Remove the duplicated constants.
   -h, --help
-               Print this help.)");
-  printf(R"(
+               Print this help.
   --version
                Display optimizer version information.
-)");
+)",
+      program, program, GetLegalizationPasses().c_str(),
+      GetOptimizationPasses().c_str(), GetSizePasses().c_str(),
+      GetWebGPUPasses().c_str());
 }
 
 // Reads command-line flags  the file specified in |oconfig_flag|. This string
@@ -635,8 +540,7 @@ OptStatus ParseFlags(int argc, const char** argv,
                      spvtools::OptimizerOptions* optimizer_options) {
   std::vector<std::string> pass_flags;
   bool target_env_set = false;
-  bool vulkan_to_webgpu_set = false;
-  bool webgpu_to_vulkan_set = false;
+  bool webgpu_mode_set = false;
   for (int argi = 1; argi < argc; ++argi) {
     const char* cur_arg = argv[argi];
     if ('-' == cur_arg[0]) {
@@ -697,16 +601,10 @@ OptStatus ParseFlags(int argc, const char** argv,
                                              max_id_bound);
       } else if (0 == strncmp(cur_arg,
                               "--target-env=", sizeof("--target-env=") - 1)) {
-        if (vulkan_to_webgpu_set) {
+        if (webgpu_mode_set) {
           spvtools::Error(opt_diagnostic, nullptr, {},
-                          "Cannot use both --vulkan-to-webgpu and --target-env "
-                          "at the same time");
-          return {OPT_STOP, 1};
-        }
-        if (webgpu_to_vulkan_set) {
-          spvtools::Error(opt_diagnostic, nullptr, {},
-                          "Cannot use both --webgpu-to-vulkan and --target-env "
-                          "at the same time");
+                          "Cannot use both --webgpu-mode and --target-env at "
+                          "the same time");
           return {OPT_STOP, 1};
         }
         const auto split_flag = spvtools::utils::SplitFlagArgs(cur_arg);
@@ -718,40 +616,16 @@ OptStatus ParseFlags(int argc, const char** argv,
           return {OPT_STOP, 1};
         }
         optimizer->SetTargetEnv(target_env);
-      } else if (0 == strcmp(cur_arg, "--vulkan-to-webgpu")) {
+      } else if (0 == strcmp(cur_arg, "--webgpu-mode")) {
         if (target_env_set) {
           spvtools::Error(opt_diagnostic, nullptr, {},
-                          "Cannot use both --vulkan-to-webgpu and --target-env "
-                          "at the same time");
-          return {OPT_STOP, 1};
-        }
-        if (webgpu_to_vulkan_set) {
-          spvtools::Error(opt_diagnostic, nullptr, {},
-                          "Cannot use both --vulkan-to-webgpu and "
-                          "--webgpu-to-vulkan at the same time");
+                          "Cannot use both --webgpu-mode and --target-env at "
+                          "the same time");
           return {OPT_STOP, 1};
         }
 
         optimizer->SetTargetEnv(SPV_ENV_WEBGPU_0);
-        optimizer->RegisterVulkanToWebGPUPasses();
-      } else if (0 == strcmp(cur_arg, "--webgpu-to-vulkan")) {
-        if (target_env_set) {
-          spvtools::Error(opt_diagnostic, nullptr, {},
-                          "Cannot use both --webgpu-to-vulkan and --target-env "
-                          "at the same time");
-          return {OPT_STOP, 1};
-        }
-        if (vulkan_to_webgpu_set) {
-          spvtools::Error(opt_diagnostic, nullptr, {},
-                          "Cannot use both --webgpu-to-vulkan and "
-                          "--vulkan-to-webgpu at the same time");
-          return {OPT_STOP, 1};
-        }
-
-        optimizer->SetTargetEnv(SPV_ENV_VULKAN_1_1);
-        optimizer->RegisterWebGPUToVulkanPasses();
-      } else if (0 == strcmp(cur_arg, "--validate-after-all")) {
-        optimizer->SetValidateAfterAll(true);
+        optimizer->RegisterWebGPUPasses();
       } else {
         // Some passes used to accept the form '--pass arg', canonicalize them
         // to '--pass=arg'.

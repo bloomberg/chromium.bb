@@ -105,7 +105,7 @@ void RealtimeAudioDestinationHandler::SetChannelCount(
     return;
   }
 
-  uint32_t old_channel_count = this->ChannelCount();
+  unsigned long old_channel_count = this->ChannelCount();
   AudioHandler::SetChannelCount(channel_count, exception_state);
 
   // Stop, re-create and start the destination to apply the new channel count.

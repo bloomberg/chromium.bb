@@ -44,7 +44,7 @@
 namespace cc {
 class Layer;
 class PictureLayer;
-}  // namespace cc
+}
 
 namespace blink {
 
@@ -57,7 +57,7 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
                                             public CompositorAnimationDelegate,
                                             public CompositorAnimationClient {
  public:
-  explicit LinkHighlightImpl(Node*);
+  static std::unique_ptr<LinkHighlightImpl> Create(Node*);
   ~LinkHighlightImpl() override;
 
   void StartHighlightAnimationIfNeeded();
@@ -99,6 +99,8 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   }
 
  private:
+  LinkHighlightImpl(Node*);
+
   void ReleaseResources();
   void ComputeQuads(const Node&, Vector<FloatQuad>&) const;
 

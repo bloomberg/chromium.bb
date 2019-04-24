@@ -36,6 +36,9 @@ void StubOfflinePageModel::DeletePagesByClientIdsAndOrigin(
     const std::vector<ClientId>& client_ids,
     const std::string& origin,
     DeletePageCallback callback) {}
+void StubOfflinePageModel::GetPagesByClientIds(
+    const std::vector<ClientId>& client_ids,
+    MultipleOfflinePageItemCallback callback) {}
 void StubOfflinePageModel::DeleteCachedPagesByURLPredicate(
     const UrlPredicate& predicate,
     DeletePageCallback callback) {}
@@ -47,18 +50,33 @@ void StubOfflinePageModel::GetOfflineIdsForClientId(
 void StubOfflinePageModel::GetPageByOfflineId(
     int64_t offline_id,
     SingleOfflinePageItemCallback callback) {}
-void StubOfflinePageModel::GetPagesWithCriteria(
-    const PageCriteria& criteria,
+void StubOfflinePageModel::GetPageByGuid(
+    const std::string& guid,
+    SingleOfflinePageItemCallback callback) {}
+void StubOfflinePageModel::GetPagesByURL(
+    const GURL& url,
     MultipleOfflinePageItemCallback callback) {}
-void StubOfflinePageModel::StoreThumbnail(int64_t offline_id,
-                                          std::string thumbnail) {}
-void StubOfflinePageModel::StoreFavicon(int64_t offline_id,
-                                        std::string favicon) {}
-void StubOfflinePageModel::GetVisualsByOfflineId(int64_t offline_id,
-                                                 GetVisualsCallback callback) {}
-void StubOfflinePageModel::GetVisualsAvailability(
+void StubOfflinePageModel::GetPagesByRequestOrigin(
+    const std::string& origin,
+    MultipleOfflinePageItemCallback callback) {}
+void StubOfflinePageModel::GetPageBySizeAndDigest(
+    int64_t file_size,
+    const std::string& digest,
+    SingleOfflinePageItemCallback callback) {}
+void StubOfflinePageModel::GetPagesRemovedOnCacheReset(
+    MultipleOfflinePageItemCallback callback) {}
+void StubOfflinePageModel::GetPagesByNamespace(
+    const std::string& name_space,
+    MultipleOfflinePageItemCallback callback) {}
+void StubOfflinePageModel::GetPagesSupportedByDownloads(
+    MultipleOfflinePageItemCallback callback) {}
+void StubOfflinePageModel::StoreThumbnail(const OfflinePageThumbnail& thumb) {}
+void StubOfflinePageModel::GetThumbnailByOfflineId(
     int64_t offline_id,
-    base::OnceCallback<void(VisualsAvailability)> callback) {}
+    GetThumbnailCallback callback) {}
+void StubOfflinePageModel::HasThumbnailForOfflineId(
+    int64_t offline_id,
+    base::OnceCallback<void(bool)> callback) {}
 void StubOfflinePageModel::PublishInternalArchive(
     const OfflinePageItem& offline_page,
     std::unique_ptr<OfflinePageArchiver> archiver,

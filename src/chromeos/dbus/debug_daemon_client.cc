@@ -50,11 +50,11 @@ const int kBigLogsDBusTimeoutMS = 120 * 1000;
 // the requester.
 class PipeReaderWrapper : public base::SupportsWeakPtr<PipeReaderWrapper> {
  public:
-  explicit PipeReaderWrapper(DebugDaemonClient::GetLogsCallback callback)
+  explicit PipeReaderWrapper(const DebugDaemonClient::GetLogsCallback& callback)
       : pipe_reader_(base::CreateTaskRunnerWithTraits(
             {base::MayBlock(),
              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-        callback_(std::move(callback)) {}
+        callback_(callback) {}
 
   base::ScopedFD Initialize() {
     return pipe_reader_.StartIO(
@@ -92,9 +92,9 @@ class PipeReaderWrapper : public base::SupportsWeakPtr<PipeReaderWrapper> {
   void RunCallbackAndDestroy(
       base::Optional<std::map<std::string, std::string>> result) {
     if (result.has_value()) {
-      std::move(callback_).Run(true, std::move(result.value()));
+      callback_.Run(true, result.value());
     } else {
-      std::move(callback_).Run(false, std::map<std::string, std::string>());
+      callback_.Run(false, std::map<std::string, std::string>());
     }
     delete this;
   }
@@ -236,22 +236,22 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void GetScrubbedLogs(GetLogsCallback callback) override {
+  void GetScrubbedLogs(const GetLogsCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetFeedbackLogs);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnGetAllLogs,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void GetScrubbedBigLogs(GetLogsCallback callback) override {
+  void GetScrubbedBigLogs(const GetLogsCallback& callback) override {
     // The PipeReaderWrapper is a self-deleting object; we don't have to worry
     // about ownership or lifetime. We need to create a new one for each Big
     // Logs requests in order to queue these requests. One request can take a
     // long time to be processed and a new request should never be ignored nor
     // cancels the on-going one.
-    PipeReaderWrapper* pipe_reader = new PipeReaderWrapper(std::move(callback));
+    PipeReaderWrapper* pipe_reader = new PipeReaderWrapper(callback);
     base::ScopedFD pipe_write_end = pipe_reader->Initialize();
 
     dbus::MethodCall method_call(debugd::kDebugdInterface,
@@ -267,22 +267,22 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        pipe_reader->AsWeakPtr()));
   }
 
-  void GetAllLogs(GetLogsCallback callback) override {
+  void GetAllLogs(const GetLogsCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetAllLogs);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnGetAllLogs,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
-  void GetUserLogFiles(GetLogsCallback callback) override {
+  void GetUserLogFiles(const GetLogsCallback& callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kGetUserLogFiles);
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnGetUserLogFiles,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                       weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
   void GetLog(const std::string& log_name,
@@ -502,9 +502,10 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void CupsRemovePrinter(const std::string& name,
-                         DebugDaemonClient::CupsRemovePrinterCallback callback,
-                         const base::Closure& error_callback) override {
+  void CupsRemovePrinter(
+      const std::string& name,
+      const DebugDaemonClient::CupsRemovePrinterCallback& callback,
+      const base::Closure& error_callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
                                  debugd::kCupsRemovePrinter);
     dbus::MessageWriter writer(&method_call);
@@ -513,7 +514,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnPrinterRemoved,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       weak_ptr_factory_.GetWeakPtr(), callback,
                        error_callback));
   }
 
@@ -534,26 +535,6 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     debugdaemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&DebugDaemonClientImpl::OnStopConcierge,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void StartPluginVmDispatcher(PluginVmDispatcherCallback callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kStartVmPluginDispatcher);
-    dbus::MessageWriter writer(&method_call);
-    debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnStartPluginVmDispatcher,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void StopPluginVmDispatcher(PluginVmDispatcherCallback callback) override {
-    dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kStopVmPluginDispatcher);
-    dbus::MessageWriter writer(&method_call);
-    debugdaemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&DebugDaemonClientImpl::OnStopPluginVmDispatcher,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -605,12 +586,13 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     std::move(callback).Run(std::move(routes));
   }
 
-  void OnGetAllLogs(GetLogsCallback callback, dbus::Response* response) {
+  void OnGetAllLogs(const GetLogsCallback& callback,
+                    dbus::Response* response) {
     std::map<std::string, std::string> logs;
     bool broken = false;  // did we see a broken (k,v) pair?
     dbus::MessageReader sub_reader(NULL);
     if (!response || !dbus::MessageReader(response).PopArray(&sub_reader)) {
-      std::move(callback).Run(false, logs);
+      callback.Run(false, logs);
       return;
     }
     while (sub_reader.HasMoreData()) {
@@ -624,11 +606,12 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       }
       logs[key] = value;
     }
-    std::move(callback).Run(!sub_reader.HasMoreData() && !broken, logs);
+    callback.Run(!sub_reader.HasMoreData() && !broken, logs);
   }
 
-  void OnGetUserLogFiles(GetLogsCallback callback, dbus::Response* response) {
-    return OnGetAllLogs(std::move(callback), response);
+  void OnGetUserLogFiles(const GetLogsCallback& callback,
+                         dbus::Response* response) {
+    return OnGetAllLogs(callback, response);
   }
 
   void OnBigFeedbackLogsResponse(base::WeakPtr<PipeReaderWrapper> pipe_reader,
@@ -768,9 +751,10 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                       dbus::Response* response,
                       dbus::ErrorResponse* err_response) {
     int32_t result;
+    dbus::MessageReader reader(response);
 
     // If we get a normal response, we need not examine the error response.
-    if (response && dbus::MessageReader(response).PopInt32(&result)) {
+    if (response && reader.PopInt32(&result)) {
       DCHECK_GE(result, 0);
       std::move(callback).Run(result);
       return;
@@ -787,20 +771,22 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     std::move(callback).Run(dbus_error);
   }
 
-  void OnPrinterRemoved(CupsRemovePrinterCallback callback,
+  void OnPrinterRemoved(const CupsRemovePrinterCallback& callback,
                         const base::Closure& error_callback,
                         dbus::Response* response) {
     bool result = false;
-    if (response && dbus::MessageReader(response).PopBool(&result))
-      std::move(callback).Run(result);
-    else
+    dbus::MessageReader reader(response);
+    if (response && reader.PopBool(&result)) {
+      callback.Run(result);
+    } else {
       error_callback.Run();
+    }
   }
 
   void OnStartConcierge(ConciergeCallback callback, dbus::Response* response) {
     bool result = false;
+    dbus::MessageReader reader(response);
     if (response) {
-      dbus::MessageReader reader(response);
       reader.PopBool(&result);
     }
     std::move(callback).Run(result);
@@ -812,28 +798,11 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
     std::move(callback).Run(response != nullptr);
   }
 
-  void OnStartPluginVmDispatcher(PluginVmDispatcherCallback callback,
-                                 dbus::Response* response) {
-    bool result = false;
-    if (response) {
-      dbus::MessageReader reader(response);
-      reader.PopBool(&result);
-    }
-    std::move(callback).Run(result);
-  }
-
-  void OnStopPluginVmDispatcher(PluginVmDispatcherCallback callback,
-                                dbus::Response* response) {
-    // Debugd just sends back an empty response, so we just check if
-    // the response exists
-    std::move(callback).Run(response != nullptr);
-  }
-
   void OnSetRlzPingSent(SetRlzPingSentCallback callback,
                         dbus::Response* response) {
     bool result = false;
+    dbus::MessageReader reader(response);
     if (response) {
-      dbus::MessageReader reader(response);
       reader.PopBool(&result);
     }
     std::move(callback).Run(result);

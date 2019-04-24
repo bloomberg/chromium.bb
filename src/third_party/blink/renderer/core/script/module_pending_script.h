@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/script/pending_script.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -22,6 +23,10 @@ class ModulePendingScript;
 // SetPendingScript() and is notified of module tree load finish.
 class ModulePendingScriptTreeClient final : public ModuleTreeClient {
  public:
+  static ModulePendingScriptTreeClient* Create() {
+    return MakeGarbageCollected<ModulePendingScriptTreeClient>();
+  }
+
   ModulePendingScriptTreeClient();
   ~ModulePendingScriptTreeClient() override = default;
 
@@ -36,14 +41,21 @@ class ModulePendingScriptTreeClient final : public ModuleTreeClient {
   void NotifyModuleTreeLoadFinished(ModuleScript*) override;
 
   bool finished_ = false;
-  Member<ModuleScript> module_script_;
-  Member<ModulePendingScript> pending_script_;
+  TraceWrapperMember<ModuleScript> module_script_;
+  TraceWrapperMember<ModulePendingScript> pending_script_;
 };
 
 // PendingScript for a module script
 // https://html.spec.whatwg.org/C/#module-script.
 class CORE_EXPORT ModulePendingScript : public PendingScript {
  public:
+  static ModulePendingScript* Create(ScriptElementBase* element,
+                                     ModulePendingScriptTreeClient* client,
+                                     bool is_external) {
+    return MakeGarbageCollected<ModulePendingScript>(element, client,
+                                                     is_external);
+  }
+
   ModulePendingScript(ScriptElementBase*,
                       ModulePendingScriptTreeClient*,
                       bool is_external);
@@ -75,7 +87,7 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
 
   void CheckState() const override {}
 
-  Member<ModulePendingScriptTreeClient> module_tree_client_;
+  TraceWrapperMember<ModulePendingScriptTreeClient> module_tree_client_;
   bool ready_ = false;
   const bool is_external_;
 };

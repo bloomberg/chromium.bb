@@ -273,8 +273,8 @@ public final class ChildProcessLauncherHelperImpl {
             public void run() {
                 ChildConnectionAllocator allocator =
                         getConnectionAllocator(context, true /* sandboxed */);
-                sBindingManager = new BindingManager(
-                        context, allocator.getNumberOfServices(), sSandboxedChildConnectionRanking);
+                sBindingManager = new BindingManager(context, allocator.getNumberOfServices(),
+                        sSandboxedChildConnectionRanking, false /* onTesting */);
             }
         });
 
@@ -488,6 +488,9 @@ public final class ChildProcessLauncherHelperImpl {
                 case ChildProcessImportance.IMPORTANT:
                     connection.addStrongBinding();
                     break;
+                case ChildProcessImportance.COUNT:
+                    assert false;
+                    break;
                 default:
                     assert false;
             }
@@ -509,6 +512,9 @@ public final class ChildProcessLauncherHelperImpl {
                     break;
                 case ChildProcessImportance.IMPORTANT:
                     connection.removeStrongBinding();
+                    break;
+                case ChildProcessImportance.COUNT:
+                    assert false;
                     break;
                 default:
                     assert false;

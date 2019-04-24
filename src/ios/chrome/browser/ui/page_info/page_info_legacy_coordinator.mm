@@ -23,7 +23,6 @@
 #import "ios/chrome/browser/ui/page_info/page_info_view_controller.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_reloading.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -96,6 +95,13 @@ NSString* const kPageInfoWillHideNotification =
   if (!navItem)
     return;
 
+  // Don't show if the page is native except for offline pages (to show the
+  // offline page info).
+  if (web::GetWebClient()->IsAppSpecificURL(navItem->GetURL()) &&
+      !reading_list::IsOfflineURL(navItem->GetURL())) {
+    return;
+  }
+
   // Don't show the bubble twice (this can happen when tapping very quickly in
   // accessibility mode).
   if (self.pageInfoViewController)
@@ -156,9 +162,15 @@ NSString* const kPageInfoWillHideNotification =
 }
 
 - (void)showSecurityHelpPage {
-  UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kPageInfoHelpCenterURL));
-  params.in_incognito = self.browserState->IsOffTheRecord();
-  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)->Load(params);
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithURL:GURL(kPageInfoHelpCenterURL)
+                                    referrer:web::Referrer()
+                                 inIncognito:self.browserState->IsOffTheRecord()
+                                inBackground:NO
+                                    appendTo:kLastTab];
+
+  UrlLoadingServiceFactory::GetForBrowserState(self.browserState)
+      ->OpenUrlInNewTab(command);
   [self hidePageInfo];
 }
 

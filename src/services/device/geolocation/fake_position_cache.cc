@@ -44,10 +44,6 @@ const mojom::Geoposition* FakePositionCache::FindPosition(
   return it == data.end() ? nullptr : &(it->second);
 }
 
-size_t FakePositionCache::GetPositionCacheSize() const {
-  return data.size();
-}
-
 const mojom::Geoposition& FakePositionCache::GetLastUsedNetworkPosition()
     const {
   return last_used_position;

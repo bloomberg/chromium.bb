@@ -4,8 +4,10 @@
 <pre id="error"></pre>
 
 <script>
-if (window.testRunner)
+if (window.testRunner) {
+    testRunner.dumpAsTextWithPixelResults();
     testRunner.waitUntilDone();
+}
 
 var image = new Image();
 

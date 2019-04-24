@@ -130,7 +130,7 @@ void RequestSenderTest::RequestSenderComplete(int error,
 TEST_P(RequestSenderTest, RequestSendSuccess) {
   EXPECT_TRUE(
       post_interceptor_->ExpectRequest(std::make_unique<PartialMatch>("test"),
-                                       test_file("updatecheck_reply_1.json")));
+                                       test_file("updatecheck_reply_1.xml")));
 
   const bool is_foreground = GetParam();
   request_sender_->Send(
@@ -154,7 +154,10 @@ TEST_P(RequestSenderTest, RequestSendSuccess) {
 
   // Check the response post conditions.
   EXPECT_EQ(0, error_);
-  EXPECT_EQ(419ul, response_.size());
+  EXPECT_TRUE(base::StartsWith(response_,
+                               "<?xml version='1.0' encoding='UTF-8'?>",
+                               base::CompareCase::SENSITIVE));
+  EXPECT_EQ(505ul, response_.size());
 
   // Check the interactivity header value.
   const auto extra_request_headers =
@@ -239,7 +242,7 @@ TEST_F(RequestSenderTest, RequestSendFailedNoUrls) {
 TEST_F(RequestSenderTest, RequestSendCupError) {
   EXPECT_TRUE(
       post_interceptor_->ExpectRequest(std::make_unique<PartialMatch>("test"),
-                                       test_file("updatecheck_reply_1.json")));
+                                       test_file("updatecheck_reply_1.xml")));
 
   const std::vector<GURL> urls = {GURL(kUrl1)};
   request_sender_ = std::make_unique<RequestSender>(config_);

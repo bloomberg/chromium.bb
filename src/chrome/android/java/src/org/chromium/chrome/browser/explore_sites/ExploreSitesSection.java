@@ -17,7 +17,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesCategory.CategoryType;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
-import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig.TileStyle;
 import org.chromium.chrome.browser.suggestions.TileGridLayout;
@@ -216,18 +215,10 @@ public class ExploreSitesSection {
     }
 
     private void onClicked(int tileIndex, ExploreSitesCategory category, View v) {
-        recordOpenedEsp(tileIndex);
+        RecordHistogram.recordLinearCountHistogram(
+                "ExploreSites.ClickedNTPCategoryIndex", tileIndex, 1, 100, 100);
         mNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
                 new LoadUrlParams(category.getUrl(), PageTransition.AUTO_BOOKMARK));
-    }
-
-    private void recordOpenedEsp(int tileIndex) {
-        // The following must be kept in sync with the "MostVisitedTileIndex" enum in enums.xml.
-        final int kMaxTileCount = 12;
-        RecordHistogram.recordEnumeratedHistogram(
-                "ExploreSites.ClickedNTPCategoryIndex", tileIndex, kMaxTileCount);
-        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_EXPLORE_SITES_TILE);
-        RecordUserAction.record("MobileNTPExploreSites");
     }
 
     @VisibleForTesting

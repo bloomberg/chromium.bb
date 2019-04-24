@@ -12,9 +12,9 @@
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_device_client.h"
+#include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
@@ -66,7 +66,6 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     LoginState::Initialize();
-    shill_clients::InitializeFakes();
     SetupDefaultShillState();
     NetworkHandler::Initialize();
     base::RunLoop().RunUntilIdle();
@@ -79,7 +78,6 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
     network_connect_delegate_.reset();
     LoginState::Shutdown();
     NetworkHandler::Shutdown();
-    shill_clients::Shutdown();
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -87,7 +85,7 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
   void SetupDefaultShillState() {
     base::RunLoop().RunUntilIdle();
     ShillDeviceClient::TestInterface* device_test =
-        ShillDeviceClient::Get()->GetTestInterface();
+        DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     device_test->ClearDevices();
     device_test->AddDevice("/device/stub_wifi_device1", shill::kTypeWifi,
                            "stub_wifi_device1");
@@ -95,7 +93,7 @@ class NetworkStateNotifierTest : public BrowserWithTestWindowTest {
                            shill::kTypeCellular, "stub_cellular_device1");
 
     ShillServiceClient::TestInterface* service_test =
-        ShillServiceClient::Get()->GetTestInterface();
+        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
     service_test->ClearServices();
     const bool add_to_visible = true;
     // Create a wifi network and set to online.

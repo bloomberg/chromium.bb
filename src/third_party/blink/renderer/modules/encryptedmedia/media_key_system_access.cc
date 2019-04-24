@@ -55,7 +55,7 @@ class NewCdmResultPromise : public ContentDecryptionModuleResultPromise {
       return;
 
     // 2.9. Let media keys be a new MediaKeys object.
-    auto* media_keys = MakeGarbageCollected<MediaKeys>(
+    MediaKeys* media_keys = MediaKeys::Create(
         GetExecutionContext(), supported_session_types_, base::WrapUnique(cdm));
 
     // 2.10. Resolve promise with media keys.

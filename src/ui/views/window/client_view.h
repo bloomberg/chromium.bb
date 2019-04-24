@@ -30,7 +30,7 @@ class VIEWS_EXPORT ClientView : public View {
   // |widget|, |contents_view| must be valid if you want the initial size of
   // the widget to be based on |contents_view|'s preferred size.
   ClientView(Widget* widget, View* contents_view);
-  ~ClientView() override = default;
+  ~ClientView() override {}
 
   // Manual RTTI ftw.
   virtual DialogClientView* AsDialogClientView();

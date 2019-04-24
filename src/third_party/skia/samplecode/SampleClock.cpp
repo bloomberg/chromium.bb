@@ -216,7 +216,9 @@ protected:
         canvas->restore();
     }
 
-    bool onAnimate(const AnimTimer&) override { return true; }
+    bool onAnimate(const SkAnimTimer&) override {
+        return true;
+    }
 
 private:
 

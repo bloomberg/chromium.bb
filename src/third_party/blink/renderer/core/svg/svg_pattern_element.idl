@@ -35,10 +35,10 @@ interface SVGPatternElement : SVGElement {
     [MeasureAs=SVG1DOMPaintServer] readonly attribute SVGAnimatedLength height;
 };
 
-SVGPatternElement includes SVGFitToViewBox;
-SVGPatternElement includes SVGURIReference;
-// SVGPatternElement includes SVGUnitTypes;
+SVGPatternElement implements SVGFitToViewBox;
+SVGPatternElement implements SVGURIReference;
+// SVGPatternElement implements SVGUnitTypes;
 
 // TODO(foolip): The following was part of SVG 1.1. https://crbug.com/701893
 // http://www.w3.org/TR/SVG11/pservers.html#InterfaceSVGPatternElement
-SVGPatternElement includes SVGTests;
+SVGPatternElement implements SVGTests;

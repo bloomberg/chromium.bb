@@ -35,6 +35,10 @@ class CSSMediaRule final : public CSSConditionRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static CSSMediaRule* Create(StyleRuleMedia* rule, CSSStyleSheet* sheet) {
+    return MakeGarbageCollected<CSSMediaRule>(rule, sheet);
+  }
+
   CSSMediaRule(StyleRuleMedia*, CSSStyleSheet*);
   ~CSSMediaRule() override;
 

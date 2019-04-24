@@ -55,8 +55,7 @@ public:
     bool prepareToDraw(GrOnFlushResourceProvider*);
 
     // Called after prepareToDraw(). Draws the given batch of path strokes.
-    void drawStrokes(
-            GrOpFlushState*, GrCCCoverageProcessor*, BatchID, const SkIRect& drawBounds) const;
+    void drawStrokes(GrOpFlushState*, BatchID, const SkIRect& drawBounds) const;
 
 private:
     static constexpr int kNumScissorModes = 2;

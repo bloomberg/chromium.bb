@@ -15,7 +15,6 @@ class LocaleManager {
  public:
   static std::string GetYandexReferralID();
   static std::string GetMailRUReferralID();
-  static void RecordUserTypeMetrics();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocaleManager);

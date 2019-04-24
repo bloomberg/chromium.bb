@@ -7,7 +7,7 @@
           %1 = OpExtInstImport "GLSL.std.450"
                OpMemoryModel Logical GLSL450
                OpEntryPoint Fragment %2 "main" %3
-               OpExecutionMode %2 OriginUpperLeft
+               OpExecutionMode %2 OriginLowerLeft
                OpDecorate %3 Location 0
        %void = OpTypeVoid
           %9 = OpTypeFunction %void

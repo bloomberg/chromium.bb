@@ -23,7 +23,6 @@
 #include "third_party/blink/renderer/core/svg/svg_length.h"
 #include "third_party/blink/renderer/core/svg/svg_preserve_aspect_ratio.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
 namespace blink {
@@ -35,12 +34,12 @@ class PatternAttributes final {
 
  public:
   PatternAttributes()
-      : x_(MakeGarbageCollected<SVGLength>(SVGLengthMode::kWidth)),
-        y_(MakeGarbageCollected<SVGLength>(SVGLengthMode::kHeight)),
-        width_(MakeGarbageCollected<SVGLength>(SVGLengthMode::kWidth)),
-        height_(MakeGarbageCollected<SVGLength>(SVGLengthMode::kHeight)),
+      : x_(SVGLength::Create(SVGLengthMode::kWidth)),
+        y_(SVGLength::Create(SVGLengthMode::kHeight)),
+        width_(SVGLength::Create(SVGLengthMode::kWidth)),
+        height_(SVGLength::Create(SVGLengthMode::kHeight)),
         view_box_(),
-        preserve_aspect_ratio_(MakeGarbageCollected<SVGPreserveAspectRatio>()),
+        preserve_aspect_ratio_(SVGPreserveAspectRatio::Create()),
         pattern_units_(SVGUnitTypes::kSvgUnitTypeObjectboundingbox),
         pattern_content_units_(SVGUnitTypes::kSvgUnitTypeUserspaceonuse),
         pattern_content_element_(nullptr),

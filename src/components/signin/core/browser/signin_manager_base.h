@@ -31,6 +31,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"
 #include "components/signin/core/browser/account_info.h"
@@ -42,10 +43,13 @@ class PrefService;
 class ProfileOAuth2TokenService;
 class SigninClient;
 
-class SigninManagerBase {
+class SigninManagerBase : public KeyedService {
  public:
   class Observer {
    public:
+    // Called when a user fails to sign into Google services such as sync.
+    virtual void GoogleSigninFailed(const GoogleServiceAuthError& error) {}
+
     // Called when a user signs into Google services such as sync.
     // This method is not called during a reauth.
     virtual void GoogleSigninSucceeded(const AccountInfo& account_info) {}
@@ -78,7 +82,7 @@ class SigninManagerBase {
  public:
 #endif
 
-  virtual ~SigninManagerBase();
+  ~SigninManagerBase() override;
 
   // Registers per-profile prefs.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -89,6 +93,12 @@ class SigninManagerBase {
   // If user was signed in, load tokens from DB if available.
   void Initialize(PrefService* local_state);
   bool IsInitialized() const;
+
+  // Returns true if a signin to Chrome is allowed (by policy or pref).
+  // TODO(crbug.com/806778): this method should not be used externally,
+  // instead the value of the kSigninAllowed preference should be checked.
+  // Once all external code has been modified, this method will be removed.
+  virtual bool IsSigninAllowed() const;
 
   // If a user has previously signed in (and has not signed out), this returns
   // the know information of the account. Otherwise, it returns an empty struct.
@@ -115,12 +125,9 @@ class SigninManagerBase {
   // Returns true if there is an authenticated user.
   bool IsAuthenticated() const;
 
-  // Methods to set or clear the observer of signin.
-  // In practice these should only be used by IdentityManager.
-  // NOTE: If SetObserver is called, ClearObserver should be called before
-  // the destruction of SigninManagerBase.
-  void SetObserver(Observer* observer);
-  void ClearObserver();
+  // Methods to register or remove observers of signin.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  protected:
   SigninClient* signin_client() const { return client_; }
@@ -150,9 +157,9 @@ class SigninManagerBase {
   // call this.
   void ClearAuthenticatedAccountId();
 
-  // Observer to notify on signin events.
-  // There is a DCHECK on destruction that this has been cleared.
-  Observer* observer_ = nullptr;
+  // List of observers to notify on signin events.
+  // Makes sure list is empty on destruction.
+  base::ObserverList<Observer, true>::Unchecked observer_list_;
 
  private:
   // Added only to allow SigninManager to call the SigninManagerBase

@@ -27,26 +27,17 @@ struct SliceTypes {
     fill = slice.fill;
   }
   explicit SliceTypes(const cssvalue::CSSBorderImageSliceValue& slice) {
-    auto* top_primitive_value =
-        DynamicTo<CSSPrimitiveValue>(slice.Slices().Top());
-    is_number[kSideTop] =
-        top_primitive_value && top_primitive_value->IsNumber();
-
-    auto* right_primitive_value =
-        DynamicTo<CSSPrimitiveValue>(slice.Slices().Right());
+    is_number[kSideTop] = slice.Slices().Top()->IsPrimitiveValue() &&
+                          ToCSSPrimitiveValue(slice.Slices().Top())->IsNumber();
     is_number[kSideRight] =
-        right_primitive_value && right_primitive_value->IsNumber();
-
-    auto* bottom_primitive_value =
-        DynamicTo<CSSPrimitiveValue>(slice.Slices().Bottom());
+        slice.Slices().Right()->IsPrimitiveValue() &&
+        ToCSSPrimitiveValue(slice.Slices().Right())->IsNumber();
     is_number[kSideBottom] =
-        bottom_primitive_value && bottom_primitive_value->IsNumber();
-
-    auto* left_primitive_value =
-        DynamicTo<CSSPrimitiveValue>(slice.Slices().Left());
+        slice.Slices().Bottom()->IsPrimitiveValue() &&
+        ToCSSPrimitiveValue(slice.Slices().Bottom())->IsNumber();
     is_number[kSideLeft] =
-        left_primitive_value && left_primitive_value->IsNumber();
-
+        slice.Slices().Left()->IsPrimitiveValue() &&
+        ToCSSPrimitiveValue(slice.Slices().Left())->IsNumber();
     fill = slice.Fill();
   }
 
@@ -91,8 +82,10 @@ namespace {
 class UnderlyingSliceTypesChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  explicit UnderlyingSliceTypesChecker(const SliceTypes& underlying_types)
-      : underlying_types_(underlying_types) {}
+  static std::unique_ptr<UnderlyingSliceTypesChecker> Create(
+      const SliceTypes& underlying_types) {
+    return base::WrapUnique(new UnderlyingSliceTypesChecker(underlying_types));
+  }
 
   static SliceTypes GetUnderlyingSliceTypes(
       const InterpolationValue& underlying) {
@@ -102,6 +95,9 @@ class UnderlyingSliceTypesChecker
   }
 
  private:
+  UnderlyingSliceTypesChecker(const SliceTypes& underlying_types)
+      : underlying_types_(underlying_types) {}
+
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     return underlying_types_ == GetUnderlyingSliceTypes(underlying);
@@ -113,11 +109,18 @@ class UnderlyingSliceTypesChecker
 class InheritedSliceTypesChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
+  static std::unique_ptr<InheritedSliceTypesChecker> Create(
+      const CSSProperty& property,
+      const SliceTypes& inherited_types) {
+    return base::WrapUnique(
+        new InheritedSliceTypesChecker(property, inherited_types));
+  }
+
+ private:
   InheritedSliceTypesChecker(const CSSProperty& property,
                              const SliceTypes& inherited_types)
       : property_(property), inherited_types_(inherited_types) {}
 
- private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     return inherited_types_ ==
@@ -130,7 +133,8 @@ class InheritedSliceTypesChecker
 };
 
 InterpolationValue ConvertImageSlice(const ImageSlice& slice, double zoom) {
-  auto list = std::make_unique<InterpolableList>(kSideIndexCount);
+  std::unique_ptr<InterpolableList> list =
+      InterpolableList::Create(kSideIndexCount);
   const Length* sides[kSideIndexCount] = {};
   sides[kSideTop] = &slice.slices.Top();
   sides[kSideRight] = &slice.slices.Right();
@@ -139,7 +143,7 @@ InterpolationValue ConvertImageSlice(const ImageSlice& slice, double zoom) {
 
   for (wtf_size_t i = 0; i < kSideIndexCount; i++) {
     const Length& side = *sides[i];
-    list->Set(i, std::make_unique<InterpolableNumber>(
+    list->Set(i, InterpolableNumber::Create(
                      side.IsFixed() ? side.Pixels() / zoom : side.Percent()));
   }
 
@@ -156,7 +160,7 @@ InterpolationValue CSSImageSliceInterpolationType::MaybeConvertNeutral(
   SliceTypes underlying_types =
       UnderlyingSliceTypesChecker::GetUnderlyingSliceTypes(underlying);
   conversion_checkers.push_back(
-      std::make_unique<UnderlyingSliceTypesChecker>(underlying_types));
+      UnderlyingSliceTypesChecker::Create(underlying_types));
   LengthBox zero_box(
       underlying_types.is_number[kSideTop] ? Length::Fixed(0)
                                            : Length::Percent(0),
@@ -182,7 +186,7 @@ InterpolationValue CSSImageSliceInterpolationType::MaybeConvertInherit(
   const ImageSlice& inherited_image_slice =
       ImageSlicePropertyFunctions::GetImageSlice(CssProperty(),
                                                  *state.ParentStyle());
-  conversion_checkers.push_back(std::make_unique<InheritedSliceTypesChecker>(
+  conversion_checkers.push_back(InheritedSliceTypesChecker::Create(
       CssProperty(), SliceTypes(inherited_image_slice)));
   return ConvertImageSlice(inherited_image_slice,
                            state.ParentStyle()->EffectiveZoom());
@@ -192,12 +196,13 @@ InterpolationValue CSSImageSliceInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  if (!IsA<cssvalue::CSSBorderImageSliceValue>(value))
+  if (!value.IsBorderImageSliceValue())
     return nullptr;
 
   const cssvalue::CSSBorderImageSliceValue& slice =
-      To<cssvalue::CSSBorderImageSliceValue>(value);
-  auto list = std::make_unique<InterpolableList>(kSideIndexCount);
+      cssvalue::ToCSSBorderImageSliceValue(value);
+  std::unique_ptr<InterpolableList> list =
+      InterpolableList::Create(kSideIndexCount);
   const CSSValue* sides[kSideIndexCount];
   sides[kSideTop] = slice.Slices().Top();
   sides[kSideRight] = slice.Slices().Right();
@@ -205,9 +210,9 @@ InterpolationValue CSSImageSliceInterpolationType::MaybeConvertValue(
   sides[kSideLeft] = slice.Slices().Left();
 
   for (wtf_size_t i = 0; i < kSideIndexCount; i++) {
-    const auto& side = *To<CSSPrimitiveValue>(sides[i]);
+    const CSSPrimitiveValue& side = *ToCSSPrimitiveValue(sides[i]);
     DCHECK(side.IsNumber() || side.IsPercentage());
-    list->Set(i, std::make_unique<InterpolableNumber>(side.GetDoubleValue()));
+    list->Set(i, InterpolableNumber::Create(side.GetDoubleValue()));
   }
 
   return InterpolationValue(

@@ -12,7 +12,7 @@
 #include "SkPaint.h"
 #include "SkPathOps.h"
 
-class SK_API SkMergePathEffect {
+class SkMergePathEffect {
 public:
     /*  Defers to two other patheffects, and then combines their outputs using the specified op.
      *  e.g.
@@ -23,13 +23,13 @@ public:
     static sk_sp<SkPathEffect> Make(sk_sp<SkPathEffect> one, sk_sp<SkPathEffect> two, SkPathOp op);
 };
 
-class SK_API SkMatrixPathEffect {
+class SkMatrixPathEffect {
 public:
     static sk_sp<SkPathEffect> MakeTranslate(SkScalar dx, SkScalar dy);
     static sk_sp<SkPathEffect> Make(const SkMatrix&);
 };
 
-class SK_API SkStrokePathEffect {
+class SkStrokePathEffect {
 public:
     static sk_sp<SkPathEffect> Make(SkScalar width, SkPaint::Join, SkPaint::Cap,
                                     SkScalar miter = 4);

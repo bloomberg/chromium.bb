@@ -79,7 +79,6 @@ base::LazyInstance<Static>::DestructorAtExit g_global_io_data =
 
 void CommonResponseCallback(IPC::Sender* ipc_sender,
                             int routing_id,
-                            int worker_thread_id,
                             int request_id,
                             ExtensionFunction::ResponseType type,
                             const base::ListValue& results,
@@ -91,23 +90,14 @@ void CommonResponseCallback(IPC::Sender* ipc_sender,
     return;
   }
 
-  if (routing_id != MSG_ROUTING_NONE) {
-    DCHECK_EQ(kMainThreadId, worker_thread_id);
-    ipc_sender->Send(new ExtensionMsg_Response(
-        routing_id, request_id, type == ExtensionFunction::SUCCEEDED, results,
-        error));
-  } else {
-    DCHECK_NE(kMainThreadId, worker_thread_id);
-    ipc_sender->Send(new ExtensionMsg_ResponseWorker(
-        worker_thread_id, request_id, type == ExtensionFunction::SUCCEEDED,
-        results, error));
-  }
+  ipc_sender->Send(new ExtensionMsg_Response(
+      routing_id, request_id, type == ExtensionFunction::SUCCEEDED, results,
+      error));
 }
 
 void IOThreadResponseCallback(
     const base::WeakPtr<IOThreadExtensionMessageFilter>& ipc_sender,
     int routing_id,
-    int worker_thread_id,
     int request_id,
     ExtensionFunction::ResponseType type,
     const base::ListValue& results,
@@ -116,8 +106,8 @@ void IOThreadResponseCallback(
   if (!ipc_sender.get())
     return;
 
-  CommonResponseCallback(ipc_sender.get(), routing_id, worker_thread_id,
-                         request_id, type, results, error);
+  CommonResponseCallback(ipc_sender.get(), routing_id, request_id, type,
+                         results, error);
 }
 
 }  // namespace
@@ -164,8 +154,8 @@ class ExtensionFunctionDispatcher::UIThreadResponseCallbackWrapper
                                     const std::string& error,
                                     functions::HistogramValue histogram_value) {
     CommonResponseCallback(render_frame_host_,
-                           render_frame_host_->GetRoutingID(), kMainThreadId,
-                           request_id, type, results, error);
+                           render_frame_host_->GetRoutingID(), request_id, type,
+                           results, error);
   }
 
   base::WeakPtr<ExtensionFunctionDispatcher> dispatcher_;
@@ -279,15 +269,19 @@ ExtensionFunctionDispatcher::Delegate::GetVisibleWebContents() const {
 }
 
 // static
-void ExtensionFunctionDispatcher::DoDispatchOnIOThread(
+void ExtensionFunctionDispatcher::DispatchOnIOThread(
     InfoMap* extension_info_map,
     void* profile_id,
     int render_process_id,
     base::WeakPtr<IOThreadExtensionMessageFilter> ipc_sender,
-    const ExtensionHostMsg_Request_Params& params,
-    const ExtensionFunction::ResponseCallback& callback) {
+    int routing_id,
+    const ExtensionHostMsg_Request_Params& params) {
   const Extension* extension =
       extension_info_map->extensions().GetByID(params.extension_id);
+
+  ExtensionFunction::ResponseCallback callback(
+      base::Bind(&IOThreadResponseCallback, ipc_sender, routing_id,
+                 params.request_id));
 
   scoped_refptr<ExtensionFunction> function(
       CreateExtensionFunction(params,
@@ -307,8 +301,6 @@ void ExtensionFunctionDispatcher::DoDispatchOnIOThread(
     return;
   }
   function_io->set_ipc_sender(ipc_sender);
-  function_io->set_worker_thread_id(params.worker_thread_id);
-  function_io->set_service_worker_version_id(params.service_worker_version_id);
   function_io->set_extension_info_map(extension_info_map);
   if (extension) {
     function->set_include_incognito_information(
@@ -348,37 +340,6 @@ void ExtensionFunctionDispatcher::DoDispatchOnIOThread(
   } else {
     function->OnQuotaExceeded(violation_error);
   }
-}
-
-// static
-void ExtensionFunctionDispatcher::DispatchOnIOThread(
-    InfoMap* extension_info_map,
-    void* profile_id,
-    int render_process_id,
-    base::WeakPtr<IOThreadExtensionMessageFilter> ipc_sender,
-    int routing_id,
-    const ExtensionHostMsg_Request_Params& params) {
-  ExtensionFunction::ResponseCallback callback(
-      base::BindRepeating(&IOThreadResponseCallback, ipc_sender, routing_id,
-                          kMainThreadId, params.request_id));
-
-  DoDispatchOnIOThread(extension_info_map, profile_id, render_process_id,
-                       ipc_sender, params, callback);
-}
-
-// static
-void ExtensionFunctionDispatcher::DispatchOnIOThreadForServiceWorker(
-    InfoMap* extension_info_map,
-    void* profile_id,
-    int render_process_id,
-    base::WeakPtr<IOThreadExtensionMessageFilter> ipc_sender,
-    const ExtensionHostMsg_Request_Params& params) {
-  ExtensionFunction::ResponseCallback callback(base::BindRepeating(
-      &IOThreadResponseCallback, ipc_sender, MSG_ROUTING_NONE,
-      params.worker_thread_id, params.request_id));
-
-  DoDispatchOnIOThread(extension_info_map, profile_id, render_process_id,
-                       ipc_sender, params, callback);
 }
 
 ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(

@@ -14,7 +14,7 @@ namespace blink {
 class CompositingRequirementsUpdaterTest : public RenderingTest {
  public:
   CompositingRequirementsUpdaterTest()
-      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
+      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
 
   void SetUp() final;
 };

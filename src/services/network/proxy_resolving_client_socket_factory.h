@@ -14,7 +14,6 @@
 #include "url/gurl.h"
 
 namespace net {
-struct CommonConnectJobParams;
 class HttpNetworkSession;
 class URLRequestContext;
 }  // namespace net
@@ -49,7 +48,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ProxyResolvingClientSocketFactory {
 
  private:
   std::unique_ptr<net::HttpNetworkSession> network_session_;
-  std::unique_ptr<net::CommonConnectJobParams> common_connect_job_params_;
   net::URLRequestContext* request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolvingClientSocketFactory);

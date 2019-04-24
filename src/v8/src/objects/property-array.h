@@ -6,7 +6,6 @@
 #define V8_OBJECTS_PROPERTY_ARRAY_H_
 
 #include "src/objects/heap-object.h"
-#include "torque-generated/class-definitions-from-dsl.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -48,12 +47,17 @@ class PropertyArray : public HeapObject {
   DECL_PRINTER(PropertyArray)
   DECL_VERIFIER(PropertyArray)
 
-  DEFINE_FIELD_OFFSET_CONSTANTS(HeapObject::kHeaderSize,
-                                TORQUE_GENERATED_PROPERTY_ARRAY_FIELDS)
-  static const int kHeaderSize = kSize;
+// Layout description.
+#define PROPERTY_ARRAY_FIELDS(V)       \
+  V(kLengthAndHashOffset, kTaggedSize) \
+  /* Header size. */                   \
+  V(kHeaderSize, 0)
+
+  DEFINE_FIELD_OFFSET_CONSTANTS(HeapObject::kHeaderSize, PROPERTY_ARRAY_FIELDS)
+#undef PROPERTY_ARRAY_FIELDS
 
   // Garbage collection support.
-  using BodyDescriptor = FlexibleBodyDescriptor<kHeaderSize>;
+  typedef FlexibleBodyDescriptor<kHeaderSize> BodyDescriptor;
 
   static const int kLengthFieldSize = 10;
   class LengthField : public BitField<int, 0, kLengthFieldSize> {};

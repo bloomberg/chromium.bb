@@ -53,7 +53,7 @@ class V8_EXPORT_PRIVATE ZoneStats final {
     friend class ZoneStats;
     void ZoneReturned(Zone* zone);
 
-    using InitialValues = std::map<Zone*, size_t>;
+    typedef std::map<Zone*, size_t> InitialValues;
 
     ZoneStats* const zone_stats_;
     InitialValues initial_values_;
@@ -75,8 +75,8 @@ class V8_EXPORT_PRIVATE ZoneStats final {
   void ReturnZone(Zone* zone);
 
   static const size_t kMaxUnusedSize = 3;
-  using Zones = std::vector<Zone*>;
-  using Stats = std::vector<StatsScope*>;
+  typedef std::vector<Zone*> Zones;
+  typedef std::vector<StatsScope*> Stats;
 
   Zones zones_;
   Stats stats_;

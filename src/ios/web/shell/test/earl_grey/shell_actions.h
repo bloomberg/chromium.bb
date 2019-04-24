@@ -5,8 +5,11 @@
 #ifndef IOS_WEB_SHELL_TEST_EARL_GREY_SHELL_ACTIONS_H_
 #define IOS_WEB_SHELL_TEST_EARL_GREY_SHELL_ACTIONS_H_
 
-@class ElementSelector;
-@protocol GREYAction;
+#include <string>
+
+#import <EarlGrey/EarlGrey.h>
+
+#include "ios/web/public/test/element_selector.h"
 
 namespace web {
 
@@ -15,7 +18,8 @@ namespace web {
 // is not expected to trigger events in the webview. This action doesn't fail if
 // the context menu isn't displayed; calling code should check for that
 // separately with a matcher.
-id<GREYAction> LongPressElementForContextMenu(ElementSelector* selector);
+id<GREYAction> LongPressElementForContextMenu(
+    web::test::ElementSelector selector);
 
 }  // namespace web
 

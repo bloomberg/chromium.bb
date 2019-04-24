@@ -38,12 +38,12 @@ NullAudioPoller::NullAudioPoller(AudioTransport* audio_transport)
 }
 
 NullAudioPoller::~NullAudioPoller() {
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
   rtc::Thread::Current()->Clear(this);
 }
 
 void NullAudioPoller::OnMessage(rtc::Message* msg) {
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
 
   // Buffer to hold the audio samples.
   int16_t buffer[kNumSamples * kNumChannels];

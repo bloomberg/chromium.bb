@@ -6,13 +6,19 @@
 }
 </style>
 <div id='target'></div>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
+This test passes if it does not crash. Newly referenced resources in the Web Animations api should be resolved in the style building stage.
 <script>
-var test = async_test("This test passes if it does not crash. Newly referenced resources in the Web Animations api should be resolved in the style building stage");
 target.animate([
     {backgroundImage: 'url(../../animations/resources/blue-100.png)', color: 'blue'},
     {backgroundImage: 'url(../../animations/resources/green-100.png)', color: 'green'},
   ], {duration: 1, fill: 'forwards'});
-requestAnimationFrame(test.step_func_done(() => {}));
+if (window.testRunner) {
+  testRunner.dumpAsText();
+  testRunner.waitUntilDone();
+}
+requestAnimationFrame(function() {
+    if (window.testRunner) {
+        testRunner.notifyDone();
+    }
+});
 </script>

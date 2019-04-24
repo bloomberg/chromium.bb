@@ -13,7 +13,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
-#include "components/image_fetcher/core/fake_image_decoder.h"
 #include "components/image_fetcher/core/image_data_fetcher.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -22,8 +21,8 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_pref_names.h"
+#include "components/signin/core/browser/test_image_decoder.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -223,9 +222,7 @@ testing::AssertionResult AccountTrackerObserver::CheckEvents(
 
 class AccountTrackerServiceTest : public testing::Test {
  public:
-  AccountTrackerServiceTest()
-      : signin_client_(&pref_service_),
-        fake_oauth2_token_service_(&pref_service_) {
+  AccountTrackerServiceTest() : signin_client_(&pref_service_) {
 #if defined(OS_ANDROID)
     ChildAccountInfoFetcherAndroid::InitializeForTests();
 #endif
@@ -263,12 +260,11 @@ class AccountTrackerServiceTest : public testing::Test {
   }
 
   void SimulateTokenAvailable(AccountKey account_key) {
-    fake_oauth2_token_service_.UpdateCredentials(
-        AccountKeyToAccountId(account_key), "fake-refresh-token");
+    fake_oauth2_token_service_.AddAccount(AccountKeyToAccountId(account_key));
   }
 
   void SimulateTokenRevoked(AccountKey account_key) {
-    fake_oauth2_token_service_.RevokeCredentials(
+    fake_oauth2_token_service_.RemoveAccount(
         AccountKeyToAccountId(account_key));
   }
 
@@ -324,9 +320,7 @@ class AccountTrackerServiceTest : public testing::Test {
 
   AccountFetcherService* account_fetcher() { return account_fetcher_.get(); }
   AccountTrackerService* account_tracker() { return account_tracker_.get(); }
-  FakeProfileOAuth2TokenService* token_service() {
-    return &fake_oauth2_token_service_;
-  }
+  OAuth2TokenService* token_service() { return &fake_oauth2_token_service_; }
   SigninClient* signin_client() { return &signin_client_; }
   PrefService* prefs() { return &pref_service_; }
   AccountTrackerObserver* observer() { return &observer_; }
@@ -362,9 +356,9 @@ class AccountTrackerServiceTest : public testing::Test {
     account_tracker_->AddObserver(&observer_);
 
     account_tracker_->Initialize(&pref_service_, std::move(path));
-    account_fetcher_->Initialize(
-        signin_client(), token_service(), account_tracker_.get(),
-        std::make_unique<image_fetcher::FakeImageDecoder>());
+    account_fetcher_->Initialize(signin_client(), token_service(),
+                                 account_tracker_.get(),
+                                 std::make_unique<TestImageDecoder>());
     if (network_enabled) {
       account_fetcher_->EnableNetworkFetchesForTest();
     }
@@ -388,7 +382,7 @@ class AccountTrackerServiceTest : public testing::Test {
   TestingPrefServiceSimple pref_service_;
   TestSigninClient signin_client_;
   AccountTrackerObserver observer_;
-  FakeProfileOAuth2TokenService fake_oauth2_token_service_;
+  FakeOAuth2TokenService fake_oauth2_token_service_;
   std::unique_ptr<AccountFetcherService> account_fetcher_;
   std::unique_ptr<AccountTrackerService> account_tracker_;
   bool force_account_id_to_email_for_legacy_tests_ = false;

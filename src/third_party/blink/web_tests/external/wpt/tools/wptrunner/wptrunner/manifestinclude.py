@@ -6,7 +6,7 @@ be included or excluded.
 """
 import glob
 import os
-from six.moves.urllib.parse import urlparse, urlsplit
+import urlparse
 
 from wptmanifest.node import DataNode
 from wptmanifest.backends import conditional
@@ -68,7 +68,7 @@ class IncludeManifest(ManifestItem):
 
     def _get_components(self, url):
         rv = []
-        url_parts = urlsplit(url)
+        url_parts = urlparse.urlsplit(url)
         variant = ""
         if url_parts.query:
             variant += "?" + url_parts.query
@@ -103,7 +103,7 @@ class IncludeManifest(ManifestItem):
                             continue
                         url = test.url
                         if query or fragment:
-                            parsed = urlparse(url)
+                            parsed = urlparse.urlparse(url)
                             if ((query and query != parsed.query) or
                                 (fragment and fragment != parsed.fragment)):
                                 continue

@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
@@ -23,6 +23,7 @@
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "net/cookies/cookie_store_test_helpers.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
+#include "services/network/session_cleanup_channel_id_store.h"
 #include "services/network/session_cleanup_cookie_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,125 +71,61 @@ class SynchronousCookieManager {
 
   std::vector<net::CanonicalCookie> GetAllCookies() {
     base::RunLoop run_loop;
-    std::vector<net::CanonicalCookie> cookies_out;
-    cookie_service_->GetAllCookies(base::BindLambdaForTesting(
-        [&run_loop,
-         &cookies_out](const std::vector<net::CanonicalCookie>& cookies) {
-          cookies_out = cookies;
-          run_loop.Quit();
-        }));
+    std::vector<net::CanonicalCookie> cookies;
+    cookie_service_->GetAllCookies(base::BindOnce(
+        &SynchronousCookieManager::GetCookiesCallback, &run_loop, &cookies));
     run_loop.Run();
-    return cookies_out;
+    return cookies;
   }
 
   std::vector<net::CanonicalCookie> GetCookieList(const GURL& url,
                                                   net::CookieOptions options) {
     base::RunLoop run_loop;
-    std::vector<net::CanonicalCookie> cookies_out;
+    std::vector<net::CanonicalCookie> cookies;
     cookie_service_->GetCookieList(
         url, options,
-        base::BindLambdaForTesting(
-            [&run_loop, &cookies_out](
-                const std::vector<net::CanonicalCookie>& cookies,
-                const net::CookieStatusList& excluded_cookies) {
-              cookies_out = cookies;
-              run_loop.Quit();
-            }));
-    run_loop.Run();
-    return cookies_out;
-  }
+        base::BindOnce(&SynchronousCookieManager::GetCookiesCallback, &run_loop,
+                       &cookies));
 
-  net::CookieStatusList GetExcludedCookieList(const GURL& url,
-                                              net::CookieOptions options) {
-    base::RunLoop run_loop;
-    net::CookieStatusList cookies_out;
-    cookie_service_->GetCookieList(
-        url, options,
-        base::BindLambdaForTesting(
-            [&run_loop, &cookies_out](
-                const std::vector<net::CanonicalCookie>& cookies,
-                const net::CookieStatusList& excluded_cookies) {
-              cookies_out = excluded_cookies;
-              run_loop.Quit();
-            }));
     run_loop.Run();
-    return cookies_out;
+    return cookies;
   }
 
   bool SetCanonicalCookie(const net::CanonicalCookie& cookie,
                           std::string source_scheme,
                           bool modify_http_only) {
     base::RunLoop run_loop;
-    net::CanonicalCookie::CookieInclusionStatus result_out =
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR;
-    net::CookieOptions options;
-    if (modify_http_only)
-      options.set_include_httponly();
+    bool result = false;
     cookie_service_->SetCanonicalCookie(
-        cookie, std::move(source_scheme), options,
-        base::BindLambdaForTesting(
-            [&run_loop,
-             &result_out](net::CanonicalCookie::CookieInclusionStatus result) {
-              result_out = result;
-              run_loop.Quit();
-            }));
-
+        cookie, std::move(source_scheme), modify_http_only,
+        base::BindOnce(&SynchronousCookieManager::SetCookieCallback, &run_loop,
+                       &result));
     run_loop.Run();
-    return result_out == net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
-  }
-
-  net::CanonicalCookie::CookieInclusionStatus SetCanonicalCookieWithStatus(
-      const net::CanonicalCookie& cookie,
-      std::string source_scheme,
-      bool modify_http_only) {
-    base::RunLoop run_loop;
-    net::CookieOptions options;
-    if (modify_http_only)
-      options.set_include_httponly();
-    net::CanonicalCookie::CookieInclusionStatus result_out =
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR;
-    cookie_service_->SetCanonicalCookie(
-        cookie, std::move(source_scheme), options,
-        base::BindLambdaForTesting(
-            [&run_loop,
-             &result_out](net::CanonicalCookie::CookieInclusionStatus result) {
-              result_out = result;
-              run_loop.Quit();
-            }));
-
-    run_loop.Run();
-    return result_out;
+    return result;
   }
 
   bool DeleteCanonicalCookie(const net::CanonicalCookie& cookie) {
     base::RunLoop run_loop;
-    bool result_out;
+    bool result;
     cookie_service_->DeleteCanonicalCookie(
-        cookie,
-        base::BindLambdaForTesting([&run_loop, &result_out](bool result) {
-          result_out = result;
-          run_loop.Quit();
-        }));
-
+        cookie, base::BindOnce(&SynchronousCookieManager::SetCookieCallback,
+                               &run_loop, &result));
     run_loop.Run();
-    return result_out;
+    return result;
   }
 
   uint32_t DeleteCookies(mojom::CookieDeletionFilter filter) {
     base::RunLoop run_loop;
-    uint32_t result_out = 0u;
+    uint32_t num_deleted = 0u;
     mojom::CookieDeletionFilterPtr filter_ptr =
         mojom::CookieDeletionFilter::New(filter);
 
     cookie_service_->DeleteCookies(
         std::move(filter_ptr),
-        base::BindLambdaForTesting([&run_loop, &result_out](uint32_t result) {
-          result_out = result;
-          run_loop.Quit();
-        }));
-
+        base::BindOnce(&SynchronousCookieManager::DeleteCookiesCallback,
+                       &run_loop, &num_deleted));
     run_loop.Run();
-    return result_out;
+    return num_deleted;
   }
 
   void FlushCookieStore() {
@@ -205,6 +142,27 @@ class SynchronousCookieManager {
   // No need to wrap Add*Listener and CloneInterface, since their use
   // is purely async.
  private:
+  static void GetCookiesCallback(
+      base::RunLoop* run_loop,
+      std::vector<net::CanonicalCookie>* cookies_out,
+      const std::vector<net::CanonicalCookie>& cookies) {
+    *cookies_out = cookies;
+    run_loop->Quit();
+  }
+
+  static void SetCookieCallback(base::RunLoop* run_loop,
+                                bool* result_out,
+                                bool result) {
+    *result_out = result;
+    run_loop->Quit();
+  }
+
+  static void DeleteCookiesCallback(base::RunLoop* run_loop,
+                                    uint32_t* num_deleted_out,
+                                    uint32_t num_deleted) {
+    *num_deleted_out = num_deleted;
+    run_loop->Quit();
+  }
 
   mojom::CookieManager* cookie_service_;
   uint32_t flush_callback_counter_;
@@ -214,7 +172,7 @@ class SynchronousCookieManager {
 
 class CookieManagerTest : public testing::Test {
  public:
-  CookieManagerTest() { InitializeCookieService(nullptr, nullptr); }
+  CookieManagerTest() { InitializeCookieService(nullptr, nullptr, nullptr); }
 
   ~CookieManagerTest() override {}
 
@@ -227,12 +185,9 @@ class CookieManagerTest : public testing::Test {
                           bool can_modify_httponly) {
     net::ResultSavingCookieCallback<net::CanonicalCookie::CookieInclusionStatus>
         callback;
-    net::CookieOptions options;
-    if (can_modify_httponly)
-      options.set_include_httponly();
     cookie_monster_->SetCanonicalCookieAsync(
         std::make_unique<net::CanonicalCookie>(cookie),
-        std::move(source_scheme), options,
+        std::move(source_scheme), can_modify_httponly,
         base::BindOnce(&net::ResultSavingCookieCallback<
                            net::CanonicalCookie::CookieInclusionStatus>::Run,
                        base::Unretained(&callback)));
@@ -286,12 +241,15 @@ class CookieManagerTest : public testing::Test {
  protected:
   void InitializeCookieService(
       scoped_refptr<net::CookieMonster::PersistentCookieStore> store,
-      scoped_refptr<SessionCleanupCookieStore> cleanup_store) {
+      scoped_refptr<SessionCleanupCookieStore> cleanup_store,
+      scoped_refptr<SessionCleanupChannelIDStore> channel_id_store) {
     connection_error_seen_ = false;
     cookie_monster_ = std::make_unique<net::CookieMonster>(
-        std::move(store), nullptr /* netlog */);
+        std::move(store), nullptr /*channel_id_service */,
+        nullptr /* netlog */);
     cookie_service_ = std::make_unique<CookieManager>(
-        cookie_monster_.get(), std::move(cleanup_store), nullptr);
+        cookie_monster_.get(), std::move(cleanup_store),
+        std::move(channel_id_store), nullptr);
     cookie_service_->AddRequest(mojo::MakeRequest(&cookie_service_ptr_));
     service_wrapper_ =
         std::make_unique<SynchronousCookieManager>(cookie_service_ptr_.get());
@@ -459,19 +417,6 @@ TEST_F(CookieManagerTest, GetCookieList) {
 
   EXPECT_EQ("Secure", cookies[1].Name());
   EXPECT_EQ("E", cookies[1].Value());
-
-  net::CookieOptions excluded_options;
-  excluded_options.set_return_excluded_cookies();
-  net::CookieStatusList excluded_cookies =
-      service_wrapper()->GetExcludedCookieList(
-          GURL("https://foo_host.com/with/path"), excluded_options);
-
-  ASSERT_EQ(1u, excluded_cookies.size());
-
-  EXPECT_EQ("HttpOnly", excluded_cookies[0].cookie.Name());
-  EXPECT_EQ("F", excluded_cookies[0].cookie.Value());
-  EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY,
-            excluded_cookies[0].status);
 }
 
 TEST_F(CookieManagerTest, GetCookieListHttpOnly) {
@@ -501,14 +446,6 @@ TEST_F(CookieManagerTest, GetCookieListHttpOnly) {
       GURL("https://foo_host.com/with/path"), options);
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ("C", cookies[0].Name());
-
-  options.set_return_excluded_cookies();
-
-  net::CookieStatusList excluded_cookies =
-      service_wrapper()->GetExcludedCookieList(
-          GURL("https://foo_host.com/with/path"), options);
-  ASSERT_EQ(1u, excluded_cookies.size());
-  EXPECT_EQ("A", excluded_cookies[0].cookie.Name());
 
   // Retrieve with httponly cookies.
   options.set_include_httponly();
@@ -556,13 +493,6 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ("A", cookies[0].Name());
 
-  options.set_return_excluded_cookies();
-
-  net::CookieStatusList excluded_cookies =
-      service_wrapper()->GetExcludedCookieList(
-          GURL("https://foo_host.com/with/path"), options);
-  ASSERT_EQ(2u, excluded_cookies.size());
-
   // Retrieve unrestricted and lax cookies.
   options.set_same_site_cookie_context(
       net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
@@ -572,10 +502,6 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
   std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
   EXPECT_EQ("A", cookies[0].Name());
   EXPECT_EQ("C", cookies[1].Name());
-
-  excluded_cookies = service_wrapper()->GetExcludedCookieList(
-      GURL("https://foo_host.com/with/path"), options);
-  ASSERT_EQ(1u, excluded_cookies.size());
 
   // Retrieve everything.
   options.set_same_site_cookie_context(
@@ -587,10 +513,6 @@ TEST_F(CookieManagerTest, GetCookieListSameSite) {
   EXPECT_EQ("A", cookies[0].Name());
   EXPECT_EQ("C", cookies[1].Name());
   EXPECT_EQ("E", cookies[2].Name());
-
-  excluded_cookies = service_wrapper()->GetExcludedCookieList(
-      GURL("https://foo_host.com/with/path"), options);
-  ASSERT_EQ(0u, excluded_cookies.size());
 }
 
 TEST_F(CookieManagerTest, GetCookieListAccessTime) {
@@ -695,14 +617,13 @@ TEST_F(CookieManagerTest, DeleteThroughSet) {
 }
 
 TEST_F(CookieManagerTest, ConfirmSecureSetFails) {
-  EXPECT_EQ(service_wrapper()->SetCanonicalCookieWithStatus(
-                net::CanonicalCookie("N", "O", kCookieDomain, "/", base::Time(),
-                                     base::Time(), base::Time(),
-                                     /*secure=*/true, /*httponly=*/false,
-                                     net::CookieSameSite::NO_RESTRICTION,
-                                     net::COOKIE_PRIORITY_MEDIUM),
-                "http", false),
-            net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY);
+  EXPECT_FALSE(service_wrapper()->SetCanonicalCookie(
+      net::CanonicalCookie("N", "O", kCookieDomain, "/", base::Time(),
+                           base::Time(), base::Time(),
+                           /*secure=*/true, /*httponly=*/false,
+                           net::CookieSameSite::NO_RESTRICTION,
+                           net::COOKIE_PRIORITY_MEDIUM),
+      "http", false));
   std::vector<net::CanonicalCookie> cookies =
       service_wrapper()->GetAllCookies();
 
@@ -710,45 +631,17 @@ TEST_F(CookieManagerTest, ConfirmSecureSetFails) {
 }
 
 TEST_F(CookieManagerTest, ConfirmHttpOnlySetFails) {
-  EXPECT_EQ(service_wrapper()->SetCanonicalCookieWithStatus(
-                net::CanonicalCookie("N", "O", kCookieDomain, "/", base::Time(),
-                                     base::Time(), base::Time(),
-                                     /*secure=*/false, /*httponly=*/true,
-                                     net::CookieSameSite::NO_RESTRICTION,
-                                     net::COOKIE_PRIORITY_MEDIUM),
-                "http", false),
-            net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY);
+  EXPECT_FALSE(service_wrapper()->SetCanonicalCookie(
+      net::CanonicalCookie("N", "O", kCookieDomain, "/", base::Time(),
+                           base::Time(), base::Time(),
+                           /*secure=*/false, /*httponly=*/true,
+                           net::CookieSameSite::NO_RESTRICTION,
+                           net::COOKIE_PRIORITY_MEDIUM),
+      "http", false));
   std::vector<net::CanonicalCookie> cookies =
       service_wrapper()->GetAllCookies();
 
   ASSERT_EQ(0u, cookies.size());
-}
-
-TEST_F(CookieManagerTest, ConfirmSecureOverwriteFails) {
-  EXPECT_TRUE(SetCanonicalCookie(
-      net::CanonicalCookie(
-          "Secure", "F", kCookieDomain, "/with/path", base::Time(),
-          base::Time(), base::Time(), /*secure=*/true,
-          /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
-          net::COOKIE_PRIORITY_MEDIUM),
-      "https", true));
-
-  EXPECT_EQ(
-      service_wrapper()->SetCanonicalCookieWithStatus(
-          net::CanonicalCookie(
-              "Secure", "Nope", kCookieDomain, "/with/path", base::Time(),
-              base::Time(), base::Time(), /*secure=*/false,
-              /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
-              net::COOKIE_PRIORITY_MEDIUM),
-          "http", false),
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE);
-
-  std::vector<net::CanonicalCookie> cookies =
-      service_wrapper()->GetAllCookies();
-  ASSERT_EQ(1u, cookies.size());
-  std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
-  EXPECT_EQ("Secure", cookies[0].Name());
-  EXPECT_EQ("F", cookies[0].Value());
 }
 
 TEST_F(CookieManagerTest, ConfirmHttpOnlyOverwriteFails) {
@@ -758,17 +651,15 @@ TEST_F(CookieManagerTest, ConfirmHttpOnlyOverwriteFails) {
           base::Time(), base::Time(), /*secure=*/false,
           /*httponly=*/true, net::CookieSameSite::NO_RESTRICTION,
           net::COOKIE_PRIORITY_MEDIUM),
-      "http", true));
+      "https", true));
 
-  EXPECT_EQ(
-      service_wrapper()->SetCanonicalCookieWithStatus(
-          net::CanonicalCookie(
-              "HttpOnly", "Nope", kCookieDomain, "/with/path", base::Time(),
-              base::Time(), base::Time(), /*secure=*/false,
-              /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
-              net::COOKIE_PRIORITY_MEDIUM),
-          "https", false),
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY);
+  EXPECT_FALSE(service_wrapper()->SetCanonicalCookie(
+      net::CanonicalCookie(
+          "HttpOnly", "Nope", kCookieDomain, "/with/path", base::Time(),
+          base::Time(), base::Time(), /*secure=*/false,
+          /*httponly=*/true, net::CookieSameSite::NO_RESTRICTION,
+          net::COOKIE_PRIORITY_MEDIUM),
+      "http", false));
 
   std::vector<net::CanonicalCookie> cookies =
       service_wrapper()->GetAllCookies();
@@ -1995,7 +1886,7 @@ class FlushableCookieManagerTest : public CookieManagerTest {
  public:
   FlushableCookieManagerTest()
       : store_(base::MakeRefCounted<net::FlushablePersistentStore>()) {
-    InitializeCookieService(store_, nullptr);
+    InitializeCookieService(store_, nullptr, nullptr);
   }
 
   ~FlushableCookieManagerTest() override {}
@@ -2095,7 +1986,7 @@ class SessionCleanupCookieManagerTest : public CookieManagerTest {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     auto store = CreateCookieStore();
-    InitializeCookieService(store, store);
+    InitializeCookieService(store, store, nullptr);
   }
 
   scoped_refptr<SessionCleanupCookieStore> CreateCookieStore() {
@@ -2130,7 +2021,7 @@ TEST_F(SessionCleanupCookieManagerTest, PersistSessionCookies) {
 
   // Re-create the cookie store to make sure cookies are persisted.
   auto store = CreateCookieStore();
-  InitializeCookieService(store, store);
+  InitializeCookieService(store, store, nullptr);
 
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
 }
@@ -2145,7 +2036,7 @@ TEST_F(SessionCleanupCookieManagerTest, DeleteSessionCookies) {
   base::RunLoop().RunUntilIdle();
 
   auto store = CreateCookieStore();
-  InitializeCookieService(store, store);
+  InitializeCookieService(store, store, nullptr);
 
   EXPECT_EQ(0u, service_wrapper()->GetAllCookies().size());
 }
@@ -2160,7 +2051,7 @@ TEST_F(SessionCleanupCookieManagerTest, SettingMustMatchDomain) {
   base::RunLoop().RunUntilIdle();
 
   auto store = CreateCookieStore();
-  InitializeCookieService(store, store);
+  InitializeCookieService(store, store, nullptr);
 
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
 }
@@ -2178,7 +2069,7 @@ TEST_F(SessionCleanupCookieManagerTest, FirstSettingTakesPrecedence) {
   base::RunLoop().RunUntilIdle();
 
   auto store = CreateCookieStore();
-  InitializeCookieService(store, store);
+  InitializeCookieService(store, store, nullptr);
 
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
 }
@@ -2194,7 +2085,7 @@ TEST_F(SessionCleanupCookieManagerTest, ForceKeepSessionState) {
   base::RunLoop().RunUntilIdle();
 
   auto store = CreateCookieStore();
-  InitializeCookieService(store, store);
+  InitializeCookieService(store, store, nullptr);
 
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
 }
@@ -2212,9 +2103,113 @@ TEST_F(SessionCleanupCookieManagerTest, HttpCookieAllowedOnHttps) {
   base::RunLoop().RunUntilIdle();
 
   auto store = CreateCookieStore();
-  InitializeCookieService(store, store);
+  InitializeCookieService(store, store, nullptr);
 
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
+}
+
+// A test class having a channel ID store with persistent backing. The channel
+// ID store can be destroyed and recreated by calling InitializeCookieService
+// again.
+class SessionCleanupChannelIDCookieManagerTest : public CookieManagerTest {
+ protected:
+  using ChannelIDVector =
+      std::vector<std::unique_ptr<net::DefaultChannelIDStore::ChannelID>>;
+
+  ~SessionCleanupChannelIDCookieManagerTest() override {}
+
+  void SetUp() override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    store_ = CreateChannelIDStore();
+    ASSERT_EQ(0u, Load().size());
+    InitializeCookieService(nullptr, nullptr, store_);
+  }
+
+  void TearDown() override {
+    NukeService();
+    store_ = nullptr;
+    base::RunLoop().RunUntilIdle();
+  }
+
+  scoped_refptr<SessionCleanupChannelIDStore> CreateChannelIDStore() {
+    return base::MakeRefCounted<SessionCleanupChannelIDStore>(
+        temp_dir_.GetPath().Append(kTestCookiesFilename),
+        scoped_task_environment_.GetMainThreadTaskRunner());
+  }
+
+  ChannelIDVector Load() {
+    ChannelIDVector channel_ids;
+    base::RunLoop run_loop;
+    store_->Load(
+        base::BindRepeating(&SessionCleanupChannelIDCookieManagerTest::OnLoaded,
+                            base::Unretained(this), &run_loop, &channel_ids));
+    run_loop.Run();
+    return channel_ids;
+  }
+
+  void OnLoaded(base::RunLoop* run_loop,
+                ChannelIDVector* channel_ids_out,
+                std::unique_ptr<ChannelIDVector> channel_ids) {
+    channel_ids_out->swap(*channel_ids);
+    run_loop->Quit();
+  }
+
+  scoped_refptr<SessionCleanupChannelIDStore> store_;
+  base::ScopedTempDir temp_dir_;
+};
+
+TEST_F(SessionCleanupChannelIDCookieManagerTest, PersistSessionChannelIDs) {
+  store_->AddChannelID(net::ChannelIDStore::ChannelID(
+      kCookieDomain, base::Time::Now(), crypto::ECPrivateKey::Create()));
+
+  // Re-create the channel ID store to make sure channel IDs are persisted.
+  store_ = CreateChannelIDStore();
+  InitializeCookieService(nullptr, nullptr, store_);
+
+  EXPECT_EQ(1u, Load().size());
+}
+
+TEST_F(SessionCleanupChannelIDCookieManagerTest, DeleteSessionChannelIDs) {
+  store_->AddChannelID(net::ChannelIDStore::ChannelID(
+      kCookieDomain, base::Time::Now(), crypto::ECPrivateKey::Create()));
+
+  cookie_service_client()->SetContentSettings(
+      {CreateSetting(CONTENT_SETTING_SESSION_ONLY, kCookieURL)});
+  base::RunLoop().RunUntilIdle();
+
+  store_ = CreateChannelIDStore();
+  InitializeCookieService(nullptr, nullptr, store_);
+
+  EXPECT_EQ(0u, Load().size());
+}
+
+TEST_F(SessionCleanupChannelIDCookieManagerTest, SettingMustMatchDomain) {
+  store_->AddChannelID(net::ChannelIDStore::ChannelID(
+      kCookieDomain, base::Time::Now(), crypto::ECPrivateKey::Create()));
+
+  cookie_service_client()->SetContentSettings(
+      {CreateSetting(CONTENT_SETTING_SESSION_ONLY, "http://other.com")});
+  base::RunLoop().RunUntilIdle();
+
+  store_ = CreateChannelIDStore();
+  InitializeCookieService(nullptr, nullptr, store_);
+
+  EXPECT_EQ(1u, Load().size());
+}
+
+TEST_F(SessionCleanupChannelIDCookieManagerTest, ForceKeepSessionState) {
+  store_->AddChannelID(net::ChannelIDStore::ChannelID(
+      kCookieDomain, base::Time::Now(), crypto::ECPrivateKey::Create()));
+
+  cookie_service_client()->SetContentSettings(
+      {CreateSetting(CONTENT_SETTING_SESSION_ONLY, kCookieURL)});
+  cookie_service_client()->SetForceKeepSessionState();
+  base::RunLoop().RunUntilIdle();
+
+  store_ = CreateChannelIDStore();
+  InitializeCookieService(nullptr, nullptr, store_);
+
+  EXPECT_EQ(1u, Load().size());
 }
 
 }  // namespace

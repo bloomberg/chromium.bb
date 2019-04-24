@@ -176,7 +176,7 @@ public class GoogleSearchRestrictionTest {
      */
     private NavigationController createOneEntryNavController(int pageTransition) {
         NavigationEntry entry = new NavigationEntry(
-                1, FOO_URL, FOO_URL, FOO_URL, "Foo", null, null, pageTransition, 0);
+                1, FOO_URL, FOO_URL, FOO_URL, "Foo", null, null, pageTransition);
 
         NavigationHistory navHistory = new NavigationHistory();
         navHistory.addEntry(entry);
@@ -196,14 +196,14 @@ public class GoogleSearchRestrictionTest {
         NavigationEntry firstEntry;
         if (fromSRP) {
             firstEntry = new NavigationEntry(0, GOOGLE_SEARCH_URL, GOOGLE_SEARCH_URL,
-                    GOOGLE_SEARCH_URL, "foo - Google Search", null, null, PageTransition.TYPED, 0);
+                    GOOGLE_SEARCH_URL, "foo - Google Search", null, null, PageTransition.TYPED);
         } else {
             firstEntry = new NavigationEntry(
-                    0, BAR_URL, BAR_URL, BAR_URL, "bar", null, null, PageTransition.LINK, 0);
+                    0, BAR_URL, BAR_URL, BAR_URL, "bar", null, null, PageTransition.LINK);
         }
 
         NavigationEntry currentEntry = new NavigationEntry(
-                1, FOO_URL, FOO_URL, FOO_URL, "Foo", null, null, pageTransition, 0);
+                1, FOO_URL, FOO_URL, FOO_URL, "Foo", null, null, pageTransition);
 
         NavigationHistory navHistory = new NavigationHistory();
         navHistory.addEntry(firstEntry);
@@ -226,24 +226,24 @@ public class GoogleSearchRestrictionTest {
     private NavigationController createLongNavHistory(
             int previousPageTransition, int currentPageTransition, boolean fromSRP) {
         NavigationEntry firstEntry = new NavigationEntry(
-                0, BAZ_URL, BAZ_URL, BAZ_URL, "baz", null, null, PageTransition.LINK, 0);
+                0, BAZ_URL, BAZ_URL, BAZ_URL, "baz", null, null, PageTransition.LINK);
         NavigationEntry secondEntry;
         if (fromSRP) {
             secondEntry = new NavigationEntry(1, GOOGLE_SEARCH_URL, GOOGLE_SEARCH_URL,
-                    GOOGLE_SEARCH_URL, "foo - Google Search", null, null, PageTransition.LINK, 0);
+                    GOOGLE_SEARCH_URL, "foo - Google Search", null, null, PageTransition.LINK);
         } else {
             secondEntry = new NavigationEntry(
-                    1, BAR_URL, BAR_URL, BAR_URL, "bar", null, null, PageTransition.LINK, 0);
+                    1, BAR_URL, BAR_URL, BAR_URL, "bar", null, null, PageTransition.LINK);
         }
 
         NavigationEntry thirdEntry = new NavigationEntry(
-                2, FOO_URL, FOO_URL, FOO_URL, "Foo", null, null, previousPageTransition, 0);
+                2, FOO_URL, FOO_URL, FOO_URL, "Foo", null, null, previousPageTransition);
 
         NavigationEntry fourthEntry = new NavigationEntry(3, QUX_URL, QUX_URL, QUX_URL, "qux", null,
-                null, currentPageTransition | PageTransition.FORWARD_BACK, 0);
+                null, currentPageTransition | PageTransition.FORWARD_BACK);
 
         NavigationEntry fifthEntry = new NavigationEntry(
-                4, QUUX_URL, QUUX_URL, QUUX_URL, "quux", null, null, PageTransition.TYPED, 0);
+                4, QUUX_URL, QUUX_URL, QUUX_URL, "quux", null, null, PageTransition.TYPED);
 
         NavigationHistory navHistory = new NavigationHistory();
         navHistory.addEntry(firstEntry);

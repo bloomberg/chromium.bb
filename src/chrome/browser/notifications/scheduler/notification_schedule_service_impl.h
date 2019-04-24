@@ -12,23 +12,17 @@
 
 namespace notifications {
 
-class NotificationScheduler;
-class NotificationSchedulerContext;
 struct NotificationParams;
 
 class NotificationScheduleServiceImpl : public NotificationScheduleService {
  public:
-  NotificationScheduleServiceImpl(
-      std::unique_ptr<NotificationSchedulerContext> context);
+  NotificationScheduleServiceImpl();
   ~NotificationScheduleServiceImpl() override;
 
  private:
   // NotificationScheduleService implementation.
   void Schedule(
       std::unique_ptr<NotificationParams> notification_params) override;
-
-  // Provides the actual notification scheduling functionalities.
-  std::unique_ptr<NotificationScheduler> scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationScheduleServiceImpl);
 };

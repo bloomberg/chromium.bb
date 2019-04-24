@@ -17,6 +17,7 @@
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 
@@ -226,7 +227,8 @@ scoped_refptr<SkottieWrapper> CreateSkottie(const gfx::Size& size,
 }
 
 PaintImage CreateNonDiscardablePaintImage(const gfx::Size& size) {
-  auto context = GrContext::MakeMock(nullptr);
+  sk_sp<const GrGLInterface> gl_interface(GrGLCreateNullInterface());
+  auto context = GrContext::MakeGL(std::move(gl_interface));
   SkBitmap bitmap;
   auto info = SkImageInfo::Make(size.width(), size.height(), kN32_SkColorType,
                                 kPremul_SkAlphaType, nullptr /* color_space */);

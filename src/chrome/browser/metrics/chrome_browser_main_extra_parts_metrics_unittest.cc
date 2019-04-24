@@ -76,9 +76,8 @@ TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
 
 // Verify a TouchEventsEnabled value isn't recorded during PostBrowserStart if
 // the device scan hasn't completed yet.
-// TODO(https://crbug.com/940076): Consistently flaky.
 TEST_F(ChromeBrowserMainExtraPartsMetricsTest,
-       DISABLED_VerifyTouchEventsEnabledIsNotRecordedAfterPostBrowserStart) {
+       VerifyTouchEventsEnabledIsNotRecordedAfterPostBrowserStart) {
   base::HistogramTester histogram_tester;
 
   ChromeBrowserMainExtraPartsMetrics test_target;

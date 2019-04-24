@@ -19,9 +19,9 @@
 #include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/common/buildflags.h"
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
-#endif  //  !defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_types.h"
+#endif  // defined(OS_CHROMEOS)
 
 class LocationBarTesting;
 class OmniboxView;
@@ -60,7 +60,6 @@ class TestBrowserWindow : public BrowserWindow {
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
   StatusBubble* GetStatusBubble() override;
   void UpdateTitleBar() override {}
-  void UpdateFrameColor() override {}
   void BookmarkBarStateChanged(
       BookmarkBar::AnimateChangeType change_type) override {}
   void UpdateDevTools() override {}
@@ -88,8 +87,7 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
   LocationBar* GetLocationBar() const override;
-  PageActionIconContainer* GetOmniboxPageActionIconContainer() override;
-  PageActionIconContainer* GetToolbarPageActionIconContainer() override;
+  PageActionIconContainer* GetPageActionIconContainer() override;
   void SetFocusToLocationBar(bool select_all) override {}
   void UpdateReloadStopState(bool is_loading, bool force) override {}
   void UpdateToolbar(content::WebContents* contents) override {}
@@ -115,13 +113,13 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsToolbarShowing() const override;
   void ShowUpdateChromeDialog() override {}
   void ShowBookmarkBubble(const GURL& url, bool already_bookmarked) override {}
-#if !defined(OS_ANDROID)
-  void ShowIntentPickerBubble(std::vector<apps::IntentPickerAppInfo> app_info,
-                              bool show_stay_in_chrome,
-                              bool show_remember_selection,
-                              IntentPickerResponse callback) override {}
+#if defined(OS_CHROMEOS)
+  void ShowIntentPickerBubble(
+      std::vector<chromeos::IntentPickerAppInfo> app_info,
+      bool disable_stay_in_chrome,
+      IntentPickerResponse callback) override {}
   void SetIntentPickerViewVisibility(bool visible) override {}
-#endif  //  !define(OS_ANDROID)
+#endif
   autofill::SaveCardBubbleView* ShowSaveCreditCardBubble(
       content::WebContents* contents,
       autofill::SaveCardBubbleController* controller,
@@ -165,6 +163,7 @@ class TestBrowserWindow : public BrowserWindow {
   void ShowHatsBubbleFromAppMenuButton() override {}
 #endif
 
+  int GetRenderViewHeightInsetWithDetachedBookmarkBar() override;
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command) override;
   ExclusiveAccessContext* GetExclusiveAccessContext() override;
@@ -212,21 +211,21 @@ class TestBrowserWindow : public BrowserWindow {
     DISALLOW_COPY_AND_ASSIGN(TestLocationBar);
   };
 
-  class TestOmniboxPageActionIconContainer : public PageActionIconContainer {
+  class TestPageActionIconContainer : public PageActionIconContainer {
    public:
-    TestOmniboxPageActionIconContainer() {}
-    ~TestOmniboxPageActionIconContainer() override {}
+    TestPageActionIconContainer() {}
+    ~TestPageActionIconContainer() override {}
 
     // PageActionIconContainer:
     void UpdatePageActionIcon(PageActionIconType type) override {}
 
    private:
-    DISALLOW_COPY_AND_ASSIGN(TestOmniboxPageActionIconContainer);
+    DISALLOW_COPY_AND_ASSIGN(TestPageActionIconContainer);
   };
 
   TestDownloadShelf download_shelf_;
   TestLocationBar location_bar_;
-  TestOmniboxPageActionIconContainer omnibox_page_action_icon_container_;
+  TestPageActionIconContainer page_action_icon_container_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindow);
 };

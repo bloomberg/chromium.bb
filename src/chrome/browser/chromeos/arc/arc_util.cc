@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -120,9 +121,37 @@ void StoreCompatibilityCheckResult(const AccountId& account_id,
 }
 
 bool IsArcMigrationAllowedInternal(const Profile* profile) {
-  return static_cast<policy_util::EcryptfsMigrationAction>(
-             profile->GetPrefs()->GetInteger(
-                 prefs::kEcryptfsMigrationStrategy)) !=
+  policy_util::EcryptfsMigrationAction migration_strategy =
+      policy_util::GetDefaultEcryptfsMigrationActionForManagedUser(
+          IsActiveDirectoryUserForProfile(profile));
+  if (profile->GetPrefs()->IsManagedPreference(
+          prefs::kEcryptfsMigrationStrategy)) {
+    migration_strategy = static_cast<policy_util::EcryptfsMigrationAction>(
+        profile->GetPrefs()->GetInteger(prefs::kEcryptfsMigrationStrategy));
+  }
+  // |kAskForEcryptfsArcUsers| value is received only if the device is in EDU
+  // and admin left the migration policy unset. Note that when enabling ARC on
+  // the admin console, it is mandatory for the administrator to also choose a
+  // migration policy.
+  // In this default case, only a group of devices that had ARC M enabled are
+  // allowed to migrate, provided that ARC is enabled by policy.
+  // TODO(pmarko): Remove the special kAskForEcryptfsArcUsers handling when we
+  // assess that it's not necessary anymore: crbug.com/761348.
+  if (migration_strategy ==
+      policy_util::EcryptfsMigrationAction::kAskForEcryptfsArcUsers) {
+    // Note that ARC enablement is controlled by policy for managed users (as
+    // it's marked 'default_for_enterprise_users': False in
+    // policy_templates.json).
+    DCHECK(profile->GetPrefs()->IsManagedPreference(prefs::kArcEnabled));
+    // We can't reuse IsArcPlayStoreEnabledForProfile here because this would
+    // lead to a circular dependency: It ends up calling this function for some
+    // cases.
+    return profile->GetPrefs()->GetBoolean(prefs::kArcEnabled) &&
+           base::CommandLine::ForCurrentProcess()->HasSwitch(
+               chromeos::switches::kArcTransitionMigrationRequired);
+  }
+
+  return migration_strategy !=
          policy_util::EcryptfsMigrationAction::kDisallowMigration;
 }
 
@@ -186,13 +215,6 @@ bool IsArcAllowedForProfileInternal(const Profile* profile,
     return false;
   }
 
-  if (policy_util::IsArcDisabledForEnterprise() &&
-      policy_util::IsAccountManaged(profile)) {
-    VLOG_IF(1, should_report_reason)
-        << "ARC is disabled by flag for managed users.";
-    return false;
-  }
-
   // Play Store requires an appropriate application install mechanism. Normal
   // users do this through GAIA, but Kiosk and Active Directory users use
   // different application install mechanism. ARC is not allowed otherwise
@@ -225,16 +247,13 @@ bool IsArcAllowedForProfileInternal(const Profile* profile,
 
 }  // namespace
 
-bool IsRealUserProfile(const Profile* profile) {
-  // Return false for signin, lock screen and incognito profiles.
-  return profile && !chromeos::ProfileHelper::IsSigninProfile(profile) &&
-         !chromeos::ProfileHelper::IsLockScreenAppProfile(profile) &&
-         !profile->IsOffTheRecord();
-}
-
 bool IsArcAllowedForProfile(const Profile* profile) {
-  if (!IsRealUserProfile(profile))
+  // Silently ignore default, lock screen and incognito profiles.
+  if (!profile || chromeos::ProfileHelper::IsSigninProfile(profile) ||
+      profile->IsOffTheRecord() ||
+      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
     return false;
+  }
 
   auto it = g_profile_status_check.Get().find(profile);
 
@@ -394,10 +413,18 @@ bool AreArcAllOptInPreferencesIgnorableForProfile(const Profile* profile) {
     return true;
 
   // Otherwise, the preferences are ignorable iff both backup&restore and
-  // location services are set by policy.
+  // location services are set off by policy.
   const PrefService* prefs = profile->GetPrefs();
-  return prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled) &&
-         prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled);
+  if (!prefs->IsManagedPreference(prefs::kArcBackupRestoreEnabled) ||
+      prefs->GetBoolean(prefs::kArcBackupRestoreEnabled) == true) {
+    return false;
+  }
+  if (!prefs->IsManagedPreference(prefs::kArcLocationServiceEnabled) ||
+      prefs->GetBoolean(prefs::kArcLocationServiceEnabled) == true) {
+    return false;
+  }
+
+  return true;
 }
 
 bool IsActiveDirectoryUserForProfile(const Profile* profile) {

@@ -14,20 +14,24 @@
 #include "base/macros.h"
 #include "base/win/atl.h"
 #include "content/common/content_export.h"
+#include "ui/compositor/compositor_animation_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 class AXFragmentRootWin;
 class AXSystemCaretWin;
+class DirectManipulationHelper;
 class WindowEventTarget;
+namespace win {
+class DirectManipulationHelper;
+}  // namespace win
 }  // namespace ui
 
 namespace content {
+class RenderWidgetHostViewAura;
 
 class DirectManipulationBrowserTest;
-class DirectManipulationHelper;
-class RenderWidgetHostViewAura;
 
 // Reasons for the existence of this class outlined below:-
 // 1. Some screen readers expect every tab / every unique web content container
@@ -95,7 +99,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
                           OnMouseRange)
     MESSAGE_HANDLER_EX(WM_NCCALCSIZE, OnNCCalcSize)
     MESSAGE_HANDLER_EX(WM_SIZE, OnSize)
-    MESSAGE_HANDLER_EX(WM_DESTROY, OnDestroy)
+    MESSAGE_HANDLER_EX(WM_WINDOWPOSCHANGED, OnWindowPosChanged)
     MESSAGE_HANDLER_EX(DM_POINTERHITTEST, OnPointerHitTest)
   END_MSG_MAP()
 
@@ -121,6 +125,10 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
     host_ = host;
   }
 
+  // DirectManipulation needs to poll for new events every frame while finger
+  // gesturing on touchpad.
+  void PollForNextEvent();
+
   // Return the root accessible object for either MSAA or UI Automation.
   gfx::NativeViewAccessible GetOrCreateWindowRootAccessible();
 
@@ -128,7 +136,6 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   void OnFinalMessage(HWND hwnd) override;
 
  private:
-  friend class AccessibilityObjectLifetimeWinBrowserTest;
   friend class DirectManipulationBrowserTest;
 
   explicit LegacyRenderWidgetHostHWND(HWND parent);
@@ -157,9 +164,13 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   LRESULT OnSetCursor(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnNCCalcSize(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnSize(UINT message, WPARAM w_param, LPARAM l_param);
-  LRESULT OnDestroy(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnWindowPosChanged(UINT message, WPARAM w_param, LPARAM l_param);
 
   LRESULT OnPointerHitTest(UINT message, WPARAM w_param, LPARAM l_param);
+
+  void CreateAnimationObserver();
+
+  void DestroyAnimationObserver();
 
   Microsoft::WRL::ComPtr<IAccessible> window_accessible_;
 
@@ -177,7 +188,11 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   // This class provides functionality to register the legacy window as a
   // Direct Manipulation consumer. This allows us to support smooth scroll
   // in Chrome on Windows 10.
-  std::unique_ptr<DirectManipulationHelper> direct_manipulation_helper_;
+  std::unique_ptr<ui::win::DirectManipulationHelper>
+      direct_manipulation_helper_;
+
+  std::unique_ptr<ui::CompositorAnimationObserver>
+      compositor_animation_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LegacyRenderWidgetHostHWND);
 };

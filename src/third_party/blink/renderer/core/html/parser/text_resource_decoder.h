@@ -58,7 +58,11 @@ class CORE_EXPORT TextResourceDecoder {
     kEncodingFromParentFrame
   };
 
-  explicit TextResourceDecoder(const TextResourceDecoderOptions&);
+  static std::unique_ptr<TextResourceDecoder> Create(
+      const TextResourceDecoderOptions& options) {
+    return base::WrapUnique(new TextResourceDecoder(options));
+  }
+
   ~TextResourceDecoder();
 
   void SetEncoding(const WTF::TextEncoding&, EncodingSource);
@@ -73,6 +77,9 @@ class CORE_EXPORT TextResourceDecoder {
 
   bool SawError() const { return saw_error_; }
   wtf_size_t CheckForBOM(const char*, wtf_size_t);
+
+ protected:
+  TextResourceDecoder(const TextResourceDecoderOptions&);
 
  private:
   static const WTF::TextEncoding& DefaultEncoding(

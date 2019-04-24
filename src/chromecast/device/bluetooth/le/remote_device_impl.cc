@@ -70,41 +70,65 @@ RemoteDeviceImpl::~RemoteDeviceImpl() = default;
 
 void RemoteDeviceImpl::Connect(StatusCallback cb) {
   MAKE_SURE_IO_THREAD(Connect, BindToCurrentSequence(std::move(cb)));
+  if (!ConnectSync()) {
+    // Error logged.
+    EXEC_CB_AND_RET(cb, false);
+  }
+
+  connect_cb_ = std::move(cb);
+}
+
+bool RemoteDeviceImpl::ConnectSync() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
   LOG(INFO) << "Connect(" << util::AddrLastByteString(addr_) << ")";
 
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
-    EXEC_CB_AND_RET(cb, false);
+    return false;
   }
-
   if (connect_pending_) {
     LOG(ERROR) << __func__ << " failed: Connection pending";
-    EXEC_CB_AND_RET(cb, false);
+    return false;
   }
 
   gatt_client_manager_->NotifyConnect(addr_);
+
   connect_pending_ = true;
-  connect_cb_ = std::move(cb);
-  gatt_client_manager_->EnqueueConnectRequest(addr_, true);
+  gatt_client_manager_->EnqueueConnectRequest(addr_);
+
+  return true;
 }
 
 void RemoteDeviceImpl::Disconnect(StatusCallback cb) {
   MAKE_SURE_IO_THREAD(Disconnect, BindToCurrentSequence(std::move(cb)));
-  LOG(INFO) << "Disconnect(" << util::AddrLastByteString(addr_) << ")";
+  if (!DisconnectSync()) {
+    // Error logged.
+    EXEC_CB_AND_RET(cb, false);
+  }
 
+  disconnect_cb_ = std::move(cb);
+}
+
+bool RemoteDeviceImpl::DisconnectSync() {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  LOG(INFO) << "Disconnect(" << util::AddrLastByteString(addr_) << ")";
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
-    EXEC_CB_AND_RET(cb, false);
+    return false;
   }
 
   if (!connected_) {
     LOG(ERROR) << "Not connected";
-    EXEC_CB_AND_RET(cb, false);
+    return false;
   }
 
+  if (!gatt_client_manager_->gatt_client()->Disconnect(addr_)) {
+    LOG(ERROR) << __func__ << " failed";
+    return false;
+  }
   disconnect_pending_ = true;
-  disconnect_cb_ = std::move(cb);
-  gatt_client_manager_->EnqueueConnectRequest(addr_, false);
+
+  return true;
 }
 
 void RemoteDeviceImpl::CreateBond(StatusCallback cb) {

@@ -132,7 +132,7 @@ std::unique_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> ReadIpHelper(
        tries++) {
     out.reset(static_cast<PIP_ADAPTER_ADDRESSES>(malloc(len)));
     memset(out.get(), 0, len);
-    rv = GetAdaptersAddresses(AF_UNSPEC, flags, nullptr, out.get(), &len);
+    rv = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, out.get(), &len);
   }
   if (rv != NO_ERROR)
     out.reset();
@@ -242,7 +242,7 @@ HostsParseWinResult AddLocalhostEntries(DnsHosts* hosts) {
   // The order of adapters is the network binding order, so stick to the
   // first good adapter for each family.
   for (const IP_ADAPTER_ADDRESSES* adapter = addresses.get();
-       adapter != nullptr && (!have_ipv4 || !have_ipv6);
+       adapter != NULL && (!have_ipv4 || !have_ipv6);
        adapter = adapter->Next) {
     if (adapter->OperStatus != IfOperStatusUp)
       continue;
@@ -251,7 +251,8 @@ HostsParseWinResult AddLocalhostEntries(DnsHosts* hosts) {
 
     for (const IP_ADAPTER_UNICAST_ADDRESS* address =
              adapter->FirstUnicastAddress;
-         address != nullptr; address = address->Next) {
+         address != NULL;
+         address = address->Next) {
       IPEndPoint ipe;
       if (!ipe.FromSockAddr(address->Address.lpSockaddr,
                             address->Address.iSockaddrLength)) {
@@ -505,7 +506,7 @@ ConfigParseWinResult ConvertSettingsToDnsConfig(
   // The order of adapters is the network binding order, so stick to the
   // first good adapter.
   for (const IP_ADAPTER_ADDRESSES* adapter = settings.addresses.get();
-       adapter != nullptr && config->nameservers.empty();
+       adapter != NULL && config->nameservers.empty();
        adapter = adapter->Next) {
     if (adapter->OperStatus != IfOperStatusUp)
       continue;
@@ -514,7 +515,8 @@ ConfigParseWinResult ConvertSettingsToDnsConfig(
 
     for (const IP_ADAPTER_DNS_SERVER_ADDRESS* address =
              adapter->FirstDnsServerAddress;
-         address != nullptr; address = address->Next) {
+         address != NULL;
+         address = address->Next) {
       IPEndPoint ipe;
       if (ipe.FromSockAddr(address->Address.lpSockaddr,
                            address->Address.iSockaddrLength)) {
@@ -639,7 +641,7 @@ class DnsConfigServiceWin::Watcher
   DISALLOW_COPY_AND_ASSIGN(Watcher);
 };
 
-// Reads config from registry and IpHelper. All work performed in ThreadPool.
+// Reads config from registry and IpHelper. All work performed in TaskScheduler.
 class DnsConfigServiceWin::ConfigReader : public SerialWorker {
  public:
   explicit ConfigReader(DnsConfigServiceWin* service)
@@ -684,7 +686,7 @@ class DnsConfigServiceWin::ConfigReader : public SerialWorker {
 };
 
 // Reads hosts from HOSTS file and fills in localhost and local computer name if
-// necessary. All work performed in ThreadPool.
+// necessary. All work performed in TaskScheduler.
 class DnsConfigServiceWin::HostsReader : public SerialWorker {
  public:
   explicit HostsReader(DnsConfigServiceWin* service)

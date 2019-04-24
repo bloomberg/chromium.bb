@@ -19,7 +19,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -52,10 +51,13 @@ public class ScreenshotMonitorTest {
     public void setUp() throws Exception {
         mTestScreenshotMonitorDelegate = new TestScreenshotMonitorDelegate();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mTestScreenshotMonitor = new ScreenshotMonitor(mTestScreenshotMonitorDelegate);
-            mContentObserver = mTestScreenshotMonitor.getContentObserver();
-            mTestScreenshotMonitor.setSkipOsCallsForUnitTesting();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mTestScreenshotMonitor = new ScreenshotMonitor(mTestScreenshotMonitorDelegate);
+                mContentObserver = mTestScreenshotMonitor.getContentObserver();
+                mTestScreenshotMonitor.setSkipOsCallsForUnitTesting();
+            }
         });
     }
 

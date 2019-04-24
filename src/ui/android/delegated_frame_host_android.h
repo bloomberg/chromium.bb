@@ -10,7 +10,6 @@
 #include "cc/layers/deadline_policy.h"
 #include "components/viz/client/frame_evictor.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
-#include "components/viz/common/presentation_feedback_map.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/host/host_frame_sink_client.h"
@@ -46,7 +45,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     virtual void SetBeginFrameSource(
         viz::BeginFrameSource* begin_frame_source) = 0;
     virtual void DidPresentCompositorFrames(
-        const viz::PresentationFeedbackMap& feedbacks) = 0;
+        const base::flat_map<uint32_t, gfx::PresentationFeedback>&
+            feedbacks) = 0;
     virtual void DidReceiveCompositorFrameAck(
         const std::vector<viz::ReturnedResource>& resources) = 0;
     virtual void ReclaimResources(
@@ -148,7 +148,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFrame(const viz::BeginFrameArgs& args,
-                    const viz::PresentationFeedbackMap& feedbacks) override;
+                    const base::flat_map<uint32_t, gfx::PresentationFeedback>&
+                        feedbacks) override;
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnBeginFramePausedChanged(bool paused) override;

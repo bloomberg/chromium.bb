@@ -32,6 +32,8 @@ class LayoutProgress;
 
 class AXProgressIndicator final : public AXLayoutObject {
  public:
+  static AXProgressIndicator* Create(LayoutProgress*, AXObjectCacheImpl&);
+
   AXProgressIndicator(LayoutProgress*, AXObjectCacheImpl&);
 
  private:

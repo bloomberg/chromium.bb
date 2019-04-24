@@ -261,11 +261,6 @@ void FakeDownloadItem::ShowDownloadInShell() {
   NOTREACHED();
 }
 
-void FakeDownloadItem::Rename(const base::FilePath& name,
-                              RenameDownloadCallback callback) {
-  NOTREACHED();
-}
-
 bool FakeDownloadItem::IsPaused() const {
   return false;
 }

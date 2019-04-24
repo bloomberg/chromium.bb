@@ -5,18 +5,18 @@
  * found in the LICENSE file.
  */
 
-#include "AnimTimer.h"
 #include "Sample.h"
+#include "SkAnimTimer.h"
 #include "SkBitmapProcShader.h"
 #include "SkCanvas.h"
 #include "SkDrawable.h"
 #include "SkLightingShader.h"
 #include "SkLights.h"
 #include "SkNormalSource.h"
-#include "SkRSXform.h"
 #include "SkRandom.h"
+#include "SkRSXform.h"
 
-#include "ToolUtils.h"
+#include "sk_tool_utils.h"
 
 // A crude normal mapped asteroids-like sample
 class DrawLitAtlasDrawable : public SkDrawable {
@@ -42,9 +42,8 @@ public:
     }
 
     void rotateLight() {
-        SkScalar r = SK_ScalarPI / 6.0f,
-                 s = SkScalarSin(r),
-                 c = SkScalarCos(r);
+        SkScalar c;
+        SkScalar s = SkScalarSinCos(SK_ScalarPI/6.0f, &c);
 
         SkScalar newX = c * fLightDir.fX - s * fLightDir.fY;
         SkScalar newY = s * fLightDir.fX + c * fLightDir.fY;
@@ -66,8 +65,8 @@ public:
     }
 
     void thrust() {
-        SkScalar s = SkScalarSin(fShip.rot()),
-                 c = SkScalarCos(fShip.rot());
+        SkScalar c;
+        SkScalar s = SkScalarSinCos(fShip.rot(), &c);
 
         SkVector newVel = fShip.velocity();
         newVel.fX += s;
@@ -132,10 +131,12 @@ protected:
             SkMatrix m;
             m.setRSXform(xforms[i]);
 
-            sk_sp<SkShader> normalMap = fAtlas.makeShader(&normalMat);
+            sk_sp<SkShader> normalMap = SkShader::MakeBitmapShader(fAtlas, SkShader::kClamp_TileMode,
+                    SkShader::kClamp_TileMode, &normalMat);
             sk_sp<SkNormalSource> normalSource = SkNormalSource::MakeFromNormalMap(
                     std::move(normalMap), m);
-            sk_sp<SkShader> diffuseShader = fAtlas.makeShader(&diffMat);
+            sk_sp<SkShader> diffuseShader = SkShader::MakeBitmapShader(fAtlas,
+                    SkShader::kClamp_TileMode, SkShader::kClamp_TileMode, &diffMat);
             paint.setShader(SkLightingShader::Make(std::move(diffuseShader),
                     std::move(normalSource), fLights));
 
@@ -250,8 +251,9 @@ private:
                 }
             }
 
-            ToolUtils::create_hemi_normal_map(
-                    &atlas, SkIRect::MakeXYWH(kNormXOff, kBigYOff, kBigSize, kBigSize));
+            sk_tool_utils::create_hemi_normal_map(&atlas,
+                                                  SkIRect::MakeXYWH(kNormXOff, kBigYOff,
+                                                                    kBigSize, kBigSize));
         }
 
         // medium asteroid
@@ -262,8 +264,9 @@ private:
                 }
             }
 
-            ToolUtils::create_frustum_normal_map(
-                    &atlas, SkIRect::MakeXYWH(kNormXOff, kMedYOff, kMedSize, kMedSize));
+            sk_tool_utils::create_frustum_normal_map(&atlas,
+                                                     SkIRect::MakeXYWH(kNormXOff, kMedYOff,
+                                                                       kMedSize, kMedSize));
         }
 
         // small asteroid
@@ -282,8 +285,9 @@ private:
                 }
             }
 
-            ToolUtils::create_hemi_normal_map(
-                    &atlas, SkIRect::MakeXYWH(kNormXOff, kSmYOff, kSmSize, kSmSize));
+            sk_tool_utils::create_hemi_normal_map(&atlas,
+                                                  SkIRect::MakeXYWH(kNormXOff, kSmYOff,
+                                                                    kSmSize, kSmSize));
         }
 
         // ship
@@ -310,8 +314,9 @@ private:
                 }
             }
 
-            ToolUtils::create_tetra_normal_map(
-                    &atlas, SkIRect::MakeXYWH(kNormXOff, kShipYOff, kMedSize, kMedSize));
+            sk_tool_utils::create_tetra_normal_map(&atlas,
+                                                   SkIRect::MakeXYWH(kNormXOff, kShipYOff,
+                                                                     kMedSize, kMedSize));
         }
 
         return atlas;
@@ -481,7 +486,9 @@ protected:
         canvas->drawDrawable(fDrawable.get());
     }
 
-    bool onAnimate(const AnimTimer& timer) override { return true; }
+    bool onAnimate(const SkAnimTimer& timer) override {
+        return true;
+    }
 
 private:
     sk_sp<DrawLitAtlasDrawable> fDrawable;

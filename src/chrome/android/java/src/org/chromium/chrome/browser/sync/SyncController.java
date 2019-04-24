@@ -16,7 +16,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.invalidation.InvalidationController;
@@ -27,7 +26,6 @@ import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.Passphrase;
 import org.chromium.components.sync.StopSource;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * SyncController handles the coordination of sync state between the invalidation controller,
@@ -209,7 +207,12 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
      */
     @Override
     public void androidSyncSettingsChanged() {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> { updateSyncStateFromAndroid(); });
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                updateSyncStateFromAndroid();
+            }
+        });
     }
 
     /**

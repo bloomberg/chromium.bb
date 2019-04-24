@@ -39,13 +39,18 @@ class ManifestItem(object):
         """A unique identifier for the test"""
         return (self.item_type, self.id)
 
+    def meta_key(self):
+        """Extra metadata that doesn't form part of the test identity, but for
+        which changes mean regenerating the manifest (e.g. the test timeout)."""
+        return ()
+
     def __eq__(self, other):
         if not hasattr(other, "key"):
             return False
         return self.key() == other.key()
 
     def __hash__(self):
-        return hash(self.key())
+        return hash(self.key() + self.meta_key())
 
     def __repr__(self):
         return "<%s.%s id=%s, path=%s>" % (self.__module__, self.__class__.__name__, self.id, self.path)
@@ -63,11 +68,15 @@ class URLManifestItem(ManifestItem):
 
     def __init__(self, tests_root, path, url_base, url, **extras):
         super(URLManifestItem, self).__init__(tests_root, path)
-        assert url_base[0] == "/"
         self.url_base = url_base
-        assert url[0] != "/"
         self._url = url
-        self._extras = extras
+        self._extras = extras or {}
+
+    @property
+    def _source_file(self):
+        """create a SourceFile for the item"""
+        from .sourcefile import SourceFile
+        return SourceFile(self._tests_root, self.path, self.url_base)
 
     @property
     def id(self):
@@ -75,9 +84,6 @@ class URLManifestItem(ManifestItem):
 
     @property
     def url(self):
-        # we can outperform urljoin, because we know we just have path relative URLs
-        if self.url_base == "/":
-            return "/" + self._url
         return urljoin(self.url_base, self._url)
 
     @property
@@ -116,17 +122,28 @@ class TestharnessTest(URLManifestItem):
 
     @property
     def script_metadata(self):
-        return self._extras.get("script_metadata")
+        if "script_metadata" in self._extras:
+            return self._extras["script_metadata"]
+        else:
+            # this branch should go when the manifest version is bumped
+            return self._source_file.script_metadata
+
+    def meta_key(self):
+        script_metadata = self.script_metadata
+        if script_metadata is not None:
+            script_metadata = tuple(tuple(x) for x in script_metadata)
+        return (self.timeout, self.testdriver, self.jsshell, script_metadata)
 
     def to_json(self):
-        rv = super(TestharnessTest, self).to_json()
+        rv = URLManifestItem.to_json(self)
         if self.timeout is not None:
             rv[-1]["timeout"] = self.timeout
         if self.testdriver:
             rv[-1]["testdriver"] = self.testdriver
         if self.jsshell:
             rv[-1]["jsshell"] = True
-        if self.script_metadata:
+        if self.script_metadata is not None:
+            # we store this even if it is [] to avoid having to read the source file
             rv[-1]["script_metadata"] = self.script_metadata
         return rv
 
@@ -138,10 +155,7 @@ class RefTestBase(URLManifestItem):
 
     def __init__(self, tests_root, path, url_base, url, references=None, **extras):
         super(RefTestBase, self).__init__(tests_root, path, url_base, url, **extras)
-        if references is None:
-            self.references = []
-        else:
-            self.references = references
+        self.references = references or []
 
     @property
     def timeout(self):
@@ -163,8 +177,11 @@ class RefTestBase(URLManifestItem):
                     for item in self._extras.get("fuzzy", [])}
         return rv
 
+    def meta_key(self):
+        return (self.timeout, self.viewport_size, self.dpi)
+
     def to_json(self):
-        rv = [self._url, self.references, {}]
+        rv = [self.url, self.references, {}]
         extras = rv[-1]
         if self.timeout is not None:
             extras["timeout"] = self.timeout
@@ -233,7 +250,7 @@ class WebDriverSpecTest(URLManifestItem):
         return self._extras.get("timeout")
 
     def to_json(self):
-        rv = super(WebDriverSpecTest, self).to_json()
+        rv = URLManifestItem.to_json(self)
         if self.timeout is not None:
             rv[-1]["timeout"] = self.timeout
         return rv

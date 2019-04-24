@@ -14,6 +14,8 @@ Resource* LinkFetchResource::Fetch(ResourceType type,
                                    FetchParameters& params,
                                    ResourceFetcher* fetcher) {
   DCHECK_EQ(type, ResourceType::kLinkPrefetch);
+  DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
+            network::mojom::RequestContextFrameType::kNone);
   return fetcher->RequestResource(params, LinkResourceFactory(type), nullptr);
 }
 

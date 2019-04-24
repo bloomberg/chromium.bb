@@ -129,11 +129,12 @@ class GFX_EXPORT IconUtil {
       const base::FilePath& icon_path,
       WriteType write_type = ATOMIC_WRITE);
 
-  // Creates a cursor of the specified size from the SkBitmap passed in.
+  // Creates a cursor of the specified size from the DIB passed in.
   // Returns the cursor on success or NULL on failure.
-  static base::win::ScopedHICON CreateCursorFromSkBitmap(
-      const SkBitmap& bitmap,
-      const gfx::Point& hotspot);
+  static base::win::ScopedHICON CreateCursorFromDIB(const gfx::Size& icon_size,
+                                                    const gfx::Point& hotspot,
+                                                    const void* dib_bits,
+                                                    size_t dib_size);
 
   // Given a valid HICON handle representing an icon, this function retrieves
   // the hot spot of the icon.

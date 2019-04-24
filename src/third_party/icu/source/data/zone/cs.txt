@@ -1,7 +1,7 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html#License
 cs{
-    Version{"2.1.48.44"}
+    Version{"2.1.44.91"}
     zoneStrings{
         "Africa:Abidjan"{
             ec{"Abidžan"}
@@ -810,9 +810,6 @@ cs{
         "Asia:Qatar"{
             ec{"Katar"}
         }
-        "Asia:Qostanay"{
-            ec{"Kostanaj"}
-        }
         "Asia:Qyzylorda"{
             ec{"Kyzylorda"}
         }
@@ -956,6 +953,7 @@ cs{
         }
         "Etc:UTC"{
             ls{"Koordinovaný světový čas"}
+            ss{"UTC"}
         }
         "Etc:Unknown"{
             ec{"neznámé město"}

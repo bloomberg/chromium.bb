@@ -29,6 +29,10 @@ static const size_t kHandleVectorInlineCapacity = 4;
 
 namespace blink {
 
+MojoHandle* MojoHandle::Create(mojo::ScopedHandle handle) {
+  return MakeGarbageCollected<MojoHandle>(std::move(handle));
+}
+
 mojo::ScopedHandle MojoHandle::TakeHandle() {
   return std::move(handle_);
 }
@@ -118,7 +122,7 @@ MojoReadMessageResult* MojoHandle::readMessage(
 
   HeapVector<Member<MojoHandle>> handles(num_handles);
   for (uint32_t i = 0; i < num_handles; ++i) {
-    handles[i] = MakeGarbageCollected<MojoHandle>(
+    handles[i] = MojoHandle::Create(
         mojo::MakeScopedHandle(mojo::Handle(raw_handles[i])));
   }
   result_dict->setHandles(handles);
@@ -258,8 +262,7 @@ MojoCreateSharedBufferResult* MojoHandle::duplicateBufferHandle(
                                                 handle.mutable_value());
   result_dict->setResult(result);
   if (result == MOJO_RESULT_OK) {
-    result_dict->setHandle(
-        MakeGarbageCollected<MojoHandle>(mojo::MakeScopedHandle(handle)));
+    result_dict->setHandle(MojoHandle::Create(mojo::MakeScopedHandle(handle)));
   }
   return result_dict;
 }

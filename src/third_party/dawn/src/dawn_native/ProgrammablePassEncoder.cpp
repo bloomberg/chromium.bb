@@ -18,7 +18,6 @@
 #include "dawn_native/CommandBuffer.h"
 #include "dawn_native/Commands.h"
 #include "dawn_native/Device.h"
-#include "dawn_native/ValidationUtils_autogen.h"
 
 #include <string.h>
 
@@ -82,10 +81,7 @@ namespace dawn_native {
         memcpy(label, groupLabel, cmd->length + 1);
     }
 
-    void ProgrammablePassEncoder::SetBindGroup(uint32_t groupIndex,
-                                               BindGroupBase* group,
-                                               uint32_t dynamicOffsetCount,
-                                               const uint64_t* dynamicOffsets) {
+    void ProgrammablePassEncoder::SetBindGroup(uint32_t groupIndex, BindGroupBase* group) {
         if (mTopLevelEncoder->ConsumedError(ValidateCanRecordCommands()) ||
             mTopLevelEncoder->ConsumedError(GetDevice()->ValidateObject(group))) {
             return;
@@ -93,12 +89,6 @@ namespace dawn_native {
 
         if (groupIndex >= kMaxBindGroups) {
             mTopLevelEncoder->HandleError("Setting bind group over the max");
-            return;
-        }
-
-        // TODO(shaobo.yan@intel.com): Implement dynamic buffer offset.
-        if (dynamicOffsetCount != 0) {
-            mTopLevelEncoder->HandleError("Dynamic Buffer Offset not supported yet");
             return;
         }
 
@@ -113,10 +103,6 @@ namespace dawn_native {
                                                    uint32_t count,
                                                    const void* data) {
         if (mTopLevelEncoder->ConsumedError(ValidateCanRecordCommands())) {
-            return;
-        }
-
-        if (mTopLevelEncoder->ConsumedError(ValidateShaderStageBit(stages))) {
             return;
         }
 

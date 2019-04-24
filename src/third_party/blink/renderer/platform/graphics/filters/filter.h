@@ -38,7 +38,12 @@ class PLATFORM_EXPORT Filter final : public GarbageCollected<Filter> {
  public:
   enum UnitScaling { kUserSpace, kBoundingBox };
 
-  Filter(float scale);
+  static Filter* Create(const FloatRect& reference_box,
+                        const FloatRect& filter_region,
+                        float scale,
+                        UnitScaling);
+  static Filter* Create(float scale);
+
   Filter(const FloatRect& reference_box,
          const FloatRect& filter_region,
          float scale,

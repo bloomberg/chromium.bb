@@ -47,8 +47,7 @@ class DecoratorTests(TraceTest):
 
 
   def test_func_names_work(self):
-    expected_method_name = __name__ + '.traced_func'
-    self.assertEquals(expected_method_name,
+    self.assertEquals('__main__.traced_func',
                       self._get_decorated_method_name(traced_func))
 
   def test_method_names_work(self):

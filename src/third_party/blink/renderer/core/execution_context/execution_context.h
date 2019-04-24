@@ -39,10 +39,9 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/loader/console_logger_impl_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "v8/include/v8.h"
 
@@ -68,7 +67,6 @@ class DocumentInterfaceBroker;
 }  // namespace blink
 }  // namespace mojom
 
-class ConsoleMessage;
 class ContentSecurityPolicy;
 class ContentSecurityPolicyDelegate;
 class CoreProbeSink;
@@ -85,7 +83,7 @@ class SecurityContext;
 class SecurityOrigin;
 class ScriptState;
 
-enum class TaskType : unsigned char;
+enum class TaskType : unsigned;
 
 enum ReasonForCallingCanExecuteScripts {
   kAboutToExecuteScript,
@@ -118,8 +116,7 @@ enum class SecureContextMode { kInsecureContext, kSecureContext };
 // in common.
 class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
                                      public Supplementable<ExecutionContext>,
-                                     public ConsoleLogger,
-                                     public FeatureContext {
+                                     public ConsoleLoggerImplBase {
   MERGE_GARBAGE_COLLECTED_MIXINS();
 
  public:
@@ -207,16 +204,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   void SetLifecycleState(mojom::FrameLifecycleState);
   void NotifyContextDestroyed() override;
-
-  // FeatureContext override
-  bool FeatureEnabled(OriginTrialFeature) const override;
-
-  // ConsoleLogger implementation.
-  void AddConsoleMessage(mojom::ConsoleMessageSource,
-                         mojom::ConsoleMessageLevel,
-                         const String& message) final;
-
-  virtual void AddConsoleMessage(ConsoleMessage*) = 0;
 
   // TODO(haraken): Remove these methods by making the customers inherit from
   // ContextLifecycleObserver. ContextLifecycleObserver is a standard way to

@@ -180,10 +180,12 @@ static bool gen_frag_proc_and_meta_keys(const GrPrimitiveProcessor& primProc,
                                                                       fp.numCoordTransforms()), b);
 }
 
-bool GrProgramDesc::Build(
-        GrProgramDesc* desc, const GrRenderTarget* renderTarget,
-        const GrPrimitiveProcessor& primProc, bool hasPointSize, const GrPipeline& pipeline,
-        GrGpu* gpu) {
+bool GrProgramDesc::Build(GrProgramDesc* desc,
+                          GrPixelConfig config,
+                          const GrPrimitiveProcessor& primProc,
+                          bool hasPointSize,
+                          const GrPipeline& pipeline,
+                          GrGpu* gpu) {
     // The descriptor is used as a cache key. Thus when a field of the
     // descriptor will not affect program generation (because of the attribute
     // bindings in use or other descriptor field settings) it should be set
@@ -204,7 +206,6 @@ bool GrProgramDesc::Build(
         desc->key().reset();
         return false;
     }
-    GrProcessor::CustomFeatures processorFeatures = primProc.requestedFeatures();
 
     for (int i = 0; i < pipeline.numFragmentProcessors(); ++i) {
         const GrFragmentProcessor& fp = pipeline.getFragmentProcessor(i);
@@ -212,7 +213,6 @@ bool GrProgramDesc::Build(
             desc->key().reset();
             return false;
         }
-        processorFeatures |= fp.requestedFeatures();
     }
 
     const GrXferProcessor& xp = pipeline.getXferProcessor();
@@ -227,12 +227,6 @@ bool GrProgramDesc::Build(
         desc->key().reset();
         return false;
     }
-    processorFeatures |= xp.requestedFeatures();
-
-    if (processorFeatures & GrProcessor::CustomFeatures::kSampleLocations) {
-        SkASSERT(pipeline.isHWAntialiasState());
-        b.add32(renderTarget->renderTargetPriv().getSamplePatternKey());
-    }
 
     // --------DO NOT MOVE HEADER ABOVE THIS LINE--------------------------------------------------
     // Because header is a pointer into the dynamic array, we can't push any new data into the key
@@ -241,7 +235,8 @@ bool GrProgramDesc::Build(
 
     // make sure any padding in the header is zeroed.
     memset(header, 0, kHeaderSize);
-    header->fOutputSwizzle = shaderCaps.configOutputSwizzle(renderTarget->config()).asKey();
+    header->fOutputSwizzle = shaderCaps.configOutputSwizzle(config).asKey();
+    header->fSnapVerticesToPixelCenters = pipeline.snapVerticesToPixelCenters();
     header->fColorFragmentProcessorCnt = pipeline.numColorFragmentProcessors();
     header->fCoverageFragmentProcessorCnt = pipeline.numCoverageFragmentProcessors();
     // Fail if the client requested more processors than the key can fit.
@@ -249,11 +244,6 @@ bool GrProgramDesc::Build(
         header->fCoverageFragmentProcessorCnt != pipeline.numCoverageFragmentProcessors()) {
         return false;
     }
-    header->fProcessorFeatures = (uint8_t)processorFeatures;
-    SkASSERT(header->processorFeatures() == processorFeatures);  // Ensure enough bits.
-    header->fSnapVerticesToPixelCenters = pipeline.snapVerticesToPixelCenters();
     header->fHasPointSize = hasPointSize ? 1 : 0;
-    header->fClampBlendInput =
-            GrClampType::kManual == GrPixelConfigClampType(renderTarget->config()) ? 1 : 0;
     return true;
 }

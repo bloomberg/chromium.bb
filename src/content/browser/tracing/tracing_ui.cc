@@ -139,17 +139,16 @@ bool OnBeginJSONRequest(const std::string& path,
   return false;
 }
 
-bool OnShouldHandleRequest(const std::string& path) {
-  return base::StartsWith(path, "json/", base::CompareCase::SENSITIVE);
-}
-
-void OnTracingRequest(const std::string& path,
+bool OnTracingRequest(const std::string& path,
                       const WebUIDataSource::GotDataCallback& callback) {
-  DCHECK(OnShouldHandleRequest(path));
-  if (!OnBeginJSONRequest(path, callback)) {
-    std::string error("##ERROR##");
-    callback.Run(base::RefCountedString::TakeString(&error));
+  if (base::StartsWith(path, "json/", base::CompareCase::SENSITIVE)) {
+    if (!OnBeginJSONRequest(path, callback)) {
+      std::string error("##ERROR##");
+      callback.Run(base::RefCountedString::TakeString(&error));
+    }
+    return true;
   }
+  return false;
 }
 
 }  // namespace
@@ -186,8 +185,7 @@ TracingUI::TracingUI(WebUI* web_ui)
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_TRACING_HTML);
   source->AddResourcePath("tracing.js", IDR_TRACING_JS);
-  source->SetRequestFilter(base::BindRepeating(OnShouldHandleRequest),
-                           base::BindRepeating(OnTracingRequest));
+  source->SetRequestFilter(base::Bind(OnTracingRequest));
   WebUIDataSource::Add(browser_context, source);
   TracingControllerImpl::GetInstance()->RegisterTracingUI(this);
 }

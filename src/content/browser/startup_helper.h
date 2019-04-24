@@ -15,8 +15,8 @@ namespace content {
 std::unique_ptr<base::FieldTrialList> CONTENT_EXPORT
 SetUpFieldTrialsAndFeatureList();
 
-// Starts the ThreadPool.
-void CONTENT_EXPORT StartBrowserThreadPool();
+// Starts the task scheduler.
+void CONTENT_EXPORT StartBrowserTaskScheduler();
 
 }  // namespace content
 

@@ -7,7 +7,6 @@
 #include "base/ios/block_types.h"
 #include "base/mac/scoped_block.h"
 #include "ios/chrome/app/application_mode.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -17,18 +16,25 @@
 
 @implementation MockTabOpener
 
+@synthesize url = _url;
+@synthesize virtualURL = _virtualURL;
+@synthesize applicationMode = _applicationMode;
+@synthesize completionBlock = _completionBlock;
+
 - (void)dismissModalsAndOpenSelectedTabInMode:(ApplicationMode)targetMode
-                            withUrlLoadParams:
-                                (const UrlLoadParams&)urlLoadParams
+                                      withURL:(const GURL&)url
+                                   virtualURL:(const GURL&)virtualURL
                                dismissOmnibox:(BOOL)dismissOmnibox
+                                   transition:(ui::PageTransition)transition
                                    completion:(ProceduralBlock)completion {
-  _urlLoadParams = urlLoadParams;
+  _url = url;
+  _virtualURL = virtualURL;
   _applicationMode = targetMode;
   _completionBlock = [completion copy];
 }
 
 - (void)resetURL {
-  _urlLoadParams.web_params.url = _urlLoadParams.web_params.url.EmptyGURL();
+  _url = _url.EmptyGURL();
 }
 
 - (void)openTabFromLaunchOptions:(NSDictionary*)launchOptions

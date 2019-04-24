@@ -15,15 +15,19 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.widget.PromoDialog.DialogParams;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
 import java.util.concurrent.Callable;
 
@@ -31,7 +35,13 @@ import java.util.concurrent.Callable;
  * Tests for the PromoDialog and PromoDialogLayout.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-public class PromoDialogTest extends DummyUiActivityTestCase {
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+public class PromoDialogTest {
+    // TODO(tedchoc): Find a way to introduce a lightweight activity that doesn't spin up the world.
+    //                crbug.com/728297
+    @Rule
+    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
     /**
      * Creates a PromoDialog.  Doesn't call {@link PromoDialog#show} because there is no Window to
      * attach them to, but it does create them and inflate the layouts.
@@ -47,7 +57,7 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
         PromoDialogWrapper(final Activity activity, final DialogParams dialogParams)
                 throws Exception {
             mDialogParams = dialogParams;
-            dialog = TestThreadUtils.runOnUiThreadBlocking(new Callable<PromoDialog>() {
+            dialog = ThreadUtils.runOnUiThreadBlocking(new Callable<PromoDialog>() {
                 @Override
                 public PromoDialog call() throws Exception {
                     PromoDialog dialog = new PromoDialog(activity) {
@@ -72,7 +82,7 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
                     return dialog;
                 }
             });
-            dialogLayout = TestThreadUtils.runOnUiThreadBlocking(new Callable<PromoDialogLayout>() {
+            dialogLayout = ThreadUtils.runOnUiThreadBlocking(new Callable<PromoDialogLayout>() {
                 @Override
                 public PromoDialogLayout call() throws Exception {
                     PromoDialogLayout promoDialogLayout =
@@ -89,12 +99,21 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
          * Trigger a {@link View#measure(int, int)} on the promo dialog layout.
          */
         public void triggerDialogLayoutMeasure(final int width, final int height) {
-            TestThreadUtils.runOnUiThreadBlocking(() -> {
-                int widthMeasureSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
-                int heightMeasureSpec = MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY);
-                dialogLayout.measure(widthMeasureSpec, heightMeasureSpec);
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    int widthMeasureSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY);
+                    int heightMeasureSpec =
+                            MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY);
+                    dialogLayout.measure(widthMeasureSpec, heightMeasureSpec);
+                }
             });
         }
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     @Test
@@ -119,7 +138,8 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
 
     /** Confirm that PromoDialogs are constructed with all the elements expected. */
     private void checkDialogControlVisibility(final DialogParams dialogParams) throws Exception {
-        PromoDialogWrapper wrapper = new PromoDialogWrapper(getActivity(), dialogParams);
+        PromoDialogWrapper wrapper =
+                new PromoDialogWrapper(mActivityTestRule.getActivity(), dialogParams);
         PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
 
         View illustration = promoDialogLayout.findViewById(R.id.illustration);
@@ -158,24 +178,31 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
         dialogParams.secondaryButtonStringResource = R.string.cancel;
         dialogParams.footerStringResource = R.string.learn_more;
 
-        PromoDialogWrapper wrapper = new PromoDialogWrapper(getActivity(), dialogParams);
+        PromoDialogWrapper wrapper =
+                new PromoDialogWrapper(mActivityTestRule.getActivity(), dialogParams);
         final PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
         LinearLayout flippableLayout =
                 (LinearLayout) promoDialogLayout.findViewById(R.id.full_promo_content);
 
         // Tall screen should keep the illustration above everything else.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            int widthMeasureSpec = MeasureSpec.makeMeasureSpec(500, MeasureSpec.EXACTLY);
-            int heightMeasureSpec = MeasureSpec.makeMeasureSpec(1000, MeasureSpec.EXACTLY);
-            promoDialogLayout.measure(widthMeasureSpec, heightMeasureSpec);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                int widthMeasureSpec = MeasureSpec.makeMeasureSpec(500, MeasureSpec.EXACTLY);
+                int heightMeasureSpec = MeasureSpec.makeMeasureSpec(1000, MeasureSpec.EXACTLY);
+                promoDialogLayout.measure(widthMeasureSpec, heightMeasureSpec);
+            }
         });
         Assert.assertEquals(LinearLayout.VERTICAL, flippableLayout.getOrientation());
 
         // Wide screen should move the image left.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            int widthMeasureSpec = MeasureSpec.makeMeasureSpec(1000, MeasureSpec.EXACTLY);
-            int heightMeasureSpec = MeasureSpec.makeMeasureSpec(500, MeasureSpec.EXACTLY);
-            promoDialogLayout.measure(widthMeasureSpec, heightMeasureSpec);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                int widthMeasureSpec = MeasureSpec.makeMeasureSpec(1000, MeasureSpec.EXACTLY);
+                int heightMeasureSpec = MeasureSpec.makeMeasureSpec(500, MeasureSpec.EXACTLY);
+                promoDialogLayout.measure(widthMeasureSpec, heightMeasureSpec);
+            }
         });
         Assert.assertEquals(LinearLayout.HORIZONTAL, flippableLayout.getOrientation());
     }
@@ -188,7 +215,8 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
         dialogParams.primaryButtonStringResource = R.string.ok;
         dialogParams.secondaryButtonStringResource = R.string.cancel;
 
-        PromoDialogWrapper wrapper = new PromoDialogWrapper(getActivity(), dialogParams);
+        PromoDialogWrapper wrapper =
+                new PromoDialogWrapper(mActivityTestRule.getActivity(), dialogParams);
         final PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
 
         // Nothing should have been clicked yet.
@@ -196,14 +224,22 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
         Assert.assertEquals(0, wrapper.secondaryCallback.getCallCount());
 
         // Only the primary button should register a click.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { promoDialogLayout.findViewById(R.id.button_primary).performClick(); });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                promoDialogLayout.findViewById(R.id.button_primary).performClick();
+            }
+        });
         Assert.assertEquals(1, wrapper.primaryCallback.getCallCount());
         Assert.assertEquals(0, wrapper.secondaryCallback.getCallCount());
 
         // Only the secondary button should register a click.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { promoDialogLayout.findViewById(R.id.button_secondary).performClick(); });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                promoDialogLayout.findViewById(R.id.button_secondary).performClick();
+            }
+        });
         Assert.assertEquals(1, wrapper.primaryCallback.getCallCount());
         Assert.assertEquals(1, wrapper.secondaryCallback.getCallCount());
     }
@@ -217,7 +253,8 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
         dialogParams.headerStringResource = R.string.data_reduction_promo_title;
         dialogParams.primaryButtonStringResource = R.string.data_reduction_enable_button;
 
-        PromoDialogWrapper wrapper = new PromoDialogWrapper(getActivity(), dialogParams);
+        PromoDialogWrapper wrapper =
+                new PromoDialogWrapper(mActivityTestRule.getActivity(), dialogParams);
         PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
         ViewGroup scrollableLayout =
                 (ViewGroup) promoDialogLayout.findViewById(R.id.scrollable_promo_content);
@@ -236,7 +273,8 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
         dialogParams.headerStringResource = R.string.search_with_sogou;
         dialogParams.primaryButtonStringResource = R.string.ok;
 
-        PromoDialogWrapper wrapper = new PromoDialogWrapper(getActivity(), dialogParams);
+        PromoDialogWrapper wrapper =
+                new PromoDialogWrapper(mActivityTestRule.getActivity(), dialogParams);
         PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
         ViewGroup scrollableLayout =
                 (ViewGroup) promoDialogLayout.findViewById(R.id.scrollable_promo_content);
@@ -255,7 +293,8 @@ public class PromoDialogTest extends DummyUiActivityTestCase {
         dialogParams.headerStringResource = R.string.search_with_sogou;
         dialogParams.primaryButtonStringResource = R.string.ok;
 
-        PromoDialogWrapper wrapper = new PromoDialogWrapper(getActivity(), dialogParams);
+        PromoDialogWrapper wrapper =
+                new PromoDialogWrapper(mActivityTestRule.getActivity(), dialogParams);
         PromoDialogLayout promoDialogLayout = wrapper.dialogLayout;
 
         // Add a dummy control view to ensure the scrolling container has some content.

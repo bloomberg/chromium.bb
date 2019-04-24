@@ -6,6 +6,7 @@
 #define CC_DEBUG_DEBUG_COLORS_H_
 
 #include "base/containers/span.h"
+#include "base/macros.h"
 #include "cc/debug/debug_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -13,8 +14,6 @@ namespace cc {
 
 class CC_DEBUG_EXPORT DebugColors {
  public:
-  DebugColors() = delete;
-
   static SkColor TiledContentLayerBorderColor();
   static int TiledContentLayerBorderWidth(float device_scale_factor);
 
@@ -120,6 +119,9 @@ class CC_DEBUG_EXPORT DebugColors {
   static SkColor FPSDisplayTextAndGraphColor();
   static SkColor MemoryDisplayTextColor();
   static SkColor PaintTimeDisplayTextAndGraphColor();
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(DebugColors);
 };
 
 }  // namespace cc

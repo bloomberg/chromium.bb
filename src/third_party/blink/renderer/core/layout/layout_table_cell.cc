@@ -440,9 +440,6 @@ void LayoutTableCell::StyleDidChange(StyleDifference diff,
   LayoutBlockFlow::StyleDidChange(diff, old_style);
   SetHasBoxDecorationBackground(true);
 
-  if (Row() && Section() && Table() && Table()->ShouldCollapseBorders())
-    SetHasNonCollapsedBorderDecoration(false);
-
   if (!old_style)
     return;
 
@@ -1146,10 +1143,9 @@ void LayoutTableCell::ScrollbarsChanged(bool horizontal_scrollbar_changed,
 
 LayoutTableCell* LayoutTableCell::CreateAnonymous(
     Document* document,
-    scoped_refptr<ComputedStyle> style,
-    LegacyLayout legacy) {
+    scoped_refptr<ComputedStyle> style) {
   LayoutTableCell* layout_object =
-      LayoutObjectFactory::CreateTableCell(*document, *style, legacy);
+      LayoutObjectFactory::CreateTableCell(*document, *style);
   layout_object->SetDocumentForAnonymous(document);
   layout_object->SetStyle(std::move(style));
   return layout_object;
@@ -1160,10 +1156,8 @@ LayoutTableCell* LayoutTableCell::CreateAnonymousWithParent(
   scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent->StyleRef(),
                                                      EDisplay::kTableCell);
-  LegacyLayout legacy =
-      parent->ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
   LayoutTableCell* new_cell = LayoutTableCell::CreateAnonymous(
-      &parent->GetDocument(), std::move(new_style), legacy);
+      &parent->GetDocument(), std::move(new_style));
   return new_cell;
 }
 

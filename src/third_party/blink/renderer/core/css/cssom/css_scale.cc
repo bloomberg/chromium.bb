@@ -18,13 +18,13 @@ bool IsValidScaleCoord(CSSNumericValue* coord) {
 CSSScale* FromScale(const CSSFunctionValue& value) {
   DCHECK(value.length() == 1U || value.length() == 2U);
   CSSNumericValue* x =
-      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0)));
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
   if (value.length() == 1U) {
     return CSSScale::Create(x, x);
   }
 
   CSSNumericValue* y =
-      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(1)));
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(1)));
   return CSSScale::Create(x, y);
 }
 
@@ -32,14 +32,14 @@ CSSScale* FromScaleXYZ(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1U);
 
   CSSNumericValue* numeric_value =
-      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0)));
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
   CSSUnitValue* default_value = CSSUnitValue::Create(1);
   switch (value.FunctionType()) {
-    case CSSValueID::kScaleX:
+    case CSSValueScaleX:
       return CSSScale::Create(numeric_value, default_value);
-    case CSSValueID::kScaleY:
+    case CSSValueScaleY:
       return CSSScale::Create(default_value, numeric_value);
-    case CSSValueID::kScaleZ:
+    case CSSValueScaleZ:
       return CSSScale::Create(default_value, default_value, numeric_value);
     default:
       NOTREACHED();
@@ -51,11 +51,11 @@ CSSScale* FromScale3d(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 3U);
 
   CSSNumericValue* x =
-      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0)));
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
   CSSNumericValue* y =
-      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(1)));
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(1)));
   CSSNumericValue* z =
-      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(2)));
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(2)));
 
   return CSSScale::Create(x, y, z);
 }
@@ -95,13 +95,13 @@ CSSScale* CSSScale::Create(const CSSNumberish& x,
 
 CSSScale* CSSScale::FromCSSValue(const CSSFunctionValue& value) {
   switch (value.FunctionType()) {
-    case CSSValueID::kScale:
+    case CSSValueScale:
       return FromScale(value);
-    case CSSValueID::kScaleX:
-    case CSSValueID::kScaleY:
-    case CSSValueID::kScaleZ:
+    case CSSValueScaleX:
+    case CSSValueScaleY:
+    case CSSValueScaleZ:
       return FromScaleXYZ(value);
-    case CSSValueID::kScale3d:
+    case CSSValueScale3d:
       return FromScale3d(value);
     default:
       NOTREACHED();
@@ -168,8 +168,8 @@ const CSSFunctionValue* CSSScale::ToCSSValue() const {
   if (!x || !y)
     return nullptr;
 
-  CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(
-      is2D() ? CSSValueID::kScale : CSSValueID::kScale3d);
+  CSSFunctionValue* result =
+      CSSFunctionValue::Create(is2D() ? CSSValueScale : CSSValueScale3d);
   result->Append(*x);
   result->Append(*y);
   if (!is2D()) {

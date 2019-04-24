@@ -427,24 +427,6 @@
         {
             "type": "setting",
             "category": "Sources",
-            "title": "Enable tab moves focus",
-            "settingName": "textEditorTabMovesFocus",
-            "settingType": "boolean",
-            "defaultValue": false,
-            "options": [
-                {
-                    "value": true,
-                    "title": "Enable tab moves focus"
-                },
-                {
-                    "value": false,
-                    "title": "Disable tab moves focus"
-                }
-            ]
-        },
-        {
-            "type": "setting",
-            "category": "Sources",
             "title": "Detect indentation",
             "settingName": "textEditorAutoDetectIndent",
             "settingType": "boolean",

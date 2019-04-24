@@ -35,6 +35,11 @@ enum MorphologyOperatorType {
 
 class PLATFORM_EXPORT FEMorphology final : public FilterEffect {
  public:
+  static FEMorphology* Create(Filter*,
+                              MorphologyOperatorType,
+                              float radius_x,
+                              float radius_y);
+
   FEMorphology(Filter*, MorphologyOperatorType, float radius_x, float radius_y);
 
   MorphologyOperatorType MorphologyOperator() const;

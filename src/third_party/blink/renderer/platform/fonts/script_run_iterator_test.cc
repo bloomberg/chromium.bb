@@ -6,7 +6,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
@@ -108,8 +107,7 @@ class MockScriptData : public ScriptData {
   }
 
   static String ToTestString(const std::string& input) {
-    StringBuilder result;
-    result.Ensure16Bit();
+    String result(g_empty_string16_bit);
     bool in_set = false;
     int seen = 0;
     int code = 0;
@@ -170,7 +168,7 @@ class MockScriptData : public ScriptData {
           case '>':
             DCHECK_NE(seen, 0);
             code |= TableLookup(list);
-            result.Append(static_cast<UChar>(kMockCharMin + code));
+            result.append(static_cast<UChar>(kMockCharMin + code));
             in_set = false;
             break;
           default:
@@ -223,10 +221,10 @@ class MockScriptData : public ScriptData {
           DLOG(ERROR) << "Illegal mock string set char: '" << c << "'";
       }
       if (!in_set) {
-        result.Append(static_cast<UChar>(kMockCharMin + code));
+        result.append(static_cast<UChar>(kMockCharMin + code));
       }
     }
-    return result.ToString();
+    return result;
   }
 
   // We determine properties based on the offset from kMockCharMin:
@@ -288,11 +286,10 @@ const int MockScriptData::kTable[] = {
 class ScriptRunIteratorTest : public testing::Test {
  protected:
   void CheckRuns(const Vector<ScriptTestRun>& runs) {
-    StringBuilder text;
-    text.Ensure16Bit();
+    String text(g_empty_string16_bit);
     Vector<ScriptExpectedRun> expect;
     for (auto& run : runs) {
-      text.Append(String::FromUTF8(run.text));
+      text.append(String::FromUTF8(run.text));
       expect.push_back(ScriptExpectedRun(text.length(), run.code));
     }
     ScriptRunIterator script_run_iterator(text.Characters16(), text.length());
@@ -302,11 +299,10 @@ class ScriptRunIteratorTest : public testing::Test {
   // FIXME crbug.com/527329 - CheckMockRuns should be replaced by finding
   // suitable equivalent real codepoint sequences instead.
   void CheckMockRuns(const Vector<ScriptTestRun>& runs) {
-    StringBuilder text;
-    text.Ensure16Bit();
+    String text(g_empty_string16_bit);
     Vector<ScriptExpectedRun> expect;
     for (const ScriptTestRun& run : runs) {
-      text.Append(MockScriptData::ToTestString(run.text));
+      text.append(MockScriptData::ToTestString(run.text));
       expect.push_back(ScriptExpectedRun(text.length(), run.code));
     }
 
@@ -319,7 +315,7 @@ class ScriptRunIteratorTest : public testing::Test {
                   const Vector<ScriptExpectedRun>& expect) {
     unsigned limit;
     UScriptCode code;
-    size_t run_count = 0;
+    unsigned long run_count = 0;
     while (script_run_iterator->Consume(&limit, &code)) {
       ASSERT_LT(run_count, expect.size());
       ASSERT_EQ(expect[run_count].limit, limit);

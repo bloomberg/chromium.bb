@@ -21,8 +21,7 @@ WebThreadScheduler::CreateMainThreadScheduler(
     std::unique_ptr<base::MessagePump> message_pump,
     base::Optional<base::Time> initial_virtual_time) {
   auto settings = base::sequence_manager::SequenceManager::Settings{
-      base::MessageLoop::TYPE_DEFAULT,
-      /*randomised_sampling_enabled=*/true};
+      .randomised_sampling_enabled = true};
   auto sequence_manager =
       message_pump
           ? base::sequence_manager::
@@ -77,12 +76,6 @@ WebThreadScheduler::IPCTaskRunner() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 WebThreadScheduler::CleanupTaskRunner() {
-  NOTREACHED();
-  return nullptr;
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-WebThreadScheduler::DeprecatedDefaultTaskRunner() {
   NOTREACHED();
   return nullptr;
 }
@@ -175,6 +168,10 @@ bool WebThreadScheduler::IsHighPriorityWorkAnticipated() {
 
 void WebThreadScheduler::SetTopLevelBlameContext(
     base::trace_event::BlameContext* blame_context) {
+  NOTREACHED();
+}
+
+void WebThreadScheduler::AddRAILModeObserver(WebRAILModeObserver* observer) {
   NOTREACHED();
 }
 

@@ -116,10 +116,8 @@ bool IrLoader::AddInstruction(const spv_parsed_instruction_t* inst) {
                  opcode == SpvOpUndef) {
         module_->AddGlobalValue(std::move(spv_inst));
       } else {
-        Errorf(consumer_, src, loc,
-               "Unhandled inst type (opcode: %d) found outside function definition.",
-               opcode);
-        return false;
+        SPIRV_UNIMPLEMENTED(consumer_,
+                            "unhandled inst type outside function definition");
       }
     } else {
       if (block_ == nullptr) {  // Inside function but outside blocks

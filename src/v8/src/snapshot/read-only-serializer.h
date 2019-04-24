@@ -13,7 +13,7 @@ namespace internal {
 class HeapObject;
 class SnapshotByteSink;
 
-class V8_EXPORT_PRIVATE ReadOnlySerializer : public RootsSerializer {
+class ReadOnlySerializer : public RootsSerializer {
  public:
   explicit ReadOnlySerializer(Isolate* isolate);
   ~ReadOnlySerializer() override;

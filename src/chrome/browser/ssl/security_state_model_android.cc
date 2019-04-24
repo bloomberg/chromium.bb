@@ -21,5 +21,7 @@ jint JNI_SecurityStateModel_GetSecurityLevelForWebContents(
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(web_contents);
   DCHECK(helper);
-  return helper->GetSecurityLevel();
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+  return security_info.security_level;
 }

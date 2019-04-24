@@ -42,50 +42,23 @@ import "services/network/public/mojom/ct_log_info.mojom";
 [EnableIf=is_trial_comparison_cert_verifier_supported]
 import "services/network/public/mojom/trial_comparison_cert_verifier.mojom";
 
-const uint32 kWebSocketOptionNone = 0;
-// Disallow the request from sending cookies. Disallow the response from writing
-// cookies.
-const uint32 kWebSocketOptionBlockAllCookies = 1;
-// Similar to |kWebSocketOptionBlockAllCookies|, but only for third party
-// cookies.
-const uint32 kWebSocketOptionBlockThirdPartyCookies = 2;
-
-// Indicates that execution is blocking on the completion of the request.
-// The browser can provide a CustomProxyConfig to a CustomProxyConfigClient
-// running in the network service. The network service will use the given proxy
-// configuration if a request matches the proxy rules and all the other
-// criteria contained within it. This configuration allows the browser to
-// direct the network service to set headers on requests to the given proxies
-// before and/or after the caching layer.
+// Config for setting a custom proxy config that will be used if a request
+// matches the proxy rules and would otherwise be direct. This config allows
+// headers to be set on requests to the proxies from the config before and/or
+// after the caching layer. Currently only supports proxying http requests.
 struct CustomProxyConfig {
-  // The custom proxy rules to use. Note that ftp:// requests are not
-  // supported.
+  // The custom proxy rules to use. Right now this is limited to proxies for
+  // http requests.
   ProxyRules rules;
 
-  // Whether the custom proxy config should override other sources of proxy
-  // configuration. If false, the custom config is ignored if a proxy is set in
-  // the operating system, for example.
-  bool should_override_existing_config = false;
+  // List of proxies that will be used if
+  // ResourceRequest::custom_proxy_use_alternate_proxy_list is set.
+  ProxyList alternate_proxy_list;
 
   // Whether the custom proxy config should apply to requests using
   // non-idempotent methods. Can be true if the proxy is known to handle this
   // case properly.
   bool allow_non_idempotent_methods = false;
-
-  // Whether every HTTPS proxy in the custom proxy config can be assumed to
-  // also support QUIC. If this is true, the network service will try to
-  // establish an alternative QUIC stream to the proxy in parallel to the HTTPS
-  // stream in an attempt to use QUIC if possible.
-  bool assume_https_proxies_support_quic = false;
-
-  // Whether the custom proxy config can be used on HTTP URLs whose fetching
-  // causes redirect cycles. If set to false, network service will try to
-  // bypass custom proxies on HTTP requests whose fetching causes redirect
-  // cycles. In such cases, the request will be fetched directly once the
-  // redirect cycle is detected.
-  // TODO(https://crbug.com/945892): Remove this boolean once Network
-  // Servicification is fully launched.
-  bool can_use_proxy_on_http_url_redirect_cycles = true;
 
   // The custom proxy can set these headers in this config which will be added
   // to all requests using the proxy. This allows setting headers that may be
@@ -94,22 +67,17 @@ struct CustomProxyConfig {
   // |custom_proxy_pre_cache_headers| and |custom_proxy_post_cache_headers|
   // fields in ResourceRequest.
   //
-  // Headers that will be set before the cache for http:// requests. If the
-  // request does not use a custom proxy, these headers will be removed before
-  // sending to the network. If a request already has one of these headers set,
-  // it may be overwritten if a custom proxy is used, or removed if a custom
-  // proxy is not used.
+  // Headers that will be set before the cache for http requests. If the request
+  // does not use a custom proxy, these headers will be removed before sending
+  // to the network. If a request already has one of these headers set, it may
+  // be overwritten if a custom proxy is used, or removed if a custom proxy is
+  // not used.
   HttpRequestHeaders pre_cache_headers;
 
-  // Headers that will be set after the cache for http:// requests that are
-  // issued through a custom proxy. Headers here will overwrite matching
-  // headers on the request if a custom proxy is used.
+  // Headers that will be set after the cache for requests that are issued
+  // through a custom proxy. Headers here will overwrite matching headers on the
+  // request if a custom proxy is used.
   HttpRequestHeaders post_cache_headers;
-
-  // For tunneled requests (https://, ws://, wss://), these headers are added
-  // to the CONNECT request. Headers here will overwrite matching headers on
-  // the CONNECT request if a custom proxy is used.
-  HttpRequestHeaders connect_tunnel_headers;
 };
 
 // Client to update the custom proxy config.
@@ -223,9 +191,13 @@ struct NetworkContextParams {
   mojo_base.mojom.FilePath? transport_security_persister_path;
 
   // Enabled protocols. Note that these apply to all fetches, including those
-  // used to fetch PAC scripts. Note that currently data URLs are always enabled
-  // and file URLs are always disabled.
+  // used to fetch PAC scripts.
 
+  // True if data URLs should be supported.
+  bool enable_data_url_support = false;
+  // True if file URLs should be supported.
+  // Must be false if built without file support.
+  bool enable_file_url_support = false;
   // True if ftp URLs should be supported.
   // Must be false if built without FTP support.
   bool enable_ftp_url_support = false;
@@ -292,6 +264,11 @@ struct NetworkContextParams {
   // lookups that are slow or are blockholed, at the cost of making it more
   // likely that the network service erroneously fails to fetch a PAC file.
   bool pac_quick_check_enabled = true;
+
+  // When enabled, exposes full URLs to PAC scripts. This setting will be
+  // removed in the future.
+  // See https://crbug.com/619087
+  bool dangerously_allow_pac_access_to_secure_urls = false;
 
   // Enables reporting certain SSL errors, such as HTTP Public Key Pinning, to
   // servers, so they can discover misconfigurations.
@@ -370,10 +347,6 @@ struct NetworkContextParams {
   // Specifies the initial set of allowed and blocked origins for the
   // URLLoaderFactory consumers to access beyond the same-origin-policy.
   array<CorsOriginAccessPatterns> cors_origin_access_list;
-
-  // Specifies header keys that are allowed to be used in
-  // network::url_request.cors_exempt_headers.
-  array<string> cors_exempt_header_list;
 };
 
 struct NetworkConditions {
@@ -794,7 +767,6 @@ interface NetworkContext {
   ClearBadProxiesCache() => ();
 
   // Creates a WebSocket connection.
-  // |options| may be a combination of the kWebSocketOption* flags.
   // If |header_client| is set, requests with the kURLLoadOptionUseHeaderClient
   // option will callback to the |header_client|, allowing the Cookie/Referrer
   // request headers and Cookie response headers to be modified. This has a
@@ -804,7 +776,6 @@ interface NetworkContext {
                   int32 process_id,
                   int32 render_frame_id,
                   url.mojom.Origin origin,
-                  uint32 options,
                   AuthenticationHandler? auth_handler,
                   TrustedHeaderClient? header_client);
 

@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/paint/image_paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/text_paint_timing_detector.h"
@@ -37,8 +36,7 @@ void PaintTimingDetector::NotifyPaintFinished() {
 // static
 void PaintTimingDetector::NotifyBackgroundImagePaint(
     const Node* node,
-    const Image* image,
-    const StyleImage* cached_image,
+    Image* image,
     const PropertyTreeState& current_paint_chunk_properties) {
   DCHECK(image);
   if (!node)
@@ -57,29 +55,45 @@ void PaintTimingDetector::NotifyBackgroundImagePaint(
   LocalFrameView* frame_view = object->GetFrameView();
   if (!frame_view)
     return;
-  if (!cached_image)
-    return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   detector.GetImagePaintTimingDetector().RecordImage(
-      *object, image->Size(), cached_image->IsLoaded(),
-      current_paint_chunk_properties);
+      *object, current_paint_chunk_properties);
+}
+
+// static
+void PaintTimingDetector::NotifyImagePaint(
+    const Node* node,
+    const PropertyTreeState& current_paint_chunk_properties) {
+  if (!node)
+    return;
+  LayoutObject* object = node->GetLayoutObject();
+  if (!object)
+    return;
+  NotifyImagePaint(*object, current_paint_chunk_properties);
 }
 
 // static
 void PaintTimingDetector::NotifyImagePaint(
     const LayoutObject& object,
-    const IntSize& intrinsic_size,
-    const ImageResourceContent* cached_image,
     const PropertyTreeState& current_paint_chunk_properties) {
   LocalFrameView* frame_view = object.GetFrameView();
   if (!frame_view)
     return;
-  if (!cached_image)
-    return;
   PaintTimingDetector& detector = frame_view->GetPaintTimingDetector();
   detector.GetImagePaintTimingDetector().RecordImage(
-      object, intrinsic_size, cached_image->IsLoaded(),
-      current_paint_chunk_properties);
+      object, current_paint_chunk_properties);
+}
+
+// static
+void PaintTimingDetector::NotifyTextPaint(
+    const Node* node,
+    const PropertyTreeState& current_paint_chunk_properties) {
+  if (!node)
+    return;
+  LayoutObject* object = node->GetLayoutObject();
+  if (!object)
+    return;
+  NotifyTextPaint(*object, current_paint_chunk_properties);
 }
 
 // static
@@ -95,11 +109,12 @@ void PaintTimingDetector::NotifyTextPaint(
 }
 
 void PaintTimingDetector::NotifyNodeRemoved(const LayoutObject& object) {
-  DOMNodeId node_id = DOMNodeIds::ExistingIdForNode(object.GetNode());
-  if (node_id == kInvalidDOMNodeId)
+  if (!object.GetNode())
     return;
-  text_paint_timing_detector_->NotifyNodeRemoved(node_id);
-  image_paint_timing_detector_->NotifyNodeRemoved(node_id);
+  text_paint_timing_detector_->NotifyNodeRemoved(
+      DOMNodeIds::IdForNode(object.GetNode()));
+  image_paint_timing_detector_->NotifyNodeRemoved(
+      DOMNodeIds::IdForNode(object.GetNode()));
 }
 
 void PaintTimingDetector::NotifyInputEvent(WebInputEvent::Type type) {
@@ -135,23 +150,30 @@ void PaintTimingDetector::DidChangePerformanceTiming() {
 }
 
 uint64_t PaintTimingDetector::CalculateVisualSize(
-    const IntRect& visual_rect,
+    const LayoutRect& invalidated_rect,
+    const PaintLayer& painting_layer) const {
+  return CalculateVisualSize(invalidated_rect, painting_layer.GetLayoutObject()
+                                                   .FirstFragment()
+                                                   .LocalBorderBoxProperties());
+}
+
+uint64_t PaintTimingDetector::CalculateVisualSize(
+    const LayoutRect& invalidated_rect,
     const PropertyTreeState& current_paint_chunk_properties) const {
   // This case should be dealt with outside the function.
-  DCHECK(!visual_rect.IsEmpty());
+  DCHECK(!invalidated_rect.IsEmpty());
 
   // As Layout objects live in different transform spaces, the object's rect
   // should be projected to the viewport's transform space.
-  FloatClipRect float_clip_visual_rect = FloatClipRect(FloatRect(visual_rect));
-  GeometryMapper::LocalToAncestorVisualRect(current_paint_chunk_properties,
-                                            PropertyTreeState::Root(),
-                                            float_clip_visual_rect);
-  FloatRect& float_visual_rect = float_clip_visual_rect.Rect();
+  FloatClipRect visual_rect = FloatClipRect(FloatRect(invalidated_rect));
+  GeometryMapper::LocalToAncestorVisualRect(
+      current_paint_chunk_properties, PropertyTreeState::Root(), visual_rect);
+  FloatRect& visual_rect_float = visual_rect.Rect();
   if (frame_view_->GetFrame().LocalFrameRoot().IsMainFrame())
-    return float_visual_rect.Size().Area();
+    return visual_rect_float.Size().Area();
   // OOPIF. The final rect lives in the iframe's root frame space. We need to
   // project it to the top frame space.
-  LayoutRect layout_visual_rect(float_visual_rect);
+  LayoutRect layout_visual_rect(visual_rect_float);
   frame_view_->GetFrame()
       .LocalFrameRoot()
       .View()

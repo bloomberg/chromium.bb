@@ -115,22 +115,18 @@ public class HomeButton extends ChromeImageButton
         };
     }
 
-    /**
-     * Menu button is enabled when not in NTP or if in NTP and homepage is enabled and set to
-     * somewhere other than the NTP.
-     */
     private void updateButtonEnabledState() {
-        // New tab page button takes precedence over homepage.
-        final boolean isHomepageEnabled = !FeatureUtilities.isNewTabPageButtonEnabled()
-                && HomepageManager.isHomepageEnabled();
-        setEnabled(!isActiveTabNTP()
-                || (isHomepageEnabled && !NewTabPage.isNTPUrl(HomepageManager.getHomepageUri())));
+        if (FeatureUtilities.isNewTabPageButtonEnabled() || !HomepageManager.isHomepageEnabled()) {
+            setEnabled(!isActiveTabNTP());
+        } else {
+            setEnabled(true);
+        }
     }
 
     private boolean isActiveTabNTP() {
         if (mActivityTabProvider == null) return false;
 
-        final Tab tab = mActivityTabProvider.get();
+        final Tab tab = mActivityTabProvider.getActivityTab();
         if (tab == null) return false;
 
         return NewTabPage.isNTPUrl(tab.getUrl());

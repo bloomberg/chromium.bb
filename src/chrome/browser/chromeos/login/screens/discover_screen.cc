@@ -18,9 +18,10 @@ namespace {
 const char kFinished[] = "finished";
 }
 
-DiscoverScreen::DiscoverScreen(DiscoverScreenView* view,
+DiscoverScreen::DiscoverScreen(BaseScreenDelegate* base_screen_delegate,
+                               DiscoverScreenView* view,
                                const base::RepeatingClosure& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_DISCOVER),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_DISCOVER),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);

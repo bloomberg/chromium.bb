@@ -129,7 +129,7 @@ void TouchSelectionMenuViews::CreateButtons() {
   // Finally, add ellipses button.
   AddChildView(
       CreateButton(base::UTF8ToUTF16(kEllipsesButtonText), kEllipsesButtonTag));
-  InvalidateLayout();
+  Layout();
 }
 
 LabelButton* TouchSelectionMenuViews::CreateButton(const base::string16& title,
@@ -152,12 +152,10 @@ void TouchSelectionMenuViews::DisconnectOwner() {
 
 void TouchSelectionMenuViews::OnPaint(gfx::Canvas* canvas) {
   BubbleDialogDelegateView::OnPaint(canvas);
-  if (children().empty())
-    return;
 
   // Draw separator bars.
-  for (auto i = children().cbegin(); i != std::prev(children().cend()); ++i) {
-    const View* child = *i;
+  for (int i = 0; i < child_count() - 1; ++i) {
+    View* child = child_at(i);
     int x = child->bounds().right() + kSpacingBetweenButtons / 2;
     canvas->FillRect(gfx::Rect(x, 0, 1, child->height()),
                      kButtonSeparatorColor);

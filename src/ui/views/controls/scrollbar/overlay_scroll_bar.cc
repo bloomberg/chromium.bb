@@ -36,7 +36,7 @@ OverlayScrollBar::Thumb::Thumb(OverlayScrollBar* scroll_bar)
   // that might reference it yet.
 }
 
-OverlayScrollBar::Thumb::~Thumb() = default;
+OverlayScrollBar::Thumb::~Thumb() {}
 
 void OverlayScrollBar::Thumb::Init() {
   EnableCanvasFlippingForRTLUI(true);
@@ -124,7 +124,8 @@ void OverlayScrollBar::Thumb::OnStateChanged() {
   }
 }
 
-OverlayScrollBar::OverlayScrollBar(bool horizontal) : ScrollBar(horizontal) {
+OverlayScrollBar::OverlayScrollBar(bool horizontal)
+    : BaseScrollBar(horizontal) {
   auto* thumb = new Thumb(this);
   SetThumb(thumb);
   thumb->Init();
@@ -134,7 +135,7 @@ OverlayScrollBar::OverlayScrollBar(bool horizontal) : ScrollBar(horizontal) {
   layer()->SetFillsBoundsOpaquely(false);
 }
 
-OverlayScrollBar::~OverlayScrollBar() = default;
+OverlayScrollBar::~OverlayScrollBar() {}
 
 gfx::Rect OverlayScrollBar::GetTrackBounds() const {
   gfx::Rect local = GetLocalBounds();
@@ -189,7 +190,7 @@ void OverlayScrollBar::StartHideCountdown() {
     return;
   hide_timer_.Start(
       FROM_HERE, ui::kOverlayScrollbarFadeDelay,
-      base::BindOnce(&OverlayScrollBar::Hide, base::Unretained(this)));
+      base::Bind(&OverlayScrollBar::Hide, base::Unretained(this)));
 }
 
 }  // namespace views

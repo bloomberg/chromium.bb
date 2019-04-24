@@ -13,7 +13,6 @@
 
 #include "api/ice_transport_interface.h"
 #include "api/scoped_refptr.h"
-#include "rtc_base/system/rtc_export.h"
 
 namespace cricket {
 class PortAllocator;
@@ -26,7 +25,7 @@ namespace webrtc {
 // The returned object must be accessed and destroyed on the thread that
 // created it.
 // The PortAllocator must outlive the created IceTransportInterface object.
-RTC_EXPORT rtc::scoped_refptr<IceTransportInterface> CreateIceTransport(
+rtc::scoped_refptr<IceTransportInterface> CreateIceTransport(
     cricket::PortAllocator* port_allocator);
 
 }  // namespace webrtc

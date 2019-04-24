@@ -66,7 +66,7 @@ static uint32_t Engines() {
     cached_engines = ~0;
   } else {
     for (Engine i = static_cast<Engine>(0); i < kEngineMax; i++)
-      if (FLAGS_regexp_engines.find(EngineName(i)) != std::string::npos)
+      if (FLAGS_regexp_engines.find(EngineName(i)) != string::npos)
         cached_engines |= 1<<i;
   }
 
@@ -97,8 +97,7 @@ typedef TestInstance::Result Result;
 
 // Formats a single capture range s in text in the form (a,b)
 // where a and b are the starting and ending offsets of s in text.
-static std::string FormatCapture(const StringPiece& text,
-                                 const StringPiece& s) {
+static string FormatCapture(const StringPiece& text, const StringPiece& s) {
   if (s.begin() == NULL)
     return "(?,?)";
   return StringPrintf("(%td,%td)",
@@ -114,7 +113,7 @@ static bool NonASCII(const StringPiece& text) {
 }
 
 // Returns string representation of match kind.
-static std::string FormatKind(Prog::MatchKind kind) {
+static string FormatKind(Prog::MatchKind kind) {
   switch (kind) {
     case Prog::kFullMatch:
       return "full match";
@@ -129,7 +128,7 @@ static std::string FormatKind(Prog::MatchKind kind) {
 }
 
 // Returns string representation of anchor kind.
-static std::string FormatAnchor(Prog::Anchor anchor) {
+static string FormatAnchor(Prog::Anchor anchor) {
   switch (anchor) {
     case Prog::kAnchored:
       return "anchored";
@@ -141,7 +140,7 @@ static std::string FormatAnchor(Prog::Anchor anchor) {
 
 struct ParseMode {
   Regexp::ParseFlags parse_flags;
-  std::string desc;
+  string desc;
 };
 
 static const Regexp::ParseFlags single_line =
@@ -157,7 +156,7 @@ static ParseMode parse_modes[] = {
   { multi_line|Regexp::Latin1,     "multiline, latin1"    },
 };
 
-static std::string FormatMode(Regexp::ParseFlags flags) {
+static string FormatMode(Regexp::ParseFlags flags) {
   for (int i = 0; i < arraysize(parse_modes); i++)
     if (parse_modes[i].parse_flags == flags)
       return parse_modes[i].desc;
@@ -221,7 +220,7 @@ TestInstance::TestInstance(const StringPiece& regexp_str, Prog::MatchKind kind,
   }
 
   // Create re string that will be used for RE and RE2.
-  std::string re = std::string(regexp_str);
+  string re = string(regexp_str);
   // Accomodate flags.
   // Regexp::Latin1 will be accomodated below.
   if (!(flags & Regexp::OneLine))
@@ -365,8 +364,8 @@ void TestInstance::RunSearch(Engine type,
 
     case kEngineOnePass:
       if (prog_ == NULL ||
-          !prog_->IsOnePass() ||
           anchor == Prog::kUnanchored ||
+          !prog_->IsOnePass() ||
           nsubmatch > Prog::kMaxOnePassCapture) {
         result->skipped = true;
         break;
@@ -377,8 +376,7 @@ void TestInstance::RunSearch(Engine type,
       break;
 
     case kEngineBitState:
-      if (prog_ == NULL ||
-          !prog_->CanBitState()) {
+      if (prog_ == NULL) {
         result->skipped = true;
         break;
       }

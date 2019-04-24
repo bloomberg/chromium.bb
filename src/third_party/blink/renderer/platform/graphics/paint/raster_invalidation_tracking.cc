@@ -80,9 +80,9 @@ void RasterInvalidationTracking::AsJSON(JSONObject* json) {
   if (!invalidations_.IsEmpty()) {
     std::sort(invalidations_.begin(), invalidations_.end(),
               &CompareRasterInvalidationInfo);
-    auto paint_invalidations_json = std::make_unique<JSONArray>();
+    std::unique_ptr<JSONArray> paint_invalidations_json = JSONArray::Create();
     for (auto& info : invalidations_) {
-      auto info_json = std::make_unique<JSONObject>();
+      std::unique_ptr<JSONObject> info_json = JSONObject::Create();
       info_json->SetString("object", info.client_debug_name);
       if (!info.rect.IsEmpty()) {
         if (info.rect == LayoutRect::InfiniteIntRect())
@@ -98,9 +98,11 @@ void RasterInvalidationTracking::AsJSON(JSONObject* json) {
   }
 
   if (!under_invalidations_.IsEmpty()) {
-    auto under_paint_invalidations_json = std::make_unique<JSONArray>();
+    std::unique_ptr<JSONArray> under_paint_invalidations_json =
+        JSONArray::Create();
     for (auto& under_paint_invalidation : under_invalidations_) {
-      auto under_paint_invalidation_json = std::make_unique<JSONObject>();
+      std::unique_ptr<JSONObject> under_paint_invalidation_json =
+          JSONObject::Create();
       under_paint_invalidation_json->SetDouble("x", under_paint_invalidation.x);
       under_paint_invalidation_json->SetDouble("y", under_paint_invalidation.y);
       under_paint_invalidation_json->SetString(

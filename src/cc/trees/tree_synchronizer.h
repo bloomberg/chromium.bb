@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "cc/cc_export.h"
 
 namespace cc {
@@ -18,9 +19,6 @@ class Layer;
 
 class CC_EXPORT TreeSynchronizer {
  public:
-  // Not instantiable.
-  TreeSynchronizer() = delete;
-
   // Accepts a Layer tree and returns a reference to a LayerImpl tree that
   // duplicates the structure of the Layer tree, reusing the LayerImpls in the
   // tree provided by old_layer_impl_root if possible.
@@ -32,6 +30,11 @@ class CC_EXPORT TreeSynchronizer {
                                   LayerTreeImpl* active_tree);
   static void PushLayerProperties(LayerTreeHost* host_tree,
                                   LayerTreeImpl* impl_tree);
+
+ private:
+  TreeSynchronizer();  // Not instantiable.
+
+  DISALLOW_COPY_AND_ASSIGN(TreeSynchronizer);
 };
 
 }  // namespace cc

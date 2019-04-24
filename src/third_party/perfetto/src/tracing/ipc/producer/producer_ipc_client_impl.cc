@@ -260,19 +260,6 @@ void ProducerIPCClientImpl::CommitData(const CommitDataRequest& req,
   producer_port_.CommitData(proto_req, std::move(async_response));
 }
 
-void ProducerIPCClientImpl::NotifyDataSourceStarted(DataSourceInstanceID id) {
-  PERFETTO_DCHECK_THREAD(thread_checker_);
-  if (!connected_) {
-    PERFETTO_DLOG(
-        "Cannot NotifyDataSourceStarted(), not connected to tracing service");
-    return;
-  }
-  protos::NotifyDataSourceStartedRequest req;
-  req.set_data_source_id(id);
-  producer_port_.NotifyDataSourceStarted(
-      req, ipc::Deferred<protos::NotifyDataSourceStartedResponse>());
-}
-
 void ProducerIPCClientImpl::NotifyDataSourceStopped(DataSourceInstanceID id) {
   PERFETTO_DCHECK_THREAD(thread_checker_);
   if (!connected_) {
@@ -284,22 +271,6 @@ void ProducerIPCClientImpl::NotifyDataSourceStopped(DataSourceInstanceID id) {
   req.set_data_source_id(id);
   producer_port_.NotifyDataSourceStopped(
       req, ipc::Deferred<protos::NotifyDataSourceStoppedResponse>());
-}
-
-void ProducerIPCClientImpl::ActivateTriggers(
-    const std::vector<std::string>& triggers) {
-  PERFETTO_DCHECK_THREAD(thread_checker_);
-  if (!connected_) {
-    PERFETTO_DLOG(
-        "Cannot ActivateTriggers(), not connected to tracing service");
-    return;
-  }
-  protos::ActivateTriggersRequest proto_req;
-  for (const auto& name : triggers) {
-    *proto_req.add_trigger_names() = name;
-  }
-  producer_port_.ActivateTriggers(
-      proto_req, ipc::Deferred<protos::ActivateTriggersResponse>());
 }
 
 std::unique_ptr<TraceWriter> ProducerIPCClientImpl::CreateTraceWriter(

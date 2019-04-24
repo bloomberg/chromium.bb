@@ -65,7 +65,8 @@ bool NGUnpositionedListMarker::AddToBox(
   // Compute the baseline of the child content.
   NGLineHeightMetrics content_metrics;
   if (content.IsLineBox()) {
-    const auto& line_box = To<NGPhysicalLineBoxFragment>(content);
+    const NGPhysicalLineBoxFragment& line_box =
+        ToNGPhysicalLineBoxFragment(content);
 
     // If this child is an empty line-box, the list marker should be aligned
     // with the next non-empty line box produced. (This can occur with floats
@@ -76,7 +77,7 @@ bool NGUnpositionedListMarker::AddToBox(
     content_metrics = line_box.Metrics();
   } else {
     NGBoxFragment content_fragment(space.GetWritingMode(), space.Direction(),
-                                   To<NGPhysicalBoxFragment>(content));
+                                   ToNGPhysicalBoxFragment(content));
     content_metrics = content_fragment.BaselineMetricsWithoutSynthesize(
         {NGBaselineAlgorithmType::kFirstLine, baseline_type});
 
@@ -92,7 +93,7 @@ bool NGUnpositionedListMarker::AddToBox(
       Layout(space, container_builder->Style(), baseline_type);
   DCHECK(marker_layout_result && marker_layout_result->PhysicalFragment());
   const NGPhysicalBoxFragment& marker_physical_fragment =
-      To<NGPhysicalBoxFragment>(*marker_layout_result->PhysicalFragment());
+      ToNGPhysicalBoxFragment(*marker_layout_result->PhysicalFragment());
 
   // Compute the inline offset of the marker.
   NGBoxFragment marker_fragment(space.GetWritingMode(), space.Direction(),
@@ -131,7 +132,7 @@ LayoutUnit NGUnpositionedListMarker::AddToBoxWithoutLineBoxes(
       Layout(space, container_builder->Style(), baseline_type);
   DCHECK(marker_layout_result && marker_layout_result->PhysicalFragment());
   const NGPhysicalBoxFragment& marker_physical_fragment =
-      To<NGPhysicalBoxFragment>(*marker_layout_result->PhysicalFragment());
+      ToNGPhysicalBoxFragment(*marker_layout_result->PhysicalFragment());
 
   // When there are no line boxes, marker is top-aligned to the list item.
   // https://github.com/w3c/csswg-drafts/issues/2417

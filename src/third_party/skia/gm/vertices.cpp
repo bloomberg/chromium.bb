@@ -24,7 +24,7 @@ static sk_sp<SkShader> make_shader1(SkScalar shaderScale) {
 
     sk_sp<SkShader> grad = SkGradientShader::MakeLinear(pts, colors, nullptr,
                                                         SK_ARRAY_COUNT(colors),
-                                                        SkTileMode::kMirror, 0,
+                                                        SkShader::kMirror_TileMode, 0,
                                                         &localMatrix);
     // Throw in a couple of local matrix wrappers for good measure.
     return shaderScale == 1
@@ -35,11 +35,11 @@ static sk_sp<SkShader> make_shader1(SkScalar shaderScale) {
 }
 
 static sk_sp<SkShader> make_shader2() {
-    return SkShaders::Color(SK_ColorBLUE);
+    return SkShader::MakeColorShader(SK_ColorBLUE);
 }
 
 static sk_sp<SkColorFilter> make_color_filter() {
-    return SkColorFilters::Blend(0xFFAABBCC, SkBlendMode::kDarken);
+    return SkColorFilter::MakeModeFilter(0xFFAABBCC, SkBlendMode::kDarken);
 }
 
 static constexpr SkScalar kMeshSize = 30;

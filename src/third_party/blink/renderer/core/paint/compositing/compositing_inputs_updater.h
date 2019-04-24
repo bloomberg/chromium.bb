@@ -16,8 +16,7 @@ class CompositingInputsUpdater {
   STACK_ALLOCATED();
 
  public:
-  explicit CompositingInputsUpdater(PaintLayer* root_layer,
-                                    PaintLayer* compositing_inputs_root);
+  explicit CompositingInputsUpdater(PaintLayer* root_layer);
   ~CompositingInputsUpdater();
 
   void Update();
@@ -65,23 +64,12 @@ class CompositingInputsUpdater {
     bool is_under_position_sticky = false;
   };
 
-  void UpdateSelfAndDescendantsRecursively(PaintLayer*,
-                                           UpdateType,
-                                           AncestorInfo);
+  void UpdateRecursive(PaintLayer*, UpdateType, AncestorInfo);
   void UpdateAncestorDependentCompositingInputs(PaintLayer*,
                                                 const AncestorInfo&);
-  // This is a recursive method to compute the geometry_map_ and AncestorInfo
-  // starting from the root layer down to the compositing_inputs_root_.
-  void ApplyAncestorInfoToSelfAndAncestorsRecursively(PaintLayer*,
-                                                      UpdateType&,
-                                                      AncestorInfo&);
-  // This method takes care of updating AncestorInfo taking into account the
-  // current value of AncestorInfo.
-  void UpdateAncestorInfo(PaintLayer*, UpdateType&, AncestorInfo&);
 
   LayoutGeometryMap geometry_map_;
   PaintLayer* root_layer_;
-  PaintLayer* compositing_inputs_root_;
 };
 
 }  // namespace blink

@@ -62,9 +62,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
 
   // User signed in.
-  NSError* signedInError =
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
-  GREYAssertNil(signedInError, signedInError.localizedDescription);
+  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
   [SigninEarlGreyUI checkSigninPromoNotVisible];
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
       assertWithMatcher:grey_interactable()];
@@ -84,9 +82,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
   [SigninEarlGreyUI confirmSigninConfirmationDialog];
 
   // User signed in.
-  NSError* signedInError =
-      [SigninEarlGreyUtils checkSignedInWithIdentity:identity];
-  GREYAssertNil(signedInError, signedInError.localizedDescription);
+  [SigninEarlGreyUtils assertSignedInWithIdentity:identity];
   [SigninEarlGreyUI checkSigninPromoNotVisible];
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
       assertWithMatcher:grey_interactable()];

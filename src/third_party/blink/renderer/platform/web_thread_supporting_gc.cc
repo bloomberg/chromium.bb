@@ -13,6 +13,11 @@
 
 namespace blink {
 
+std::unique_ptr<WebThreadSupportingGC> WebThreadSupportingGC::Create(
+    const ThreadCreationParams& params) {
+  return base::WrapUnique(new WebThreadSupportingGC(params));
+}
+
 WebThreadSupportingGC::WebThreadSupportingGC(
     const ThreadCreationParams& params) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

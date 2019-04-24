@@ -38,7 +38,11 @@ class PaintLayer;
 class CORE_EXPORT RootScrollerController
     : public GarbageCollected<RootScrollerController> {
  public:
-  explicit RootScrollerController(Document&);
+  // Creates a RootScrollerController for the given document. Note: instances
+  // of this class need to be made aware of layout updates.
+  static RootScrollerController* Create(Document&);
+
+  RootScrollerController(Document&);
 
   void Trace(blink::Visitor*);
 

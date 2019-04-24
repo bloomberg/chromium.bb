@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import print_function
-
 from conditions import *
 
 """Nodes for scons to gn
@@ -89,7 +87,7 @@ class Node(object):
     self.parent = None
 
   def DumpInfo(self, depth=0):
-    print('%s%s(%s)' % ('  ' * depth, str(type(self)), self.name))
+    print '%s%s(%s)' % ('  ' * depth, str(type(self)), self.name)
     for child in self.children:
       child.DumpInfo(depth+1)
 

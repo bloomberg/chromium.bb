@@ -54,7 +54,7 @@ importer.Setting = {
  */
 importer.ELIGIBLE_VOLUME_TYPES_ = [
   VolumeManagerCommon.VolumeType.MTP,
-  VolumeManagerCommon.VolumeType.REMOVABLE,
+  VolumeManagerCommon.VolumeType.REMOVABLE
 ];
 
 /**
@@ -63,7 +63,7 @@ importer.ELIGIBLE_VOLUME_TYPES_ = [
  */
 importer.ValidImportRoots_ = {
   DCIM: 'DCIM',
-  MP_ROOT: 'MP_ROOT'  // MP_ROOT is a Sony thing.
+  MP_ROOT: 'MP_ROOT' // MP_ROOT is a Sony thing.
 };
 
 /**
@@ -83,7 +83,8 @@ importer.Destination = {
  */
 importer.isEligibleType = entry => {
   // TODO(mtomasz): Add support to mime types.
-  return !!entry && entry.isFile &&
+  return !!entry &&
+      entry.isFile &&
       FileType.isType(['image', 'raw', 'video'], entry);
 };
 
@@ -94,7 +95,7 @@ importer.isEligibleType = entry => {
  * @return {!Array<string>}
  */
 importer.splitPath_ = entry => {
-  const splitPath = entry.fullPath.toUpperCase().split('/');
+  const splitPath =  entry.fullPath.toUpperCase().split('/');
   // Remove the empty string caused by the leading '/'.
   splitPath.splice(0, 1);
   // If there is a trailing empty string, remove it.
@@ -188,7 +189,7 @@ importer.isMediaDirectory = (entry, volumeManager) => {
   if (!entry || !entry.isDirectory || !entry.fullPath) {
     return false;
   }
-  const splitPath = importer.splitPath_(/** @type {Entry} */ (entry));
+  const splitPath = importer.splitPath_(/** @type {Entry} */(entry));
   if (importer.isEligiblePath_(splitPath)) {
     return true;
   }
@@ -222,13 +223,14 @@ importer.getMediaDirectory = directory => {
             }
             // If standard (upper case) forms are not present,
             // check for a lower-case "DCIM".
-            return importer.getDirectory_(directory, 'dcim').then(directory => {
-              if (!!directory && directory.isDirectory) {
-                return Promise.resolve(directory);
-              } else {
-                return Promise.reject('Unable to local media directory.');
-              }
-            });
+            return importer.getDirectory_(directory, 'dcim')
+                .then(directory => {
+                  if (!!directory && directory.isDirectory) {
+                    return Promise.resolve(directory);
+                  } else {
+                    return Promise.reject('Unable to local media directory.');
+                  }
+                });
           });
 };
 
@@ -260,6 +262,22 @@ importer.getDirectory_ = (parent, name) => {
           resolve(null);
         });
   });
+};
+
+/**
+ * @return {!Promise<boolean>} Resolves with true when Cloud Import feature
+ *     is enabled.
+ */
+importer.importEnabled = () => {
+  return new Promise(
+      (resolve, reject) => {
+        chrome.commandLinePrivate.hasSwitch(
+            'disable-cloud-import',
+            /** @param {boolean} disabled */
+            disabled => {
+              resolve(!disabled);
+            });
+      });
 };
 
 /**
@@ -319,15 +337,19 @@ importer.getDirectoryNameForDate = date => {
  */
 importer.getMachineId = () => {
   const storage = importer.ChromeLocalStorage.getInstance();
-  return storage.get(importer.Setting.MACHINE_ID).then(id => {
-    if (id) {
-      return id;
-    }
-    id = importer.generateId();
-    return storage.set(importer.Setting.MACHINE_ID, id).then(() => {
-      return id;
-    });
-  });
+  return storage.get(importer.Setting.MACHINE_ID)
+      .then(
+          id => {
+            if (id) {
+              return id;
+            }
+            id = importer.generateId();
+            return storage.set(importer.Setting.MACHINE_ID, id)
+                .then(
+                    () => {
+                      return id;
+                    });
+          });
 };
 
 /**
@@ -335,9 +357,10 @@ importer.getMachineId = () => {
  *     machines history file.
  */
 importer.getHistoryFilename = () => {
-  return importer.getMachineId().then(machineId => {
-    return machineId + '-import-history.log';
-  });
+  return importer.getMachineId().then(
+      machineId => {
+        return machineId + '-import-history.log';
+      });
 };
 
 /**
@@ -346,9 +369,10 @@ importer.getHistoryFilename = () => {
  *     machines debug log file.
  */
 importer.getDebugLogFilename = logId => {
-  return importer.getMachineId().then(machineId => {
-    return machineId + '-import-debug-' + logId + '.log';
-  });
+  return importer.getMachineId().then(
+      machineId => {
+        return machineId + '-import-debug-' + logId + '.log';
+      });
 };
 
 /**
@@ -367,11 +391,11 @@ importer.generateId = () => {
  */
 importer.getUnownedHistoryFiles_ = machineId => {
   const historyFiles = [];
-  return importer.ChromeSyncFilesystem.getRoot().then(
-      /** @param {!DirectoryEntry} root */
-      root => {
-        return importer
-            .listEntries_(
+  return importer.ChromeSyncFilesystem.getRoot()
+      .then(
+          /** @param {!DirectoryEntry} root */
+          root => {
+            return importer.listEntries_(
                 root,
                 /** @param {Entry} entry */
                 entry => {
@@ -381,10 +405,11 @@ importer.getUnownedHistoryFiles_ = machineId => {
                     historyFiles.push(/** @type {!FileEntry} */ (entry));
                   }
                 })
-            .then(() => {
-              return historyFiles;
-            });
-      });
+                .then(
+                    () => {
+                      return historyFiles;
+                    });
+          });
 };
 
 /**
@@ -403,18 +428,16 @@ importer.getOrCreateHistoryFile = () => {
  *     the current (*this*) machine. List will always have at least one entry.
  */
 importer.getHistoryFiles = () => {
-  return Promise
-      .all([
-        importer.getOrCreateHistoryFile(),
-        importer.getMachineId().then(importer.getUnownedHistoryFiles_)
-      ])
-      .then(
-          /** @param {!Array<!FileEntry|!Array<!FileEntry>>} entries */
-          entries => {
-            const historyFiles = entries[1];
-            historyFiles.unshift(entries[0]);
-            return historyFiles;
-          });
+  return Promise.all([
+      importer.getOrCreateHistoryFile(),
+      importer.getMachineId().then(importer.getUnownedHistoryFiles_)
+    ]).then(
+        /** @param {!Array<!FileEntry|!Array<!FileEntry>>} entries */
+        entries => {
+          const historyFiles = entries[1];
+          historyFiles.unshift(entries[0]);
+          return historyFiles;
+        });
 };
 
 /**
@@ -426,25 +449,26 @@ importer.getHistoryFiles = () => {
  * @private
  */
 importer.listEntries_ = (directory, callback) => {
-  return new Promise((resolve, reject) => {
-    const reader = directory.createReader();
+  return new Promise(
+      (resolve, reject) => {
+        const reader = directory.createReader();
 
-    const readEntries = () => {
-      reader.readEntries(
-          /** @param {!Array<!Entry>} entries */
-          entries => {
-            if (entries.length === 0) {
-              resolve(undefined);
-              return;
-            }
-            entries.forEach(callback);
-            readEntries();
-          },
-          reject);
-    };
+        const readEntries = () => {
+          reader.readEntries (
+              /** @param {!Array<!Entry>} entries */
+              entries => {
+                if (entries.length === 0) {
+                  resolve(undefined);
+                  return;
+                }
+                entries.forEach(callback);
+                readEntries();
+              },
+              reject);
+        };
 
-    readEntries();
-  });
+        readEntries();
+      });
 };
 
 /**
@@ -465,10 +489,11 @@ importer.Resolver = function() {
   this.reject_;
 
   /** @private {!Promise<T>} */
-  this.promise_ = new Promise((resolve, reject) => {
-    this.resolve_ = resolve;
-    this.reject_ = reject;
-  });
+  this.promise_ = new Promise(
+      (resolve, reject) => {
+        this.resolve_ = resolve;
+        this.reject_ = reject;
+      });
 
   const settler = () => {
     this.settled_ = true;
@@ -514,10 +539,17 @@ importer.Resolver.prototype = /** @struct */ {
  * @return {!Promise<!DirectoryEntry>}
  */
 importer.demandChildDirectory = (parent, name) => {
-  return new Promise((resolve, reject) => {
-    parent.getDirectory(
-        name, {create: true, exclusive: false}, resolve, reject);
-  });
+  return new Promise(
+      (resolve, reject) => {
+        parent.getDirectory(
+            name,
+            {
+              create: true,
+              exclusive: false
+            },
+            resolve,
+            reject);
+      });
 };
 
 /**
@@ -631,17 +663,18 @@ importer.ChromeSyncFilesystem = {};
  * @private
  */
 importer.ChromeSyncFilesystem.getFileSystem_ = () => {
-  return new Promise((resolve, reject) => {
-    chrome.syncFileSystem.requestFileSystem(
-        /** @param {FileSystem} filesystem */
-        filesystem => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError.message);
-          } else {
-            resolve(/** @type {!FileSystem} */ (filesystem));
-          }
-        });
-  });
+  return new Promise(
+      (resolve, reject) => {
+        chrome.syncFileSystem.requestFileSystem(
+            /** @param {FileSystem} filesystem */
+            filesystem => {
+              if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError.message);
+              } else {
+                resolve(/** @type {!FileSystem} */ (filesystem));
+              }
+            });
+      });
 };
 
 /**
@@ -650,17 +683,19 @@ importer.ChromeSyncFilesystem.getFileSystem_ = () => {
  * @return {!Promise<!DirectoryEntry>}
  */
 importer.ChromeSyncFilesystem.getRoot = () => {
-  return new Promise((resolve, reject) => {
-    importer.ChromeSyncFilesystem.getFileSystem_().then(
-        /** @param {FileSystem} filesystem */
-        filesystem => {
-          if (!filesystem.root) {
-            reject('Unable to access ChromeSyncFilesystem root');
-          }
-          resolve(
-              /** @type {!DirectoryEntry} */ (filesystem.root));
-        });
-  });
+  return new Promise(
+      (resolve, reject) => {
+        importer.ChromeSyncFilesystem.getFileSystem_()
+            .then(
+                /** @param {FileSystem} filesystem */
+                filesystem => {
+                  if (!filesystem.root) {
+                    reject('Unable to access ChromeSyncFilesystem root');
+                  }
+                  resolve(
+                    /** @type {!DirectoryEntry} */ (filesystem.root));
+                });
+      });
 };
 
 /**
@@ -670,22 +705,29 @@ importer.ChromeSyncFilesystem.getRoot = () => {
  * @return {!Promise<!FileEntry>}
  */
 importer.ChromeSyncFilesystem.getOrCreateFileEntry = fileNamePromise => {
-  const promise = importer.ChromeSyncFilesystem.getRoot().then(
-      /**
-       * @param {!DirectoryEntry} directory
-       * @return {!Promise<!FileEntry>}
-       */
-      directory => {
-        return fileNamePromise.then(
-            /** @param {string} fileName */
-            fileName => {
-              return new Promise((resolve, reject) => {
-                directory.getFile(
-                    fileName, {create: true, exclusive: false}, resolve,
-                    reject);
-              });
-            });
-      });
+  const promise = importer.ChromeSyncFilesystem.getRoot()
+      .then(
+          /**
+           * @param {!DirectoryEntry} directory
+           * @return {!Promise<!FileEntry>}
+           */
+          directory => {
+            return fileNamePromise.then(
+                /** @param {string} fileName */
+                fileName => {
+                  return new Promise(
+                      (resolve, reject) => {
+                        directory.getFile(
+                            fileName,
+                            {
+                              create: true,
+                              exclusive: false
+                            },
+                            resolve,
+                            reject);
+                      });
+                });
+          });
 
   return /** @type {!Promise<!FileEntry>} */ (promise);
 };
@@ -755,6 +797,7 @@ importer.RuntimeLogger.prototype.catcher = function(context) {
   const prefix = '(' + context + ') ';
 
   return error => {
+
     let message = prefix + 'Caught error in promise chain.';
     // Append error info, if provided, then output the error.
     if (error) {
@@ -764,7 +807,7 @@ importer.RuntimeLogger.prototype.catcher = function(context) {
 
     // Output a stack, if provided.
     if (error && error.stack) {
-      this.write_('STACK', prefix + error.stack);
+        this.write_('STACK', prefix + error.stack);
     }
   };
 };
@@ -798,13 +841,14 @@ importer.RuntimeLogger.prototype.writeLine_ = function(type, line, writer) {
   const blob = new Blob(
       ['[' + type + ' @ ' + new Date().toString() + '] ' + line + '\n'],
       {type: 'text/plain; charset=UTF-8'});
-  return new Promise((resolve, reject) => {
-    writer.onwriteend = resolve;
-    writer.onerror = reject;
+  return new Promise(
+      (resolve, reject) => {
+        writer.onwriteend = resolve;
+        writer.onerror = reject;
 
-    writer.seek(writer.length);
-    writer.write(blob);
-  });
+        writer.seek(writer.length);
+        writer.write(blob);
+      });
 };
 
 /** @private {importer.Logger} */
@@ -817,12 +861,14 @@ importer.logger_ = null;
  */
 importer.getLogger = () => {
   if (!importer.logger_) {
+
     const nextLogId = importer.getNextDebugLogId_();
 
     /** @return {!Promise} */
     const rotator = () => {
       return importer.rotateLogs(
-          nextLogId, importer.ChromeSyncFilesystem.getOrCreateFileEntry);
+          nextLogId,
+          importer.ChromeSyncFilesystem.getOrCreateFileEntry);
     };
 
     // This is a sligtly odd arrangement in service of two goals.
@@ -871,14 +917,17 @@ importer.rotateLogs = (nextLogId, fileFactory) => {
 
   /** @return {!Promise} */
   const rememberLogId = () => {
-    return storage.set(importer.Setting.LAST_KNOWN_LOG_ID, nextLogId);
+    return storage.set(
+        importer.Setting.LAST_KNOWN_LOG_ID,
+        nextLogId);
   };
 
   return storage.get(importer.Setting.LAST_KNOWN_LOG_ID)
       .then(
           /** @param {number} lastKnownLogId */
           lastKnownLogId => {
-            if (nextLogId === lastKnownLogId || lastKnownLogId === undefined) {
+            if (nextLogId === lastKnownLogId ||
+                lastKnownLogId === undefined) {
               return Promise.resolve();
             }
 
@@ -893,8 +942,8 @@ importer.rotateLogs = (nextLogId, fileFactory) => {
                       return new Promise(entry.remove.bind(entry));
                     });
           })
-      .then(rememberLogId)
-      .catch(rememberLogId);
+          .then(rememberLogId)
+          .catch(rememberLogId);
 };
 
 /**
@@ -912,17 +961,20 @@ importer.ChromeLocalStorage = function() {};
  * @return {!Promise} Resolves when operation is complete
  */
 importer.ChromeLocalStorage.prototype.set = (key, value) => {
-  return new Promise((resolve, reject) => {
-    const values = {};
-    values[key] = value;
-    chrome.storage.local.set(values, () => {
-      if (chrome.runtime.lastError) {
-        reject(chrome.runtime.lastError);
-      } else {
-        resolve(undefined);
-      }
-    });
-  });
+  return new Promise(
+      (resolve, reject) => {
+        const values = {};
+        values[key] = value;
+        chrome.storage.local.set(
+            values,
+            () => {
+              if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+              } else {
+                resolve(undefined);
+              }
+            });
+      });
 };
 
 /**
@@ -933,20 +985,21 @@ importer.ChromeLocalStorage.prototype.set = (key, value) => {
  * @template T
  */
 importer.ChromeLocalStorage.prototype.get = (key, opt_default) => {
-  return new Promise((resolve, reject) => {
-    chrome.storage.local.get(
-        key,
-        /** @param {Object<?>} values */
-        values => {
-          if (chrome.runtime.lastError) {
-            reject(chrome.runtime.lastError);
-          } else if (key in values) {
-            resolve(values[key]);
-          } else {
-            resolve(opt_default);
-          }
-        });
-  });
+  return new Promise(
+      (resolve, reject) => {
+        chrome.storage.local.get(
+            key,
+            /** @param {Object<?>} values */
+            values => {
+              if (chrome.runtime.lastError) {
+                reject(chrome.runtime.lastError);
+              } else if (key in values) {
+                resolve(values[key]);
+              } else {
+                resolve(opt_default);
+              }
+            });
+      });
 };
 
 /** @private @const {!importer.ChromeLocalStorage} */

@@ -1,4 +1,0 @@
-region
-++document
-++++heading Name='Link In Heading'
-++++++link Name='Link In Heading'

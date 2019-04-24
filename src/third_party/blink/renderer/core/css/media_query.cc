@@ -78,6 +78,14 @@ std::unique_ptr<MediaQuery> MediaQuery::CreateNotAll() {
                                       ExpressionHeapVector());
 }
 
+std::unique_ptr<MediaQuery> MediaQuery::Create(
+    RestrictorType restrictor,
+    String media_type,
+    ExpressionHeapVector expressions) {
+  return std::make_unique<MediaQuery>(restrictor, std::move(media_type),
+                                      std::move(expressions));
+}
+
 MediaQuery::MediaQuery(RestrictorType restrictor,
                        String media_type,
                        ExpressionHeapVector expressions)

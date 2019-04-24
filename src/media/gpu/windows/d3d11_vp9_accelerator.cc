@@ -149,15 +149,14 @@ void D3D11VP9Accelerator::CopyFrameParams(
 void D3D11VP9Accelerator::CopyReferenceFrames(
     const scoped_refptr<D3D11VP9Picture>& pic,
     DXVA_PicParams_VP9* pic_params,
-    const Vp9ReferenceFrameVector& ref_frames) {
+    const std::vector<scoped_refptr<VP9Picture>>& reference_pictures) {
   D3D11_TEXTURE2D_DESC texture_descriptor;
   pic->picture_buffer()->texture()->GetDesc(&texture_descriptor);
 
   for (size_t i = 0; i < base::size(pic_params->ref_frame_map); i++) {
-    auto ref_pic = ref_frames.GetFrame(i);
-    if (ref_pic) {
+    if (i < reference_pictures.size() && reference_pictures[i].get()) {
       scoped_refptr<D3D11VP9Picture> our_ref_pic(
-          static_cast<D3D11VP9Picture*>(ref_pic.get()));
+          static_cast<D3D11VP9Picture*>(reference_pictures[i].get()));
       pic_params->ref_frame_map[i].Index7Bits = our_ref_pic->level();
       pic_params->ref_frame_coded_width[i] = texture_descriptor.Width;
       pic_params->ref_frame_coded_height[i] = texture_descriptor.Height;
@@ -352,7 +351,7 @@ bool D3D11VP9Accelerator::SubmitDecode(
     const scoped_refptr<VP9Picture>& picture,
     const Vp9SegmentationParams& segmentation_params,
     const Vp9LoopFilterParams& loop_filter_params,
-    const Vp9ReferenceFrameVector& reference_frames,
+    const std::vector<scoped_refptr<VP9Picture>>& reference_pictures,
     const base::Closure& on_finished_cb) {
   scoped_refptr<D3D11VP9Picture> pic(
       static_cast<D3D11VP9Picture*>(picture.get()));
@@ -362,7 +361,7 @@ bool D3D11VP9Accelerator::SubmitDecode(
 
   DXVA_PicParams_VP9 pic_params = {};
   CopyFrameParams(pic, &pic_params);
-  CopyReferenceFrames(pic, &pic_params, reference_frames);
+  CopyReferenceFrames(pic, &pic_params, reference_pictures);
   CopyFrameRefs(&pic_params, pic);
   CopyLoopFilterParams(&pic_params, loop_filter_params);
   CopyQuantParams(&pic_params, pic);

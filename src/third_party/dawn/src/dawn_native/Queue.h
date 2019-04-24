@@ -15,6 +15,7 @@
 #ifndef DAWNNATIVE_QUEUE_H_
 #define DAWNNATIVE_QUEUE_H_
 
+#include "dawn_native/Builder.h"
 #include "dawn_native/Error.h"
 #include "dawn_native/Forward.h"
 #include "dawn_native/ObjectBase.h"

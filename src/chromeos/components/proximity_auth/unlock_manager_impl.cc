@@ -484,11 +484,6 @@ ScreenlockState UnlockManagerImpl::GetScreenlockState() {
     }
   }
 
-  if (messenger) {
-    PA_LOG(WARNING) << "Connection to host established, but remote screenlock "
-                    << "state was either malformed or not received.";
-  }
-
   return ScreenlockState::NO_PHONE;
 }
 
@@ -548,7 +543,6 @@ void UnlockManagerImpl::OnConnectionAttemptTimeOut() {
             kTimedOutBluetoothDisabled);
   }
 
-  PA_LOG(INFO) << "Failed to connect to host within allotted time.";
   SetWakingUpState(false /* is_waking_up */);
 }
 

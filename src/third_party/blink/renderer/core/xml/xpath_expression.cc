@@ -44,7 +44,7 @@ XPathExpression* XPathExpression::CreateExpression(
     const String& expression,
     XPathNSResolver* resolver,
     ExceptionState& exception_state) {
-  auto* expr = MakeGarbageCollected<XPathExpression>();
+  XPathExpression* expr = XPathExpression::Create();
   Parser parser;
 
   expr->top_expression_ =
@@ -73,7 +73,7 @@ XPathResult* XPathExpression::evaluate(Node* context_node,
   }
 
   EvaluationContext evaluation_context(*context_node);
-  auto* result = MakeGarbageCollected<XPathResult>(
+  XPathResult* result = XPathResult::Create(
       evaluation_context, top_expression_->Evaluate(evaluation_context));
 
   if (evaluation_context.had_type_conversion_error) {

@@ -62,7 +62,7 @@ CHECKASMOBJS := $(sort $(CHECKASMOBJS:%=tests/checkasm/%))
 
 CHECKASMDIRS := $(sort $(dir $(CHECKASMOBJS)))
 $(CHECKASMOBJS): | $(CHECKASMDIRS)
-OUTDIRS += $(CHECKASMDIRS)
+OBJDIRS += $(CHECKASMDIRS)
 
 tests/checkasm/checkasm.o: CFLAGS += -Umain
 

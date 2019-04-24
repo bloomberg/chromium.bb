@@ -16,6 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -26,7 +27,6 @@ import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.util.List;
@@ -278,14 +278,14 @@ public class AutofillProfilesFragmentTest {
         Assert.assertNotNull(addProfile);
 
         // Open AutofillProfileEditorPreference.
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> PreferencesTest.clickPreference(fragment, addProfile));
         rule.setEditorDialogAndWait(addProfile.getEditorDialog());
         // The keyboard is shown as soon as AutofillProfileEditorPreference comes into view.
         waitForKeyboardStatus(true, activity);
 
         // Hide the keyboard.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             List<EditText> fields = addProfile.getEditorDialog().getEditableTextFieldsForTest();
             KeyboardVisibilityDelegate.getInstance().hideKeyboard(fields.get(0));
         });
@@ -318,7 +318,7 @@ public class AutofillProfilesFragmentTest {
     private void updatePreferencesAndWait(AutofillProfilesFragment profileFragment,
             AutofillProfileEditorPreference profile, String[] values, int buttonId,
             boolean waitForError) throws TimeoutException, InterruptedException {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> PreferencesTest.clickPreference(profileFragment, profile));
 
         rule.setEditorDialogAndWait(profile.getEditorDialog());

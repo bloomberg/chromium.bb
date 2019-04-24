@@ -23,10 +23,9 @@ std::vector<GLImplementation> GetAllowedGLImplementations() {
   return GetSurfaceFactoryOzone()->GetAllowedGLImplementations();
 }
 
-bool GetGLWindowSystemBindingInfo(const GLVersionInfo& gl_info,
-                                  GLWindowSystemBindingInfo* info) {
+bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
   if (HasGLOzone())
-    return GetGLOzone()->GetGLWindowSystemBindingInfo(gl_info, info);
+    return GetGLOzone()->GetGLWindowSystemBindingInfo(info);
 
   return false;
 }

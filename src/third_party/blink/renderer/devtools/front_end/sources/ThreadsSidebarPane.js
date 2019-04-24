@@ -45,7 +45,7 @@ Sources.ThreadsSidebarPane = class extends UI.VBox {
     }
 
     function updatePausedState() {
-      pausedState.textContent = debuggerModel.isPaused() ? ls`paused` : '';
+      pausedState.textContent = Common.UIString(debuggerModel.isPaused() ? 'paused' : '');
     }
 
     /**

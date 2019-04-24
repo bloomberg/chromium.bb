@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -93,10 +92,7 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
   Vector<scoped_refptr<CSSVariableData>> argument_variable_data_;
 };
 
-template <>
-struct DowncastTraits<CSSPaintValue> {
-  static bool AllowFrom(const CSSValue& value) { return value.IsPaintValue(); }
-};
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSPaintValue, IsPaintValue());
 
 }  // namespace blink
 

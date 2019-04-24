@@ -396,7 +396,8 @@ TEST_F(FPDFDocEmbedderTest, FindBookmarks) {
   EXPECT_TRUE(OpenDocument("bookmarks.pdf"));
 
   // Find the first one, based on its known title.
-  ScopedFPDFWideString title = GetFPDFWideString(L"A Good Beginning");
+  std::unique_ptr<unsigned short, pdfium::FreeDeleter> title =
+      GetFPDFWideString(L"A Good Beginning");
   FPDF_BOOKMARK child = FPDFBookmark_Find(document(), title.get());
   EXPECT_TRUE(child);
 
@@ -409,7 +410,8 @@ TEST_F(FPDFDocEmbedderTest, FindBookmarks) {
   EXPECT_EQ(child, FPDFBookmark_GetFirstChild(document(), nullptr));
 
   // Try to find one using a non-existent title.
-  ScopedFPDFWideString bad_title = GetFPDFWideString(L"A BAD Beginning");
+  std::unique_ptr<unsigned short, pdfium::FreeDeleter> bad_title =
+      GetFPDFWideString(L"A BAD Beginning");
   EXPECT_EQ(nullptr, FPDFBookmark_Find(document(), bad_title.get()));
 }
 
@@ -419,7 +421,8 @@ TEST_F(FPDFDocEmbedderTest, FindBookmarks_bug420) {
   EXPECT_TRUE(OpenDocument("bookmarks_circular.pdf"));
 
   // Try to find a title.
-  ScopedFPDFWideString title = GetFPDFWideString(L"anything");
+  std::unique_ptr<unsigned short, pdfium::FreeDeleter> title =
+      GetFPDFWideString(L"anything");
   EXPECT_EQ(nullptr, FPDFBookmark_Find(document(), title.get()));
 }
 

@@ -39,9 +39,8 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(
   SetBackgroundColor(SK_ColorTRANSPARENT);
   BrowserActionsContainer* main =
       toolbar_button_provider->GetBrowserActionsContainer();
-  auto container = std::make_unique<BrowserActionsContainer>(browser_, main,
-                                                             main->delegate());
-  container_ = SetContents(std::move(container));
+  container_ = new BrowserActionsContainer(browser_, main, main->delegate());
+  SetContents(container_);
 
   // Listen for the drop to finish so we can close the app menu, if necessary.
   toolbar_actions_bar_observer_.Add(main->toolbar_actions_bar());

@@ -3,10 +3,7 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "db/skiplist.h"
-
-#include <atomic>
 #include <set>
-
 #include "leveldb/env.h"
 #include "port/port.h"
 #include "port/thread_annotations.h"
@@ -131,7 +128,7 @@ TEST(SkipTest, InsertAndLookup) {
 // concurrent readers (with no synchronization other than when a
 // reader's iterator is created), the reader always observes all the
 // data that was present in the skip list when the iterator was
-// constructed.  Because insertions are happening concurrently, we may
+// constructor.  Because insertions are happening concurrently, we may
 // also observe new values that were inserted since the iterator was
 // constructed, but we should never miss any values that were present
 // at iterator construction time.
@@ -191,12 +188,12 @@ class ConcurrentTest {
 
   // Per-key generation
   struct State {
-    std::atomic<int> generation[K];
-    void Set(int k, int v) {
-      generation[k].store(v, std::memory_order_release);
+    port::AtomicPointer generation[K];
+    void Set(int k, intptr_t v) {
+      generation[k].Release_Store(reinterpret_cast<void*>(v));
     }
-    int Get(int k) {
-      return generation[k].load(std::memory_order_acquire);
+    intptr_t Get(int k) {
+      return reinterpret_cast<intptr_t>(generation[k].Acquire_Load());
     }
 
     State() {
@@ -303,7 +300,7 @@ class TestState {
  public:
   ConcurrentTest t_;
   int seed_;
-  std::atomic<bool> quit_flag_;
+  port::AtomicPointer quit_flag_;
 
   enum ReaderState {
     STARTING,
@@ -313,7 +310,7 @@ class TestState {
 
   explicit TestState(int s)
       : seed_(s),
-        quit_flag_(false),
+        quit_flag_(nullptr),
         state_(STARTING),
         state_cv_(&mu_) {}
 
@@ -343,7 +340,7 @@ static void ConcurrentReader(void* arg) {
   Random rnd(state->seed_);
   int64_t reads = 0;
   state->Change(TestState::RUNNING);
-  while (!state->quit_flag_.load(std::memory_order_acquire)) {
+  while (!state->quit_flag_.Acquire_Load()) {
     state->t_.ReadStep(&rnd);
     ++reads;
   }
@@ -365,7 +362,7 @@ static void RunConcurrent(int run) {
     for (int i = 0; i < kSize; i++) {
       state.t_.WriteStep(&rnd);
     }
-    state.quit_flag_.store(true, std::memory_order_release);
+    state.quit_flag_.Release_Store(&state);  // Any non-null arg will do
     state.Wait(TestState::DONE);
   }
 }

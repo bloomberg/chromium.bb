@@ -2,6 +2,7 @@
   "features": [],
   "services": [
       "chromium.cast.ApplicationConfigManager",
+      "chromium.web.ContextProvider",
       "fuchsia.fonts.Provider",
       "fuchsia.media.Audio",
       "fuchsia.net.SocketProvider",
@@ -10,7 +11,6 @@
       "fuchsia.ui.input.ImeService",
       "fuchsia.ui.input.ImeVisibilityService",
       "fuchsia.ui.scenic.Scenic",
-      "fuchsia.vulkan.loader.Loader",
-      "fuchsia.web.ContextProvider"
+      "fuchsia.vulkan.loader.Loader"
   ]
 }

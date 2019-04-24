@@ -22,7 +22,6 @@ class SyncService;
 }
 
 class AuthenticationServiceDelegate;
-class AuthenticationServiceFake;
 @class ChromeIdentity;
 class PrefService;
 class SyncSetupService;
@@ -116,7 +115,6 @@ class AuthenticationService : public KeyedService,
 
  private:
   friend class AuthenticationServiceTest;
-  friend class AuthenticationServiceFake;
 
   // Method called each time the application enters foreground.
   void OnApplicationEnterForeground();

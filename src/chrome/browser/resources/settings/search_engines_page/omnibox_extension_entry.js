@@ -45,7 +45,7 @@ Polymer({
   /** @private */
   onDotsTap_: function() {
     /** @type {!CrActionMenuElement} */ (this.$$('cr-action-menu'))
-        .showAt(assert(this.$$('cr-icon-button')), {
+        .showAt(assert(this.$$('paper-icon-button-light button')), {
           anchorAlignmentY: AnchorAlignment.AFTER_END,
         });
   },

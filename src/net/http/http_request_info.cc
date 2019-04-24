@@ -7,7 +7,7 @@
 namespace net {
 
 HttpRequestInfo::HttpRequestInfo()
-    : upload_data_stream(nullptr),
+    : upload_data_stream(NULL),
       load_flags(0),
       privacy_mode(PRIVACY_MODE_DISABLED),
       reporting_upload_depth(0) {}

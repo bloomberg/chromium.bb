@@ -1,2 +1,0 @@
-AutomationFocusChanged on role=option, name=Banana
-SelectionItem_ElementSelected on role=option, name=Banana

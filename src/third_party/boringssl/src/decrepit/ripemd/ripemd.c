@@ -311,8 +311,7 @@ static void ripemd160_block_data_order(uint32_t h[5], const uint8_t *data,
 #undef X
 }
 
-uint8_t *RIPEMD160(const uint8_t *data, size_t len,
-                   uint8_t out[RIPEMD160_DIGEST_LENGTH]) {
+uint8_t *RIPEMD160(const uint8_t *data, size_t len, unsigned char *out) {
   RIPEMD160_CTX ctx;
 
   if (!RIPEMD160_Init(&ctx)) {

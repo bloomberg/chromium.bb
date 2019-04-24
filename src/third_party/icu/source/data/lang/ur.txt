@@ -70,7 +70,6 @@ ur{
         bug{"بگینیز"}
         byn{"بلین"}
         ca{"کیٹالان"}
-        ccp{"چکمہ"}
         ce{"چیچن"}
         ceb{"سیبوآنو"}
         cgg{"چیگا"}
@@ -633,7 +632,7 @@ ur{
             vaii{"وائی ہندسے"}
         }
     }
-    Version{"2.1.49.82"}
+    Version{"2.1.44.3"}
     characterLabelPattern{
         all{"{0} — تمام"}
         category-list{"{0}: {1}"}

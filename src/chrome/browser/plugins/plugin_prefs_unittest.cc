@@ -4,9 +4,10 @@
 
 #include "chrome/browser/plugins/plugin_prefs.h"
 
-#include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_constants.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class PluginPrefsTest : public ::testing::Test {

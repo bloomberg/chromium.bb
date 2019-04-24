@@ -190,7 +190,8 @@ ResourceType RequestContextToResourceType(
     case blink::mojom::RequestContextType::XML_HTTP_REQUEST:
       return RESOURCE_TYPE_XHR;
 
-    // Navigation requests should not go through WebURLLoader.
+    // These should be handled by the FrameType checks at the top of the
+    // function.
     case blink::mojom::RequestContextType::FORM:
     case blink::mojom::RequestContextType::HYPERLINK:
     case blink::mojom::RequestContextType::LOCATION:
@@ -206,22 +207,95 @@ ResourceType RequestContextToResourceType(
 }
 
 ResourceType WebURLRequestToResourceType(const WebURLRequest& request) {
-  return RequestContextToResourceType(request.GetRequestContext());
+  blink::mojom::RequestContextType request_context =
+      request.GetRequestContext();
+  if (request.GetFrameType() !=
+      network::mojom::RequestContextFrameType::kNone) {
+    DCHECK(request_context == blink::mojom::RequestContextType::FORM ||
+           request_context == blink::mojom::RequestContextType::FRAME ||
+           request_context == blink::mojom::RequestContextType::HYPERLINK ||
+           request_context == blink::mojom::RequestContextType::IFRAME ||
+           request_context == blink::mojom::RequestContextType::INTERNAL ||
+           request_context == blink::mojom::RequestContextType::LOCATION);
+    if (request.GetFrameType() ==
+            network::mojom::RequestContextFrameType::kTopLevel ||
+        request.GetFrameType() ==
+            network::mojom::RequestContextFrameType::kAuxiliary) {
+      return RESOURCE_TYPE_MAIN_FRAME;
+    }
+    if (request.GetFrameType() ==
+        network::mojom::RequestContextFrameType::kNested)
+      return RESOURCE_TYPE_SUB_FRAME;
+    NOTREACHED();
+    return RESOURCE_TYPE_SUB_RESOURCE;
+  }
+  return RequestContextToResourceType(request_context);
 }
 
 net::HttpRequestHeaders GetWebURLRequestHeaders(
     const blink::WebURLRequest& request) {
   net::HttpRequestHeaders headers;
   HttpRequestHeadersVisitor visitor(&headers);
-  request.VisitHttpHeaderFields(&visitor);
+  request.VisitHTTPHeaderFields(&visitor);
   return headers;
 }
 
 std::string GetWebURLRequestHeadersAsString(
     const blink::WebURLRequest& request) {
   HeaderFlattener flattener;
-  request.VisitHttpHeaderFields(&flattener);
+  request.VisitHTTPHeaderFields(&flattener);
   return flattener.GetBuffer();
+}
+
+int GetLoadFlagsForWebURLRequest(const WebURLRequest& request) {
+  int load_flags = net::LOAD_NORMAL;
+
+  GURL url = request.Url();
+  switch (request.GetCacheMode()) {
+    case FetchCacheMode::kNoStore:
+      load_flags |= net::LOAD_DISABLE_CACHE;
+      break;
+    case FetchCacheMode::kValidateCache:
+      load_flags |= net::LOAD_VALIDATE_CACHE;
+      break;
+    case FetchCacheMode::kBypassCache:
+      load_flags |= net::LOAD_BYPASS_CACHE;
+      break;
+    case FetchCacheMode::kForceCache:
+      load_flags |= net::LOAD_SKIP_CACHE_VALIDATION;
+      break;
+    case FetchCacheMode::kOnlyIfCached:
+      load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
+      break;
+    case FetchCacheMode::kUnspecifiedOnlyIfCachedStrict:
+      load_flags |= net::LOAD_ONLY_FROM_CACHE;
+      break;
+    case FetchCacheMode::kDefault:
+      break;
+    case FetchCacheMode::kUnspecifiedForceCacheMiss:
+      load_flags |= net::LOAD_ONLY_FROM_CACHE | net::LOAD_BYPASS_CACHE;
+      break;
+  }
+
+  if (!request.AllowStoredCredentials()) {
+    load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
+    load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
+    load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  }
+
+  if (request.GetRequestContext() == blink::mojom::RequestContextType::PREFETCH)
+    load_flags |= net::LOAD_PREFETCH;
+
+  if (request.GetExtraData()) {
+    RequestExtraData* extra_data =
+        static_cast<RequestExtraData*>(request.GetExtraData());
+    if (extra_data->is_for_no_state_prefetch())
+      load_flags |= net::LOAD_PREFETCH;
+  }
+  if (request.SupportsAsyncRevalidation())
+    load_flags |= net::LOAD_SUPPORT_ASYNC_REVALIDATION;
+
+  return load_flags;
 }
 
 WebHTTPBody GetWebHTTPBodyForRequestBody(

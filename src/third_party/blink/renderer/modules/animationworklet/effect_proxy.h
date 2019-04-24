@@ -17,7 +17,7 @@ class MODULES_EXPORT EffectProxy : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit EffectProxy(base::Optional<TimeDelta> local_time);
+  EffectProxy();
 
   void setLocalTime(double time_ms, bool is_null);
   double localTime(bool& is_null) const;

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 652 tests; 611 PASS, 41 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 653 tests; 612 PASS, 41 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface mixin NavigatorID: original interface mixin defined
@@ -278,6 +278,7 @@ PASS OffscreenCanvasRenderingContext2D interface: operation rect(unrestricted do
 PASS OffscreenCanvasRenderingContext2D interface: operation arc(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean)
 PASS OffscreenCanvasRenderingContext2D interface: operation ellipse(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, boolean)
 PASS CustomElementRegistry interface: existence and properties of interface object
+PASS ElementInternals interface: existence and properties of interface object
 PASS DataTransfer interface: existence and properties of interface object
 PASS DataTransferItemList interface: existence and properties of interface object
 PASS DataTransferItem interface: existence and properties of interface object

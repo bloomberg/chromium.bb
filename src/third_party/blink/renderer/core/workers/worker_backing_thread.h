@@ -29,7 +29,11 @@ class CORE_EXPORT WorkerBackingThread final {
   USING_FAST_MALLOC(WorkerBackingThread);
 
  public:
-  explicit WorkerBackingThread(const ThreadCreationParams&);
+  static std::unique_ptr<WorkerBackingThread> Create(
+      const ThreadCreationParams& params) {
+    return base::WrapUnique(new WorkerBackingThread(params));
+  }
+
   ~WorkerBackingThread();
 
   // InitializeOnBackingThread() and ShutdownOnBackingThread() attaches and
@@ -49,7 +53,11 @@ class CORE_EXPORT WorkerBackingThread final {
   static void MemoryPressureNotificationToWorkerThreadIsolates(
       v8::MemoryPressureLevel);
 
+  static void SetRAILModeOnWorkerThreadIsolates(v8::RAILMode);
+
  private:
+  explicit WorkerBackingThread(const ThreadCreationParams&);
+
   std::unique_ptr<WebThreadSupportingGC> backing_thread_;
   v8::Isolate* isolate_ = nullptr;
 };

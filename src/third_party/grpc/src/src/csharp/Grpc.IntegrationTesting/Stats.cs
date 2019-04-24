@@ -328,7 +328,7 @@ namespace Grpc.Testing {
       }
       if (other.coreStats_ != null) {
         if (coreStats_ == null) {
-          CoreStats = new global::Grpc.Core.Stats();
+          coreStats_ = new global::Grpc.Core.Stats();
         }
         CoreStats.MergeFrom(other.CoreStats);
       }
@@ -369,9 +369,9 @@ namespace Grpc.Testing {
           }
           case 58: {
             if (coreStats_ == null) {
-              CoreStats = new global::Grpc.Core.Stats();
+              coreStats_ = new global::Grpc.Core.Stats();
             }
-            input.ReadMessage(CoreStats);
+            input.ReadMessage(coreStats_);
             break;
           }
         }
@@ -1210,7 +1210,7 @@ namespace Grpc.Testing {
       }
       if (other.latencies_ != null) {
         if (latencies_ == null) {
-          Latencies = new global::Grpc.Testing.HistogramData();
+          latencies_ = new global::Grpc.Testing.HistogramData();
         }
         Latencies.MergeFrom(other.Latencies);
       }
@@ -1229,7 +1229,7 @@ namespace Grpc.Testing {
       }
       if (other.coreStats_ != null) {
         if (coreStats_ == null) {
-          CoreStats = new global::Grpc.Core.Stats();
+          coreStats_ = new global::Grpc.Core.Stats();
         }
         CoreStats.MergeFrom(other.CoreStats);
       }
@@ -1246,9 +1246,9 @@ namespace Grpc.Testing {
             break;
           case 10: {
             if (latencies_ == null) {
-              Latencies = new global::Grpc.Testing.HistogramData();
+              latencies_ = new global::Grpc.Testing.HistogramData();
             }
-            input.ReadMessage(Latencies);
+            input.ReadMessage(latencies_);
             break;
           }
           case 17: {
@@ -1273,9 +1273,9 @@ namespace Grpc.Testing {
           }
           case 58: {
             if (coreStats_ == null) {
-              CoreStats = new global::Grpc.Core.Stats();
+              coreStats_ = new global::Grpc.Core.Stats();
             }
-            input.ReadMessage(CoreStats);
+            input.ReadMessage(coreStats_);
             break;
           }
         }

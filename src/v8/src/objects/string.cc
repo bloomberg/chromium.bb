@@ -23,28 +23,36 @@ namespace v8 {
 namespace internal {
 
 Handle<String> String::SlowFlatten(Isolate* isolate, Handle<ConsString> cons,
-                                   AllocationType allocation) {
-  DCHECK_GT(cons->first()->length(), 0);
-  DCHECK_GT(cons->second()->length(), 0);
+                                   PretenureFlag pretenure) {
+  DCHECK_NE(cons->second()->length(), 0);
+
+  // TurboFan can create cons strings with empty first parts.
+  while (cons->first()->length() == 0) {
+    // We do not want to call this function recursively. Therefore we call
+    // String::Flatten only in those cases where String::SlowFlatten is not
+    // called again.
+    if (cons->second()->IsConsString() && !cons->second()->IsFlat()) {
+      cons = handle(ConsString::cast(cons->second()), isolate);
+    } else {
+      return String::Flatten(isolate, handle(cons->second(), isolate));
+    }
+  }
 
   DCHECK(AllowHeapAllocation::IsAllowed());
   int length = cons->length();
-  allocation =
-      ObjectInYoungGeneration(*cons) ? allocation : AllocationType::kOld;
+  PretenureFlag tenure = ObjectInYoungGeneration(*cons) ? pretenure : TENURED;
   Handle<SeqString> result;
   if (cons->IsOneByteRepresentation()) {
-    Handle<SeqOneByteString> flat =
-        isolate->factory()
-            ->NewRawOneByteString(length, allocation)
-            .ToHandleChecked();
+    Handle<SeqOneByteString> flat = isolate->factory()
+                                        ->NewRawOneByteString(length, tenure)
+                                        .ToHandleChecked();
     DisallowHeapAllocation no_gc;
     WriteToFlat(*cons, flat->GetChars(no_gc), 0, length);
     result = flat;
   } else {
-    Handle<SeqTwoByteString> flat =
-        isolate->factory()
-            ->NewRawTwoByteString(length, allocation)
-            .ToHandleChecked();
+    Handle<SeqTwoByteString> flat = isolate->factory()
+                                        ->NewRawTwoByteString(length, tenure)
+                                        .ToHandleChecked();
     DisallowHeapAllocation no_gc;
     WriteToFlat(*cons, flat->GetChars(no_gc), 0, length);
     result = flat;
@@ -989,7 +997,7 @@ MaybeHandle<String> String::GetSubstitution(Isolate* isolate, Match* match,
         break;
       }
       case '<': {  // $<name> - named capture
-        using CaptureState = String::Match::CaptureState;
+        typedef String::Match::CaptureState CaptureState;
 
         if (!match->HasNamedCaptures()) {
           builder.AppendCharacter('$');
@@ -1513,9 +1521,6 @@ String ConsStringIterator::NextLeaf(bool* blew_stack) {
   }
   UNREACHABLE();
 }
-
-template EXPORT_TEMPLATE_DEFINE(V8_EXPORT_PRIVATE) void String::WriteToFlat(
-    String source, uint16_t* sink, int from, int to);
 
 }  // namespace internal
 }  // namespace v8

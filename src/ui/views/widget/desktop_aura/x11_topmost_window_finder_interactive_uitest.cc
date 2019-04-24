@@ -34,7 +34,7 @@ class MinimizeWaiter : public X11PropertyChangeWaiter {
   explicit MinimizeWaiter(XID window)
       : X11PropertyChangeWaiter(window, "_NET_WM_STATE") {}
 
-  ~MinimizeWaiter() override = default;
+  ~MinimizeWaiter() override {}
 
  private:
   // X11PropertyChangeWaiter:
@@ -60,7 +60,7 @@ class StackingClientListWaiter : public X11PropertyChangeWaiter {
         expected_windows_(expected_windows, expected_windows + count) {
   }
 
-  ~StackingClientListWaiter() override = default;
+  ~StackingClientListWaiter() override {}
 
   // X11PropertyChangeWaiter:
   void Wait() override {
@@ -93,9 +93,10 @@ class StackingClientListWaiter : public X11PropertyChangeWaiter {
 
 class X11TopmostWindowFinderTest : public ViewsInteractiveUITestBase {
  public:
-  X11TopmostWindowFinderTest() = default;
+  X11TopmostWindowFinderTest() {
+  }
 
-  ~X11TopmostWindowFinderTest() override = default;
+  ~X11TopmostWindowFinderTest() override {}
 
   // Creates and shows a Widget with |bounds|. The caller takes ownership of
   // the returned widget.

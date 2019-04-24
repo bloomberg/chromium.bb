@@ -10,7 +10,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/test/login_screen_tester.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -110,7 +109,9 @@ IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
   {
     OobeScreenWaiter screen_waiter(OobeScreen::SCREEN_GAIA_SIGNIN);
     ProxyAuthDialogWaiter auth_dialog_waiter;
-    ASSERT_TRUE(test::LoginScreenTester().ClickAddUserButton());
+    ASSERT_TRUE(content::ExecuteScript(
+        LoginDisplayHost::default_host()->GetOobeWebContents(),
+        "$('add-user-button').click()"));
     screen_waiter.Wait();
     auth_dialog_waiter.Wait();
     ASSERT_TRUE(auth_dialog_waiter.login_handler());

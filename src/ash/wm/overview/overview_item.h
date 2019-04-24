@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/caption_container_view.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
 #include "base/macros.h"
@@ -27,11 +26,12 @@ class Widget;
 }  // namespace views
 
 namespace ash {
+
+class CaptionContainerView;
 class OverviewGrid;
-class RoundedLabelWidget;
 
 // This class represents an item in overview mode.
-class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
+class ASH_EXPORT OverviewItem : public views::ButtonListener,
                                 public aura::WindowObserver,
                                 public ui::ImplicitAnimationObserver {
  public:
@@ -147,15 +147,25 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   // Translate and fade the window (or minimized widget) and |item_widget_|. It
   // should remain in the same spot relative to the grids origin, which is given
-  // by |new_grid_y|. Returns the settings object of the layer the caller should
-  // observe.
-  std::unique_ptr<ui::ScopedLayerAnimationSettings> UpdateYPositionAndOpacity(
+  // by |new_grid_y|.
+  void UpdateYPositionAndOpacity(
       int new_grid_y,
       float opacity,
       OverviewSession::UpdateAnimationSettingsCallback callback);
 
   // If the window item represents a minimized window, update its content view.
   void UpdateItemContentViewForMinimizedWindow();
+
+  // Handle the mouse/gesture event and facilitate dragging the item.
+  void HandlePressEvent(const gfx::PointF& location_in_screen);
+  void HandleReleaseEvent(const gfx::PointF& location_in_screen);
+  void HandleDragEvent(const gfx::PointF& location_in_screen);
+  void HandleLongPressEvent(const gfx::PointF& location_in_screen);
+  void HandleFlingStartEvent(const gfx::PointF& location_in_screen,
+                             float velocity_x,
+                             float velocity_y);
+  void ActivateDraggedWindow();
+  void ResetDraggedWindowGesture();
 
   // Checks if this item is current being dragged.
   bool IsDragItem();
@@ -184,18 +194,8 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   OverviewAnimationType GetExitOverviewAnimationType();
   OverviewAnimationType GetExitTransformAnimationType();
 
-  // CaptionContainerView::EventDelegate:
-  void HandlePressEvent(const gfx::PointF& location_in_screen) override;
-  void HandleReleaseEvent(const gfx::PointF& location_in_screen) override;
-  void HandleDragEvent(const gfx::PointF& location_in_screen) override;
-  void HandleLongPressEvent(const gfx::PointF& location_in_screen) override;
-  void HandleFlingStartEvent(const gfx::PointF& location_in_screen,
-                             float velocity_x,
-                             float velocity_y) override;
-  void HandleTapEvent() override;
-  void HandleGestureEndEvent() override;
-  void HandleCloseButtonClicked() override;
-  bool ShouldIgnoreGestureEvents() override;
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // aura::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,
@@ -236,9 +236,6 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   float GetCloseButtonVisibilityForTesting() const;
   float GetTitlebarOpacityForTesting() const;
   gfx::Rect GetShadowBoundsForTesting();
-  RoundedLabelWidget* cannot_snap_widget_for_testing() {
-    return cannot_snap_widget_.get();
-  }
 
  private:
   friend class OverviewSessionTest;
@@ -288,18 +285,17 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   // when the item is selected.
   bool selected_ = false;
 
-  // A widget stacked under the |transform_window_|. The widget has
+  // A widget that covers the |transform_window_|. The widget has
   // |caption_container_view_| as its contents view. The widget is backed by a
   // NOT_DRAWN layer since most of its surface is transparent.
   std::unique_ptr<views::Widget> item_widget_;
 
-  // The view associated with |item_widget_|. Contains a title, close button and
-  // maybe a backdrop. Forwards certain events to |this|.
+  // Container view that owns a Button view covering the |transform_window_|.
+  // That button serves as an event shield to receive all events such as clicks
+  // targeting the |transform_window_| or the overview header above the window.
+  // The shield button owns a header view which shows an icon, close button and
+  // title.
   CaptionContainerView* caption_container_view_ = nullptr;
-
-  // A widget with text that may show up on top of |transform_window_| to notify
-  // users this window cannot be snapped.
-  std::unique_ptr<RoundedLabelWidget> cannot_snap_widget_;
 
   // Pointer to the Overview that owns the OverviewGrid containing |this|.
   // Guaranteed to be non-null for the lifetime of |this|.

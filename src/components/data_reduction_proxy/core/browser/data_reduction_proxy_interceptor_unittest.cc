@@ -225,7 +225,8 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
     net::ProxyServer origin =
         net::ProxyServer::FromURI(spec, net::ProxyServer::SCHEME_HTTP);
     std::vector<DataReductionProxyServer> proxies_for_http;
-    proxies_for_http.push_back(DataReductionProxyServer(origin));
+    proxies_for_http.push_back(
+        DataReductionProxyServer(origin, ProxyServer::UNSPECIFIED_TYPE));
     test_context_->config()->test_params()->SetProxiesForHttp(proxies_for_http);
     std::string proxy_name = origin.ToURI();
     net::ProxyConfig proxy_config;

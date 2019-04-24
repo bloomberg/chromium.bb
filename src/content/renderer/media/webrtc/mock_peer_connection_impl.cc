@@ -225,11 +225,6 @@ void FakeRtpReceiver::SetObserver(
   NOTIMPLEMENTED();
 }
 
-void FakeRtpReceiver::SetJitterBufferMinimumDelay(
-    absl::optional<double> delay_seconds) {
-  NOTIMPLEMENTED();
-}
-
 std::vector<webrtc::RtpSource> FakeRtpReceiver::GetSources() const {
   NOTIMPLEMENTED();
   return std::vector<webrtc::RtpSource>();

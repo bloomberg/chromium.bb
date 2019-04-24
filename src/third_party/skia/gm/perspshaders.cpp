@@ -5,19 +5,20 @@
  * found in the LICENSE file.
  */
 
+#include "gm.h"
+#include "sk_tool_utils.h"
 #include "SkGradientShader.h"
 #include "SkImage.h"
 #include "SkPath.h"
 #include "SkSurface.h"
-#include "ToolUtils.h"
-#include "gm.h"
+#include "sk_tool_utils.h"
 
 static sk_sp<SkImage> make_image(SkCanvas* origCanvas, int w, int h) {
     SkImageInfo info = SkImageInfo::MakeN32Premul(w, h);
-    auto        surface(ToolUtils::makeSurface(origCanvas, info));
+    auto surface(sk_tool_utils::makeSurface(origCanvas, info));
     SkCanvas* canvas = surface->getCanvas();
 
-    ToolUtils::draw_checkerboard(canvas, SK_ColorRED, SK_ColorGREEN, w / 10);
+    sk_tool_utils::draw_checkerboard(canvas, SK_ColorRED, SK_ColorGREEN, w/10);
     return surface->makeImageSnapshot();
 }
 
@@ -40,10 +41,12 @@ protected:
     }
 
     void onOnceBeforeDraw() override {
-        fBitmap = ToolUtils::create_checkerboard_bitmap(
-                kCellSize, kCellSize, SK_ColorBLUE, SK_ColorYELLOW, kCellSize / 10);
+        fBitmap = sk_tool_utils::create_checkerboard_bitmap(kCellSize, kCellSize,
+                                                            SK_ColorBLUE, SK_ColorYELLOW,
+                                                            kCellSize/10);
 
-        fBitmapShader = fBitmap.makeShader();
+        fBitmapShader = SkShader::MakeBitmapShader(fBitmap, SkShader::kClamp_TileMode,
+                                                   SkShader::kClamp_TileMode);
         SkPoint pts1[] = {
             { 0, 0 },
             { SkIntToScalar(kCellSize), SkIntToScalar(kCellSize) }
@@ -58,9 +61,9 @@ protected:
         constexpr SkScalar pos[] = { 0, 0.25f, 0.5f, 0.75f, SK_Scalar1 };
 
         fLinearGrad1 = SkGradientShader::MakeLinear(pts1, colors, pos, SK_ARRAY_COUNT(colors),
-                                                    SkTileMode::kClamp);
+                                                    SkShader::kClamp_TileMode);
         fLinearGrad2 = SkGradientShader::MakeLinear(pts2, colors, pos, SK_ARRAY_COUNT(colors),
-                                                    SkTileMode::kClamp);
+                                                    SkShader::kClamp_TileMode);
 
         fPerspMatrix.reset();
         fPerspMatrix.setPerspY(SK_Scalar1 / 50);

@@ -52,8 +52,7 @@ void PaymentHandlerUtils::ReportResponseError(
 
   DCHECK(execution_context);
   execution_context->AddConsoleMessage(ConsoleMessage::Create(
-      mojom::ConsoleMessageSource::kJavaScript,
-      mojom::ConsoleMessageLevel::kWarning, error_message));
+      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, error_message));
 }
 
 }  // namespace blink

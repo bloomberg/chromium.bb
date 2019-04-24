@@ -7,12 +7,13 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chromecast/browser/cast_web_view.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
 
 namespace content {
-class BrowserContext;
 class NotificationSource;
 }
 
@@ -28,9 +29,11 @@ class CastExtensionHost : public extensions::ExtensionHost,
                           public content::NotificationObserver {
  public:
   CastExtensionHost(content::BrowserContext* browser_context,
+                    CastWebView::Delegate* delegate,
                     const extensions::Extension* extension,
                     const GURL& initial_url,
-                    scoped_refptr<content::SiteInstance> site_instance);
+                    content::SiteInstance* site_instance,
+                    extensions::ViewType host_type);
   ~CastExtensionHost() override;
 
   // extensions::ExtensionHost implementation:
@@ -54,6 +57,7 @@ class CastExtensionHost : public extensions::ExtensionHost,
 
   content::NotificationRegistrar registrar_;
   content::BrowserContext* const browser_context_;
+  CastWebView::Delegate* const delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CastExtensionHost);
 };

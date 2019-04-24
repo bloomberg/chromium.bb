@@ -24,6 +24,10 @@ class XMLParserScriptRunner final
   USING_GARBAGE_COLLECTED_MIXIN(XMLParserScriptRunner);
 
  public:
+  static XMLParserScriptRunner* Create(XMLParserScriptRunnerHost* host) {
+    return MakeGarbageCollected<XMLParserScriptRunner>(host);
+  }
+
   explicit XMLParserScriptRunner(XMLParserScriptRunnerHost*);
   ~XMLParserScriptRunner() override;
 
@@ -40,7 +44,7 @@ class XMLParserScriptRunner final
 
   // https://html.spec.whatwg.org/C/#pending-parsing-blocking-script
   // TODO(crbug/717643): Support module scripts, and turn this into
-  // Member<>.
+  // TraceWrapperMember<>.
   Member<PendingScript> parser_blocking_script_;
 
   Member<XMLParserScriptRunnerHost> host_;

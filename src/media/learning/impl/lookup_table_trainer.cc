@@ -19,16 +19,17 @@ class LookupTable : public Model {
   }
 
   // Model
-  TargetHistogram PredictDistribution(const FeatureVector& instance) override {
+  TargetDistribution PredictDistribution(
+      const FeatureVector& instance) override {
     auto iter = buckets_.find(instance);
     if (iter == buckets_.end())
-      return TargetHistogram();
+      return TargetDistribution();
 
     return iter->second;
   }
 
  private:
-  std::map<FeatureVector, TargetHistogram> buckets_;
+  std::map<FeatureVector, TargetDistribution> buckets_;
 };
 
 LookupTableTrainer::LookupTableTrainer() = default;

@@ -18,7 +18,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
-#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "content/public/browser/browser_context.h"
@@ -34,7 +33,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/quota/special_storage_policy.h"
-#include "url/gurl.h"
 #include "url/origin.h"
 
 using base::UserMetricsAction;
@@ -42,10 +40,6 @@ using base::UserMetricsAction;
 namespace content {
 
 namespace {
-
-// Timeout after which the History.ClearBrowsingData.Duration.SlowTasks180s
-// histogram is recorded.
-const base::TimeDelta kSlowTaskTimeout = base::TimeDelta::FromSeconds(180);
 
 base::OnceClosure RunsOrPostOnCurrentTaskRunner(base::OnceClosure closure) {
   return base::BindOnce(
@@ -70,16 +64,17 @@ bool DoesOriginMatchMaskAndURLs(
     const base::Callback<bool(const GURL&)>& predicate,
     const BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher&
         embedder_matcher,
-    const url::Origin& origin,
+    const GURL& origin,
     storage::SpecialStoragePolicy* policy) {
-  if (!predicate.is_null() && !predicate.Run(origin.GetURL()))
+  if (!predicate.is_null() && !predicate.Run(origin))
     return false;
 
   const std::vector<std::string>& schemes = url::GetWebStorageSchemes();
-  bool is_web_scheme = base::ContainsValue(schemes, origin.scheme());
+  bool is_web_scheme =
+      base::ContainsValue(schemes, origin.GetOrigin().scheme());
 
   // If a websafe origin is unprotected, it matches iff UNPROTECTED_WEB.
-  if ((!policy || !policy->IsStorageProtected(origin.GetURL())) &&
+  if ((!policy || !policy->IsStorageProtected(origin.GetOrigin())) &&
       is_web_scheme &&
       (origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB)) {
     return true;
@@ -87,7 +82,8 @@ bool DoesOriginMatchMaskAndURLs(
   origin_type_mask &= ~BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB;
 
   // Hosted applications (protected and websafe origins) iff PROTECTED_WEB.
-  if (policy && policy->IsStorageProtected(origin.GetURL()) && is_web_scheme &&
+  if (policy && policy->IsStorageProtected(origin.GetOrigin()) &&
+      is_web_scheme &&
       (origin_type_mask & BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB)) {
     return true;
   }
@@ -148,7 +144,7 @@ void BrowsingDataRemoverImpl::SetEmbedderDelegate(
 
 bool BrowsingDataRemoverImpl::DoesOriginMatchMask(
     int origin_type_mask,
-    const url::Origin& origin,
+    const GURL& origin,
     storage::SpecialStoragePolicy* policy) const {
   BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher embedder_matcher;
   if (embedder_delegate_)
@@ -236,14 +232,6 @@ void BrowsingDataRemoverImpl::RunNextTask() {
   DCHECK(!task_queue_.empty());
   RemovalTask& removal_task = task_queue_.front();
   removal_task.task_started = base::Time::Now();
-
-  // To detect tasks that are causing slow deletions, record running sub tasks
-  // after a delay.
-  slow_pending_tasks_closure_.Reset(base::BindRepeating(
-      &BrowsingDataRemoverImpl::RecordUnfinishedSubTasks, GetWeakPtr()));
-  base::PostDelayedTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                                  slow_pending_tasks_closure_.callback(),
-                                  kSlowTaskTimeout);
 
   RemoveImpl(removal_task.delete_begin, removal_task.delete_end,
              removal_task.remove_mask, *removal_task.filter_builder,
@@ -610,8 +598,6 @@ void BrowsingDataRemoverImpl::Notify() {
     return;
   }
 
-  slow_pending_tasks_closure_.Cancel();
-
   // Yield to the UI thread before executing the next removal task.
   // TODO(msramek): Consider also adding a backoff if too many tasks
   // are scheduled.
@@ -625,13 +611,12 @@ void BrowsingDataRemoverImpl::OnTaskComplete(TracingDataType data_type) {
   // clearing (what about other things such as passwords, etc.?) and wait for
   // them to complete before continuing.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  size_t num_erased = pending_sub_tasks_.erase(data_type);
-  DCHECK_EQ(num_erased, 1U);
-
+  DCHECK_GT(num_pending_tasks_, 0);
+  num_pending_tasks_--;
   TRACE_EVENT_ASYNC_END1("browsing_data", "BrowsingDataRemoverImpl",
                          static_cast<int>(data_type), "data_type",
                          static_cast<int>(data_type));
-  if (!pending_sub_tasks_.empty())
+  if (num_pending_tasks_ > 0)
     return;
 
   if (!would_complete_callback_.is_null()) {
@@ -646,9 +631,7 @@ void BrowsingDataRemoverImpl::OnTaskComplete(TracingDataType data_type) {
 base::OnceClosure BrowsingDataRemoverImpl::CreateTaskCompletionClosure(
     TracingDataType data_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto result = pending_sub_tasks_.insert(data_type);
-  DCHECK(result.second) << "Task already started: "
-                        << static_cast<int>(data_type);
+  num_pending_tasks_++;
   TRACE_EVENT_ASYNC_BEGIN1("browsing_data", "BrowsingDataRemoverImpl",
                            static_cast<int>(data_type), "data_type",
                            static_cast<int>(data_type));
@@ -663,14 +646,6 @@ base::OnceClosure BrowsingDataRemoverImpl::CreateTaskCompletionClosureForMojo(
       CreateTaskCompletionClosure(data_type),
       base::BindOnce(&BrowsingDataRemoverImpl::OnTaskComplete, GetWeakPtr(),
                      data_type)));
-}
-
-void BrowsingDataRemoverImpl::RecordUnfinishedSubTasks() {
-  DCHECK(!pending_sub_tasks_.empty());
-  for (TracingDataType task : pending_sub_tasks_) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "History.ClearBrowsingData.Duration.SlowTasks180s", task);
-  }
 }
 
 base::WeakPtr<BrowsingDataRemoverImpl> BrowsingDataRemoverImpl::GetWeakPtr() {

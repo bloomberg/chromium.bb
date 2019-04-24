@@ -406,14 +406,10 @@ TEST_P(TrapHandlerTest, TestCrashInWasmWrongCrashType) {
   SetupTrapHandler(GetParam());
 
 #if V8_OS_POSIX
-  // On Posix, the V8 default trap handler does not register for SIGFPE,
-  // therefore the thread-in-wasm flag is never reset in this test. We
-  // therefore do not check the value of this flag.
+  // The V8 default trap handler does not register for SIGFPE, therefore the
+  // thread-in-wasm flag is never reset in this test. We therefore do not check
+  // the value of this flag.
   bool check_wasm_flag = GetParam() != kDefault;
-#elif V8_OS_WIN
-  // On Windows, the trap handler returns immediately if not an exception of
-  // interest.
-  bool check_wasm_flag = false;
 #else
   bool check_wasm_flag = true;
 #endif

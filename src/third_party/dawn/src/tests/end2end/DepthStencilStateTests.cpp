@@ -37,7 +37,7 @@ class DepthStencilStateTest : public DawnTest {
             renderTargetDescriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::TransferSrc;
             renderTarget = device.CreateTexture(&renderTargetDescriptor);
 
-            renderTargetView = renderTarget.CreateDefaultView();
+            renderTargetView = renderTarget.CreateDefaultTextureView();
 
             dawn::TextureDescriptor depthDescriptor;
             depthDescriptor.dimension = dawn::TextureDimension::e2D;
@@ -51,7 +51,7 @@ class DepthStencilStateTest : public DawnTest {
             depthDescriptor.usage = dawn::TextureUsageBit::OutputAttachment;
             depthTexture = device.CreateTexture(&depthDescriptor);
 
-            depthTextureView = depthTexture.CreateDefaultView();
+            depthTextureView = depthTexture.CreateDefaultTextureView();
 
             vsModule = utils::CreateShaderModule(device, dawn::ShaderStage::Vertex, R"(
                 #version 450
@@ -283,7 +283,7 @@ class DepthStencilStateTest : public DawnTest {
 
                 pass.SetPipeline(pipeline);
                 pass.SetStencilReference(test.stencil);  // Set the stencil reference
-                pass.SetBindGroup(0, bindGroup, 0, nullptr);         // Set the bind group which contains color and depth data
+                pass.SetBindGroup(0, bindGroup);         // Set the bind group which contains color and depth data
                 pass.Draw(6, 1, 0, 0);
             }
             pass.EndPass();

@@ -75,9 +75,7 @@ def json_types(obj):
         return {key: json_types(value) for key, value in iteritems(obj)}
     if (isinstance(obj, string_types) or
         isinstance(obj, integer_types) or
-        isinstance(obj, float) or
-        isinstance(obj, bool) or
-        obj is None):
+        isinstance(obj, float)):
         return obj
     if isinstance(obj, list) or hasattr(obj, "__iter__"):
         return [json_types(value) for value in obj]

@@ -78,7 +78,7 @@ class LayoutSVGInlineText final : public LayoutText {
   LayoutRect LinesBoundingBox() const override;
   InlineTextBox* CreateTextBox(int start, uint16_t length) override;
 
-  LayoutRect VisualRectInDocument(VisualRectFlags) const final;
+  LayoutRect VisualRectInDocument() const final;
   FloatRect VisualRectInLocalSVGCoordinates() const final;
 
   float scaling_factor_;

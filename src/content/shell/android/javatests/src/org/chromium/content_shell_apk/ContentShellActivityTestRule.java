@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import org.junit.Assert;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.RenderCoordinatesImpl;
@@ -37,7 +38,6 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellViewAndroidDelegate.OnCursorUpdateHelper;
 
@@ -123,7 +123,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      * Returns the OnCursorUpdateHelper.
      */
     public OnCursorUpdateHelper getOnCursorUpdateHelper() throws ExecutionException {
-        return TestThreadUtils.runOnUiThreadBlocking(new Callable<OnCursorUpdateHelper>() {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<OnCursorUpdateHelper>() {
             @Override
             public OnCursorUpdateHelper call() {
                 return getActivity()
@@ -139,7 +139,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      */
     public ViewEventSink getViewEventSink() {
         try {
-            return TestThreadUtils.runOnUiThreadBlocking(() -> {
+            return ThreadUtils.runOnUiThreadBlocking(() -> {
                 return ViewEventSink.from(getActivity().getActiveShell().getWebContents());
             });
         } catch (ExecutionException e) {
@@ -152,8 +152,9 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      */
     public WebContents getWebContents() {
         try {
-            return TestThreadUtils.runOnUiThreadBlocking(
-                    () -> { return getActivity().getActiveShell().getWebContents(); });
+            return ThreadUtils.runOnUiThreadBlocking(() -> {
+                return getActivity().getActiveShell().getWebContents();
+            });
         } catch (ExecutionException e) {
             return null;
         }
@@ -164,7 +165,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      */
     public SelectionPopupControllerImpl getSelectionPopupController() {
         try {
-            return TestThreadUtils.runOnUiThreadBlocking(() -> {
+            return ThreadUtils.runOnUiThreadBlocking(() -> {
                 return SelectionPopupControllerImpl.fromWebContents(
                         getActivity().getActiveShell().getWebContents());
             });
@@ -178,7 +179,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      */
     public ImeAdapterImpl getImeAdapter() {
         try {
-            return TestThreadUtils.runOnUiThreadBlocking(
+            return ThreadUtils.runOnUiThreadBlocking(
                     () -> ImeAdapterImpl.fromWebContents(getWebContents()));
         } catch (ExecutionException e) {
             return null;
@@ -190,7 +191,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      */
     public SelectPopup getSelectPopup() {
         try {
-            return TestThreadUtils.runOnUiThreadBlocking(
+            return ThreadUtils.runOnUiThreadBlocking(
                     () -> SelectPopup.fromWebContents(getWebContents()));
         } catch (ExecutionException e) {
             return null;
@@ -199,7 +200,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
 
     public WebContentsAccessibilityImpl getWebContentsAccessibility() {
         try {
-            return TestThreadUtils.runOnUiThreadBlocking(
+            return ThreadUtils.runOnUiThreadBlocking(
                     () -> WebContentsAccessibilityImpl.fromWebContents(getWebContents()));
         } catch (ExecutionException e) {
             return null;
@@ -211,7 +212,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      */
     public RenderCoordinatesImpl getRenderCoordinates() {
         try {
-            return TestThreadUtils.runOnUiThreadBlocking(
+            return ThreadUtils.runOnUiThreadBlocking(
                     () -> ((WebContentsImpl) getWebContents()).getRenderCoordinates());
         } catch (ExecutionException e) {
             return null;
@@ -224,7 +225,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     public ViewGroup getContainerView() {
         final WebContents webContents = getWebContents();
         try {
-            return TestThreadUtils.runOnUiThreadBlocking(() -> {
+            return ThreadUtils.runOnUiThreadBlocking(() -> {
                 return webContents != null ? webContents.getViewAndroidDelegate().getContainerView()
                                            : null;
             });
@@ -278,7 +279,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      * @throws ExecutionException
      */
     public Shell loadNewShell(String url) throws ExecutionException {
-        Shell shell = TestThreadUtils.runOnUiThreadBlocking(new Callable<Shell>() {
+        Shell shell = ThreadUtils.runOnUiThreadBlocking(new Callable<Shell>() {
             @Override
             public Shell call() {
                 getActivity().getShellManager().launchShell(url);

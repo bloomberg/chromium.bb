@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -51,8 +50,6 @@ class TraceableVariable;
 // wouldn't be helpful in our case because removing one takes linear time
 // and tracers may be created and disposed frequently.
 class PLATFORM_EXPORT TraceableVariableController {
-  DISALLOW_NEW();
-
  public:
   TraceableVariableController();
   ~TraceableVariableController();
@@ -90,8 +87,6 @@ class TraceableVariable {
 
 template <const char* category>
 class StateTracer {
-  DISALLOW_NEW();
-
  public:
   StateTracer(const char* name, const void* object)
       : name_(name), object_(object), slice_is_open_(false) {

@@ -45,10 +45,16 @@ class WebAudioSourceProvider;
 
 class MediaStreamWebAudioSource : public AudioSourceProvider {
  public:
-  explicit MediaStreamWebAudioSource(std::unique_ptr<WebAudioSourceProvider>);
+  static std::unique_ptr<MediaStreamWebAudioSource> Create(
+      std::unique_ptr<WebAudioSourceProvider> provider) {
+    return base::WrapUnique(new MediaStreamWebAudioSource(std::move(provider)));
+  }
+
   ~MediaStreamWebAudioSource() override;
 
  private:
+  explicit MediaStreamWebAudioSource(std::unique_ptr<WebAudioSourceProvider>);
+
   // blink::AudioSourceProvider implementation.
   void ProvideInput(AudioBus*, uint32_t frames_to_process) override;
 

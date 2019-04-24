@@ -23,10 +23,6 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace leveldb_proto {
-class ProtoDatabaseProvider;
-}  // namespace leveldb_proto
-
 namespace ntp_snippets {
 
 class SnippetImageProto;
@@ -40,15 +36,14 @@ class RemoteSuggestionsDatabase {
   using SnippetImageCallback = base::OnceCallback<void(std::string)>;
 
   // Creates a RemoteSuggestionsDatabase backed by real ProtoDatabases.
-  RemoteSuggestionsDatabase(
-      leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
-      const base::FilePath& database_dir);
+  RemoteSuggestionsDatabase(const base::FilePath& database_dir);
   // Creates a RemoteSuggestionsDatabase backed by the passed-in ProtoDatabases,
   // useful for testing.
   RemoteSuggestionsDatabase(
       std::unique_ptr<leveldb_proto::ProtoDatabase<SnippetProto>> database,
       std::unique_ptr<leveldb_proto::ProtoDatabase<SnippetImageProto>>
-          image_database);
+          image_database,
+      const base::FilePath& database_dir);
   ~RemoteSuggestionsDatabase();
 
   // Returns whether the database has finished initialization. While this is
@@ -102,19 +97,18 @@ class RemoteSuggestionsDatabase {
       leveldb_proto::ProtoDatabase<SnippetImageProto>::KeyEntryVector;
 
   RemoteSuggestionsDatabase(
-      leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
-      const base::FilePath& database_dir,
-      scoped_refptr<base::SequencedTaskRunner> task_runner);
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
+      const base::FilePath& database_dir);
 
   // Callbacks for ProtoDatabase<SnippetProto> operations.
-  void OnDatabaseInited(leveldb_proto::Enums::InitStatus status);
+  void OnDatabaseInited(bool success);
   void OnDatabaseLoaded(SnippetsCallback callback,
                         bool success,
                         std::unique_ptr<std::vector<SnippetProto>> entries);
   void OnDatabaseSaved(bool success);
 
   // Callbacks for ProtoDatabase<SnippetImageProto> operations.
-  void OnImageDatabaseInited(leveldb_proto::Enums::InitStatus status);
+  void OnImageDatabaseInited(bool success);
   void OnImageDatabaseLoaded(SnippetImageCallback callback,
                              bool success,
                              std::unique_ptr<SnippetImageProto> entry);

@@ -33,6 +33,7 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
   // At the moment, layout worklet allows at most two global scopes at any time.
   static const size_t kNumGlobalScopes;
   static LayoutWorklet* From(LocalDOMWindow&);
+  static LayoutWorklet* Create(LocalFrame*);
 
   explicit LayoutWorklet(LocalFrame*);
   ~LayoutWorklet() override;

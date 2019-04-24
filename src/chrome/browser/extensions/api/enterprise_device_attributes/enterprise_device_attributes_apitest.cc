@@ -14,13 +14,13 @@
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
+#include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -138,10 +138,15 @@ class EnterpriseDeviceAttributesTest
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
-    chromeos::SessionManagerClient::InitializeFakeInMemory();
+    chromeos::FakeSessionManagerClient* fake_session_manager_client =
+        new chromeos::FakeSessionManagerClient;
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::unique_ptr<chromeos::SessionManagerClient>(
+            fake_session_manager_client));
+
     policy::AffiliationTestHelper affiliation_helper =
         policy::AffiliationTestHelper::CreateForCloud(
-            chromeos::FakeSessionManagerClient::Get());
+            fake_session_manager_client);
 
     std::set<std::string> device_affiliation_ids;
     device_affiliation_ids.insert(kAffiliationID);
@@ -167,9 +172,8 @@ class EnterpriseDeviceAttributesTest
     device_policy->policy_data().set_annotated_location(kAnnotatedLocation);
     device_policy->Build();
 
-    chromeos::FakeSessionManagerClient::Get()->set_device_policy(
-        device_policy->GetBlob());
-    chromeos::FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
+    fake_session_manager_client->set_device_policy(device_policy->GetBlob());
+    fake_session_manager_client->OnPropertyChangeComplete(true);
 
     // Init the user policy provider.
     EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))

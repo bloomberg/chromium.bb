@@ -247,14 +247,14 @@ ChromeMetricsServicesManagerClient::GetEnabledStateProviderForTesting() {
 
 std::unique_ptr<rappor::RapporServiceImpl>
 ChromeMetricsServicesManagerClient::CreateRapporServiceImpl() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   return std::make_unique<rappor::RapporServiceImpl>(
       local_state_, base::Bind(&chrome::IsIncognitoSessionActive));
 }
 
 std::unique_ptr<variations::VariationsService>
 ChromeMetricsServicesManagerClient::CreateVariationsService() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   return variations::VariationsService::Create(
       std::make_unique<ChromeVariationsServiceClient>(), local_state_,
       GetMetricsStateManager(), switches::kDisableBackgroundNetworking,
@@ -264,13 +264,13 @@ ChromeMetricsServicesManagerClient::CreateVariationsService() {
 
 std::unique_ptr<metrics::MetricsServiceClient>
 ChromeMetricsServicesManagerClient::CreateMetricsServiceClient() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   return ChromeMetricsServiceClient::Create(GetMetricsStateManager());
 }
 
 metrics::MetricsStateManager*
 ChromeMetricsServicesManagerClient::GetMetricsStateManager() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!metrics_state_manager_) {
     metrics_state_manager_ = metrics::MetricsStateManager::Create(
         local_state_, enabled_state_provider_.get(), GetRegistryBackupKey(),

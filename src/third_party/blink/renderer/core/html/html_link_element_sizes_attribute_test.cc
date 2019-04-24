@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -17,8 +16,7 @@ class HTMLLinkElementSizesAttributeTest : public testing::Test {};
 TEST(HTMLLinkElementSizesAttributeTest,
      setSizesPropertyValue_updatesAttribute) {
   Document* document = Document::CreateForTest();
-  auto* link =
-      MakeGarbageCollected<HTMLLinkElement>(*document, CreateElementFlags());
+  auto* link = HTMLLinkElement::Create(*document, CreateElementFlags());
   DOMTokenList* sizes = link->sizes();
   EXPECT_EQ(g_null_atom, sizes->value());
   sizes->setValue("   a b  c ");
@@ -29,8 +27,8 @@ TEST(HTMLLinkElementSizesAttributeTest,
 TEST(HTMLLinkElementSizesAttributeTest,
      setSizesAttribute_updatesSizesPropertyValue) {
   Document* document = Document::CreateForTest();
-  auto* link =
-      MakeGarbageCollected<HTMLLinkElement>(*document, CreateElementFlags());
+  HTMLLinkElement* link =
+      HTMLLinkElement::Create(*document, CreateElementFlags());
   DOMTokenList* sizes = link->sizes();
   EXPECT_EQ(g_null_atom, sizes->value());
   link->setAttribute(html_names::kSizesAttr, "y  x ");

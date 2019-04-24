@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "cc/layers/layer_impl.h"
 
 namespace cc {
@@ -18,12 +19,7 @@ class PushPropertiesCountingLayerImpl : public LayerImpl {
   static std::unique_ptr<PushPropertiesCountingLayerImpl> Create(
       LayerTreeImpl* tree_impl,
       int id);
-  PushPropertiesCountingLayerImpl(const PushPropertiesCountingLayerImpl&) =
-      delete;
   ~PushPropertiesCountingLayerImpl() override;
-
-  PushPropertiesCountingLayerImpl& operator=(
-      const PushPropertiesCountingLayerImpl&) = delete;
 
   // LayerImpl implementation.
   void PushPropertiesTo(LayerImpl* layer) override;
@@ -36,6 +32,8 @@ class PushPropertiesCountingLayerImpl : public LayerImpl {
   PushPropertiesCountingLayerImpl(LayerTreeImpl* tree_impl, int id);
 
   size_t push_properties_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(PushPropertiesCountingLayerImpl);
 };
 
 }  // namespace cc

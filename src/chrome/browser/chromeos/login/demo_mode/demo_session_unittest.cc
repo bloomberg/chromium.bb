@@ -421,7 +421,8 @@ TEST_F(DemoSessionTest, MultipleEnsureOfflineResourcesLoaded) {
       demo_session->resources()->GetAbsolutePath(base::FilePath("foo.txt")));
 }
 
-TEST_F(DemoSessionTest, ShowAndRemoveSplashScreen) {
+// TODO(crbug.com/939687): Reenable the test.
+TEST_F(DemoSessionTest, DISABLED_ShowAndRemoveSplashScreen) {
   DemoSession* demo_session = DemoSession::StartIfInDemoMode();
   ASSERT_TRUE(demo_session);
 
@@ -476,7 +477,8 @@ TEST_F(DemoSessionTest, ShowAndRemoveSplashScreen) {
   app_window->OnNativeClose();
 }
 
-TEST_F(DemoSessionTest, RemoveSplashScreenWhenTimeout) {
+// TODO(crbug.com/939687): Reenable the test.
+TEST_F(DemoSessionTest, DISABLED_RemoveSplashScreenWhenTimeout) {
   DemoSession* demo_session = DemoSession::StartIfInDemoMode();
   ASSERT_TRUE(demo_session);
 

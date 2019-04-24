@@ -20,9 +20,6 @@ class SetTimeDialog : public SystemWebDialogDelegate {
   // as a child of |parent|, e.g. the Settings window.
   static void ShowDialog(gfx::NativeWindow parent = nullptr);
 
-  // Returns true if the dialog should show the timezone <select>.
-  static bool ShouldShowTimezone();
-
  private:
   SetTimeDialog();
   ~SetTimeDialog() override;

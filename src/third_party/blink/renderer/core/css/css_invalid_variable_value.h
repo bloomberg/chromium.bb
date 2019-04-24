@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -29,12 +28,7 @@ class CORE_EXPORT CSSInvalidVariableValue : public CSSValue {
   CSSInvalidVariableValue() : CSSValue(kInvalidVariableValueClass) {}
 };
 
-template <>
-struct DowncastTraits<CSSInvalidVariableValue> {
-  static bool AllowFrom(const CSSValue& value) {
-    return value.IsInvalidVariableValue();
-  }
-};
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSInvalidVariableValue, IsInvalidVariableValue());
 
 }  // namespace blink
 

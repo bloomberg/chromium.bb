@@ -13,8 +13,7 @@ using VariableMode = CSSParserLocalContext::VariableMode;
 TEST(CSSParserLocalContextTest, Constructor) {
   EXPECT_FALSE(CSSParserLocalContext().UseAliasParsing());
   EXPECT_FALSE(CSSParserLocalContext().IsAnimationTainted());
-  EXPECT_EQ(CSSPropertyID::kInvalid,
-            CSSParserLocalContext().CurrentShorthand());
+  EXPECT_EQ(CSSPropertyInvalid, CSSParserLocalContext().CurrentShorthand());
   EXPECT_EQ(VariableMode::kTyped, CSSParserLocalContext().GetVariableMode());
 }
 
@@ -32,7 +31,7 @@ TEST(CSSParserLocalContextTest, WithAnimationTainted) {
 
 TEST(CSSParserLocalContextTest, WithCurrentShorthand) {
   const CSSParserLocalContext context;
-  const CSSPropertyID shorthand = CSSPropertyID::kBackground;
+  const CSSPropertyID shorthand = CSSPropertyBackground;
   EXPECT_EQ(shorthand,
             context.WithCurrentShorthand(shorthand).CurrentShorthand());
 }
@@ -47,14 +46,14 @@ TEST(CSSParserLocalContextTest, LocalMutation) {
   CSSParserLocalContext context;
   context = context.WithAliasParsing(true);
   context = context.WithAnimationTainted(true);
-  context = context.WithCurrentShorthand(CSSPropertyID::kBackground);
+  context = context.WithCurrentShorthand(CSSPropertyBackground);
   context = context.WithVariableMode(VariableMode::kUntyped);
 
   // WithAliasParsing only changes that member.
   {
     auto local_context = context.WithAliasParsing(false);
     EXPECT_FALSE(local_context.UseAliasParsing());
-    EXPECT_EQ(CSSPropertyID::kBackground, local_context.CurrentShorthand());
+    EXPECT_EQ(CSSPropertyBackground, local_context.CurrentShorthand());
     EXPECT_TRUE(local_context.IsAnimationTainted());
     EXPECT_EQ(VariableMode::kUntyped, local_context.GetVariableMode());
   }
@@ -63,16 +62,16 @@ TEST(CSSParserLocalContextTest, LocalMutation) {
   {
     auto local_context = context.WithAnimationTainted(false);
     EXPECT_TRUE(local_context.UseAliasParsing());
-    EXPECT_EQ(CSSPropertyID::kBackground, local_context.CurrentShorthand());
+    EXPECT_EQ(CSSPropertyBackground, local_context.CurrentShorthand());
     EXPECT_FALSE(local_context.IsAnimationTainted());
     EXPECT_EQ(VariableMode::kUntyped, local_context.GetVariableMode());
   }
 
   // WithCurrentShorthand only changes that member.
   {
-    auto local_context = context.WithCurrentShorthand(CSSPropertyID::kPadding);
+    auto local_context = context.WithCurrentShorthand(CSSPropertyPadding);
     EXPECT_TRUE(local_context.UseAliasParsing());
-    EXPECT_EQ(CSSPropertyID::kPadding, local_context.CurrentShorthand());
+    EXPECT_EQ(CSSPropertyPadding, local_context.CurrentShorthand());
     EXPECT_TRUE(local_context.IsAnimationTainted());
     EXPECT_EQ(VariableMode::kUntyped, local_context.GetVariableMode());
   }
@@ -81,7 +80,7 @@ TEST(CSSParserLocalContextTest, LocalMutation) {
   {
     auto local_context = context.WithVariableMode(VariableMode::kTyped);
     EXPECT_TRUE(local_context.UseAliasParsing());
-    EXPECT_EQ(CSSPropertyID::kBackground, local_context.CurrentShorthand());
+    EXPECT_EQ(CSSPropertyBackground, local_context.CurrentShorthand());
     EXPECT_TRUE(local_context.IsAnimationTainted());
     EXPECT_EQ(VariableMode::kTyped, local_context.GetVariableMode());
   }

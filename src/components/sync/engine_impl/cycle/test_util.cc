@@ -4,8 +4,6 @@
 
 #include "components/sync/engine_impl/cycle/test_util.h"
 
-#include "net/base/net_errors.h"
-
 namespace syncer {
 namespace test_util {
 
@@ -43,7 +41,7 @@ void SimulateConfigureConnectionFailure(
   cycle->mutable_status_controller()->set_last_get_key_result(
       SyncerError(SyncerError::SYNCER_OK));
   cycle->mutable_status_controller()->set_last_download_updates_result(
-      SyncerError::NetworkConnectionUnavailable(net::ERR_FAILED));
+      SyncerError(SyncerError::NETWORK_CONNECTION_UNAVAILABLE));
 }
 
 void SimulateNormalSuccess(ModelTypeSet requested_types,
@@ -77,7 +75,7 @@ void SimulateConnectionFailure(ModelTypeSet requested_types,
                                NudgeTracker* nudge_tracker,
                                SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_download_updates_result(
-      SyncerError::NetworkConnectionUnavailable(net::ERR_FAILED));
+      SyncerError(SyncerError::NETWORK_CONNECTION_UNAVAILABLE));
 }
 
 void SimulatePollSuccess(ModelTypeSet requested_types, SyncCycle* cycle) {
@@ -114,7 +112,7 @@ void SimulatePollIntervalUpdateImpl(ModelTypeSet requested_types,
                                     SyncCycle* cycle,
                                     const base::TimeDelta& new_poll) {
   SimulatePollSuccess(requested_types, cycle);
-  cycle->delegate()->OnReceivedPollIntervalUpdate(new_poll);
+  cycle->delegate()->OnReceivedLongPollIntervalUpdate(new_poll);
 }
 
 void SimulateGuRetryDelayCommandImpl(SyncCycle* cycle, base::TimeDelta delay) {

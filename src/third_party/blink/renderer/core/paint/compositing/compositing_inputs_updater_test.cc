@@ -13,7 +13,7 @@ namespace blink {
 class CompositingInputsUpdaterTest : public RenderingTest {
  public:
   CompositingInputsUpdaterTest()
-      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
+      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
 };
 
 // Tests that transitioning a sticky away from an ancestor overflow layer that
@@ -63,9 +63,9 @@ TEST_F(CompositingInputsUpdaterTest,
   // Now make the outer scroller non-scrollable (i.e. overflow: visible), and
   // the inner scroller into an actual scroller.
   ToElement(outer_scroller->GetNode())
-      ->SetInlineStyleProperty(CSSPropertyID::kOverflow, "visible");
+      ->SetInlineStyleProperty(CSSPropertyOverflow, "visible");
   ToElement(inner_scroller->GetNode())
-      ->SetInlineStyleProperty(CSSPropertyID::kOverflow, "scroll");
+      ->SetInlineStyleProperty(CSSPropertyOverflow, "scroll");
 
   // Before we update compositing inputs, validate that the current ancestor
   // overflow no longer has a scrollable area.

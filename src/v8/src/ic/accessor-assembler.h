@@ -16,7 +16,7 @@ class CodeAssemblerState;
 
 class ExitPoint;
 
-class V8_EXPORT_PRIVATE AccessorAssembler : public CodeStubAssembler {
+class AccessorAssembler : public CodeStubAssembler {
  public:
   using Node = compiler::Node;
   template <class T>
@@ -282,9 +282,9 @@ class V8_EXPORT_PRIVATE AccessorAssembler : public CodeStubAssembler {
 
   // Low-level helpers.
 
-  using OnCodeHandler = std::function<void(Node* code_handler)>;
-  using OnFoundOnReceiver =
-      std::function<void(Node* properties, Node* name_index)>;
+  typedef std::function<void(Node* code_handler)> OnCodeHandler;
+  typedef std::function<void(Node* properties, Node* name_index)>
+      OnFoundOnReceiver;
 
   template <typename ICHandler, typename ICParameters>
   Node* HandleProtoHandler(const ICParameters* p, Node* handler,
@@ -343,12 +343,12 @@ class V8_EXPORT_PRIVATE AccessorAssembler : public CodeStubAssembler {
 // and then jump to an exit label.
 class ExitPoint {
  private:
-  using Node = compiler::Node;
-  using CodeAssemblerLabel = compiler::CodeAssemblerLabel;
-  using CodeAssemblerVariable = compiler::CodeAssemblerVariable;
+  typedef compiler::Node Node;
+  typedef compiler::CodeAssemblerLabel CodeAssemblerLabel;
+  typedef compiler::CodeAssemblerVariable CodeAssemblerVariable;
 
  public:
-  using IndirectReturnHandler = std::function<void(Node* result)>;
+  typedef std::function<void(Node* result)> IndirectReturnHandler;
 
   explicit ExitPoint(CodeStubAssembler* assembler)
       : ExitPoint(assembler, nullptr) {}

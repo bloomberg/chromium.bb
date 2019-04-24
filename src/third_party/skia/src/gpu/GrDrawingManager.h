@@ -46,10 +46,12 @@ public:
                                                          bool managedOpList = true);
     sk_sp<GrTextureContext> makeTextureContext(sk_sp<GrSurfaceProxy>, sk_sp<SkColorSpace>);
 
+    // The caller automatically gets a ref on the returned opList. It must
+    // be balanced by an unref call.
     // A managed opList is controlled by the drawing manager (i.e., sorted & flushed with the
-    // others). An unmanaged one is created and used by the onFlushCallback.
-    sk_sp<GrRenderTargetOpList> newRTOpList(sk_sp<GrRenderTargetProxy>, bool managedOpList);
-    sk_sp<GrTextureOpList> newTextureOpList(sk_sp<GrTextureProxy>);
+    // other). An unmanaged one is created and used by the onFlushCallback.
+    sk_sp<GrRenderTargetOpList> newRTOpList(GrRenderTargetProxy* rtp, bool managedOpList);
+    sk_sp<GrTextureOpList> newTextureOpList(GrTextureProxy* textureProxy);
 
     GrRecordingContext* getContext() { return fContext; }
 
@@ -70,9 +72,11 @@ public:
 
     static bool ProgramUnitTest(GrContext* context, int maxStages, int maxLevels);
 
-    GrSemaphoresSubmitted flushSurface(GrSurfaceProxy*,
-                                       SkSurface::BackendSurfaceAccess access,
-                                       const GrFlushInfo& info);
+    GrSemaphoresSubmitted prepareSurfaceForExternalIO(GrSurfaceProxy*,
+                                                      SkSurface::BackendSurfaceAccess access,
+                                                      SkSurface::FlushFlags flags,
+                                                      int numSemaphores,
+                                                      GrBackendSemaphore backendSemaphores[]);
 
     void addOnFlushCallbackObject(GrOnFlushCallbackObject*);
 
@@ -87,7 +91,7 @@ private:
     // This class encapsulates maintenance and manipulation of the drawing manager's DAG of opLists.
     class OpListDAG {
     public:
-        OpListDAG(bool explicitlyAllocating, bool sortOpLists);
+        OpListDAG(bool explicitlyAllocating, GrContextOptions::Enable sortOpLists);
         ~OpListDAG();
 
         // Currently, when explicitly allocating resources, this call will topologically sort the
@@ -114,8 +118,6 @@ private:
         bool empty() const { return fOpLists.empty(); }
         int numOpLists() const { return fOpLists.count(); }
 
-        bool isUsed(GrSurfaceProxy*) const;
-
         GrOpList* opList(int index) { return fOpLists[index].get(); }
         const GrOpList* opList(int index) const { return fOpLists[index].get(); }
 
@@ -136,8 +138,7 @@ private:
 
     GrDrawingManager(GrRecordingContext*, const GrPathRendererChain::Options&,
                      const GrTextContext::Options&,
-                     bool explicitlyAllocating,
-                     bool sortOpLists,
+                     bool explicitlyAllocating, GrContextOptions::Enable sortRenderTargets,
                      GrContextOptions::Enable reduceOpListSplitting);
 
     bool wasAbandoned() const;
@@ -149,7 +150,9 @@ private:
 
     GrSemaphoresSubmitted flush(GrSurfaceProxy* proxy,
                                 SkSurface::BackendSurfaceAccess access,
-                                const GrFlushInfo&);
+                                SkSurface::FlushFlags flags,
+                                int numSemaphores,
+                                GrBackendSemaphore backendSemaphores[]);
 
     SkDEBUGCODE(void validate() const);
 

@@ -24,7 +24,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -57,8 +57,9 @@
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/dbus/upstart/upstart_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/upstart_client.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -80,8 +81,8 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/host_id.h"
+#include "media/audio/sounds/sounds_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/accessibility/accessibility_switches.h"
@@ -135,13 +136,11 @@ BrailleController* GetBrailleController() {
 }
 
 void EnableChromeVoxAfterSwitchAccessMetric(bool val) {
-  base::UmaHistogramBoolean("Accessibility.CrosChromeVoxAfterSwitchAccess",
-                            val);
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosChromeVoxAfterSwitchAccess", val);
 }
 
 void EnableSwitchAccessAfterChromeVoxMetric(bool val) {
-  base::UmaHistogramBoolean("Accessibility.CrosSwitchAccessAfterChromeVox",
-                            val);
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSwitchAccessAfterChromeVox", val);
 }
 
 // Restarts (stops, then starts brltty). If |address| is empty, only stops.
@@ -150,7 +149,8 @@ void EnableSwitchAccessAfterChromeVoxMetric(bool val) {
 // stop followed by start ensures we both stop a started job, and also start
 // brltty.
 void RestartBrltty(const std::string& address) {
-  chromeos::UpstartClient* client = chromeos::UpstartClient::Get();
+  chromeos::UpstartClient* client =
+      chromeos::DBusThreadManager::Get()->GetUpstartClient();
   client->StopJob(kBrlttyUpstartJobName, EmptyVoidDBusMethodCallback());
 
   std::vector<std::string> args;
@@ -259,7 +259,7 @@ AccessibilityManager::AccessibilityManager()
   input_method::InputMethodManager::Get()->AddObserver(this);
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  audio::SoundsManager* manager = audio::SoundsManager::Get();
+  media::SoundsManager* manager = media::SoundsManager::Get();
   manager->Initialize(SOUND_SHUTDOWN,
                       bundle.GetRawDataResource(IDR_SOUND_SHUTDOWN_WAV));
   manager->Initialize(
@@ -554,7 +554,7 @@ bool AccessibilityManager::PlayEarcon(int sound_key, PlaySoundOption option) {
       !IsSpokenFeedbackEnabled()) {
     return false;
   }
-  return audio::SoundsManager::Get()->Play(sound_key);
+  return media::SoundsManager::Get()->Play(sound_key);
 }
 
 void AccessibilityManager::OnTwoFingerTouchStart() {
@@ -617,7 +617,7 @@ bool AccessibilityManager::ShouldToggleSpokenFeedbackViaTouch() {
 }
 
 bool AccessibilityManager::PlaySpokenFeedbackToggleCountdown(int tick_count) {
-  return audio::SoundsManager::Get()->Play(
+  return media::SoundsManager::Get()->Play(
       tick_count % 2 ? SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH
                      : SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW);
 }
@@ -1098,12 +1098,9 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         base::Bind(&AccessibilityManager::OnLocaleChanged,
                    base::Unretained(this)));
 
-    // Compute these histograms on the main (UI) thread because they
-    // need to access PrefService.
-    content::BrowserAccessibilityState::GetInstance()
-        ->AddUIThreadHistogramCallback(base::BindOnce(
-            &AccessibilityManager::UpdateChromeOSAccessibilityHistograms,
-            base::Unretained(this)));
+    content::BrowserAccessibilityState::GetInstance()->AddHistogramCallback(
+        base::Bind(&AccessibilityManager::UpdateChromeOSAccessibilityHistograms,
+                   base::Unretained(this)));
 
     extensions::ExtensionRegistry* registry =
         extensions::ExtensionRegistry::Get(profile);
@@ -1138,7 +1135,7 @@ base::TimeDelta AccessibilityManager::PlayShutdownSound() {
                   PlaySoundOption::ONLY_IF_SPOKEN_FEEDBACK_ENABLED)) {
     return base::TimeDelta();
   }
-  return audio::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
+  return media::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
 }
 
 std::unique_ptr<AccessibilityStatusSubscription>
@@ -1175,55 +1172,49 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
 }
 
 void AccessibilityManager::UpdateChromeOSAccessibilityHistograms() {
-  base::UmaHistogramBoolean("Accessibility.CrosSpokenFeedback",
-                            IsSpokenFeedbackEnabled());
-  base::UmaHistogramBoolean("Accessibility.CrosHighContrast",
-                            IsHighContrastEnabled());
-  base::UmaHistogramBoolean("Accessibility.CrosVirtualKeyboard",
-                            IsVirtualKeyboardEnabled());
-  base::UmaHistogramBoolean("Accessibility.CrosStickyKeys",
-                            IsStickyKeysEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSpokenFeedback",
+                        IsSpokenFeedbackEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosHighContrast",
+                        IsHighContrastEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosVirtualKeyboard",
+                        IsVirtualKeyboardEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosStickyKeys", IsStickyKeysEnabled());
   if (MagnificationManager::Get()) {
-    base::UmaHistogramBoolean(
-        "Accessibility.CrosScreenMagnifier",
-        MagnificationManager::Get()->IsMagnifierEnabled());
-    base::UmaHistogramBoolean(
-        "Accessibility.CrosDockedMagnifier",
-        MagnificationManager::Get()->IsDockedMagnifierEnabled());
+    UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosScreenMagnifier",
+                          MagnificationManager::Get()->IsMagnifierEnabled());
   }
   if (profile_) {
     const PrefService* const prefs = profile_->GetPrefs();
 
     bool large_cursor_enabled =
         prefs->GetBoolean(ash::prefs::kAccessibilityLargeCursorEnabled);
-    base::UmaHistogramBoolean("Accessibility.CrosLargeCursor",
-                              large_cursor_enabled);
+    UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosLargeCursor",
+                          large_cursor_enabled);
     if (large_cursor_enabled) {
-      base::UmaHistogramCounts100(
+      UMA_HISTOGRAM_COUNTS_100(
           "Accessibility.CrosLargeCursorSize",
           prefs->GetInteger(ash::prefs::kAccessibilityLargeCursorDipSize));
     }
 
-    base::UmaHistogramBoolean(
+    UMA_HISTOGRAM_BOOLEAN(
         "Accessibility.CrosAlwaysShowA11yMenu",
         prefs->GetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu));
 
     bool autoclick_enabled =
         prefs->GetBoolean(ash::prefs::kAccessibilityAutoclickEnabled);
-    base::UmaHistogramBoolean("Accessibility.CrosAutoclick", autoclick_enabled);
+    UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosAutoclick", autoclick_enabled);
   }
-  base::UmaHistogramBoolean("Accessibility.CrosCaretHighlight",
-                            IsCaretHighlightEnabled());
-  base::UmaHistogramBoolean("Accessibility.CrosCursorHighlight",
-                            IsCursorHighlightEnabled());
-  base::UmaHistogramBoolean("Accessibility.CrosDictation",
-                            IsDictationEnabled());
-  base::UmaHistogramBoolean("Accessibility.CrosFocusHighlight",
-                            IsFocusHighlightEnabled());
-  base::UmaHistogramBoolean("Accessibility.CrosSelectToSpeak",
-                            IsSelectToSpeakEnabled());
-  base::UmaHistogramBoolean("Accessibility.CrosSwitchAccess",
-                            IsSwitchAccessEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosCaretHighlight",
+                        IsCaretHighlightEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosCursorHighlight",
+                        IsCursorHighlightEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosDictation", IsDictationEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosFocusHighlight",
+                        IsFocusHighlightEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSelectToSpeak",
+                        IsSelectToSpeakEnabled());
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.CrosSwitchAccess",
+                        IsSwitchAccessEnabled());
 }
 
 void AccessibilityManager::Observe(
@@ -1346,7 +1337,7 @@ void AccessibilityManager::PostLoadChromeVox() {
   }
 
   audio_focus_manager_ptr_->SetEnforcementMode(
-      media_session::mojom::EnforcementMode::kNone);
+      media_session::mojom::EnforcementMode::kSingleSession);
 
   InitializeFocusRings(extension_id);
 }
@@ -1354,8 +1345,8 @@ void AccessibilityManager::PostLoadChromeVox() {
 void AccessibilityManager::PostUnloadChromeVox() {
   // Do any teardown work needed immediately after ChromeVox actually unloads.
   // Stop brltty.
-  chromeos::UpstartClient::Get()->StopJob(kBrlttyUpstartJobName,
-                                          EmptyVoidDBusMethodCallback());
+  chromeos::DBusThreadManager::Get()->GetUpstartClient()->StopJob(
+      kBrlttyUpstartJobName, EmptyVoidDBusMethodCallback());
 
   PlayEarcon(SOUND_SPOKEN_FEEDBACK_DISABLED, PlaySoundOption::ALWAYS);
 
@@ -1458,10 +1449,8 @@ void AccessibilityManager::HideSwitchAccessMenu() {
 
 void AccessibilityManager::ShowSwitchAccessMenu(const gfx::Rect& element_bounds,
                                                 int menu_width,
-                                                int menu_height,
-                                                bool back_button_only) {
-  switch_access_panel_->Show(element_bounds, menu_width, menu_height,
-                             back_button_only);
+                                                int menu_height) {
+  switch_access_panel_->Show(element_bounds, menu_width, menu_height);
 }
 
 bool AccessibilityManager::ToggleDictation() {
@@ -1502,11 +1491,21 @@ void AccessibilityManager::RemoveFocusRings(const std::string& extension_id) {
   focus_ring_names_for_extension_id_.erase(extension_id);
 }
 
-void AccessibilityManager::SetFocusRing(std::string focus_ring_id,
-                                        ash::mojom::FocusRingPtr focus_ring) {
-  accessibility_focus_ring_controller_->SetFocusRing(focus_ring_id,
-                                                     std::move(focus_ring));
+void AccessibilityManager::SetFocusRingColor(SkColor color,
+                                             std::string focus_ring_id) {
+  accessibility_focus_ring_controller_->SetFocusRingColor(color, focus_ring_id);
+}
 
+void AccessibilityManager::ResetFocusRingColor(std::string focus_ring_id) {
+  accessibility_focus_ring_controller_->ResetFocusRingColor(focus_ring_id);
+}
+
+void AccessibilityManager::SetFocusRing(
+    const std::vector<gfx::Rect>& rects_in_screen,
+    ash::mojom::FocusRingBehavior focus_ring_behavior,
+    std::string focus_ring_id) {
+  accessibility_focus_ring_controller_->SetFocusRing(
+      rects_in_screen, focus_ring_behavior, focus_ring_id);
   if (focus_ring_observer_for_test_)
     focus_ring_observer_for_test_.Run();
 }

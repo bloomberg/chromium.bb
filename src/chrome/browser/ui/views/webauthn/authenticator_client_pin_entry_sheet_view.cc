@@ -7,8 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
-
 AuthenticatorClientPinEntrySheetView::AuthenticatorClientPinEntrySheetView(
     std::unique_ptr<AuthenticatorClientPinEntrySheetModel> sheet_model)
     : AuthenticatorRequestSheetView(std::move(sheet_model)) {
@@ -31,7 +29,6 @@ AuthenticatorClientPinEntrySheetView::BuildStepSpecificContent() {
                 AuthenticatorClientPinEntrySheetModel::Mode::
                     kPinSetup /* show_confirmation_text_field */);
   pin_entry_view_ = view.get();
-  pin_entry_sheet_model()->MaybeShowRetryError();
   return view;
 }
 
@@ -48,7 +45,7 @@ void AuthenticatorClientPinEntrySheetView::OnConfirmationChanged(
 void AuthenticatorClientPinEntrySheetView::ShowPinError(
     const base::string16& error) {
   if (!pin_entry_view_) {
-    NOTREACHED();
+    DCHECK(false);
     return;
   }
   pin_entry_view_->UpdateError(error);

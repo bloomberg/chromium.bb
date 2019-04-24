@@ -68,16 +68,13 @@ cr.define('appcache', function() {
   }
 
 
-  function onAllAppCacheInfoReady(partition_path, display_name, data) {
+  function onAllAppCacheInfoReady(partition_path, data) {
     var template = jstGetTemplate('appcache-list-template');
     var container = $('appcache-list');
     container.appendChild(template);
     jstProcess(
-        new JsEvalContext({
-          appcache_vector: data,
-          partition_path: partition_path,
-          display_name: display_name
-        }),
+        new JsEvalContext(
+            {appcache_vector: data, partition_path: partition_path}),
         template);
     var removeLinks = container.querySelectorAll('a.remove-manifest');
     for (var i = 0; i < removeLinks.length; ++i) {
@@ -168,9 +165,7 @@ cr.define('appcache', function() {
       }
       properties = properties.join(',');
       simpleVector.push({
-        responseSize: details.responseSize,
-        paddingSize: details.paddingSize,
-        totalSize: details.totalSize,
+        size: details.size,
         properties: properties,
         fileUrl: details.url,
         responseId: details.responseId

@@ -22,7 +22,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.compat.ApiHelperForN;
 import org.chromium.blink_public.web.WebCursorInfoType;
-import org.chromium.ui.touchless.TouchlessEventHandler;
 
 /**
  * Class to acquire, position, and remove anchor views from the implementing View.
@@ -434,26 +433,5 @@ public class ViewAndroidDelegate {
     private void requestFocus() {
         ViewGroup containerView = getContainerView();
         if (containerView != null) ViewUtils.requestFocus(containerView);
-    }
-
-    @CalledByNative
-    private static boolean hasTouchlessEventHandler() {
-        return TouchlessEventHandler.hasTouchlessEventHandler();
-    }
-
-    @CalledByNative
-    private static boolean onUnconsumedKeyboardEventAck(int nativeCode) {
-        return TouchlessEventHandler.onUnconsumedKeyboardEventAck(nativeCode);
-    }
-
-    @CalledByNative
-    private static void fallbackCursorModeLockCursor(
-            boolean left, boolean right, boolean up, boolean down) {
-        TouchlessEventHandler.fallbackCursorModeLockCursor(left, right, up, down);
-    }
-
-    @CalledByNative
-    private static void fallbackCursorModeSetCursorVisibility(boolean visible) {
-        TouchlessEventHandler.fallbackCursorModeSetCursorVisibility(visible);
     }
 }

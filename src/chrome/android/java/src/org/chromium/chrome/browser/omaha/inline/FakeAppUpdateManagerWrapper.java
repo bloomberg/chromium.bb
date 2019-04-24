@@ -16,9 +16,7 @@ import com.google.android.play.core.install.model.AppUpdateType;
 import com.google.android.play.core.tasks.Task;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
@@ -151,6 +149,7 @@ public class FakeAppUpdateManagerWrapper extends FakeAppUpdateManager {
         }
     }
 
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final @Type int mType;
     private final EventHandler mEventHandler;
 
@@ -186,7 +185,7 @@ public class FakeAppUpdateManagerWrapper extends FakeAppUpdateManager {
             resultCode = Activity.RESULT_OK;
         }
 
-        PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> {
+        mHandler.postDelayed(() -> {
             triggerDialogResponse((ChromeActivity) activity, requestCode, resultCode);
         }, STEP_DELAY_MS);
 

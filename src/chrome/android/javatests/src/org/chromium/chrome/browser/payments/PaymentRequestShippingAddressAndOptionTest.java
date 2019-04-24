@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.payments;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,7 +22,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.ui.DisableAnimationsTestRule;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -34,10 +32,6 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestShippingAddressAndOptionTest implements MainActivityStartCallback {
-    // Disable animations to reduce flakiness.
-    @ClassRule
-    public static DisableAnimationsTestRule sNoAnimationsRule = new DisableAnimationsTestRule();
-
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
             new PaymentRequestTestRule("payment_request_free_shipping_test.html", this);
@@ -156,10 +150,17 @@ public class PaymentRequestShippingAddressAndOptionTest implements MainActivityS
                 R.id.payments_add_option_button, mPaymentRequestTestRule.getReadyToEdit());
         Boolean is_company_name_enabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_COMPANY_NAME);
-        mPaymentRequestTestRule.setTextInEditorAndWait(
-                new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles", "CA", "90291",
-                        "650-253-0000"},
-                mPaymentRequestTestRule.getEditorTextUpdate());
+        if (is_company_name_enabled) {
+            mPaymentRequestTestRule.setTextInEditorAndWait(
+                    new String[] {"Seb Doe", "Google", "340 Main St", "Los Angeles", "CA", "90291",
+                            "650-253-0000"},
+                    mPaymentRequestTestRule.getEditorTextUpdate());
+        } else {
+            mPaymentRequestTestRule.setTextInEditorAndWait(
+                    new String[] {
+                            "Seb Doe", "340 Main St", "Los Angeles", "CA", "90291", "650-253-0000"},
+                    mPaymentRequestTestRule.getEditorTextUpdate());
+        }
         mPaymentRequestTestRule.clickInEditorAndWait(
                 R.id.editor_dialog_done_button, mPaymentRequestTestRule.getReadyToPay());
 
@@ -167,7 +168,10 @@ public class PaymentRequestShippingAddressAndOptionTest implements MainActivityS
         Assert.assertEquals(mPaymentRequestTestRule.getShippingAddressOptionRowAtIndex(0)
                                     .getLabelText()
                                     .toString(),
-                "Seb Doe\nGoogle, 340 Main St, Los Angeles, CA 90291\n+1 650-253-0000");
+                is_company_name_enabled ? "Seb Doe\nGoogle, 340 Main St, Los Angeles, CA 90291\n"
+                                + "+1 650-253-0000"
+                                        : "Seb Doe\n340 Main St, Los Angeles, CA 90291\n"
+                                + "+1 650-253-0000");
     }
 
     /**

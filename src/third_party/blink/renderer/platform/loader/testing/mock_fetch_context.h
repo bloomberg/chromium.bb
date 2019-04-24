@@ -29,11 +29,25 @@ class MockFetchContext : public FetchContext {
   MockFetchContext() = default;
   ~MockFetchContext() override = default;
 
-  uint64_t GetTransferSize() const { return transfer_size_; }
+  long long GetTransferSize() const { return transfer_size_; }
 
   void CountUsage(mojom::WebFeature) const override {}
   void CountDeprecation(mojom::WebFeature) const override {}
 
+  // The last ResourceRequest passed to DispatchWillSendRequest.
+  base::Optional<ResourceRequest> RequestFromWillSendRequest() const {
+    return will_send_request_;
+  }
+
+  // FetchContext:
+  void DispatchWillSendRequest(
+      unsigned long identifier,
+      const ResourceRequest& request,
+      const ResourceResponse& redirect_response,
+      ResourceType,
+      const FetchInitiatorInfo& = FetchInitiatorInfo()) override {
+    will_send_request_ = request;
+  }
   bool AllowImage(bool images_enabled, const KURL&) const override {
     return true;
   }
@@ -60,7 +74,8 @@ class MockFetchContext : public FetchContext {
   }
 
  private:
-  uint64_t transfer_size_ = 0;
+  long long transfer_size_ = -1;
+  base::Optional<ResourceRequest> will_send_request_;
 };
 
 }  // namespace blink

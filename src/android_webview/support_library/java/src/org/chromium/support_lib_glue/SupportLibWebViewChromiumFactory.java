@@ -70,8 +70,6 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
                     Features.WEB_VIEW_RENDERER_TERMINATE,
                     Features.TRACING_CONTROLLER_BASIC_USAGE,
                     Features.WEB_VIEW_RENDERER_CLIENT_BASIC_USAGE,
-                    Features.MULTI_PROCESS_QUERY + Features.DEV_SUFFIX,
-                    Features.FORCE_DARK + Features.DEV_SUFFIX,
             };
     // clang-format on
 
@@ -120,11 +118,6 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
         @Override
         public Uri getSafeBrowsingPrivacyPolicyUrl() {
             return mSharedStatics.getSafeBrowsingPrivacyPolicyUrl();
-        }
-
-        @Override
-        public boolean isMultiProcessEnabled() {
-            return mSharedStatics.isMultiProcessEnabled();
         }
     }
 

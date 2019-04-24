@@ -88,12 +88,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnMenuPopupEnd();
   void OnSelected();
   void OnSelectedChildrenChanged();
-  void OnTextSelectionChanged();
   void OnValueChanged();
-  void OnNameChanged();
-  void OnDescriptionChanged();
-  void OnInvalidStatusChanged();
-  void OnDocumentTitleChanged();
 
   bool SupportsSelectionWithAtkSelection();
   bool SelectionAndFocusAreTheSame();
@@ -116,15 +111,9 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void SetEmbeddedDocument(AtkObject* new_document);
   void SetEmbeddingWindow(AtkObject* new_embedding_window);
 
-  int GetCaretOffset();
-  bool SetCaretOffset(int offset);
-  bool SetTextSelectionForAtkText(int start_offset, int end_offset);
-  bool HasSelection();
-  gchar* GetSelection(int* start_offset, int* end_offset);
-
-  std::string accessible_name_;
-
  protected:
+  AXHypertext hypertext_;
+
   // Offsets for the AtkText API are calculated in UTF-16 code point offsets,
   // but the ATK APIs want all offsets to be in "characters," which we
   // understand to be Unicode character offsets. We keep a lazily generated set
@@ -147,7 +136,6 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
     ATK_IMAGE_INTERFACE,
     ATK_SELECTION_INTERFACE,
     ATK_TABLE_INTERFACE,
-    ATK_TABLE_CELL_INTERFACE,
     ATK_TEXT_INTERFACE,
     ATK_VALUE_INTERFACE,
     ATK_WINDOW_INTERFACE,
@@ -160,7 +148,6 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void AddRelationToSet(AtkRelationSet*,
                         AtkRelationType,
                         AXPlatformNode* target);
-  bool IsInLiveRegion();
 
   // The AtkStateType for a checkable node can vary depending on the role.
   AtkStateType GetAtkStateTypeForCheckableNode();

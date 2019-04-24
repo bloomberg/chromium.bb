@@ -20,9 +20,6 @@
 #include "unicode/unum.h"
 #endif  /* U_HIDE_INTERNAL_API */
 
-// Forward-declaration
-struct UFormattedNumber;
-
 /**
  * \file
  * \brief C API: Plural rules, select plural keywords for numeric values.
@@ -135,15 +132,14 @@ U_NAMESPACE_END
 
 
 /**
- * Given a floating-point number, returns the keyword of the first rule that
+ * Given a number, returns the keyword of the first rule that
  * applies to the number, according to the supplied UPluralRules object.
  * @param uplrules The UPluralRules object specifying the rules.
  * @param number The number for which the rule has to be determined.
- * @param keyword An output buffer to write the keyword of the rule that
- *         applies to number.
- * @param capacity The capacity of the keyword buffer.
+ * @param keyword The keyword of the rule that applies to number.
+ * @param capacity The capacity of keyword.
  * @param status A pointer to a UErrorCode to receive any errors.
- * @return The length of the keyword.
+ * @return The length of keyword.
  * @stable ICU 4.8
  */
 U_CAPI int32_t U_EXPORT2
@@ -151,31 +147,6 @@ uplrules_select(const UPluralRules *uplrules,
                double number,
                UChar *keyword, int32_t capacity,
                UErrorCode *status);
-
-#ifndef U_HIDE_DRAFT_API
-/**
- * Given a formatted number, returns the keyword of the first rule
- * that applies to the number, according to the supplied UPluralRules object.
- *
- * A UFormattedNumber allows you to specify an exponent or trailing zeros,
- * which can affect the plural category. To get a UFormattedNumber, see
- * {@link UNumberFormatter}.
- *
- * @param uplrules The UPluralRules object specifying the rules.
- * @param number The formatted number for which the rule has to be determined.
- * @param keyword The destination buffer for the keyword of the rule that
- *         applies to number.
- * @param capacity The capacity of the keyword buffer.
- * @param status A pointer to a UErrorCode to receive any errors.
- * @return The length of the keyword.
- * @draft ICU 64
- */
-U_CAPI int32_t U_EXPORT2
-uplrules_selectFormatted(const UPluralRules *uplrules,
-               const struct UFormattedNumber* number,
-               UChar *keyword, int32_t capacity,
-               UErrorCode *status);
-#endif  /* U_HIDE_DRAFT_API */
 
 #ifndef U_HIDE_INTERNAL_API
 /**
@@ -189,8 +160,7 @@ uplrules_selectFormatted(const UPluralRules *uplrules,
  * @param fmt The UNumberFormat specifying how the number will be formatted
  *        (this can affect the plural form, e.g. "1 dollar" vs "1.0 dollars").
  *        If this is NULL, the function behaves like uplrules_select.
- * @param keyword An output buffer to write the keyword of the rule that
- *         applies to number.
+ * @param keyword The keyword of the rule that applies to number.
  * @param capacity The capacity of the keyword buffer.
  * @param status A pointer to a UErrorCode to receive any errors.
  * @return The length of keyword.

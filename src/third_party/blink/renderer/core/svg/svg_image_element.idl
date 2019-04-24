@@ -41,4 +41,4 @@
     [CallWith=ScriptState, RaisesException] Promise<void> decode();
 };
 
-SVGImageElement includes SVGURIReference;
+SVGImageElement implements SVGURIReference;

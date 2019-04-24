@@ -12,9 +12,9 @@
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "components/sync/driver/sync_service_observer.h"
 
-namespace syncer {
+namespace browser_sync {
 class ProfileSyncService;
-}  // namespace syncer
+}  // namespace browser_sync
 
 // This class provides some common functionality for StatusChangeCheckers that
 // observe only one ProfileSyncService.  This class is abstract.  Its
@@ -22,14 +22,15 @@ class ProfileSyncService;
 class SingleClientStatusChangeChecker
   : public MultiClientStatusChangeChecker {
  public:
-  explicit SingleClientStatusChangeChecker(syncer::ProfileSyncService* service);
+  explicit SingleClientStatusChangeChecker(
+      browser_sync::ProfileSyncService* service);
   ~SingleClientStatusChangeChecker() override;
 
   // StatusChangeChecker implementations and stubs.
   bool IsExitConditionSatisfied() override = 0;
   std::string GetDebugMessage() const override = 0;
 
-  syncer::ProfileSyncService* service();
+  browser_sync::ProfileSyncService* service();
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_SINGLE_CLIENT_STATUS_CHANGE_CHECKER_H_

@@ -43,8 +43,7 @@ struct ResolvedSearchTerm {
                      const QuickActionCategory& quick_action_category,
                      int64_t logged_event_id,
                      const std::string& search_url_full,
-                     const std::string& search_url_preload,
-                     int coca_card_tag);
+                     const std::string& search_url_preload);
   ~ResolvedSearchTerm();
 
   const bool is_invalid;
@@ -65,7 +64,6 @@ struct ResolvedSearchTerm {
   const int64_t logged_event_id;  // Often 0.
   const std::string search_url_full;
   const std::string search_url_preload;
-  const int coca_card_tag;
 
   DISALLOW_COPY_AND_ASSIGN(ResolvedSearchTerm);
 };

@@ -29,7 +29,8 @@
 #include "Test.h"
 
 #include "Resources.h"
-#include "ToolUtils.h"
+#include "sk_pixel_iter.h"
+#include "sk_tool_utils.h"
 
 #include "GrContextPriv.h"
 #include "GrContextThreadSafeProxy.h"
@@ -41,7 +42,7 @@
 using namespace sk_gpu_test;
 
 SkImageInfo read_pixels_info(SkImage* image) {
-    if (image->colorSpace()) {
+    if (as_IB(image)->onImageInfo().colorSpace()) {
         return SkImageInfo::MakeS32(image->width(), image->height(), image->alphaType());
     }
 
@@ -1364,7 +1365,7 @@ DEF_TEST(Image_nonfinite_dst, reporter) {
             surf->getCanvas()->drawImageRect(img, dst, &paint);
 
             // we should draw nothing
-            ToolUtils::PixelIter iter(surf.get());
+            sk_tool_utils::PixelIter iter(surf.get());
             while (void* addr = iter.next()) {
                 REPORTER_ASSERT(reporter, *(SkPMColor*)addr == 0);
             }

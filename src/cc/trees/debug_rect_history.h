@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/macros.h"
 #include "cc/input/touch_action.h"
 #include "cc/layers/layer_collections.h"
 #include "ui/gfx/geometry/rect.h"
@@ -70,10 +71,7 @@ class DebugRectHistory {
  public:
   static std::unique_ptr<DebugRectHistory> Create();
 
-  DebugRectHistory(const DebugRectHistory&) = delete;
   ~DebugRectHistory();
-
-  DebugRectHistory& operator=(const DebugRectHistory&) = delete;
 
   // Note: Saving debug rects must happen before layers' change tracking is
   // reset.
@@ -101,6 +99,8 @@ class DebugRectHistory {
   void SaveNonFastScrollableRectsCallback(LayerImpl* layer);
 
   std::vector<DebugRect> debug_rects_;
+
+  DISALLOW_COPY_AND_ASSIGN(DebugRectHistory);
 };
 
 }  // namespace cc

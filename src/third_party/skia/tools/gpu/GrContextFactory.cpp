@@ -20,6 +20,7 @@
 #ifdef SK_METAL
 #include "mtl/MtlTestContext.h"
 #endif
+#include "gl/null/NullGLTestContext.h"
 #include "gl/GrGLGpu.h"
 #include "mock/MockTestContext.h"
 #include "GrCaps.h"
@@ -187,6 +188,10 @@ ContextInfo GrContextFactory::getContextInfoInternal(ContextType type, ContextOv
                     glCtx = CommandBufferGLTestContext::Create(glShareContext);
                     break;
 #endif
+                case kNullGL_ContextType:
+                    glCtx = CreateNullGLTestContext(
+                            ContextOverrides::kRequireNVPRSupport & overrides, glShareContext);
+                    break;
                 default:
                     return ContextInfo();
             }
@@ -223,10 +228,8 @@ ContextInfo GrContextFactory::getContextInfoInternal(ContextType type, ContextOv
 #endif
 #ifdef SK_METAL
         case GrBackendApi::kMetal: {
-            MtlTestContext* mtlSharedContext = masterContext
-                    ? static_cast<MtlTestContext*>(masterContext->fTestContext) : nullptr;
-            SkASSERT(kMetal_ContextType == type);
-            testCtx.reset(CreatePlatformMtlTestContext(mtlSharedContext));
+            SkASSERT(!masterContext);
+            testCtx.reset(CreatePlatformMtlTestContext(nullptr));
             if (!testCtx) {
                 return ContextInfo();
             }

@@ -4,7 +4,6 @@
 
 #include "ui/ozone/platform/wayland/gpu/wayland_canvas_surface.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/files/scoped_file.h"

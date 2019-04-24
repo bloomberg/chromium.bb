@@ -32,7 +32,7 @@ class InterstitialPageImpl;
 class NavigationControllerImpl;
 class NavigationEntry;
 class NavigationRequest;
-class NavigatorTest;
+class NavigatorTestWithBrowserSideNavigation;
 class RenderFrameHostManagerTest;
 class RenderFrameProxyHost;
 class RenderViewHost;
@@ -292,9 +292,13 @@ class CONTENT_EXPORT RenderFrameHostManager
   void DidChangeOpener(int opener_routing_id,
                        SiteInstance* source_site_instance);
 
-  // Creates and initializes a RenderFrameHost.
-  std::unique_ptr<RenderFrameHostImpl> CreateRenderFrame(SiteInstance* instance,
-                                                         bool hidden);
+  // Creates and initializes a RenderFrameHost. If |view_routing_id_ptr|
+  // is not nullptr it will be set to the routing id of the view associated with
+  // the frame.
+  std::unique_ptr<RenderFrameHostImpl> CreateRenderFrame(
+      SiteInstance* instance,
+      bool hidden,
+      int* view_routing_id_ptr);
 
   // Helper method to create and initialize a RenderFrameProxyHost and return
   // its routing id.
@@ -521,7 +525,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   }
 
  private:
-  friend class NavigatorTest;
+  friend class NavigatorTestWithBrowserSideNavigation;
   friend class RenderFrameHostManagerTest;
   friend class RenderFrameHostTester;
   friend class TestWebContents;

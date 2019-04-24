@@ -41,6 +41,11 @@ class SimpleEditCommand;
 
 class UndoStep : public GarbageCollectedFinalized<UndoStep> {
  public:
+  static UndoStep* Create(Document*,
+                          const SelectionForUndoStep&,
+                          const SelectionForUndoStep&,
+                          InputEvent::InputType);
+
   UndoStep(Document*,
            const SelectionForUndoStep& starting_selection,
            const SelectionForUndoStep& ending_selection,

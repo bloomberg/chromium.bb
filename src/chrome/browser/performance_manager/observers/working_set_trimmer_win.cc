@@ -22,14 +22,19 @@ namespace {
 // |process_creation_time|. The creation time is verified to ensure that we
 // don't empty the working set of the wrong process if the target process exits
 // and its id is reused.
-void EmptyWorkingSet(const base::Process& process,
+void EmptyWorkingSet(base::ProcessId process_id,
                      base::Time process_creation_time) {
-  // Open a new handle to the process with the specific access needed.
-  base::Process process_copy = base::Process::OpenWithAccess(
-      process.Pid(), PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA);
-  if (!process_copy.IsValid()) {
+  base::Process process = base::Process::OpenWithAccess(
+      process_id, PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_SET_QUOTA);
+  if (!process.IsValid()) {
     DPLOG(ERROR) << "Working set not emptied because process handle could not "
                     "be obtained.";
+    return;
+  }
+
+  if (process.CreationTime() != process_creation_time) {
+    DLOG(ERROR) << "Working set not emptied because actual process creation "
+                   "time does not match expected process creation time";
     return;
   }
 
@@ -46,15 +51,16 @@ void EmptyWorkingSet(const base::Process& process,
 WorkingSetTrimmer::WorkingSetTrimmer() = default;
 WorkingSetTrimmer::~WorkingSetTrimmer() = default;
 
-bool WorkingSetTrimmer::ShouldObserve(const NodeBase* node) {
-  return node->id().type ==
+bool WorkingSetTrimmer::ShouldObserve(const NodeBase* coordination_unit) {
+  return coordination_unit->id().type ==
          resource_coordinator::CoordinationUnitType::kProcess;
 }
 
 void WorkingSetTrimmer::OnAllFramesInProcessFrozen(
-    ProcessNodeImpl* process_node) {
-  if (process_node->process().IsValid()) {
-    EmptyWorkingSet(process_node->process(), process_node->launch_time());
+    ProcessNodeImpl* process_cu) {
+  const base::ProcessId process_id = process_cu->process_id();
+  if (process_id != base::kNullProcessId) {
+    EmptyWorkingSet(process_id, process_cu->launch_time());
   }
 }
 

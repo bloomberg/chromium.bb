@@ -14,7 +14,6 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
-#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -24,7 +23,6 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -62,11 +60,8 @@ constexpr int kDragDropAppIconScaleTransitionInMs = 200;
 // The color of the title for the tiles within folder.
 constexpr SkColor kFolderGridTitleColor = SK_ColorBLACK;
 
-// The color of the focus ring within a folder.
-constexpr SkColor kFolderGridFocusRingColor = gfx::kGoogleBlue600;
-
-// The width of the focus ring within a folder.
-constexpr int kFocusRingWidth = 2;
+// The color of the selected item view within folder.
+constexpr SkColor kFolderGridSelectedColor = SkColorSetARGB(31, 0, 0, 0);
 
 // The duration in milliseconds of dragged view hover animation.
 constexpr int kDraggedViewHoverAnimationDuration = 250;
@@ -397,12 +392,6 @@ void AppListItemView::SetAsAttemptedFolderTarget(bool is_target_folder) {
     SetUIState(UI_STATE_NORMAL);
 }
 
-void AppListItemView::SilentlyRequestFocus() {
-  DCHECK(!focus_silently_);
-  base::AutoReset<bool> auto_reset(&focus_silently_, true);
-  RequestFocus();
-}
-
 void AppListItemView::SetItemName(const base::string16& display_name,
                                   const base::string16& full_name) {
   const base::string16 folder_name_placeholder =
@@ -482,7 +471,7 @@ void AppListItemView::OnContextMenuModelReceived(
       base::BindOnce(&AppListItemView::OnMenuClosed,
                      weak_ptr_factory_.GetWeakPtr()));
   context_menu_->Build(std::move(menu));
-  context_menu_->Run(anchor_rect, views::MenuAnchorPosition::kBubbleRight,
+  context_menu_->Run(anchor_rect, views::MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT,
                      run_types);
   apps_grid_view_->SetSelectedView(this);
 }
@@ -530,10 +519,9 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(apps_grid_view_->is_in_folder()
-                       ? kFolderGridFocusRingColor
+                       ? kFolderGridSelectedColor
                        : AppListConfig::instance().grid_selected_color());
-    flags.setStyle(cc::PaintFlags::kStroke_Style);
-    flags.setStrokeWidth(kFocusRingWidth);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
     gfx::Rect selection_highlight_bounds = GetContentsBounds();
     AdaptBoundsForSelectionHighlight(&selection_highlight_bounds);
     canvas->DrawRoundRect(gfx::RectF(selection_highlight_bounds),
@@ -648,8 +636,6 @@ bool AppListItemView::SkipDefaultKeyEventProcessing(const ui::KeyEvent& event) {
 }
 
 void AppListItemView::OnFocus() {
-  if (focus_silently_)
-    return;
   apps_grid_view_->SetSelectedView(this);
 }
 
@@ -722,16 +708,17 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
     Button::OnGestureEvent(event);
 }
 
-base::string16 AppListItemView::GetTooltipText(const gfx::Point& p) const {
+bool AppListItemView::GetTooltipText(const gfx::Point& p,
+                                     base::string16* tooltip) const {
   // Use the label to generate a tooltip, so that it will consider its text
   // truncation in making the tooltip. We do not want the label itself to have a
   // tooltip, so we only temporarily enable it to get the tooltip text from the
   // label, then disable it again.
   title_->SetHandlesTooltips(true);
   title_->SetTooltipText(tooltip_text_);
-  base::string16 tooltip = title_->GetTooltipText(p);
+  bool handled = title_->GetTooltipText(p, tooltip);
   title_->SetHandlesTooltips(false);
-  return tooltip;
+  return handled;
 }
 
 void AppListItemView::OnDraggedViewEnter() {

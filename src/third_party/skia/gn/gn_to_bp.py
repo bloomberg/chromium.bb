@@ -206,9 +206,6 @@ cc_defaults {
             "libvulkan",
             "libnativewindow",
         ],
-        export_shared_lib_headers: [
-            "libvulkan",
-        ],
       },
       host: {
         static_libs: [
@@ -221,9 +218,7 @@ cc_defaults {
         ],
       },
       windows: {
-        // clang-r353983 emits error when building Skia for Windows. Do not
-        // build it for now until the compiler issue is addressed.
-        // enabled: true,
+        enabled: true,
         host_ldlibs: [
             "-lgdi32",
             "-loleaut32",

@@ -92,13 +92,14 @@ bool ConstantAffixModifier::isStrong() const {
 bool ConstantAffixModifier::containsField(UNumberFormatFields field) const {
     (void)field;
     // This method is not currently used.
-    UPRV_UNREACHABLE;
+    U_ASSERT(false);
+    return false;
 }
 
 void ConstantAffixModifier::getParameters(Parameters& output) const {
     (void)output;
     // This method is not currently used.
-    UPRV_UNREACHABLE;
+    U_ASSERT(false);
 }
 
 bool ConstantAffixModifier::semanticallyEquivalent(const Modifier& other) const {
@@ -156,7 +157,7 @@ SimpleModifier::SimpleModifier()
 
 int32_t SimpleModifier::apply(NumberStringBuilder &output, int leftIndex, int rightIndex,
                               UErrorCode &status) const {
-    return formatAsPrefixSuffix(output, leftIndex, rightIndex, status);
+    return formatAsPrefixSuffix(output, leftIndex, rightIndex, fField, status);
 }
 
 int32_t SimpleModifier::getPrefixLength() const {
@@ -181,7 +182,8 @@ bool SimpleModifier::isStrong() const {
 bool SimpleModifier::containsField(UNumberFormatFields field) const {
     (void)field;
     // This method is not currently used.
-    UPRV_UNREACHABLE;
+    U_ASSERT(false);
+    return false;
 }
 
 void SimpleModifier::getParameters(Parameters& output) const {
@@ -204,13 +206,13 @@ bool SimpleModifier::semanticallyEquivalent(const Modifier& other) const {
 
 int32_t
 SimpleModifier::formatAsPrefixSuffix(NumberStringBuilder &result, int32_t startIndex, int32_t endIndex,
-                                     UErrorCode &status) const {
+                                     Field field, UErrorCode &status) const {
     if (fSuffixOffset == -1 && fPrefixLength + fSuffixLength > 0) {
         // There is no argument for the inner number; overwrite the entire segment with our string.
-        return result.splice(startIndex, endIndex, fCompiledPattern, 2, 2 + fPrefixLength, fField, status);
+        return result.splice(startIndex, endIndex, fCompiledPattern, 2, 2 + fPrefixLength, field, status);
     } else {
         if (fPrefixLength > 0) {
-            result.insert(startIndex, fCompiledPattern, 2, 2 + fPrefixLength, fField, status);
+            result.insert(startIndex, fCompiledPattern, 2, 2 + fPrefixLength, field, status);
         }
         if (fSuffixLength > 0) {
             result.insert(
@@ -218,7 +220,7 @@ SimpleModifier::formatAsPrefixSuffix(NumberStringBuilder &result, int32_t startI
                     fCompiledPattern,
                     1 + fSuffixOffset,
                     1 + fSuffixOffset + fSuffixLength,
-                    fField,
+                    field,
                     status);
         }
         return fPrefixLength + fSuffixLength;

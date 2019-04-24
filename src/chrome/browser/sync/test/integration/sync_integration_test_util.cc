@@ -8,7 +8,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sync/test/integration/themes_helper.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "components/sync/driver/profile_sync_service.h"
+#include "components/browser_sync/profile_sync_service.h"
 #include "content/public/test/test_utils.h"
 
 void SetCustomTheme(Profile* profile, int theme_index) {
@@ -38,7 +38,7 @@ std::string ServerCountMatchStatusChecker::GetDebugMessage() const {
 }
 
 PassphraseRequiredChecker::PassphraseRequiredChecker(
-    syncer::ProfileSyncService* service)
+    browser_sync::ProfileSyncService* service)
     : SingleClientStatusChangeChecker(service) {}
 
 bool PassphraseRequiredChecker::IsExitConditionSatisfied() {
@@ -50,7 +50,7 @@ std::string PassphraseRequiredChecker::GetDebugMessage() const {
 }
 
 PassphraseAcceptedChecker::PassphraseAcceptedChecker(
-    syncer::ProfileSyncService* service)
+    browser_sync::ProfileSyncService* service)
     : SingleClientStatusChangeChecker(service) {}
 
 bool PassphraseAcceptedChecker::IsExitConditionSatisfied() {

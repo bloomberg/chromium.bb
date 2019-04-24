@@ -173,10 +173,10 @@ public class ChromePreferenceManager {
     private static final String NTP_BUTTON_VARIANT_KEY = "ntp_button_variant";
 
     /**
-     * Deprecated in M75. This value may still exist in shared preferences file. Do not reuse.
+     * Whether or not to inflate the ChromeTabbedActivity toolbar on a background thread async.
+     * Default value is false.
      */
-    @Deprecated
-    private static final String INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY =
+    public static final String INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY =
             "inflate_toolbar_on_background_thread";
 
     /**
@@ -204,10 +204,10 @@ public class ChromePreferenceManager {
     public static final String NIGHT_MODE_CCT_AVAILABLE_KEY = "night_mode_cct_available";
 
     /**
-     * The current theme setting in the user settings.
-     * Default value is System default (see {@link ThemePreference.ThemeSetting}).
+     * Whether or not night mode is enabled from user settings.
+     * Default value is false.
      */
-    public static final String UI_THEME_SETTING_KEY = "ui_theme_setting";
+    public static final String NIGHT_MODE_SETTINGS_ENABLED_KEY = "night_mode_settings_enabled";
 
     /**
      * Whether or not the download auto-resumption is enabled in native.
@@ -290,12 +290,6 @@ public class ChromePreferenceManager {
     public static final String TWA_DIALOG_NUMBER_OF_DIMSISSALS_ON_CLEAR_DATA =
             "twa_dialog_number_of_dismissals_on_clear_data";
 
-    /** Key for deferred recording of WebAPK uninstalls. */
-    public static final String WEBAPK_NUMBER_OF_UNINSTALLS = "webapk_number_of_uninstalls";
-
-    public static final String INTEREST_FEED_CONTENT_SUGGESTIONS_KEY =
-            "interest_feed_content_suggestions";
-
     /**
      * Whether or not the grid tab switcher is enabled.
      * Default value is false.
@@ -309,13 +303,6 @@ public class ChromePreferenceManager {
     public static final String TAB_GROUPS_ANDROID_ENABLED_KEY = "tab_group_android_enabled";
 
     /**
-     * Key for whether PrefetchBackgroundTask should load native in service manager only mode.
-     * Default value is false.
-     */
-    public static final String SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH_KEY =
-            "service_manager_for_background_prefetch";
-
-    /**
      * Deprecated keys for Chrome Home.
      */
     private static final String CHROME_HOME_USER_ENABLED_KEY = "chrome_home_user_enabled";
@@ -326,7 +313,7 @@ public class ChromePreferenceManager {
 
     /**
      * Whether or not bootstrap tasks should be prioritized (i.e. bootstrap task prioritization
-     * experiment is enabled). Default value is true.
+     * experiment is enabled). Default value is false.
      */
     public static final String PRIORITIZE_BOOTSTRAP_TASKS_KEY = "prioritize_bootstrap_tasks";
 
@@ -336,11 +323,6 @@ public class ChromePreferenceManager {
      */
     public static final String NETWORK_SERVICE_WARM_UP_ENABLED_KEY =
             "network_service_warm_up_enabled";
-
-    /**
-     * Key to cache whether immersive ui mode is enabled.
-     */
-    public static final String IMMERSIVE_UI_MODE_ENABLED = "immersive_ui_mode_enabled";
 
     private static class LazyHolder {
         static final ChromePreferenceManager INSTANCE = new ChromePreferenceManager();

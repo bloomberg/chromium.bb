@@ -19,18 +19,18 @@ namespace webrtc {
 
 DesktopFrameProvider::DesktopFrameProvider(bool allow_iosurface)
     : allow_iosurface_(allow_iosurface) {
-  thread_checker_.Detach();
+  thread_checker_.DetachFromThread();
 }
 
 DesktopFrameProvider::~DesktopFrameProvider() {
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
 
   Release();
 }
 
 std::unique_ptr<DesktopFrame> DesktopFrameProvider::TakeLatestFrameForDisplay(
     CGDirectDisplayID display_id) {
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!allow_iosurface_ || !io_surfaces_[display_id]) {
     // Regenerate a snapshot. If iosurface is on it will be empty until the
@@ -43,7 +43,7 @@ std::unique_ptr<DesktopFrame> DesktopFrameProvider::TakeLatestFrameForDisplay(
 
 void DesktopFrameProvider::InvalidateIOSurface(CGDirectDisplayID display_id,
                                                rtc::ScopedCFTypeRef<IOSurfaceRef> io_surface) {
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!allow_iosurface_) {
     return;
@@ -58,7 +58,7 @@ void DesktopFrameProvider::InvalidateIOSurface(CGDirectDisplayID display_id,
 }
 
 void DesktopFrameProvider::Release() {
-  RTC_DCHECK(thread_checker_.IsCurrent());
+  RTC_DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!allow_iosurface_) {
     return;

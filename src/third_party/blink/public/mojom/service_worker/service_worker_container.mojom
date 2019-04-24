@@ -28,12 +28,15 @@ enum ControllerServiceWorkerPurpose {
 // - For service workers:
 //       Associated with EmbeddedWorkerInstanceClient, which is on a dedicated
 //       message pipe.
-// - For shared workers:
+// - For shared workers (S13nSW):
 //       Associated with SharedWorkerFactory, which is on a dedicated message
 //       pipe.
+// - For shared workers (non-S13nSW):
+//       Associated with ServiceWorkerDispatcherHost, which is on the
+//       channel-associated interface to the renderer process.
 // - For documents:
-//       Associated with NavigationClient/FrameNavigationControl, which is on
-//       the channel-associated interface to the renderer process.
+//       Associated with ServiceWorkerDispatcherHost, which is on the
+//       channel-associated interface to the renderer process.
 interface ServiceWorkerContainerHost {
   // Corresponds to navigator.serviceWorker.register().
   // Registers a service worker from |script_url| with |options|.
@@ -73,6 +76,7 @@ interface ServiceWorkerContainerHost {
   GetRegistrationForReady()
     => (ServiceWorkerRegistrationObjectInfo? registration);
 
+  // S13nServiceWorker:
   // Returns a Mojo end point to the controller ServiceWorker. This may start a
   // service worker instance in a renderer process if the corresponding
   // instance is not alive.
@@ -85,6 +89,7 @@ interface ServiceWorkerContainerHost {
   EnsureControllerServiceWorker(ControllerServiceWorker& controller,
                                 ControllerServiceWorkerPurpose purpose);
 
+  // S13nServiceWorker:
   // Makes a new endpoint to this ServiceWorkerContainerHost.
   CloneContainerHost(ServiceWorkerContainerHost& container_host);
 
@@ -93,6 +98,7 @@ interface ServiceWorkerContainerHost {
   // you know all incoming messages up to the Ping() call have been received.
   Ping() => ();
 
+  // S13nServiceWorker:
   // Gives a hint to the browser process to update the service worker after a
   // controlled page load. This message is meant to be sent at a time when page
   // load is no longer busy, so update doesn't adversely affect performance.
@@ -126,9 +132,12 @@ interface ServiceWorkerContainer {
   // Corresponds to setting ServiceWorkerContainer#controller.
   // If |controller_info| is invalid (its |object_info| is null), then
   // ServiceWorkerContainer#controller is cleared.
+  // If |controller_info| is valid, |used_features| is the set of
+  // features the controller has used, for UseCounter purposes.
   // If |should_notify_controllerchange| is true, dispatch a 'controllerchange'
   // event.
   SetController(ControllerServiceWorkerInfo controller_info,
+                array<WebFeature> used_features,
                 bool should_notify_controllerchange);
 
   // Corresponds to Client#postMessage().

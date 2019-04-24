@@ -113,7 +113,9 @@ inline MemOperand CFunctionArgumentOperand(int index) {
 
 class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
  public:
-  using TurboAssemblerBase::TurboAssemblerBase;
+  template <typename... Args>
+  explicit TurboAssembler(Args&&... args)
+      : TurboAssemblerBase(std::forward<Args>(args)...) {}
 
   // Activation support.
   void EnterFrame(StackFrame::Type type);
@@ -356,8 +358,6 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
   void CallRecordWriteStub(Register object, Register address,
                            RememberedSetAction remembered_set_action,
                            SaveFPRegsMode fp_mode, Address wasm_target);
-  void CallEphemeronKeyBarrier(Register object, Register address,
-                           SaveFPRegsMode fp_mode);
 
   // Push multiple registers on the stack.
   // Registers are saved in numerical order, with higher numbered registers
@@ -912,7 +912,9 @@ class V8_EXPORT_PRIVATE TurboAssembler : public TurboAssemblerBase {
 // MacroAssembler implements a collection of frequently used macros.
 class V8_EXPORT_PRIVATE MacroAssembler : public TurboAssembler {
  public:
-  using TurboAssembler::TurboAssembler;
+  template <typename... Args>
+  explicit MacroAssembler(Args&&... args)
+      : TurboAssembler(std::forward<Args>(args)...) {}
 
   bool IsNear(Label* L, Condition cond, int rs_reg);
 

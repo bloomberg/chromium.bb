@@ -14,18 +14,18 @@ namespace collections {
         typeswitch (a.elements) {
           case (elements: FixedArray): {
             return KeyValuePair{
-              key: length > 0 ? array::LoadElementOrUndefined(elements, 0) :
-                                Undefined,
-              value: length > 1 ? array::LoadElementOrUndefined(elements, 1) :
-                                  Undefined
+              length > 0 ? array::LoadElementOrUndefined(elements, 0) :
+                           Undefined,
+              length > 1 ? array::LoadElementOrUndefined(elements, 1) :
+                           Undefined
             };
           }
           case (elements: FixedDoubleArray): {
             return KeyValuePair{
-              key: length > 0 ? array::LoadElementOrUndefined(elements, 0) :
-                                Undefined,
-              value: length > 1 ? array::LoadElementOrUndefined(elements, 1) :
-                                  Undefined
+              length > 0 ? array::LoadElementOrUndefined(elements, 0) :
+                           Undefined,
+              length > 1 ? array::LoadElementOrUndefined(elements, 1) :
+                           Undefined
             };
           }
           case (Object): deferred {
@@ -49,8 +49,8 @@ namespace collections {
     }
     label Generic {
       return KeyValuePair{
-        key: GetProperty(o, Convert<Smi>(0)),
-        value: GetProperty(o, Convert<Smi>(1))
+        GetProperty(o, Convert<Smi>(0)),
+        GetProperty(o, Convert<Smi>(1))
       };
     }
   }

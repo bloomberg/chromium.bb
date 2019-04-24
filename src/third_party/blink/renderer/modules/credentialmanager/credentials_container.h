@@ -22,6 +22,8 @@ class MODULES_EXPORT CredentialsContainer final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static CredentialsContainer* Create();
+
   CredentialsContainer();
 
   // CredentialsContainer.idl

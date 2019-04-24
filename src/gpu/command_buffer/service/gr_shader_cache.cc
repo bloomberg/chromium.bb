@@ -4,12 +4,7 @@
 
 #include "gpu/command_buffer/service/gr_shader_cache.h"
 
-#include <inttypes.h>
-
 #include "base/base64.h"
-#include "base/strings/stringprintf.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 
 namespace gpu {
@@ -29,17 +24,9 @@ sk_sp<SkData> MakeData(const std::string& str) {
 GrShaderCache::GrShaderCache(size_t max_cache_size_bytes, Client* client)
     : cache_size_limit_(max_cache_size_bytes),
       store_(Store::NO_AUTO_EVICT),
-      client_(client) {
-  if (base::ThreadTaskRunnerHandle::IsSet()) {
-    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, "GrShaderCache", base::ThreadTaskRunnerHandle::Get());
-  }
-}
+      client_(client) {}
 
-GrShaderCache::~GrShaderCache() {
-  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-      this);
-}
+GrShaderCache::~GrShaderCache() = default;
 
 sk_sp<SkData> GrShaderCache::load(const SkData& key) {
   TRACE_EVENT0("gpu", "GrShaderCache::load");
@@ -139,19 +126,6 @@ void GrShaderCache::PurgeMemory(
 
   EnforceLimits(0u);
   cache_size_limit_ = original_limit;
-}
-
-bool GrShaderCache::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                                 base::trace_event::ProcessMemoryDump* pmd) {
-  using base::trace_event::MemoryAllocatorDump;
-  std::string dump_name =
-      base::StringPrintf("gpu/gr_shader_cache/cache_0x%" PRIXPTR,
-                         reinterpret_cast<uintptr_t>(this));
-  MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
-  dump->AddScalar(MemoryAllocatorDump::kNameSize,
-                  MemoryAllocatorDump::kUnitsBytes, curr_size_bytes_);
-
-  return true;
 }
 
 void GrShaderCache::WriteToDisk(const CacheKey& key, CacheData* data) {

@@ -92,7 +92,7 @@ enum { kAecCaptureStreamIndex = 0, kAecRenderStreamIndex = 1 };
 //
 // Example implementation:
 // http://msdn.microsoft.com/en-us/library/dd376684(v=vs.85).aspx
-class MediaBufferImpl final : public IMediaBuffer {
+class MediaBufferImpl : public IMediaBuffer {
  public:
   explicit MediaBufferImpl(DWORD maxLength)
       : _data(new BYTE[maxLength]),
@@ -179,8 +179,8 @@ bool AudioDeviceWindowsCore::CoreAudioIsSupported() {
   bool coreAudioIsSupported(false);
 
   HRESULT hr(S_OK);
-  wchar_t buf[MAXERRORLENGTH];
-  wchar_t errorText[MAXERRORLENGTH];
+  TCHAR buf[MAXERRORLENGTH];
+  TCHAR errorText[MAXERRORLENGTH];
 
   // 1) Check if Windows version is Vista SP1 or later.
   //
@@ -289,8 +289,8 @@ bool AudioDeviceWindowsCore::CoreAudioIsSupported() {
       errorText[messageLength - 1] = '\0';
     }
 
-    StringCchPrintfW(buf, MAXERRORLENGTH, L"Error details: ");
-    StringCchCatW(buf, MAXERRORLENGTH, errorText);
+    StringCchPrintf(buf, MAXERRORLENGTH, TEXT("Error details: "));
+    StringCchCat(buf, MAXERRORLENGTH, errorText);
     RTC_LOG(LS_VERBOSE) << buf;
   } else {
     MMDeviceIsAvailable = true;
@@ -4160,8 +4160,8 @@ Exit:
 // ----------------------------------------------------------------------------
 
 void AudioDeviceWindowsCore::_TraceCOMError(HRESULT hr) const {
-  wchar_t buf[MAXERRORLENGTH];
-  wchar_t errorText[MAXERRORLENGTH];
+  TCHAR buf[MAXERRORLENGTH];
+  TCHAR errorText[MAXERRORLENGTH];
 
   const DWORD dwFlags =
       FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
@@ -4181,8 +4181,8 @@ void AudioDeviceWindowsCore::_TraceCOMError(HRESULT hr) const {
   }
 
   RTC_LOG(LS_ERROR) << "Core Audio method failed (hr=" << hr << ")";
-  StringCchPrintfW(buf, MAXERRORLENGTH, L"Error details: ");
-  StringCchCatW(buf, MAXERRORLENGTH, errorText);
+  StringCchPrintf(buf, MAXERRORLENGTH, TEXT("Error details: "));
+  StringCchCat(buf, MAXERRORLENGTH, errorText);
   RTC_LOG(LS_ERROR) << WideToUTF8(buf);
 }
 
@@ -4190,7 +4190,8 @@ void AudioDeviceWindowsCore::_TraceCOMError(HRESULT hr) const {
 //  WideToUTF8
 // ----------------------------------------------------------------------------
 
-char* AudioDeviceWindowsCore::WideToUTF8(const wchar_t* src) const {
+char* AudioDeviceWindowsCore::WideToUTF8(const TCHAR* src) const {
+#ifdef UNICODE
   const size_t kStrLen = sizeof(_str);
   memset(_str, 0, kStrLen);
   // Get required size (in bytes) to be able to complete the conversion.
@@ -4202,6 +4203,9 @@ char* AudioDeviceWindowsCore::WideToUTF8(const wchar_t* src) const {
       memset(_str, 0, kStrLen);
   }
   return _str;
+#else
+  return const_cast<char*>(src);
+#endif
 }
 
 bool AudioDeviceWindowsCore::KeyPressed() const {

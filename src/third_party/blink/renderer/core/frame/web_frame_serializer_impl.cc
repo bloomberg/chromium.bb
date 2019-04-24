@@ -98,20 +98,6 @@
 
 namespace blink {
 
-namespace {
-
-// Generate the default base tag declaration.
-String GenerateBaseTagDeclaration(const WebString& base_target) {
-  // TODO(yosin) We should call |FrameSerializer::baseTagDeclarationOf()|.
-  if (base_target.IsEmpty())
-    return String("<base href=\".\">");
-  String base_string = "<base href=\".\" target=\"" +
-                       static_cast<const String&>(base_target) + "\">";
-  return base_string;
-}
-
-}  // namespace
-
 // Maximum length of data buffer which is used to temporary save generated
 // html content data. This is a soft limit which might be passed if a very large
 // contegious string is found in the html document.
@@ -253,7 +239,8 @@ String WebFrameSerializerImpl::PostActionAfterSerializeEndTag(
   if (IsHTMLBaseElement(*element)) {
     result.Append("-->");
     // Append a new base tag declaration.
-    result.Append(GenerateBaseTagDeclaration(param->document->BaseTarget()));
+    result.Append(WebFrameSerializer::GenerateBaseTagDeclaration(
+        param->document->BaseTarget()));
   }
 
   return result.ToString();
@@ -452,11 +439,9 @@ void WebFrameSerializerImpl::BuildContentForNode(Node* node,
 WebFrameSerializerImpl::WebFrameSerializerImpl(
     WebLocalFrame* frame,
     WebFrameSerializerClient* client,
-    WebFrameSerializer::LinkRewritingDelegate* delegate,
-    bool save_with_empty_url)
+    WebFrameSerializer::LinkRewritingDelegate* delegate)
     : client_(client),
       delegate_(delegate),
-      save_with_empty_url_(save_with_empty_url),
       html_entities_(false),
       xml_entities_(true) {
   // Must specify available webframe.
@@ -474,8 +459,7 @@ bool WebFrameSerializerImpl::Serialize() {
 
   Document* document =
       specified_web_local_frame_impl_->GetFrame()->GetDocument();
-  const KURL& url =
-      save_with_empty_url_ ? KURL("about:internet") : document->Url();
+  const KURL& url = document->Url();
 
   if (url.IsValid()) {
     did_serialization = true;

@@ -53,7 +53,7 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kBgcolorAttr) {
-    AddHTMLColorToStyle(style, CSSPropertyID::kBackgroundColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyBackgroundColor, value);
   } else if (name == kBackgroundAttr) {
     String url = StripLeadingAndTrailingHTMLSpaces(value);
     if (!url.IsEmpty()) {
@@ -68,43 +68,41 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
           CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));
     }
   } else if (name == kValignAttr) {
-    if (DeprecatedEqualIgnoringCase(value, "top")) {
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kVerticalAlign, CSSValueID::kTop);
-    } else if (DeprecatedEqualIgnoringCase(value, "middle")) {
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kVerticalAlign, CSSValueID::kMiddle);
-    } else if (DeprecatedEqualIgnoringCase(value, "bottom")) {
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kVerticalAlign, CSSValueID::kBottom);
-    } else if (DeprecatedEqualIgnoringCase(value, "baseline")) {
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kVerticalAlign, CSSValueID::kBaseline);
-    } else {
-      AddPropertyToPresentationAttributeStyle(
-          style, CSSPropertyID::kVerticalAlign, value);
-    }
+    if (DeprecatedEqualIgnoringCase(value, "top"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
+                                              CSSValueTop);
+    else if (DeprecatedEqualIgnoringCase(value, "middle"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
+                                              CSSValueMiddle);
+    else if (DeprecatedEqualIgnoringCase(value, "bottom"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
+                                              CSSValueBottom);
+    else if (DeprecatedEqualIgnoringCase(value, "baseline"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
+                                              CSSValueBaseline);
+    else
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
+                                              value);
   } else if (name == kAlignAttr) {
     if (DeprecatedEqualIgnoringCase(value, "middle") ||
-        DeprecatedEqualIgnoringCase(value, "center")) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
-                                              CSSValueID::kWebkitCenter);
-    } else if (DeprecatedEqualIgnoringCase(value, "absmiddle")) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
-                                              CSSValueID::kCenter);
-    } else if (DeprecatedEqualIgnoringCase(value, "left")) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
-                                              CSSValueID::kWebkitLeft);
-    } else if (DeprecatedEqualIgnoringCase(value, "right")) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
-                                              CSSValueID::kWebkitRight);
-    } else {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextAlign,
+        DeprecatedEqualIgnoringCase(value, "center"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+                                              CSSValueWebkitCenter);
+    else if (DeprecatedEqualIgnoringCase(value, "absmiddle"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+                                              CSSValueCenter);
+    else if (DeprecatedEqualIgnoringCase(value, "left"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+                                              CSSValueWebkitLeft);
+    else if (DeprecatedEqualIgnoringCase(value, "right"))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
+                                              CSSValueWebkitRight);
+    else
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyTextAlign,
                                               value);
-    }
   } else if (name == kHeightAttr) {
     if (!value.IsEmpty())
-      AddHTMLLengthToStyle(style, CSSPropertyID::kHeight, value);
+      AddHTMLLengthToStyle(style, CSSPropertyHeight, value);
   } else {
     HTMLElement::CollectStyleForPresentationAttribute(name, value, style);
   }

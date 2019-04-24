@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/core/editing/markers/styleable_marker.h"
 #include "third_party/blink/renderer/core/editing/markers/suggestion_marker.h"
 
-using ui::mojom::ImeTextSpanThickness;
+using ws::mojom::ImeTextSpanThickness;
 
 namespace blink {
 

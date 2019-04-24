@@ -80,7 +80,3 @@ void InMemoryPrefStore::ReportValueChanged(const std::string& key,
   for (Observer& observer : observers_)
     observer.OnPrefValueChanged(key);
 }
-
-bool InMemoryPrefStore::IsInMemoryPrefStore() const {
-  return true;
-}

@@ -270,21 +270,17 @@ void RendererWebMediaPlayerDelegate::SetFrameHiddenForTesting(bool is_hidden) {
   ScheduleUpdateTask();
 }
 
-void RendererWebMediaPlayerDelegate::OnMediaDelegatePause(
-    int player_id,
-    bool triggered_by_user) {
+void RendererWebMediaPlayerDelegate::OnMediaDelegatePause(int player_id) {
   RecordAction(base::UserMetricsAction("Media.Controls.RemotePause"));
 
   Observer* observer = id_map_.Lookup(player_id);
   if (observer) {
-    if (triggered_by_user) {
-      // TODO(avayvod): remove when default play/pause is handled via
-      // the MediaSession code path.
-      std::unique_ptr<blink::WebScopedUserGesture> gesture(
-          render_frame()
-              ? new blink::WebScopedUserGesture(render_frame()->GetWebFrame())
-              : nullptr);
-    }
+    // TODO(avayvod): remove when default play/pause is handled via
+    // the MediaSession code path.
+    std::unique_ptr<blink::WebScopedUserGesture> gesture(
+        render_frame()
+            ? new blink::WebScopedUserGesture(render_frame()->GetWebFrame())
+            : nullptr);
     observer->OnPause();
   }
 }

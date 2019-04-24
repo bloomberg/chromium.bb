@@ -8,14 +8,18 @@
 #include <memory>
 
 class KeyedService;
-class SimpleFactoryKey;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace offline_pages {
 
 // Helper function to be used with
-// SimpleKeyedServiceFactory::SetTestingFactory() that returns a
+// BrowserContextKeyedServiceFactory::SetTestingFactory() that returns a
 // OfflinePageModel object with mocked store.
-std::unique_ptr<KeyedService> BuildTestOfflinePageModel(SimpleFactoryKey* key);
+std::unique_ptr<KeyedService> BuildTestOfflinePageModel(
+    content::BrowserContext* context);
 
 }  // namespace offline_pages
 

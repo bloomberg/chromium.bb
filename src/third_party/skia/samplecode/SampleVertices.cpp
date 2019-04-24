@@ -34,7 +34,7 @@ static sk_sp<SkShader> make_shader0(SkIPoint* size) {
     pixels[0] = pixels[2] = color0;
     pixels[1] = pixels[3] = color1;
 
-    return bm.makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat);
+    return SkShader::MakeBitmapShader(bm, SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode);
 }
 
 static sk_sp<SkShader> make_shader1(const SkIPoint& size) {
@@ -42,7 +42,7 @@ static sk_sp<SkShader> make_shader1(const SkIPoint& size) {
                       { SkIntToScalar(size.fX), SkIntToScalar(size.fY) } };
     SkColor colors[] = { SK_ColorRED, SK_ColorGREEN, SK_ColorBLUE, SK_ColorRED };
     return SkGradientShader::MakeLinear(pts, colors, nullptr,
-                    SK_ARRAY_COUNT(colors), SkTileMode::kMirror);
+                    SK_ARRAY_COUNT(colors), SkShader::kMirror_TileMode);
 }
 
 class VerticesView : public Sample {
@@ -158,9 +158,8 @@ private:
         v[0].set(0, 0);
         t[0].set(0, 0);
         for (int i = 0; i < n; i++) {
-            SkScalar r   = SK_ScalarPI * 2 * i / n,
-                     sin = SkScalarSin(r),
-                     cos = SkScalarCos(r);
+            SkScalar cos;
+            SkScalar sin = SkScalarSinCos(SK_ScalarPI * 2 * i / n, &cos);
             v[i+1].set(cos, sin);
             t[i+1].set(i*tx/n, ty);
         }
@@ -187,9 +186,8 @@ private:
         SkPoint* t = rec->fTexs;
 
         for (int i = 0; i < n; i++) {
-            SkScalar r   = SK_ScalarPI * 2 * i / n,
-                     sin = SkScalarSin(r),
-                     cos = SkScalarCos(r);
+            SkScalar cos;
+            SkScalar sin = SkScalarSinCos(SK_ScalarPI * 2 * i / n, &cos);
             v[i*2 + 0].set(cos/2, sin/2);
             v[i*2 + 1].set(cos, sin);
 

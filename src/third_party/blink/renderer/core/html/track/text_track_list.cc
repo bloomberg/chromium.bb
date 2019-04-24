@@ -139,7 +139,7 @@ TextTrack* TextTrackList::getTrackById(const AtomicString& id) {
 }
 
 void TextTrackList::InvalidateTrackIndexesAfterTrack(TextTrack* track) {
-  HeapVector<Member<TextTrack>>* tracks = nullptr;
+  HeapVector<TraceWrapperMember<TextTrack>>* tracks = nullptr;
 
   if (track->TrackType() == TextTrack::kTrackElement) {
     tracks = &element_tracks_;
@@ -187,7 +187,7 @@ void TextTrackList::Append(TextTrack* track) {
 }
 
 void TextTrackList::Remove(TextTrack* track) {
-  HeapVector<Member<TextTrack>>* tracks = nullptr;
+  HeapVector<TraceWrapperMember<TextTrack>>* tracks = nullptr;
 
   if (track->TrackType() == TextTrack::kTrackElement) {
     tracks = &element_tracks_;
@@ -221,7 +221,7 @@ void TextTrackList::RemoveAllInbandTracks() {
 }
 
 bool TextTrackList::Contains(TextTrack* track) const {
-  const HeapVector<Member<TextTrack>>* tracks = nullptr;
+  const HeapVector<TraceWrapperMember<TextTrack>>* tracks = nullptr;
 
   if (track->TrackType() == TextTrack::kTrackElement)
     tracks = &element_tracks_;

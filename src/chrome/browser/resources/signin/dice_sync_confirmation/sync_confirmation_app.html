@@ -15,13 +15,12 @@
   <template>
     <style include="signin-dialog-shared paper-button-style">
       :host {
-        color: var(--cr-primary-text-color);
         display: block;
       }
 
       paper-button {
-        padding-inline-end: 16px;
-        padding-inline-start: 16px;
+        padding-left: 16px;
+        padding-right: 16px;
       }
 
       .action-container {
@@ -59,11 +58,8 @@
         width: 100%;
       }
 
-      :host-context([dark]) #illustration {
-        background-image: url(./images/sync_confirmation_illustration_dark.svg);
-      }
-
       #illustration-container > img {
+        background: white;
         border-radius: 50%;
         height: 68px;
         left: 0;
@@ -75,6 +71,7 @@
       }
 
       .heading {
+        color: var(--paper-grey-800);
         font-weight: normal;
         margin-bottom: 32px;
         padding: 0 24px;
@@ -95,10 +92,10 @@
       }
 
       .secondary {
-        color: var(--cr-secondary-text-color);
+        color: var(--paper-grey-600);
       }
 
-      :host-context(html:not([dark])) #grey-banner {
+      #grey-banner {
         background: var(--paper-grey-50);
         height: 128px;
         top: 0;

@@ -174,7 +174,7 @@ root{
         minimumGroupingDigits{"1"}
         native{"latn"}
     }
-    Version{"2.1.49.82"}
+    Version{"2.1.44.91"}
     calendar{
         buddhist{
             AmPmMarkers:alias{"/LOCALE/calendar/gregorian/AmPmMarkers"}
@@ -412,15 +412,6 @@ root{
             }
             dayNames:alias{"/LOCALE/calendar/gregorian/dayNames"}
             intervalFormats{
-                Bh{
-                    B{"h B – h B"}
-                    h{"h–h B"}
-                }
-                Bhm{
-                    B{"h:mm B – h:mm B"}
-                    h{"h:mm–h:mm B"}
-                    m{"h:mm–h:mm B"}
-                }
                 H{
                     H{"HH–HH"}
                 }
@@ -818,15 +809,6 @@ root{
                 wide:alias{"/LOCALE/calendar/generic/eras/abbreviated"}
             }
             intervalFormats{
-                Bh{
-                    B{"h B – h B"}
-                    h{"h–h B"}
-                }
-                Bhm{
-                    B{"h:mm B – h:mm B"}
-                    h{"h:mm–h:mm B"}
-                    m{"h:mm–h:mm B"}
-                }
                 Gy{
                     G{"G y – G y"}
                     y{"G y–y"}
@@ -1125,15 +1107,6 @@ root{
                 wide:alias{"/LOCALE/calendar/gregorian/eras/abbreviated"}
             }
             intervalFormats{
-                Bh{
-                    B{"h B – h B"}
-                    h{"h–h B"}
-                }
-                Bhm{
-                    B{"h:mm B – h:mm B"}
-                    h{"h:mm–h:mm B"}
-                    m{"h:mm–h:mm B"}
-                }
                 Gy{
                     G{"G y – G y"}
                     y{"G y–y"}
@@ -1818,7 +1791,7 @@ root{
                     "Taishō",
                     "Shōwa",
                     "Heisei",
-                    "Reiwa",
+                    "Qqqq",
                 }
                 narrow{
                     "Taika (645–650)",
@@ -2057,7 +2030,7 @@ root{
                     "T",
                     "S",
                     "H",
-                    "R",
+                    "Q",
                 }
                 wide:alias{"/LOCALE/calendar/japanese/eras/abbreviated"}
             }

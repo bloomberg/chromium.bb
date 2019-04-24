@@ -17,11 +17,11 @@ namespace blink {
 
 std::unique_ptr<TracedValue> InspectorWebSocketCreateEvent::Data(
     ExecutionContext* execution_context,
-    uint64_t identifier,
+    unsigned long identifier,
     const KURL& url,
     const String& protocol) {
   DCHECK(execution_context->IsContextThread());
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetInteger("identifier", static_cast<int>(identifier));
   value->SetString("url", url.GetString());
   if (auto* document = DynamicTo<Document>(execution_context)) {
@@ -43,9 +43,9 @@ std::unique_ptr<TracedValue> InspectorWebSocketCreateEvent::Data(
 
 std::unique_ptr<TracedValue> InspectorWebSocketEvent::Data(
     ExecutionContext* execution_context,
-    uint64_t identifier) {
+    unsigned long identifier) {
   DCHECK(execution_context->IsContextThread());
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetInteger("identifier", static_cast<int>(identifier));
   if (auto* document = DynamicTo<Document>(execution_context)) {
     value->SetString("frame",

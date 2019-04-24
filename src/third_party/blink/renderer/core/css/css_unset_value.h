@@ -7,7 +7,6 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -33,13 +32,9 @@ class CSSUnsetValue : public CSSValue {
   CSSUnsetValue() : CSSValue(kUnsetClass) {}
 };
 
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSUnsetValue, IsUnsetValue());
+
 }  // namespace cssvalue
-
-template <>
-struct DowncastTraits<cssvalue::CSSUnsetValue> {
-  static bool AllowFrom(const CSSValue& value) { return value.IsUnsetValue(); }
-};
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_UNSET_VALUE_H_

@@ -6,11 +6,11 @@ DIV with :hover and :active
 element.style { ()
 
 [expanded] 
-div:active, a:active { (<style>)
+div:active, a:active { (<style>…</style>)
     font-weight: bold;
 
 [expanded] 
-div:hover, a:hover { (<style>)
+div:hover, a:hover { (<style>…</style>)
     color: red;
 
 [expanded] 
@@ -39,11 +39,11 @@ DIV with :active and :focus
 element.style { ()
 
 [expanded] 
-div:active, a:active { (<style>)
+div:active, a:active { (<style>…</style>)
     font-weight: bold;
 
 [expanded] 
-div:focus, a:focus { (<style>)
+div:focus, a:focus { (<style>…</style>)
     border: 1px solid green;
         border-top-color: green;
         border-top-style: solid;

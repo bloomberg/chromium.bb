@@ -46,22 +46,20 @@ using ::testing::UnorderedElementsAre;
 class PeerConnectionFactoryForJsepTest : public PeerConnectionFactory {
  public:
   PeerConnectionFactoryForJsepTest()
-      : PeerConnectionFactory([] {
-          PeerConnectionFactoryDependencies dependencies;
-          dependencies.worker_thread = rtc::Thread::Current();
-          dependencies.network_thread = rtc::Thread::Current();
-          dependencies.signaling_thread = rtc::Thread::Current();
-          dependencies.media_engine = cricket::WebRtcMediaEngineFactory::Create(
-              rtc::scoped_refptr<AudioDeviceModule>(
-                  FakeAudioCaptureModule::Create()),
-              CreateBuiltinAudioEncoderFactory(),
-              CreateBuiltinAudioDecoderFactory(),
-              CreateBuiltinVideoEncoderFactory(),
-              CreateBuiltinVideoDecoderFactory(), nullptr,
-              AudioProcessingBuilder().Create());
-          dependencies.call_factory = CreateCallFactory();
-          return dependencies;
-        }()) {}
+      : PeerConnectionFactory(rtc::Thread::Current(),
+                              rtc::Thread::Current(),
+                              rtc::Thread::Current(),
+                              cricket::WebRtcMediaEngineFactory::Create(
+                                  rtc::scoped_refptr<AudioDeviceModule>(
+                                      FakeAudioCaptureModule::Create()),
+                                  CreateBuiltinAudioEncoderFactory(),
+                                  CreateBuiltinAudioDecoderFactory(),
+                                  CreateBuiltinVideoEncoderFactory(),
+                                  CreateBuiltinVideoDecoderFactory(),
+                                  nullptr,
+                                  AudioProcessingBuilder().Create()),
+                              CreateCallFactory(),
+                              nullptr) {}
 
   std::unique_ptr<cricket::SctpTransportInternalFactory>
   CreateSctpTransportInternalFactory() {
@@ -710,7 +708,7 @@ TEST_F(PeerConnectionJsepTest, CreateOfferRecyclesWhenOfferingTwice) {
 // - The new transceiver is associated with the new MID value.
 class RecycleMediaSectionTest
     : public PeerConnectionJsepTest,
-      public ::testing::WithParamInterface<
+      public testing::WithParamInterface<
           std::tuple<cricket::MediaType, cricket::MediaType>> {
  protected:
   RecycleMediaSectionTest() {

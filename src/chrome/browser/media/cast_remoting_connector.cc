@@ -17,11 +17,8 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/common/pref_names.h"
 #include "components/mirroring/browser/cast_remoting_sender.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -140,7 +137,6 @@ CastRemotingConnector* CastRemotingConnector::Get(
     connector = new CastRemotingConnector(
         media_router::MediaRouterFactory::GetApiForBrowserContext(
             contents->GetBrowserContext()),
-        Profile::FromBrowserContext(contents->GetBrowserContext())->GetPrefs(),
         SessionTabHelper::IdForTab(contents),
 #if defined(TOOLKIT_VIEWS)
         base::BindRepeating(
@@ -166,7 +162,7 @@ CastRemotingConnector* CastRemotingConnector::Get(
           return CancelPermissionRequestCallback();
         })
 #endif
-    );
+            );
     contents->SetUserData(kUserDataKey, base::WrapUnique(connector));
   }
   return connector;
@@ -189,7 +185,6 @@ void CastRemotingConnector::CreateMediaRemoter(
 
 CastRemotingConnector::CastRemotingConnector(
     media_router::MediaRouter* router,
-    PrefService* pref_service,
     SessionID tab_id,
     PermissionRequestCallback permission_request_callback)
     : media_router_(router),
@@ -198,7 +193,6 @@ CastRemotingConnector::CastRemotingConnector(
       active_bridge_(nullptr),
       deprecated_binding_(this),
       binding_(this),
-      pref_service_(pref_service),
       weak_factory_(this) {
   DCHECK(permission_request_callback_);
 #if !defined(OS_ANDROID)
@@ -210,7 +204,6 @@ CastRemotingConnector::CastRemotingConnector(
     media_router_->RegisterRemotingSource(tab_id_, this);
   }
 #endif  // !defined(OS_ANDROID)
-  StartObservingPref();
 }
 
 CastRemotingConnector::~CastRemotingConnector() {
@@ -618,21 +611,4 @@ void CastRemotingConnector::OnDataSendFailed() {
   // session.
   if (active_bridge_)
     StopRemoting(active_bridge_, RemotingStopReason::DATA_SEND_FAILED, false);
-}
-
-void CastRemotingConnector::StartObservingPref() {
-  pref_change_registrar_.Init(pref_service_);
-  pref_change_registrar_.Add(
-      prefs::kMediaRouterMediaRemotingEnabled,
-      base::BindRepeating(&CastRemotingConnector::OnPrefChanged,
-                          base::Unretained(this)));
-}
-
-void CastRemotingConnector::OnPrefChanged() {
-  const PrefService::Preference* pref =
-      pref_service_->FindPreference(prefs::kMediaRouterMediaRemotingEnabled);
-  bool enabled = false;
-  pref->GetValue()->GetAsBoolean(&enabled);
-  if (!enabled)
-    OnStopped(media::mojom::RemotingStopReason::USER_DISABLED);
 }

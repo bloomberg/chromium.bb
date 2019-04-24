@@ -209,8 +209,8 @@ public:
      * fDstClipCount, so the pointer can become invalid after this returns.
      */
     void drawTextureSet(const GrClip&, const TextureSetEntry[], int cnt, GrSamplerState::Filter,
-                        SkBlendMode mode, GrAA aa, SkCanvas::SrcRectConstraint,
-                        const SkMatrix& viewMatrix, sk_sp<GrColorSpaceXform> texXform);
+                        SkBlendMode mode, GrAA aa, const SkMatrix& viewMatrix,
+                        sk_sp<GrColorSpaceXform> texXform);
 
     /**
      * Draw a roundrect using a paint.
@@ -406,7 +406,9 @@ public:
      * After this returns any pending surface IO will be issued to the backend 3D API and
      * if the surface has MSAA it will be resolved.
      */
-    GrSemaphoresSubmitted flush(SkSurface::BackendSurfaceAccess access, const GrFlushInfo&);
+    GrSemaphoresSubmitted prepareForExternalIO(SkSurface::BackendSurfaceAccess access,
+                                               SkSurface::FlushFlags flags, int numSemaphores,
+                                               GrBackendSemaphore backendSemaphores[]);
 
     /**
      *  The next time this GrRenderTargetContext is flushed, the gpu will wait on the passed in
@@ -464,7 +466,9 @@ protected:
 private:
     class TextTarget;
 
-    GrAAType chooseAAType(GrAA);
+    inline GrAAType chooseAAType(GrAA aa, GrAllowMixedSamples allowMixedSamples) {
+        return GrChooseAAType(aa, this->fsaaType(), allowMixedSamples, *this->caps());
+    }
 
     friend class GrAtlasTextBlob;               // for access to add[Mesh]DrawOp
     friend class GrClipStackClip;               // for access to getOpList

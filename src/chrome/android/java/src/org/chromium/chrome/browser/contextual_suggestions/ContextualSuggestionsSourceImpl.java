@@ -10,10 +10,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.chrome.browser.cached_image_fetcher.CachedImageFetcher;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsBridge.ContextualSuggestionsResult;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
-import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
 import org.chromium.chrome.browser.ntp.snippets.EmptySuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -25,7 +23,7 @@ import org.chromium.content_public.browser.WebContents;
 class ContextualSuggestionsSourceImpl
         extends EmptySuggestionsSource implements ContextualSuggestionsSource {
     private ContextualSuggestionsBridge mBridge;
-    private ImageFetcher mImageFetcher;
+    private CachedImageFetcher mCachedImageFetcher;
 
     /**
      * Creates a ContextualSuggestionsSource for getting contextual suggestions for the current
@@ -35,22 +33,19 @@ class ContextualSuggestionsSourceImpl
      */
     public ContextualSuggestionsSourceImpl(Profile profile) {
         mBridge = new ContextualSuggestionsBridge(profile);
-        mImageFetcher = ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.DISK_CACHE_ONLY);
+        mCachedImageFetcher = CachedImageFetcher.getInstance();
     }
 
     @Override
     public void destroy() {
         mBridge.destroy();
-        mBridge = null;
-        mImageFetcher.destroy();
-        mImageFetcher = null;
     }
 
     @Override
     public void fetchSuggestionImage(SnippetArticle suggestion, Callback<Bitmap> callback) {
         String url = mBridge.getImageUrl(suggestion);
-        mImageFetcher.fetchImage(
-                url, ImageFetcher.CONTEXTUAL_SUGGESTIONS_UMA_CLIENT_NAME, callback);
+        mCachedImageFetcher.fetchImage(
+                url, CachedImageFetcher.CONTEXTUAL_SUGGESTIONS_UMA_CLIENT_NAME, callback);
     }
 
     @Override
@@ -62,8 +57,8 @@ class ContextualSuggestionsSourceImpl
             return;
         }
 
-        mImageFetcher.fetchImage(
-                url, ImageFetcher.CONTEXTUAL_SUGGESTIONS_UMA_CLIENT_NAME, callback);
+        mCachedImageFetcher.fetchImage(
+                url, CachedImageFetcher.CONTEXTUAL_SUGGESTIONS_UMA_CLIENT_NAME, callback);
     }
 
     @Override
@@ -75,8 +70,9 @@ class ContextualSuggestionsSourceImpl
             return;
         }
 
-        mImageFetcher.fetchImage(url, ImageFetcher.CONTEXTUAL_SUGGESTIONS_UMA_CLIENT_NAME,
-                desiredSizePx, desiredSizePx, callback);
+        mCachedImageFetcher.fetchImage(url,
+                CachedImageFetcher.CONTEXTUAL_SUGGESTIONS_UMA_CLIENT_NAME, desiredSizePx,
+                desiredSizePx, callback);
     }
 
     @Override
@@ -95,8 +91,9 @@ class ContextualSuggestionsSourceImpl
     }
 
     @VisibleForTesting
-    ContextualSuggestionsSourceImpl(ContextualSuggestionsBridge bridge, ImageFetcher imageFetcher) {
+    ContextualSuggestionsSourceImpl(
+            ContextualSuggestionsBridge bridge, CachedImageFetcher cachedImageFethcer) {
         mBridge = bridge;
-        mImageFetcher = imageFetcher;
+        mCachedImageFetcher = cachedImageFethcer;
     }
 }

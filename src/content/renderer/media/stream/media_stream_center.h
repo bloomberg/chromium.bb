@@ -6,7 +6,6 @@
 #define CONTENT_RENDERER_MEDIA_STREAM_MEDIA_STREAM_CENTER_H_
 
 #include "base/macros.h"
-#include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_center.h"
@@ -20,7 +19,7 @@ namespace content {
 
 class CONTENT_EXPORT MediaStreamCenter : public blink::WebMediaStreamCenter {
  public:
-  MediaStreamCenter(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  MediaStreamCenter();
   ~MediaStreamCenter() override;
 
  private:
@@ -40,8 +39,7 @@ class CONTENT_EXPORT MediaStreamCenter : public blink::WebMediaStreamCenter {
       const blink::WebMediaStreamTrack& track) override;
 
   blink::WebAudioSourceProvider* CreateWebAudioSourceFromMediaStreamTrack(
-      const blink::WebMediaStreamTrack& track,
-      int context_sample_rate) override;
+      const blink::WebMediaStreamTrack& track) override;
 
   void DidStopMediaStreamSource(
       const blink::WebMediaStreamSource& web_source) override;
@@ -49,8 +47,6 @@ class CONTENT_EXPORT MediaStreamCenter : public blink::WebMediaStreamCenter {
   void GetSourceSettings(
       const blink::WebMediaStreamSource& web_source,
       blink::WebMediaStreamTrack::Settings& settings) override;
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamCenter);
 };

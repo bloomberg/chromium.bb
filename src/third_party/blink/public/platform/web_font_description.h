@@ -48,6 +48,13 @@ struct WebFontDescription {
     kGenericFamilyFantasy
   };
 
+  enum Smoothing {
+    kSmoothingAuto,
+    kSmoothingNone,
+    kSmoothingGrayscale,
+    kSmoothingSubpixel
+  };
+
   enum Weight {
     kWeight100,
     kWeight200,
@@ -68,6 +75,7 @@ struct WebFontDescription {
         italic(false),
         small_caps(false),
         weight(kWeightNormal),
+        smoothing(kSmoothingAuto),
         letter_spacing(0),
         word_spacing(0) {}
 
@@ -77,6 +85,7 @@ struct WebFontDescription {
   bool italic;
   bool small_caps;
   Weight weight;
+  Smoothing smoothing;
 
   int16_t letter_spacing;
   int16_t word_spacing;

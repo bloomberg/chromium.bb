@@ -70,9 +70,4 @@ gaia::MultiloginMode MiceAccountReconcilorDelegate::CalculateModeForReconcile(
   return gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER;
 }
 
-bool MiceAccountReconcilorDelegate::IsUnknownInvalidAccountInCookieAllowed()
-    const {
-  return false;
-}
-
 }  // namespace signin

@@ -44,15 +44,13 @@ PutContext::PutContext(blink::mojom::FetchAPIRequestPtr request,
                        blink::mojom::BlobPtr blob,
                        uint64_t blob_size,
                        blink::mojom::BlobPtr side_data_blob,
-                       uint64_t side_data_blob_size,
-                       int64_t trace_id)
+                       uint64_t side_data_blob_size)
     : request(std::move(request)),
       response(std::move(response)),
       blob(std::move(blob)),
       blob_size(blob_size),
       side_data_blob(std::move(side_data_blob)),
-      side_data_blob_size(side_data_blob_size),
-      trace_id(trace_id) {}
+      side_data_blob_size(side_data_blob_size) {}
 
 PutContext::~PutContext() = default;
 
@@ -67,8 +65,7 @@ class CacheStorageCacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
 
   std::unique_ptr<PutContext> CreatePutContext(
       blink::mojom::FetchAPIRequestPtr request,
-      blink::mojom::FetchAPIResponsePtr response,
-      int64_t trace_id) override {
+      blink::mojom::FetchAPIResponsePtr response) override {
     blink::mojom::BlobPtr blob;
     uint64_t blob_size = blink::BlobUtils::kUnknownSize;
     blink::mojom::BlobPtr side_data_blob;
@@ -85,7 +82,7 @@ class CacheStorageCacheEntryHandlerImpl : public CacheStorageCacheEntryHandler {
 
     return std::make_unique<PutContext>(
         std::move(request), std::move(response), std::move(blob), blob_size,
-        std::move(side_data_blob), side_data_blob_size, trace_id);
+        std::move(side_data_blob), side_data_blob_size);
   }
 
   void PopulateResponseBody(scoped_refptr<BlobDataHandle> data_handle,

@@ -48,13 +48,13 @@ int main(int argc, char **argv) {
     UDate date;
 
     // The languages in which we will display the date
-    static const char* LANGUAGE[] = {
+    static char* LANGUAGE[] = {
         "en", "de", "fr"
     };
     static const int32_t N_LANGUAGE = sizeof(LANGUAGE)/sizeof(LANGUAGE[0]);
 
     // The time zones in which we will display the time
-    static const char* TIMEZONE[] = {
+    static char* TIMEZONE[] = {
         "America/Los_Angeles",
         "America/New_York",
         "Europe/Paris",

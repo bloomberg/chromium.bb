@@ -83,7 +83,7 @@ std::unique_ptr<base::DictionaryValue> ChromeNetLog::GetPlatformConstants(
   return constants_dict;
 }
 
-void ChromeNetLog::ShutDownBeforeThreadPool() {
+void ChromeNetLog::ShutDownBeforeTaskScheduler() {
   // TODO(eroman): Stop in-progress net_export_file_writer_ or delete its files?
 
   ClearFileNetLogObserver();

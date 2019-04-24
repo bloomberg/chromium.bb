@@ -1,7 +1,5 @@
-reillyg@chromium.org
+# COMPONENT: Blink>ImageCapture
+# TEAM: media-dev@chromium.org
 
-# Original (legacy) owner.
 mcasas@chromium.org
-
-# COMPONENT: Blink>ShapeDetection
-# TEAM: device-dev@chromium.org
+reillyg@chromium.org

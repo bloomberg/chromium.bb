@@ -58,6 +58,10 @@ interface DisplayPrivate {
 };
 
 interface DisplayClient {
+  // Notifies that a swap has occured after some latency info with snapshot
+  // component reached the display.
+  DidSwapAfterSnapshotRequestReceived(array<ui.mojom.LatencyInfo> latency_info);
+
   [EnableIf=is_mac]
   OnDisplayReceivedCALayerParams(gfx.mojom.CALayerParams ca_layer_params);
 

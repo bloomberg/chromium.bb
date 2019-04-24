@@ -93,6 +93,7 @@ protected:
     }
 
 private:
+
     void computeScratchKey(GrScratchKey*) const override;
     size_t onGpuMemorySize() const override;
     void markMipMapsDirty();

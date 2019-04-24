@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <set>
 
 #include "base/memory/ptr_util.h"
@@ -40,7 +39,6 @@
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_view.h"
-#include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -270,11 +268,7 @@ ScopedFreezeBlinkAXTreeSource::~ScopedFreezeBlinkAXTreeSource() {
 
 BlinkAXTreeSource::BlinkAXTreeSource(RenderFrameImpl* render_frame,
                                      ui::AXMode mode)
-    : render_frame_(render_frame), accessibility_mode_(mode), frozen_(false) {
-  image_annotation_debugging_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kEnableExperimentalAccessibilityLabelsDebugging);
-}
+    : render_frame_(render_frame), accessibility_mode_(mode), frozen_(false) {}
 
 BlinkAXTreeSource::~BlinkAXTreeSource() {
 }
@@ -378,23 +372,15 @@ bool BlinkAXTreeSource::GetTreeData(AXContentTreeData* tree_data) const {
   if (!focus().IsNull())
     tree_data->focus_id = focus().AxID();
 
-  bool is_selection_backward = false;
   WebAXObject anchor_object, focus_object;
   int anchor_offset, focus_offset;
   ax::mojom::TextAffinity anchor_affinity, focus_affinity;
-  if (base::FeatureList::IsEnabled(features::kNewAccessibilitySelection)) {
-    root().Selection(is_selection_backward, anchor_object, anchor_offset,
-                     anchor_affinity, focus_object, focus_offset,
-                     focus_affinity);
-  } else {
-    root().SelectionDeprecated(anchor_object, anchor_offset, anchor_affinity,
-                               focus_object, focus_offset, focus_affinity);
-  }
+  root().Selection(anchor_object, anchor_offset, anchor_affinity, focus_object,
+                   focus_offset, focus_affinity);
   if (!anchor_object.IsNull() && !focus_object.IsNull() && anchor_offset >= 0 &&
       focus_offset >= 0) {
     int32_t anchor_id = anchor_object.AxID();
     int32_t focus_id = focus_object.AxID();
-    tree_data->sel_is_backward = is_selection_backward;
     tree_data->sel_anchor_object_id = anchor_id;
     tree_data->sel_anchor_offset = anchor_offset;
     tree_data->sel_focus_object_id = focus_id;
@@ -567,15 +553,10 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   if (!web_description.IsEmpty()) {
     TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kDescription,
                                   web_description.Utf8());
-    dst->SetDescriptionFrom(description_from);
+    dst->AddIntAttribute(ax::mojom::IntAttribute::kDescriptionFrom,
+                         static_cast<int32_t>(description_from));
     AddIntListAttributeFromWebObjects(
         ax::mojom::IntListAttribute::kDescribedbyIds, description_objects, dst);
-  }
-
-  blink::WebString web_title = src.Title(name_from);
-  if (!web_title.IsEmpty()) {
-    TruncateAndAddStringAttribute(dst, ax::mojom::StringAttribute::kTooltip,
-                                  web_title.Utf8());
   }
 
   if (src.ValueDescription().length()) {
@@ -653,11 +634,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       dst->AddFloatAttribute(ax::mojom::FloatAttribute::kFontSize,
                              src.FontSize());
 
-    if (src.FontWeight()) {
-      dst->AddFloatAttribute(ax::mojom::FloatAttribute::kFontWeight,
-                             src.FontWeight());
-    }
-
     if (src.HasPopup() != ax::mojom::HasPopup::kFalse)
       dst->SetHasPopup(src.HasPopup());
     else if (src.Role() == ax::mojom::Role::kPopUpButton)
@@ -681,11 +657,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       dst->SetCheckedState(src.CheckedState());
     }
 
-    if (dst->role == ax::mojom::Role::kListItem &&
-        src.GetListStyle() != ax::mojom::ListStyle::kNone) {
-      dst->SetListStyle(src.GetListStyle());
-    }
-
     if (src.GetTextDirection() != ax::mojom::TextDirection::kNone) {
       dst->SetTextDirection(src.GetTextDirection());
     }
@@ -695,30 +666,9 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                            static_cast<int32_t>(src.GetTextPosition()));
     }
 
-    int32_t text_style = 0;
-    ax::mojom::TextDecorationStyle text_overline_style;
-    ax::mojom::TextDecorationStyle text_strikethrough_style;
-    ax::mojom::TextDecorationStyle text_underline_style;
-    src.GetTextStyleAndTextDecorationStyle(&text_style, &text_overline_style,
-                                           &text_strikethrough_style,
-                                           &text_underline_style);
-    if (text_style) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextStyle, text_style);
-    }
-
-    if (text_overline_style != ax::mojom::TextDecorationStyle::kNone) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextOverlineStyle,
-                           static_cast<int32_t>(text_overline_style));
-    }
-
-    if (text_strikethrough_style != ax::mojom::TextDecorationStyle::kNone) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextStrikethroughStyle,
-                           static_cast<int32_t>(text_strikethrough_style));
-    }
-
-    if (text_underline_style != ax::mojom::TextDecorationStyle::kNone) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextUnderlineStyle,
-                           static_cast<int32_t>(text_underline_style));
+    if (src.TextStyle()) {
+      dst->AddIntAttribute(ax::mojom::IntAttribute::kTextStyle,
+                           src.TextStyle());
     }
 
     if (dst->role == ax::mojom::Role::kInlineTextBox) {
@@ -1034,19 +984,11 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
         dst->AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
 
       if (src.IsControl() && !src.IsRichlyEditable()) {
-        // Only for simple input controls -- rich editable areas use AXTreeData.
-        if (base::FeatureList::IsEnabled(
-                features::kNewAccessibilitySelection)) {
-          dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
-                               src.SelectionStart());
-          dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd,
-                               src.SelectionEnd());
-        } else {
-          dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
-                               src.SelectionStartDeprecated());
-          dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd,
-                               src.SelectionEndDeprecated());
-        }
+        // Only for simple input controls -- rich editable areas use AXTreeData
+        dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
+                             src.SelectionStart());
+        dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd,
+                             src.SelectionEnd());
       }
     }
 
@@ -1167,17 +1109,8 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
   ax::mojom::NameFrom name_from;
   blink::WebVector<WebAXObject> name_objects;
   blink::WebString web_name = src.GetName(name_from, name_objects);
-
-  // When visual debugging is enabled, the "title" attribute is set to a
-  // string beginning with a "%". We need to ignore such strings when
-  // subsequently deciding whether an image should be annotated or not.
-  bool has_debug_title =
-      image_annotation_debugging_ &&
-      base::StartsWith(web_name.Utf8(), "%", base::CompareCase::SENSITIVE);
-
-  if ((name_from == ax::mojom::NameFrom::kAttributeExplicitlyEmpty ||
-       !web_name.IsEmpty()) &&
-      !has_debug_title) {
+  if (name_from == ax::mojom::NameFrom::kAttributeExplicitlyEmpty ||
+      !web_name.IsEmpty()) {
     dst->SetImageAnnotationStatus(
         ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
     return;
@@ -1187,8 +1120,7 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject src,
   // it if it already has text other than whitespace.
   if (!base::ContainsOnlyChars(
           dst->GetStringAttribute(ax::mojom::StringAttribute::kName),
-          base::kWhitespaceASCII) &&
-      !has_debug_title) {
+          base::kWhitespaceASCII)) {
     dst->SetImageAnnotationStatus(
         ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
     return;

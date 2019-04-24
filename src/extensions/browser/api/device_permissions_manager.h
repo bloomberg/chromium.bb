@@ -22,6 +22,7 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "device/usb/public/mojom/device.mojom.h"
+#include "device/usb/usb_service.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
 namespace base {
@@ -32,10 +33,6 @@ class Value;
 
 namespace content {
 class BrowserContext;
-}
-
-namespace device {
-class UsbDevice;
 }
 
 namespace extensions {
@@ -139,7 +136,8 @@ class DevicePermissions {
 };
 
 // Manages saved device permissions for all extensions.
-class DevicePermissionsManager : public KeyedService {
+class DevicePermissionsManager : public KeyedService,
+                                 public device::UsbService::Observer {
  public:
   static DevicePermissionsManager* Get(content::BrowserContext* context);
 
@@ -189,9 +187,14 @@ class DevicePermissionsManager : public KeyedService {
 
   DevicePermissions* GetInternal(const std::string& extension_id) const;
 
+  // UsbService::Observer implementation
+  void OnDeviceRemovedCleanup(scoped_refptr<device::UsbDevice> device) override;
+
   base::ThreadChecker thread_checker_;
   content::BrowserContext* context_;
   std::map<std::string, DevicePermissions*> extension_id_to_device_permissions_;
+  ScopedObserver<device::UsbService, device::UsbService::Observer>
+      usb_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePermissionsManager);
 };

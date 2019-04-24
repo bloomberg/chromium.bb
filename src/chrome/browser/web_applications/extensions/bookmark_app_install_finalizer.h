@@ -27,7 +27,6 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
 
   // InstallFinalizer:
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
-                       const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override;
   bool CanCreateOsShortcuts() const override;
   void CreateOsShortcuts(const web_app::AppId& app_id,

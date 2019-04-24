@@ -9,9 +9,6 @@ If two binaries have been generated with an almost identical code
 generator, we expect the delta of the canoncalized dumps to be small
 as well.
 """
-
-from __future__ import print_function
-
 import sys
 import re
 
@@ -35,7 +32,7 @@ for line in sys.stdin:
   tokens = line.split()
   if re.search(r">:$", line):
     # we encountered a function beginning
-    print("@@@@@@@@@@@@@@@", tokens[1])
+    print "@@@@@@@@@@@@@@@", tokens[1]
     count = 0
   elif re.search(r"^ +[0-9a-f]+:", line):
     # we encountered an instruction, first strip the instruction address
@@ -56,8 +53,8 @@ for line in sys.stdin:
       to = r"        \1"
       line = re.sub(fr, to, line)
     # replace the address which was stripped out above by an offset
-    print("%8x" % count, line, end=' ')
+    print "%8x" % count, line,
     count += 4
   else:
     # pass thru everything which is neither function beginning or instruction
-    print(line, end=' ')
+    print line,

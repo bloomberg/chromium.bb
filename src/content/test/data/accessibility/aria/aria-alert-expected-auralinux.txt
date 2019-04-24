@@ -1,3 +1,0 @@
-[document web]
-++[alert]
-++++[text] name='This test is for aria role="alert"' member-of

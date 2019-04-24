@@ -18,6 +18,8 @@ MainThread::MainThread(MainThreadSchedulerImpl* scheduler)
 
 MainThread::~MainThread() = default;
 
+void MainThread::Init() {}
+
 blink::PlatformThreadId MainThread::ThreadId() const {
   return thread_id_;
 }

@@ -72,7 +72,7 @@ public:
                                                       colors.get(),
                                                       positions.get(),
                                                       fColorCount,
-                                                      SkTileMode::kClamp,
+                                                      SkShader::kClamp_TileMode,
                                                       0,
                                                       nullptr));
     }

@@ -8,27 +8,27 @@
 #include <memory>
 
 #include "chrome/browser/notifications/scheduler/notification_data.h"
-#include "chrome/browser/notifications/scheduler/notification_scheduler_types.h"
 #include "chrome/browser/notifications/scheduler/schedule_params.h"
 
 namespace notifications {
 
 // Struct used to schedule a notification.
 struct NotificationParams {
-  NotificationParams(SchedulerClientType type,
+  enum class Type {
+    PLACE_HOLDER,
+  };
+
+  NotificationParams(Type type,
                      NotificationData notification,
                      ScheduleParams schedule_params);
   ~NotificationParams();
 
   // The type of notification using the scheduling system.
-  SchedulerClientType type;
-
-  // An auto generated unique id of the scheduled notification.
-  std::string guid;
+  Type type;
 
   // Data used to show the notification, such as text or title on the
   // notification.
-  NotificationData notification_data;
+  NotificationData notification;
 
   // Scheduling details used to determine when to show the notification.
   ScheduleParams schedule_params;

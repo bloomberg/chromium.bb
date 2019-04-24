@@ -11,7 +11,6 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_discovery_factory.h"
 #include "device/fido/fido_transport_protocol.h"
-#include "device/fido/virtual_ctap2_device.h"
 #include "device/fido/virtual_fido_device.h"
 
 namespace device {
@@ -35,9 +34,9 @@ class ScopedVirtualFidoDevice
   void SetTransport(FidoTransportProtocol transport);
 
   void SetSupportedProtocol(ProtocolVersion supported_protocol);
-  // SetCtap2Config sets the configuration for |VirtualCtap2Device|s and sets
-  // the supported protocol to CTAP2.
-  void SetCtap2Config(const VirtualCtap2Device::Config& config);
+  // EnablePINSupport causes the virtual devices to support PINs and sets the
+  // protocol version to CTAP2.
+  void EnablePINSupport();
   VirtualFidoDevice::State* mutable_state();
 
  protected:
@@ -49,7 +48,7 @@ class ScopedVirtualFidoDevice
   ProtocolVersion supported_protocol_ = ProtocolVersion::kU2f;
   FidoTransportProtocol transport_ =
       FidoTransportProtocol::kUsbHumanInterfaceDevice;
-  VirtualCtap2Device::Config ctap2_config_;
+  bool enable_pin_ = false;
   scoped_refptr<VirtualFidoDevice::State> state_;
   DISALLOW_COPY_AND_ASSIGN(ScopedVirtualFidoDevice);
 };

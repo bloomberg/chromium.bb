@@ -200,10 +200,14 @@ TEST_F(FPDFTextEmbedderTest, TextSearch) {
   FPDF_TEXTPAGE textpage = FPDFText_LoadPage(page);
   ASSERT_TRUE(textpage);
 
-  ScopedFPDFWideString nope = GetFPDFWideString(L"nope");
-  ScopedFPDFWideString world = GetFPDFWideString(L"world");
-  ScopedFPDFWideString world_caps = GetFPDFWideString(L"WORLD");
-  ScopedFPDFWideString world_substr = GetFPDFWideString(L"orld");
+  std::unique_ptr<unsigned short, pdfium::FreeDeleter> nope =
+      GetFPDFWideString(L"nope");
+  std::unique_ptr<unsigned short, pdfium::FreeDeleter> world =
+      GetFPDFWideString(L"world");
+  std::unique_ptr<unsigned short, pdfium::FreeDeleter> world_caps =
+      GetFPDFWideString(L"WORLD");
+  std::unique_ptr<unsigned short, pdfium::FreeDeleter> world_substr =
+      GetFPDFWideString(L"orld");
 
   {
     // No occurrences of "nope" in test page.
@@ -316,7 +320,8 @@ TEST_F(FPDFTextEmbedderTest, TextSearchConsecutive) {
   FPDF_TEXTPAGE textpage = FPDFText_LoadPage(page);
   ASSERT_TRUE(textpage);
 
-  ScopedFPDFWideString aaaa = GetFPDFWideString(L"aaaa");
+  std::unique_ptr<unsigned short, pdfium::FreeDeleter> aaaa =
+      GetFPDFWideString(L"aaaa");
 
   {
     // Search for "aaaa" yields 2 results in "aaaaaaaaaa".

@@ -34,6 +34,7 @@ typedef (ArrayBuffer or ArrayBufferView or Blob or USVString) BlobPart;
 [
     Constructor(optional sequence<BlobPart> blobParts, optional BlobPropertyBag options),
     ConstructorCallWith=ExecutionContext,
+    RaisesException=Constructor,
     Exposed=(Window,Worker),
     Serializable
 ] interface Blob {

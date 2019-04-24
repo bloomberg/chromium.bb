@@ -7,14 +7,13 @@ package org.chromium.chrome.browser.feed;
 import android.content.Context;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.task.PostTask;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskParameters;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.concurrent.TimeUnit;
 
@@ -96,7 +95,6 @@ public class FeedRefreshTask extends NativeBackgroundTask {
         // as light weight as possible. Instead of going to native to reschedule with a more
         // informed threshold, just schedule for 1 day from now. The next time a successful fetch
         // occurs, this value will be set to a value tailored to current usage patterns.
-        PostTask.runOrPostTask(
-                UiThreadTaskTraits.DEFAULT, () -> scheduleWakeUp(TimeUnit.DAYS.toMillis(1)));
+        ThreadUtils.runOnUiThread(() -> scheduleWakeUp(TimeUnit.DAYS.toMillis(1)));
     }
 }

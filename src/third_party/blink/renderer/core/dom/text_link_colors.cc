@@ -61,25 +61,25 @@ Color TextLinkColors::ColorFromCSSValue(const CSSValue& value,
                                         Color current_color,
                                         ColorScheme color_scheme,
                                         bool for_visited_link) const {
-  if (auto* color_value = DynamicTo<CSSColorValue>(value))
-    return color_value->Value();
+  if (value.IsColorValue())
+    return ToCSSColorValue(value).Value();
 
-  CSSValueID value_id = To<CSSIdentifierValue>(value).GetValueID();
+  CSSValueID value_id = ToCSSIdentifierValue(value).GetValueID();
   switch (value_id) {
-    case CSSValueID::kInvalid:
+    case CSSValueInvalid:
       NOTREACHED();
       return Color();
-    case CSSValueID::kInternalQuirkInherit:
+    case CSSValueInternalQuirkInherit:
       return TextColor();
-    case CSSValueID::kWebkitLink:
+    case CSSValueWebkitLink:
       return for_visited_link ? VisitedLinkColor() : LinkColor();
-    case CSSValueID::kWebkitActivelink:
+    case CSSValueWebkitActivelink:
       return ActiveLinkColor();
-    case CSSValueID::kWebkitFocusRingColor:
+    case CSSValueWebkitFocusRingColor:
       return LayoutTheme::GetTheme().FocusRingColor();
-    case CSSValueID::kCurrentcolor:
+    case CSSValueCurrentcolor:
       return current_color;
-    case CSSValueID::kInternalRootColor:
+    case CSSValueInternalRootColor:
       return LayoutTheme::GetTheme().RootElementColor(color_scheme);
     default:
       return StyleColor::ColorFromKeyword(value_id);

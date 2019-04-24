@@ -4,9 +4,7 @@
 
 // On iOS, |distiller_on_ios| was set to true before this script.
 var distiller_on_ios;
-if (typeof distiller_on_ios === 'undefined') {
-  distiller_on_ios = false;
-}
+if (typeof distiller_on_ios === 'undefined') {distiller_on_ios = false;}
 
 function addToPage(html) {
   var div = document.createElement('div');
@@ -62,34 +60,34 @@ function setTextDirection(direction) {
 // CSS classes must agree with distilledpage.css.
 function useFontFamily(fontFamily) {
   var cssClass;
-  if (fontFamily == 'serif') {
-    cssClass = 'serif';
-  } else if (fontFamily == 'monospace') {
-    cssClass = 'monospace';
+  if (fontFamily == "serif") {
+    cssClass = "serif";
+  } else if (fontFamily == "monospace") {
+    cssClass = "monospace";
   } else {
-    cssClass = 'sans-serif';
+    cssClass = "sans-serif";
   }
   // Relies on the classname order of the body being Theme class, then Font
   // Family class.
-  var themeClass = document.body.className.split(' ')[0];
-  document.body.className = themeClass + ' ' + cssClass;
+  var themeClass = document.body.className.split(" ")[0];
+  document.body.className = themeClass + " " + cssClass;
 }
 
 // Maps JS theme to CSS class and then changes body class name.
 // CSS classes must agree with distilledpage.css.
 function useTheme(theme) {
   var cssClass;
-  if (theme == 'sepia') {
-    cssClass = 'sepia';
-  } else if (theme == 'dark') {
-    cssClass = 'dark';
+  if (theme == "sepia") {
+    cssClass = "sepia";
+  } else if (theme == "dark") {
+    cssClass = "dark";
   } else {
-    cssClass = 'light';
+    cssClass = "light";
   }
   // Relies on the classname order of the body being Theme class, then Font
   // Family class.
-  var fontFamilyClass = document.body.className.split(' ')[1];
-  document.body.className = cssClass + ' ' + fontFamilyClass;
+  var fontFamilyClass = document.body.className.split(" ")[1];
+  document.body.className = cssClass + " " + fontFamilyClass;
 
   updateToolbarColor();
 }
@@ -97,15 +95,15 @@ function useTheme(theme) {
 function updateToolbarColor() {
   // Relies on the classname order of the body being Theme class, then Font
   // Family class.
-  var themeClass = document.body.className.split(' ')[0];
+  var themeClass = document.body.className.split(" ")[0];
 
   var toolbarColor;
-  if (themeClass == 'sepia') {
-    toolbarColor = '#BF9A73';
-  } else if (themeClass == 'dark') {
-    toolbarColor = '#1A1A1A';
+  if (themeClass == "sepia") {
+    toolbarColor = "#BF9A73";
+  } else if (themeClass == "dark") {
+    toolbarColor = "#1A1A1A";
   } else {
-    toolbarColor = '#F5F5F5';
+    toolbarColor = "#F5F5F5";
   }
   document.getElementById('theme-color').content = toolbarColor;
 }
@@ -119,8 +117,7 @@ function maybeSetWebFont() {
   // fetched, which can take a long time on slow networks.
   // In Blink, it times out after 3 seconds and uses fallback fonts.
   // See crbug.com/711650
-  if (distiller_on_ios)
-    return;
+  if (distiller_on_ios) return;
 
   var e = document.createElement('link');
   e.href = 'https://fonts.googleapis.com/css?family=Roboto';
@@ -130,8 +127,8 @@ function maybeSetWebFont() {
 }
 
 // Add a listener to the "View Original" link to report opt-outs.
-document.getElementById('closeReaderView')
-    .addEventListener('click', function(e) {
+document.getElementById('closeReaderView').addEventListener('click',
+    function(e) {
       if (distiller) {
         distiller.closePanel(true);
       }
@@ -189,12 +186,10 @@ var pincher = (function() {
 
     // Use "fake" 3D transform so that the layer is not repainted.
     // With 2D transform, the frame rate would be much lower.
-    // clang-format off
     document.body.style.transform =
-        'translate3d(' + shiftX + 'px,'
-                       + shiftY + 'px, 0px)' +
-        'scale(' + clampedScale / fontSizeAnchor + ')';
-    // clang-format on
+        'translate3d(' + shiftX + 'px,' +
+                         shiftY + 'px, 0px)' +
+        'scale(' + clampedScale/fontSizeAnchor + ')';
   };
 
   function saveCenter(clientMid) {
@@ -218,7 +213,7 @@ var pincher = (function() {
 
     document.body.style.transformOrigin = '';
     document.body.style.transform = '';
-    document.documentElement.style.fontSize = clampedScale * baseSize + 'px';
+    document.documentElement.style.fontSize = clampedScale * baseSize + "px";
 
     restoreCenter();
 
@@ -229,7 +224,7 @@ var pincher = (function() {
       img.style.display = 'none';
       document.body.appendChild(img);
     }
-    img.src = '/savefontscaling/' + clampedScale;
+    img.src = "/savefontscaling/" + clampedScale;
   }
 
   function touchSpan(e) {
@@ -242,7 +237,7 @@ var pincher = (function() {
       sum += Math.hypot(dx, dy);
     }
     // Avoid very small span.
-    return Math.max(MIN_SPAN_LENGTH, sum / count);
+    return Math.max(MIN_SPAN_LENGTH, sum/count);
   }
 
   function touchClientMid(e) {
@@ -253,21 +248,18 @@ var pincher = (function() {
       sumX += e.touches[i].clientX;
       sumY += e.touches[i].clientY;
     }
-    return {x: sumX / count, y: sumY / count};
+    return {x: sumX/count, y: sumY/count};
   }
 
   function touchPageMid(e) {
     var clientMid = touchClientMid(e);
-    return {
-      x: clientMid.x - e.touches[0].clientX + e.touches[0].pageX,
-      y: clientMid.y - e.touches[0].clientY + e.touches[0].pageY
-    };
+    return {x: clientMid.x - e.touches[0].clientX + e.touches[0].pageX,
+            y: clientMid.y - e.touches[0].clientY + e.touches[0].pageY};
   }
 
   return {
     handleTouchStart: function(e) {
-      if (e.touches.length < 2)
-        return;
+      if (e.touches.length < 2) return;
       e.preventDefault();
 
       var span = touchSpan(e);
@@ -291,7 +283,7 @@ var pincher = (function() {
 
       var pinchOrigin = touchPageMid(e);
       document.body.style.transformOrigin =
-          pinchOrigin.x + 'px ' + pinchOrigin.y + 'px';
+          pinchOrigin.x + 'px ' + pinchOrigin.y  + 'px';
 
       saveCenter(clientMid);
 
@@ -302,10 +294,8 @@ var pincher = (function() {
     },
 
     handleTouchMove: function(e) {
-      if (!pinching)
-        return;
-      if (e.touches.length < 2)
-        return;
+      if (!pinching) return;
+      if (e.touches.length < 2) return;
       e.preventDefault();
 
       var span = touchSpan(e);
@@ -322,8 +312,7 @@ var pincher = (function() {
     },
 
     handleTouchEnd: function(e) {
-      if (!pinching)
-        return;
+      if (!pinching) return;
       e.preventDefault();
 
       var span = touchSpan(e);
@@ -340,8 +329,7 @@ var pincher = (function() {
     },
 
     handleTouchCancel: function(e) {
-      if (!pinching)
-        return;
+      if (!pinching) return;
       endPinch();
     },
 
@@ -350,7 +338,7 @@ var pincher = (function() {
       shiftX = 0;
       shiftY = 0;
       clampedScale = 1;
-      document.documentElement.style.fontSize = clampedScale * baseSize + 'px';
+      document.documentElement.style.fontSize = clampedScale * baseSize + "px";
     },
 
     status: function() {
@@ -363,10 +351,10 @@ var pincher = (function() {
     },
 
     useFontScaling: function(scaling) {
-      saveCenter({x: window.innerWidth / 2, y: window.innerHeight / 2});
+      saveCenter({x: window.innerWidth/2, y: window.innerHeight/2});
       shiftX = 0;
       shiftY = 0;
-      document.documentElement.style.fontSize = scaling * baseSize + 'px';
+      document.documentElement.style.fontSize = scaling * baseSize + "px";
       clampedScale = scaling;
       restoreCenter();
     }
@@ -374,8 +362,10 @@ var pincher = (function() {
 }());
 
 window.addEventListener(
-    'touchstart', pincher.handleTouchStart, {passive: false});
-window.addEventListener('touchmove', pincher.handleTouchMove, {passive: false});
-window.addEventListener('touchend', pincher.handleTouchEnd, {passive: false});
+  'touchstart', pincher.handleTouchStart, {passive: false});
 window.addEventListener(
-    'touchcancel', pincher.handleTouchCancel, {passive: false});
+  'touchmove', pincher.handleTouchMove, {passive: false});
+window.addEventListener(
+  'touchend', pincher.handleTouchEnd, {passive: false});
+window.addEventListener(
+  'touchcancel', pincher.handleTouchCancel, {passive: false});

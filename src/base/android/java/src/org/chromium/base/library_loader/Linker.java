@@ -434,8 +434,7 @@ public class Linker {
         } catch (UnsatisfiedLinkError e) {
             if (LibraryLoader.PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
                 System.load(LibraryLoader.getExtractedLibraryPath(
-                        ContextUtils.getApplicationContext().getApplicationInfo(),
-                        LINKER_JNI_LIBRARY));
+                        ContextUtils.getApplicationContext(), LINKER_JNI_LIBRARY));
                 LibraryLoader.incrementRelinkerCountHitHistogram();
             }
         }

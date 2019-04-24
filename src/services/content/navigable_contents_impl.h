@@ -8,10 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/content/public/cpp/buildflags.h"
 #include "services/content/public/mojom/navigable_contents.mojom.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
@@ -32,11 +29,10 @@ class NavigableContentsView;
 // roughly analogous to a WebContentsImpl.
 class NavigableContentsImpl : public mojom::NavigableContents {
  public:
-  NavigableContentsImpl(
-      Service* service,
-      mojom::NavigableContentsParamsPtr params,
-      mojo::PendingReceiver<mojom::NavigableContents> receiver,
-      mojo::PendingRemote<mojom::NavigableContentsClient> client);
+  NavigableContentsImpl(Service* service,
+                        mojom::NavigableContentsParamsPtr params,
+                        mojom::NavigableContentsRequest request,
+                        mojom::NavigableContentsClientPtr client);
   ~NavigableContentsImpl() override;
 
  private:
@@ -59,8 +55,8 @@ class NavigableContentsImpl : public mojom::NavigableContents {
 
   Service* const service_;
 
-  mojo::Receiver<mojom::NavigableContents> receiver_;
-  mojo::Remote<mojom::NavigableContentsClient> client_;
+  mojo::Binding<mojom::NavigableContents> binding_;
+  mojom::NavigableContentsClientPtr client_;
   std::unique_ptr<NavigableContentsDelegate> delegate_;
   gfx::NativeView native_content_view_;
 

@@ -88,16 +88,17 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
     return other && popup_client_ == other->popup_client_;
   }
 
-  WebWidgetClient* WidgetClient() const { return web_page_popup_client_; }
+  WebWidgetClient* WidgetClient() const { return widget_client_; }
 
   LocalDOMWindow* Window();
 
   // WebWidget implementation.
+  void CompositeAndReadbackAsync(
+      base::OnceCallback<void(const SkBitmap&)> callback) override;
   WebInputEventResult DispatchBufferedTouchEvents() override;
 
   // WebPagePopup implementation.
   WebPoint PositionRelativeToOwner() override;
-  WebPagePopupClient* GetClientForTesting() const override;
 
   // PagePopup implementation.
   void PostMessageToPopup(const String& message) override;
@@ -113,6 +114,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
                   bool record_main_frame_metrics) override;
   void UpdateLifecycle(LifecycleUpdate requested_update,
                        LifecycleUpdateReason reason) override;
+  void UpdateAllLifecyclePhasesAndCompositeForTesting(bool do_raster) override;
+  void PaintContent(cc::PaintCanvas*, const WebRect&) override;
   void Resize(const WebSize&) override;
   void Close() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
@@ -139,13 +142,13 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   AXObject* RootAXObject() override;
   void SetWindowRect(const IntRect&) override;
 
-  explicit WebPagePopupImpl(WebPagePopupClient*);
+  explicit WebPagePopupImpl(WebWidgetClient*);
   void DestroyPage();
   void SetRootLayer(scoped_refptr<cc::Layer>);
 
   WebRect WindowRectInScreen() const;
 
-  WebPagePopupClient* web_page_popup_client_;
+  WebWidgetClient* widget_client_;
   WebViewImpl* web_view_;
   // WebPagePopupImpl wraps its own Page that renders the content in the popup.
   // This member is non-null between the call to Initialize() and the call to

@@ -5,13 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_RASTER_INVALIDATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_RASTER_INVALIDATOR_H_
 
-#include "base/callback.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/chunk_to_layer_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -21,16 +19,11 @@ class PaintArtifact;
 class IntRect;
 
 class PLATFORM_EXPORT RasterInvalidator {
-  USING_FAST_MALLOC(RasterInvalidator);
-
  public:
-  using RasterInvalidationFunction =
-      base::RepeatingCallback<void(const IntRect&)>;
+  using RasterInvalidationFunction = std::function<void(const IntRect&)>;
 
   RasterInvalidator(RasterInvalidationFunction raster_invalidation_function)
-      : raster_invalidation_function_(std::move(raster_invalidation_function)) {
-    DCHECK(!raster_invalidation_function_.is_null());
-  }
+      : raster_invalidation_function_(raster_invalidation_function) {}
 
   void SetTracksRasterInvalidations(bool);
   RasterInvalidationTracking* GetTracking() const {
@@ -121,7 +114,7 @@ class PLATFORM_EXPORT RasterInvalidator {
                              ClientIsOldOrNew old_or_new) {
     if (rect.IsEmpty())
       return;
-    raster_invalidation_function_.Run(rect);
+    raster_invalidation_function_(rect);
     if (tracking_info_)
       TrackRasterInvalidation(rect, client, reason, old_or_new);
   }

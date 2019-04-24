@@ -25,13 +25,11 @@ struct PlatformNotificationData;
 
 namespace content {
 
-class BrowserContext;
-
 // Responsible for tracking active notifications and allowed origins for the
 // Web Notification API when running layout and content tests.
 class MockPlatformNotificationService : public PlatformNotificationService {
  public:
-  MockPlatformNotificationService(BrowserContext* context);
+  MockPlatformNotificationService();
   ~MockPlatformNotificationService() override;
 
   // Simulates a click on the notification titled |title|. |action_index|
@@ -47,34 +45,44 @@ class MockPlatformNotificationService : public PlatformNotificationService {
 
   // PlatformNotificationService implementation.
   void DisplayNotification(
+      BrowserContext* browser_context,
       const std::string& notification_id,
       const GURL& origin,
       const blink::PlatformNotificationData& notification_data,
       const blink::NotificationResources& notification_resources) override;
   void DisplayPersistentNotification(
+      BrowserContext* browser_context,
       const std::string& notification_id,
       const GURL& service_worker_scope,
       const GURL& origin,
       const blink::PlatformNotificationData& notification_data,
       const blink::NotificationResources& notification_resources) override;
-  void CloseNotification(const std::string& notification_id) override;
-  void ClosePersistentNotification(const std::string& notification_id) override;
+  void CloseNotification(BrowserContext* browser_context,
+                         const std::string& notification_id) override;
+  void ClosePersistentNotification(BrowserContext* browser_context,
+                                   const std::string& notification_id) override;
   void GetDisplayedNotifications(
+      BrowserContext* browser_context,
       DisplayedNotificationsCallback callback) override;
-  void ScheduleTrigger(base::Time timestamp) override;
-  base::Time ReadNextTriggerTimestamp() override;
-  int64_t ReadNextPersistentNotificationId() override;
+  int64_t ReadNextPersistentNotificationId(
+      BrowserContext* browser_context) override;
   void RecordNotificationUkmEvent(
+      BrowserContext* browser_context,
       const NotificationDatabaseData& data) override;
 
  private:
+  // Structure to represent the information of a persistent notification.
+  struct PersistentNotification {
+    BrowserContext* browser_context = nullptr;
+    GURL origin;
+  };
+
   // Fakes replacing the notification identified by |notification_id|. Both
   // persistent and non-persistent notifications will be considered for this.
   void ReplaceNotificationIfNeeded(const std::string& notification_id);
 
-  BrowserContext* context_;
-
-  std::unordered_map<std::string, GURL> persistent_notifications_;
+  std::unordered_map<std::string, PersistentNotification>
+      persistent_notifications_;
   std::unordered_set<std::string> non_persistent_notifications_;
 
   // Mapping of titles to notification ids giving test a usable identifier.

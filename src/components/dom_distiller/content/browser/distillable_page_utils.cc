@@ -27,8 +27,8 @@ namespace {
 
 void OnExtractFeaturesJsResult(const DistillablePageDetector* detector,
                                base::Callback<void(bool)> callback,
-                               base::Value result) {
-  callback.Run(detector->Classify(CalculateDerivedFeaturesFromJSON(&result)));
+                               const base::Value* result) {
+  callback.Run(detector->Classify(CalculateDerivedFeaturesFromJSON(result)));
 }
 
 }  // namespace
@@ -48,7 +48,7 @@ void IsDistillablePageForDetector(content::WebContents* web_contents,
           .as_string();
   RunIsolatedJavaScript(
       main_frame, extract_features_js,
-      base::BindOnce(OnExtractFeaturesJsResult, detector, callback));
+      base::Bind(OnExtractFeaturesJsResult, detector, callback));
 }
 
 void SetDelegate(content::WebContents* web_contents,

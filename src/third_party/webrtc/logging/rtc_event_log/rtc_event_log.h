@@ -35,6 +35,8 @@ class RtcEventLog {
   virtual ~RtcEventLog() {}
 
   // Factory method to create an RtcEventLog object.
+  static std::unique_ptr<RtcEventLog> Create(EncodingType encoding_type);
+
   static std::unique_ptr<RtcEventLog> Create(
       EncodingType encoding_type,
       TaskQueueFactory* task_queue_factory);

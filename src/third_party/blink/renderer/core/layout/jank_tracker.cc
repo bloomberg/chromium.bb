@@ -8,17 +8,15 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/location.h"
-#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
-#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -99,7 +97,6 @@ static void RegionToTracedValue(const JankRegion& region,
 JankTracker::JankTracker(LocalFrameView* frame_view)
     : frame_view_(frame_view),
       score_(0.0),
-      weighted_score_(0.0),
       timer_(frame_view->GetFrame().GetTaskRunner(TaskType::kInternalDefault),
              this,
              &JankTracker::TimerFired),
@@ -170,7 +167,7 @@ void JankTracker::AccumulateJank(const LayoutObject& source,
 }
 
 void JankTracker::NotifyObjectPrePaint(const LayoutObject& object,
-                                       const IntRect& old_visual_rect,
+                                       const LayoutRect& old_visual_rect,
                                        const PaintLayer& painting_layer) {
   if (!IsActive())
     return;
@@ -197,32 +194,6 @@ void JankTracker::NotifyCompositedLayerMoved(const PaintLayer& paint_layer,
   new_layer_rect.MoveBy(transform_parent_offset);
 
   AccumulateJank(layout_object, paint_layer, old_layer_rect, new_layer_rect);
-}
-
-double JankTracker::SubframeWeightingFactor() const {
-  LocalFrame& frame = frame_view_->GetFrame();
-  if (frame.IsMainFrame())
-    return 1;
-
-  // Map the subframe view rect into the coordinate space of the local root.
-  FloatClipRect subframe_cliprect =
-      FloatClipRect(FloatRect(FloatPoint(), FloatSize(frame_view_->Size())));
-  GeometryMapper::LocalToAncestorVisualRect(
-      frame_view_->GetLayoutView()->FirstFragment().LocalBorderBoxProperties(),
-      PropertyTreeState::Root(), subframe_cliprect);
-  LayoutRect subframe_rect = LayoutRect(subframe_cliprect.Rect());
-
-  // Intersect with the portion of the local root that overlaps the main frame.
-  frame.LocalFrameRoot().View()->MapToVisualRectInTopFrameSpace(subframe_rect);
-  IntSize subframe_visible_size = subframe_rect.PixelSnappedSize();
-
-  // TODO(crbug.com/939050): This does not update on window resize.
-  IntSize main_frame_size = frame.GetPage()->GetVisualViewport().Size();
-
-  // TODO(crbug.com/940711): This comparison ignores page scale and CSS
-  // transforms above the local root.
-  return static_cast<double>(subframe_visible_size.Area()) /
-         main_frame_size.Area();
 }
 
 void JankTracker::NotifyPrePaintFinished() {
@@ -259,13 +230,9 @@ void JankTracker::NotifyPrePaintFinished() {
                        PerFrameTraceData(jank_fraction, granularity_scale),
                        "frame", ToTraceValue(&frame));
 
-  double weighted_jank_fraction = jank_fraction * SubframeWeightingFactor();
-  if (weighted_jank_fraction > 0) {
-    weighted_score_ += weighted_jank_fraction;
-    frame.Client()->DidObserveLayoutJank(weighted_jank_fraction);
-  }
+  frame.Client()->DidObserveLayoutJank(jank_fraction);
 
-  if (RuntimeEnabledFeatures::LayoutJankAPIEnabled(frame.GetDocument()) &&
+  if (origin_trials::LayoutJankAPIEnabled(frame.GetDocument()) &&
       frame.DomWindow()) {
     WindowPerformance* performance =
         DOMWindowPerformance::performance(*frame.DomWindow());
@@ -315,7 +282,7 @@ bool JankTracker::IsActive() {
 std::unique_ptr<TracedValue> JankTracker::PerFrameTraceData(
     double jank_fraction,
     double granularity_scale) const {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetDouble("jank_fraction", jank_fraction);
   value->SetDouble("cumulative_score", score_);
   value->SetDouble("max_distance", max_distance_);

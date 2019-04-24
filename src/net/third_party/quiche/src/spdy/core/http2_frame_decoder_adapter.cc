@@ -4,10 +4,10 @@
 
 #include "net/third_party/quiche/src/spdy/core/http2_frame_decoder_adapter.h"
 
-// Logging policy: If an error in the input is detected, SPDY_VLOG(n) is used so
-// that the option exists to debug the situation. Otherwise, this code mostly
-// uses DVLOG so that the logging does not slow down production code when things
-// are working OK.
+// Logging policy: If an error in the input is detected, VLOG(n) is used so that
+// the option exists to debug the situation. Otherwise, this code mostly uses
+// DVLOG so that the logging does not slow down production code when things are
+// working OK.
 
 #include <stddef.h>
 
@@ -15,6 +15,7 @@
 #include <cstring>
 #include <utility>
 
+#include "base/logging.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
 #include "net/third_party/quiche/src/http2/decoder/decode_status.h"
 #include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder.h"
@@ -32,7 +33,6 @@
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_endianness_util.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_estimate_memory_usage.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_flags.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_logging.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_ptr_util.h"
 #include "net/third_party/quiche/src/spdy/platform/api/spdy_string_utils.h"
 
@@ -173,7 +173,7 @@ const char* Http2DecoderAdapter::SpdyFramerErrorToString(
 }
 
 Http2DecoderAdapter::Http2DecoderAdapter() {
-  SPDY_DVLOG(1) << "Http2DecoderAdapter ctor";
+  DVLOG(1) << "Http2DecoderAdapter ctor";
   ResetInternal();
 }
 
@@ -261,7 +261,7 @@ size_t Http2DecoderAdapter::EstimateMemoryUsage() const {
 // This function is largely based on Http2DecoderAdapter::ValidateFrameHeader
 // and some parts of Http2DecoderAdapter::ProcessCommonHeader.
 bool Http2DecoderAdapter::OnFrameHeader(const Http2FrameHeader& header) {
-  SPDY_DVLOG(1) << "OnFrameHeader: " << header;
+  DVLOG(1) << "OnFrameHeader: " << header;
   decoded_frame_header_ = true;
   if (!latched_probable_http_response_) {
     latched_probable_http_response_ = header.IsProbableHttpResponse();
@@ -273,10 +273,9 @@ bool Http2DecoderAdapter::OnFrameHeader(const Http2FrameHeader& header) {
     // Report an unexpected frame error and close the connection if we
     // expect a known frame type (probably CONTINUATION) and receive an
     // unknown frame.
-    SPDY_VLOG(1) << "The framer was expecting to receive a "
-                 << expected_frame_type_
-                 << " frame, but instead received an unknown frame of type "
-                 << header.type;
+    VLOG(1) << "The framer was expecting to receive a " << expected_frame_type_
+            << " frame, but instead received an unknown frame of type "
+            << header.type;
     SetSpdyErrorAndNotify(SpdyFramerError::SPDY_UNEXPECTED_FRAME);
     return false;
   }
@@ -292,34 +291,34 @@ bool Http2DecoderAdapter::OnFrameHeader(const Http2FrameHeader& header) {
         visitor()->OnUnknownFrame(header.stream_id, raw_frame_type);
     if (!valid_stream) {
       // Report an invalid frame error if the stream_id is not valid.
-      SPDY_VLOG(1) << "Unknown control frame type " << header.type
-                   << " received on invalid stream " << header.stream_id;
+      VLOG(1) << "Unknown control frame type " << header.type
+              << " received on invalid stream " << header.stream_id;
       SetSpdyErrorAndNotify(SpdyFramerError::SPDY_INVALID_CONTROL_FRAME);
       return false;
     } else {
-      SPDY_DVLOG(1) << "Ignoring unknown frame type " << header.type;
+      DVLOG(1) << "Ignoring unknown frame type " << header.type;
       return true;
     }
   }
 
   SpdyFrameType frame_type = ToSpdyFrameType(header.type);
   if (!IsValidHTTP2FrameStreamId(header.stream_id, frame_type)) {
-    SPDY_VLOG(1) << "The framer received an invalid streamID of "
-                 << header.stream_id << " for a frame of type " << header.type;
+    VLOG(1) << "The framer received an invalid streamID of " << header.stream_id
+            << " for a frame of type " << header.type;
     SetSpdyErrorAndNotify(SpdyFramerError::SPDY_INVALID_STREAM_ID);
     return false;
   }
 
   if (has_expected_frame_type_ && header.type != expected_frame_type_) {
-    SPDY_VLOG(1) << "Expected frame type " << expected_frame_type_ << ", not "
-                 << header.type;
+    VLOG(1) << "Expected frame type " << expected_frame_type_ << ", not "
+            << header.type;
     SetSpdyErrorAndNotify(SpdyFramerError::SPDY_UNEXPECTED_FRAME);
     return false;
   }
 
   if (!has_expected_frame_type_ &&
       header.type == Http2FrameType::CONTINUATION) {
-    SPDY_VLOG(1) << "Got CONTINUATION frame when not expected.";
+    VLOG(1) << "Got CONTINUATION frame when not expected.";
     SetSpdyErrorAndNotify(SpdyFramerError::SPDY_UNEXPECTED_FRAME);
     return false;
   }
@@ -337,7 +336,7 @@ bool Http2DecoderAdapter::OnFrameHeader(const Http2FrameHeader& header) {
 }
 
 void Http2DecoderAdapter::OnDataStart(const Http2FrameHeader& header) {
-  SPDY_DVLOG(1) << "OnDataStart: " << header;
+  DVLOG(1) << "OnDataStart: " << header;
 
   if (IsOkToStartFrame(header) && HasRequiredStreamId(header)) {
     frame_header_ = header;
@@ -348,14 +347,14 @@ void Http2DecoderAdapter::OnDataStart(const Http2FrameHeader& header) {
 }
 
 void Http2DecoderAdapter::OnDataPayload(const char* data, size_t len) {
-  SPDY_DVLOG(1) << "OnDataPayload: len=" << len;
+  DVLOG(1) << "OnDataPayload: len=" << len;
   DCHECK(has_frame_header_);
   DCHECK_EQ(frame_header_.type, Http2FrameType::DATA);
   visitor()->OnStreamFrameData(frame_header().stream_id, data, len);
 }
 
 void Http2DecoderAdapter::OnDataEnd() {
-  SPDY_DVLOG(1) << "OnDataEnd";
+  DVLOG(1) << "OnDataEnd";
   DCHECK(has_frame_header_);
   DCHECK_EQ(frame_header_.type, Http2FrameType::DATA);
   if (frame_header().IsEndStream()) {
@@ -365,7 +364,7 @@ void Http2DecoderAdapter::OnDataEnd() {
 }
 
 void Http2DecoderAdapter::OnHeadersStart(const Http2FrameHeader& header) {
-  SPDY_DVLOG(1) << "OnHeadersStart: " << header;
+  DVLOG(1) << "OnHeadersStart: " << header;
   if (IsOkToStartFrame(header) && HasRequiredStreamId(header)) {
     frame_header_ = header;
     has_frame_header_ = true;
@@ -388,7 +387,7 @@ void Http2DecoderAdapter::OnHeadersStart(const Http2FrameHeader& header) {
 
 void Http2DecoderAdapter::OnHeadersPriority(
     const Http2PriorityFields& priority) {
-  SPDY_DVLOG(1) << "OnHeadersPriority: " << priority;
+  DVLOG(1) << "OnHeadersPriority: " << priority;
   DCHECK(has_frame_header_);
   DCHECK_EQ(frame_type(), Http2FrameType::HEADERS) << frame_header_;
   DCHECK(frame_header_.HasPriority());
@@ -403,7 +402,7 @@ void Http2DecoderAdapter::OnHeadersPriority(
 }
 
 void Http2DecoderAdapter::OnHpackFragment(const char* data, size_t len) {
-  SPDY_DVLOG(1) << "OnHpackFragment: len=" << len;
+  DVLOG(1) << "OnHpackFragment: len=" << len;
   on_hpack_fragment_called_ = true;
   if (!GetHpackDecoder()->HandleControlFrameHeadersData(data, len)) {
     SetSpdyErrorAndNotify(SpdyFramerError::SPDY_DECOMPRESS_FAILURE);
@@ -412,14 +411,14 @@ void Http2DecoderAdapter::OnHpackFragment(const char* data, size_t len) {
 }
 
 void Http2DecoderAdapter::OnHeadersEnd() {
-  SPDY_DVLOG(1) << "OnHeadersEnd";
+  DVLOG(1) << "OnHeadersEnd";
   CommonHpackFragmentEnd();
   opt_pad_length_.reset();
 }
 
 void Http2DecoderAdapter::OnPriorityFrame(const Http2FrameHeader& header,
                                           const Http2PriorityFields& priority) {
-  SPDY_DVLOG(1) << "OnPriorityFrame: " << header << "; priority: " << priority;
+  DVLOG(1) << "OnPriorityFrame: " << header << "; priority: " << priority;
   if (IsOkToStartFrame(header) && HasRequiredStreamId(header)) {
     visitor()->OnPriority(header.stream_id, priority.stream_dependency,
                           priority.weight, priority.is_exclusive);
@@ -427,7 +426,7 @@ void Http2DecoderAdapter::OnPriorityFrame(const Http2FrameHeader& header,
 }
 
 void Http2DecoderAdapter::OnContinuationStart(const Http2FrameHeader& header) {
-  SPDY_DVLOG(1) << "OnContinuationStart: " << header;
+  DVLOG(1) << "OnContinuationStart: " << header;
   if (IsOkToStartFrame(header) && HasRequiredStreamId(header)) {
     DCHECK(has_hpack_first_frame_header_);
     if (header.stream_id != hpack_first_frame_header_.stream_id) {
@@ -442,12 +441,12 @@ void Http2DecoderAdapter::OnContinuationStart(const Http2FrameHeader& header) {
 }
 
 void Http2DecoderAdapter::OnContinuationEnd() {
-  SPDY_DVLOG(1) << "OnContinuationEnd";
+  DVLOG(1) << "OnContinuationEnd";
   CommonHpackFragmentEnd();
 }
 
 void Http2DecoderAdapter::OnPadLength(size_t trailing_length) {
-  SPDY_DVLOG(1) << "OnPadLength: " << trailing_length;
+  DVLOG(1) << "OnPadLength: " << trailing_length;
   opt_pad_length_ = trailing_length;
   DCHECK_LT(trailing_length, 256u);
   if (frame_header_.type == Http2FrameType::DATA) {
@@ -457,7 +456,7 @@ void Http2DecoderAdapter::OnPadLength(size_t trailing_length) {
 
 void Http2DecoderAdapter::OnPadding(const char* padding,
                                     size_t skipped_length) {
-  SPDY_DVLOG(1) << "OnPadding: " << skipped_length;
+  DVLOG(1) << "OnPadding: " << skipped_length;
   if (frame_header_.type == Http2FrameType::DATA) {
     visitor()->OnStreamPadding(stream_id(), skipped_length);
   } else {
@@ -467,7 +466,7 @@ void Http2DecoderAdapter::OnPadding(const char* padding,
 
 void Http2DecoderAdapter::OnRstStream(const Http2FrameHeader& header,
                                       Http2ErrorCode http2_error_code) {
-  SPDY_DVLOG(1) << "OnRstStream: " << header << "; code=" << http2_error_code;
+  DVLOG(1) << "OnRstStream: " << header << "; code=" << http2_error_code;
   if (IsOkToStartFrame(header) && HasRequiredStreamId(header)) {
     SpdyErrorCode error_code =
         ParseErrorCode(static_cast<uint32_t>(http2_error_code));
@@ -476,7 +475,7 @@ void Http2DecoderAdapter::OnRstStream(const Http2FrameHeader& header,
 }
 
 void Http2DecoderAdapter::OnSettingsStart(const Http2FrameHeader& header) {
-  SPDY_DVLOG(1) << "OnSettingsStart: " << header;
+  DVLOG(1) << "OnSettingsStart: " << header;
   if (IsOkToStartFrame(header) && HasRequiredStreamIdZero(header)) {
     frame_header_ = header;
     has_frame_header_ = true;
@@ -485,7 +484,7 @@ void Http2DecoderAdapter::OnSettingsStart(const Http2FrameHeader& header) {
 }
 
 void Http2DecoderAdapter::OnSetting(const Http2SettingFields& setting_fields) {
-  SPDY_DVLOG(1) << "OnSetting: " << setting_fields;
+  DVLOG(1) << "OnSetting: " << setting_fields;
   const auto parameter = static_cast<SpdySettingsId>(setting_fields.parameter);
   visitor()->OnSetting(parameter, setting_fields.value);
   if (extension_ != nullptr) {
@@ -494,12 +493,12 @@ void Http2DecoderAdapter::OnSetting(const Http2SettingFields& setting_fields) {
 }
 
 void Http2DecoderAdapter::OnSettingsEnd() {
-  SPDY_DVLOG(1) << "OnSettingsEnd";
+  DVLOG(1) << "OnSettingsEnd";
   visitor()->OnSettingsEnd();
 }
 
 void Http2DecoderAdapter::OnSettingsAck(const Http2FrameHeader& header) {
-  SPDY_DVLOG(1) << "OnSettingsAck: " << header;
+  DVLOG(1) << "OnSettingsAck: " << header;
   if (IsOkToStartFrame(header) && HasRequiredStreamIdZero(header)) {
     visitor()->OnSettingsAck();
   }
@@ -509,8 +508,8 @@ void Http2DecoderAdapter::OnPushPromiseStart(
     const Http2FrameHeader& header,
     const Http2PushPromiseFields& promise,
     size_t total_padding_length) {
-  SPDY_DVLOG(1) << "OnPushPromiseStart: " << header << "; promise: " << promise
-                << "; total_padding_length: " << total_padding_length;
+  DVLOG(1) << "OnPushPromiseStart: " << header << "; promise: " << promise
+           << "; total_padding_length: " << total_padding_length;
   if (IsOkToStartFrame(header) && HasRequiredStreamId(header)) {
     if (promise.promised_stream_id == 0) {
       SetSpdyErrorAndNotify(SpdyFramerError::SPDY_INVALID_CONTROL_FRAME);
@@ -526,14 +525,14 @@ void Http2DecoderAdapter::OnPushPromiseStart(
 }
 
 void Http2DecoderAdapter::OnPushPromiseEnd() {
-  SPDY_DVLOG(1) << "OnPushPromiseEnd";
+  DVLOG(1) << "OnPushPromiseEnd";
   CommonHpackFragmentEnd();
   opt_pad_length_.reset();
 }
 
 void Http2DecoderAdapter::OnPing(const Http2FrameHeader& header,
                                  const Http2PingFields& ping) {
-  SPDY_DVLOG(1) << "OnPing: " << header << "; ping: " << ping;
+  DVLOG(1) << "OnPing: " << header << "; ping: " << ping;
   if (IsOkToStartFrame(header) && HasRequiredStreamIdZero(header)) {
     visitor()->OnPing(ToSpdyPingId(ping), false);
   }
@@ -541,7 +540,7 @@ void Http2DecoderAdapter::OnPing(const Http2FrameHeader& header,
 
 void Http2DecoderAdapter::OnPingAck(const Http2FrameHeader& header,
                                     const Http2PingFields& ping) {
-  SPDY_DVLOG(1) << "OnPingAck: " << header << "; ping: " << ping;
+  DVLOG(1) << "OnPingAck: " << header << "; ping: " << ping;
   if (IsOkToStartFrame(header) && HasRequiredStreamIdZero(header)) {
     visitor()->OnPing(ToSpdyPingId(ping), true);
   }
@@ -549,7 +548,7 @@ void Http2DecoderAdapter::OnPingAck(const Http2FrameHeader& header,
 
 void Http2DecoderAdapter::OnGoAwayStart(const Http2FrameHeader& header,
                                         const Http2GoAwayFields& goaway) {
-  SPDY_DVLOG(1) << "OnGoAwayStart: " << header << "; goaway: " << goaway;
+  DVLOG(1) << "OnGoAwayStart: " << header << "; goaway: " << goaway;
   if (IsOkToStartFrame(header) && HasRequiredStreamIdZero(header)) {
     frame_header_ = header;
     has_frame_header_ = true;
@@ -560,18 +559,18 @@ void Http2DecoderAdapter::OnGoAwayStart(const Http2FrameHeader& header,
 }
 
 void Http2DecoderAdapter::OnGoAwayOpaqueData(const char* data, size_t len) {
-  SPDY_DVLOG(1) << "OnGoAwayOpaqueData: len=" << len;
+  DVLOG(1) << "OnGoAwayOpaqueData: len=" << len;
   visitor()->OnGoAwayFrameData(data, len);
 }
 
 void Http2DecoderAdapter::OnGoAwayEnd() {
-  SPDY_DVLOG(1) << "OnGoAwayEnd";
+  DVLOG(1) << "OnGoAwayEnd";
   visitor()->OnGoAwayFrameData(nullptr, 0);
 }
 
 void Http2DecoderAdapter::OnWindowUpdate(const Http2FrameHeader& header,
                                          uint32_t increment) {
-  SPDY_DVLOG(1) << "OnWindowUpdate: " << header << "; increment=" << increment;
+  DVLOG(1) << "OnWindowUpdate: " << header << "; increment=" << increment;
   if (IsOkToStartFrame(header)) {
     visitor()->OnWindowUpdate(header.stream_id, increment);
   }
@@ -584,9 +583,9 @@ void Http2DecoderAdapter::OnWindowUpdate(const Http2FrameHeader& header,
 void Http2DecoderAdapter::OnAltSvcStart(const Http2FrameHeader& header,
                                         size_t origin_length,
                                         size_t value_length) {
-  SPDY_DVLOG(1) << "OnAltSvcStart: " << header
-                << "; origin_length: " << origin_length
-                << "; value_length: " << value_length;
+  DVLOG(1) << "OnAltSvcStart: " << header
+           << "; origin_length: " << origin_length
+           << "; value_length: " << value_length;
   if (!IsOkToStartFrame(header)) {
     return;
   }
@@ -597,20 +596,20 @@ void Http2DecoderAdapter::OnAltSvcStart(const Http2FrameHeader& header,
 }
 
 void Http2DecoderAdapter::OnAltSvcOriginData(const char* data, size_t len) {
-  SPDY_DVLOG(1) << "OnAltSvcOriginData: len=" << len;
+  DVLOG(1) << "OnAltSvcOriginData: len=" << len;
   alt_svc_origin_.append(data, len);
 }
 
 // Called when decoding the Alt-Svc-Field-Value of an ALTSVC;
 // the field is uninterpreted.
 void Http2DecoderAdapter::OnAltSvcValueData(const char* data, size_t len) {
-  SPDY_DVLOG(1) << "OnAltSvcValueData: len=" << len;
+  DVLOG(1) << "OnAltSvcValueData: len=" << len;
   alt_svc_value_.append(data, len);
 }
 
 void Http2DecoderAdapter::OnAltSvcEnd() {
-  SPDY_DVLOG(1) << "OnAltSvcEnd: origin.size(): " << alt_svc_origin_.size()
-                << "; value.size(): " << alt_svc_value_.size();
+  DVLOG(1) << "OnAltSvcEnd: origin.size(): " << alt_svc_origin_.size()
+           << "; value.size(): " << alt_svc_value_.size();
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
   if (!SpdyAltSvcWireFormat::ParseHeaderFieldValue(alt_svc_value_,
                                                    &altsvc_vector)) {
@@ -629,7 +628,7 @@ void Http2DecoderAdapter::OnAltSvcEnd() {
 // Except for BLOCKED frames, all other unknown frames are either dropped or
 // passed to a registered extension.
 void Http2DecoderAdapter::OnUnknownStart(const Http2FrameHeader& header) {
-  SPDY_DVLOG(1) << "OnUnknownStart: " << header;
+  DVLOG(1) << "OnUnknownStart: " << header;
   if (IsOkToStartFrame(header)) {
     if (extension_ != nullptr) {
       const uint8_t type = static_cast<uint8_t>(header.type);
@@ -644,19 +643,19 @@ void Http2DecoderAdapter::OnUnknownPayload(const char* data, size_t len) {
   if (handling_extension_payload_) {
     extension_->OnFramePayload(data, len);
   } else {
-    SPDY_DVLOG(1) << "OnUnknownPayload: len=" << len;
+    DVLOG(1) << "OnUnknownPayload: len=" << len;
   }
 }
 
 void Http2DecoderAdapter::OnUnknownEnd() {
-  SPDY_DVLOG(1) << "OnUnknownEnd";
+  DVLOG(1) << "OnUnknownEnd";
   handling_extension_payload_ = false;
 }
 
 void Http2DecoderAdapter::OnPaddingTooLong(const Http2FrameHeader& header,
                                            size_t missing_length) {
-  SPDY_DVLOG(1) << "OnPaddingTooLong: " << header
-                << "; missing_length: " << missing_length;
+  DVLOG(1) << "OnPaddingTooLong: " << header
+           << "; missing_length: " << missing_length;
   if (header.type == Http2FrameType::DATA) {
     if (header.payload_length == 0) {
       DCHECK_EQ(1u, missing_length);
@@ -669,7 +668,7 @@ void Http2DecoderAdapter::OnPaddingTooLong(const Http2FrameHeader& header,
 }
 
 void Http2DecoderAdapter::OnFrameSizeError(const Http2FrameHeader& header) {
-  SPDY_DVLOG(1) << "OnFrameSizeError: " << header;
+  DVLOG(1) << "OnFrameSizeError: " << header;
   size_t recv_limit = recv_frame_size_limit_;
   if (header.payload_length > recv_limit) {
     SetSpdyErrorAndNotify(SpdyFramerError::SPDY_OVERSIZED_PAYLOAD);
@@ -699,8 +698,8 @@ size_t Http2DecoderAdapter::ProcessInputFrame(const char* data, size_t len) {
   if (spdy_state_ != SpdyState::SPDY_ERROR) {
     DetermineSpdyState(status);
   } else {
-    SPDY_VLOG(1) << "ProcessInputFrame spdy_framer_error_="
-                 << SpdyFramerErrorToString(spdy_framer_error_);
+    VLOG(1) << "ProcessInputFrame spdy_framer_error_="
+            << SpdyFramerErrorToString(spdy_framer_error_);
     if (spdy_framer_error_ == SpdyFramerError::SPDY_INVALID_PADDING &&
         has_frame_header_ && frame_type() != Http2FrameType::DATA) {
       // spdy_framer_test checks that all of the available frame payload
@@ -708,8 +707,8 @@ size_t Http2DecoderAdapter::ProcessInputFrame(const char* data, size_t len) {
       size_t total = remaining_total_payload();
       if (total <= frame_header().payload_length) {
         size_t avail = db.MinLengthRemaining(total);
-        SPDY_VLOG(1) << "Skipping past " << avail << " bytes, of " << total
-                     << " total remaining in the frame's payload.";
+        VLOG(1) << "Skipping past " << avail << " bytes, of " << total
+                << " total remaining in the frame's payload.";
         db.AdvanceCursor(avail);
       } else {
         SPDY_BUG << "Total remaining (" << total
@@ -730,11 +729,11 @@ void Http2DecoderAdapter::DetermineSpdyState(DecodeStatus status) {
   DCHECK(!HasError()) << spdy_framer_error_;
   switch (status) {
     case DecodeStatus::kDecodeDone:
-      SPDY_DVLOG(1) << "ProcessInputFrame -> DecodeStatus::kDecodeDone";
+      DVLOG(1) << "ProcessInputFrame -> DecodeStatus::kDecodeDone";
       ResetBetweenFrames();
       break;
     case DecodeStatus::kDecodeInProgress:
-      SPDY_DVLOG(1) << "ProcessInputFrame -> DecodeStatus::kDecodeInProgress";
+      DVLOG(1) << "ProcessInputFrame -> DecodeStatus::kDecodeInProgress";
       if (decoded_frame_header_) {
         if (IsDiscardingPayload()) {
           set_spdy_state(SpdyState::SPDY_IGNORE_REMAINING_PAYLOAD);
@@ -754,7 +753,7 @@ void Http2DecoderAdapter::DetermineSpdyState(DecodeStatus status) {
       }
       break;
     case DecodeStatus::kDecodeError:
-      SPDY_VLOG(1) << "ProcessInputFrame -> DecodeStatus::kDecodeError";
+      VLOG(1) << "ProcessInputFrame -> DecodeStatus::kDecodeError";
       if (IsDiscardingPayload()) {
         if (remaining_total_payload() == 0) {
           // Push the Http2FrameDecoder out of state kDiscardPayload now
@@ -809,7 +808,7 @@ void Http2DecoderAdapter::ResetInternal() {
 }
 
 void Http2DecoderAdapter::set_spdy_state(SpdyState v) {
-  SPDY_DVLOG(2) << "set_spdy_state(" << StateToString(v) << ")";
+  DVLOG(2) << "set_spdy_state(" << StateToString(v) << ")";
   spdy_state_ = v;
 }
 
@@ -817,8 +816,8 @@ void Http2DecoderAdapter::SetSpdyErrorAndNotify(SpdyFramerError error) {
   if (HasError()) {
     DCHECK_EQ(spdy_state_, SpdyState::SPDY_ERROR);
   } else {
-    SPDY_VLOG(2) << "SetSpdyErrorAndNotify(" << SpdyFramerErrorToString(error)
-                 << ")";
+    VLOG(2) << "SetSpdyErrorAndNotify(" << SpdyFramerErrorToString(error)
+            << ")";
     DCHECK_NE(error, SpdyFramerError::SPDY_NO_ERROR);
     spdy_framer_error_ = error;
     set_spdy_state(SpdyState::SPDY_ERROR);
@@ -861,33 +860,33 @@ size_t Http2DecoderAdapter::remaining_total_payload() const {
 
 bool Http2DecoderAdapter::IsReadingPaddingLength() {
   bool result = frame_header_.IsPadded() && !opt_pad_length_;
-  SPDY_DVLOG(2) << "Http2DecoderAdapter::IsReadingPaddingLength: " << result;
+  DVLOG(2) << "Http2DecoderAdapter::IsReadingPaddingLength: " << result;
   return result;
 }
 bool Http2DecoderAdapter::IsSkippingPadding() {
   bool result = frame_header_.IsPadded() && opt_pad_length_ &&
                 frame_decoder_->remaining_payload() == 0 &&
                 frame_decoder_->remaining_padding() > 0;
-  SPDY_DVLOG(2) << "Http2DecoderAdapter::IsSkippingPadding: " << result;
+  DVLOG(2) << "Http2DecoderAdapter::IsSkippingPadding: " << result;
   return result;
 }
 bool Http2DecoderAdapter::IsDiscardingPayload() {
   bool result = decoded_frame_header_ && frame_decoder_->IsDiscardingPayload();
-  SPDY_DVLOG(2) << "Http2DecoderAdapter::IsDiscardingPayload: " << result;
+  DVLOG(2) << "Http2DecoderAdapter::IsDiscardingPayload: " << result;
   return result;
 }
 // Called from OnXyz or OnXyzStart methods to decide whether it is OK to
 // handle the callback.
 bool Http2DecoderAdapter::IsOkToStartFrame(const Http2FrameHeader& header) {
-  SPDY_DVLOG(3) << "IsOkToStartFrame";
+  DVLOG(3) << "IsOkToStartFrame";
   if (HasError()) {
-    SPDY_VLOG(2) << "HasError()";
+    VLOG(2) << "HasError()";
     return false;
   }
   DCHECK(!has_frame_header_);
   if (has_expected_frame_type_ && header.type != expected_frame_type_) {
-    SPDY_VLOG(1) << "Expected frame type " << expected_frame_type_ << ", not "
-                 << header.type;
+    VLOG(1) << "Expected frame type " << expected_frame_type_ << ", not "
+            << header.type;
     SetSpdyErrorAndNotify(SpdyFramerError::SPDY_UNEXPECTED_FRAME);
     return false;
   }
@@ -896,15 +895,15 @@ bool Http2DecoderAdapter::IsOkToStartFrame(const Http2FrameHeader& header) {
 }
 
 bool Http2DecoderAdapter::HasRequiredStreamId(uint32_t stream_id) {
-  SPDY_DVLOG(3) << "HasRequiredStreamId: " << stream_id;
+  DVLOG(3) << "HasRequiredStreamId: " << stream_id;
   if (HasError()) {
-    SPDY_VLOG(2) << "HasError()";
+    VLOG(2) << "HasError()";
     return false;
   }
   if (stream_id != 0) {
     return true;
   }
-  SPDY_VLOG(1) << "Stream Id is required, but zero provided";
+  VLOG(1) << "Stream Id is required, but zero provided";
   SetSpdyErrorAndNotify(SpdyFramerError::SPDY_INVALID_STREAM_ID);
   return false;
 }
@@ -914,15 +913,15 @@ bool Http2DecoderAdapter::HasRequiredStreamId(const Http2FrameHeader& header) {
 }
 
 bool Http2DecoderAdapter::HasRequiredStreamIdZero(uint32_t stream_id) {
-  SPDY_DVLOG(3) << "HasRequiredStreamIdZero: " << stream_id;
+  DVLOG(3) << "HasRequiredStreamIdZero: " << stream_id;
   if (HasError()) {
-    SPDY_VLOG(2) << "HasError()";
+    VLOG(2) << "HasError()";
     return false;
   }
   if (stream_id == 0) {
     return true;
   }
-  SPDY_VLOG(1) << "Stream Id was not zero, as required: " << stream_id;
+  VLOG(1) << "Stream Id was not zero, as required: " << stream_id;
   SetSpdyErrorAndNotify(SpdyFramerError::SPDY_INVALID_STREAM_ID);
   return false;
 }
@@ -949,7 +948,7 @@ HpackDecoderAdapter* Http2DecoderAdapter::GetHpackDecoder() {
 }
 
 void Http2DecoderAdapter::CommonStartHpackBlock() {
-  SPDY_DVLOG(1) << "CommonStartHpackBlock";
+  DVLOG(1) << "CommonStartHpackBlock";
   DCHECK(!has_hpack_first_frame_header_);
   if (!frame_header_.IsEndHeaders()) {
     hpack_first_frame_header_ = frame_header_;
@@ -978,9 +977,9 @@ void Http2DecoderAdapter::MaybeAnnounceEmptyFirstHpackFragment() {
 }
 
 void Http2DecoderAdapter::CommonHpackFragmentEnd() {
-  SPDY_DVLOG(1) << "CommonHpackFragmentEnd: stream_id=" << stream_id();
+  DVLOG(1) << "CommonHpackFragmentEnd: stream_id=" << stream_id();
   if (HasError()) {
-    SPDY_VLOG(1) << "HasError(), returning";
+    VLOG(1) << "HasError(), returning";
     return;
   }
   DCHECK(has_frame_header_);

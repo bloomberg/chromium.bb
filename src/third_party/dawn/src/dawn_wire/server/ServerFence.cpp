@@ -18,19 +18,16 @@
 
 namespace dawn_wire { namespace server {
 
-    void Server::ForwardFenceCompletedValue(DawnFenceCompletionStatus status,
-                                            DawnCallbackUserdata userdata) {
+    void Server::ForwardFenceCompletedValue(dawnFenceCompletionStatus status,
+                                            dawnCallbackUserdata userdata) {
         auto data = reinterpret_cast<FenceCompletionUserdata*>(static_cast<uintptr_t>(userdata));
-        data->server->OnFenceCompletedValueUpdated(status, data);
+        if (status == DAWN_FENCE_COMPLETION_STATUS_SUCCESS) {
+            data->server->OnFenceCompletedValueUpdated(data);
+        }
     }
 
-    void Server::OnFenceCompletedValueUpdated(DawnFenceCompletionStatus status,
-                                              FenceCompletionUserdata* userdata) {
+    void Server::OnFenceCompletedValueUpdated(FenceCompletionUserdata* userdata) {
         std::unique_ptr<FenceCompletionUserdata> data(userdata);
-
-        if (status != DAWN_FENCE_COMPLETION_STATUS_SUCCESS) {
-            return;
-        }
 
         ReturnFenceUpdateCompletedValueCmd cmd;
         cmd.fence = data->fence;

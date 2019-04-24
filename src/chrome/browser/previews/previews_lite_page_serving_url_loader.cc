@@ -51,9 +51,10 @@ void BlacklistBypassedHostOnUIThread(const std::string& host,
   if (!web_contents)
     return;
 
-  PreviewsServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()))
-      ->previews_lite_page_decider()
+  static_cast<PreviewsLitePageNavigationThrottleManager*>(
+      PreviewsServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))
+          ->previews_lite_page_decider())
       ->BlacklistBypassedHost(host, duration);
 }
 
@@ -74,9 +75,10 @@ void SetServerUnavailableForOnUIThread(base::TimeDelta duration,
   if (!web_contents)
     return;
 
-  PreviewsServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()))
-      ->previews_lite_page_decider()
+  static_cast<PreviewsLitePageNavigationThrottleManager*>(
+      PreviewsServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))
+          ->previews_lite_page_decider())
       ->SetServerUnavailableFor(duration);
 }
 
@@ -97,9 +99,10 @@ void ReportDataSavingsOnUIThread(int64_t network_bytes,
   if (!web_contents)
     return;
 
-  PreviewsServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()))
-      ->previews_lite_page_decider()
+  static_cast<PreviewsLitePageNavigationThrottleManager*>(
+      PreviewsServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))
+          ->previews_lite_page_decider())
       ->ReportDataSavings(network_bytes, original_bytes, host);
 }
 

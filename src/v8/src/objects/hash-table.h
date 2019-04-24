@@ -6,8 +6,6 @@
 #define V8_OBJECTS_HASH_TABLE_H_
 
 #include "src/base/compiler-specific.h"
-#include "src/base/export-template.h"
-#include "src/base/macros.h"
 #include "src/globals.h"
 #include "src/objects/fixed-array.h"
 #include "src/objects/smi.h"
@@ -58,7 +56,7 @@ namespace internal {
 template <typename KeyT>
 class BaseShape {
  public:
-  using Key = KeyT;
+  typedef KeyT Key;
   static inline RootIndex GetMapRootIndex();
   static const bool kNeedsHoleCheck = true;
   static Object Unwrap(Object key) { return key; }
@@ -132,16 +130,15 @@ class V8_EXPORT_PRIVATE HashTableBase : public NON_EXPORTED_BASE(FixedArray) {
 };
 
 template <typename Derived, typename Shape>
-class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) HashTable
-    : public HashTableBase {
+class HashTable : public HashTableBase {
  public:
-  using ShapeT = Shape;
-  using Key = typename Shape::Key;
+  typedef Shape ShapeT;
+  typedef typename Shape::Key Key;
 
   // Returns a new HashTable object.
   V8_WARN_UNUSED_RESULT static Handle<Derived> New(
       Isolate* isolate, int at_least_space_for,
-      AllocationType allocation = AllocationType::kYoung,
+      PretenureFlag pretenure = NOT_TENURED,
       MinimumCapacity capacity_option = USE_DEFAULT_MINIMUM_CAPACITY);
 
   // Garbage collection support.
@@ -186,20 +183,10 @@ class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) HashTable
     return (entry * kEntrySize) + kElementsStartIndex;
   }
 
-  // Returns the index for an entry (of the key)
-  static constexpr inline int IndexToEntry(int index) {
-    return (index - kElementsStartIndex) / kEntrySize;
-  }
-
-  // Returns the index for a slot address in the object.
-  static constexpr inline int SlotToIndex(Address object, Address slot) {
-    return static_cast<int>((slot - object - kHeaderSize) / kTaggedSize);
-  }
-
   // Ensure enough space for n additional elements.
   V8_WARN_UNUSED_RESULT static Handle<Derived> EnsureCapacity(
       Isolate* isolate, Handle<Derived> table, int n,
-      AllocationType allocation = AllocationType::kYoung);
+      PretenureFlag pretenure = NOT_TENURED);
 
   // Returns true if this table has sufficient capacity for adding n elements.
   bool HasSufficientCapacityToAdd(int number_of_additional_elements);
@@ -208,7 +195,7 @@ class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) HashTable
   friend class ObjectHashTable;
 
   V8_WARN_UNUSED_RESULT static Handle<Derived> NewInternal(
-      Isolate* isolate, int capacity, AllocationType allocation);
+      Isolate* isolate, int capacity, PretenureFlag pretenure);
 
   // Find the entry at which to insert element with the given key that
   // has the given hash value.
@@ -217,9 +204,6 @@ class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) HashTable
   // Attempt to shrink hash table after removal of key.
   V8_WARN_UNUSED_RESULT static Handle<Derived> Shrink(
       Isolate* isolate, Handle<Derived> table, int additionalCapacity = 0);
-
-  inline void set_key(int index, Object value);
-  inline void set_key(int index, Object value, WriteBarrierMode mode);
 
  private:
   // Ensure that kMaxRegularCapacity yields a non-large object dictionary.
@@ -290,8 +274,7 @@ class ObjectHashTableShape : public BaseShape<Handle<Object>> {
 };
 
 template <typename Derived, typename Shape>
-class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) ObjectHashTableBase
-    : public HashTable<Derived, Shape> {
+class ObjectHashTableBase : public HashTable<Derived, Shape> {
  public:
   // Looks up the value associated with the given key. The hole value is
   // returned in case the key is not present.
@@ -332,16 +315,9 @@ class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE) ObjectHashTableBase
   OBJECT_CONSTRUCTORS(ObjectHashTableBase, HashTable<Derived, Shape>);
 };
 
-class ObjectHashTable;
-
-extern template class EXPORT_TEMPLATE_DECLARE(
-    V8_EXPORT_PRIVATE) HashTable<ObjectHashTable, ObjectHashTableShape>;
-extern template class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE)
-    ObjectHashTableBase<ObjectHashTable, ObjectHashTableShape>;
-
 // ObjectHashTable maps keys that are arbitrary objects to object values by
 // using the identity hash of the key for hashing purposes.
-class V8_EXPORT_PRIVATE ObjectHashTable
+class ObjectHashTable
     : public ObjectHashTableBase<ObjectHashTable, ObjectHashTableShape> {
  public:
   DECL_CAST(ObjectHashTable)
@@ -357,31 +333,18 @@ class EphemeronHashTableShape : public ObjectHashTableShape {
   static inline RootIndex GetMapRootIndex();
 };
 
-class EphemeronHashTable;
-
-extern template class EXPORT_TEMPLATE_DECLARE(
-    V8_EXPORT_PRIVATE) HashTable<EphemeronHashTable, EphemeronHashTableShape>;
-extern template class EXPORT_TEMPLATE_DECLARE(V8_EXPORT_PRIVATE)
-    ObjectHashTableBase<EphemeronHashTable, EphemeronHashTableShape>;
-
 // EphemeronHashTable is similar to ObjectHashTable but gets special treatment
 // by the GC. The GC treats its entries as ephemerons: both key and value are
 // weak references, however if the key is strongly reachable its corresponding
 // value is also kept alive.
-class V8_EXPORT_PRIVATE EphemeronHashTable
+class EphemeronHashTable
     : public ObjectHashTableBase<EphemeronHashTable, EphemeronHashTableShape> {
  public:
   DECL_CAST(EphemeronHashTable)
   DECL_PRINTER(EphemeronHashTable)
-  class BodyDescriptor;
 
  protected:
   friend class MarkCompactCollector;
-  friend class ScavengerCollector;
-  friend class HashTable<EphemeronHashTable, EphemeronHashTableShape>;
-  friend class ObjectHashTableBase<EphemeronHashTable, EphemeronHashTableShape>;
-  inline void set_key(int index, Object value);
-  inline void set_key(int index, Object value, WriteBarrierMode mode);
 
   OBJECT_CONSTRUCTORS(
       EphemeronHashTable,
@@ -394,12 +357,7 @@ class ObjectHashSetShape : public ObjectHashTableShape {
   static const int kEntrySize = 1;
 };
 
-class ObjectHashSet;
-extern template class EXPORT_TEMPLATE_DECLARE(
-    V8_EXPORT_PRIVATE) HashTable<ObjectHashSet, ObjectHashSetShape>;
-
-class V8_EXPORT_PRIVATE ObjectHashSet
-    : public HashTable<ObjectHashSet, ObjectHashSetShape> {
+class ObjectHashSet : public HashTable<ObjectHashSet, ObjectHashSetShape> {
  public:
   static Handle<ObjectHashSet> Add(Isolate* isolate, Handle<ObjectHashSet> set,
                                    Handle<Object> key);

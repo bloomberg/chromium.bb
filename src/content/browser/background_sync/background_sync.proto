@@ -14,10 +14,6 @@ enum SyncNetworkState {
   NETWORK_STATE_ONLINE = 2;
 }
 
-message PeriodicSyncOptions {
-  optional int64 min_interval = 1;
-}
-
 message BackgroundSyncRegistrationProto {
   // required int64 id = 1;
   required string tag = 2;
@@ -27,7 +23,6 @@ message BackgroundSyncRegistrationProto {
   // required SyncPowerState power_state = 6;
   required int32 num_attempts = 7;
   required int64 delay_until = 8;
-  optional PeriodicSyncOptions periodic_sync_options = 9;
 }
 
 message BackgroundSyncRegistrationsProto {

@@ -199,8 +199,8 @@ template <typename T,
           typename InitOnceTrait = ThreadSafeInitOnceTrait,
           typename DestroyTrait = LeakyInstanceTrait<T> >
 struct LazyStaticInstance {
-  using type = LazyInstanceImpl<T, StaticallyAllocatedInstanceTrait<T>,
-                                CreateTrait, InitOnceTrait, DestroyTrait>;
+  typedef LazyInstanceImpl<T, StaticallyAllocatedInstanceTrait<T>,
+      CreateTrait, InitOnceTrait, DestroyTrait> type;
 };
 
 
@@ -210,8 +210,8 @@ template <typename T,
           typename DestroyTrait = LeakyInstanceTrait<T> >
 struct LazyInstance {
   // A LazyInstance is a LazyStaticInstance.
-  using type = typename LazyStaticInstance<T, CreateTrait, InitOnceTrait,
-                                           DestroyTrait>::type;
+  typedef typename LazyStaticInstance<T, CreateTrait, InitOnceTrait,
+      DestroyTrait>::type type;
 };
 
 
@@ -220,8 +220,8 @@ template <typename T,
           typename InitOnceTrait = ThreadSafeInitOnceTrait,
           typename DestroyTrait = LeakyInstanceTrait<T> >
 struct LazyDynamicInstance {
-  using type = LazyInstanceImpl<T, DynamicallyAllocatedInstanceTrait<T>,
-                                CreateTrait, InitOnceTrait, DestroyTrait>;
+  typedef LazyInstanceImpl<T, DynamicallyAllocatedInstanceTrait<T>,
+      CreateTrait, InitOnceTrait, DestroyTrait> type;
 };
 
 // LeakyObject<T> wraps an object of type T, which is initialized in the

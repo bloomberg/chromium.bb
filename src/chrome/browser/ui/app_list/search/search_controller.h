@@ -38,7 +38,6 @@ class SearchController {
   virtual ~SearchController();
 
   void Start(const base::string16& query);
-  void ViewClosing();
 
   void OpenResult(ChromeSearchResult* result, int event_flags);
   void InvokeResultAction(ChromeSearchResult* result,

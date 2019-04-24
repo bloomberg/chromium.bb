@@ -7,6 +7,7 @@
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+#include "third_party/blink/renderer/modules/xr/xr_stage_bounds.h"
 
 namespace blink {
 
@@ -22,7 +23,7 @@ XRReferenceSpace::~XRReferenceSpace() = default;
 // identity reference spaces.
 std::unique_ptr<TransformationMatrix> XRReferenceSpace::DefaultPose() {
   // An identity reference space always returns an identity matrix.
-  return std::make_unique<TransformationMatrix>();
+  return TransformationMatrix::Create();
 }
 
 // Transforms a given pose from a "base" reference space used by the XR
@@ -64,10 +65,6 @@ XRReferenceSpace::GetTransformToMojoSpace() {
 
 void XRReferenceSpace::setOriginOffset(XRRigidTransform* transform) {
   origin_offset_ = transform;
-}
-
-TransformationMatrix XRReferenceSpace::InverseOriginOffsetMatrix() {
-  return origin_offset_->InverseTransformMatrix();
 }
 
 void XRReferenceSpace::Trace(blink::Visitor* visitor) {

@@ -71,8 +71,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
     kContextImageBitmap = 5,
     kContextXRPresent = 6,
     kContextWebgl2Compute = 7,
-    kContextGPUPresent = 8,
-    kContextTypeUnknown = 9,
+    kContextTypeUnknown = 8,
     kMaxValue = kContextTypeUnknown,
   };
 
@@ -154,7 +153,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   virtual HitTestCanvasResult* GetControlAndIdIfHitRegionExists(
       const LayoutPoint& location) {
     NOTREACHED();
-    return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
+    return HitTestCanvasResult::Create(String(), nullptr);
   }
   virtual String GetIdFromControl(const Element* element) { return String(); }
   virtual void ResetUsageTracking() {}

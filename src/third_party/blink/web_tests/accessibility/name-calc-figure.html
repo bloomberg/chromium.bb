@@ -1,6 +1,7 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container">
   <figure id="figure1">
@@ -9,7 +10,7 @@
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axFigure1 = accessibilityController.accessibleElementById("figure1");
     assert_equals(axFigure1.name, "");
 }, "Figure element with no figcaption");
@@ -22,7 +23,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axFigure2 = accessibilityController.accessibleElementById("figure2");
     assert_equals(axFigure2.name, "figure2-title");
     assert_equals(axFigure2.nameFrom, "title");
@@ -37,7 +38,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axFigure3 = accessibilityController.accessibleElementById("figure3");
     assert_equals(axFigure3.name, "figcaption3");
     assert_equals(axFigure3.nameFrom, "relatedElement");
@@ -52,7 +53,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axFigure4 = accessibilityController.accessibleElementById("figure4");
     assert_equals(axFigure4.name, "figure4-aria-label");
     assert_equals(axFigure4.nameFrom, "attribute");
@@ -68,7 +69,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axFigure5 = accessibilityController.accessibleElementById("figure5");
     assert_equals(axFigure5.name, "figure5-aria-labelledby");
     assert_equals(axFigure5.nameFrom, "relatedElement");

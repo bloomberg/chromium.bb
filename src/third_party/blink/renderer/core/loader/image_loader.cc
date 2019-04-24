@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/loader/importance_attribute.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -61,7 +62,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
@@ -71,19 +71,15 @@ namespace {
 bool IsLazyLoadableImage(const LocalFrame* frame,
                          HTMLImageElement* html_image,
                          const KURL& url) {
-  if (!url.ProtocolIsInHTTPFamily())
-    return false;
-
-  if (EqualIgnoringASCIICase(
-          html_image->FastGetAttribute(html_names::kLoadingAttr), "lazy"))
-    return true;
-
   // Do not lazyload image elements created from javascript.
   if (!html_image->ElementCreatedByParser())
     return false;
 
+  if (!url.ProtocolIsInHTTPFamily())
+    return false;
+
   if (EqualIgnoringASCIICase(
-          html_image->FastGetAttribute(html_names::kLoadingAttr), "eager") &&
+          html_image->FastGetAttribute(html_names::kLoadAttr), "eager") &&
       !frame->GetDocument()->IsLazyLoadPolicyEnforced()) {
     return false;
   }
@@ -102,20 +98,46 @@ bool IsLazyLoadableImage(const LocalFrame* frame,
   return true;
 }
 
-bool CheckForUnoptimizedImagePolicy(const Document& document,
-                                    ImageResourceContent* new_image) {
+bool CheckForOptimizedImagePolicy(const Document& document,
+                                  ImageResourceContent* new_image) {
   if (!new_image)
     return false;
-
-  // Render the image as a placeholder image if the image is not sufficiently
-  // well-compressed, according to the unoptimized image feature policies on
-  // |document|.
-  if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
-      !new_image->IsAcceptableCompressionRatio(document)) {
-    return true;
+  bool is_legacy_format_or_unoptimized_image = false;
+  // Render the image as a placeholder image if the document does not have the
+  // 'legacy-image-formats' feature enabled, and the image is not one of the
+  // allowed formats.
+  if (!new_image->IsAcceptableContentType()) {
+    // If the image violates the 'legacy-image-formats' policy, record violation
+    // Blink.UseCounter.FeaturePolicy.PotentialVioation. Note that violation
+    // report is up to once per page load).
+    document.CountPotentialFeaturePolicyViolation(
+        mojom::FeaturePolicyFeature::kLegacyImageFormats);
+    // Check if 'legacy-image-formats' policy is disallowed by feature policy.
+    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
+        !document.IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kLegacyImageFormats,
+            ReportOptions::kReportOnFailure)) {
+      is_legacy_format_or_unoptimized_image = true;
+    }
   }
-
-  return false;
+  // Render the image as a placeholder image if the document does not have the
+  // 'unoptimized-images' feature enabled and the image is not
+  // sufficiently-well-compressed.
+  if (!new_image->IsAcceptableCompressionRatio()) {
+    // If the image violates the 'unoptimized-images' policy, record violation
+    // Blink.UseCounter.FeaturePolicy.PotentialVioation. Note that violation
+    // report is up to once per page load).
+    document.CountPotentialFeaturePolicyViolation(
+        mojom::FeaturePolicyFeature::kUnoptimizedImages);
+    // Check if 'unoptimized-images' policy is disallowed by feature policy.
+    if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
+        !document.IsFeatureEnabled(
+            mojom::FeaturePolicyFeature::kUnoptimizedImages,
+            ReportOptions::kReportOnFailure)) {
+      is_legacy_format_or_unoptimized_image = true;
+    }
+  }
+  return is_legacy_format_or_unoptimized_image;
 }
 
 }  // namespace
@@ -133,6 +155,15 @@ static ImageLoader::BypassMainWorldBehavior ShouldBypassMainWorldCSP(
 
 class ImageLoader::Task {
  public:
+  static std::unique_ptr<Task> Create(
+      ImageLoader* loader,
+      const KURL& request_url,
+      UpdateFromElementBehavior update_behavior,
+      network::mojom::ReferrerPolicy referrer_policy) {
+    return std::make_unique<Task>(loader, request_url, update_behavior,
+                                  referrer_policy);
+  }
+
   Task(ImageLoader* loader,
        const KURL& request_url,
        UpdateFromElementBehavior update_behavior,
@@ -378,7 +409,7 @@ static void ConfigureRequest(
         element.GetDocument().GetSecurityOrigin(), cross_origin);
   }
 
-  if (RuntimeEnabledFeatures::PriorityHintsEnabled(&element.GetDocument())) {
+  if (origin_trials::PriorityHintsEnabled(&element.GetDocument())) {
     mojom::FetchImportanceMode importance_mode =
         GetFetchImportanceAttributeValue(
             element.FastGetAttribute(html_names::kImportanceAttr));
@@ -401,7 +432,7 @@ inline void ImageLoader::DispatchErrorEvent() {
       *GetElement()->GetDocument().GetTaskRunner(TaskType::kDOMManipulation),
       FROM_HERE,
       WTF::Bind(&ImageLoader::DispatchPendingErrorEvent, WrapPersistent(this),
-                WTF::Passed(std::make_unique<IncrementLoadEventDelayCount>(
+                WTF::Passed(IncrementLoadEventDelayCount::Create(
                     GetElement()->GetDocument()))));
 }
 
@@ -418,13 +449,13 @@ inline void ImageLoader::EnqueueImageLoadingMicroTask(
     const KURL& request_url,
     UpdateFromElementBehavior update_behavior,
     network::mojom::ReferrerPolicy referrer_policy) {
-  auto task = std::make_unique<Task>(this, request_url, update_behavior,
-                                     referrer_policy);
+  std::unique_ptr<Task> task =
+      Task::Create(this, request_url, update_behavior, referrer_policy);
   pending_task_ = task->GetWeakPtr();
   Microtask::EnqueueMicrotask(
       WTF::Bind(&Task::Run, WTF::Passed(std::move(task))));
   delay_until_do_update_from_element_ =
-      std::make_unique<IncrementLoadEventDelayCount>(element_->GetDocument());
+      IncrementLoadEventDelayCount::Create(element_->GetDocument());
 }
 
 void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
@@ -495,7 +526,7 @@ void ImageLoader::DoUpdateFromElement(
     bool page_is_being_dismissed =
         document.PageDismissalEventBeingDispatched() != Document::kNoDismissal;
     if (page_is_being_dismissed) {
-      resource_request.SetHttpHeaderField(http_names::kCacheControl,
+      resource_request.SetHTTPHeaderField(http_names::kCacheControl,
                                           "max-age=0");
       resource_request.SetKeepalive(true);
       resource_request.SetRequestContext(mojom::RequestContextType::PING);
@@ -532,12 +563,6 @@ void ImageLoader::DoUpdateFromElement(
             LazyLoadImageObserver::StartTrackingVisibilityMetrics(html_image);
         }
       }
-    }
-
-    // If the image was previously set to full image, it is a full load of a
-    // placeholder image.
-    if (lazy_image_load_state_ == LazyImageLoadState::kFullImage) {
-      params.SetLazyImageAutoReload();
     }
 
     new_image_content = ImageResourceContent::Fetch(params, document.Fetcher());
@@ -719,7 +744,7 @@ void ImageLoader::ImageChanged(ImageResourceContent* content,
     return;
 
   delay_until_image_notify_finished_ =
-      std::make_unique<IncrementLoadEventDelayCount>(document);
+      IncrementLoadEventDelayCount::Create(document);
 }
 
 void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
@@ -781,10 +806,10 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
     }
   }
 
-  // TODO(loonybear): support image policies on other images in addition to
+  // TODO(loonybear): support image policies on  other images in addition to
   // HTMLImageElement.
   // crbug.com/930281
-  if (CheckForUnoptimizedImagePolicy(element_->GetDocument(), image_content_) &&
+  if (CheckForOptimizedImagePolicy(element_->GetDocument(), image_content_) &&
       IsHTMLImageElement(element_))
     ToHTMLImageElement(element_)->SetImagePolicyViolated();
 
@@ -818,7 +843,7 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
       *GetElement()->GetDocument().GetTaskRunner(TaskType::kDOMManipulation),
       FROM_HERE,
       WTF::Bind(&ImageLoader::DispatchPendingLoadEvent, WrapPersistent(this),
-                WTF::Passed(std::make_unique<IncrementLoadEventDelayCount>(
+                WTF::Passed(IncrementLoadEventDelayCount::Create(
                     GetElement()->GetDocument()))));
 }
 
@@ -916,7 +941,7 @@ ScriptPromise ImageLoader::Decode(ScriptState* script_state,
   UseCounter::Count(GetElement()->GetDocument(), WebFeature::kImageDecodeAPI);
 
   auto* request = MakeGarbageCollected<DecodeRequest>(
-      this, MakeGarbageCollected<ScriptPromiseResolver>(script_state));
+      this, ScriptPromiseResolver::Create(script_state));
   Microtask::EnqueueMicrotask(
       WTF::Bind(&DecodeRequest::ProcessForTask, WrapWeakPersistent(request)));
   decode_requests_.push_back(request);

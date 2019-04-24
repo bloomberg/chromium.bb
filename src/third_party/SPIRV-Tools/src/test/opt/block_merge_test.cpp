@@ -590,7 +590,7 @@ OpUnreachable
 OpFunctionEnd
 )";
 
-  SinglePassRunAndMatch<BlockMergePass>(text, false);
+  SinglePassRunAndMatch<BlockMergePass>(text, true);
 }
 
 TEST_F(BlockMergeTest, DontMergeReturn) {

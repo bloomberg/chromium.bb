@@ -11,7 +11,7 @@
 namespace views {
 
 HWND HWNDForView(const View* view) {
-  return view->GetWidget() ? HWNDForWidget(view->GetWidget()) : nullptr;
+  return view->GetWidget() ? HWNDForWidget(view->GetWidget()) : NULL;
 }
 
 HWND HWNDForWidget(const Widget* widget) {
@@ -19,14 +19,13 @@ HWND HWNDForWidget(const Widget* widget) {
 }
 
 HWND HWNDForNativeView(const gfx::NativeView view) {
-  return view && view->GetRootWindow() ? view->GetHost()->GetAcceleratedWidget()
-                                       : nullptr;
+  return view && view->GetRootWindow() ?
+      view->GetHost()->GetAcceleratedWidget() : NULL;
 }
 
 HWND HWNDForNativeWindow(const gfx::NativeWindow window) {
-  return window && window->GetRootWindow()
-             ? window->GetHost()->GetAcceleratedWidget()
-             : nullptr;
+  return window && window->GetRootWindow() ?
+      window->GetHost()->GetAcceleratedWidget() : NULL;
 }
 
 gfx::Rect GetWindowBoundsForClientBounds(View* view,

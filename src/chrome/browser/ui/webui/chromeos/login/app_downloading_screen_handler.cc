@@ -14,6 +14,8 @@
 
 namespace {
 
+const char kJsScreenPath[] = "login.AppDownloadingScreen";
+
 int GetNumberOfUserSelectedApps() {
   const Profile* profile = ProfileManager::GetActiveUserProfile();
   const PrefService* pref_service = profile->GetPrefs();
@@ -30,7 +32,7 @@ namespace chromeos {
 AppDownloadingScreenHandler::AppDownloadingScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.AppDownloadingScreen.userActed");
+  set_call_js_prefix(kJsScreenPath);
 }
 
 AppDownloadingScreenHandler::~AppDownloadingScreenHandler() {}

@@ -73,13 +73,14 @@ void AudioPipelineImpl::OnUpdateConfig(
   }
 }
 
-EncryptionScheme AudioPipelineImpl::GetEncryptionScheme(StreamId id) const {
+const EncryptionScheme& AudioPipelineImpl::GetEncryptionScheme(
+    StreamId id) const {
   return audio_config_.encryption_scheme;
 }
 
 std::unique_ptr<StreamDecryptor> AudioPipelineImpl::CreateDecryptor() {
   bool clear_buffer_needed = audio_decoder_->RequiresDecryption();
-  if (audio_config_.is_encrypted() &&
+  if (audio_config_.encryption_scheme.is_encrypted() &&
       MediaPipelineBackend::CreateAudioDecryptor && clear_buffer_needed) {
     LOG(INFO) << __func__ << " Create backend decryptor for audio.";
     return std::make_unique<BackendDecryptor>(audio_config_.encryption_scheme);

@@ -9,7 +9,6 @@
 #include "components/viz/common/viz_vulkan_context_provider_export.h"
 
 class GrContext;
-class GrVkSecondaryCBDrawContext;
 
 namespace gpu {
 class VulkanDeviceQueue;
@@ -25,7 +24,6 @@ class VIZ_VULKAN_CONTEXT_PROVIDER_EXPORT VulkanContextProvider
   virtual gpu::VulkanImplementation* GetVulkanImplementation() = 0;
   virtual gpu::VulkanDeviceQueue* GetDeviceQueue() = 0;
   virtual GrContext* GetGrContext() = 0;
-  virtual GrVkSecondaryCBDrawContext* GetGrSecondaryCBDrawContext() = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<VulkanContextProvider>;

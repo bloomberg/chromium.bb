@@ -39,7 +39,7 @@ namespace blink {
 using namespace cssvalue;
 using namespace html_names;
 
-HTMLFontElement::HTMLFontElement(Document& document)
+inline HTMLFontElement::HTMLFontElement(Document& document)
     : HTMLElement(kFontTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLFontElement)
@@ -126,10 +126,10 @@ static const CSSValueList* CreateFontFaceValueWithPool(
       CssValuePool().GetFontFaceCacheEntry(string);
   if (!entry.stored_value->value) {
     const CSSValue* parsed_value = CSSParser::ParseSingleValue(
-        CSSPropertyID::kFontFamily, string,
+        CSSPropertyFontFamily, string,
         StrictCSSParserContext(secure_context_mode));
-    if (auto* parsed_value_list = DynamicTo<CSSValueList>(parsed_value))
-      entry.stored_value->value = parsed_value_list;
+    if (parsed_value && parsed_value->IsValueList())
+      entry.stored_value->value = ToCSSValueList(parsed_value);
   }
   return entry.stored_value->value;
 }
@@ -142,27 +142,26 @@ bool HTMLFontElement::CssValueFromFontSizeNumber(const String& s,
 
   switch (num) {
     case 1:
-      // FIXME: The spec says that we're supposed to use CSSValueID::kXxSmall
-      // here.
-      size = CSSValueID::kXSmall;
+      // FIXME: The spec says that we're supposed to use CSSValueXxSmall here.
+      size = CSSValueXSmall;
       break;
     case 2:
-      size = CSSValueID::kSmall;
+      size = CSSValueSmall;
       break;
     case 3:
-      size = CSSValueID::kMedium;
+      size = CSSValueMedium;
       break;
     case 4:
-      size = CSSValueID::kLarge;
+      size = CSSValueLarge;
       break;
     case 5:
-      size = CSSValueID::kXLarge;
+      size = CSSValueXLarge;
       break;
     case 6:
-      size = CSSValueID::kXxLarge;
+      size = CSSValueXxLarge;
       break;
     case 7:
-      size = CSSValueID::kWebkitXxxLarge;
+      size = CSSValueWebkitXxxLarge;
       break;
     default:
       NOTREACHED();
@@ -181,13 +180,11 @@ void HTMLFontElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == kSizeAttr) {
-    CSSValueID size = CSSValueID::kInvalid;
-    if (CssValueFromFontSizeNumber(value, size)) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kFontSize,
-                                              size);
-    }
+    CSSValueID size = CSSValueInvalid;
+    if (CssValueFromFontSizeNumber(value, size))
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyFontSize, size);
   } else if (name == kColorAttr) {
-    AddHTMLColorToStyle(style, CSSPropertyID::kColor, value);
+    AddHTMLColorToStyle(style, CSSPropertyColor, value);
   } else if (name == kFaceAttr && !value.IsEmpty()) {
     if (const CSSValueList* font_face_value = CreateFontFaceValueWithPool(
             value, GetDocument().GetSecureContextMode())) {

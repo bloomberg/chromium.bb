@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -32,7 +33,6 @@ import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomiz
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Unit test suite for partner homepage.
@@ -119,9 +119,12 @@ public class PartnerHomepageUnitTest {
         PartnerBrowserCustomizations.ignoreBrowserProviderSystemPackageCheckForTests(false);
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_PROVIDER);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PartnerBrowserCustomizations.initializeAsync(
-                    mTestRule.getContextWrapper(), DEFAULT_TIMEOUT_MS);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PartnerBrowserCustomizations.initializeAsync(
+                        mTestRule.getContextWrapper(), DEFAULT_TIMEOUT_MS);
+            }
         });
         PartnerBrowserCustomizations.setOnInitializeAsyncFinished(
                 mTestRule.getCallback(), DEFAULT_TIMEOUT_MS);
@@ -151,9 +154,12 @@ public class PartnerHomepageUnitTest {
 
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_NO_PROVIDER);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PartnerBrowserCustomizations.initializeAsync(
-                    mTestRule.getContextWrapper(), DEFAULT_TIMEOUT_MS);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PartnerBrowserCustomizations.initializeAsync(
+                        mTestRule.getContextWrapper(), DEFAULT_TIMEOUT_MS);
+            }
         });
         PartnerBrowserCustomizations.setOnInitializeAsyncFinished(
                 mTestRule.getCallback(), DEFAULT_TIMEOUT_MS);
@@ -182,9 +188,12 @@ public class PartnerHomepageUnitTest {
 
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_PROVIDER);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PartnerBrowserCustomizations.initializeAsync(
-                    mTestRule.getContextWrapper(), DEFAULT_TIMEOUT_MS);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PartnerBrowserCustomizations.initializeAsync(
+                        mTestRule.getContextWrapper(), DEFAULT_TIMEOUT_MS);
+            }
         });
         PartnerBrowserCustomizations.setOnInitializeAsyncFinished(
                 mTestRule.getCallback(), DEFAULT_TIMEOUT_MS);
@@ -215,9 +224,12 @@ public class PartnerHomepageUnitTest {
 
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_PROVIDER);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PartnerBrowserCustomizations.initializeAsync(
-                    mTestRule.getContextWrapper(), DEFAULT_TIMEOUT_MS);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PartnerBrowserCustomizations.initializeAsync(
+                        mTestRule.getContextWrapper(), DEFAULT_TIMEOUT_MS);
+            }
         });
         PartnerBrowserCustomizations.setOnInitializeAsyncFinished(
                 mTestRule.getCallback(), DEFAULT_TIMEOUT_MS);
@@ -248,8 +260,11 @@ public class PartnerHomepageUnitTest {
 
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_DELAYED_PROVIDER);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PartnerBrowserCustomizations.initializeAsync(mTestRule.getContextWrapper(), 500);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PartnerBrowserCustomizations.initializeAsync(mTestRule.getContextWrapper(), 500);
+            }
         });
         PartnerBrowserCustomizations.setOnInitializeAsyncFinished(mTestRule.getCallback(), 300);
 
@@ -293,8 +308,11 @@ public class PartnerHomepageUnitTest {
                 PARTNER_BROWSER_CUSTOMIZATIONS_DELAYED_PROVIDER);
         mTestRule.setDelayProviderUriPathForDelay(
                 PartnerBrowserCustomizations.PARTNER_HOMEPAGE_PATH);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PartnerBrowserCustomizations.initializeAsync(mTestRule.getContextWrapper(), 2000);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PartnerBrowserCustomizations.initializeAsync(mTestRule.getContextWrapper(), 2000);
+            }
         });
         PartnerBrowserCustomizations.setOnInitializeAsyncFinished(mTestRule.getCallback(), 300);
 
@@ -336,9 +354,12 @@ public class PartnerHomepageUnitTest {
 
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_PROVIDER);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PartnerBrowserCustomizations.initializeAsync(
-                    mTestRule.getContextWrapper(), DEFAULT_TIMEOUT_MS);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PartnerBrowserCustomizations.initializeAsync(
+                        mTestRule.getContextWrapper(), DEFAULT_TIMEOUT_MS);
+            }
         });
         PartnerBrowserCustomizations.setOnInitializeAsyncFinished(
                 mTestRule.getCallback(), DEFAULT_TIMEOUT_MS);

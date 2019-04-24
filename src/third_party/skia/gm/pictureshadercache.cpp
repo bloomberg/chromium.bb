@@ -54,7 +54,9 @@ public:
 
     void onDraw(SkCanvas* canvas) override {
         SkPaint paint;
-        paint.setShader(fPicture->makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat));
+        paint.setShader(SkShader::MakePictureShader(fPicture, SkShader::kRepeat_TileMode,
+                                                    SkShader::kRepeat_TileMode, nullptr,
+                                                    nullptr));
 
         {
             // Render in a funny color space that converts green to yellow.

@@ -19,7 +19,8 @@ ResizeArea::ResizeArea(ResizeAreaDelegate* delegate)
       initial_position_(0) {
 }
 
-ResizeArea::~ResizeArea() = default;
+ResizeArea::~ResizeArea() {
+}
 
 const char* ResizeArea::GetClassName() const {
   return kViewClassName;

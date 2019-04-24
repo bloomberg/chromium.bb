@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "core/fpdfapi/page/cpdf_streamcontentparser.h"
+#include "core/fpdfapi/parser/cpdf_stream_acc.h"
 #include "core/fxcrt/maybe_owned.h"
 #include "core/fxcrt/unowned_ptr.h"
 
@@ -21,7 +22,6 @@ class CPDF_Form;
 class CPDF_Page;
 class CPDF_PageObjectHolder;
 class CPDF_Stream;
-class CPDF_StreamAcc;
 class CPDF_Type3Char;
 
 class CPDF_ContentParser {

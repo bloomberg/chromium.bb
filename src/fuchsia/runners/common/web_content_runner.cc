@@ -5,12 +5,12 @@
 #include "fuchsia/runners/common/web_content_runner.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
+#include <lib/fdio/util.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/files/file.h"
-#include "base/files/file_util.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/scoped_service_binding.h"
@@ -21,32 +21,24 @@
 #include "fuchsia/runners/common/web_component.h"
 #include "url/gurl.h"
 
-namespace {
-
-fidl::InterfaceHandle<fuchsia::io::Directory> OpenDirectoryOrFail(
-    const base::FilePath& path) {
-  auto directory = base::fuchsia::OpenDirectory(path);
-  CHECK(directory) << "Failed to open " << path;
-  return directory;
-}
-
-fuchsia::web::ContextPtr CreateWebContextWithDataDirectory(
-    fidl::InterfaceHandle<fuchsia::io::Directory> data_directory) {
+// static
+chromium::web::ContextPtr WebContentRunner::CreateDefaultWebContext() {
   auto web_context_provider =
       base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-          ->ConnectToService<fuchsia::web::ContextProvider>();
+          ->ConnectToService<chromium::web::ContextProvider>();
 
-  fuchsia::web::CreateContextParams create_params;
+  chromium::web::CreateContextParams2 create_params;
 
-  // Pass /svc and /data to the context.
-  create_params.set_service_directory(OpenDirectoryOrFail(
-      base::FilePath(base::fuchsia::kServiceDirectoryPath)));
-  if (data_directory)
-    create_params.set_data_directory(std::move(data_directory));
+  // Clone /svc to the context.
+  fidl::InterfaceHandle<fuchsia::io::Directory> directory;
+  zx_status_t result = fdio_service_connect(
+      "/svc", directory.NewRequest().TakeChannel().release());
+  ZX_CHECK(result == ZX_OK, result) << "Failed to open /svc";
+  create_params.set_service_directory(std::move(directory));
 
-  fuchsia::web::ContextPtr web_context;
-  web_context_provider->Create(std::move(create_params),
-                               web_context.NewRequest());
+  chromium::web::ContextPtr web_context;
+  web_context_provider->Create2(std::move(create_params),
+                                web_context.NewRequest());
   web_context.set_error_handler([](zx_status_t status) {
     // If the browser instance died, then exit everything and do not attempt
     // to recover. appmgr will relaunch the runner when it is needed again.
@@ -56,23 +48,9 @@ fuchsia::web::ContextPtr CreateWebContextWithDataDirectory(
   return web_context;
 }
 
-}  // namespace
-
-// static
-fuchsia::web::ContextPtr WebContentRunner::CreateDefaultWebContext() {
-  return CreateWebContextWithDataDirectory(OpenDirectoryOrFail(
-      base::FilePath(base::fuchsia::kPersistedDataDirectoryPath)));
-}
-
-// static
-fuchsia::web::ContextPtr WebContentRunner::CreateIncognitoWebContext() {
-  return CreateWebContextWithDataDirectory(
-      fidl::InterfaceHandle<fuchsia::io::Directory>());
-}
-
 WebContentRunner::WebContentRunner(
     base::fuchsia::ServiceDirectory* service_directory,
-    fuchsia::web::ContextPtr context,
+    chromium::web::ContextPtr context,
     base::OnceClosure on_idle_closure)
     : context_(std::move(context)),
       service_binding_(service_directory, this),

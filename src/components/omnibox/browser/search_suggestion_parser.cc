@@ -24,7 +24,6 @@
 #include "base/values.h"
 #include "components/omnibox/browser/autocomplete_i18n.h"
 #include "components/omnibox/browser/autocomplete_input.h"
-#include "components/omnibox/browser/autocomplete_match_classification.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
@@ -182,7 +181,9 @@ void SearchSuggestionParser::SuggestResult::ClassifyMatchContents(
   }
 
   match_contents_class_ = AutocompleteProvider::ClassifyAllMatchesInString(
-      input_text, match_contents_, true);
+      input_text,
+      SearchSuggestionParser::GetOrCreateWordMapForInputText(input_text),
+      match_contents_, true);
 }
 
 void SearchSuggestionParser::SuggestResult::SetAnswer(
@@ -232,11 +233,7 @@ SearchSuggestionParser::NavigationResult::NavigationResult(
       description_(description) {
   DCHECK(url_.is_valid());
   CalculateAndClassifyMatchContents(true, input_text);
-  ClassifyDescription(input_text);
 }
-
-SearchSuggestionParser::NavigationResult::NavigationResult(
-    const NavigationResult& other) = default;
 
 SearchSuggestionParser::NavigationResult::~NavigationResult() {}
 
@@ -289,14 +286,6 @@ int SearchSuggestionParser::NavigationResult::CalculateRelevance(
     const AutocompleteInput& input,
     bool keyword_provider_requested) const {
   return (from_keyword_ || !keyword_provider_requested) ? 800 : 150;
-}
-
-void SearchSuggestionParser::NavigationResult::ClassifyDescription(
-    const base::string16& input_text) {
-  TermMatches term_matches = FindTermMatches(input_text, description_);
-  description_class_ = ClassifyTermMatches(term_matches, description_.size(),
-                                           ACMatchClassification::MATCH,
-                                           ACMatchClassification::NONE);
 }
 
 // SearchSuggestionParser::Results ---------------------------------------------
@@ -505,15 +494,13 @@ bool SearchSuggestionParser::ParseSuggestResults(
       base::string16 annotation;
       base::string16 match_contents = suggestion;
       if (match_type == AutocompleteMatchType::CALCULATOR) {
-        const bool has_equals_prefix =
-            !suggestion.compare(0, 2, base::UTF8ToUTF16("= "));
-        if (has_equals_prefix) {
+        if (!suggestion.compare(0, 2, base::UTF8ToUTF16("= "))) {
           // Calculator results include a "= " prefix but we don't want to
           // include this in the search terms.
           suggestion.erase(0, 2);
         }
         if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_DESKTOP) {
-          annotation = has_equals_prefix ? suggestion : match_contents;
+          annotation = match_contents;
           match_contents = query;
         }
       }
@@ -543,7 +530,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
           base::string16 answer_type;
           if (suggestion_detail->GetDictionary("ansa", &answer_json) &&
               suggestion_detail->GetString("ansb", &answer_type)) {
-            if (SuggestionAnswer::ParseAnswer(*answer_json, answer_type,
+            if (SuggestionAnswer::ParseAnswer(answer_json, answer_type,
                                               &answer)) {
               base::UmaHistogramSparse("Omnibox.AnswerParseType",
                                        answer.type());
@@ -578,4 +565,26 @@ bool SearchSuggestionParser::ParseSuggestResults(
   }
   results->relevances_from_server = relevances != nullptr;
   return true;
+}
+
+// static
+const AutocompleteProvider::WordMap&
+SearchSuggestionParser::GetOrCreateWordMapForInputText(
+    const base::string16& input_text) {
+  auto& cache = GetWordMapCache();
+  if (cache.first != input_text) {
+    auto new_cache = std::make_pair(
+        input_text, AutocompleteProvider::CreateWordMapForString(input_text));
+    cache.swap(new_cache);
+  }
+  return cache.second;
+}
+
+// static
+std::pair<base::string16, AutocompleteProvider::WordMap>&
+SearchSuggestionParser::GetWordMapCache() {
+  static base::NoDestructor<
+      std::pair<base::string16, AutocompleteProvider::WordMap>>
+      word_map_cache;
+  return *word_map_cache;
 }

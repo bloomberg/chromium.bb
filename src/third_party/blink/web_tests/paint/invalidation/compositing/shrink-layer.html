@@ -11,13 +11,18 @@
     </style>
     <script src="../../../resources/run-after-layout-and-paint.js"></script>
     <script>
+        if (window.testRunner) {
+            testRunner.dumpAsTextWithPixelResults();
+            testRunner.waitUntilDone();
+        }
         function repaintTest()
         {
             document.getElementById("ruler").style.height = "450px";
+            testRunner.notifyDone();
         }
     </script>
 </head>
-<body onload="runAfterLayoutAndPaint(repaintTest, true);">
+<body onload="runAfterLayoutAndPaint(repaintTest);">
     <div id="ruler">
 </body>
 </html>

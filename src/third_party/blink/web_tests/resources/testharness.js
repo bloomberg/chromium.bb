@@ -145,9 +145,9 @@ policies and contribution forms [3].
     };
 
     WindowTestEnvironment.prototype._forEach_windows = function(callback) {
-        // Iterate over the windows [self ... top, opener]. The callback is passed
-        // two objects, the first one is the window object itself, the second one
-        // is a boolean indicating whether or not it's on the same origin as the
+        // Iterate of the the windows [self ... top, opener]. The callback is passed
+        // two objects, the first one is the windows object itself, the second one
+        // is a boolean indicating whether or not its on the same origin as the
         // current window.
         var cache = this.window_cache;
         if (!cache) {
@@ -513,7 +513,7 @@ policies and contribution forms [3].
             return new DedicatedWorkerTestEnvironment();
         }
 
-        if (!('location' in global_scope)) {
+        if (!('self' in global_scope)) {
             return new ShellTestEnvironment();
         }
 
@@ -635,7 +635,7 @@ policies and contribution forms [3].
      * which can make it a lot easier to test a very specific series of events,
      * including ensuring that unexpected events are not fired at any point.
      */
-    function EventWatcher(test, watchedNode, eventTypes, timeoutPromise)
+    function EventWatcher(test, watchedNode, eventTypes)
     {
         if (typeof eventTypes == 'string') {
             eventTypes = [eventTypes];
@@ -712,27 +712,6 @@ policies and contribution forms [3].
                 recordedEvents = [];
             }
             return new Promise(function(resolve, reject) {
-                var timeout = test.step_func(function() {
-                    // If the timeout fires after the events have been received
-                    // or during a subsequent call to wait_for, ignore it.
-                    if (!waitingFor || waitingFor.resolve !== resolve)
-                        return;
-
-                    // This should always fail, otherwise we should have
-                    // resolved the promise.
-                    assert_true(waitingFor.types.length == 0,
-                                'Timed out waiting for ' + waitingFor.types.join(', '));
-                    var result = recordedEvents;
-                    recordedEvents = null;
-                    var resolveFunc = waitingFor.resolve;
-                    waitingFor = null;
-                    resolveFunc(result);
-                });
-
-                if (timeoutPromise) {
-                    timeoutPromise().then(timeout);
-                }
-
                 waitingFor = {
                     types: types,
                     resolve: resolve,
@@ -775,7 +754,7 @@ policies and contribution forms [3].
         }
         if (tests.file_is_test) {
             // file is test files never have asynchronous cleanup logic,
-            // meaning the fully-synchronous `done` function can be used here.
+            // meaning the fully-sycnronous `done` function can be used here.
             tests.tests[0].done();
         }
         tests.end_wait();
@@ -1283,13 +1262,6 @@ policies and contribution forms [3].
     }
     expose(assert_own_property, "assert_own_property");
 
-    function assert_not_own_property(object, property_name, description) {
-        assert(!object.hasOwnProperty(property_name),
-               "assert_not_own_property", description,
-               "unexpected property ${p} is found on object", {p:property_name});
-    }
-    expose(assert_not_own_property, "assert_not_own_property");
-
     function _assert_inherits(name) {
         return function (object, property_name, description)
         {
@@ -1507,9 +1479,11 @@ policies and contribution forms [3].
         this.index = null;
 
         this.properties = properties;
-        this.timeout_length = settings.test_timeout;
-        if (this.timeout_length !== null) {
-            this.timeout_length *= tests.timeout_multiplier;
+        var timeout = properties.timeout ? properties.timeout : settings.test_timeout;
+        if (timeout !== null) {
+            this.timeout_length = timeout * tests.timeout_multiplier;
+        } else {
+            this.timeout_length = null;
         }
 
         this.message = null;
@@ -1567,7 +1541,7 @@ policies and contribution forms [3].
             return;
         }
         this.phase = this.phases.STARTED;
-        //If we don't get a result before the harness times out that will be a test timeout
+        //If we don't get a result before the harness times out that will be a test timout
         this.set_status(this.TIMEOUT, "Test timed out");
 
         tests.started = true;
@@ -1923,9 +1897,7 @@ policies and contribution forms [3].
      */
     function RemoteContext(remote, message_target, message_filter) {
         this.running = true;
-        this.started = false;
         this.tests = new Array();
-        this.early_exception = null;
 
         var this_obj = this;
         // If remote context is cross origin assigning to onerror is not
@@ -1964,21 +1936,6 @@ policies and contribution forms [3].
     }
 
     RemoteContext.prototype.remote_error = function(error) {
-        if (error.preventDefault) {
-            error.preventDefault();
-        }
-
-        // Defer interpretation of errors until the testing protocol has
-        // started and the remote test's `allow_uncaught_exception` property
-        // is available.
-        if (!this.started) {
-            this.early_exception = error;
-        } else if (!this.allow_uncaught_exception) {
-            this.report_uncaught(error);
-        }
-    };
-
-    RemoteContext.prototype.report_uncaught = function(error) {
         var message = error.message || String(error);
         var filename = (error.filename ? " " + error.filename: "");
         // FIXME: Display remote error states separately from main document
@@ -1986,14 +1943,9 @@ policies and contribution forms [3].
         tests.set_status(tests.status.ERROR,
                          "Error in remote" + filename + ": " + message,
                          error.stack);
-    };
 
-    RemoteContext.prototype.start = function(data) {
-        this.started = true;
-        this.allow_uncaught_exception = data.properties.allow_uncaught_exception;
-
-        if (this.early_exception && !this.allow_uncaught_exception) {
-            this.report_uncaught(this.early_exception);
+        if (error.preventDefault) {
+            error.preventDefault();
         }
     };
 
@@ -2043,7 +1995,6 @@ policies and contribution forms [3].
     };
 
     RemoteContext.prototype.message_handlers = {
-        start: RemoteContext.prototype.start,
         test_state: RemoteContext.prototype.test_state,
         result: RemoteContext.prototype.test_done,
         complete: RemoteContext.prototype.remote_done
@@ -2156,9 +2107,6 @@ policies and contribution forms [3].
                     }
                 } else if (p == "timeout_multiplier") {
                     this.timeout_multiplier = value;
-                    if (this.timeout_length) {
-                         this.timeout_length *= this.timeout_multiplier;
-                    }
                 }
             }
         }
@@ -2581,9 +2529,6 @@ policies and contribution forms [3].
 
     Output.prototype.resolve_log = function() {
         var output_document;
-        if (this.output_node) {
-            return;
-        }
         if (typeof this.output_document === "function") {
             output_document = this.output_document.apply(undefined);
         } else {
@@ -2594,7 +2539,7 @@ policies and contribution forms [3].
         }
         var node = output_document.getElementById("log");
         if (!node) {
-            if (output_document.readyState === "loading") {
+            if (!document.readyState == "loading") {
                 return;
             }
             node = output_document.createElementNS("http://www.w3.org/1999/xhtml", "div");
@@ -2634,8 +2579,8 @@ policies and contribution forms [3].
         if (!this.enabled) {
             return;
         }
-        this.resolve_log();
         if (this.phase < this.HAVE_RESULTS) {
+            this.resolve_log();
             this.phase = this.HAVE_RESULTS;
         }
         var done_count = tests.tests.length - tests.num_pending;
@@ -2842,7 +2787,7 @@ policies and contribution forms [3].
     /*
      * Template code
      *
-     * A template is just a JavaScript structure. An element is represented as:
+     * A template is just a javascript structure. An element is represented as:
      *
      * [tag_name, {attr_name:attr_value}, child1, child2]
      *
@@ -3004,7 +2949,7 @@ policies and contribution forms [3].
     }
 
     /*
-     * Utility functions
+     * Utility funcions
      */
     function assert(expected_true, function_name, description, error, substitutions)
     {
@@ -3267,7 +3212,7 @@ policies and contribution forms [3].
         // Touching the postMessage prop on a window can throw if the window is
         // not from the same origin AND post message is not supported in that
         // browser. So just doing an existence test here won't do, you also need
-        // to wrap it in a try..catch block.
+        // to wrap it in a try..cacth block.
         try {
             type = typeof w.postMessage;
             if (type === "function") {

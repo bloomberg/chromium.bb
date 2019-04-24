@@ -40,12 +40,18 @@ class ASH_EXPORT AccessibilityFocusRingController
   void BindRequest(mojom::AccessibilityFocusRingControllerRequest request);
 
   // mojom::AccessibilityFocusRingController overrides:
-  void SetFocusRing(const std::string& focus_ring_id,
-                    mojom::FocusRingPtr focus_ring) override;
-  void HideFocusRing(const std::string& focus_ring_id) override;
+  void SetFocusRingColor(SkColor color, const std::string& caller_id) override;
+  void ResetFocusRingColor(const std::string& caller_id) override;
+  void SetFocusRing(const std::vector<gfx::Rect>& rects,
+                    mojom::FocusRingBehavior focus_ring_behavior,
+                    const std::string& caller_id) override;
+  void HideFocusRing(const std::string& caller_id) override;
   void SetHighlights(const std::vector<gfx::Rect>& rects,
                      SkColor color) override;
   void HideHighlights() override;
+  void EnableDoubleFocusRing(SkColor color,
+                             const std::string& caller_id) override;
+  void DisableDoubleFocusRing(const std::string& caller_id) override;
 
   // Draw a ring around the mouse cursor. It fades out automatically.
   void SetCursorRing(const gfx::Point& location);
@@ -66,7 +72,7 @@ class ASH_EXPORT AccessibilityFocusRingController
     return caret_layer_.get();
   }
   const AccessibilityFocusRingGroup* GetFocusRingGroupForTesting(
-      const std::string& focus_ring_id);
+      std::string caller_id);
 
  protected:
   // Breaks an SkColor into its opacity and color. If the opacity is
@@ -94,8 +100,8 @@ class ASH_EXPORT AccessibilityFocusRingController
   // Binding for mojom::AccessibilityFocusRingController interface.
   mojo::Binding<mojom::AccessibilityFocusRingController> binding_;
 
-  AccessibilityFocusRingGroup* GetFocusRingGroupForId(
-      const std::string& focus_ring_id,
+  AccessibilityFocusRingGroup* GetFocusRingGroupForCallerId(
+      std::string caller_id,
       bool create);
   std::map<std::string, std::unique_ptr<AccessibilityFocusRingGroup>>
       focus_ring_groups_;

@@ -4,8 +4,6 @@
 
 #include "android_webview/browser/gfx/parent_output_surface.h"
 
-#include <utility>
-
 #include "android_webview/browser/gfx/aw_render_thread_context_provider.h"
 #include "android_webview/browser/gfx/scoped_app_gl_state_restore.h"
 #include "components/viz/service/display/output_surface_client.h"
@@ -15,20 +13,13 @@
 namespace android_webview {
 
 ParentOutputSurface::ParentOutputSurface(
-    scoped_refptr<AwGLSurface> gl_surface,
     scoped_refptr<AwRenderThreadContextProvider> context_provider)
-    : viz::OutputSurface(std::move(context_provider)),
-      gl_surface_(std::move(gl_surface)),
-      weak_ptr_factory_(this) {}
+    : viz::OutputSurface(std::move(context_provider)) {}
 
 ParentOutputSurface::~ParentOutputSurface() {
 }
 
-void ParentOutputSurface::BindToClient(viz::OutputSurfaceClient* client) {
-  DCHECK(client);
-  DCHECK(!client_);
-  client_ = client;
-}
+void ParentOutputSurface::BindToClient(viz::OutputSurfaceClient* client) {}
 
 void ParentOutputSurface::EnsureBackbuffer() {}
 
@@ -50,14 +41,6 @@ void ParentOutputSurface::Reshape(const gfx::Size& size,
 
 void ParentOutputSurface::SwapBuffers(viz::OutputSurfaceFrame frame) {
   context_provider_->ContextGL()->ShallowFlushCHROMIUM();
-  gl_surface_->SwapBuffers(base::BindOnce(&ParentOutputSurface::OnPresentation,
-                                          weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ParentOutputSurface::OnPresentation(
-    const gfx::PresentationFeedback& feedback) {
-  DCHECK(client_);
-  client_->DidReceivePresentationFeedback(feedback);
 }
 
 bool ParentOutputSurface::HasExternalStencilTest() const {

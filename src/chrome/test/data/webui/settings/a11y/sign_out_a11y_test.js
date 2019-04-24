@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @fileoverview Suite of accessibility tests for the SIGN_OUT route.
- * Not used on Chrome OS since signing out is done at the OS level, not within
- * the Chrome Browser.
- */
+/** @fileoverview Suite of accessibility tests for the SIGN_OUT route. */
+
+// Do not test the SIGN_OUT route on Chrome OS since signing out is done at the
+// OS level, not within the Chrome Browser.
+GEN('#if !defined(OS_CHROMEOS)');
 
 // SettingsAccessibilityTest fixture.
 GEN_INCLUDE([
@@ -114,3 +114,5 @@ AccessibilityTest.define('SettingsA11ySignOut', {
   /** @override */
   violationFilter: SettingsAccessibilityTest.violationFilter,
 });
+
+GEN('#endif  // !defined(OS_CHROMEOS)');

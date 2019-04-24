@@ -28,7 +28,8 @@ class SCTableReference {
   friend class StubCache;
 };
 
-class V8_EXPORT_PRIVATE StubCache {
+
+class StubCache {
  public:
   struct Entry {
     // The values here have plain Address types because they are read

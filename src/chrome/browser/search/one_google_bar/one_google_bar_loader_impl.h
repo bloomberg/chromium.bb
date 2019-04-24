@@ -27,6 +27,9 @@ class SharedURLLoaderFactory;
 
 struct OneGoogleBarData;
 
+// TODO(treib): This class uses cookies for authentication. After "Dice" account
+// consistency launches, we should switch to using OAuth2 instead.
+// See https://crbug.com/751534.
 class OneGoogleBarLoaderImpl : public OneGoogleBarLoader {
  public:
   OneGoogleBarLoaderImpl(

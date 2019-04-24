@@ -29,7 +29,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
-#include "third_party/blink/renderer/platform/wtf/text/integer_to_string_conversion.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
@@ -37,8 +36,6 @@
 namespace WTF {
 
 class WTF_EXPORT StringBuilder {
-  USING_FAST_MALLOC(StringBuilder);
-
  public:
   StringBuilder() : no_buffer_() {}
   ~StringBuilder() { Clear(); }
@@ -138,21 +135,13 @@ class WTF_EXPORT StringBuilder {
     Append(U16_TRAIL(c));
   }
 
-  template <typename IntegerType>
-  void AppendNumber(IntegerType number) {
-    IntegerToStringConverter<IntegerType> converter(number);
-    Append(converter.Characters8(), converter.length());
-  }
-
-  void AppendNumber(bool);
-
-  void AppendNumber(float);
-
+  void AppendNumber(int);
+  void AppendNumber(unsigned);
+  void AppendNumber(long);
+  void AppendNumber(unsigned long);
+  void AppendNumber(long long);
+  void AppendNumber(unsigned long long);
   void AppendNumber(double, unsigned precision = 6);
-
-  // Like WTF::String::Format, supports Latin-1 only.
-  PRINTF_FORMAT(2, 3)
-  void AppendFormat(const char* format, ...);
 
   void erase(unsigned);
 
@@ -197,7 +186,6 @@ class WTF_EXPORT StringBuilder {
   }
 
   bool Is8Bit() const { return is_8bit_; }
-  void Ensure16Bit();
 
   void Clear();
   void Swap(StringBuilder&);

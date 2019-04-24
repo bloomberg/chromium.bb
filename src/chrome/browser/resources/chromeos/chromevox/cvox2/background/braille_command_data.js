@@ -91,14 +91,9 @@ BrailleCommandData.getDots = function(command) {
  */
 BrailleCommandData.init_ = function() {
   var map = function(dots, command) {
-    var pattern = BrailleCommandData.makeDotPattern(dots);
-    var existingCommand = BrailleCommandData.DOT_PATTERN_TO_COMMAND[pattern];
-    if (existingCommand) {
-      throw 'Braille command pattern already exists: ' + dots + ' ' +
-          existingCommand + '. Trying to map ' + command;
-    }
-
-    BrailleCommandData.DOT_PATTERN_TO_COMMAND[pattern] = command;
+    BrailleCommandData
+        .DOT_PATTERN_TO_COMMAND[BrailleCommandData.makeDotPattern(dots)] =
+        command;
   };
 
   map([2, 3], 'previousGroup');
@@ -144,7 +139,7 @@ BrailleCommandData.init_ = function() {
   map([1, 2, 3, 4, 5, 6], 'undarkenScreen');
 
   // s.
-  map([1, 2, 3, 4, 5], 'toggleSpeechOnOrOff');
+  map([2, 3, 4], 'toggleSpeechOnOrOff');
 
   // g.
   map([1, 2, 4, 5], 'toggleBrailleTable');

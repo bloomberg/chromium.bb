@@ -32,6 +32,10 @@ namespace blink {
 
 class UnlinkCommand final : public CompositeEditCommand {
  public:
+  static UnlinkCommand* Create(Document& document) {
+    return MakeGarbageCollected<UnlinkCommand>(document);
+  }
+
   explicit UnlinkCommand(Document&);
 
  private:

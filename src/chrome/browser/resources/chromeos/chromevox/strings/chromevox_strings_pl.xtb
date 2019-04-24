@@ -54,7 +54,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="1319608975892113573">Brak poprzedniego cytatu blokowego.</translation>
 <translation id="1321576897702511272">Ukryj pomoc dotyczącą ChromeVox</translation>
 <translation id="1325946044405407859">Pastelowobrązowy</translation>
-<translation id="1331634987653814322">Ustawienia brajla</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> z <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">odczytywanie znaków i słów</translation>
 <translation id="1334570596456017464">Indeks dolny</translation>
@@ -99,7 +98,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="1616111909442424068">Pszenica</translation>
 <translation id="1618597272655350600">Przedstawia pełny opis aktualnej pozycji</translation>
 <translation id="1627222324347828322">Białawy</translation>
-<translation id="1630688379087270943">Wskaż kursywę:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{większy niż}few{# znaki większości}many{# znaków większości}other{# greater than signs}}</translation>
 <translation id="1653266918374749391">Poprzedni nagłówek poziomu 3</translation>
 <translation id="1657616855184033958">Pokaż filtry strumienia wydarzenia</translation>
@@ -321,7 +319,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="3286390186030710347">Suwak</translation>
 <translation id="3299925995433437805">Brak następnego klikniętego linku.</translation>
 <translation id="3300348286427369683">Obsługa tekstu sformatowanego. ChromeVox obsługuje teraz pola tekstu sformatowanego, w tym między innymi polecenia nawigacyjne, kierowanie kursorem brajlowskim oraz wybór.</translation>
-<translation id="3304756947457041303">Dostosuj wskazywanie tekstu sformatowanego</translation>
 <translation id="3307886118343381874">Przejdź na koniec tabeli.</translation>
 <translation id="3311969765485641742">Naciśnij Alt+Shift+A, by zobaczyć alerty</translation>
 <translation id="3312997241656799641">Następny kliknięty link</translation>
@@ -408,7 +405,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="3930498801443296724">Cytat</translation>
 <translation id="3936394396199829062">Jasnolawendowy</translation>
 <translation id="3941269780691800708">Przeczytaj na głos tekst wskazany myszą.</translation>
-<translation id="394953087167197343">Wskaż błąd w pisowni:</translation>
 <translation id="3962990492275676168">Zacznij czytać od bieżącego miejsca</translation>
 <translation id="3970951409746498040">Piaskowobrązowy</translation>
 <translation id="3989324057180830702">przełącznik</translation>
@@ -455,7 +451,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="42164919740161077">Szaroniebieski</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{pauza}few{# pauzy}many{# pauz}other{# dashes}}</translation>
 <translation id="421884353938374759">selektor kolorów</translation>
-<translation id="4221071177874897997">Wskaż pogrubienie:</translation>
 <translation id="4229646983878045487">data i godzina</translation>
 <translation id="4230834257931120629">Jasny szaroniebieski</translation>
 <translation id="4231102694147661229">Włącz opcje programisty</translation>
@@ -553,7 +548,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="489907760999452556">Link wewnętrzny</translation>
 <translation id="4915087353619183190">Włączam tryb informacyjny. Naciśnij klawisz na klawiaturze QWERTY lub na monitorze brajlowskim albo wykonaj gest dotykowy, by poznać jego funkcję. Przytrzymaj Control i naciśnij W lub Escape, by wyłączyć tryb informacyjny.</translation>
 <translation id="492295894462528572">Przedmowa</translation>
-<translation id="4943781537993885772">Styl wyświetlania</translation>
 <translation id="495170559598752135">Czynności</translation>
 <translation id="4953585991029886728">Edytowanie tekstu</translation>
 <translation id="4954534434583049121">Poprzedni cytat blokowy</translation>
@@ -652,7 +646,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="5574412348552378458">Tryb informacyjny ChromeVoxa</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">Edytowanie tekstu, pisanie e-maila</translation>
-<translation id="5586942249556966598">Nic nie rób</translation>
 <translation id="5597170376237141345">Następne pole wyboru</translation>
 <translation id="5597933780944041114">Brak następnego nagłówka.</translation>
 <translation id="5598905979683743333"><ph name="NAME" />, niewybrany przycisk opcji</translation>
@@ -720,7 +713,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="6006050241733874051">Formularz</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ukośnik wsteczny}few{# ukośniki wsteczne}many{# ukośników wstecznych}other{# backslashes}}</translation>
 <translation id="6017514345406065928">Zielony</translation>
-<translation id="6021969570711251331">Łączony</translation>
 <translation id="6034000775414344507">Jasnoszary</translation>
 <translation id="6037602951055904232">Przesuń do przodu</translation>
 <translation id="6042826534790431634">Naciśnij klawisz wyszukiwania + spację, aby aktywować.</translation>
@@ -758,7 +750,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="6348869651006731065">Przyćmiony szary</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{punktor}few{# punktory}many{# punktorów}other{# punktora}}</translation>
 <translation id="6355910664415701303">Brak poprzedniego elementu listy.</translation>
-<translation id="6360318852623800555">Atrybuty tekstu sformatowanego</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Poprzedni nagłówek</translation>
 <translation id="6376999910001533545">Kasztanowy</translation>
@@ -772,7 +763,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="6438968337250688271"><ph name="NAME" />, menu</translation>
 <translation id="6444046323172968959">Okno dialogowe alertu</translation>
 <translation id="6452403590345320472">Spis treści</translation>
-<translation id="6454456397828627257">Obok siebie</translation>
 <translation id="6459511626086141404">Płaska mapa klawiszy</translation>
 <translation id="6468049171101508116">Następny przycisk</translation>
 <translation id="646954774886932461">Indeks</translation>
@@ -934,7 +924,6 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="762020119231868829">Wstrzymuje odtwarzanie we wszystkich aktywnych widżetach multimedialnych</translation>
 <translation id="7625690649919402823">Następna tabela</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), klasa <ph name="GRADE" /></translation>
-<translation id="763535765081585392">Wskaż podkreślenie:</translation>
 <translation id="7639968568612851608">Ciemnoszary</translation>
 <translation id="7641134354185483015">Brak poprzedniego nagłówka poziomu 3.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, pole tekstowe</translation>
@@ -1170,7 +1159,6 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="8943175951035496220">Brak komórki z prawej strony.</translation>
 <translation id="8943282376843390568">Limonkowy</translation>
 <translation id="8946628535652548639">w<ph name="TABLECELLROWINDEX" />k<ph name="TABLECELLCOLUMNINDEX" /></translation>
-<translation id="8957142051395645063">Powiadom</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Zapomnij</translation>
 <translation id="900114243503212879">plik</translation>

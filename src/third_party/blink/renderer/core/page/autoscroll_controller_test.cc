@@ -69,8 +69,7 @@ TEST_F(AutoscrollControllerTest,
   DCHECK(controller.IsAutoscrolling());
 
   // Hide scrollable here will cause UpdateSelectionForMouseDrag stop animation.
-  scrollable->SetInlineStyleProperty(CSSPropertyID::kDisplay,
-                                     CSSValueID::kNone);
+  scrollable->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
 
   // BeginFrame will call AutoscrollController::Animate.
   Compositor().BeginFrame();

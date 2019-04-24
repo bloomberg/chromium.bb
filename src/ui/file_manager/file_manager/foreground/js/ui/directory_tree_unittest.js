@@ -218,8 +218,7 @@ function testCreateDirectoryTreeWithTeamDrive(callback) {
       }).then(() => {
         // There exist 1 my drive entry and 3 fake entries under the drive item.
         assertEquals(str('DRIVE_MY_DRIVE_LABEL'), driveItem.items[0].label);
-        assertEquals(
-            str('DRIVE_SHARED_DRIVES_LABEL'), driveItem.items[1].label);
+        assertEquals(str('DRIVE_TEAM_DRIVES_LABEL'), driveItem.items[1].label);
         assertEquals(
             str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL'),
             driveItem.items[2].label);
@@ -262,7 +261,7 @@ function testCreateDirectoryTreeWithEmptyTeamDrive(callback) {
       }).then(() => {
         let teamDrivesItemFound = false;
         for (let i = 0; i < driveItem.items.length; i++) {
-          if (driveItem.items[i].label == str('DRIVE_SHARED_DRIVES_LABEL')) {
+          if (driveItem.items[i].label == str('DRIVE_TEAM_DRIVES_LABEL')) {
             teamDrivesItemFound = true;
             break;
           }
@@ -389,7 +388,7 @@ function testCreateDirectoryTreeWithEmptyComputers(callback) {
  */
 function testCreateDirectoryTreeWithTeamDrivesAndComputers(callback) {
   // Setup entries returned by fakeFileSystemURLResults.
-  fakeFileSystemURLEntries['filesystem:drive/team_drives/a'] =
+  fakeFileSystemURLEntries ['filesystem:drive/team_drives/a'] =
       new MockDirectoryEntry(driveFileSystem, '/team_drives/a');
   fakeFileSystemURLEntries['filesystem:drive/Comuters/My Laptop'] =
       new MockDirectoryEntry(driveFileSystem, '/Computers/My Laptop');
@@ -420,8 +419,7 @@ function testCreateDirectoryTreeWithTeamDrivesAndComputers(callback) {
       }).then(() => {
         // There exist 1 my drive entry and 3 fake entries under the drive item.
         assertEquals(str('DRIVE_MY_DRIVE_LABEL'), driveItem.items[0].label);
-        assertEquals(
-            str('DRIVE_SHARED_DRIVES_LABEL'), driveItem.items[1].label);
+        assertEquals(str('DRIVE_TEAM_DRIVES_LABEL'), driveItem.items[1].label);
         assertEquals(str('DRIVE_COMPUTERS_LABEL'), driveItem.items[2].label);
         assertEquals(
             str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL'),
@@ -499,12 +497,10 @@ function testUpdateSubElementsFromList() {
   directoryTree.updateSubElementsFromList(true);
 
   // There are 2 volumes, Drive and Downloads, at first.
-  assertArrayEquals(
-      [
-        str('DRIVE_DIRECTORY_LABEL'),
-        str('DOWNLOADS_DIRECTORY_LABEL'),
-      ],
-      getDirectoryTreeItemLabels(directoryTree));
+  assertArrayEquals([
+    str('DRIVE_DIRECTORY_LABEL'),
+    str('DOWNLOADS_DIRECTORY_LABEL')
+  ], getDirectoryTreeItemLabels(directoryTree));
 
   // Mounts a removable volume.
   const removableVolume = MockVolumeManager.createMockVolumeInfo(
@@ -513,22 +509,18 @@ function testUpdateSubElementsFromList() {
   volumeManager.volumeInfoList.add(removableVolume);
 
   // Asserts that the directoryTree is not updated before the update.
-  assertArrayEquals(
-      [
-        str('DRIVE_DIRECTORY_LABEL'),
-        str('DOWNLOADS_DIRECTORY_LABEL'),
-      ],
-      getDirectoryTreeItemLabels(directoryTree));
+  assertArrayEquals([
+    str('DRIVE_DIRECTORY_LABEL'),
+    str('DOWNLOADS_DIRECTORY_LABEL')
+  ], getDirectoryTreeItemLabels(directoryTree));
 
   // Asserts that a removable directory is added after the update.
   directoryTree.updateSubElementsFromList(false);
-  assertArrayEquals(
-      [
-        str('DRIVE_DIRECTORY_LABEL'),
-        str('DOWNLOADS_DIRECTORY_LABEL'),
-        str('REMOVABLE_DIRECTORY_LABEL'),
-      ],
-      getDirectoryTreeItemLabels(directoryTree));
+  assertArrayEquals([
+    str('DRIVE_DIRECTORY_LABEL'),
+    str('DOWNLOADS_DIRECTORY_LABEL'),
+    str('REMOVABLE_DIRECTORY_LABEL')
+  ], getDirectoryTreeItemLabels(directoryTree));
 
   // Mounts an archive volume.
   const archiveVolume = MockVolumeManager.createMockVolumeInfo(
@@ -537,13 +529,11 @@ function testUpdateSubElementsFromList() {
   volumeManager.volumeInfoList.add(archiveVolume);
 
   // Asserts that the directoryTree is not updated before the update.
-  assertArrayEquals(
-      [
-        str('DRIVE_DIRECTORY_LABEL'),
-        str('DOWNLOADS_DIRECTORY_LABEL'),
-        str('REMOVABLE_DIRECTORY_LABEL'),
-      ],
-      getDirectoryTreeItemLabels(directoryTree));
+  assertArrayEquals([
+    str('DRIVE_DIRECTORY_LABEL'),
+    str('DOWNLOADS_DIRECTORY_LABEL'),
+    str('REMOVABLE_DIRECTORY_LABEL')
+  ], getDirectoryTreeItemLabels(directoryTree));
 
   // Asserts that an archive directory is added before the removable directory.
   directoryTree.updateSubElementsFromList(false);
@@ -571,13 +561,11 @@ function testUpdateSubElementsFromList() {
 
   // Asserts that an archive directory is deleted.
   directoryTree.updateSubElementsFromList(false);
-  assertArrayEquals(
-      [
-        str('DRIVE_DIRECTORY_LABEL'),
-        str('DOWNLOADS_DIRECTORY_LABEL'),
-        str('REMOVABLE_DIRECTORY_LABEL'),
-      ],
-      getDirectoryTreeItemLabels(directoryTree));
+  assertArrayEquals([
+    str('DRIVE_DIRECTORY_LABEL'),
+    str('DOWNLOADS_DIRECTORY_LABEL'),
+    str('REMOVABLE_DIRECTORY_LABEL')
+  ], getDirectoryTreeItemLabels(directoryTree));
 }
 
 /**
@@ -624,7 +612,7 @@ function testAddFirstTeamDrive(callback) {
             return waitUntil(() => {
               for (let i = 0; i < driveItem.items.length; i++) {
                 if (driveItem.items[i].label ==
-                    str('DRIVE_SHARED_DRIVES_LABEL')) {
+                    str('DRIVE_TEAM_DRIVES_LABEL')) {
                   return !driveItem.items[i].hidden;
                 }
               }
@@ -668,8 +656,8 @@ function testRemoveLastTeamDrive(callback) {
       })
           .then(() => {
             return new Promise(resolve => {
-              fakeFileSystemURLEntries['filesystem:drive/team_drives/a'].remove(
-                  resolve);
+              fakeFileSystemURLEntries['filesystem:drive/team_drives/a']
+                  .remove(resolve);
             });
           })
           .then(() => {
@@ -686,7 +674,7 @@ function testRemoveLastTeamDrive(callback) {
             return waitUntil(() => {
               for (let i = 0; i < driveItem.items.length; i++) {
                 if (driveItem.items[i].label ==
-                    str('DRIVE_SHARED_DRIVES_LABEL')) {
+                    str('DRIVE_TEAM_DRIVES_LABEL')) {
                   return false;
                 }
               }
@@ -789,8 +777,8 @@ function testRemoveLastComputer(callback) {
       })
           .then(() => {
             return new Promise(resolve => {
-              fakeFileSystemURLEntries['filesystem:drive/Computers/a'].remove(
-                  resolve);
+              fakeFileSystemURLEntries['filesystem:drive/Computers/a']
+                  .remove(resolve);
             });
           })
           .then(() => {

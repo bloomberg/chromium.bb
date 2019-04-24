@@ -488,10 +488,8 @@ class SlaveCQSyncTest(BaseCQTestCase):
   MILESTONE_VERSION = '10'
 
   def setUp(self):
-    self._run.options.master_buildbucket_id = 1234
     self._run.options.master_build_id = self.buildstore.InsertBuild(
-        'master builder name', 1, 'master-paladin', 'bot hostname',
-        buildbucket_id=1234)
+        'master builder name', 1, 'master-paladin', 'bot hostname')
     self.fake_db.UpdateMetadata(
         self._run.options.master_build_id,
         {'version': {
@@ -915,13 +913,13 @@ pre-cq-configs: chell-pre-cq
 
 Third line.
 pre-cq-configs: chell-pre-cq
-pre-cq-configs: grunt-pre-cq
+pre-cq-configs: link-pre-cq
 """)
     self.PatchObject(
         cq_config.CQConfigParser, 'GetOption', return_value='eve-pre-cq')
     self.assertItemsEqual(
         self.sync_stage.VerificationsForChange(change),
-        ['chell-pre-cq', 'grunt-pre-cq'])
+        ['chell-pre-cq', 'link-pre-cq'])
 
   def _PrepareChangesWithPendingVerifications(self, verifications=None):
     """Prepare changes and pending verifications for them.

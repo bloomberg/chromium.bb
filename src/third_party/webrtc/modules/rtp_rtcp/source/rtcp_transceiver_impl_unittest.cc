@@ -22,7 +22,7 @@
 #include "modules/rtp_rtcp/source/time_util.h"
 #include "rtc_base/event.h"
 #include "rtc_base/fake_clock.h"
-#include "rtc_base/task_queue_for_test.h"
+#include "rtc_base/task_queue.h"
 #include "test/gmock.h"
 #include "test/gtest.h"
 #include "test/mock_transport.h"
@@ -36,6 +36,7 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SizeIs;
 using ::testing::StrictMock;
+using ::webrtc::VideoBitrateAllocation;
 using ::webrtc::CompactNtp;
 using ::webrtc::CompactNtpRttToMs;
 using ::webrtc::MockRtcpRttStats;
@@ -44,9 +45,7 @@ using ::webrtc::NtpTime;
 using ::webrtc::RtcpTransceiverConfig;
 using ::webrtc::RtcpTransceiverImpl;
 using ::webrtc::SaturatedUsToCompactNtp;
-using ::webrtc::TaskQueueForTest;
 using ::webrtc::TimeMicrosToNtp;
-using ::webrtc::VideoBitrateAllocation;
 using ::webrtc::rtcp::Bye;
 using ::webrtc::rtcp::CompoundPacket;
 using ::webrtc::rtcp::ReportBlock;
@@ -137,9 +136,9 @@ RtcpTransceiverConfig DefaultTestConfig() {
   return config;
 }
 
-TEST(RtcpTransceiverImplTest, NeedToStopPeriodicTaskToDestroyOnTaskQueue) {
+TEST(RtcpTransceiverImplTest, CanDestroyOnTaskQueue) {
   FakeRtcpTransport transport;
-  TaskQueueForTest queue("rtcp");
+  rtc::TaskQueue queue("rtcp");
   RtcpTransceiverConfig config = DefaultTestConfig();
   config.task_queue = &queue;
   config.schedule_periodic_compound_packets = true;
@@ -150,7 +149,6 @@ TEST(RtcpTransceiverImplTest, NeedToStopPeriodicTaskToDestroyOnTaskQueue) {
 
   rtc::Event done;
   queue.PostTask([rtcp_transceiver, &done] {
-    rtcp_transceiver->StopPeriodicTask();
     delete rtcp_transceiver;
     done.Set();
   });
@@ -159,7 +157,7 @@ TEST(RtcpTransceiverImplTest, NeedToStopPeriodicTaskToDestroyOnTaskQueue) {
 
 TEST(RtcpTransceiverImplTest, CanDestroyAfterTaskQueue) {
   FakeRtcpTransport transport;
-  auto* queue = new TaskQueueForTest("rtcp");
+  auto* queue = new rtc::TaskQueue("rtcp");
   RtcpTransceiverConfig config = DefaultTestConfig();
   config.task_queue = queue;
   config.schedule_periodic_compound_packets = true;
@@ -173,7 +171,7 @@ TEST(RtcpTransceiverImplTest, CanDestroyAfterTaskQueue) {
 }
 
 TEST(RtcpTransceiverImplTest, DelaysSendingFirstCompondPacket) {
-  TaskQueueForTest queue("rtcp");
+  rtc::TaskQueue queue("rtcp");
   FakeRtcpTransport transport;
   RtcpTransceiverConfig config;
   config.outgoing_transport = &transport;
@@ -190,7 +188,6 @@ TEST(RtcpTransceiverImplTest, DelaysSendingFirstCompondPacket) {
   // Cleanup.
   rtc::Event done;
   queue.PostTask([&] {
-    rtcp_transceiver->StopPeriodicTask();
     rtcp_transceiver.reset();
     done.Set();
   });
@@ -198,7 +195,7 @@ TEST(RtcpTransceiverImplTest, DelaysSendingFirstCompondPacket) {
 }
 
 TEST(RtcpTransceiverImplTest, PeriodicallySendsPackets) {
-  TaskQueueForTest queue("rtcp");
+  rtc::TaskQueue queue("rtcp");
   FakeRtcpTransport transport;
   RtcpTransceiverConfig config;
   config.outgoing_transport = &transport;
@@ -224,7 +221,6 @@ TEST(RtcpTransceiverImplTest, PeriodicallySendsPackets) {
   // Cleanup.
   rtc::Event done;
   queue.PostTask([&] {
-    rtcp_transceiver->StopPeriodicTask();
     rtcp_transceiver.reset();
     done.Set();
   });
@@ -232,7 +228,7 @@ TEST(RtcpTransceiverImplTest, PeriodicallySendsPackets) {
 }
 
 TEST(RtcpTransceiverImplTest, SendCompoundPacketDelaysPeriodicSendPackets) {
-  TaskQueueForTest queue("rtcp");
+  rtc::TaskQueue queue("rtcp");
   FakeRtcpTransport transport;
   RtcpTransceiverConfig config;
   config.outgoing_transport = &transport;
@@ -270,7 +266,6 @@ TEST(RtcpTransceiverImplTest, SendCompoundPacketDelaysPeriodicSendPackets) {
   // Cleanup.
   rtc::Event done;
   queue.PostTask([&] {
-    rtcp_transceiver->StopPeriodicTask();
     rtcp_transceiver.reset();
     done.Set();
   });
@@ -318,7 +313,7 @@ TEST(RtcpTransceiverImplTest, SendsRtcpWhenNetworkStateIsUp) {
 }
 
 TEST(RtcpTransceiverImplTest, SendsPeriodicRtcpWhenNetworkStateIsUp) {
-  TaskQueueForTest queue("rtcp");
+  rtc::TaskQueue queue("rtcp");
   FakeRtcpTransport transport;
   RtcpTransceiverConfig config = DefaultTestConfig();
   config.schedule_periodic_compound_packets = true;
@@ -335,7 +330,6 @@ TEST(RtcpTransceiverImplTest, SendsPeriodicRtcpWhenNetworkStateIsUp) {
   // Cleanup.
   rtc::Event done;
   queue.PostTask([&] {
-    rtcp_transceiver->StopPeriodicTask();
     rtcp_transceiver.reset();
     done.Set();
   });
@@ -735,10 +729,10 @@ TEST(RtcpTransceiverImplTest,
   };
 
   receive_sender_report(kRemoteSsrc1);
-  clock.AdvanceTime(webrtc::TimeDelta::ms(100));
+  clock.AdvanceTimeMicros(100 * rtc::kNumMicrosecsPerMillisec);
 
   receive_sender_report(kRemoteSsrc2);
-  clock.AdvanceTime(webrtc::TimeDelta::ms(100));
+  clock.AdvanceTimeMicros(100 * rtc::kNumMicrosecsPerMillisec);
 
   // Trigger ReceiverReport back.
   rtcp_transceiver.SendCompoundPacket();

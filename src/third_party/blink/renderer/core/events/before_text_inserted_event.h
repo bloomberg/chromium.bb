@@ -35,6 +35,10 @@ class BeforeTextInsertedEvent final : public Event {
   explicit BeforeTextInsertedEvent(const String&);
   ~BeforeTextInsertedEvent() override;
 
+  static BeforeTextInsertedEvent* Create(const String& text) {
+    return MakeGarbageCollected<BeforeTextInsertedEvent>(text);
+  }
+
   const AtomicString& InterfaceName() const override;
   bool IsBeforeTextInsertedEvent() const override { return true; }
 

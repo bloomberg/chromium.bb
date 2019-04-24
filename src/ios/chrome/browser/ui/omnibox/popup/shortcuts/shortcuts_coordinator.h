@@ -16,8 +16,7 @@
 @interface ShortcutsCoordinator : ChromeCoordinator
 
 // The view controller managed by this coordinator.
-@property(nonatomic, strong, readonly)
-    UICollectionViewController* viewController;
+@property(nonatomic, strong, readonly) UIViewController* viewController;
 
 @property(nonatomic, weak)
     id<ApplicationCommands, BrowserCommands, OmniboxFocuser>

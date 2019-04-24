@@ -331,6 +331,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   Stat<std::string>* username = section_identity->AddStringStat("Username");
   Stat<bool>* user_is_primary = section_identity->AddBoolStat("Is Primary");
   Stat<std::string>* auth_error = section_identity->AddStringStat("Auth Error");
+  // TODO(treib): Add the *time* of the auth error?
 
   Section* section_credentials = section_list.AddSection("Credentials");
   Stat<std::string>* request_token_time =
@@ -453,15 +454,13 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   setup_in_progress->Set(service->IsSetupInProgress());
 
   SyncStatus full_status;
-  bool is_status_valid =
-      service->QueryDetailedSyncStatusForDebugging(&full_status);
-  const SyncCycleSnapshot& snapshot =
-      service->GetLastCycleSnapshotForDebugging();
+  bool is_status_valid = service->QueryDetailedSyncStatus(&full_status);
+  const SyncCycleSnapshot& snapshot = service->GetLastCycleSnapshot();
   const SyncTokenStatus& token_status = service->GetSyncTokenStatus();
 
   // Version Info.
   // |client_version| was already set above.
-  server_url->Set(service->GetSyncServiceUrlForDebugging().spec());
+  server_url->Set(service->sync_service_url().spec());
 
   // Identity.
   if (is_status_valid && !full_status.sync_id.empty())
@@ -471,9 +470,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   username->Set(service->GetAuthenticatedAccountInfo().email);
   user_is_primary->Set(service->IsAuthenticatedAccountPrimary());
   std::string auth_error_str = service->GetAuthError().ToString();
-  auth_error->Set(base::StringPrintf(
-      "%s since %s", (auth_error_str.empty() ? "OK" : auth_error_str).c_str(),
-      GetTimeStr(service->GetAuthErrorTime(), "browser startup").c_str()));
+  auth_error->Set(auth_error_str.empty() ? "None" : auth_error_str);
 
   // Credentials.
   request_token_time->Set(GetTimeStr(token_status.token_request_time, "n/a"));
@@ -486,8 +483,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   // Local State.
   server_connection->Set(GetConnectionStatus(token_status));
-  last_synced->Set(
-      GetLastSyncedTimeString(service->GetLastSyncedTimeForDebugging()));
+  last_synced->Set(GetLastSyncedTimeString(service->GetLastSyncedTime()));
   is_setup_complete->Set(service->GetUserSettings()->IsFirstSetupComplete());
   if (is_status_valid)
     is_syncing->Set(full_status.syncing);
@@ -618,15 +614,14 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   if (service->HasUnrecoverableError()) {
     std::string unrecoverable_error_message =
         "Unrecoverable error detected at " +
-        service->GetUnrecoverableErrorLocationForDebugging().ToString() + ": " +
-        service->GetUnrecoverableErrorMessageForDebugging();
+        service->unrecoverable_error_location().ToString() + ": " +
+        service->unrecoverable_error_message();
     about_info->SetKey("unrecoverable_error_message",
                        base::Value(unrecoverable_error_message));
   }
 
-  about_info->SetKey(
-      "type_status",
-      base::Value::FromUniquePtrValue(service->GetTypeStatusMapForDebugging()));
+  about_info->SetKey("type_status", base::Value::FromUniquePtrValue(
+                                        service->GetTypeStatusMap()));
 
   return about_info;
 }

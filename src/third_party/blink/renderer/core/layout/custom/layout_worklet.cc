@@ -22,10 +22,15 @@ LayoutWorklet* LayoutWorklet::From(LocalDOMWindow& window) {
   LayoutWorklet* supplement =
       Supplement<LocalDOMWindow>::From<LayoutWorklet>(window);
   if (!supplement && window.GetFrame()) {
-    supplement = MakeGarbageCollected<LayoutWorklet>(window.GetFrame());
+    supplement = Create(window.GetFrame());
     ProvideTo(window, supplement);
   }
   return supplement;
+}
+
+// static
+LayoutWorklet* LayoutWorklet::Create(LocalFrame* frame) {
+  return MakeGarbageCollected<LayoutWorklet>(frame);
 }
 
 LayoutWorklet::LayoutWorklet(LocalFrame* frame)

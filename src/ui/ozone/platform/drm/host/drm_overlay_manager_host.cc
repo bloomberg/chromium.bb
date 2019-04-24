@@ -32,7 +32,7 @@ void DrmOverlayManagerHost::GpuSentOverlayResult(
   TRACE_EVENT_ASYNC_END0("hwoverlays",
                          "DrmOverlayManagerHost::SendOverlayValidationRequest",
                          this);
-  UpdateCacheForOverlayCandidates(candidates, widget, returns);
+  UpdateCacheForOverlayCandidates(candidates, returns);
 }
 
 void DrmOverlayManagerHost::SendOverlayValidationRequest(

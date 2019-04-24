@@ -48,7 +48,7 @@ struct GrMockOptions {
 
     struct ConfigOptions {
         enum Renderability { kNo, kNonMSAA, kMSAA };
-        Renderability fRenderability = kNo;
+        Renderability fRenderability;
         bool fTexturable = false;
     };
 
@@ -68,7 +68,6 @@ struct GrMockOptions {
     int fMaxVertexSamplers = 0;
     int fMaxFragmentSamplers = 8;
     bool fShaderDerivativeSupport = true;
-    bool fDualSourceBlendingSupport = false;
 
     // GrMockGpu options.
     bool fFailTextureAllocations = false;

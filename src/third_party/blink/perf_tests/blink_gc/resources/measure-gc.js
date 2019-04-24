@@ -36,10 +36,10 @@ if (!window.GCController && !window.gc)
         if (completedIterations > warmUpCount)
             console.time("BlinkGCTimeMeasurement");
 
-        // scheduleBlinkGC will schedule 5 Blink GCs at the end of event loop.
+        // forceBlinkGCWithoutV8GC will schedule 5 Blink GCs at the end of event loop.
         // setTimeout function runs on next event loop, so assuming that event loop is not busy,
         // we can estimate GC time by measuring the delay of setTimeout function.
-        internals.scheduleBlinkGC();
+        internals.forceBlinkGCWithoutV8GC();
         var start = PerfTestRunner.now();
         setTimeout(function() {
             var end = PerfTestRunner.now();

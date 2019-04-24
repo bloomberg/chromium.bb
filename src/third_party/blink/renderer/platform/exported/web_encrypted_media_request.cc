@@ -40,8 +40,8 @@ WebSecurityOrigin WebEncryptedMediaRequest::GetSecurityOrigin() const {
 }
 
 void WebEncryptedMediaRequest::RequestSucceeded(
-    std::unique_ptr<WebContentDecryptionModuleAccess> access) {
-  private_->RequestSucceeded(std::move(access));
+    WebContentDecryptionModuleAccess* access) {
+  private_->RequestSucceeded(access);
 }
 
 void WebEncryptedMediaRequest::RequestNotSupported(

@@ -25,6 +25,8 @@ namespace dawn_wire { namespace client {
     class Client;
     class Device;
 
+    // TODO(cwallez@chromium.org): Do something with objects before they are destroyed ?
+    //  - Call still uncalled builder callbacks
     template <typename T>
     class ObjectAllocator {
         using ObjectOwner =

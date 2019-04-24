@@ -15,7 +15,7 @@
 
 namespace views {
 
-using ImageButtonFactoryTest = ViewsTestBase;
+typedef ViewsTestBase ImageButtonFactoryTest;
 
 TEST_F(ImageButtonFactoryTest, CreateVectorImageButton) {
   ImageButton* button = CreateVectorImageButton(nullptr);
@@ -42,4 +42,4 @@ TEST_F(ImageButtonFactoryTest, SetImageFromVectorIcon_Default) {
             button->GetInkDropBaseColor());
   delete button;
 }
-}  // namespace views
+}  // views

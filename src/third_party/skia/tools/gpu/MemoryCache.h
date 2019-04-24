@@ -27,24 +27,11 @@ public:
     MemoryCache() = default;
     MemoryCache(const MemoryCache&) = delete;
     MemoryCache& operator=(const MemoryCache&) = delete;
-    void reset() {
-        fCacheMissCnt = 0;
-        fMap.clear();
-    }
 
     sk_sp<SkData> load(const SkData& key) override;
     void store(const SkData& key, const SkData& data) override;
     int numCacheMisses() const { return fCacheMissCnt; }
     void resetNumCacheMisses() { fCacheMissCnt = 0; }
-
-    void writeShadersToDisk(const char* path, GrBackendApi backend);
-
-    template <typename Fn>
-    void foreach(Fn&& fn) {
-        for (auto it = fMap.begin(); it != fMap.end(); ++it) {
-            fn(it->first.fKey, it->second.fData, it->second.fHitCount);
-        }
-    }
 
 private:
     struct Key {
@@ -59,18 +46,6 @@ private:
         sk_sp<const SkData> fKey;
     };
 
-    struct Value {
-        Value() = default;
-        Value(const SkData& data)
-            : fData(SkData::MakeWithCopy(data.data(), data.size()))
-            , fHitCount(1) {}
-        Value(const Value& that) = default;
-        Value& operator=(const Value&) = default;
-
-        sk_sp<SkData> fData;
-        int fHitCount;
-    };
-
     struct Hash {
         using argument_type = Key;
         using result_type = uint32_t;
@@ -80,7 +55,7 @@ private:
     };
 
     int fCacheMissCnt = 0;
-    std::unordered_map<Key, Value, Hash> fMap;
+    std::unordered_map<Key, sk_sp<SkData>, Hash> fMap;
 };
 
 }  // namespace sk_gpu_test

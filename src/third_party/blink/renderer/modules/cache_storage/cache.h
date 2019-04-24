@@ -38,6 +38,7 @@ struct TypeConverter<CacheQueryOptionsPtr, const blink::CacheQueryOptions*> {
 
 namespace blink {
 
+class CacheStorage;
 class ExceptionState;
 class Response;
 class Request;
@@ -49,7 +50,13 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static Cache* Create(GlobalFetch::ScopedFetcher*,
+                       CacheStorage*,
+                       mojom::blink::CacheStorageCacheAssociatedPtrInfo,
+                       scoped_refptr<base::SingleThreadTaskRunner>);
+
   Cache(GlobalFetch::ScopedFetcher*,
+        CacheStorage*,
         mojom::blink::CacheStorageCacheAssociatedPtrInfo,
         scoped_refptr<base::SingleThreadTaskRunner>);
 
@@ -107,13 +114,16 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
                         const String& method_name,
                         const HeapVector<Member<Request>>&,
                         const HeapVector<Member<Response>>&,
-                        ExceptionState&,
-                        int64_t trace_id);
+                        ExceptionState&);
   ScriptPromise KeysImpl(ScriptState*,
                          const Request*,
                          const CacheQueryOptions*);
 
   Member<GlobalFetch::ScopedFetcher> scoped_fetcher_;
+  // Hold a reference to CacheStorage to keep |cache_ptr_| alive.
+  // This is required because |cache_ptr_| is associated with CacheStorage's
+  // mojo message pipe.
+  Member<CacheStorage> cache_storage_;
 
   mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr_;
 

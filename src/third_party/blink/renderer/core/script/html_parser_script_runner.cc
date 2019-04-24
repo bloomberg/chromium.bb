@@ -53,7 +53,7 @@ std::unique_ptr<TracedValue> GetTraceArgsForScriptElement(
     Document& document,
     const TextPosition& text_position,
     const KURL& url) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   if (!url.IsNull())
     value->SetString("url", url.GetString());
   if (document.GetFrame()) {

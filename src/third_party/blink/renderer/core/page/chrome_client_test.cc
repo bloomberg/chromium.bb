@@ -71,7 +71,7 @@ TEST_F(ChromeClientTest, SetToolTipFlood) {
 }
 
 TEST_F(ChromeClientTest, SetToolTipEmptyString) {
-  ChromeClient* client = MakeGarbageCollected<EmptyChromeClient>();
+  ChromeClient* client = EmptyChromeClient::Create();
   HitTestLocation location(LayoutPoint(10, 20));
   HitTestResult result(HitTestRequest(HitTestRequest::kMove), location);
   auto& doc = *Document::CreateForTest();

@@ -30,7 +30,6 @@
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
 #include "ash/window_factory.h"
 #include "ash/wm/always_on_top_controller.h"
-#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -106,7 +105,7 @@ class TestShellObserver : public ShellObserver {
   ~TestShellObserver() override { Shell::Get()->RemoveShellObserver(this); }
 
   void OnFullscreenStateChanged(bool is_fullscreen,
-                                aura::Window* container) override {
+                                aura::Window* root_window) override {
     call_count_++;
     is_fullscreen_ = is_fullscreen;
   }
@@ -451,10 +450,10 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
       window_factory::NewWindow(nullptr, aura::client::WINDOW_TYPE_NORMAL);
   window->Init(ui::LAYER_TEXTURED);
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  aura::Window* active_desk_container =
+  aura::Window* default_container =
       Shell::GetPrimaryRootWindowController()->GetContainer(
-          desks_util::GetActiveDeskContainerId());
-  active_desk_container->AddChild(window.get());
+          kShellWindowId_DefaultContainer);
+  default_container->AddChild(window.get());
   window->Show();
   gfx::Rect work_area(GetPrimaryDisplay().work_area());
   EXPECT_EQ(work_area.ToString(), window->GetBoundsInScreen().ToString());
@@ -845,8 +844,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenSuspendsAlwaysOnTop) {
       always_on_top_window1->GetProperty(aura::client::kAlwaysOnTopKey));
   EXPECT_FALSE(
       always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
-  EXPECT_NE(nullptr,
-            wm::GetWindowForFullscreenModeForContext(fullscreen_window.get()));
+  EXPECT_NE(nullptr, wm::GetWindowForFullscreenMode(fullscreen_window.get()));
 
   // Adding a new always-on-top window is not affected by fullscreen.
   std::unique_ptr<aura::Window> always_on_top_window3(
@@ -864,8 +862,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenSuspendsAlwaysOnTop) {
       always_on_top_window2->GetProperty(aura::client::kAlwaysOnTopKey));
   EXPECT_TRUE(
       always_on_top_window3->GetProperty(aura::client::kAlwaysOnTopKey));
-  EXPECT_EQ(nullptr,
-            wm::GetWindowForFullscreenModeForContext(fullscreen_window.get()));
+  EXPECT_EQ(nullptr, wm::GetWindowForFullscreenMode(fullscreen_window.get()));
 }
 
 TEST_F(WorkspaceLayoutManagerSoloTest,
@@ -888,15 +885,13 @@ TEST_F(WorkspaceLayoutManagerSoloTest,
   fullscreen_window->SetProperty(aura::client::kShowStateKey,
                                  ui::SHOW_STATE_FULLSCREEN);
   EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
-  EXPECT_NE(nullptr,
-            wm::GetWindowForFullscreenModeForContext(fullscreen_window.get()));
+  EXPECT_NE(nullptr, wm::GetWindowForFullscreenMode(fullscreen_window.get()));
 
   // Making fullscreen window normal does not affect PIP.
   fullscreen_window->SetProperty(aura::client::kShowStateKey,
                                  ui::SHOW_STATE_NORMAL);
   EXPECT_TRUE(pip_window->GetProperty(aura::client::kAlwaysOnTopKey));
-  EXPECT_EQ(nullptr,
-            wm::GetWindowForFullscreenModeForContext(fullscreen_window.get()));
+  EXPECT_EQ(nullptr, wm::GetWindowForFullscreenMode(fullscreen_window.get()));
 }
 
 // Similary, pinned window causes always_on_top_ windows to stack below.
@@ -1131,7 +1126,7 @@ class WorkspaceLayoutManagerBackdropTest : public AshTestBase {
     AshTestBase::SetUp();
     UpdateDisplay("800x600");
     default_container_ = Shell::GetPrimaryRootWindowController()->GetContainer(
-        desks_util::GetActiveDeskContainerId());
+        kShellWindowId_DefaultContainer);
   }
 
   // Turn the top window back drop on / off.
@@ -1650,10 +1645,10 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     UpdateDisplay("800x600");
-    aura::Window* active_desk_container =
+    aura::Window* default_container =
         Shell::GetPrimaryRootWindowController()->GetContainer(
-            desks_util::GetActiveDeskContainerId());
-    layout_manager_ = GetWorkspaceLayoutManager(active_desk_container);
+            kShellWindowId_DefaultContainer);
+    layout_manager_ = GetWorkspaceLayoutManager(default_container);
   }
 
   void ShowKeyboard() {
@@ -1797,6 +1792,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest,
        IgnoreWorkAreaChangeinNonStickyMode) {
   keyboard::SetAccessibilityKeyboardEnabled(true);
   InitKeyboardBounds();
+  Shell::Get()->EnableKeyboard();
   auto* kb_controller = keyboard::KeyboardController::Get();
 
   gfx::Rect work_area(

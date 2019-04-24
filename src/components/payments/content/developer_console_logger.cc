@@ -19,7 +19,7 @@ void DeveloperConsoleLogger::Warn(const std::string& warning_message) const {
     return;
   if (web_contents() && web_contents()->GetMainFrame()) {
     web_contents()->GetMainFrame()->AddMessageToConsole(
-        blink::mojom::ConsoleMessageLevel::kWarning, warning_message);
+        content::CONSOLE_MESSAGE_LEVEL_WARNING, warning_message);
   } else {
     ErrorLogger::Warn(warning_message);
   }
@@ -30,7 +30,7 @@ void DeveloperConsoleLogger::Error(const std::string& error_message) const {
     return;
   if (web_contents() && web_contents()->GetMainFrame()) {
     web_contents()->GetMainFrame()->AddMessageToConsole(
-        blink::mojom::ConsoleMessageLevel::kError, error_message);
+        content::CONSOLE_MESSAGE_LEVEL_ERROR, error_message);
   } else {
     ErrorLogger::Error(error_message);
   }

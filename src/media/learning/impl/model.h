@@ -8,7 +8,7 @@
 #include "base/component_export.h"
 #include "media/learning/common/labelled_example.h"
 #include "media/learning/impl/model.h"
-#include "media/learning/impl/target_histogram.h"
+#include "media/learning/impl/target_distribution.h"
 
 namespace media {
 namespace learning {
@@ -19,11 +19,11 @@ namespace learning {
 class COMPONENT_EXPORT(LEARNING_IMPL) Model {
  public:
   // Callback for asynchronous predictions.
-  using PredictionCB = base::OnceCallback<void(TargetHistogram predicted)>;
+  using PredictionCB = base::OnceCallback<void(TargetDistribution predicted)>;
 
   virtual ~Model() = default;
 
-  virtual TargetHistogram PredictDistribution(
+  virtual TargetDistribution PredictDistribution(
       const FeatureVector& instance) = 0;
 
   // TODO(liberato): Consider adding an async prediction helper.

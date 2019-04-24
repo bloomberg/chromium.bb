@@ -66,7 +66,8 @@ ChromeVoxBluetoothBrailleDisplayUIUnitTest.prototype = {
   buildUIExpectation: function(controls) {
     return `
       <div>
-        <div>
+        <h2>Bluetooth Braille Display</h2>
+        <div class="option">
           <span id="bluetoothBrailleSelectLabel">${this.selectLabel}</span>
           ${controls}
         </div>
@@ -81,7 +82,7 @@ SYNC_TEST_F(
       var ui = new BluetoothBrailleDisplayUI();
       ui.attach(document.body);
       assertEqualsDOM(this.buildUIExpectation(`
-            <select aria-labelledby="bluetoothBrailleSelectLabel"></select>
+              <select aria-labelledby="bluetoothBrailleSelectLabel"></select>
                 <button id="connectOrDisconnect" disabled="">Connect</button>
                 <button id="forget" disabled="">Forget</button>`),
           document.body.children[0]);
@@ -95,8 +96,8 @@ SYNC_TEST_F(
       ui.attach(document.body);
 
       var displays = [];
-
-      // Fake out getDevice using |display| as the backing source which changes below.
+      
+// Fake out getDevice using |display| as the backing source which changes below.
       chrome.bluetooth.getDevice = (address, callback) => {
         var display = displays.find((display) => display.address == address );
         assertNotNullNorUndefined(display);
@@ -153,7 +154,7 @@ SYNC_TEST_F(
       displays = [
         {name: 'Focus 40 BT', address: 'abcd1234', paired: true},
         {name: 'Focus 40 BT rev 2', address: '4321dcba'}
-      ];
+];
       ui.onDisplayListChanged(displays);
       assertEqualsDOM(this.buildUIExpectation(`
               <select aria-labelledby="bluetoothBrailleSelectLabel">
@@ -217,7 +218,19 @@ SYNC_TEST_F(
       // Trigger pincode screen.
       ui.onPincodeRequested();
       assertEqualsDOM(`
-          <div><form><label id="pincodeLabel">Please enter a pin</label><input id="pincode" type="text" aria-labelledby="pincodeLabel"></form><div hidden=""><span id="bluetoothBrailleSelectLabel">Select a bluetooth braille display</span><select aria-labelledby="bluetoothBrailleSelectLabel"></select><button id="connectOrDisconnect" disabled="">Connect</button><button id="forget" disabled="">Forget</button></div></div>`,
+          <div>
+            <h2>Bluetooth Braille Display</h2>
+            <form>
+              <label id="pincodeLabel">Please enter a pin</label>
+              <input id="pincode" type="text" aria-labelledby="pincodeLabel">
+            </form>
+            <div class="option" hidden="">
+              <span id="bluetoothBrailleSelectLabel">${this.selectLabel}</span>
+              <select aria-labelledby="bluetoothBrailleSelectLabel"></select>
+              <button id="connectOrDisconnect" disabled="">Connect</button>
+              <button id="forget" disabled="">Forget</button>
+            </div>
+          </div>`,
           document.body.children[0]);
       ui.detach();
     });

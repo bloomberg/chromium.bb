@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/iterators/character_iterator.h"
 #include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
-#include "third_party/blink/renderer/core/editing/iterators/text_iterator_behavior.h"
 #include "third_party/blink/renderer/core/editing/position.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_layout_object.h"
@@ -80,9 +79,6 @@ const AXPosition AXPosition::CreateFirstPositionInObject(
     return position.AsUnignoredPosition(adjustment_behavior);
   }
 
-  // If the container is not a text object, creating a position inside an
-  // ignored container might result in an invalid position, because child count
-  // is inaccurate.
   const AXObject* unignored_container = container.AccessibilityIsIgnored()
                                             ? container.ParentObjectUnignored()
                                             : &container;
@@ -107,9 +103,6 @@ const AXPosition AXPosition::CreateLastPositionInObject(
     return position.AsUnignoredPosition(adjustment_behavior);
   }
 
-  // If the container is not a text object, creating a position inside an
-  // ignored container might result in an invalid position, because child count
-  // is inaccurate.
   const AXObject* unignored_container = container.AccessibilityIsIgnored()
                                             ? container.ParentObjectUnignored()
                                             : &container;
@@ -208,12 +201,9 @@ const AXPosition AXPosition::FromPosition(
     // character offset.
     // TODO(nektar): Use LayoutNG offset mapping instead of
     // |TextIterator|.
-    TextIteratorBehavior::Builder iterator_builder;
-    const TextIteratorBehavior text_iterator_behavior =
-        iterator_builder.SetDoesNotEmitSpaceBeyondRangeEnd(true).Build();
     const auto first_position = Position::FirstPositionInNode(*container_node);
-    int offset = TextIterator::RangeLength(
-        first_position, parent_anchored_position, text_iterator_behavior);
+    int offset =
+        TextIterator::RangeLength(first_position, parent_anchored_position);
     ax_position.text_offset_or_child_index_ = offset;
     ax_position.affinity_ = affinity;
     DCHECK(ax_position.IsValid());
@@ -223,13 +213,13 @@ const AXPosition AXPosition::FromPosition(
   DCHECK(container_node->IsContainerNode());
   if (container->AccessibilityIsIgnored()) {
     container = container->ParentObjectUnignored();
-    if (!container)
-      return {};
-
-    // |container_node| could potentially become nullptr if the unignored
-    // parent is an anonymous layout block.
+    // |container_node| could potentially become nullptr if the unignored parent
+    // is an anonymous layout block.
     container_node = container->GetNode();
   }
+
+  if (!container)
+    return {};
 
   AXPosition ax_position(*container);
   // |ComputeNodeAfterPosition| returns nullptr for "after children"
@@ -280,15 +270,6 @@ const AXPosition AXPosition::FromPosition(
       if (!container->Children().Contains(ax_child)) {
         // The |ax_child| is aria-owned by another object.
         return CreatePositionBeforeObject(*ax_child, adjustment_behavior);
-      }
-
-      if (ax_child->IsTextObject()) {
-        // The |ax_child| is a text object. In order that equality between
-        // seemingly identical positions would hold, i.e. a "before object"
-        // position before the text object and a "text position" before the
-        // first character of the text object, we would need to convert to the
-        // deep equivalent position.
-        return CreateFirstPositionInObject(*ax_child, adjustment_behavior);
       }
 
       ax_position.text_offset_or_child_index_ = ax_child->IndexInParent();
@@ -369,15 +350,11 @@ int AXPosition::MaxTextOffset() const {
   }
 
   // TODO(nektar): Use LayoutNG offset mapping instead of |TextIterator|.
-  TextIteratorBehavior::Builder iterator_builder;
-  const TextIteratorBehavior text_iterator_behavior =
-      iterator_builder.SetDoesNotEmitSpaceBeyondRangeEnd(true).Build();
   const auto first_position =
       Position::FirstPositionInNode(*container_object_->GetNode());
   const auto last_position =
       Position::LastPositionInNode(*container_object_->GetNode());
-  return TextIterator::RangeLength(first_position, last_position,
-                                   text_iterator_behavior);
+  return TextIterator::RangeLength(first_position, last_position);
 }
 
 TextAffinity AXPosition::Affinity() const {
@@ -509,7 +486,7 @@ const AXPosition AXPosition::AsUnignoredPosition(
   if (!IsValid())
     return {};
 
-  // There are five possibilities:
+  // There are four possibilities:
   //
   // 1. The container object is ignored and this is not a text position or an
   // "after children" position. Try to find the equivalent position in the
@@ -524,13 +501,6 @@ const AXPosition AXPosition::AsUnignoredPosition(
   //
   // 4. The child after a tree position is ignored, but the container object is
   // not. Return a "before children" or an "after children" position.
-  //
-  // 5. We arbitrarily decided to ignore positions that are anchored to before a
-  // text object. We move such positions to before the first character of the
-  // text object. This is in an effort to ensure that two positions, one a
-  // "before object" position anchored to before a text object, and one a "text
-  // position" anchored to before the first character of the same text object,
-  // compare as equivalent.
 
   const AXObject* container = container_object_;
   const AXObject* child = ChildAfterTreePosition();
@@ -584,10 +554,6 @@ const AXPosition AXPosition::AsUnignoredPosition(
         return CreateFirstPositionInObject(*container);
     }
   }
-
-  // Case 5.
-  if (child && child->IsTextObject())
-    return CreateFirstPositionInObject(*child);
 
   // The position is not ignored.
   return *this;
@@ -739,13 +705,9 @@ const PositionWithAffinity AXPosition::ToPositionWithAffinity(
   }
 
   // TODO(nektar): Use LayoutNG offset mapping instead of |TextIterator|.
-  TextIteratorBehavior::Builder iterator_builder;
-  const TextIteratorBehavior text_iterator_behavior =
-      iterator_builder.SetDoesNotEmitSpaceBeyondRangeEnd(true).Build();
   const auto first_position = Position::FirstPositionInNode(*container_node);
   const auto last_position = Position::LastPositionInNode(*container_node);
-  CharacterIterator character_iterator(first_position, last_position,
-                                       text_iterator_behavior);
+  CharacterIterator character_iterator(first_position, last_position);
   const EphemeralRange range = character_iterator.CalculateCharacterSubrange(
       0, adjusted_position.text_offset_or_child_index_);
   return PositionWithAffinity(range.EndPosition(), affinity_);
@@ -759,13 +721,15 @@ String AXPosition::ToString() const {
   if (IsTextPosition()) {
     builder.Append("AX text position in ");
     builder.Append(container_object_->ToString());
-    builder.AppendFormat(", %d", TextOffset());
+    builder.Append(", ");
+    builder.Append(String::Format("%d", TextOffset()));
     return builder.ToString();
   }
 
   builder.Append("AX object anchored position in ");
   builder.Append(container_object_->ToString());
-  builder.AppendFormat(", %d", ChildIndex());
+  builder.Append(", ");
+  builder.Append(String::Format("%d", ChildIndex()));
   return builder.ToString();
 }
 

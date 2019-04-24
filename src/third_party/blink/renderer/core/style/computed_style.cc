@@ -27,7 +27,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/numerics/clamped_math.h"
 #include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
@@ -71,6 +70,7 @@
 #include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
@@ -227,7 +227,7 @@ bool ComputedStyle::NeedsReattachLayoutTree(const ComputedStyle* old_style,
       !old_style->HasPseudoStyle(kPseudoIdFirstLine))
     return true;
 
-  return false;
+  return old_style->ForceLegacyLayout() != new_style->ForceLegacyLayout();
 }
 
 ComputedStyle::Difference ComputedStyle::ComputeDifference(
@@ -774,7 +774,7 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(
   if (InsideLink() != EInsideLink::kNotInsideLink)
     return false;
 
-  CSSPaintValue* value = To<CSSPaintValue>(image.CssValue());
+  CSSPaintValue* value = ToCSSPaintValue(image.CssValue());
 
   // NOTE: If the invalidation properties vectors are null, we are invalid as
   // we haven't yet been painted (and can't provide the invalidation
@@ -883,12 +883,11 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
       HasCurrentFilterAnimation() != other.HasCurrentFilterAnimation() ||
       HasCurrentBackdropFilterAnimation() !=
           other.HasCurrentBackdropFilterAnimation() ||
-      SubtreeWillChangeContents() != other.SubtreeWillChangeContents() ||
       BackfaceVisibility() != other.BackfaceVisibility() ||
+      HasWillChangeCompositingHint() != other.HasWillChangeCompositingHint() ||
       UsedTransformStyle3D() != other.UsedTransformStyle3D() ||
       ContainsPaint() != other.ContainsPaint() ||
-      IsOverflowVisible() != other.IsOverflowVisible() ||
-      WillChangeProperties() != other.WillChangeProperties()) {
+      IsOverflowVisible() != other.IsOverflowVisible()) {
     diff.SetCompositingReasonsChanged();
   }
 }
@@ -926,30 +925,30 @@ static bool HasPropertyThatCreatesStackingContext(
     const Vector<CSSPropertyID>& properties) {
   for (CSSPropertyID property : properties) {
     switch (property) {
-      case CSSPropertyID::kOpacity:
-      case CSSPropertyID::kTransform:
-      case CSSPropertyID::kAliasWebkitTransform:
-      case CSSPropertyID::kTransformStyle:
-      case CSSPropertyID::kAliasWebkitTransformStyle:
-      case CSSPropertyID::kPerspective:
-      case CSSPropertyID::kAliasWebkitPerspective:
-      case CSSPropertyID::kTranslate:
-      case CSSPropertyID::kRotate:
-      case CSSPropertyID::kScale:
-      case CSSPropertyID::kOffsetPath:
-      case CSSPropertyID::kOffsetPosition:
-      case CSSPropertyID::kWebkitMask:
-      case CSSPropertyID::kWebkitMaskBoxImage:
-      case CSSPropertyID::kClipPath:
-      case CSSPropertyID::kAliasWebkitClipPath:
-      case CSSPropertyID::kWebkitBoxReflect:
-      case CSSPropertyID::kFilter:
-      case CSSPropertyID::kAliasWebkitFilter:
-      case CSSPropertyID::kBackdropFilter:
-      case CSSPropertyID::kZIndex:
-      case CSSPropertyID::kPosition:
-      case CSSPropertyID::kMixBlendMode:
-      case CSSPropertyID::kIsolation:
+      case CSSPropertyOpacity:
+      case CSSPropertyTransform:
+      case CSSPropertyAliasWebkitTransform:
+      case CSSPropertyTransformStyle:
+      case CSSPropertyAliasWebkitTransformStyle:
+      case CSSPropertyPerspective:
+      case CSSPropertyAliasWebkitPerspective:
+      case CSSPropertyTranslate:
+      case CSSPropertyRotate:
+      case CSSPropertyScale:
+      case CSSPropertyOffsetPath:
+      case CSSPropertyOffsetPosition:
+      case CSSPropertyWebkitMask:
+      case CSSPropertyWebkitMaskBoxImage:
+      case CSSPropertyClipPath:
+      case CSSPropertyAliasWebkitClipPath:
+      case CSSPropertyWebkitBoxReflect:
+      case CSSPropertyFilter:
+      case CSSPropertyAliasWebkitFilter:
+      case CSSPropertyBackdropFilter:
+      case CSSPropertyZIndex:
+      case CSSPropertyPosition:
+      case CSSPropertyMixBlendMode:
+      case CSSPropertyIsolation:
         return true;
       default:
         break;
@@ -999,49 +998,44 @@ void ComputedStyle::SetContent(ContentData* content_data) {
   SetContentInternal(content_data);
 }
 
-static bool IsWillChangeTransformHintProperty(CSSPropertyID property) {
-  switch (property) {
-    case CSSPropertyID::kTransform:
-    case CSSPropertyID::kAliasWebkitTransform:
-    case CSSPropertyID::kPerspective:
-    case CSSPropertyID::kTranslate:
-    case CSSPropertyID::kScale:
-    case CSSPropertyID::kRotate:
-    case CSSPropertyID::kOffsetPath:
-    case CSSPropertyID::kOffsetPosition:
-      return true;
-    default:
-      break;
-  }
-  return false;
-}
-
-static bool IsWillChangeCompositingHintProperty(CSSPropertyID property) {
-  if (IsWillChangeTransformHintProperty(property))
-    return true;
-  switch (property) {
-    case CSSPropertyID::kOpacity:
-    case CSSPropertyID::kTop:
-    case CSSPropertyID::kLeft:
-    case CSSPropertyID::kBottom:
-    case CSSPropertyID::kRight:
-      return true;
-    default:
-      break;
-  }
-  return false;
-}
-
 bool ComputedStyle::HasWillChangeCompositingHint() const {
-  const auto& properties = WillChangeProperties();
-  return std::any_of(properties.begin(), properties.end(),
-                     IsWillChangeCompositingHintProperty);
+  for (const auto& property : WillChangeProperties()) {
+    switch (property) {
+      case CSSPropertyOpacity:
+      case CSSPropertyTransform:
+      case CSSPropertyAliasWebkitTransform:
+      case CSSPropertyTranslate:
+      case CSSPropertyScale:
+      case CSSPropertyRotate:
+      case CSSPropertyTop:
+      case CSSPropertyLeft:
+      case CSSPropertyBottom:
+      case CSSPropertyRight:
+        return true;
+      default:
+        break;
+    }
+  }
+  return false;
 }
 
 bool ComputedStyle::HasWillChangeTransformHint() const {
-  const auto& properties = WillChangeProperties();
-  return std::any_of(properties.begin(), properties.end(),
-                     IsWillChangeTransformHintProperty);
+  for (const auto& property : WillChangeProperties()) {
+    switch (property) {
+      case CSSPropertyTransform:
+      case CSSPropertyAliasWebkitTransform:
+      case CSSPropertyPerspective:
+      case CSSPropertyTranslate:
+      case CSSPropertyScale:
+      case CSSPropertyRotate:
+      case CSSPropertyOffsetPath:
+      case CSSPropertyOffsetPosition:
+        return true;
+      default:
+        break;
+    }
+  }
+  return false;
 }
 
 bool ComputedStyle::RequireTransformOrigin(
@@ -1085,7 +1079,7 @@ void ComputedStyle::LoadDeferredImages(Document& document) const {
          background_layer; background_layer = background_layer->Next()) {
       if (StyleImage* image = background_layer->GetImage()) {
         if (image->IsImageResource() && image->IsLazyloadPossiblyDeferred())
-          To<StyleFetchedImage>(image)->LoadDeferredImage(document);
+          ToStyleFetchedImage(image)->LoadDeferredImage(document);
       }
     }
   }
@@ -1181,12 +1175,12 @@ void ComputedStyle::ApplyMotionPathTransform(
     // TODO(ericwilligers): crbug.com/641245 Support <size> for ray paths.
     float float_distance = FloatValueForLength(distance, 0);
 
-    angle = To<StyleRay>(*path).Angle() - 90;
+    angle = ToStyleRay(*path).Angle() - 90;
     point.SetX(float_distance * cos(deg2rad(angle)));
     point.SetY(float_distance * sin(deg2rad(angle)));
   } else {
     float zoom = EffectiveZoom();
-    const StylePath& motion_path = To<StylePath>(*path);
+    const StylePath& motion_path = ToStylePath(*path);
     float path_length = motion_path.length();
     float float_distance =
         FloatValueForLength(distance, path_length * zoom) / zoom;
@@ -1589,13 +1583,13 @@ LineLogicalSide ComputedStyle::GetTextEmphasisLineLogicalSide() const {
 
 CSSAnimationData& ComputedStyle::AccessAnimations() {
   if (!AnimationsInternal())
-    SetAnimationsInternal(std::make_unique<CSSAnimationData>());
+    SetAnimationsInternal(CSSAnimationData::Create());
   return *AnimationsInternal();
 }
 
 CSSTransitionData& ComputedStyle::AccessTransitions() {
   if (!TransitionsInternal())
-    SetTransitionsInternal(std::make_unique<CSSTransitionData>());
+    SetTransitionsInternal(CSSTransitionData::Create());
   return *TransitionsInternal();
 }
 
@@ -1706,7 +1700,7 @@ StyleNonInheritedVariables& ComputedStyle::MutableNonInheritedVariables() {
   std::unique_ptr<StyleNonInheritedVariables>& variables =
       MutableNonInheritedVariablesInternal();
   if (!variables)
-    variables = std::make_unique<StyleNonInheritedVariables>();
+    variables = StyleNonInheritedVariables::Create();
   return *variables;
 }
 
@@ -2077,7 +2071,7 @@ int ComputedStyle::OutlineOutsetExtent() const {
         OutlineOffset(), std::ceil(GetOutlineStrokeWidthForFocusRing()),
         LayoutTheme::GetTheme().IsFocusRingOutset());
   }
-  return base::ClampAdd(OutlineWidth(), OutlineOffset()).Max(0);
+  return ClampAdd(OutlineWidth(), OutlineOffset()).Max(0);
 }
 
 float ComputedStyle::GetOutlineStrokeWidthForFocusRing() const {

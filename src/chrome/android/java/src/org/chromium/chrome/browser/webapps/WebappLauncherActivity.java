@@ -14,7 +14,6 @@ import android.os.Handler;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Base64;
 
@@ -23,7 +22,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
@@ -57,6 +55,27 @@ public class WebappLauncherActivity extends Activity {
     private static final int WEBAPK_LAUNCH_DELAY_MS = 20;
 
     private static final String TAG = "webapps";
+
+    /** WebAPK first run experience parameters. */
+    public static class FreParams {
+        private final Intent mIntentToLaunchAfterFreComplete;
+        private final String mShortName;
+
+        public FreParams(Intent intentToLaunchAfterFreComplete, String shortName) {
+            mIntentToLaunchAfterFreComplete = intentToLaunchAfterFreComplete;
+            mShortName = shortName;
+        }
+
+        /** Returns the intent launch when the user completes the first run experience. */
+        public Intent getIntentToLaunchAfterFreComplete() {
+            return mIntentToLaunchAfterFreComplete;
+        }
+
+        /** Returns the WebAPK's short name. */
+        public String webApkShortName() {
+            return mShortName;
+        }
+    }
 
     /** Creates intent to relaunch WebAPK. */
     public static Intent createRelaunchWebApkIntent(Intent sourceIntent, WebApkInfo webApkInfo) {
@@ -93,7 +112,7 @@ public class WebappLauncherActivity extends Activity {
      * if the intent does not launch either a WebappLauncherActivity or a WebApkActivity. This
      * method is slow. It makes several PackageManager calls.
      */
-    public static @Nullable WebApkInfo maybeSlowlyGenerateWebApkInfoFromIntent(Intent fromIntent) {
+    public static FreParams slowGenerateFreParamsIfIntentIsForWebApk(Intent fromIntent) {
         // Check for intents targeted at WebApkActivity, WebApkActivity0-9,
         // SameTaskWebApkActivity and WebappLauncherActivity.
         String targetActivityClassName = fromIntent.getComponent().getClassName();
@@ -103,17 +122,15 @@ public class WebappLauncherActivity extends Activity {
             return null;
         }
 
-        return WebApkInfo.create(fromIntent);
+        WebApkInfo info = WebApkInfo.create(fromIntent);
+        return (info != null)
+                ? new FreParams(createRelaunchWebApkIntent(fromIntent, info), info.shortName())
+                : null;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Close the notification tray.
-        ContextUtils.getApplicationContext().sendBroadcast(
-                new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
-
         long createTimestamp = SystemClock.elapsedRealtime();
         Intent intent = getIntent();
 
@@ -195,7 +212,6 @@ public class WebappLauncherActivity extends Activity {
             ApiCompatibilityUtils.finishAndRemoveTask(launchingActivity);
         } else {
             launchingActivity.finish();
-            launchingActivity.overridePendingTransition(0, R.anim.no_anim);
         }
     }
 

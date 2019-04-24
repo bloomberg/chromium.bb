@@ -34,7 +34,6 @@ void Test() {
   Prog* prog = re->CompileToProg(0);
   CHECK(prog);
   CHECK(prog->IsOnePass());
-  CHECK(prog->CanBitState());
   const char* text = "650-253-0001";
   StringPiece sp[4];
   CHECK(prog->SearchOnePass(text, text, Prog::kAnchored, Prog::kFullMatch, sp, 4));
@@ -62,7 +61,6 @@ void MemoryUsage() {
     Prog* prog = re->CompileToProg(0);
     CHECK(prog);
     CHECK(prog->IsOnePass());
-    CHECK(prog->CanBitState());
     fprintf(stderr, "Prog:   %7lld bytes (peak=%lld)\n", mc.HeapGrowth(), mc.PeakHeapGrowth());
     mc.Reset();
 
@@ -141,7 +139,7 @@ ParseImpl SearchParse1CachedPCRE, SearchParse1CachedRE2;
 
 // Generate random text that won't contain the search string,
 // to test worst-case search behavior.
-void MakeText(std::string* text, int nbytes) {
+void MakeText(string* text, int nbytes) {
   srand(1);
   text->resize(nbytes);
   for (int i = 0; i < nbytes; i++) {
@@ -158,7 +156,7 @@ void MakeText(std::string* text, int nbytes) {
 // the text for regexp iters times.
 void Search(int iters, int nbytes, const char* regexp, SearchImpl* search) {
   StopBenchmarkTiming();
-  std::string s;
+  string s;
   MakeText(&s, nbytes);
   BenchmarkMemoryUsage();
   StartBenchmarkTiming();
@@ -263,10 +261,10 @@ BENCHMARK_RANGE(Search_Parens_CachedRE2,     8, 16<<20)->ThreadRange(1, NumCPUs(
 
 void SearchBigFixed(int iters, int nbytes, SearchImpl* search) {
   StopBenchmarkTiming();
-  std::string s;
+  string s;
   s.append(nbytes/2, 'x');
-  std::string regexp = "^" + s + ".*$";
-  std::string t;
+  string regexp = "^" + s + ".*$";
+  string t;
   MakeText(&t, nbytes/2);
   s += t;
   BenchmarkMemoryUsage();
@@ -291,7 +289,7 @@ BENCHMARK_RANGE(Search_BigFixed_CachedRE2,     8, 1<<20)->ThreadRange(1, NumCPUs
 
 void FindAndConsume(int iters, int nbytes) {
   StopBenchmarkTiming();
-  std::string s;
+  string s;
   MakeText(&s, nbytes);
   s.append("Hello World");
   StartBenchmarkTiming();
@@ -311,7 +309,7 @@ BENCHMARK_RANGE(FindAndConsume, 8, 16<<20)->ThreadRange(1, NumCPUs());
 
 void SearchSuccess(int iters, int nbytes, const char* regexp, SearchImpl* search) {
   StopBenchmarkTiming();
-  std::string s;
+  string s;
   MakeText(&s, nbytes);
   BenchmarkMemoryUsage();
   StartBenchmarkTiming();
@@ -385,7 +383,7 @@ BENCHMARK_RANGE(Search_Success1_CachedBitState, 8, 2<<20)->ThreadRange(1, NumCPU
 
 void SearchAltMatch(int iters, int nbytes, SearchImpl* search) {
   StopBenchmarkTiming();
-  std::string s;
+  string s;
   MakeText(&s, nbytes);
   BenchmarkMemoryUsage();
   StartBenchmarkTiming();
@@ -606,7 +604,7 @@ BENCHMARK(Parse_CachedSplitHard_Backtrack)->ThreadRange(1, NumCPUs());
 
 void Parse1SplitBig1(int iters,
                   void (*run)(int, const char*, const StringPiece&)) {
-  std::string s;
+  string s;
   s.append(100000, 'x');
   s.append("650-253-0001");
   BenchmarkMemoryUsage();
@@ -626,7 +624,7 @@ BENCHMARK(Parse_CachedSplitBig1_RE2)->ThreadRange(1, NumCPUs());
 
 void Parse1SplitBig2(int iters,
                   void (*run)(int, const char*, const StringPiece&)) {
-  std::string s;
+  string s;
   s.append("650-253-");
   s.append(100000, '0');
   BenchmarkMemoryUsage();
@@ -645,7 +643,7 @@ BENCHMARK(Parse_CachedSplitBig2_RE2)->ThreadRange(1, NumCPUs());
 // Benchmark: measure time required to parse (but not execute)
 // a simple regular expression.
 
-void ParseRegexp(int iters, const std::string& regexp) {
+void ParseRegexp(int iters, const string& regexp) {
   for (int i = 0; i < iters; i++) {
     Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
     CHECK(re);
@@ -653,7 +651,7 @@ void ParseRegexp(int iters, const std::string& regexp) {
   }
 }
 
-void SimplifyRegexp(int iters, const std::string& regexp) {
+void SimplifyRegexp(int iters, const string& regexp) {
   for (int i = 0; i < iters; i++) {
     Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
     CHECK(re);
@@ -664,7 +662,7 @@ void SimplifyRegexp(int iters, const std::string& regexp) {
   }
 }
 
-void NullWalkRegexp(int iters, const std::string& regexp) {
+void NullWalkRegexp(int iters, const string& regexp) {
   Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
   CHECK(re);
   for (int i = 0; i < iters; i++) {
@@ -673,7 +671,7 @@ void NullWalkRegexp(int iters, const std::string& regexp) {
   re->Decref();
 }
 
-void SimplifyCompileRegexp(int iters, const std::string& regexp) {
+void SimplifyCompileRegexp(int iters, const string& regexp) {
   for (int i = 0; i < iters; i++) {
     Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
     CHECK(re);
@@ -687,7 +685,7 @@ void SimplifyCompileRegexp(int iters, const std::string& regexp) {
   }
 }
 
-void CompileRegexp(int iters, const std::string& regexp) {
+void CompileRegexp(int iters, const string& regexp) {
   for (int i = 0; i < iters; i++) {
     Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
     CHECK(re);
@@ -698,7 +696,7 @@ void CompileRegexp(int iters, const std::string& regexp) {
   }
 }
 
-void CompileToProg(int iters, const std::string& regexp) {
+void CompileToProg(int iters, const string& regexp) {
   Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
   CHECK(re);
   for (int i = 0; i < iters; i++) {
@@ -709,7 +707,7 @@ void CompileToProg(int iters, const std::string& regexp) {
   re->Decref();
 }
 
-void CompileByteMap(int iters, const std::string& regexp) {
+void CompileByteMap(int iters, const string& regexp) {
   Regexp* re = Regexp::Parse(regexp, Regexp::LikePerl, NULL);
   CHECK(re);
   Prog* prog = re->CompileToProg(0);
@@ -721,22 +719,21 @@ void CompileByteMap(int iters, const std::string& regexp) {
   re->Decref();
 }
 
-void CompilePCRE(int iters, const std::string& regexp) {
+void CompilePCRE(int iters, const string& regexp) {
   for (int i = 0; i < iters; i++) {
     PCRE re(regexp, PCRE::UTF8);
     CHECK_EQ(re.error(), "");
   }
 }
 
-void CompileRE2(int iters, const std::string& regexp) {
+void CompileRE2(int iters, const string& regexp) {
   for (int i = 0; i < iters; i++) {
     RE2 re(regexp);
     CHECK_EQ(re.error(), "");
   }
 }
 
-void RunBuild(int iters, const std::string& regexp,
-              void (*run)(int, const std::string&)) {
+void RunBuild(int iters, const string& regexp, void (*run)(int, const string&)) {
   run(iters, regexp);
   SetBenchmarkItemsProcessed(iters);
 }
@@ -773,7 +770,7 @@ BENCHMARK(BM_RE2_Compile)->ThreadRange(1, NumCPUs());
 // the text for regexp iters times.
 void SearchPhone(int iters, int nbytes, ParseImpl* search) {
   StopBenchmarkTiming();
-  std::string s;
+  string s;
   MakeText(&s, nbytes);
   s.append("(650) 253-0001");
   BenchmarkMemoryUsage();
@@ -802,7 +799,7 @@ TODO(rsc): Make this work again.
 // brute force method would generate a string of length n * 2^n, but this
 // generates a string of length n + 2^n - 1 called a De Bruijn cycle.
 // See Knuth, The Art of Computer Programming, Vol 2, Exercise 3.2.2 #17.
-static std::string DeBruijnString(int n) {
+static string DeBruijnString(int n) {
   CHECK_LT(n, 8*sizeof(int));
   CHECK_GT(n, 0);
 
@@ -810,7 +807,7 @@ static std::string DeBruijnString(int n) {
   for (int i = 0; i < 1<<n; i++)
     did[i] = false;
 
-  std::string s;
+  string s;
   for (int i = 0; i < n-1; i++)
     s.append("0");
   int bits = 0;
@@ -831,8 +828,8 @@ static std::string DeBruijnString(int n) {
 }
 
 void CacheFill(int iters, int n, SearchImpl *srch) {
-  std::string s = DeBruijnString(n+1);
-  std::string t;
+  string s = DeBruijnString(n+1);
+  string t;
   for (int i = n+1; i < 20; i++) {
     t = s + s;
     using std::swap;
@@ -935,7 +932,6 @@ void SearchBitState(int iters, const char* regexp, const StringPiece& text,
     CHECK(re);
     Prog* prog = re->CompileToProg(0);
     CHECK(prog);
-    CHECK(prog->CanBitState());
     CHECK_EQ(prog->SearchBitState(text, text, anchor, Prog::kFirstMatch, NULL, 0),
              expect_match);
     delete prog;
@@ -1023,7 +1019,6 @@ void SearchCachedBitState(int iters, const char* regexp, const StringPiece& text
   CHECK(re);
   Prog* prog = re->CompileToProg(0);
   CHECK(prog);
-  CHECK(prog->CanBitState());
   for (int i = 0; i < iters; i++)
     CHECK_EQ(prog->SearchBitState(text, text, anchor, Prog::kFirstMatch, NULL, 0),
              expect_match);
@@ -1093,7 +1088,6 @@ void Parse3BitState(int iters, const char* regexp, const StringPiece& text) {
     CHECK(re);
     Prog* prog = re->CompileToProg(0);
     CHECK(prog);
-    CHECK(prog->CanBitState());
     StringPiece sp[4];  // 4 because sp[0] is whole match.
     CHECK(prog->SearchBitState(text, text, Prog::kAnchored, Prog::kFullMatch, sp, 4));
     delete prog;
@@ -1164,7 +1158,6 @@ void Parse3CachedBitState(int iters, const char* regexp, const StringPiece& text
   CHECK(re);
   Prog* prog = re->CompileToProg(0);
   CHECK(prog);
-  CHECK(prog->CanBitState());
   StringPiece sp[4];  // 4 because sp[0] is whole match.
   for (int i = 0; i < iters; i++)
     CHECK(prog->SearchBitState(text, text, Prog::kAnchored, Prog::kFullMatch, sp, 4));
@@ -1240,7 +1233,6 @@ void Parse1BitState(int iters, const char* regexp, const StringPiece& text) {
     CHECK(re);
     Prog* prog = re->CompileToProg(0);
     CHECK(prog);
-    CHECK(prog->CanBitState());
     StringPiece sp[2];  // 2 because sp[0] is whole match.
     CHECK(prog->SearchBitState(text, text, Prog::kAnchored, Prog::kFullMatch, sp, 2));
     delete prog;
@@ -1298,7 +1290,6 @@ void Parse1CachedBitState(int iters, const char* regexp, const StringPiece& text
   CHECK(re);
   Prog* prog = re->CompileToProg(0);
   CHECK(prog);
-  CHECK(prog->CanBitState());
   StringPiece sp[2];  // 2 because sp[0] is whole match.
   for (int i = 0; i < iters; i++)
     CHECK(prog->SearchBitState(text, text, Prog::kAnchored, Prog::kFullMatch, sp, 2));
@@ -1412,7 +1403,7 @@ BENCHMARK(SimplePartialMatchPCRE)->ThreadRange(1, NumCPUs());
 #endif
 BENCHMARK(SimplePartialMatchRE2)->ThreadRange(1, NumCPUs());
 
-static std::string http_text =
+static string http_text =
   "GET /asdfhjasdhfasdlfhasdflkjasdfkljasdhflaskdjhf"
   "alksdjfhasdlkfhasdlkjfhasdljkfhadsjklf HTTP/1.1";
 
@@ -1437,7 +1428,7 @@ BENCHMARK(HTTPPartialMatchPCRE)->ThreadRange(1, NumCPUs());
 #endif
 BENCHMARK(HTTPPartialMatchRE2)->ThreadRange(1, NumCPUs());
 
-static std::string smallhttp_text =
+static string smallhttp_text =
   "GET /abc HTTP/1.1";
 
 void SmallHTTPPartialMatchPCRE(int n) {
@@ -1505,7 +1496,7 @@ BENCHMARK(ASCIIMatchRE2)->ThreadRange(1, NumCPUs());
 
 void FullMatchPCRE(int iter, int n, const char *regexp) {
   StopBenchmarkTiming();
-  std::string s;
+  string s;
   MakeText(&s, n);
   s += "ABCDEFGHIJ";
   BenchmarkMemoryUsage();
@@ -1518,7 +1509,7 @@ void FullMatchPCRE(int iter, int n, const char *regexp) {
 
 void FullMatchRE2(int iter, int n, const char *regexp) {
   StopBenchmarkTiming();
-  std::string s;
+  string s;
   MakeText(&s, n);
   s += "ABCDEFGHIJ";
   BenchmarkMemoryUsage();
@@ -1557,8 +1548,8 @@ void PossibleMatchRangeCommon(int iter, const char* regexp) {
   StopBenchmarkTiming();
   RE2 re(regexp);
   StartBenchmarkTiming();
-  std::string min;
-  std::string max;
+  string min;
+  string max;
   const int kMaxLen = 16;
   for (int i = 0; i < iter; i++) {
     CHECK(re.PossibleMatchRange(&min, &max, kMaxLen));

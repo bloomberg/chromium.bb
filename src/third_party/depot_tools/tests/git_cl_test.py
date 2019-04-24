@@ -964,7 +964,6 @@ class TestGitCl(TestCase):
       if not issue:
         # Prompting to edit description on first upload.
         calls += [
-          ((['git', 'config', 'rietveld.bug-prefix'],), ''),
           ((['git', 'config', 'core.editor'],), ''),
           ((['RunEditor'],), description),
         ]

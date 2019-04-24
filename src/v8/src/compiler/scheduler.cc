@@ -698,7 +698,7 @@ class SpecialRPONumberer : public ZoneObject {
   }
 
  private:
-  using Backedge = std::pair<BasicBlock*, size_t>;
+  typedef std::pair<BasicBlock*, size_t> Backedge;
 
   // Numbering for BasicBlock::rpo_number for this block traversal:
   static const int kBlockOnStack = -2;

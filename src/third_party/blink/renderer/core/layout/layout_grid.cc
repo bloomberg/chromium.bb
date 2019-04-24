@@ -156,7 +156,7 @@ void LayoutGrid::StyleDidChange(StyleDifference diff,
                                    *child) ||
           SelfAlignmentChangedSize(kGridColumnAxis, *old_style, new_style,
                                    *child)) {
-        child->SetSelfNeedsLayoutForAvailableSpace(true);
+        child->SetNeedsLayout(layout_invalidation_reason::kGridChanged);
       }
     }
   }
@@ -497,13 +497,8 @@ LayoutUnit LayoutGrid::GuttersSize(
 void LayoutGrid::ComputeIntrinsicLogicalWidths(
     LayoutUnit& min_logical_width,
     LayoutUnit& max_logical_width) const {
-  LayoutUnit scrollbar_width = LayoutUnit(ScrollbarLogicalWidth());
-
-  if (ShouldApplySizeContainment()) {
-    min_logical_width = scrollbar_width;
-    max_logical_width = scrollbar_width;
+  if (ShouldApplySizeContainment())
     return;
-  }
 
   std::unique_ptr<Grid> grid = Grid::Create(this);
   GridTrackSizingAlgorithm algorithm(this, *grid);
@@ -525,6 +520,7 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
   ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns, &min_logical_width,
                                      &max_logical_width);
 
+  LayoutUnit scrollbar_width = LayoutUnit(ScrollbarLogicalWidth());
   min_logical_width += scrollbar_width;
   max_logical_width += scrollbar_width;
 }
@@ -1220,7 +1216,8 @@ void LayoutGrid::UpdateGridAreaLogicalSize(
       OverrideSizeChanged(child, kForRows, grid_area_logical_size);
   if (grid_area_width_changed ||
       (grid_area_height_changed && HasRelativeBlockAxisSize(*this, child))) {
-    child.SetSelfNeedsLayoutForAvailableSpace(true);
+    child.SetNeedsLayout(layout_invalidation_reason::kGridChanged,
+                         kMarkOnlyThis);
   }
 
   child.SetOverrideContainingBlockContentLogicalWidth(
@@ -1506,7 +1503,7 @@ void LayoutGrid::ApplyStretchAlignmentToChildIfNeeded(LayoutBox& child) {
       // TODO (lajava): Can avoid laying out here in some cases. See
       // https://webkit.org/b/87905.
       child.SetLogicalHeight(LayoutUnit());
-      child.SetSelfNeedsLayoutForAvailableSpace(true);
+      child.SetNeedsLayout(layout_invalidation_reason::kGridChanged);
     }
   }
 }
@@ -1581,6 +1578,17 @@ void LayoutGrid::UpdateAutoMarginsInColumnAxisIfNeeded(LayoutBox& child) {
 
 // TODO(lajava): This logic is shared by LayoutFlexibleBox, so it might be
 // refactored somehow.
+LayoutUnit LayoutGrid::SynthesizedBaselineFromContentBox(
+    const LayoutBox& box,
+    LineDirectionMode direction) {
+  if (direction == kHorizontalLine) {
+    return box.Size().Height() - box.BorderBottom() - box.PaddingBottom() -
+           box.HorizontalScrollbarHeight();
+  }
+  return box.Size().Width() - box.BorderLeft() - box.PaddingLeft() -
+         box.VerticalScrollbarWidth();
+}
+
 LayoutUnit LayoutGrid::SynthesizedBaselineFromBorderBox(
     const LayoutBox& box,
     LineDirectionMode direction) {
@@ -1594,11 +1602,9 @@ LayoutUnit LayoutGrid::BaselinePosition(FontBaseline,
                                         LinePositionMode mode) const {
   DCHECK_EQ(mode, kPositionOnContainingLine);
   LayoutUnit baseline = FirstLineBoxBaseline();
-  // We take border-box's bottom if no valid baseline.
-  if (baseline == -1) {
-    return SynthesizedBaselineFromBorderBox(*this, direction) +
-           MarginLogicalHeight();
-  }
+  // We take content-box's bottom if no valid baseline.
+  if (baseline == -1)
+    baseline = SynthesizedBaselineFromContentBox(*this, direction);
 
   return baseline + BeforeMarginInLineDirection(direction);
 }
@@ -1653,14 +1659,20 @@ LayoutUnit LayoutGrid::FirstLineBoxBaseline() const {
     LineDirectionMode direction =
         IsHorizontalWritingMode() ? kHorizontalLine : kVerticalLine;
     return SynthesizedBaselineFromBorderBox(*baseline_child, direction) +
-           LogicalTopForChild(*baseline_child);
+           baseline_child->LogicalTop();
   }
 
   return baseline + baseline_child->LogicalTop();
 }
 
 LayoutUnit LayoutGrid::InlineBlockBaseline(LineDirectionMode direction) const {
-  return FirstLineBoxBaseline();
+  LayoutUnit baseline = FirstLineBoxBaseline();
+  if (baseline != -1)
+    return baseline;
+
+  LayoutUnit margin_height =
+      direction == kHorizontalLine ? MarginTop() : MarginRight();
+  return SynthesizedBaselineFromContentBox(*this, direction) + margin_height;
 }
 
 bool LayoutGrid::IsBaselineAlignmentForChild(const LayoutBox& child) const {

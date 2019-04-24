@@ -21,10 +21,10 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_manager_client.h"
-#include "chromeos/dbus/shill/shill_profile_client.h"
-#include "chromeos/dbus/shill/shill_service_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_manager_client.h"
+#include "chromeos/dbus/shill_profile_client.h"
+#include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -113,9 +113,11 @@ class ClientCertResolverTest : public testing::Test,
     test_system_nsscertdb_->SetSystemSlot(
         crypto::ScopedPK11Slot(PK11_ReferenceSlot(test_system_nssdb_.slot())));
 
-    shill_clients::InitializeFakes();
-    service_test_ = ShillServiceClient::Get()->GetTestInterface();
-    profile_test_ = ShillProfileClient::Get()->GetTestInterface();
+    DBusThreadManager::Initialize();
+    service_test_ =
+        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
+    profile_test_ =
+        DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
     profile_test_->AddProfile(kUserProfilePath, kUserHash);
     scoped_task_environment_.RunUntilIdle();
     service_test_->ClearServices();
@@ -138,7 +140,7 @@ class ClientCertResolverTest : public testing::Test,
     network_profile_handler_.reset();
     network_state_handler_.reset();
     NetworkCertLoader::Shutdown();
-    shill_clients::Shutdown();
+    DBusThreadManager::Shutdown();
   }
 
  protected:
@@ -258,8 +260,10 @@ class ClientCertResolverTest : public testing::Test,
                                       base::Value("invalid id"));
     profile_test_->AddService(kUserProfilePath, kWifiStub);
 
-    ShillManagerClient::Get()->GetTestInterface()->AddManagerService(kWifiStub,
-                                                                     true);
+    DBusThreadManager::Get()
+        ->GetShillManagerClient()
+        ->GetTestInterface()
+        ->AddManagerService(kWifiStub, true);
   }
 
   // Sets up a policy with a certificate pattern that matches any client cert

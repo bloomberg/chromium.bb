@@ -21,6 +21,9 @@ class MockBaseScreenDelegate : public BaseScreenDelegate {
   virtual ~MockBaseScreenDelegate();
 
   MOCK_METHOD0(ShowCurrentScreen, void());
+  MOCK_METHOD0(GetErrorScreen, ErrorScreen*());
+  MOCK_METHOD0(ShowErrorScreen, void());
+  MOCK_METHOD1(HideErrorScreen, void(BaseScreen*));
 };
 
 }  // namespace chromeos

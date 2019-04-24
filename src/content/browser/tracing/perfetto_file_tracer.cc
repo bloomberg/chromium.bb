@@ -133,8 +133,6 @@ PerfettoFileTracer::PerfettoFileTracer()
 
 PerfettoFileTracer::~PerfettoFileTracer() = default;
 
-void PerfettoFileTracer::OnTracingEnabled() {}
-
 void PerfettoFileTracer::OnNoMorePackets(bool queued_after_disable) {
   DCHECK(consumer_host_);
   // If this callback happens as the result of a ReadBuffers() call

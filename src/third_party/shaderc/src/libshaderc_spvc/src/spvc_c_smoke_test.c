@@ -54,7 +54,6 @@ int main() {
   shaderc_spvc_compiler_t compiler;
   shaderc_spvc_compilation_result_t result;
   shaderc_spvc_compile_options_t options;
-  int ret_code = 0;
 
   compiler = shaderc_spvc_compiler_initialize();
   options = shaderc_spvc_compile_options_initialize();
@@ -69,47 +68,39 @@ int main() {
       compiler, (const uint32_t *)shaderc_result_get_bytes(res),
       shaderc_result_get_length(res) / sizeof(uint32_t), options);
   assert(result);
-  if (shaderc_spvc_result_get_status(result) == shaderc_compilation_status_success) {
-    printf("success! %lu characters of glsl\n",
-           (unsigned long)(strlen(shaderc_spvc_result_get_output(result))));
-  } else {
+  if (shaderc_spvc_result_get_status(result) !=
+      shaderc_compilation_status_success) {
     printf("failed to produce glsl\n");
-    ret_code = -1;
+    return -1;
   }
-  shaderc_spvc_result_release(result);
 
   result = shaderc_spvc_compile_into_hlsl(
       compiler, (const uint32_t *)shaderc_result_get_bytes(res),
       shaderc_result_get_length(res) / sizeof(uint32_t), options);
   assert(result);
-  if (shaderc_spvc_result_get_status(result) == shaderc_compilation_status_success) {
-    printf("success! %lu characters of hlsl\n",
-           (unsigned long)(strlen(shaderc_spvc_result_get_output(result))));
-  } else {
+  if (shaderc_spvc_result_get_status(result) !=
+      shaderc_compilation_status_success) {
     printf("failed to produce hlsl\n");
-    ret_code = -1;
+    return -1;
   }
-  shaderc_spvc_result_release(result);
 
   result = shaderc_spvc_compile_into_msl(
       compiler, (const uint32_t *)shaderc_result_get_bytes(res),
       shaderc_result_get_length(res) / sizeof(uint32_t), options);
   assert(result);
-  if (shaderc_spvc_result_get_status(result) ==
+  if (shaderc_spvc_result_get_status(result) !=
       shaderc_compilation_status_success) {
-    printf("success! %lu characters of msl\n",
-           (unsigned long)(strlen(shaderc_spvc_result_get_output(result))));
-  } else {
     printf("failed to produce msl\n");
-    ret_code = -1;
+    return -1;
   }
-  shaderc_spvc_result_release(result);
 
+  printf("success! %lu characters of compiler output\n",
+         (unsigned long)(strlen(shaderc_spvc_result_get_output(result))));
   shaderc_compile_options_release(opt);
   shaderc_result_release(res);
+  shaderc_spvc_result_release(result);
   shaderc_spvc_compile_options_release(options);
   shaderc_spvc_compiler_release(compiler);
-  shaderc_compiler_release(shaderc);
 
-  return ret_code;
+  return 0;
 }

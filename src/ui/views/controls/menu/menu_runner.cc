@@ -14,12 +14,12 @@ namespace views {
 
 MenuRunner::MenuRunner(ui::MenuModel* menu_model,
                        int32_t run_types,
-                       base::RepeatingClosure on_menu_closed_callback)
+                       const base::Closure& on_menu_closed_callback)
     : run_types_(run_types),
-      impl_(internal::MenuRunnerImplInterface::Create(
-          menu_model,
-          run_types,
-          std::move(on_menu_closed_callback))) {}
+      impl_(
+          internal::MenuRunnerImplInterface::Create(menu_model,
+                                                    run_types,
+                                                    on_menu_closed_callback)) {}
 
 MenuRunner::MenuRunner(MenuItemView* menu_view, int32_t run_types)
     : run_types_(run_types), impl_(new internal::MenuRunnerImpl(menu_view)) {}
@@ -45,16 +45,24 @@ void MenuRunner::RunMenuAt(Widget* parent,
     return;
   }
 
+  // The parent of the nested menu will have created a DisplayChangeListener, so
+  // we avoid creating a DisplayChangeListener if nested. Drop menus are
+  // transient, so we don't cancel in that case.
+  if ((run_types_ & (IS_NESTED | FOR_DROP)) == 0 && parent) {
+    display_change_listener_.reset(
+        internal::DisplayChangeListener::Create(parent, this));
+  }
+
   if ((run_types_ & CONTEXT_MENU) && !(run_types_ & FIXED_ANCHOR)) {
     switch (source_type) {
       case ui::MENU_SOURCE_NONE:
       case ui::MENU_SOURCE_KEYBOARD:
       case ui::MENU_SOURCE_MOUSE:
-        anchor = MenuAnchorPosition::kTopLeft;
+        anchor = MENU_ANCHOR_TOPLEFT;
         break;
       case ui::MENU_SOURCE_TOUCH:
       case ui::MENU_SOURCE_TOUCH_EDIT_MENU:
-        anchor = MenuAnchorPosition::kBottomCenter;
+        anchor = MENU_ANCHOR_BOTTOMCENTER;
         break;
       default:
         break;

@@ -32,7 +32,7 @@ namespace views {
 ViewsTestSuite::ViewsTestSuite(int argc, char** argv)
     : base::TestSuite(argc, argv), argc_(argc), argv_(argv) {}
 
-ViewsTestSuite::~ViewsTestSuite() = default;
+ViewsTestSuite::~ViewsTestSuite() {}
 
 int ViewsTestSuite::RunTests() {
   return base::LaunchUnitTests(

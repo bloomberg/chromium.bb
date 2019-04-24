@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer.h"
 #include "cc/resources/ui_resource_client.h"
@@ -19,9 +20,6 @@ class LayerTreeHost;
 class CC_EXPORT UIResourceLayer : public Layer {
  public:
   static scoped_refptr<UIResourceLayer> Create();
-
-  UIResourceLayer(const UIResourceLayer&) = delete;
-  UIResourceLayer& operator=(const UIResourceLayer&) = delete;
 
   void PushPropertiesTo(LayerImpl* layer) override;
 
@@ -68,6 +66,8 @@ class CC_EXPORT UIResourceLayer : public Layer {
   gfx::PointF uv_top_left_;
   gfx::PointF uv_bottom_right_;
   float vertex_opacity_[4];
+
+  DISALLOW_COPY_AND_ASSIGN(UIResourceLayer);
 };
 
 }  // namespace cc

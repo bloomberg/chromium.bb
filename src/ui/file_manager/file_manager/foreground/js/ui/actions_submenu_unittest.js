@@ -41,8 +41,9 @@ function tearDown() {
 function testSeparator() {
   assertTrue(separator.hidden);
 
-  submenu.setActionsModel(
-      new MockActionsModel({id: new MockActionModel('title', null)}));
+  submenu.setActionsModel(new MockActionsModel({
+    id: new MockActionModel('title', null)
+  }));
   assertFalse(separator.hidden);
 
   submenu.setActionsModel(new MockActionsModel([]));
@@ -50,8 +51,9 @@ function testSeparator() {
 }
 
 function testNullModel() {
-  submenu.setActionsModel(
-      new MockActionsModel({id: new MockActionModel('title', null)}));
+  submenu.setActionsModel(new MockActionsModel({
+    id: new MockActionModel('title', null)
+  }));
   let item = menu.querySelector('cr-menu-item');
   assertTrue(!!item);
 
@@ -61,8 +63,9 @@ function testNullModel() {
 }
 
 function testCustomActionRendering() {
-  submenu.setActionsModel(
-      new MockActionsModel({id: new MockActionModel('title', null)}));
+  submenu.setActionsModel(new MockActionsModel({
+    id: new MockActionModel('title', null)
+  }));
   const item = menu.querySelector('cr-menu-item');
   assertTrue(!!item);
   assertEquals('title', item.textContent);
@@ -70,8 +73,9 @@ function testCustomActionRendering() {
 }
 
 function testCommandActionRendering() {
-  submenu.setActionsModel(new MockActionsModel(
-      {SHARE: new MockActionModel('share with me!', null)}));
+  submenu.setActionsModel(new MockActionsModel({
+    SHARE: new MockActionModel('share with me!', null)
+  }));
   const item = menu.querySelector('cr-menu-item');
   assertTrue(!!item);
   assertEquals('Share', item.textContent);

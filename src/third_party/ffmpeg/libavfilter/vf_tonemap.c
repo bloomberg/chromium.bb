@@ -287,7 +287,13 @@ static const AVOption tonemap_options[] = {
     { NULL }
 };
 
-AVFILTER_DEFINE_CLASS(tonemap);
+static const AVClass tonemap_class = {
+    .class_name       = "tonemap",
+    .item_name        = av_default_item_name,
+    .option           = tonemap_options,
+    .version          = LIBAVUTIL_VERSION_INT,
+    .category         = AV_CLASS_CATEGORY_FILTER,
+};
 
 static const AVFilterPad tonemap_inputs[] = {
     {

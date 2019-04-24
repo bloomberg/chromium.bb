@@ -31,6 +31,8 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
+#include "net/url_request/http_user_agent_settings.h"
+#include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -387,6 +389,15 @@ DataReductionProxyIOData::CreateCustomProxyConfig(
                               proxies_for_http)
           .proxy_rules();
 
+  // Set an alternate proxy list to be used for media requests which only
+  // contains proxies supporting the media resource type.
+  net::ProxyList media_proxies;
+  for (const auto& proxy : proxies_for_http) {
+    if (proxy.SupportsResourceType(ResourceTypeProvider::CONTENT_TYPE_MEDIA))
+      media_proxies.AddProxyServer(proxy.proxy_server());
+  }
+  config->alternate_proxy_list = media_proxies;
+
   net::EffectiveConnectionType type = GetEffectiveConnectionType();
   if (type > net::EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
     DCHECK_NE(net::EFFECTIVE_CONNECTION_TYPE_LAST, type);
@@ -397,10 +408,6 @@ DataReductionProxyIOData::CreateCustomProxyConfig(
 
   request_options_->AddRequestHeader(&config->post_cache_headers,
                                      base::nullopt);
-
-  config->assume_https_proxies_support_quic = true;
-  config->can_use_proxy_on_http_url_redirect_cycles = false;
-
   return config;
 }
 

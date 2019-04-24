@@ -128,7 +128,7 @@ void HTMLTrackElement::setKind(const AtomicString& kind) {
 LoadableTextTrack* HTMLTrackElement::EnsureTrack() {
   if (!track_) {
     // kind, label and language are updated by parseAttribute
-    track_ = MakeGarbageCollected<LoadableTextTrack>(this);
+    track_ = LoadableTextTrack::Create(this);
   }
   return track_.Get();
 }

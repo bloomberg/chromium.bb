@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 
@@ -33,7 +32,6 @@ EventRouterFactory::EventRouterFactory()
           "EventRouter",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(drive::DriveIntegrationServiceFactory::GetInstance());
-  DependsOn(extensions::EventRouterFactory::GetInstance());
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(VolumeManagerFactory::GetInstance());

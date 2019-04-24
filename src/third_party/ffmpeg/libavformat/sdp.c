@@ -347,8 +347,7 @@ static char *extradata2config(AVFormatContext *s, AVCodecParameters *par)
 
 static char *xiph_extradata2config(AVFormatContext *s, AVCodecParameters *par)
 {
-    uint8_t *config;
-    char *encoded_config;
+    char *config, *encoded_config;
     const uint8_t *header_start[3];
     int headers_len, header_len[3], config_len;
     int first_header_size;

@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/tabs/tab_change_type.h"
 #include "ui/base/models/list_selection_model.h"
 
-class TabGroupData;
 class TabStripModel;
 
 namespace content {
@@ -33,14 +32,7 @@ class WebContents;
 ////////////////////////////////////////////////////////////////////////////////
 class TabStripModelChange {
  public:
-  enum Type {
-    kSelectionOnly,
-    kInserted,
-    kRemoved,
-    kMoved,
-    kReplaced,
-    kGroupChanged
-  };
+  enum Type { kSelectionOnly, kInserted, kRemoved, kMoved, kReplaced };
 
   // A WebContents was inserted at |index|. This implicitly changes the existing
   // selection model by calling IncrementFrom(index).
@@ -78,22 +70,12 @@ class TabStripModelChange {
     int index;
   };
 
-  // A WebContents' group affiliation changed from |old_group_data| to
-  // |new_group_data|.
-  struct GroupChange {
-    content::WebContents* contents;
-    int index;
-    const TabGroupData* old_group_data;
-    const TabGroupData* new_group_data;
-  };
-
   struct Delta {
     union {
       Insert insert;
       Remove remove;
       Move move;
       Replace replace;
-      GroupChange group_change;
     };
   };
 
@@ -108,10 +90,6 @@ class TabStripModelChange {
   static Delta CreateReplaceDelta(content::WebContents* old_contents,
                                   content::WebContents* new_contents,
                                   int index);
-  static Delta CreateGroupChangeDelta(content::WebContents* contents,
-                                      int index,
-                                      const TabGroupData* old_group_data,
-                                      const TabGroupData* new_group_data);
 
   TabStripModelChange();
   TabStripModelChange(Type type, const Delta& delta);

@@ -100,7 +100,7 @@ LayoutView::LayoutView(Document* document)
       layout_counter_count_(0),
       hit_test_count_(0),
       hit_test_cache_hits_(0),
-      hit_test_cache_(MakeGarbageCollected<HitTestCache>()),
+      hit_test_cache_(HitTestCache::Create()),
       autosize_h_scrollbar_mode_(kScrollbarAuto),
       autosize_v_scrollbar_mode_(kScrollbarAuto) {
   // init LayoutObject attributes
@@ -539,7 +539,7 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
     // compute the subpixel offset of painting at this point in a a bottom-up
     // walk, round to the enclosing int rect, which will enclose the actual
     // visible rect.
-    rect.ExpandEdgesToPixelBoundaries();
+    rect = LayoutRect(EnclosingIntRect(rect));
 
     // Adjust for frame border.
     rect.Move(obj->PhysicalContentBoxOffset());

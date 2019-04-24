@@ -61,7 +61,7 @@ class SVGAnimatedEnumerationBase
       : SVGAnimatedProperty<SVGEnumerationBase>(context_element,
                                                 attribute_name,
                                                 initial_value,
-                                                CSSPropertyID::kInvalid,
+                                                CSSPropertyInvalid,
                                                 initial_enum_value) {}
 };
 

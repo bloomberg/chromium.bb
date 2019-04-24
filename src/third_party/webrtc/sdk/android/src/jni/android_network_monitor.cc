@@ -174,7 +174,7 @@ AndroidNetworkMonitor::AndroidNetworkMonitor(
 AndroidNetworkMonitor::~AndroidNetworkMonitor() = default;
 
 void AndroidNetworkMonitor::Start() {
-  RTC_CHECK(thread_checker_.IsCurrent());
+  RTC_CHECK(thread_checker_.CalledOnValidThread());
   if (started_) {
     return;
   }
@@ -191,7 +191,7 @@ void AndroidNetworkMonitor::Start() {
 }
 
 void AndroidNetworkMonitor::Stop() {
-  RTC_CHECK(thread_checker_.IsCurrent());
+  RTC_CHECK(thread_checker_.CalledOnValidThread());
   if (!started_) {
     return;
   }
@@ -216,7 +216,7 @@ void AndroidNetworkMonitor::Stop() {
 rtc::NetworkBindingResult AndroidNetworkMonitor::BindSocketToNetwork(
     int socket_fd,
     const rtc::IPAddress& address) {
-  RTC_CHECK(thread_checker_.IsCurrent());
+  RTC_CHECK(thread_checker_.CalledOnValidThread());
 
   // Android prior to Lollipop didn't have support for binding sockets to
   // networks. This may also occur if there is no connectivity manager service.
@@ -354,7 +354,7 @@ void AndroidNetworkMonitor::OnNetworkDisconnected_w(NetworkHandle handle) {
 
 void AndroidNetworkMonitor::SetNetworkInfos(
     const std::vector<NetworkInformation>& network_infos) {
-  RTC_CHECK(thread_checker_.IsCurrent());
+  RTC_CHECK(thread_checker_.CalledOnValidThread());
   network_handle_by_address_.clear();
   network_info_by_handle_.clear();
   RTC_LOG(LS_INFO) << "Android network monitor found " << network_infos.size()

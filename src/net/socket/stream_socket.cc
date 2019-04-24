@@ -18,6 +18,16 @@ void StreamSocket::GetSSLCertRequestInfo(
   NOTREACHED();
 }
 
+ChannelIDService* StreamSocket::GetChannelIDService() const {
+  NOTREACHED();
+  return nullptr;
+}
+
+crypto::ECPrivateKey* StreamSocket::GetChannelIDKey() const {
+  NOTREACHED();
+  return nullptr;
+}
+
 StreamSocket::SocketMemoryStats::SocketMemoryStats()
     : total_size(0), buffer_size(0), cert_count(0), cert_size(0) {}
 

@@ -19,7 +19,7 @@ namespace blink {
 
 class XRSession;
 
-class MODULES_EXPORT XRView final : public ScriptWrappable {
+class XRView final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -37,7 +37,8 @@ class MODULES_EXPORT XRView final : public ScriptWrappable {
 
   XRSession* session() const;
   DOMFloat32Array* projectionMatrix() const { return projection_matrix_; }
-  XRRigidTransform* transform() const;
+  DOMFloat32Array* viewMatrix() const { return view_matrix_; }
+  XRRigidTransform* transform();
 
   void UpdateProjectionMatrixFromRawValues(
       const WTF::Vector<float>& projection_matrix,
@@ -61,7 +62,7 @@ class MODULES_EXPORT XRView final : public ScriptWrappable {
                                                          double canvas_width,
                                                          double canvas_height);
 
-  void UpdatePoseMatrix(TransformationMatrix pose_matrix);
+  void UpdateViewMatrix(TransformationMatrix inv_pose_matrix);
 
   // TODO(bajones): Should eventually represent this as a full transform.
   const FloatPoint3D& offset() const { return offset_; }
@@ -77,7 +78,9 @@ class MODULES_EXPORT XRView final : public ScriptWrappable {
   Member<XRSession> session_;
   Member<XRRigidTransform> transform_;
   Member<DOMFloat32Array> projection_matrix_;
+  Member<DOMFloat32Array> view_matrix_;
   FloatPoint3D offset_;
+  std::unique_ptr<TransformationMatrix> inv_pose_;
   std::unique_ptr<TransformationMatrix> inv_projection_;
   bool inv_projection_dirty_ = true;
 };

@@ -138,7 +138,8 @@ class InfoThrobberLayout : public views::LayoutManager {
   void Layout(views::View* host) override {
     gfx::Size max_size(GetMaxChildSize(host));
     // Center each child view within |max_size|.
-    for (auto* child : host->children()) {
+    for (int i = 0; i < host->child_count(); ++i) {
+      views::View* child = host->child_at(i);
       if (!child->visible())
         continue;
       gfx::Size child_size = child->GetPreferredSize();
@@ -160,12 +161,16 @@ class InfoThrobberLayout : public views::LayoutManager {
 
  private:
   gfx::Size GetMaxChildSize(const views::View* host) const {
-    gfx::Size max_size;
-    for (const auto* child : host->children()) {
-      if (child->visible())
-        max_size.SetToMax(child->GetPreferredSize());
+    int width = 0, height = 0;
+    for (int i = 0; i < host->child_count(); ++i) {
+      const views::View* child = host->child_at(i);
+      if (!child->visible())
+        continue;
+      gfx::Size child_size = child->GetPreferredSize();
+      width = std::max(width, child_size.width());
+      height = std::max(height, child_size.width());
     }
-    return max_size;
+    return gfx::Size(width, height);
   }
 
   DISALLOW_COPY_AND_ASSIGN(InfoThrobberLayout);

@@ -25,13 +25,12 @@ class TaskManagerMac;
 // This class is responsible for loading the task manager window and for
 // managing it.
 @interface TaskManagerWindowController
-    : NSWindowController <NSWindowDelegate,
-                          NSTableViewDataSource,
-                          NSTableViewDelegate,
-                          NSMenuDelegate> {
+    : NSWindowController<NSTableViewDataSource,
+                         NSTableViewDelegate,
+                         NSMenuDelegate> {
  @private
-  NSTableView* tableView_;
-  NSButton* endProcessButton_;
+  IBOutlet NSTableView* tableView_;
+  IBOutlet NSButton* endProcessButton_;
   task_manager::TaskManagerMac* taskManagerMac_;     // weak
   task_manager::TaskManagerTableModel* tableModel_;  // weak
 

@@ -35,13 +35,13 @@ struct GRFUTestCase {
 // Create a new WebURLResponse object.
 static WebURLResponse CreateResponse(const GRFUTestCase& test) {
   WebURLResponse response;
-  response.SetHttpVersion(test.version);
+  response.SetHTTPVersion(test.version);
   response.SetHttpStatusCode(test.status_code);
   for (const std::string& line :
        base::SplitString(test.headers, "\n", base::KEEP_WHITESPACE,
                          base::SPLIT_WANT_NONEMPTY)) {
     size_t colon = line.find(": ");
-    response.AddHttpHeaderField(WebString::FromUTF8(line.substr(0, colon)),
+    response.AddHTTPHeaderField(WebString::FromUTF8(line.substr(0, colon)),
                                 WebString::FromUTF8(line.substr(colon + 2)));
   }
   return response;

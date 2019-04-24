@@ -61,9 +61,5 @@ template("json_to_struct") {
     deps = [
       ":$action_name",
     ]
-
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-    }
   }
 }

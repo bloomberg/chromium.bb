@@ -10,8 +10,7 @@ namespace blink {
 
 class LayoutSVGTextTest : public RenderingTest {
  public:
-  LayoutSVGTextTest()
-      : RenderingTest(MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
+  LayoutSVGTextTest() : RenderingTest(SingleChildLocalFrameClient::Create()) {}
 };
 
 TEST_F(LayoutSVGTextTest, RectBasedHitTest) {

@@ -122,7 +122,7 @@ void FindWaveChunk(ChunkHeader* chunk_header,
     if (!readable->SeekForward(chunk_header->Size))
       return;  // EOF or error.
   }
-  // EOF.
+  return;  // EOF.
 }
 
 bool ReadFmtChunkData(FmtSubchunk* fmt_subchunk, ReadableWav* readable) {

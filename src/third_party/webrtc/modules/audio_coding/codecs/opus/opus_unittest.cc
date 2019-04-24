@@ -21,67 +21,6 @@
 
 namespace webrtc {
 
-namespace {
-// Equivalent to SDP params
-// {{"channel_mapping", "0,1,2,3"}, {"coupled_streams", "2"}}.
-constexpr unsigned char kQuadChannelMapping[] = {0, 1, 2, 3};
-constexpr int kQuadTotalStreams = 2;
-constexpr int kQuadCoupledStreams = 2;
-
-constexpr unsigned char kStereoChannelMapping[] = {0, 1};
-constexpr int kStereoTotalStreams = 1;
-constexpr int kStereoCoupledStreams = 1;
-
-constexpr unsigned char kMonoChannelMapping[] = {0};
-constexpr int kMonoTotalStreams = 1;
-constexpr int kMonoCoupledStreams = 0;
-
-void CreateSingleOrMultiStreamEncoder(WebRtcOpusEncInst** opus_encoder,
-                                      int channels,
-                                      int application,
-                                      bool force_multistream = false) {
-  if (!force_multistream && (channels == 1 || channels == 2)) {
-    EXPECT_EQ(0, WebRtcOpus_EncoderCreate(opus_encoder, channels, application));
-  } else if (force_multistream && channels == 1) {
-    EXPECT_EQ(0, WebRtcOpus_MultistreamEncoderCreate(
-                     opus_encoder, channels, application, kMonoTotalStreams,
-                     kMonoCoupledStreams, kMonoChannelMapping));
-  } else if (force_multistream && channels == 2) {
-    EXPECT_EQ(0, WebRtcOpus_MultistreamEncoderCreate(
-                     opus_encoder, channels, application, kStereoTotalStreams,
-                     kStereoCoupledStreams, kStereoChannelMapping));
-  } else if (channels == 4) {
-    EXPECT_EQ(0, WebRtcOpus_MultistreamEncoderCreate(
-                     opus_encoder, channels, application, kQuadTotalStreams,
-                     kQuadCoupledStreams, kQuadChannelMapping));
-  } else {
-    EXPECT_TRUE(false) << channels;
-  }
-}
-
-void CreateSingleOrMultiStreamDecoder(WebRtcOpusDecInst** opus_decoder,
-                                      int channels,
-                                      bool force_multistream = false) {
-  if (!force_multistream && (channels == 1 || channels == 2)) {
-    EXPECT_EQ(0, WebRtcOpus_DecoderCreate(opus_decoder, channels));
-  } else if (channels == 1) {
-    EXPECT_EQ(0, WebRtcOpus_MultistreamDecoderCreate(
-                     opus_decoder, channels, kMonoTotalStreams,
-                     kMonoCoupledStreams, kMonoChannelMapping));
-  } else if (channels == 2) {
-    EXPECT_EQ(0, WebRtcOpus_MultistreamDecoderCreate(
-                     opus_decoder, channels, kStereoTotalStreams,
-                     kStereoCoupledStreams, kStereoChannelMapping));
-  } else if (channels == 4) {
-    EXPECT_EQ(0, WebRtcOpus_MultistreamDecoderCreate(
-                     opus_decoder, channels, kQuadTotalStreams,
-                     kQuadCoupledStreams, kQuadChannelMapping));
-  } else {
-    EXPECT_TRUE(false) << channels;
-  }
-}
-}  // namespace
-
 using test::AudioLoop;
 using ::testing::TestWithParam;
 using ::testing::Values;
@@ -96,7 +35,7 @@ const size_t kOpus20msFrameSamples = kOpusRateKhz * 20;
 // Number of samples-per-channel in a 10 ms frame, sampled at 48 kHz.
 const size_t kOpus10msFrameSamples = kOpusRateKhz * 10;
 
-class OpusTest : public TestWithParam<::testing::tuple<int, int, bool>> {
+class OpusTest : public TestWithParam<::testing::tuple<int, int>> {
  protected:
   OpusTest();
 
@@ -135,7 +74,6 @@ class OpusTest : public TestWithParam<::testing::tuple<int, int, bool>> {
   size_t encoded_bytes_;
   size_t channels_;
   int application_;
-  bool force_multistream_;
 };
 
 OpusTest::OpusTest()
@@ -143,8 +81,7 @@ OpusTest::OpusTest()
       opus_decoder_(NULL),
       encoded_bytes_(0),
       channels_(static_cast<size_t>(::testing::get<0>(GetParam()))),
-      application_(::testing::get<1>(GetParam())),
-      force_multistream_(::testing::get<2>(GetParam())) {}
+      application_(::testing::get<1>(GetParam())) {}
 
 void OpusTest::PrepareSpeechData(size_t channel,
                                  int block_length_ms,
@@ -211,10 +148,9 @@ void OpusTest::TestDtxEffect(bool dtx, int block_length_ms) {
   const size_t samples = kOpusRateKhz * block_length_ms;
 
   // Create encoder memory.
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
-  CreateSingleOrMultiStreamDecoder(&opus_decoder_, channels_,
-                                   force_multistream_);
+  EXPECT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
+  EXPECT_EQ(0, WebRtcOpus_DecoderCreate(&opus_decoder_, channels_));
 
   // Set bitrate.
   EXPECT_EQ(
@@ -377,10 +313,9 @@ void OpusTest::TestCbrEffect(bool cbr, int block_length_ms) {
   int32_t prev_pkt_size = 0;
 
   // Create encoder memory.
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
-  CreateSingleOrMultiStreamDecoder(&opus_decoder_, channels_,
-                                   force_multistream_);
+  EXPECT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
+  EXPECT_EQ(0, WebRtcOpus_DecoderCreate(&opus_decoder_, channels_));
 
   // Set bitrate.
   EXPECT_EQ(
@@ -441,10 +376,9 @@ TEST(OpusTest, OpusFreeFail) {
 
 // Test normal Create and Free.
 TEST_P(OpusTest, OpusCreateFree) {
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
-  CreateSingleOrMultiStreamDecoder(&opus_decoder_, channels_,
-                                   force_multistream_);
+  EXPECT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
+  EXPECT_EQ(0, WebRtcOpus_DecoderCreate(&opus_decoder_, channels_));
   EXPECT_TRUE(opus_encoder_ != NULL);
   EXPECT_TRUE(opus_decoder_ != NULL);
   // Free encoder and decoder memory.
@@ -452,19 +386,18 @@ TEST_P(OpusTest, OpusCreateFree) {
   EXPECT_EQ(0, WebRtcOpus_DecoderFree(opus_decoder_));
 }
 
-#define ENCODER_CTL(inst, vargs)               \
-  inst->encoder                                \
-      ? opus_encoder_ctl(inst->encoder, vargs) \
-      : opus_multistream_encoder_ctl(inst->multistream_encoder, vargs)
+#define ENCODER_CTL(inst, vargs)                       \
+  inst->channels <= 2                                  \
+      ? opus_encoder_ctl(inst->encoder.encoder, vargs) \
+      : opus_multistream_encoder_ctl(inst->encoder.multistream_encoder, vargs)
 
 TEST_P(OpusTest, OpusEncodeDecode) {
   PrepareSpeechData(channels_, 20, 20);
 
   // Create encoder memory.
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
-  CreateSingleOrMultiStreamDecoder(&opus_decoder_, channels_,
-                                   force_multistream_);
+  EXPECT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
+  EXPECT_EQ(0, WebRtcOpus_DecoderCreate(&opus_decoder_, channels_));
 
   // Set bitrate.
   EXPECT_EQ(
@@ -498,8 +431,8 @@ TEST_P(OpusTest, OpusSetBitRate) {
   EXPECT_EQ(-1, WebRtcOpus_SetBitRate(opus_encoder_, 60000));
 
   // Create encoder memory, try with different bitrates.
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
+  EXPECT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
   EXPECT_EQ(0, WebRtcOpus_SetBitRate(opus_encoder_, 30000));
   EXPECT_EQ(0, WebRtcOpus_SetBitRate(opus_encoder_, 60000));
   EXPECT_EQ(0, WebRtcOpus_SetBitRate(opus_encoder_, 300000));
@@ -514,8 +447,8 @@ TEST_P(OpusTest, OpusSetComplexity) {
   EXPECT_EQ(-1, WebRtcOpus_SetComplexity(opus_encoder_, 9));
 
   // Create encoder memory, try with different complexities.
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
+  EXPECT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
 
   EXPECT_EQ(0, WebRtcOpus_SetComplexity(opus_encoder_, 0));
   EXPECT_EQ(0, WebRtcOpus_SetComplexity(opus_encoder_, 10));
@@ -543,10 +476,9 @@ TEST_P(OpusTest, OpusSetBandwidth) {
   EXPECT_EQ(-1, WebRtcOpus_GetBandwidth(opus_encoder_));
 
   // Create encoder memory, try with different bandwidths.
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
-  CreateSingleOrMultiStreamDecoder(&opus_decoder_, channels_,
-                                   force_multistream_);
+  EXPECT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
+  EXPECT_EQ(0, WebRtcOpus_DecoderCreate(&opus_decoder_, channels_));
 
   EXPECT_EQ(-1, WebRtcOpus_SetBandwidth(opus_encoder_,
                                         OPUS_BANDWIDTH_NARROWBAND - 1));
@@ -574,9 +506,8 @@ TEST_P(OpusTest, OpusForceChannels) {
   // Test without creating encoder memory.
   EXPECT_EQ(-1, WebRtcOpus_SetForceChannels(opus_encoder_, 1));
 
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
-  ASSERT_NE(nullptr, opus_encoder_);
+  ASSERT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
 
   if (channels_ >= 2) {
     EXPECT_EQ(-1, WebRtcOpus_SetForceChannels(opus_encoder_, 3));
@@ -598,10 +529,9 @@ TEST_P(OpusTest, OpusDecodeInit) {
   PrepareSpeechData(channels_, 20, 20);
 
   // Create encoder memory.
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
-  CreateSingleOrMultiStreamDecoder(&opus_decoder_, channels_,
-                                   force_multistream_);
+  EXPECT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
+  EXPECT_EQ(0, WebRtcOpus_DecoderCreate(&opus_decoder_, channels_));
 
   // Encode & decode.
   int16_t audio_type;
@@ -630,8 +560,8 @@ TEST_P(OpusTest, OpusEnableDisableFec) {
   EXPECT_EQ(-1, WebRtcOpus_DisableFec(opus_encoder_));
 
   // Create encoder memory.
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
+  EXPECT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
 
   EXPECT_EQ(0, WebRtcOpus_EnableFec(opus_encoder_));
   EXPECT_EQ(0, WebRtcOpus_DisableFec(opus_encoder_));
@@ -646,8 +576,8 @@ TEST_P(OpusTest, OpusEnableDisableDtx) {
   EXPECT_EQ(-1, WebRtcOpus_DisableDtx(opus_encoder_));
 
   // Create encoder memory.
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
+  EXPECT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
 
   opus_int32 dtx;
 
@@ -703,8 +633,8 @@ TEST_P(OpusTest, OpusSetPacketLossRate) {
   EXPECT_EQ(-1, WebRtcOpus_SetPacketLossRate(opus_encoder_, 50));
 
   // Create encoder memory.
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
+  EXPECT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
 
   EXPECT_EQ(0, WebRtcOpus_SetPacketLossRate(opus_encoder_, 50));
   EXPECT_EQ(-1, WebRtcOpus_SetPacketLossRate(opus_encoder_, -1));
@@ -719,8 +649,8 @@ TEST_P(OpusTest, OpusSetMaxPlaybackRate) {
   EXPECT_EQ(-1, WebRtcOpus_SetMaxPlaybackRate(opus_encoder_, 20000));
 
   // Create encoder memory.
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
+  EXPECT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
 
   SetMaxPlaybackRate(opus_encoder_, OPUS_BANDWIDTH_FULLBAND, 48000);
   SetMaxPlaybackRate(opus_encoder_, OPUS_BANDWIDTH_FULLBAND, 24001);
@@ -742,10 +672,9 @@ TEST_P(OpusTest, OpusDecodePlc) {
   PrepareSpeechData(channels_, 20, 20);
 
   // Create encoder memory.
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
-  CreateSingleOrMultiStreamDecoder(&opus_decoder_, channels_,
-                                   force_multistream_);
+  EXPECT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
+  EXPECT_EQ(0, WebRtcOpus_DecoderCreate(&opus_decoder_, channels_));
 
   // Set bitrate.
   EXPECT_EQ(
@@ -779,10 +708,9 @@ TEST_P(OpusTest, OpusDurationEstimation) {
   PrepareSpeechData(channels_, 20, 20);
 
   // Create.
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
-  CreateSingleOrMultiStreamDecoder(&opus_decoder_, channels_,
-                                   force_multistream_);
+  EXPECT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
+  EXPECT_EQ(0, WebRtcOpus_DecoderCreate(&opus_decoder_, channels_));
 
   // 10 ms. We use only first 10 ms of a 20 ms block.
   auto speech_block = speech_data_.GetNextBlock();
@@ -825,12 +753,9 @@ TEST_P(OpusTest, OpusDecodeRepacketized) {
   PrepareSpeechData(channels_, 20, 20 * kPackets);
 
   // Create encoder memory.
-  CreateSingleOrMultiStreamEncoder(&opus_encoder_, channels_, application_,
-                                   force_multistream_);
-  ASSERT_NE(nullptr, opus_encoder_);
-  CreateSingleOrMultiStreamDecoder(&opus_decoder_, channels_,
-                                   force_multistream_);
-  ASSERT_NE(nullptr, opus_decoder_);
+  ASSERT_EQ(0,
+            WebRtcOpus_EncoderCreate(&opus_encoder_, channels_, application_));
+  ASSERT_EQ(0, WebRtcOpus_DecoderCreate(&opus_decoder_, channels_));
 
   // Set bitrate.
   EXPECT_EQ(
@@ -887,13 +812,6 @@ TEST_P(OpusTest, OpusDecodeRepacketized) {
 
 INSTANTIATE_TEST_SUITE_P(VariousMode,
                          OpusTest,
-                         ::testing::ValuesIn({
-                             std::make_tuple(1, 0, true),
-                             std::make_tuple(2, 1, true),
-                             std::make_tuple(2, 0, false),
-                             std::make_tuple(4, 0, false),
-                             std::make_tuple(1, 1, false),
-                             std::make_tuple(4, 1, false),
-                         }));
+                         Combine(Values(1, 2, 4), Values(0, 1)));
 
 }  // namespace webrtc

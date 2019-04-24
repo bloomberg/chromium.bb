@@ -20,7 +20,14 @@
         "ui"
     ],
     "scripts": [
-        "lighthouse/report.js",
+        "lighthouse/renderer/util.js",
+        "lighthouse/renderer/dom.js",
+        "lighthouse/renderer/category-renderer.js",
+        "lighthouse/renderer/performance-category-renderer.js",
+        "lighthouse/renderer/pwa-category-renderer.js",
+        "lighthouse/renderer/details-renderer.js",
+        "lighthouse/renderer/crc-details-renderer.js",
+        "lighthouse/renderer/report-renderer.js",
         "RadioSetting.js",
         "Audits2Panel.js",
         "Audits2Controller.js",
@@ -32,13 +39,19 @@
     ],
     "resources": [
         "audits2Dialog.css",
-        "audits2Panel.css",
         "audits2StartView.css",
-        "lighthouse/templates.html",
-        "lighthouse/report.css",
-        "lighthouse/report.js"
+        "audits2Panel.css",
+        "lighthouse/report-styles.css",
+        "lighthouse/templates.html"
     ],
     "skip_compilation": [
-      "lighthouse/report.js"
+      "lighthouse/renderer/util.js",
+      "lighthouse/renderer/dom.js",
+      "lighthouse/renderer/category-renderer.js",
+      "lighthouse/renderer/performance-category-renderer.js",
+      "lighthouse/renderer/pwa-category-renderer.js",
+      "lighthouse/renderer/details-renderer.js",
+      "lighthouse/renderer/crc-details-renderer.js",
+      "lighthouse/renderer/report-renderer.js"
   ]
 }

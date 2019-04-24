@@ -27,12 +27,7 @@ class WebGPUDecoderTest : public ::testing::Test {
     command_buffer_service_.reset(new FakeCommandBufferServiceBase());
     decoder_.reset(WebGPUDecoder::Create(nullptr, command_buffer_service_.get(),
                                          &outputter_));
-    if (decoder_->Initialize() != ContextResult::kSuccess) {
-      decoder_ = nullptr;
-    }
   }
-
-  bool WebGPUSupported() const { return decoder_ != nullptr; }
 
   template <typename T>
   error::Error ExecuteCmd(const T& cmd) {
@@ -51,15 +46,10 @@ class WebGPUDecoderTest : public ::testing::Test {
   scoped_refptr<gles2::ContextGroup> group_;
 };
 
-TEST_F(WebGPUDecoderTest, DawnCommands) {
-  if (!WebGPUSupported()) {
-    LOG(ERROR) << "Test skipped because WebGPU isn't supported";
-    return;
-  }
-
-  cmds::DawnCommands cmd;
-  cmd.Init(0, 0, 0);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+TEST_F(WebGPUDecoderTest, Dummy) {
+  cmds::Dummy dummy;
+  dummy.Init();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(dummy));
 }
 }  // namespace webgpu
 }  // namespace gpu

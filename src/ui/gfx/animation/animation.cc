@@ -103,13 +103,15 @@ bool Animation::ShouldRenderRichAnimation() {
          RichAnimationRenderMode::FORCE_ENABLED;
 }
 
-#if !defined(OS_WIN) && (!defined(OS_MACOSX) || defined(OS_IOS))
+#if !defined(OS_WIN)
 // static
 bool Animation::ShouldRenderRichAnimationImpl() {
-  // Defined in platform specific file for Windows and OSX.
+  // Defined in platform specific file for Windows.
   return true;
 }
+#endif
 
+#if !defined(OS_WIN) && (!defined(OS_MACOSX) || defined(OS_IOS))
 // static
 bool Animation::ScrollAnimationsEnabledBySystem() {
   // Defined in platform specific files for Windows and OSX.

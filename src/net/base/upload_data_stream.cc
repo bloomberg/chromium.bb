@@ -143,7 +143,7 @@ bool UploadDataStream::IsInMemory() const {
 
 const std::vector<std::unique_ptr<UploadElementReader>>*
 UploadDataStream::GetElementReaders() const {
-  return nullptr;
+  return NULL;
 }
 
 void UploadDataStream::OnInitCompleted(int result) {

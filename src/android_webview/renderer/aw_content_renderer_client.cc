@@ -278,12 +278,13 @@ void AwContentRendererClient::PrepareErrorPage(
       replacements, nullptr);
 }
 
-uint64_t AwContentRendererClient::VisitedLinkHash(const char* canonical_url,
-                                                  size_t length) {
+unsigned long long AwContentRendererClient::VisitedLinkHash(
+    const char* canonical_url,
+    size_t length) {
   return visited_link_slave_->ComputeURLFingerprint(canonical_url, length);
 }
 
-bool AwContentRendererClient::IsLinkVisited(uint64_t link_hash) {
+bool AwContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
   return visited_link_slave_->IsVisited(link_hash);
 }
 

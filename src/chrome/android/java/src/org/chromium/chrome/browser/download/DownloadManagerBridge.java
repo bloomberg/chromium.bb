@@ -203,12 +203,7 @@ public class DownloadManagerBridge {
         }
         c.close();
 
-        try {
-            result.contentUri = manager.getUriForDownloadedFile(downloadId);
-        } catch (SecurityException e) {
-            Log.e(TAG, "unable to get content URI from DownloadManager");
-        }
-
+        result.contentUri = manager.getUriForDownloadedFile(downloadId);
         result.mimeType = manager.getMimeTypeForDownloadedFile(downloadId);
 
         return result;

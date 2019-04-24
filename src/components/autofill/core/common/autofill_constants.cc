@@ -5,7 +5,6 @@
 #include "components/autofill/core/common/autofill_constants.h"
 
 #include "build/build_config.h"
-#include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_features.h"
 
 namespace autofill {
@@ -29,10 +28,6 @@ size_t MinRequiredFieldsForUpload() {
              autofill::features::kAutofillEnforceMinRequiredFieldsForUpload)
              ? 3
              : 1;
-}
-
-bool IsAutofillEntryWithUseDateDeletable(const base::Time& use_date) {
-  return use_date < AutofillClock::Now() - kDisusedDataModelDeletionTimeDelta;
 }
 
 }  // namespace autofill

@@ -18,6 +18,9 @@ SyncCompositorDemandDrawHwParams::SyncCompositorDemandDrawHwParams(
 
 SyncCompositorDemandDrawHwParams::~SyncCompositorDemandDrawHwParams() {}
 
+SyncCompositorSetSharedMemoryParams::SyncCompositorSetSharedMemoryParams()
+    : buffer_size(0u) {}
+
 SyncCompositorDemandDrawSwParams::SyncCompositorDemandDrawSwParams() {}
 
 SyncCompositorDemandDrawSwParams::~SyncCompositorDemandDrawSwParams() {}

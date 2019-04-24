@@ -25,7 +25,6 @@ OPTIONAL_MATCHING = (
     'path_delimiter',
     'pixel_tests_enabled',
     'random_order_seed',
-    'metadata'
     )
 
 OPTIONAL_IGNORED = (

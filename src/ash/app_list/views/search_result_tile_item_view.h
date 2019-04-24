@@ -103,7 +103,8 @@ class APP_LIST_EXPORT SearchResultTileItemView
   void Layout() override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
-  base::string16 GetTooltipText(const gfx::Point& p) const override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
 
   AppListViewDelegate* const view_delegate_;           // Owned by AppListView.
   PaginationModel* const pagination_model_;            // Owned by AppsGridView.

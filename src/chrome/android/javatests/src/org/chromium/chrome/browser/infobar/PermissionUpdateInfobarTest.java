@@ -15,6 +15,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
@@ -27,7 +28,6 @@ import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.PermissionCallback;
@@ -86,7 +86,7 @@ public class PermissionUpdateInfobarTest {
 
         final String locationUrl = mTestServer.getURL(GEOLOCATION_PAGE);
         final PermissionInfo geolocationSettings =
-                TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<PermissionInfo>() {
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<PermissionInfo>() {
                     @Override
                     public PermissionInfo call() {
                         return new PermissionInfo(
@@ -100,15 +100,19 @@ public class PermissionUpdateInfobarTest {
         LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
 
         try {
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> geolocationSettings.setContentSetting(ContentSettingValues.ALLOW));
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    geolocationSettings.setContentSetting(ContentSettingValues.ALLOW);
+                }
+            });
 
             mActivityTestRule.loadUrl(mTestServer.getURL(GEOLOCATION_PAGE));
             mListener.addInfoBarAnimationFinished("InfoBar not added");
             Assert.assertEquals(1, mActivityTestRule.getInfoBars().size());
 
-            final WebContents webContents =
-                    TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<WebContents>() {
+            final WebContents webContents = ThreadUtils.runOnUiThreadBlockingNoException(
+                    new Callable<WebContents>() {
                         @Override
                         public WebContents call() throws Exception {
                             return mActivityTestRule.getActivity()
@@ -137,8 +141,12 @@ public class PermissionUpdateInfobarTest {
                 }
             }));
         } finally {
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> geolocationSettings.setContentSetting(ContentSettingValues.DEFAULT));
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    geolocationSettings.setContentSetting(ContentSettingValues.DEFAULT);
+                }
+            });
         }
     }
 

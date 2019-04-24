@@ -18,17 +18,17 @@
 #include "chrome/browser/offline_pages/download_archive_manager.h"
 #include "chrome/browser/offline_pages/fresh_offline_content_observer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_key.h"
 #include "chrome/common/chrome_constants.h"
-#include "components/keyed_service/core/simple_dependency_manager.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/offline_pages/core/model/offline_page_model_taskified.h"
 #include "components/offline_pages/core/offline_page_metadata_store.h"
 
 namespace offline_pages {
 
 OfflinePageModelFactory::OfflinePageModelFactory()
-    : SimpleKeyedServiceFactory("OfflinePageModel",
-                                SimpleDependencyManager::GetInstance()) {}
+    : BrowserContextKeyedServiceFactory(
+          "OfflinePageModel",
+          BrowserContextDependencyManager::GetInstance()) {}
 
 // static
 OfflinePageModelFactory* OfflinePageModelFactory::GetInstance() {
@@ -36,30 +36,25 @@ OfflinePageModelFactory* OfflinePageModelFactory::GetInstance() {
 }
 
 // static
-OfflinePageModel* OfflinePageModelFactory::GetForKey(SimpleFactoryKey* key) {
-  return static_cast<OfflinePageModel*>(
-      GetInstance()->GetServiceForKey(key, /*create=*/true));
-}
-
-// static
 OfflinePageModel* OfflinePageModelFactory::GetForBrowserContext(
-    content::BrowserContext* browser_context) {
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-  return GetForKey(profile->GetProfileKey());
+    content::BrowserContext* context) {
+  return static_cast<OfflinePageModel*>(
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
-std::unique_ptr<KeyedService> OfflinePageModelFactory::BuildServiceInstanceFor(
-    SimpleFactoryKey* key) const {
+KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  Profile* profile = Profile::FromBrowserContext(context);
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
 
   base::FilePath store_path =
-      key->GetPath().Append(chrome::kOfflinePageMetadataDirname);
+      profile->GetPath().Append(chrome::kOfflinePageMetadataDirname);
   std::unique_ptr<OfflinePageMetadataStore> metadata_store(
       new OfflinePageMetadataStore(background_task_runner, store_path));
 
   base::FilePath persistent_archives_dir =
-      key->GetPath().Append(chrome::kOfflinePageArchivesDirname);
+      profile->GetPath().Append(chrome::kOfflinePageArchivesDirname);
   // If base::PathService::Get returns false, the temporary_archives_dir will be
   // empty, and no temporary pages will be saved during this chrome lifecycle.
   base::FilePath temporary_archives_dir;
@@ -67,25 +62,22 @@ std::unique_ptr<KeyedService> OfflinePageModelFactory::BuildServiceInstanceFor(
     temporary_archives_dir =
         temporary_archives_dir.Append(chrome::kOfflinePageArchivesDirname);
   }
-
-  ProfileKey* profile_key = ProfileKey::FromSimpleFactoryKey(key);
   std::unique_ptr<ArchiveManager> archive_manager(new DownloadArchiveManager(
       temporary_archives_dir, persistent_archives_dir,
       DownloadPrefs::GetDefaultDownloadDirectory(), background_task_runner,
-      profile_key->GetPrefs()));
+      profile->GetPrefs()));
   auto clock = std::make_unique<base::DefaultClock>();
 
   std::unique_ptr<SystemDownloadManager> download_manager(
       new android::OfflinePagesDownloadManagerBridge());
 
-  std::unique_ptr<OfflinePageModelTaskified> model =
-      std::make_unique<OfflinePageModelTaskified>(
-          std::move(metadata_store), std::move(archive_manager),
-          std::move(download_manager), background_task_runner);
+  OfflinePageModelTaskified* model = new OfflinePageModelTaskified(
+      std::move(metadata_store), std::move(archive_manager),
+      std::move(download_manager), background_task_runner);
 
-  CctOriginObserver::AttachToOfflinePageModel(model.get());
+  CctOriginObserver::AttachToOfflinePageModel(model);
 
-  FreshOfflineContentObserver::AttachToOfflinePageModel(model.get());
+  FreshOfflineContentObserver::AttachToOfflinePageModel(model);
 
   return model;
 }

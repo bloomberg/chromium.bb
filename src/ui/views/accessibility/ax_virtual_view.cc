@@ -38,7 +38,12 @@ AXVirtualView* AXVirtualView::GetFromId(int32_t id) {
   return it != id_map.end() ? it->second : nullptr;
 }
 
-AXVirtualView::AXVirtualView() {
+AXVirtualView::AXVirtualView()
+    : parent_view_(nullptr), virtual_parent_view_(nullptr) {
+#if defined(USE_AURA)
+  wrapper_ = std::make_unique<AXVirtualViewWrapper>(this);
+#endif
+
   GetIdMap()[unique_id_.Get()] = this;
   ax_platform_node_ = ui::AXPlatformNode::Create(this);
   DCHECK(ax_platform_node_);
@@ -262,20 +267,15 @@ gfx::NativeViewAccessible AXVirtualView::GetParent() {
   return nullptr;
 }
 
-gfx::Rect AXVirtualView::GetBoundsRect(
-    const ui::AXCoordinateSystem coordinate_system,
-    const ui::AXClippingBehavior clipping_behavior,
-    ui::AXOffscreenResult* offscreen_result) const {
-  switch (coordinate_system) {
-    case ui::AXCoordinateSystem::kScreen:
-      // We could optionally add clipping here if ever needed.
-      // TODO(nektar): Implement bounds that are relative to the parent.
-      return gfx::ToEnclosingRect(custom_data_.relative_bounds.bounds);
-    case ui::AXCoordinateSystem::kRootFrame:
-    case ui::AXCoordinateSystem::kFrame:
-      NOTIMPLEMENTED();
-      return gfx::Rect();
-  }
+gfx::Rect AXVirtualView::GetClippedScreenBoundsRect() const {
+  // We could optionally add clipping here if ever needed.
+  // TODO(nektar): Implement bounds that are relative to the parent.
+  return gfx::ToEnclosingRect(custom_data_.relative_bounds.bounds);
+}
+
+gfx::Rect AXVirtualView::GetUnclippedScreenBoundsRect() const {
+  // TODO(nektar): Implement bounds that are relative to the parent.
+  return gfx::ToEnclosingRect(custom_data_.relative_bounds.bounds);
 }
 
 gfx::NativeViewAccessible AXVirtualView::HitTestSync(int x, int y) {
@@ -338,12 +338,7 @@ View* AXVirtualView::GetOwnerView() const {
   return nullptr;
 }
 
-AXVirtualViewWrapper* AXVirtualView::GetOrCreateWrapper(
-    views::AXAuraObjCache* cache) {
-#if defined(USE_AURA)
-  if (!wrapper_)
-    wrapper_ = std::make_unique<AXVirtualViewWrapper>(this, cache);
-#endif
+AXVirtualViewWrapper* AXVirtualView::GetWrapper() const {
   return wrapper_.get();
 }
 

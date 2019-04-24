@@ -342,10 +342,16 @@ class PageLoadTimingMerger {
           new_paint_timing.largest_image_paint;
       target_paint_timing->largest_image_paint_size =
           new_paint_timing.largest_image_paint_size;
+      target_paint_timing->last_image_paint = new_paint_timing.last_image_paint;
+      target_paint_timing->last_image_paint_size =
+          new_paint_timing.last_image_paint_size;
       target_paint_timing->largest_text_paint =
           new_paint_timing.largest_text_paint;
       target_paint_timing->largest_text_paint_size =
           new_paint_timing.largest_text_paint_size;
+      target_paint_timing->last_text_paint = new_paint_timing.last_text_paint;
+      target_paint_timing->last_text_paint_size =
+          new_paint_timing.last_text_paint_size;
     }
   }
 
@@ -411,7 +417,8 @@ PageLoadMetricsUpdateDispatcher::PageLoadMetricsUpdateDispatcher(
       current_merged_page_timing_(CreatePageLoadTiming()),
       pending_merged_page_timing_(CreatePageLoadTiming()),
       main_frame_metadata_(mojom::PageLoadMetadata::New()),
-      subframe_metadata_(mojom::PageLoadMetadata::New()) {}
+      subframe_metadata_(mojom::PageLoadMetadata::New()),
+      main_frame_render_data_(mojom::PageRenderData::New()) {}
 
 PageLoadMetricsUpdateDispatcher::~PageLoadMetricsUpdateDispatcher() {
   ShutDown();
@@ -436,9 +443,8 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     mojom::PageLoadMetadataPtr new_metadata,
     mojom::PageLoadFeaturesPtr new_features,
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
-    mojom::FrameRenderDataUpdatePtr render_data,
-    mojom::CpuTimingPtr new_cpu_timing,
-    mojom::DeferredResourceCountsPtr new_deferred_resource_data) {
+    mojom::PageRenderDataPtr render_data,
+    mojom::CpuTimingPtr new_cpu_timing) {
   if (render_frame_host->GetLastCommittedURL().SchemeIs(
           extensions::kExtensionScheme)) {
     // Extensions can inject child frames into a page. We don't want to track
@@ -450,27 +456,17 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
   UpdateFrameCpuTiming(render_frame_host, std::move(new_cpu_timing));
   // Report data usage before new timing and metadata for messages that have
   // both updates.
-  client_->UpdateResourceDataUse(render_frame_host, resources);
-
-  // Report new deferral info.
-  client_->OnNewDeferredResourceCounts(*new_deferred_resource_data);
-
-  bool is_main_frame = render_frame_host->GetParent() == nullptr;
-  if (is_main_frame) {
+  client_->UpdateResourceDataUse(render_frame_host->GetFrameTreeNodeId(),
+                                 resources);
+  if (render_frame_host->GetParent() == nullptr) {
     UpdateMainFrameMetadata(std::move(new_metadata));
     UpdateMainFrameTiming(std::move(new_timing));
-    UpdateMainFrameRenderData(*render_data);
+    UpdateMainFrameRenderData(std::move(render_data));
   } else {
-    UpdateSubFrameMetadata(render_frame_host, std::move(new_metadata));
+    UpdateSubFrameMetadata(std::move(new_metadata));
     UpdateSubFrameTiming(render_frame_host, std::move(new_timing));
+    UpdateSubFrameRenderData(render_frame_host, std::move(render_data));
   }
-
-  UpdatePageRenderData(*render_data);
-  if (!is_main_frame) {
-    // This path is just for the AMP metrics.
-    OnSubFrameRenderDataChanged(render_frame_host, *render_data);
-  }
-
   client_->UpdateFeaturesUsage(render_frame_host, *new_features);
 }
 
@@ -544,12 +540,17 @@ void PageLoadMetricsUpdateDispatcher::UpdateFrameCpuTiming(
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameMetadata(
-    content::RenderFrameHost* render_frame_host,
     mojom::PageLoadMetadataPtr subframe_metadata) {
   // Merge the subframe loading behavior flags with any we've already observed,
   // possibly from other subframes.
+  const int last_subframe_loading_behavior_flags =
+      subframe_metadata_->behavior_flags;
   subframe_metadata_->behavior_flags |= subframe_metadata->behavior_flags;
-  client_->OnSubframeMetadataChanged(render_frame_host, *subframe_metadata);
+  if (last_subframe_loading_behavior_flags ==
+      subframe_metadata_->behavior_flags)
+    return;
+
+  client_->OnSubframeMetadataChanged();
 }
 
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameTiming(
@@ -612,20 +613,15 @@ void PageLoadMetricsUpdateDispatcher::UpdateMainFrameMetadata(
   client_->OnMainFrameMetadataChanged();
 }
 
-void PageLoadMetricsUpdateDispatcher::UpdatePageRenderData(
-    const mojom::FrameRenderDataUpdate& render_data) {
-  page_render_data_.layout_jank_score += render_data.layout_jank_delta;
-}
-
 void PageLoadMetricsUpdateDispatcher::UpdateMainFrameRenderData(
-    const mojom::FrameRenderDataUpdate& render_data) {
-  main_frame_render_data_.layout_jank_score += render_data.layout_jank_delta;
+    mojom::PageRenderDataPtr render_data) {
+  main_frame_render_data_ = std::move(render_data);
 }
 
-void PageLoadMetricsUpdateDispatcher::OnSubFrameRenderDataChanged(
+void PageLoadMetricsUpdateDispatcher::UpdateSubFrameRenderData(
     content::RenderFrameHost* render_frame_host,
-    const mojom::FrameRenderDataUpdate& render_data) {
-  client_->OnSubFrameRenderDataChanged(render_frame_host, render_data);
+    mojom::PageRenderDataPtr render_data) {
+  client_->OnSubFrameRenderDataChanged(render_frame_host, *render_data);
 }
 
 void PageLoadMetricsUpdateDispatcher::MaybeDispatchTimingUpdates(

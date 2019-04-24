@@ -39,71 +39,63 @@ class CSSPropertyPriorityData {
 template <>
 inline CSSPropertyID CSSPropertyPriorityData<kResolveVariables>::First() {
   static_assert(
-      static_cast<int>(CSSPropertyID::kVariable) == kIntFirstCSSProperty - 1,
-      "CSSPropertyID::kVariable should be directly before the first CSS "
-      "property.");
-  return CSSPropertyID::kVariable;
+      CSSPropertyVariable == firstCSSProperty - 1,
+      "CSSPropertyVariable should be directly before the first CSS property.");
+  return CSSPropertyVariable;
 }
 
 template <>
 inline CSSPropertyID CSSPropertyPriorityData<kResolveVariables>::Last() {
-  return CSSPropertyID::kVariable;
+  return CSSPropertyVariable;
 }
 
 template <>
 inline CSSPropertyID
 CSSPropertyPriorityData<kAnimationPropertyPriority>::First() {
-  static_assert(CSSPropertyID::kAnimationDelay == firstCSSProperty,
-                "CSSPropertyID::kAnimationDelay should be the first animation "
+  static_assert(CSSPropertyAnimationDelay == firstCSSProperty,
+                "CSSPropertyAnimationDelay should be the first animation "
                 "priority property");
-  return CSSPropertyID::kAnimationDelay;
+  return CSSPropertyAnimationDelay;
 }
 
 template <>
 inline CSSPropertyID
 CSSPropertyPriorityData<kAnimationPropertyPriority>::Last() {
   static_assert(
-      static_cast<int>(CSSPropertyID::kTransitionTimingFunction) ==
-          static_cast<int>(CSSPropertyID::kAnimationDelay) + 11,
-      "CSSPropertyID::kTransitionTimingFunction should be the end of the high "
+      CSSPropertyTransitionTimingFunction == CSSPropertyAnimationDelay + 11,
+      "CSSPropertyTransitionTimingFunction should be the end of the high "
       "priority property range");
   static_assert(
-      static_cast<int>(CSSPropertyID::kColor) ==
-          static_cast<int>(CSSPropertyID::kTransitionTimingFunction) + 1,
-      "CSSPropertyID::kTransitionTimingFunction should be immediately before "
-      "CSSPropertyID::kColor");
-  return CSSPropertyID::kTransitionTimingFunction;
+      CSSPropertyColor == CSSPropertyTransitionTimingFunction + 1,
+      "CSSPropertyTransitionTimingFunction should be immediately before "
+      "CSSPropertyColor");
+  return CSSPropertyTransitionTimingFunction;
 }
 
 template <>
 inline CSSPropertyID CSSPropertyPriorityData<kHighPropertyPriority>::First() {
-  static_assert(
-      static_cast<int>(CSSPropertyID::kColor) ==
-          static_cast<int>(CSSPropertyID::kTransitionTimingFunction) + 1,
-      "CSSPropertyID::kColor should be the first high priority property");
-  return CSSPropertyID::kColor;
+  static_assert(CSSPropertyColor == CSSPropertyTransitionTimingFunction + 1,
+                "CSSPropertyColor should be the first high priority property");
+  return CSSPropertyColor;
 }
 
 template <>
 inline CSSPropertyID CSSPropertyPriorityData<kHighPropertyPriority>::Last() {
-  static_assert(static_cast<int>(CSSPropertyID::kZoom) ==
-                    static_cast<int>(CSSPropertyID::kColor) + 22,
-                "CSSPropertyID::kZoom should be the end of the high priority "
-                "property range");
-  static_assert(static_cast<int>(CSSPropertyID::kWritingMode) ==
-                    static_cast<int>(CSSPropertyID::kZoom) - 1,
-                "CSSPropertyID::kWritingMode should be immediately before "
-                "CSSPropertyID::kZoom");
-  return CSSPropertyID::kZoom;
+  static_assert(
+      CSSPropertyZoom == CSSPropertyColor + 22,
+      "CSSPropertyZoom should be the end of the high priority property range");
+  static_assert(CSSPropertyWritingMode == CSSPropertyZoom - 1,
+                "CSSPropertyWritingMode should be immediately before "
+                "CSSPropertyZoom");
+  return CSSPropertyZoom;
 }
 
 template <>
 inline CSSPropertyID CSSPropertyPriorityData<kLowPropertyPriority>::First() {
   static_assert(
-      static_cast<int>(CSSPropertyID::kAlignContent) ==
-          static_cast<int>(CSSPropertyID::kZoom) + 1,
-      "CSSPropertyID::kAlignContent should be the first low priority property");
-  return CSSPropertyID::kAlignContent;
+      CSSPropertyAlignContent == CSSPropertyZoom + 1,
+      "CSSPropertyAlignContent should be the first low priority property");
+  return CSSPropertyAlignContent;
 }
 
 template <>

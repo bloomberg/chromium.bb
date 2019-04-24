@@ -27,7 +27,7 @@ namespace internal {
 // to it. GC uses layout descriptors to iterate objects. Avoid heap pointers
 // in a layout descriptor because they can lead to data races in GC when
 // GC moves objects in parallel.
-class V8_EXPORT_PRIVATE LayoutDescriptor : public ByteArray {
+class LayoutDescriptor : public ByteArray {
  public:
   V8_INLINE bool IsTagged(int field_index);
 
@@ -145,6 +145,7 @@ class V8_EXPORT_PRIVATE LayoutDescriptor : public ByteArray {
   OBJECT_CONSTRUCTORS(LayoutDescriptor, ByteArray);
 };
 
+
 // LayoutDescriptorHelper is a helper class for querying layout descriptor
 // about whether the field at given offset is tagged or not.
 class LayoutDescriptorHelper {
@@ -159,8 +160,8 @@ class LayoutDescriptorHelper {
   // otherwise and writes the offset of the end of the contiguous region to
   // |out_end_of_contiguous_region_offset|. The |end_offset| value is the
   // upper bound for |out_end_of_contiguous_region_offset|.
-  V8_EXPORT_PRIVATE bool IsTagged(int offset_in_bytes, int end_offset,
-                                  int* out_end_of_contiguous_region_offset);
+  bool IsTagged(int offset_in_bytes, int end_offset,
+                int* out_end_of_contiguous_region_offset);
 
  private:
   bool all_fields_tagged_;

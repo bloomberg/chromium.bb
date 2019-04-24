@@ -114,33 +114,34 @@ void FakeDebugDaemonClient::GetPerfOutput(
     int file_descriptor,
     DBusMethodCallback<uint64_t> error_callback) {}
 
-void FakeDebugDaemonClient::GetScrubbedLogs(GetLogsCallback callback) {
+void FakeDebugDaemonClient::GetScrubbedLogs(const GetLogsCallback& callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Scrubbed Log"] = "Your email address is xxxxxxxx";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), false, sample));
+      FROM_HERE, base::BindOnce(callback, false, sample));
 }
 
-void FakeDebugDaemonClient::GetScrubbedBigLogs(GetLogsCallback callback) {
+void FakeDebugDaemonClient::GetScrubbedBigLogs(
+    const GetLogsCallback& callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Scrubbed Big Log"] = "Your email address is xxxxxxxx";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), false, sample));
+      FROM_HERE, base::BindOnce(callback, false, sample));
 }
 
-void FakeDebugDaemonClient::GetAllLogs(GetLogsCallback callback) {
+void FakeDebugDaemonClient::GetAllLogs(const GetLogsCallback& callback) {
   std::map<std::string, std::string> sample;
   sample["Sample Log"] = "Your email address is abc@abc.com";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), false, sample));
+      FROM_HERE, base::BindOnce(callback, false, sample));
 }
 
-void FakeDebugDaemonClient::GetUserLogFiles(GetLogsCallback callback) {
+void FakeDebugDaemonClient::GetUserLogFiles(const GetLogsCallback& callback) {
   std::map<std::string, std::string> user_logs;
   user_logs["preferences"] = "Preferences";
   user_logs["invalid_file"] = "Invalid File";
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true, user_logs));
+      FROM_HERE, base::BindOnce(callback, true, user_logs));
 }
 
 void FakeDebugDaemonClient::GetLog(const std::string& log_name,
@@ -247,14 +248,14 @@ void FakeDebugDaemonClient::CupsAddAutoConfiguredPrinter(
 
 void FakeDebugDaemonClient::CupsRemovePrinter(
     const std::string& name,
-    DebugDaemonClient::CupsRemovePrinterCallback callback,
+    const DebugDaemonClient::CupsRemovePrinterCallback& callback,
     const base::Closure& error_callback) {
   const bool has_printer = base::ContainsKey(printers_, name);
   if (has_printer)
     printers_.erase(name);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), has_printer));
+      FROM_HERE, base::BindOnce(callback, has_printer));
 }
 
 void FakeDebugDaemonClient::StartConcierge(ConciergeCallback callback) {
@@ -263,18 +264,6 @@ void FakeDebugDaemonClient::StartConcierge(ConciergeCallback callback) {
 }
 
 void FakeDebugDaemonClient::StopConcierge(ConciergeCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
-}
-
-void FakeDebugDaemonClient::StartPluginVmDispatcher(
-    PluginVmDispatcherCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
-}
-
-void FakeDebugDaemonClient::StopPluginVmDispatcher(
-    PluginVmDispatcherCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }

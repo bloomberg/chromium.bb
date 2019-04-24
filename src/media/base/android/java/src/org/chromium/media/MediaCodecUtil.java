@@ -15,8 +15,6 @@ import android.media.MediaCodecList;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.os.Build;
-import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
@@ -24,8 +22,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.compat.ApiHelperForN;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -499,72 +495,46 @@ class MediaCodecUtil {
     }
 
     // List of supported HW encoders.
-    @IntDef({HWEncoder.QcomVp8, HWEncoder.QcomH264, HWEncoder.ExynosVp8, HWEncoder.ExynosH264,
-            HWEncoder.MediatekH264})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface HWEncoder {
-        int QcomVp8 = 0;
-        int QcomH264 = 1;
-        int ExynosVp8 = 2;
-        int ExynosH264 = 3;
-        int MediatekH264 = 4;
-        int NUM_ENTRIES = 5;
-    }
+    private static enum HWEncoderProperties {
+        QcomVp8(MimeTypes.VIDEO_VP8, "OMX.qcom.", Build.VERSION_CODES.KITKAT,
+                BitrateAdjuster.Type.NO_ADJUSTMENT),
+        QcomH264(MimeTypes.VIDEO_H264, "OMX.qcom.", Build.VERSION_CODES.KITKAT,
+                BitrateAdjuster.Type.NO_ADJUSTMENT),
+        ExynosVp8(MimeTypes.VIDEO_VP8, "OMX.Exynos.", Build.VERSION_CODES.M,
+                BitrateAdjuster.Type.NO_ADJUSTMENT),
+        ExynosH264(MimeTypes.VIDEO_H264, "OMX.Exynos.", Build.VERSION_CODES.LOLLIPOP,
+                BitrateAdjuster.Type.FRAMERATE_ADJUSTMENT),
+        MediatekH264(MimeTypes.VIDEO_H264, "OMX.MTK.", Build.VERSION_CODES.O_MR1,
+                BitrateAdjuster.Type.FRAMERATE_ADJUSTMENT);
 
-    private static String getMimeForHWEncoder(@HWEncoder int decoder) {
-        switch (decoder) {
-            case HWEncoder.QcomVp8:
-            case HWEncoder.ExynosVp8:
-                return MimeTypes.VIDEO_VP8;
-            case HWEncoder.QcomH264:
-            case HWEncoder.ExynosH264:
-            case HWEncoder.MediatekH264:
-                return MimeTypes.VIDEO_H264;
-        }
-        return "";
-    }
+        private final String mMime;
+        private final String mPrefix;
+        private final int mMinSDK;
+        private final @BitrateAdjuster.Type int mBitrateAdjuster;
 
-    private static String getPrefixForHWEncoder(@HWEncoder int decoder) {
-        switch (decoder) {
-            case HWEncoder.QcomVp8:
-            case HWEncoder.QcomH264:
-                return "OMX.qcom.";
-            case HWEncoder.ExynosVp8:
-            case HWEncoder.ExynosH264:
-                return "OMX.Exynos.";
-            case HWEncoder.MediatekH264:
-                return "OMX.MTK.";
+        private HWEncoderProperties(
+                String mime, String prefix, int minSDK, @BitrateAdjuster.Type int bitrateAdjuster) {
+            this.mMime = mime;
+            this.mPrefix = prefix;
+            this.mMinSDK = minSDK;
+            this.mBitrateAdjuster = bitrateAdjuster;
         }
-        return "";
-    }
 
-    private static int getMinSDKForHWEncoder(@HWEncoder int decoder) {
-        switch (decoder) {
-            case HWEncoder.QcomVp8:
-            case HWEncoder.QcomH264:
-                return Build.VERSION_CODES.KITKAT;
-            case HWEncoder.ExynosVp8:
-                return Build.VERSION_CODES.M;
-            case HWEncoder.ExynosH264:
-                return Build.VERSION_CODES.LOLLIPOP;
-            case HWEncoder.MediatekH264:
-                return Build.VERSION_CODES.O_MR1;
+        public String getMime() {
+            return mMime;
         }
-        return -1;
-    }
 
-    private static @BitrateAdjuster.Type int getBitrateAdjusterTypeForHWEncoder(
-            @HWEncoder int decoder) {
-        switch (decoder) {
-            case HWEncoder.QcomVp8:
-            case HWEncoder.QcomH264:
-            case HWEncoder.ExynosVp8:
-                return BitrateAdjuster.Type.NO_ADJUSTMENT;
-            case HWEncoder.ExynosH264:
-            case HWEncoder.MediatekH264:
-                return BitrateAdjuster.Type.FRAMERATE_ADJUSTMENT;
+        public String getPrefix() {
+            return mPrefix;
         }
-        return -1;
+
+        public int getMinSDK() {
+            return mMinSDK;
+        }
+
+        public @BitrateAdjuster.Type int getBitrateAdjuster() {
+            return mBitrateAdjuster;
+        }
     }
 
     // List of devices with poor H.264 encoder quality.
@@ -583,15 +553,15 @@ class MediaCodecUtil {
         // if we cannot create the codec.
         CodecCreationInfo result = new CodecCreationInfo();
 
-        @Nullable
-        @HWEncoder
-        Integer encoderProperties = findHWEncoder(mime);
-        if (encoderProperties == null) return result;
+        HWEncoderProperties encoderProperties = findHWEncoder(mime);
+        if (encoderProperties == null) {
+            return result;
+        }
 
         try {
             result.mediaCodec = MediaCodec.createEncoderByType(mime);
             result.supportsAdaptivePlayback = false;
-            result.bitrateAdjuster = getBitrateAdjusterTypeForHWEncoder(encoderProperties);
+            result.bitrateAdjuster = encoderProperties.getBitrateAdjuster();
         } catch (Exception e) {
             Log.e(TAG, "Failed to create MediaCodec: %s", mime, e);
         }
@@ -621,7 +591,11 @@ class MediaCodecUtil {
             }
         }
 
-        return !(findHWEncoder(mime) == null);
+        if (findHWEncoder(mime) == null) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -642,9 +616,9 @@ class MediaCodecUtil {
     /**
      * Find HW encoder with given MIME type.
      * @param mime MIME type of the media.
-     * @return HWEncoder or null if not found.
+     * @return HWEncoderProperties object.
      */
-    private static @Nullable @HWEncoder Integer findHWEncoder(String mime) {
+    private static HWEncoderProperties findHWEncoder(String mime) {
         MediaCodecListHelper codecListHelper = new MediaCodecListHelper();
         for (MediaCodecInfo info : codecListHelper) {
             if (!info.isEncoder() || isSoftwareCodec(info.getName())) continue;
@@ -662,12 +636,11 @@ class MediaCodecUtil {
             }
 
             // Check if this is supported HW encoder.
-            for (@HWEncoder int codecProperties = 0; codecProperties < HWEncoder.NUM_ENTRIES;
-                    codecProperties++) {
-                if (!mime.equalsIgnoreCase(getMimeForHWEncoder(codecProperties))) continue;
+            for (HWEncoderProperties codecProperties : HWEncoderProperties.values()) {
+                if (!mime.equalsIgnoreCase(codecProperties.getMime())) continue;
 
-                if (encoderName.startsWith(getPrefixForHWEncoder(codecProperties))) {
-                    if (Build.VERSION.SDK_INT < getMinSDKForHWEncoder(codecProperties)) {
+                if (encoderName.startsWith(codecProperties.getPrefix())) {
+                    if (Build.VERSION.SDK_INT < codecProperties.getMinSDK()) {
                         Log.w(TAG, "Codec " + encoderName + " is disabled due to SDK version "
                                         + Build.VERSION.SDK_INT);
                         continue;

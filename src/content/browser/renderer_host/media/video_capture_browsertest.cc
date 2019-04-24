@@ -165,7 +165,7 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
     if (params_.exercise_accelerated_jpeg_decoding) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kUseFakeMjpegDecodeAccelerator);
+          switches::kUseFakeJpegDecodeAccelerator);
     } else {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
           switches::kDisableAcceleratedMjpegDecode);

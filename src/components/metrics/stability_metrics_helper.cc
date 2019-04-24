@@ -322,7 +322,8 @@ void StabilityMetricsHelper::IncrementLongPrefsValue(const char* path) {
   local_state_->SetInt64(path, value + 1);
 }
 
-void StabilityMetricsHelper::LogRendererHang() {
+void StabilityMetricsHelper::LogRendererHang(RendererHangCause hang_cause) {
+  UMA_HISTOGRAM_ENUMERATION("ChildProcess.HungRendererCause", hang_cause);
   IncrementPrefValue(prefs::kStabilityRendererHangCount);
 }
 

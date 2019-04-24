@@ -11,11 +11,9 @@
 
 #include "components/services/heap_profiling/address.h"
 #include "components/services/heap_profiling/backtrace_storage.h"
-#include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
+#include "components/services/heap_profiling/public/cpp/stream.h"
 
 namespace heap_profiling {
-
-using mojom::AllocatorType;
 
 // This class is copyable and assignable.
 //

@@ -4,12 +4,11 @@
 
 #include "content/renderer/media/stream/remote_media_stream_track_adapter.h"
 
+#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/webrtc/media_stream_remote_video_source.h"
 #include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc/track_observer.h"
-#include "media/base/limits.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_source.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 
 namespace content {
 
@@ -48,9 +47,8 @@ void RemoteVideoTrackAdapter::InitializeWebVideoTrack(
   capabilities.device_id = blink::WebString::FromUTF8(id());
   web_track()->Source().SetCapabilities(capabilities);
 
-  web_track()->SetPlatformTrack(std::make_unique<blink::MediaStreamVideoTrack>(
-      video_source, blink::MediaStreamVideoSource::ConstraintsCallback(),
-      enabled));
+  web_track()->SetPlatformTrack(std::make_unique<MediaStreamVideoTrack>(
+      video_source, MediaStreamVideoSource::ConstraintsCallback(), enabled));
 }
 
 RemoteAudioTrackAdapter::RemoteAudioTrackAdapter(
@@ -66,7 +64,7 @@ RemoteAudioTrackAdapter::RemoteAudioTrackAdapter(
   // Here, we use base::Unretained() to avoid a circular reference.
   web_initialize_ =
       base::Bind(&RemoteAudioTrackAdapter::InitializeWebAudioTrack,
-                 base::Unretained(this), main_thread);
+                 base::Unretained(this));
 }
 
 RemoteAudioTrackAdapter::~RemoteAudioTrackAdapter() {
@@ -83,12 +81,11 @@ void RemoteAudioTrackAdapter::Unregister() {
   observed_track()->UnregisterObserver(this);
 }
 
-void RemoteAudioTrackAdapter::InitializeWebAudioTrack(
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread) {
+void RemoteAudioTrackAdapter::InitializeWebAudioTrack() {
   InitializeWebTrack(blink::WebMediaStreamSource::kTypeAudio);
 
   blink::MediaStreamAudioSource* const source =
-      new PeerConnectionRemoteAudioSource(observed_track().get(), main_thread);
+      new PeerConnectionRemoteAudioSource(observed_track().get());
   web_track()->Source().SetPlatformSource(
       base::WrapUnique(source));  // Takes ownership.
 

@@ -33,7 +33,8 @@
 
 [
     LegacyTreatAsPartialInterface,
+    NoInterfaceObject, // Always used on target of 'implements'
     Exposed=(Window,Worker)
-] interface mixin AbstractWorker {
+] interface AbstractWorker {
     attribute EventHandler onerror;
 };

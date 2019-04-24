@@ -234,7 +234,7 @@ class ReportingUploaderImpl : public ReportingUploader, URLRequest::Delegate {
   }
 
   void OnAuthRequired(URLRequest* request,
-                      const AuthChallengeInfo& auth_info) override {
+                      AuthChallengeInfo* auth_info) override {
     request->Cancel();
   }
 

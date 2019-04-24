@@ -27,15 +27,13 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_current_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
-#include "third_party/blink/renderer/modules/media_controls/elements/media_control_remaining_time_display_element.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_resource_loader.h"
-#include "third_party/blink/renderer/modules/media_controls/media_controls_shared_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace {
 
+const double kCurrentTimeBufferedDelta = 1.0;
 const int kThumbRadius = 6;
 
 // Only respond to main button of primary pointer(s).
@@ -60,10 +58,8 @@ namespace blink {
 // +-HTMLStyleElement
 MediaControlTimelineElement::MediaControlTimelineElement(
     MediaControlsImpl& media_controls)
-    : MediaControlSliderElement(media_controls) {
+    : MediaControlSliderElement(media_controls, kMediaSlider) {
   SetShadowPseudoId(AtomicString("-webkit-media-controls-timeline"));
-
-  setAttribute(html_names::kAriaLiveAttr, "polite");
 
   if (MediaControlsImpl::IsModern()) {
     Element& track = GetTrackElement();
@@ -85,25 +81,15 @@ bool MediaControlTimelineElement::WillRespondToMouseClickEvents() {
 
 void MediaControlTimelineElement::SetPosition(double current_time) {
   setValue(String::Number(current_time));
-  String aria_label =
-      GetLocale().QueryString(
-          MediaElement().IsHTMLVideoElement()
-              ? WebLocalizedString::kAXMediaVideoSliderHelp
-              : WebLocalizedString::kAXMediaAudioSliderHelp) +
-      " " + GetMediaControls().CurrentTimeDisplay().textContent(true) + " " +
-      GetMediaControls().RemainingTimeDisplay().textContent(true);
-  setAttribute(html_names::kAriaLabelAttr, AtomicString(aria_label));
-
-  setAttribute(html_names::kAriaValuetextAttr,
-               AtomicString(GetLocale().QueryString(
-                   WebLocalizedString::kAXMediaCurrentTimeDisplay,
-                   GetMediaControls().CurrentTimeDisplay().textContent(true))));
+  setAttribute(
+      html_names::kAriaValuetextAttr,
+      AtomicString(GetMediaControls().CurrentTimeDisplay().textContent(true)));
   RenderBarSegments();
 }
 
 void MediaControlTimelineElement::SetDuration(double duration) {
-  double duration_value = std::isfinite(duration) ? duration : 0;
-  SetFloatingPointAttribute(html_names::kMaxAttr, duration_value);
+  SetFloatingPointAttribute(html_names::kMaxAttr,
+                            std::isfinite(duration) ? duration : 0);
   RenderBarSegments();
 }
 
@@ -233,14 +219,22 @@ void MediaControlTimelineElement::RenderBarSegments() {
   if (MediaControlsImpl::IsModern())
     before_segment.width = current_position;
 
-  base::Optional<unsigned> current_buffered_time_range =
-      MediaControlsSharedHelpers::GetCurrentBufferedTimeRange(MediaElement());
-
-  if (current_buffered_time_range) {
-    float start = buffered_time_ranges->start(
-        current_buffered_time_range.value(), ASSERT_NO_EXCEPTION);
-    float end = buffered_time_ranges->end(current_buffered_time_range.value(),
-                                          ASSERT_NO_EXCEPTION);
+  // Calculate the size of the after segment (i.e. what has been buffered).
+  for (unsigned i = 0; i < buffered_time_ranges->length(); ++i) {
+    float start = buffered_time_ranges->start(i, ASSERT_NO_EXCEPTION);
+    float end = buffered_time_ranges->end(i, ASSERT_NO_EXCEPTION);
+    // The delta is there to avoid corner cases when buffered
+    // ranges is out of sync with current time because of
+    // asynchronous media pipeline and current time caching in
+    // HTMLMediaElement.
+    // This is related to https://www.w3.org/Bugs/Public/show_bug.cgi?id=28125
+    // FIXME: Remove this workaround when WebMediaPlayer
+    // has an asynchronous pause interface.
+    if (std::isnan(start) || std::isnan(end) ||
+        start > current_time + kCurrentTimeBufferedDelta ||
+        end < current_time) {
+      continue;
+    }
 
     double start_position = start / duration;
     double end_position = end / duration;
@@ -262,6 +256,10 @@ void MediaControlTimelineElement::RenderBarSegments() {
         before_segment.width = end_position - current_position;
       }
     }
+
+    // Break out of the loop since we've drawn the only buffered range
+    // we're going to draw.
+    break;
   }
 
   // Update the positions of the segments.

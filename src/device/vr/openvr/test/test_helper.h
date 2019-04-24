@@ -18,7 +18,7 @@ struct ProjectionRaw {
   float projection[4];
 };
 
-class TestHelper : public device::ServiceTestHook {
+class TestHelper : public device::TestHookRegistration {
  public:
   // Methods called by mock OpenVR APIs.
   void OnPresentedFrame(ID3D11Texture2D* texture,
@@ -47,7 +47,7 @@ class TestHelper : public device::ServiceTestHook {
   void AttachToCurrentThread();
   void DetachFromCurrentThread();
 
-  // ServiceTestHook
+  // TestHookRegistration
   void SetTestHook(device::VRTestHook* hook) final;
 
  private:

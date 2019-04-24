@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/paint/list_item_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/platform/wtf/saturated_arithmetic.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -140,8 +141,7 @@ LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
     if (curr->HasOverflowClip())
       return curr;
 
-    auto* child_block_flow = DynamicTo<LayoutBlockFlow>(curr_child);
-    if (!child_block_flow ||
+    if (!curr_child->IsLayoutBlockFlow() ||
         (curr_child->IsBox() && ToLayoutBox(curr_child)->IsWritingModeRoot()))
       return curr_child;
 
@@ -150,7 +150,8 @@ LayoutObject* GetParentOfFirstLineBox(LayoutBlockFlow* curr,
          IsHTMLOListElement(*curr_child->GetNode())))
       break;
 
-    LayoutObject* line_box = GetParentOfFirstLineBox(child_block_flow, marker);
+    LayoutObject* line_box =
+        GetParentOfFirstLineBox(ToLayoutBlockFlow(curr_child), marker);
     if (line_box)
       return line_box;
   }
@@ -338,12 +339,11 @@ void LayoutListItem::AlignMarkerInBlockDirection() {
 
   InlineBox* marker_inline_box = marker_->InlineBoxWrapper();
   RootInlineBox& marker_root = marker_inline_box->Root();
-  auto* line_box_parent_block_flow =
-      DynamicTo<LayoutBlockFlow>(line_box_parent_block);
-  if (line_box_parent_block && line_box_parent_block_flow) {
+  if (line_box_parent_block && line_box_parent_block->IsLayoutBlockFlow()) {
     // If marker_ and line_box_parent_block share a same RootInlineBox, no need
     // to align marker.
-    if (line_box_parent_block_flow->FirstRootBox() == &marker_root)
+    if (ToLayoutBlockFlow(line_box_parent_block)->FirstRootBox() ==
+        &marker_root)
       return;
   }
 
@@ -523,11 +523,10 @@ void LayoutListItem::UpdateOverflow() {
     bool found_self_painting_layer = false;
     do {
       object = object->ParentBox();
-      auto* layout_block_object = DynamicTo<LayoutBlock>(object);
-      if (layout_block_object) {
+      if (object->IsLayoutBlock()) {
         if (!found_self_painting_layer)
-          layout_block_object->AddContentsVisualOverflow(marker_rect);
-        layout_block_object->AddLayoutOverflow(marker_rect);
+          ToLayoutBlock(object)->AddContentsVisualOverflow(marker_rect);
+        ToLayoutBlock(object)->AddLayoutOverflow(marker_rect);
       }
 
       if (object->HasOverflowClip())

@@ -5,7 +5,6 @@
 #include "components/nacl/browser/nacl_browser.h"
 
 #include <stddef.h>
-#include <utility>
 
 #include "base/command_line.h"
 #include "base/files/file_proxy.h"
@@ -99,10 +98,10 @@ void WriteCache(const base::FilePath& filename, const base::Pickle* pickle) {
                        pickle->size());
 }
 
-void RemoveCache(const base::FilePath& filename, base::OnceClosure callback) {
+void RemoveCache(const base::FilePath& filename,
+                 const base::Closure& callback) {
   base::DeleteFile(filename, false);
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           std::move(callback));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO}, callback);
 }
 
 void LogCacheQuery(nacl::NaClBrowser::ValidationCacheStatus status) {
@@ -420,8 +419,7 @@ void NaClBrowser::CheckWaiting() {
     // directly.  For example, this could result in use-after-free of the
     // process host.
     for (auto iter = waiting_.begin(); iter != waiting_.end(); ++iter) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                    std::move(*iter));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, *iter);
     }
     waiting_.clear();
   }
@@ -433,9 +431,9 @@ void NaClBrowser::MarkAsFailed() {
   CheckWaiting();
 }
 
-void NaClBrowser::WaitForResources(base::OnceClosure reply) {
+void NaClBrowser::WaitForResources(const base::Closure& reply) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  waiting_.push_back(std::move(reply));
+  waiting_.push_back(reply);
   EnsureAllResourcesAvailable();
   CheckWaiting();
 }
@@ -514,7 +512,7 @@ void NaClBrowser::SetKnownToValidate(const std::string& signature,
   }
 }
 
-void NaClBrowser::ClearValidationCache(base::OnceClosure callback) {
+void NaClBrowser::ClearValidationCache(const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // Note: this method may be called before EnsureValidationCacheAvailable has
   // been invoked.  In other words, this method may be called before any NaCl
@@ -526,8 +524,7 @@ void NaClBrowser::ClearValidationCache(base::OnceClosure callback) {
 
   if (validation_cache_file_path_.empty()) {
     // Can't figure out what file to remove, but don't drop the callback.
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             std::move(callback));
+    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO}, callback);
   } else {
     // Delegate the removal of the cache from the filesystem to another thread
     // to avoid blocking the IO thread.
@@ -536,8 +533,8 @@ void NaClBrowser::ClearValidationCache(base::OnceClosure callback) {
     // In addition, we need to make sure the cache is actually cleared before
     // invoking the callback to meet the implicit guarantees of the UI.
     file_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(RemoveCache, validation_cache_file_path_,
-                                  std::move(callback)));
+        FROM_HERE,
+        base::BindOnce(RemoveCache, validation_cache_file_path_, callback));
   }
 
   // Make sure any delayed tasks to persist the cache to the filesystem are

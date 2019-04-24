@@ -4,7 +4,6 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -69,8 +68,9 @@ DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostX11*)
 
 namespace views {
 
-DesktopWindowTreeHostX11* DesktopWindowTreeHostX11::g_current_capture = nullptr;
-std::list<XID>* DesktopWindowTreeHostX11::open_windows_ = nullptr;
+DesktopWindowTreeHostX11* DesktopWindowTreeHostX11::g_current_capture =
+    NULL;
+std::list<XID>* DesktopWindowTreeHostX11::open_windows_ = NULL;
 
 DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kViewsWindowForRootWindow, NULL)
 
@@ -137,13 +137,33 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura)
     : xdisplay_(gfx::GetXDisplay()),
+      xwindow_(0),
       x_root_window_(DefaultRootWindow(xdisplay_)),
+      window_mapped_in_server_(false),
+      window_mapped_in_client_(false),
+      is_fullscreen_(false),
+      is_always_on_top_(false),
+      use_native_frame_(false),
+      should_maximize_after_map_(false),
+      use_argb_visual_(false),
+      drag_drop_client_(NULL),
       native_widget_delegate_(native_widget_delegate),
-      desktop_native_widget_aura_(desktop_native_widget_aura) {}
+      desktop_native_widget_aura_(desktop_native_widget_aura),
+      window_parent_(NULL),
+      custom_window_shape_(false),
+      urgency_hint_set_(false),
+      has_pointer_grab_(false),
+      activatable_(true),
+      has_pointer_(false),
+      has_window_focus_(false),
+      has_pointer_focus_(false),
+      modal_dialog_counter_(0),
+      close_widget_factory_(this),
+      weak_factory_(this) {}
 
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
   window()->ClearProperty(kHostForRootWindow);
-  wm::SetWindowMoveClient(window(), nullptr);
+  wm::SetWindowMoveClient(window(), NULL);
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
   DestroyDispatcher();
 }
@@ -159,7 +179,7 @@ aura::Window* DesktopWindowTreeHostX11::GetContentWindowForXID(XID xid) {
 DesktopWindowTreeHostX11* DesktopWindowTreeHostX11::GetHostForXID(XID xid) {
   aura::WindowTreeHost* host =
       aura::WindowTreeHost::GetForAcceleratedWidget(xid);
-  return host ? host->window()->GetProperty(kHostForRootWindow) : nullptr;
+  return host ? host->window()->GetProperty(kHostForRootWindow) : NULL;
 }
 
 // static
@@ -361,7 +381,7 @@ void DesktopWindowTreeHostX11::CleanUpWindowList(
   }
 
   delete open_windows_;
-  open_windows_ = nullptr;
+  open_windows_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -404,7 +424,7 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
   SetUseNativeFrame(params.type == Widget::InitParams::TYPE_WINDOW &&
                     !params.remove_standard_frame);
 
-  x11_window_move_client_ = std::make_unique<X11DesktopWindowMoveClient>();
+  x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
   wm::SetWindowMoveClient(window(), x11_window_move_client_.get());
 
   SetWindowTransparency();
@@ -465,7 +485,7 @@ void DesktopWindowTreeHostX11::CloseNow() {
   // If we have a parent, remove ourselves from its children list.
   if (window_parent_) {
     window_parent_->window_children_.erase(this);
-    window_parent_ = nullptr;
+    window_parent_ = NULL;
   }
 
   // Remove the event listeners we've installed. We need to remove these
@@ -655,7 +675,7 @@ gfx::Rect DesktopWindowTreeHostX11::GetRestoredBounds() const {
 }
 
 std::string DesktopWindowTreeHostX11::GetWorkspace() const {
-  return workspace_ ? base::NumberToString(workspace_.value()) : std::string();
+  return workspace_ ? base::IntToString(workspace_.value()) : std::string();
 }
 
 void DesktopWindowTreeHostX11::UpdateWorkspace() {
@@ -716,9 +736,7 @@ void DesktopWindowTreeHostX11::Activate() {
 
   Time timestamp = ui::X11EventSource::GetInstance()->GetTimestamp();
 
-  // override_redirect windows ignore _NET_ACTIVE_WINDOW.
-  // https://crbug.com/940924
-  if (wm_supports_active_window && !override_redirect_) {
+  if (wm_supports_active_window) {
     XEvent xclient;
     memset(&xclient, 0, sizeof(xclient));
     xclient.type = ClientMessage;
@@ -894,7 +912,7 @@ bool DesktopWindowTreeHostX11::IsVisibleOnAllWorkspaces() const {
   // that the window remain in a fixed position even if the viewport scrolls.
   // This is different from the type of workspace that's associated with
   // _NET_WM_DESKTOP.
-  return GetWorkspace() == base::NumberToString(kAllDesktops);
+  return GetWorkspace() == base::IntToString(kAllDesktops);
 }
 
 bool DesktopWindowTreeHostX11::SetWindowTitle(const base::string16& title) {
@@ -1288,7 +1306,7 @@ void DesktopWindowTreeHostX11::ReleaseCapture() {
     // Release mouse grab asynchronously. A window managed by Chrome is likely
     // the topmost window underneath the mouse so the capture release being
     // asynchronous is likely inconsequential.
-    g_current_capture = nullptr;
+    g_current_capture = NULL;
     ui::UngrabPointer();
     has_pointer_grab_ = false;
 
@@ -1419,8 +1437,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
   if (!activatable_)
     swa.override_redirect = x11::True;
 
-  override_redirect_ = swa.override_redirect == x11::True;
-  if (override_redirect_)
+  if (swa.override_redirect)
     attribute_mask |= CWOverrideRedirect;
 
   bool enable_transparent_visuals;
@@ -1472,8 +1489,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
                     ExposureMask | VisibilityChangeMask |
                     StructureNotifyMask | PropertyChangeMask |
                     PointerMotionMask;
-  xwindow_events_ =
-      std::make_unique<ui::XScopedEventSelector>(xwindow_, event_mask);
+  xwindow_events_.reset(new ui::XScopedEventSelector(xwindow_, event_mask));
   XFlush(xdisplay_);
 
   if (ui::IsXInput2Available())
@@ -1489,8 +1505,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
 
   // We need a WM_CLIENT_MACHINE and WM_LOCALE_NAME value so we integrate with
   // the desktop environment.
-  XSetWMProperties(xdisplay_, xwindow_, nullptr, nullptr, nullptr, 0, nullptr,
-                   nullptr, nullptr);
+  XSetWMProperties(xdisplay_, xwindow_, NULL, NULL, NULL, 0, NULL, NULL, NULL);
 
   // Likewise, the X server needs to know this window's pid so it knows which
   // program to kill if the window hangs.
@@ -1537,7 +1552,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
         xdisplay_, xwindow_, params.wm_class_name, params.wm_class_class);
   }
 
-  const char* wm_role_name = nullptr;
+  const char* wm_role_name = NULL;
   // If the widget isn't overriding the role, provide a default value for popup
   // and bubble types.
   if (!params.wm_role_name.empty()) {
@@ -1593,7 +1608,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
   gfx::ImageSkia* window_icon =
       ViewsDelegate::GetInstance()
           ? ViewsDelegate::GetInstance()->GetDefaultWindowIcon()
-          : nullptr;
+          : NULL;
   if (window_icon) {
     SetWindowIcons(gfx::ImageSkia(), *window_icon);
   }
@@ -1990,6 +2005,7 @@ void DesktopWindowTreeHostX11::Relayout() {
     non_client_view->client_view()->InvalidateLayout();
     non_client_view->InvalidateLayout();
   }
+  widget->GetRootView()->Layout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2350,7 +2366,8 @@ gfx::Rect DesktopWindowTreeHostX11::ToPixelRect(
   return gfx::ToEnclosingRect(rect_in_pixels);
 }
 
-base::OnceClosure DesktopWindowTreeHostX11::DisableEventListening() {
+std::unique_ptr<base::Closure>
+DesktopWindowTreeHostX11::DisableEventListening() {
   // Allows to open multiple file-pickers. See https://crbug.com/678982
   modal_dialog_counter_++;
   if (modal_dialog_counter_ == 1) {
@@ -2360,8 +2377,9 @@ base::OnceClosure DesktopWindowTreeHostX11::DisableEventListening() {
         window(), std::make_unique<aura::NullWindowTargeter>());
   }
 
-  return base::BindOnce(&DesktopWindowTreeHostX11::EnableEventListening,
-                        weak_factory_.GetWeakPtr());
+  return std::make_unique<base::Closure>(
+      base::Bind(&DesktopWindowTreeHostX11::EnableEventListening,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void DesktopWindowTreeHostX11::EnableEventListening() {
@@ -2371,9 +2389,9 @@ void DesktopWindowTreeHostX11::EnableEventListening() {
 }
 
 void DesktopWindowTreeHostX11::RestartDelayedResizeTask() {
-  delayed_resize_task_.Reset(base::BindOnce(
-      &DesktopWindowTreeHostX11::DelayedResize,
-      close_widget_factory_.GetWeakPtr(), bounds_in_pixels_.size()));
+  delayed_resize_task_.Reset(
+      base::Bind(&DesktopWindowTreeHostX11::DelayedResize,
+                 close_widget_factory_.GetWeakPtr(), bounds_in_pixels_.size()));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, delayed_resize_task_.callback());
 }

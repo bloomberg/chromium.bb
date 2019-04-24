@@ -31,7 +31,9 @@ window.onload = function() {
     runAfterLayoutAndPaint(function() { testRunner.notifyDone() });
 };
 
-if (window.testRunner)
+if (window.testRunner) {
+  testRunner.dumpAsTextWithPixelResults();
   testRunner.waitUntilDone();
+}
 </script>
 </html>

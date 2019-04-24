@@ -9,8 +9,7 @@
 
 namespace customtabs {
 
-void RecordCodeMemoryFootprint(const std::string& package_name,
-                               const std::string& suffix);
+void RecordCodeMemoryFootprint(const std::string& package_name);
 }  // namespace customtabs
 
 #endif  // CHROME_BROWSER_ANDROID_CUSTOMTABS_DYNAMICMODULE_MODULE_METRICS_H_

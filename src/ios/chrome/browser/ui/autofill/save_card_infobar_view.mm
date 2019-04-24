@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
@@ -225,7 +226,11 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
 
 - (void)setupSubviews {
   [self setAccessibilityViewIsModal:YES];
-  self.backgroundColor = UIColorFromRGB(kInfobarBackgroundColor);
+  if (IsUIRefreshPhase1Enabled()) {
+    self.backgroundColor = UIColorFromRGB(kInfobarBackgroundColor);
+  } else {
+    self.backgroundColor = [UIColor whiteColor];
+  }
   id<LayoutGuideProvider> safeAreaLayoutGuide = self.safeAreaLayoutGuide;
 
   // Add the icon. The icon is fixed to the top leading corner of the infobar.

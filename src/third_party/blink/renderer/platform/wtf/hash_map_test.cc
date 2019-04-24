@@ -30,7 +30,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_test_helper.h"
@@ -218,8 +217,6 @@ TEST(HashMaptest, RemoveAdd) {
 }
 
 class SimpleClass {
-  USING_FAST_MALLOC(SimpleClass);
-
  public:
   explicit SimpleClass(int v) : v_(v) {}
   int V() { return v_; }
@@ -269,8 +266,6 @@ TEST(HashMapTest, AddResultVectorValue) {
 }
 
 class InstanceCounter {
-  USING_FAST_MALLOC(InstanceCounter);
-
  public:
   InstanceCounter() { ++counter_; }
   InstanceCounter(const InstanceCounter& another) { ++counter_; }

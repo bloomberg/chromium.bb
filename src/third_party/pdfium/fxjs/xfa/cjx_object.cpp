@@ -6,7 +6,6 @@
 
 #include "fxjs/xfa/cjx_object.h"
 
-#include <set>
 #include <tuple>
 
 #include "core/fxcrt/fx_extension.h"
@@ -351,12 +350,12 @@ void CJX_Object::SetInteger(XFA_Attribute eAttr, int32_t iValue, bool bNotify) {
   }
 }
 
-int32_t CJX_Object::GetInteger(XFA_Attribute eAttr) const {
+int32_t CJX_Object::GetInteger(XFA_Attribute eAttr) {
   return TryInteger(eAttr, true).value_or(0);
 }
 
 Optional<int32_t> CJX_Object::TryInteger(XFA_Attribute eAttr,
-                                         bool bUseDefault) const {
+                                         bool bUseDefault) {
   void* pKey = GetMapKey_Element(GetXFAObject()->GetElementType(), eAttr);
   Optional<void*> value = GetMapModuleValue(pKey);
   if (value.has_value())
@@ -432,7 +431,7 @@ float CJX_Object::GetMeasureInUnit(XFA_Attribute eAttr, XFA_Unit unit) const {
   return measure.ToUnit(unit);
 }
 
-WideString CJX_Object::GetCData(XFA_Attribute eAttr) const {
+WideString CJX_Object::GetCData(XFA_Attribute eAttr) {
   return TryCData(eAttr, true).value_or(WideString());
 }
 
@@ -499,7 +498,7 @@ void CJX_Object::SetAttributeValue(const WideString& wsValue,
 }
 
 Optional<WideString> CJX_Object::TryCData(XFA_Attribute eAttr,
-                                          bool bUseDefault) const {
+                                          bool bUseDefault) {
   void* pKey = GetMapKey_Element(GetXFAObject()->GetElementType(), eAttr);
   if (eAttr == XFA_Attribute::Value) {
     void* pData;
@@ -893,12 +892,8 @@ void CJX_Object::SetMapModuleValue(void* pKey, void* pValue) {
 }
 
 Optional<void*> CJX_Object::GetMapModuleValue(void* pKey) const {
-  std::set<const CXFA_Node*> visited;
   for (const CXFA_Node* pNode = ToNode(GetXFAObject()); pNode;
        pNode = pNode->GetTemplateNodeIfExists()) {
-    if (!visited.insert(pNode).second)
-      break;
-
     XFA_MAPMODULEDATA* pModule = pNode->JSObject()->GetMapModuleData();
     if (pModule) {
       auto it = pModule->m_ValueMap.find(pKey);
@@ -911,7 +906,7 @@ Optional<void*> CJX_Object::GetMapModuleValue(void* pKey) const {
   return {};
 }
 
-Optional<WideString> CJX_Object::GetMapModuleString(void* pKey) const {
+Optional<WideString> CJX_Object::GetMapModuleString(void* pKey) {
   void* pRawValue;
   int32_t iBytes;
   if (!GetMapModuleBuffer(pKey, &pRawValue, &iBytes))
@@ -953,13 +948,9 @@ void CJX_Object::SetMapModuleBuffer(
 bool CJX_Object::GetMapModuleBuffer(void* pKey,
                                     void** pValue,
                                     int32_t* pBytes) const {
-  std::set<const CXFA_Node*> visited;
   XFA_MAPDATABLOCK* pBuffer = nullptr;
   for (const CXFA_Node* pNode = ToNode(GetXFAObject()); pNode;
        pNode = pNode->GetTemplateNodeIfExists()) {
-    if (!visited.insert(pNode).second)
-      break;
-
     XFA_MAPMODULEDATA* pModule = pNode->JSObject()->GetMapModuleData();
     if (pModule) {
       auto it = pModule->m_BufferMap.find(pKey);
@@ -1428,10 +1419,8 @@ void CJX_Object::ScriptSomDefaultValue(CFXJSE_Value* pValue,
 
   if (bSetting) {
     WideString wsNewValue;
-    if (pValue &&
-        !(pValue->IsEmpty() || pValue->IsNull() || pValue->IsUndefined())) {
+    if (pValue && !(pValue->IsNull() || pValue->IsUndefined()))
       wsNewValue = pValue->ToWideString();
-    }
 
     WideString wsFormatValue(wsNewValue);
     CXFA_Node* pContainerNode = nullptr;
@@ -1507,8 +1496,8 @@ void CJX_Object::ScriptSomDataNode(CFXJSE_Value* pValue,
     return;
   }
 
-  pValue->Assign(GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
-      pDataNode));
+  pValue->Assign(
+      GetDocument()->GetScriptContext()->GetJSValueFromMap(pDataNode));
 }
 
 void CJX_Object::ScriptSomMandatory(CFXJSE_Value* pValue,

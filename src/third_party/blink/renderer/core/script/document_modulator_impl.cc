@@ -12,6 +12,10 @@
 
 namespace blink {
 
+ModulatorImplBase* DocumentModulatorImpl::Create(ScriptState* script_state) {
+  return MakeGarbageCollected<DocumentModulatorImpl>(script_state);
+}
+
 DocumentModulatorImpl::DocumentModulatorImpl(ScriptState* script_state)
     : ModulatorImplBase(script_state) {}
 

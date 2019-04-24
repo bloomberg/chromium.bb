@@ -255,6 +255,7 @@ NonClientFrameController::NonClientFrameController(
       new WmNativeWidgetAura(widget_, DoesClientProvideFrame(properties));
   window_ = native_widget->GetNativeView();
   window_->SetProperty(kNonClientFrameControllerKey, this);
+  window_->SetProperty(kWidgetCreationTypeKey, WidgetCreationType::FOR_CLIENT);
   window_->AddObserver(this);
   params.native_widget = native_widget;
   aura::SetWindowType(window_, ws::mojom::WindowType::WINDOW);

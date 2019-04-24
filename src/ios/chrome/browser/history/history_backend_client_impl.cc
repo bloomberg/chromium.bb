@@ -47,6 +47,10 @@ std::vector<history::URLAndTitle> HistoryBackendClientImpl::GetPinnedURLs() {
   return result;
 }
 
+bool HistoryBackendClientImpl::ShouldReportDatabaseError() {
+  return false;
+}
+
 bool HistoryBackendClientImpl::IsWebSafe(const GURL& url) {
   return url.SchemeIsHTTPOrHTTPS();
 }

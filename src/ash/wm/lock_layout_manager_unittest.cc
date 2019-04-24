@@ -182,11 +182,9 @@ TEST_F(LockLayoutManagerTest, AccessibilityPanel) {
       GetPrimaryShelf()->shelf_layout_manager();
   ASSERT_TRUE(shelf_layout_manager);
 
-  // Create accessibility panel and set its height.
+  // Set the accessibility panel height.
   int accessibility_panel_height = 45;
-  std::unique_ptr<views::Widget> accessibility_panel_widget =
-      CreateTestWidget(nullptr, kShellWindowId_AccessibilityPanelContainer);
-  SetAccessibilityPanelHeight(accessibility_panel_height);
+  shelf_layout_manager->SetAccessibilityPanelHeight(accessibility_panel_height);
 
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -206,7 +204,7 @@ TEST_F(LockLayoutManagerTest, AccessibilityPanel) {
   // Update the accessibility panel height, and verify the window bounds are
   // updated accordingly.
   accessibility_panel_height = 25;
-  SetAccessibilityPanelHeight(accessibility_panel_height);
+  shelf_layout_manager->SetAccessibilityPanelHeight(accessibility_panel_height);
 
   target_bounds = primary_display.bounds();
   target_bounds.Inset(0 /* left */, accessibility_panel_height /* top */,
@@ -341,11 +339,8 @@ TEST_F(LockLayoutManagerTest, AccessibilityPanelWithMultipleMonitors) {
       GetPrimaryShelf()->shelf_layout_manager();
   ASSERT_TRUE(shelf_layout_manager);
 
-  // Create accessibility panel and set its height.
-  const int kAccessibilityPanelHeight = 45;
-  std::unique_ptr<views::Widget> accessibility_panel_widget =
-      CreateTestWidget(nullptr, kShellWindowId_AccessibilityPanelContainer);
-  SetAccessibilityPanelHeight(kAccessibilityPanelHeight);
+  int accessibility_panel_height = 45;
+  shelf_layout_manager->SetAccessibilityPanelHeight(accessibility_panel_height);
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
@@ -359,7 +354,7 @@ TEST_F(LockLayoutManagerTest, AccessibilityPanelWithMultipleMonitors) {
 
   gfx::Rect target_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  target_bounds.Inset(0, kAccessibilityPanelHeight, 0, 0);
+  target_bounds.Inset(0, accessibility_panel_height, 0, 0);
   EXPECT_EQ(target_bounds, window->GetBoundsInScreen());
 
   // Restore window with bounds in the second display, the window should be

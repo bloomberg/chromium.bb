@@ -18,7 +18,6 @@
 #include "common/debug.h"
 #include "libANGLE/Error.h"
 #include "libANGLE/Observer.h"
-#include "libANGLE/renderer/vulkan/SecondaryCommandBuffer.h"
 #include "libANGLE/renderer/vulkan/vk_wrapper.h"
 
 #define ANGLE_GL_OBJECTS_X(PROC) \
@@ -35,7 +34,7 @@ namespace egl
 {
 class Display;
 class Image;
-}  // namespace egl
+}
 
 namespace gl
 {
@@ -114,14 +113,6 @@ class Context : angle::NonCopyable
   protected:
     RendererVk *const mRenderer;
 };
-
-#if ANGLE_USE_CUSTOM_VULKAN_CMD_BUFFERS
-using CommandBuffer = priv::SecondaryCommandBuffer;
-#else
-using CommandBuffer = priv::CommandBuffer;
-#endif
-
-using PrimaryCommandBuffer = priv::CommandBuffer;
 
 VkImageAspectFlags GetDepthStencilAspectFlags(const angle::Format &format);
 VkImageAspectFlags GetFormatAspectFlags(const angle::Format &format);
@@ -529,6 +520,10 @@ void GetViewport(const gl::Rectangle &viewport,
                  bool invertViewport,
                  GLint renderAreaHeight,
                  VkViewport *viewportOut);
+void GetScissor(const gl::State &glState,
+                bool invertViewport,
+                const gl::Rectangle &renderArea,
+                VkRect2D *scissorOut);
 }  // namespace gl_vk
 
 }  // namespace rx

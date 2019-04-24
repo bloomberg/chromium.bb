@@ -5,7 +5,6 @@
 #include "ui/ozone/platform/drm/common/drm_overlay_manager.h"
 
 #include <algorithm>
-#include <memory>
 #include <utility>
 
 #include "base/trace_event/trace_event.h"
@@ -26,7 +25,7 @@ constexpr int kThrottleRequestSize = 3;
 
 }  // namespace
 
-DrmOverlayManager::DrmOverlayManager() {
+DrmOverlayManager::DrmOverlayManager() : cache_(kMaxCacheSize) {
   DETACH_FROM_THREAD(thread_checker_);
 }
 
@@ -37,10 +36,13 @@ DrmOverlayManager::CreateOverlayCandidates(gfx::AcceleratedWidget widget) {
   return std::make_unique<DrmOverlayCandidates>(this, widget);
 }
 
+bool DrmOverlayManager::SupportsOverlays() const {
+  return supports_overlays_;
+}
+
 void DrmOverlayManager::ResetCache() {
-  TRACE_EVENT0("hwoverlays", "DrmOverlayManager::ResetCache");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  widget_cache_map_.clear();
+  cache_.Clear();
 }
 
 void DrmOverlayManager::CheckOverlaySupport(
@@ -61,14 +63,8 @@ void DrmOverlayManager::CheckOverlaySupport(
     result_candidates.back().overlay_handled = can_handle;
   }
 
-  auto widget_cache_map_it = widget_cache_map_.find(widget);
-  if (widget_cache_map_it == widget_cache_map_.end()) {
-    widget_cache_map_it =
-        widget_cache_map_.emplace(widget, kMaxCacheSize).first;
-  }
-  OverlayCandidatesListCache& cache = widget_cache_map_it->second;
-  auto iter = cache.Get(result_candidates);
-  if (iter == cache.end()) {
+  auto iter = cache_.Get(result_candidates);
+  if (iter == cache_.end()) {
     // We can skip GPU side validation in case all candidates are invalid.
     bool needs_gpu_validation = std::any_of(
         result_candidates.begin(), result_candidates.end(),
@@ -77,7 +73,7 @@ void DrmOverlayManager::CheckOverlaySupport(
     value.status.resize(result_candidates.size(), needs_gpu_validation
                                                       ? OVERLAY_STATUS_PENDING
                                                       : OVERLAY_STATUS_NOT);
-    iter = cache.Put(result_candidates, std::move(value));
+    iter = cache_.Put(result_candidates, std::move(value));
   }
 
   OverlayValidationCacheValue& value = iter->second;
@@ -126,17 +122,10 @@ bool DrmOverlayManager::CanHandleCandidate(
 
 void DrmOverlayManager::UpdateCacheForOverlayCandidates(
     const std::vector<OverlaySurfaceCandidate>& candidates,
-    const gfx::AcceleratedWidget widget,
     const std::vector<OverlayStatus>& status) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  auto widget_cache_map_it = widget_cache_map_.find(widget);
-  if (widget_cache_map_it == widget_cache_map_.end())
-    return;
-
-  OverlayCandidatesListCache& cache = widget_cache_map_it->second;
-  auto iter = cache.Peek(candidates);
-  if (iter != cache.end())
+  auto iter = cache_.Peek(candidates);
+  if (iter != cache_.end())
     iter->second.status = status;
 }
 

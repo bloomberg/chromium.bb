@@ -320,6 +320,7 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   const std::string app_id = ArcAppTest::GetAppId(app_info);
   controller()->SetAppPinnable(app_id, AppListControllerDelegate::PIN_EDITABLE);
 
+  arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(arc_test.fake_apps());
 
   ArcAppItem item(profile(), nullptr, nullptr, app_id, std::string());
@@ -408,6 +409,7 @@ TEST_F(AppContextMenuTest, ArcMenu) {
     }
 
   // Uninstall all apps.
+  arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(
       std::vector<arc::mojom::AppInfo>());
   controller()->SetAppOpen(app_id, false);
@@ -483,6 +485,7 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
 
+  arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(arc_test.fake_apps());
 
   {
@@ -525,6 +528,7 @@ TEST_F(AppContextMenuTest, ArcMenuSuspendedItem) {
   arc::mojom::AppInfo app = arc_test.fake_apps()[0];
   app.suspended = true;
 
+  arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList({app});
 
   const std::string app_id = ArcAppTest::GetAppId(app);

@@ -49,7 +49,6 @@ class CONTENT_EXPORT WebRtcSetDescriptionObserver
     States& operator=(States&& other);
 
     webrtc::PeerConnectionInterface::SignalingState signaling_state;
-    blink::WebRTCSctpTransportSnapshot sctp_transport_state;
     std::vector<RtpTransceiverState> transceiver_states;
 
     DISALLOW_COPY_AND_ASSIGN(States);

@@ -375,7 +375,6 @@ void DisplayInfoProviderChromeOS::SetDisplayProperties(
 
   cros_display_config_->SetDisplayProperties(
       display_id_str, std::move(config_properties),
-      ash::mojom::DisplayConfigSource::kUser,
       base::BindOnce(
           [](ErrorCallback callback, ash::mojom::DisplayConfigResult result) {
             std::move(callback).Run(GetStringResult(result));

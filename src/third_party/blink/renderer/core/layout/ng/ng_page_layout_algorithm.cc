@@ -19,7 +19,7 @@ namespace blink {
 NGPageLayoutAlgorithm::NGPageLayoutAlgorithm(NGBlockNode node,
                                              const NGConstraintSpace& space,
                                              const NGBreakToken* break_token)
-    : NGLayoutAlgorithm(node, space, To<NGBlockBreakToken>(break_token)) {
+    : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {
   container_builder_.SetIsNewFormattingContext(space.IsNewFormattingContext());
 }
 
@@ -41,15 +41,21 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   scoped_refptr<const NGBlockBreakToken> break_token = BreakToken();
   LayoutUnit intrinsic_block_size;
   NGLogicalOffset page_offset(border_scrollbar_padding.StartOffset());
-  // TODO(mstensho): Handle auto block size.
-  NGLogicalOffset page_progression(LayoutUnit(), page_size.block_size);
+  NGLogicalOffset page_progression;
+  if (Style().OverflowY() == EOverflow::kWebkitPagedX) {
+    page_progression.inline_offset = page_size.inline_size;
+  } else {
+    // TODO(mstensho): Handle auto block size.
+    page_progression.block_offset = page_size.block_size;
+  }
 
   do {
     // Lay out one page. Each page will become a fragment.
     NGBlockLayoutAlgorithm child_algorithm(Node(), child_space,
                                            break_token.get());
     scoped_refptr<const NGLayoutResult> result = child_algorithm.Layout();
-    const auto* page = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
+    const NGPhysicalBoxFragment* page =
+        ToNGPhysicalBoxFragment(result->PhysicalFragment());
 
     container_builder_.AddChild(*result, page_offset);
 
@@ -59,7 +65,7 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
         std::max(intrinsic_block_size,
                  page_offset.block_offset + logical_fragment.BlockSize());
     page_offset += page_progression;
-    break_token = To<NGBlockBreakToken>(page->BreakToken());
+    break_token = ToNGBlockBreakToken(page->BreakToken());
   } while (break_token && !break_token->IsFinished());
 
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
@@ -71,8 +77,9 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   container_builder_.SetBorders(ComputeBorders(ConstraintSpace(), Node()));
   container_builder_.SetPadding(ComputePadding(ConstraintSpace(), Style()));
 
-  NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders + scrollbars,
-                        &container_builder_)
+  NGOutOfFlowLayoutPart(&container_builder_, Node().IsAbsoluteContainer(),
+                        Node().IsFixedContainer(), borders + scrollbars,
+                        ConstraintSpace(), Style())
       .Run();
 
   // TODO(mstensho): Propagate baselines.

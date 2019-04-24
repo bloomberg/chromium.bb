@@ -1162,6 +1162,7 @@ it{
         MXN{"$"}
         MYR{"RM"}
         NAD{"$"}
+        NGN{"₦"}
         NIO{"C$"}
         NOK{"NKr"}
         NPR{"Rs"}
@@ -1877,5 +1878,5 @@ it{
         one{"{0} {1}"}
         other{"{0} {1}"}
     }
-    Version{"2.1.48.42"}
+    Version{"2.1.44.86"}
 }

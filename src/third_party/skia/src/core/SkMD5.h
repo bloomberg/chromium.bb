@@ -31,7 +31,7 @@ public:
     };
 
     /** Computes and returns the digest. */
-    Digest finish();
+    void finish(Digest& digest);
 
 private:
     uint64_t byteCount;  // number of bytes, modulo 2^64

@@ -4,14 +4,13 @@
 
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen.h"
 
-#include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
-
 namespace chromeos {
 
 RecommendAppsScreen::RecommendAppsScreen(
+    BaseScreenDelegate* base_screen_delegate,
     RecommendAppsScreenView* view,
     const ScreenExitCallback& exit_callback)
-    : BaseScreen(OobeScreen::SCREEN_RECOMMEND_APPS),
+    : BaseScreen(base_screen_delegate, OobeScreen::SCREEN_RECOMMEND_APPS),
       view_(view),
       exit_callback_(exit_callback) {
   DCHECK(view_);
@@ -30,8 +29,7 @@ RecommendAppsScreen::~RecommendAppsScreen() {
 void RecommendAppsScreen::Show() {
   view_->Show();
 
-  recommend_apps_fetcher_ = RecommendAppsFetcher::Create(this);
-  recommend_apps_fetcher_->Start();
+  recommend_apps_fetcher_ = std::make_unique<RecommendAppsFetcher>(view_);
 }
 
 void RecommendAppsScreen::Hide() {
@@ -54,21 +52,6 @@ void RecommendAppsScreen::OnViewDestroyed(RecommendAppsScreenView* view) {
   DCHECK_EQ(view, view_);
   view_->RemoveObserver(this);
   view_ = nullptr;
-}
-
-void RecommendAppsScreen::OnLoadSuccess(const base::Value& app_list) {
-  if (view_)
-    view_->OnLoadSuccess(app_list);
-}
-
-void RecommendAppsScreen::OnLoadError() {
-  if (view_)
-    view_->OnLoadError();
-}
-
-void RecommendAppsScreen::OnParseResponseError() {
-  if (view_)
-    view_->OnParseResponseError();
 }
 
 }  // namespace chromeos

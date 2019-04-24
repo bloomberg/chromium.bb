@@ -21,15 +21,19 @@ RTC_PUSH_IGNORING_WUNDEF()
 RTC_POP_IGNORING_WUNDEF()
 
 struct WebRtcOpusEncInst {
-  OpusEncoder* encoder;
-  OpusMSEncoder* multistream_encoder;
+  union {
+    OpusEncoder* encoder;
+    OpusMSEncoder* multistream_encoder;
+  } encoder;
   size_t channels;
   int in_dtx_mode;
 };
 
 struct WebRtcOpusDecInst {
-  OpusDecoder* decoder;
-  OpusMSDecoder* multistream_decoder;
+  union {
+    OpusDecoder* decoder;
+    OpusMSDecoder* multistream_decoder;
+  } decoder;
   int prev_decoded_samples;
   size_t channels;
   int in_dtx_mode;

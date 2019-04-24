@@ -5,7 +5,6 @@
 #include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
 
 #include <stddef.h>
-#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"

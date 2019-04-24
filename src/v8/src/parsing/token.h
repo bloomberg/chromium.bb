@@ -201,7 +201,7 @@ namespace internal {
   T(UNINITIALIZED, nullptr, 0)                                     \
   T(REGEXP_LITERAL, nullptr, 0)
 
-class V8_EXPORT_PRIVATE Token {
+class Token {
  public:
   // All token values.
 #define T(name, string, precedence) name,

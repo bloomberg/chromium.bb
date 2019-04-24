@@ -14,7 +14,7 @@ namespace internal {
 
 class StartupSerializer;
 
-class V8_EXPORT_PRIVATE PartialSerializer : public Serializer {
+class PartialSerializer : public Serializer {
  public:
   PartialSerializer(Isolate* isolate, StartupSerializer* startup_serializer,
                     v8::SerializeEmbedderFieldsCallback callback);

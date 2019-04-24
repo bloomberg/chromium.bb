@@ -25,7 +25,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/features.h"
 #include "net/base/filename_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/cert/ct_verifier.h"
@@ -149,12 +148,11 @@ class IOThreadEctFieldTrialBrowserTest : public IOThreadBrowserTest {
     variations::testing::ClearAllVariationParams();
     std::map<std::string, std::string> variation_params;
     variation_params["force_effective_connection_type"] = "2G";
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        net::features::kNetworkQualityEstimator, variation_params);
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        "NetworkQualityEstimator", "Enabled", variation_params));
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        "NetworkQualityEstimator", "Enabled"));
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(IOThreadEctFieldTrialBrowserTest,

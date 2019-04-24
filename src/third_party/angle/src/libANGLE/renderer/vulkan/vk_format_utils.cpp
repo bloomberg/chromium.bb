@@ -178,18 +178,6 @@ size_t Format::getImageCopyBufferAlignment() const
     return alignment;
 }
 
-bool Format::hasEmulatedChannels() const
-{
-    const angle::Format &angleFmt   = angleFormat();
-    const angle::Format &textureFmt = textureFormat();
-
-    return (angleFmt.alphaBits == 0 && textureFmt.alphaBits > 0) ||
-           (angleFmt.blueBits == 0 && textureFmt.blueBits > 0) ||
-           (angleFmt.greenBits == 0 && textureFmt.greenBits > 0) ||
-           (angleFmt.depthBits == 0 && textureFmt.depthBits > 0) ||
-           (angleFmt.stencilBits == 0 && textureFmt.stencilBits > 0);
-}
-
 bool operator==(const Format &lhs, const Format &rhs)
 {
     return &lhs == &rhs;
@@ -217,6 +205,7 @@ void FormatTable::initialize(RendererVk *renderer,
 
         format.initialize(renderer, angleFormat);
         const GLenum internalFormat = format.internalFormat;
+        format.textureLoadFunctions = GetLoadFunctionsMap(internalFormat, format.textureFormatID);
         format.angleFormatID        = formatID;
 
         if (!format.valid())
@@ -230,12 +219,6 @@ void FormatTable::initialize(RendererVk *renderer,
         gl::TextureCaps textureCaps;
         FillTextureFormatCaps(renderer, format.vkTextureFormat, &textureCaps);
         outTextureCapsMap->set(formatID, textureCaps);
-
-        if (textureCaps.texturable)
-        {
-            format.textureLoadFunctions =
-                GetLoadFunctionsMap(internalFormat, format.textureFormatID);
-        }
 
         if (angleFormat.isBlock)
         {

@@ -72,7 +72,7 @@ class ExampleBubble : public BubbleDialogDelegateView {
 
 BubbleExample::BubbleExample() : ExampleBase("Bubble") {}
 
-BubbleExample::~BubbleExample() = default;
+BubbleExample::~BubbleExample() {}
 
 void BubbleExample::CreateExampleView(View* container) {
   PrintStatus("Click with optional modifiers: [Ctrl] for set_arrow(NONE), "

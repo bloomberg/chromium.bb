@@ -379,7 +379,7 @@ class LineLoopHelper final : angle::NonCopyable
     void release(RendererVk *renderer);
     void destroy(VkDevice device);
 
-    static void Draw(uint32_t count, vk::CommandBuffer *commandBuffer);
+    static void Draw(uint32_t count, CommandBuffer *commandBuffer);
 
   private:
     DynamicBuffer mDynamicIndexBuffer;
@@ -599,28 +599,33 @@ class ImageHelper final : public CommandGraphResource
                              GLint samples);
     void resetImageWeakReference();
 
-    const Image &getImage() const { return mImage; }
-    const DeviceMemory &getDeviceMemory() const { return mDeviceMemory; }
+    const Image &getImage() const;
+    const DeviceMemory &getDeviceMemory() const;
 
-    const gl::Extents &getExtents() const { return mExtents; }
+    const gl::Extents &getExtents() const;
     uint32_t getLayerCount() const { return mLayerCount; }
     uint32_t getLevelCount() const { return mLevelCount; }
-    const Format &getFormat() const { return *mFormat; }
-    GLint getSamples() const { return mSamples; }
+    const Format &getFormat() const;
+    GLint getSamples() const;
 
     VkImageLayout getCurrentLayout() const;
 
-    // Helper function to calculate the extents of a render target created for a certain mip of the
-    // image.
-    gl::Extents getLevelExtents2D(uint32_t level) const;
+    void clearColor(const VkClearColorValue &color,
+                    uint32_t baseMipLevel,
+                    uint32_t levelCount,
+                    CommandBuffer *commandBuffer);
 
-    // Clear either color or depth/stencil based on image format.
-    void clear(const VkClearValue &value,
-               uint32_t mipLevel,
-               uint32_t baseArrayLayer,
-               uint32_t layerCount,
-               vk::CommandBuffer *commandBuffer);
+    void clearColorLayer(const VkClearColorValue &color,
+                         uint32_t baseMipLevel,
+                         uint32_t levelCount,
+                         uint32_t baseArrayLayer,
+                         uint32_t layerCount,
+                         CommandBuffer *commandBuffer);
 
+    void clearDepthStencil(VkImageAspectFlags imageAspectFlags,
+                           VkImageAspectFlags clearAspectFlags,
+                           const VkClearDepthStencilValue &depthStencil,
+                           CommandBuffer *commandBuffer);
     gl::Extents getSize(const gl::ImageIndex &index) const;
 
     static void Copy(ImageHelper *srcImage,
@@ -630,7 +635,7 @@ class ImageHelper final : public CommandGraphResource
                      const gl::Extents &copySize,
                      const VkImageSubresourceLayers &srcSubresources,
                      const VkImageSubresourceLayers &dstSubresources,
-                     vk::CommandBuffer *commandBuffer);
+                     CommandBuffer *commandBuffer);
 
     angle::Result generateMipmapsWithBlit(ContextVk *contextVk, GLuint maxLevel);
 
@@ -644,8 +649,7 @@ class ImageHelper final : public CommandGraphResource
                                          const gl::InternalFormat &formatInfo,
                                          const gl::PixelUnpackState &unpack,
                                          GLenum type,
-                                         const uint8_t *pixels,
-                                         const vk::Format &vkFormat);
+                                         const uint8_t *pixels);
 
     angle::Result stageSubresourceUpdateAndGetData(ContextVk *contextVk,
                                                    size_t allocationSize,
@@ -667,19 +671,6 @@ class ImageHelper final : public CommandGraphResource
                                          const gl::Offset &destOffset,
                                          const gl::Extents &extents);
 
-    // Stage a clear operation to a clear value based on WebGL requirements.
-    void stageSubresourceRobustClear(const gl::ImageIndex &index, const angle::Format &format);
-
-    // Stage a clear operation to a clear value that initializes emulated channels to the desired
-    // values.
-    void stageSubresourceEmulatedClear(const gl::ImageIndex &index, const angle::Format &format);
-
-    // If the image has emulated channels, we clear them once so as not to leave garbage on those
-    // channels.
-    angle::Result clearIfEmulatedFormat(Context *context,
-                                        const gl::ImageIndex &index,
-                                        const Format &format);
-
     // This will use the underlying dynamic buffer to allocate some memory to be used as a src or
     // dst.
     angle::Result allocateStagingMemory(ContextVk *contextVk,
@@ -689,21 +680,12 @@ class ImageHelper final : public CommandGraphResource
                                         VkDeviceSize *offsetOut,
                                         bool *newBufferAllocatedOut);
 
-    // Flushes staged updates to a range of levels and layers from start to (but not including) end.
-    // Due to the nature of updates (done wholly to a VkImageSubresourceLayers), some unsolicited
-    // layers may also be updated.
     angle::Result flushStagedUpdates(Context *context,
-                                     uint32_t levelStart,
-                                     uint32_t levelEnd,
-                                     uint32_t layerStart,
-                                     uint32_t layerEnd,
+                                     uint32_t baseLevel,
+                                     uint32_t levelCount,
                                      vk::CommandBuffer *commandBuffer);
-    // Creates a command buffer and flushes all staged updates.  This is used for one-time
-    // initialization of resources that we don't expect to accumulate further staged updates, such
-    // as with renderbuffers or surface images.
-    angle::Result flushAllStagedUpdates(Context *context);
 
-    bool hasStagedUpdates() const { return !mSubresourceUpdates.empty(); }
+    bool hasStagedUpdates() const;
 
     // changeLayout automatically skips the layout change if it's unnecessary.  This function can be
     // used to prevent creating a command graph node and subsequently a command buffer for the sole
@@ -712,7 +694,7 @@ class ImageHelper final : public CommandGraphResource
 
     void changeLayout(VkImageAspectFlags aspectMask,
                       ImageLayout newLayout,
-                      vk::CommandBuffer *commandBuffer);
+                      CommandBuffer *commandBuffer);
 
     bool isQueueChangeNeccesary(uint32_t newQueueFamilyIndex) const
     {
@@ -722,44 +704,25 @@ class ImageHelper final : public CommandGraphResource
     void changeLayoutAndQueue(VkImageAspectFlags aspectMask,
                               ImageLayout newLayout,
                               uint32_t newQueueFamilyIndex,
-                              vk::CommandBuffer *commandBuffer);
+                              CommandBuffer *commandBuffer);
 
   private:
     void forceChangeLayoutAndQueue(VkImageAspectFlags aspectMask,
                                    ImageLayout newLayout,
                                    uint32_t newQueueFamilyIndex,
-                                   vk::CommandBuffer *commandBuffer);
-
-    void stageSubresourceClear(const gl::ImageIndex &index,
-                               const angle::Format &format,
-                               const VkClearColorValue &colorValue,
-                               const VkClearDepthStencilValue &depthStencilValue);
-
-    void clearColor(const VkClearColorValue &color,
-                    uint32_t baseMipLevel,
-                    uint32_t levelCount,
-                    uint32_t baseArrayLayer,
-                    uint32_t layerCount,
-                    vk::CommandBuffer *commandBuffer);
-
-    void clearDepthStencil(VkImageAspectFlags imageAspectFlags,
-                           VkImageAspectFlags clearAspectFlags,
-                           const VkClearDepthStencilValue &depthStencil,
-                           vk::CommandBuffer *commandBuffer);
+                                   CommandBuffer *commandBuffer);
 
     struct SubresourceUpdate
     {
         SubresourceUpdate();
         SubresourceUpdate(VkBuffer bufferHandle, const VkBufferImageCopy &copyRegion);
         SubresourceUpdate(vk::ImageHelper *image, const VkImageCopy &copyRegion);
-        SubresourceUpdate(const VkClearValue &clearValue, const gl::ImageIndex &imageIndex);
         SubresourceUpdate(const SubresourceUpdate &other);
 
         void release(RendererVk *renderer);
 
         const VkImageSubresourceLayers &dstSubresource() const
         {
-            ASSERT(updateSource == UpdateSource::Buffer || updateSource == UpdateSource::Image);
             return updateSource == UpdateSource::Buffer ? buffer.copyRegion.imageSubresource
                                                         : image.copyRegion.dstSubresource;
         }
@@ -767,16 +730,8 @@ class ImageHelper final : public CommandGraphResource
 
         enum class UpdateSource
         {
-            Clear,
             Buffer,
             Image,
-        };
-        struct ClearUpdate
-        {
-            VkClearValue value;
-            uint32_t levelIndex;
-            uint32_t layerIndex;
-            uint32_t layerCount;
         };
         struct BufferUpdate
         {
@@ -792,7 +747,6 @@ class ImageHelper final : public CommandGraphResource
         UpdateSource updateSource;
         union
         {
-            ClearUpdate clear;
             BufferUpdate buffer;
             ImageUpdate image;
         };
@@ -886,15 +840,10 @@ class ShaderProgramHelper : angle::NonCopyable
         ANGLE_TRY(renderPassCache->getCompatibleRenderPass(
             context, currentQueueSerial, pipelineDesc.getRenderPassDesc(), &compatibleRenderPass));
 
-        ShaderModule *vertexShader   = &mShaders[gl::ShaderType::Vertex].get().get();
-        ShaderModule *fragmentShader = mShaders[gl::ShaderType::Fragment].valid()
-                                           ? &mShaders[gl::ShaderType::Fragment].get().get()
-                                           : nullptr;
-
-        return mGraphicsPipelines.getPipeline(context, pipelineCache, *compatibleRenderPass,
-                                              pipelineLayout, activeAttribLocationsMask,
-                                              vertexShader, fragmentShader, pipelineDesc,
-                                              descPtrOut, pipelineOut);
+        return mGraphicsPipelines.getPipeline(
+            context, pipelineCache, *compatibleRenderPass, pipelineLayout,
+            activeAttribLocationsMask, mShaders[gl::ShaderType::Vertex].get().get(),
+            mShaders[gl::ShaderType::Fragment].get().get(), pipelineDesc, descPtrOut, pipelineOut);
     }
 
     angle::Result getComputePipeline(Context *context,

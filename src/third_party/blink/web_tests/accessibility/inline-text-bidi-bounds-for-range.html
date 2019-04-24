@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body>
 
@@ -49,7 +50,7 @@ function testWord(elementId, word) {
     assert_approx_equals(axBounds.height, rangeBounds.height, 2);
 }
 
-test((t) => {
+test_after_layout_and_paint((t) => {
     testWord('horizontalParagraph', 'one');
     testWord('horizontalParagraph', 'two');
     testWord('horizontalParagraph', 'three');

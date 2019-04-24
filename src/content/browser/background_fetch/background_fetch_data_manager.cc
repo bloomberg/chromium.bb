@@ -130,7 +130,7 @@ void BackgroundFetchDataManager::CreateRegistration(
     blink::mojom::BackgroundFetchOptionsPtr options,
     const SkBitmap& icon,
     bool start_paused,
-    CreateRegistrationCallback callback) {
+    GetRegistrationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   AddDatabaseTask(std::make_unique<background_fetch::CreateMetadataTask>(

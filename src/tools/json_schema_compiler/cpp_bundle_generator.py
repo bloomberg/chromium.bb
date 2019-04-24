@@ -13,7 +13,6 @@ import copy
 import json
 import os
 import re
-import sys
 
 
 def _RemoveKey(node, key, type_restriction):
@@ -33,10 +32,7 @@ def _RemoveUnneededFields(schema):
   # Return a copy so that we don't pollute the global api object, which may be
   # used elsewhere.
   ret = copy.deepcopy(schema)
-  if sys.version_info.major == 2:
-    _RemoveKey(ret, 'description', basestring)
-  else:
-    _RemoveKey(ret, 'description', str)
+  _RemoveKey(ret, 'description', basestring)
   _RemoveKey(ret, 'compiler_options', dict)
   _RemoveKey(ret, 'nodoc', bool)
   _RemoveKey(ret, 'nocompile', bool)
@@ -57,8 +53,7 @@ def _PrefixSchemaWithNamespace(schema):
       assert not mandatory, (
              'Required key "%s" is not present in object.' % key)
       return
-    assert type(obj[key]) is str or (sys.version_info.major == 2 and
-                                     isinstance(obj[key], basestring))
+    assert type(obj[key]) in [str, unicode]
     if obj[key].find('.') == -1:
       obj[key] = '%s.%s' % (namespace, obj[key])
 
@@ -345,10 +340,9 @@ class _SchemasCCGenerator(object):
       # too large to compile on windows. Split the JSON up into several
       # strings, since apparently that helps.
       max_length = 8192
-      segments = [
-          json_content[i:i + max_length].replace('\\', '\\\\').replace(
-              '"', '\\"') for i in range(0, len(json_content), max_length)
-      ]
+      segments = [json_content[i:i + max_length].replace('\\', '\\\\')
+                                                .replace('"', '\\"')
+                  for i in xrange(0, len(json_content), max_length)]
       c.Append('const char %s[] = "%s";' %
           (_FormatNameAsConstant(namespace.name), '" "'.join(segments)))
     c.Append('}  // namespace')

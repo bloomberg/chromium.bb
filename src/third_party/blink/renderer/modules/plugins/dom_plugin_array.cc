@@ -113,8 +113,10 @@ void DOMPluginArray::refresh(bool reload) {
     NavigatorPlugins::mimeTypes(navigator)->UpdatePluginData();
   }
 
-  if (reload)
-    GetFrame()->Reload(WebFrameLoadType::kReload);
+  if (reload) {
+    GetFrame()->Reload(WebFrameLoadType::kReload,
+                       ClientRedirectPolicy::kClientRedirect);
+  }
 }
 
 PluginData* DOMPluginArray::GetPluginData() const {

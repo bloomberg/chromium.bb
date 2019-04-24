@@ -133,9 +133,6 @@ class Timestamp final : public rtc_units_impl::UnitBase<Timestamp> {
 };
 
 std::string ToString(Timestamp value);
-inline std::string ToLogString(Timestamp value) {
-  return ToString(value);
-}
 
 #ifdef UNIT_TEST
 inline std::ostream& operator<<(  // no-presubmit-check TODO(webrtc:8982)

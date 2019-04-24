@@ -45,7 +45,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     DCHECK(ThreadState::Current()->IsGCForbidden());
     if (child_node_list_)
       return ToChildNodeList(child_node_list_);
-    auto* list = MakeGarbageCollected<ChildNodeList>(node);
+    ChildNodeList* list = ChildNodeList::Create(node);
     child_node_list_ = list;
     return list;
   }
@@ -54,7 +54,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     DCHECK(ThreadState::Current()->IsGCForbidden());
     if (child_node_list_)
       return ToEmptyNodeList(child_node_list_);
-    auto* list = MakeGarbageCollected<EmptyNodeList>(node);
+    EmptyNodeList* list = EmptyNodeList::Create(node);
     child_node_list_ = list;
     return list;
   }
@@ -77,10 +77,10 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   };
 
   typedef HeapHashMap<NamedNodeListKey,
-                      Member<LiveNodeListBase>,
+                      TraceWrapperMember<LiveNodeListBase>,
                       NodeListAtomicCacheMapEntryHash>
       NodeListAtomicNameCacheMap;
-  typedef HeapHashMap<QualifiedName, Member<TagCollectionNS>>
+  typedef HeapHashMap<QualifiedName, TraceWrapperMember<TagCollectionNS>>
       TagCollectionNSCache;
 
   template <typename T>
@@ -136,6 +136,10 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
     return list;
   }
 
+  static NodeListsNodeData* Create() {
+    return MakeGarbageCollected<NodeListsNodeData>();
+  }
+
   NodeListsNodeData() : child_node_list_(nullptr) {}
 
   void InvalidateCaches(const QualifiedName* attr_name = nullptr);
@@ -174,7 +178,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
 
  private:
   // Can be a ChildNodeList or an EmptyNodeList.
-  Member<NodeList> child_node_list_;
+  TraceWrapperMember<NodeList> child_node_list_;
   NodeListAtomicNameCacheMap atomic_name_caches_;
   TagCollectionNSCache tag_collection_ns_caches_;
   DISALLOW_COPY_AND_ASSIGN(NodeListsNodeData);

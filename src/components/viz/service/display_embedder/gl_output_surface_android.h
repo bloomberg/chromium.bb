@@ -16,7 +16,8 @@ class GLOutputSurfaceAndroid : public GLOutputSurface {
  public:
   GLOutputSurfaceAndroid(
       scoped_refptr<VizProcessContextProvider> context_provider,
-      UpdateVSyncParametersCallback update_vsync_callback);
+      SyntheticBeginFrameSource* synthetic_begin_frame_source,
+      bool allow_overlays);
   ~GLOutputSurfaceAndroid() override;
 
   // GLOutputSurface implementation:

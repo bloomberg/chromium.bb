@@ -9,7 +9,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
-#include "ios/web/common/features.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_client.h"
 #include "net/base/escape.h"
@@ -64,15 +63,13 @@ int GetSafeItemIterators(
     // on the left side of the vector. Trim those.
     *begin = items.end() - kMaxSessionSize;
     *end = items.end();
-  } else {
-    // Trim items from both sides of the vector. Keep the same number of items
-    // on the left and right side of |last_committed_item_index|.
-    *begin = items.begin() + last_committed_item_index - kMaxSessionSize / 2;
-    *end = items.begin() + last_committed_item_index + kMaxSessionSize / 2 + 1;
+    return last_committed_item_index - kMaxSessionSize;
   }
 
-  // The beginning of the vector has been trimmed, so move up the last committed
-  // item index by whatever was trimmed from the left.
+  // Trim items from both sides of the vector. Keep the same number of items
+  // on the left and right side of |last_committed_item_index|.
+  *begin = items.begin() + last_committed_item_index - kMaxSessionSize / 2;
+  *end = items.begin() + last_committed_item_index + kMaxSessionSize / 2 + 1;
   return last_committed_item_index - (*begin - items.begin());
 }
 }
@@ -112,11 +109,9 @@ GURL GetRestoreSessionBaseUrl() {
   return GURL(url::kAboutBlankURL).ReplaceComponents(replacements);
 }
 
-void CreateRestoreSessionUrl(
+GURL CreateRestoreSessionUrl(
     int last_committed_item_index,
-    const std::vector<std::unique_ptr<NavigationItem>>& items,
-    GURL* url,
-    int* first_index) {
+    const std::vector<std::unique_ptr<NavigationItem>>& items) {
   DCHECK(last_committed_item_index >= 0 &&
          last_committed_item_index < static_cast<int>(items.size()));
 
@@ -137,8 +132,7 @@ void CreateRestoreSessionUrl(
     NavigationItem* item = (*it).get();
     GURL original_url = item->GetURL();
     GURL restored_url = original_url;
-    if (!web::features::WebUISchemeHandlingEnabled() &&
-        web::GetWebClient()->IsAppSpecificURL(original_url)) {
+    if (web::GetWebClient()->IsAppSpecificURL(original_url)) {
       restored_url = CreatePlaceholderUrlForUrl(original_url);
     }
     restored_urls.GetList().push_back(base::Value(restored_url.spec()));
@@ -157,8 +151,7 @@ void CreateRestoreSessionUrl(
       net::EscapeQueryParamValue(session_json, false /* use_plus */);
   GURL::Replacements replacements;
   replacements.SetRefStr(ref);
-  *first_index = begin - items.begin();
-  *url = GetRestoreSessionBaseUrl().ReplaceComponents(replacements);
+  return GetRestoreSessionBaseUrl().ReplaceComponents(replacements);
 }
 
 bool IsRestoreSessionUrl(const GURL& url) {

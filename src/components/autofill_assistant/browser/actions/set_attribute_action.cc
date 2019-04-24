@@ -22,23 +22,15 @@ SetAttributeAction::~SetAttributeAction() {}
 
 void SetAttributeAction::InternalProcessAction(ActionDelegate* delegate,
                                                ProcessActionCallback callback) {
-  Selector selector = Selector(proto_.set_attribute().element());
-  if (selector.empty()) {
-    DVLOG(1) << __func__ << ": empty selector";
-    UpdateProcessedAction(INVALID_SELECTOR);
-    std::move(callback).Run(std::move(processed_action_proto_));
-    return;
-  }
-  delegate->ShortWaitForElement(
-      selector,
+  delegate->ShortWaitForElementExist(
+      Selector(proto_.set_attribute().element()),
       base::BindOnce(&SetAttributeAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback), selector));
+                     std::move(callback)));
 }
 
 void SetAttributeAction::OnWaitForElement(ActionDelegate* delegate,
                                           ProcessActionCallback callback,
-                                          const Selector& selector,
                                           bool element_found) {
   if (!element_found) {
     UpdateProcessedAction(ELEMENT_RESOLUTION_FAILED);
@@ -47,15 +39,16 @@ void SetAttributeAction::OnWaitForElement(ActionDelegate* delegate,
   }
 
   delegate->SetAttribute(
-      selector, ExtractVector(proto_.set_attribute().attribute()),
+      Selector(proto_.set_attribute().element()),
+      ExtractVector(proto_.set_attribute().attribute()),
       proto_.set_attribute().value(),
       base::BindOnce(&SetAttributeAction::OnSetAttribute,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void SetAttributeAction::OnSetAttribute(ProcessActionCallback callback,
-                                        const ClientStatus& status) {
-  UpdateProcessedAction(status);
+                                        bool status) {
+  UpdateProcessedAction(status ? ACTION_APPLIED : OTHER_ACTION_STATUS);
   std::move(callback).Run(std::move(processed_action_proto_));
 }
 

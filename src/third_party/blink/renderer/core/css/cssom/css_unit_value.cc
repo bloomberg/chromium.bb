@@ -49,38 +49,38 @@ bool IsValueOutOfRangeForProperty(CSSPropertyID property_id,
 
   // For non-length properties and special cases.
   switch (property_id) {
-    case CSSPropertyID::kVariable:
+    case CSSPropertyVariable:
       if (match && match->IsInteger())
         return round(value) != value;
       return false;
-    case CSSPropertyID::kOrder:
-    case CSSPropertyID::kZIndex:
+    case CSSPropertyOrder:
+    case CSSPropertyZIndex:
       return round(value) != value;
-    case CSSPropertyID::kTabSize:
+    case CSSPropertyTabSize:
       return value < 0 || (unit == CSSPrimitiveValue::UnitType::kNumber &&
                            round(value) != value);
-    case CSSPropertyID::kOrphans:
-    case CSSPropertyID::kWidows:
-    case CSSPropertyID::kColumnCount:
+    case CSSPropertyOrphans:
+    case CSSPropertyWidows:
+    case CSSPropertyColumnCount:
       return round(value) != value || value < 1;
-    case CSSPropertyID::kBlockSize:
-    case CSSPropertyID::kColumnRuleWidth:
-    case CSSPropertyID::kFlexGrow:
-    case CSSPropertyID::kFlexShrink:
-    case CSSPropertyID::kFontSize:
-    case CSSPropertyID::kFontSizeAdjust:
-    case CSSPropertyID::kFontStretch:
-    case CSSPropertyID::kInlineSize:
-    case CSSPropertyID::kLineHeightStep:
-    case CSSPropertyID::kMaxBlockSize:
-    case CSSPropertyID::kMaxInlineSize:
-    case CSSPropertyID::kMinBlockSize:
-    case CSSPropertyID::kMinInlineSize:
-    case CSSPropertyID::kR:
-    case CSSPropertyID::kRx:
-    case CSSPropertyID::kRy:
+    case CSSPropertyBlockSize:
+    case CSSPropertyColumnRuleWidth:
+    case CSSPropertyFlexGrow:
+    case CSSPropertyFlexShrink:
+    case CSSPropertyFontSize:
+    case CSSPropertyFontSizeAdjust:
+    case CSSPropertyFontStretch:
+    case CSSPropertyInlineSize:
+    case CSSPropertyLineHeightStep:
+    case CSSPropertyMaxBlockSize:
+    case CSSPropertyMaxInlineSize:
+    case CSSPropertyMinBlockSize:
+    case CSSPropertyMinInlineSize:
+    case CSSPropertyR:
+    case CSSPropertyRx:
+    case CSSPropertyRy:
       return value < 0;
-    case CSSPropertyID::kFontWeight:
+    case CSSPropertyFontWeight:
       return value < 0 || value > 1000;
     default:
       return false;

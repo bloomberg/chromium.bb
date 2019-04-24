@@ -293,12 +293,6 @@ void IndexedDBTransaction::Start(std::vector<ScopeLock> locks) {
 
   RunTasksIfStarted();
 }
-void IndexedDBTransaction::EnsureBackingStoreTransactionBegun() {
-  if (!backing_store_transaction_begun_) {
-    transaction_->Begin();
-    backing_store_transaction_begun_ = true;
-  }
-}
 
 class BlobWriteCallbackImpl : public IndexedDBBackingStore::BlobWriteCallback {
  public:
@@ -497,8 +491,6 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
     }
     callbacks_->OnAbort(*this, error);
     database_->TransactionFinished(mode_, false);
-    // RemoveTransaction will delete |this|.
-    connection_->RemoveTransaction(id_);
   }
   return s;
 }
@@ -517,7 +509,10 @@ void IndexedDBTransaction::ProcessTaskQueue() {
   DCHECK(!IsTaskQueueEmpty());
   should_process_queue_ = false;
 
-  EnsureBackingStoreTransactionBegun();
+  if (!backing_store_transaction_begun_) {
+    transaction_->Begin();
+    backing_store_transaction_begun_ = true;
+  }
 
   TaskQueue* task_queue =
       pending_preemptive_events_ ? &preemptive_task_queue_ : &task_queue_;

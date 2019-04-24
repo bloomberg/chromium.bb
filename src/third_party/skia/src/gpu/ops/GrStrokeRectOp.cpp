@@ -117,22 +117,22 @@ public:
         if (!allowed_stroke(stroke, GrAA::kNo, &isMiter)) {
             return nullptr;
         }
-        Helper::InputFlags inputFlags = Helper::InputFlags::kNone;
+        Helper::Flags flags = Helper::Flags::kNone;
         // Depending on sub-pixel coordinates and the particular GPU, we may lose a corner of
         // hairline rects. We jam all the vertices to pixel centers to avoid this, but not
         // when MSAA is enabled because it can cause ugly artifacts.
         if (stroke.getStyle() == SkStrokeRec::kHairline_Style && aaType != GrAAType::kMSAA) {
-            inputFlags |= Helper::InputFlags::kSnapVerticesToPixelCenters;
+            flags |= Helper::Flags::kSnapVerticesToPixelCenters;
         }
-        return Helper::FactoryHelper<NonAAStrokeRectOp>(context, std::move(paint), inputFlags,
+        return Helper::FactoryHelper<NonAAStrokeRectOp>(context, std::move(paint), flags,
                                                         viewMatrix, rect,
                                                         stroke, aaType);
     }
 
     NonAAStrokeRectOp(const Helper::MakeArgs& helperArgs, const SkPMColor4f& color,
-                      Helper::InputFlags inputFlags, const SkMatrix& viewMatrix, const SkRect& rect,
+                      Helper::Flags flags, const SkMatrix& viewMatrix, const SkRect& rect,
                       const SkStrokeRec& stroke, GrAAType aaType)
-            : INHERITED(ClassID()), fHelper(helperArgs, aaType, inputFlags) {
+            : INHERITED(ClassID()), fHelper(helperArgs, aaType, flags) {
         fColor = color;
         fViewMatrix = viewMatrix;
         fRect = rect;
@@ -145,7 +145,7 @@ public:
         bounds.outset(rad, rad);
 
         // If our caller snaps to pixel centers then we have to round out the bounds
-        if (inputFlags & Helper::InputFlags::kSnapVerticesToPixelCenters) {
+        if (flags & Helper::Flags::kSnapVerticesToPixelCenters) {
             viewMatrix.mapRect(&bounds);
             // We want to be consistent with how we snap non-aa lines. To match what we do in
             // GrGLSLVertexShaderBuilder, we first floor all the vertex values and then add half a
@@ -163,11 +163,10 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
-                                      GrFSAAType fsaaType, GrClampType clampType) override {
-        // This Op uses uniform (not vertex) color, so doesn't need to track wide color.
-        return fHelper.finalizeProcessors(caps, clip, fsaaType, clampType,
-                                          GrProcessorAnalysisCoverage::kNone, &fColor, nullptr);
+    GrProcessorSet::Analysis finalize(
+            const GrCaps& caps, const GrAppliedClip* clip, GrFSAAType fsaaType) override {
+        return fHelper.finalizeProcessors(
+                caps, clip, fsaaType, GrProcessorAnalysisCoverage::kNone, &fColor);
     }
 
 private:
@@ -344,6 +343,7 @@ public:
         fRects.emplace_back(RectInfo{color, devOutside, devOutside, devInside, false});
         this->setBounds(devOutside, HasAABloat::kYes, IsZeroArea::kNo);
         fMiterStroke = true;
+        fWideColor = !SkPMColor4fFitsInBytes(color);
     }
 
     static std::unique_ptr<GrDrawOp> Make(GrRecordingContext* context,
@@ -366,6 +366,7 @@ public:
             , fHelper(helperArgs, GrAAType::kCoverage)
             , fViewMatrix(viewMatrix) {
         fMiterStroke = isMiter;
+        fWideColor = !SkPMColor4fFitsInBytes(color);
         RectInfo& info = fRects.push_back();
         compute_aa_rects(&info.fDevOutside, &info.fDevOutsideAssist, &info.fDevInside,
                          &info.fDegenerate, viewMatrix, rect, stroke.getWidth(), isMiter);
@@ -409,11 +410,11 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
-                                      GrFSAAType fsaaType, GrClampType clampType) override {
+    GrProcessorSet::Analysis finalize(
+            const GrCaps& caps, const GrAppliedClip* clip, GrFSAAType fsaaType) override {
         return fHelper.finalizeProcessors(
-                caps, clip, fsaaType, clampType, GrProcessorAnalysisCoverage::kSingleChannel,
-                &fRects.back().fColor, &fWideColor);
+                caps, clip, fsaaType, GrProcessorAnalysisCoverage::kSingleChannel,
+                &fRects.back().fColor);
     }
 
 private:
@@ -465,7 +466,7 @@ private:
 
 void AAStrokeRectOp::onPrepareDraws(Target* target) {
     sk_sp<GrGeometryProcessor> gp(create_aa_stroke_rect_gp(target->caps().shaderCaps(),
-                                                           fHelper.compatibleWithCoverageAsAlpha(),
+                                                           fHelper.compatibleWithAlphaAsCoverage(),
                                                            this->viewMatrix(),
                                                            fHelper.usesLocalCoords(),
                                                            fWideColor));
@@ -505,7 +506,7 @@ void AAStrokeRectOp::onPrepareDraws(Target* target) {
                                            info.fDevInside,
                                            fMiterStroke,
                                            info.fDegenerate,
-                                           fHelper.compatibleWithCoverageAsAlpha());
+                                           fHelper.compatibleWithAlphaAsCoverage());
     }
     helper.recordDraw(target, std::move(gp));
 }

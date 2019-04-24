@@ -74,9 +74,6 @@ class WebMediaStreamSource {
     WebVector<bool> auto_gain_control;
     WebVector<bool> noise_suppression;
     WebVector<int32_t> sample_size;
-    WebVector<int32_t> channel_count;
-    WebVector<int32_t> sample_rate;
-    WebVector<double> latency;
 
     WebMediaStreamTrack::FacingMode facing_mode =
         WebMediaStreamTrack::FacingMode::kNone;

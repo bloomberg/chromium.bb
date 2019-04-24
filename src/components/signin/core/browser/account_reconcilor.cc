@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "components/signin/core/browser/account_consistency_method.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
-#include "components/signin/core/browser/consistency_cookie_manager_base.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -33,12 +32,7 @@
 #include "services/identity/public/cpp/accounts_in_cookie_jar_info.h"
 #include "services/identity/public/cpp/accounts_mutator.h"
 
-#if defined(OS_ANDROID)
-#include "components/signin/core/browser/consistency_cookie_manager_android.h"
-#endif
-
 using signin::AccountReconcilorDelegate;
-using signin_metrics::AccountReconcilorState;
 
 const base::Feature kUseMultiloginEndpoint{"UseMultiloginEndpoint",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
@@ -125,6 +119,30 @@ bool RevokeAllSecondaryTokens(
   return token_revoked;
 }
 
+// Returns true if current array of existing accounts in cookie is different
+// from the desired one. If this returns false, the multilogin call would be a
+// no-op.
+bool AccountsNeedUpdate(
+    const signin::MultiloginParameters& parameters,
+    const std::vector<gaia::ListedAccount>& existing_accounts) {
+  if (parameters.mode ==
+          gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER &&
+      !existing_accounts.empty() && !parameters.accounts_to_send.empty() &&
+      existing_accounts[0].id != parameters.accounts_to_send[0]) {
+    // In UPDATE mode update is needed if first accounts don't match.
+    return true;
+  }
+  // Maybe some accounts in cookies are not valid and need refreshing.
+  std::set<std::string> accounts_to_send_set(
+      parameters.accounts_to_send.begin(), parameters.accounts_to_send.end());
+  std::set<std::string> existing_accounts_set;
+  for (const gaia::ListedAccount& account : existing_accounts) {
+    if (account.valid)
+      existing_accounts_set.insert(account.id);
+  }
+  return (existing_accounts_set != accounts_to_send_set);
+}
+
 // Pick the account will become first after this reconcile is finished.
 std::string PickFirstGaiaAccount(
     const signin::MultiloginParameters& parameters,
@@ -136,20 +154,6 @@ std::string PickFirstGaiaAccount(
   }
   return parameters.accounts_to_send.empty() ? ""
                                              : parameters.accounts_to_send[0];
-}
-
-// Returns true if gaia_accounts contains an invalid account that is unknown to
-// the identity manager.
-bool HasUnknownInvalidAccountInCookie(
-    identity::IdentityManager* identity_manager,
-    const std::vector<gaia::ListedAccount>& gaia_accounts) {
-  for (const gaia::ListedAccount& account : gaia_accounts) {
-    if (!account.valid &&
-        !identity_manager->HasAccountWithRefreshToken(account.gaia_id)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 }  // namespace
@@ -199,7 +203,6 @@ AccountReconcilor::AccountReconcilor(
       account_reconcilor_lock_count_(0),
       reconcile_on_unblock_(false),
       timer_(new base::OneShotTimer),
-      state_(signin_metrics::ACCOUNT_RECONCILOR_OK),
       weak_factory_(this) {
   VLOG(1) << "AccountReconcilor::AccountReconcilor";
   DCHECK(delegate_);
@@ -226,19 +229,12 @@ void AccountReconcilor::UnregisterWithAllDependencies() {
 void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
   VLOG(1) << "AccountReconcilor::Initialize";
   if (delegate_->IsReconcileEnabled()) {
-    SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_SCHEDULED);
     RegisterWithAllDependencies();
 
     // Start a reconcile if the tokens are already loaded.
     if (start_reconcile_if_tokens_available && IsIdentityManagerReady())
       StartReconcile();
   }
-}
-
-void AccountReconcilor::SetConsistencyCookieManager(
-    std::unique_ptr<signin::ConsistencyCookieManagerBase>
-        consistency_cookie_manager) {
-  consistency_cookie_manager_ = std::move(consistency_cookie_manager);
 }
 
 #if defined(OS_IOS)
@@ -248,7 +244,6 @@ void AccountReconcilor::SetIsWKHTTPSystemCookieStoreEnabled(bool is_enabled) {
 #endif  // defined(OS_IOS)
 
 void AccountReconcilor::EnableReconcile() {
-  SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_SCHEDULED);
   RegisterWithAllDependencies();
 #if !defined(OS_IOS)
   // TODO(droger): Investigate why this breaks tests on iOS.
@@ -259,7 +254,6 @@ void AccountReconcilor::EnableReconcile() {
 
 void AccountReconcilor::DisableReconcile(bool logout_all_accounts) {
   AbortReconcile();
-  SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_OK);
   UnregisterWithAllDependencies();
 
   if (logout_all_accounts)
@@ -314,8 +308,15 @@ void AccountReconcilor::UnregisterWithIdentityManager() {
   registered_with_identity_manager_ = false;
 }
 
-AccountReconcilorState AccountReconcilor::GetState() {
-  return state_;
+signin_metrics::AccountReconcilorState AccountReconcilor::GetState() {
+  if (!is_reconcile_started_) {
+    return (error_during_last_reconcile_.state() !=
+            GoogleServiceAuthError::State::NONE)
+               ? signin_metrics::ACCOUNT_RECONCILOR_ERROR
+               : signin_metrics::ACCOUNT_RECONCILOR_OK;
+  }
+
+  return signin_metrics::ACCOUNT_RECONCILOR_RUNNING;
 }
 
 std::unique_ptr<AccountReconcilor::ScopedSyncedDataDeletion>
@@ -428,26 +429,24 @@ void AccountReconcilor::StartReconcile() {
             << "Reconcile is blocked, scheduling for later.";
     // Reconcile is locked, it will be restarted when the lock count reaches 0.
     reconcile_on_unblock_ = true;
-    SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_SCHEDULED);
     return;
   }
 
   if (!delegate_->IsReconcileEnabled() || !client_->AreSigninCookiesAllowed()) {
     VLOG(1) << "AccountReconcilor::StartReconcile: !enabled or no cookies";
-    SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_OK);
     return;
   }
 
   // Do not reconcile if tokens are not loaded yet.
   if (!IsIdentityManagerReady()) {
-    SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_SCHEDULED);
     VLOG(1)
         << "AccountReconcilor::StartReconcile: token service *not* ready yet.";
     return;
   }
 
   // Begin reconciliation. Reset initial states.
-  SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_RUNNING);
+  for (auto& observer : observer_list_)
+    observer.OnStartReconcile();
   add_to_cookie_.clear();
   reconcile_start_time_ = base::Time::Now();
   is_reconcile_started_ = true;
@@ -465,7 +464,6 @@ void AccountReconcilor::StartReconcile() {
           account_id) &&
       delegate_->ShouldAbortReconcileIfPrimaryHasError()) {
     VLOG(1) << "AccountReconcilor::StartReconcile: primary has error, abort.";
-    SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_ERROR);
     error_during_last_reconcile_ =
         identity_manager_->GetErrorStateOfRefreshTokenForAccount(account_id);
     AbortReconcile();
@@ -487,9 +485,8 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
     const std::string& primary_account,
     const std::vector<std::string>& chrome_accounts,
     std::vector<gaia::ListedAccount>&& gaia_accounts) {
-  DCHECK(IsMultiloginEndpointEnabled());
+  DCHECK(base::FeatureList::IsEnabled(kUseMultiloginEndpoint));
   DCHECK(!set_accounts_in_progress_);
-  DCHECK_EQ(AccountReconcilorState::ACCOUNT_RECONCILOR_RUNNING, state_);
 
   bool primary_has_error =
       identity_manager_->HasAccountWithRefreshTokenInPersistentErrorState(
@@ -501,7 +498,7 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
           primary_has_error);
 
   DCHECK(is_reconcile_started_);
-  if (CookieNeedsUpdate(parameters_for_multilogin, gaia_accounts)) {
+  if (AccountsNeedUpdate(parameters_for_multilogin, gaia_accounts)) {
     if (parameters_for_multilogin.mode ==
             gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER &&
         parameters_for_multilogin.accounts_to_send.empty()) {
@@ -518,6 +515,7 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
       // is_reconcile_started_ is set to false.
       set_accounts_in_progress_ = true;
       PerformSetCookiesAction(parameters_for_multilogin);
+      DCHECK(is_reconcile_started_);
     }
   } else {
     // Nothing to do, accounts already match.
@@ -534,8 +532,7 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
     // is consistent). If it is not the case, second reconcile is expected to be
     // triggered after changes are made. For that one the state is supposed to
     // be already consistent.
-    DCHECK(!CookieNeedsUpdate(parameters_for_multilogin, gaia_accounts));
-    DCHECK_NE(AccountReconcilorState::ACCOUNT_RECONCILOR_RUNNING, state_);
+    DCHECK(!AccountsNeedUpdate(parameters_for_multilogin, gaia_accounts));
     std::string first_gaia_account_after_reconcile =
         PickFirstGaiaAccount(parameters_for_multilogin, gaia_accounts);
     delegate_->OnReconcileFinished(first_gaia_account_after_reconcile,
@@ -566,19 +563,20 @@ void AccountReconcilor::OnAccountsInCookieUpdated(
       return;
   }
 
-  if (!is_reconcile_started_) {
-    StartReconcile();
-    return;
-  }
-
   if (error.state() != GoogleServiceAuthError::NONE) {
     // We may have seen a series of errors during reconciliation. Delegates may
     // rely on the severity of the last seen error (see |OnReconcileError|) and
     // hence do not override a persistent error, if we have seen one.
-    if (!error_during_last_reconcile_.IsPersistentError())
+    if (is_reconcile_started_ &&
+        !error_during_last_reconcile_.IsPersistentError()) {
       error_during_last_reconcile_ = error;
-    SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_ERROR);
+    }
     AbortReconcile();
+    return;
+  }
+
+  if (!is_reconcile_started_) {
+    StartReconcile();
     return;
   }
 
@@ -609,7 +607,6 @@ void AccountReconcilor::OnAccountsInCookieUpdated(
     VLOG(1) << "Primary account has error, abort.";
     DCHECK(is_reconcile_started_);
     AbortReconcile();
-    SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_ERROR);
     return;
   }
 
@@ -687,8 +684,6 @@ void AccountReconcilor::FinishReconcile(
     std::vector<gaia::ListedAccount>&& gaia_accounts) {
   VLOG(1) << "AccountReconcilor::FinishReconcile";
   DCHECK(add_to_cookie_.empty());
-  DCHECK(delegate_->IsUnknownInvalidAccountInCookieAllowed())
-      << "Only supported in UPDATE mode";
 
   size_t number_gaia_accounts = gaia_accounts.size();
   // If there are any accounts in the gaia cookie but not in chrome, then
@@ -820,22 +815,13 @@ void AccountReconcilor::ScheduleStartReconcileIfChromeAccountsChanged() {
   if (is_reconcile_started_)
     return;
 
-  if (GetState() == AccountReconcilorState::ACCOUNT_RECONCILOR_SCHEDULED)
-    return;
-
   // Start a reconcile as the token accounts have changed.
   VLOG(1) << "AccountReconcilor::StartReconcileIfChromeAccountsChanged";
   if (chrome_accounts_changed_) {
     chrome_accounts_changed_ = false;
-    SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_SCHEDULED);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AccountReconcilor::StartReconcile,
                                   base::Unretained(this)));
-  } else if (error_during_last_reconcile_.state() ==
-             GoogleServiceAuthError::NONE) {
-    SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_OK);
-  } else {
-    SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_ERROR);
   }
 }
 
@@ -931,7 +917,6 @@ void AccountReconcilor::BlockReconcile() {
   VLOG(1) << "AccountReconcilor::BlockReconcile.";
   if (is_reconcile_started_) {
     AbortReconcile();
-    SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_SCHEDULED);
     reconcile_on_unblock_ = true;
   }
   for (auto& observer : observer_list_)
@@ -984,46 +969,4 @@ bool AccountReconcilor::IsMultiloginEndpointEnabled() const {
     return true;  // Mice is only implemented with multilogin.
 #endif
   return base::FeatureList::IsEnabled(kUseMultiloginEndpoint);
-}
-
-bool AccountReconcilor::CookieNeedsUpdate(
-    const signin::MultiloginParameters& parameters,
-    const std::vector<gaia::ListedAccount>& existing_accounts) {
-  bool should_remove_unknown_account =
-      !delegate_->IsUnknownInvalidAccountInCookieAllowed() &&
-      HasUnknownInvalidAccountInCookie(identity_manager_, existing_accounts);
-  if (should_remove_unknown_account) {
-    // Removing unknown accounts in the cookie is only supported for UPDATE
-    // mode.
-    DCHECK_EQ(parameters.mode,
-              gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER);
-    return true;
-  }
-
-  if (parameters.mode ==
-          gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER &&
-      !existing_accounts.empty() && !parameters.accounts_to_send.empty() &&
-      existing_accounts[0].id != parameters.accounts_to_send[0]) {
-    // In UPDATE mode update is needed if first accounts don't match.
-    return true;
-  }
-
-  // Maybe some accounts in cookies are not valid and need refreshing.
-  std::set<std::string> accounts_to_send_set(
-      parameters.accounts_to_send.begin(), parameters.accounts_to_send.end());
-  std::set<std::string> existing_accounts_set;
-  for (const gaia::ListedAccount& account : existing_accounts) {
-    if (account.valid)
-      existing_accounts_set.insert(account.id);
-  }
-  return (existing_accounts_set != accounts_to_send_set);
-}
-
-void AccountReconcilor::SetState(AccountReconcilorState state) {
-  if (state == state_)
-    return;
-
-  state_ = state;
-  for (auto& observer : observer_list_)
-    observer.OnStateChanged(state_);
 }

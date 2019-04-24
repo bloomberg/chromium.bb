@@ -60,9 +60,9 @@ TEST_F(CredentialManagerPasswordFormManagerTest, AbortEarly) {
   // in turn should delete |form_fetcher|.
   EXPECT_CALL(delegate, OnProvisionalSaveComplete()).WillOnce(Invoke(deleter));
   static_cast<FakeFormFetcher*>(form_manager->GetFormFetcher())
-      ->NotifyFetchCompleted();
+      ->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
   // Check that |form_manager| was not deleted yet; doing so would have caused
-  // use after free during NotifyFetchCompleted.
+  // use after free during SetNonFederated.
   EXPECT_TRUE(form_manager);
 
   base::RunLoop().RunUntilIdle();

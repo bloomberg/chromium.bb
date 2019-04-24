@@ -220,8 +220,7 @@ Resources.ServiceWorkersView = class extends UI.VBox {
    * @return {!UI.ReportView}
    */
   _getReportViewForOrigin(origin) {
-    if (this._securityOriginManager.securityOrigins().includes(origin) ||
-        this._securityOriginManager.unreachableMainSecurityOrigin() === origin)
+    if (this._securityOriginManager.securityOrigins().includes(origin))
       return this._currentWorkersView;
     else
       return this._otherWorkersView;

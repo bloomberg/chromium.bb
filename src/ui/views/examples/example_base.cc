@@ -50,7 +50,7 @@ class ContainerView : public View {
 
 }  // namespace
 
-ExampleBase::~ExampleBase() = default;
+ExampleBase::~ExampleBase() {}
 
 ExampleBase::ExampleBase(const char* title) : example_title_(title) {
   container_ = new ContainerView(this);

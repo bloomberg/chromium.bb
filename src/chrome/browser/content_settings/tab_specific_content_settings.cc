@@ -208,18 +208,6 @@ void TabSpecificContentSettings::IndexedDBAccessed(
 }
 
 // static
-void TabSpecificContentSettings::CacheStorageAccessed(int render_process_id,
-                                                      int render_frame_id,
-                                                      const GURL& url,
-                                                      bool blocked_by_policy) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TabSpecificContentSettings* settings =
-      GetForFrame(render_process_id, render_frame_id);
-  if (settings)
-    settings->OnCacheStorageAccessed(url, blocked_by_policy);
-}
-
-// static
 void TabSpecificContentSettings::FileSystemAccessed(int render_process_id,
                                                     int render_frame_id,
                                                     const GURL& url,
@@ -432,22 +420,6 @@ void TabSpecificContentSettings::OnIndexedDBAccessed(const GURL& url,
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
     allowed_local_shared_objects_.indexed_dbs()->Add(url::Origin::Create(url));
-    OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
-  }
-
-  NotifySiteDataObservers();
-}
-
-void TabSpecificContentSettings::OnCacheStorageAccessed(
-    const GURL& url,
-    bool blocked_by_policy) {
-  if (blocked_by_policy) {
-    blocked_local_shared_objects_.cache_storages()->Add(
-        url::Origin::Create(url));
-    OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
-  } else {
-    allowed_local_shared_objects_.cache_storages()->Add(
-        url::Origin::Create(url));
     OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 
@@ -857,12 +829,10 @@ void TabSpecificContentSettings::DidFinishNavigation(
 void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
                                                   bool blocked_by_policy) {
   if (blocked_by_policy) {
-    blocked_local_shared_objects_.appcaches()->Add(
-        url::Origin::Create(manifest_url));
+    blocked_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
-    allowed_local_shared_objects_.appcaches()->Add(
-        url::Origin::Create(manifest_url));
+    allowed_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
     OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 }

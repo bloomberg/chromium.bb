@@ -290,7 +290,7 @@ class ServerBookmarksEqualityChecker : public SingleClientStatusChangeChecker {
   // the server-side data should be encrypted, and the provided cryptographer
   // will be used to decrypt the data prior to checking for equality.
   ServerBookmarksEqualityChecker(
-      syncer::ProfileSyncService* service,
+      browser_sync::ProfileSyncService* service,
       fake_server::FakeServer* fake_server,
       const std::vector<ExpectedBookmark>& expected_bookmarks,
       syncer::Cryptographer* cryptographer);

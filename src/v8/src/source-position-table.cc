@@ -159,7 +159,7 @@ Handle<ByteArray> SourcePositionTableBuilder::ToSourcePositionTable(
   DCHECK(!Omit());
 
   Handle<ByteArray> table = isolate->factory()->NewByteArray(
-      static_cast<int>(bytes_.size()), AllocationType::kOld);
+      static_cast<int>(bytes_.size()), TENURED);
   MemCopy(table->GetDataStartAddress(), bytes_.data(), bytes_.size());
 
 #ifdef ENABLE_SLOW_DCHECKS

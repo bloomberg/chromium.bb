@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -50,7 +49,10 @@ namespace blink {
 static void DeflateIfOverlapped(LayoutRect&, LayoutRect&);
 
 FocusCandidate::FocusCandidate(Node* node, SpatialNavigationDirection direction)
-    : visible_node(nullptr), focusable_node(nullptr), is_offscreen(true) {
+    : visible_node(nullptr),
+      focusable_node(nullptr),
+      is_offscreen(true),
+      is_offscreen_after_scrolling(true) {
   DCHECK(node);
   DCHECK(node->IsElementNode());
 
@@ -71,6 +73,8 @@ FocusCandidate::FocusCandidate(Node* node, SpatialNavigationDirection direction)
 
   focusable_node = node;
   is_offscreen = IsOffscreen(visible_node);
+  is_offscreen_after_scrolling =
+      IsOffscreenAfterFrameScroll(visible_node, direction);
 }
 
 bool IsSpatialNavigationEnabled(const LocalFrame* frame) {
@@ -128,51 +132,6 @@ static bool IsRectInDirection(SpatialNavigationDirection direction,
   }
 }
 
-FloatRect RectInViewport(const Node& node) {
-  LocalFrameView* frame_view = node.GetDocument().View();
-  if (!frame_view)
-    return FloatRect();
-
-  DCHECK(!frame_view->NeedsLayout());
-
-  LayoutObject* object = node.GetLayoutObject();
-  if (!object)
-    return FloatRect();
-
-  // Get the rect in the object's own frame. We use VisualRectInDocument for
-  // legacy reasons, it has some special cases for inlines that we'd like to
-  // preserve (or at least break layout tests). Because of that, we have to
-  // manually convert into frame coordinates and then clip to the frame.
-  LayoutRect rect_in_frame =
-      object->IsLayoutView()
-          ? object->VisualRectInDocument()
-          : frame_view->DocumentToFrame(object->VisualRectInDocument());
-  LayoutRect frame_rect =
-      LayoutRect(LayoutPoint(), LayoutSize(frame_view->Size()));
-  rect_in_frame.Intersect(frame_rect);
-
-  // Now convert from the local frame to the root frame's coordinate space.
-  // This will already apply clipping along the way.
-  LayoutRect rect_in_root_frame = rect_in_frame;
-  const LayoutBoxModelObject* ancestor = nullptr;
-  frame_view->GetLayoutView()->MapToVisualRectInAncestorSpace(
-      ancestor, rect_in_root_frame,
-      kUseTransforms | kTraverseDocumentBoundaries, kDefaultVisualRectFlags);
-
-  // Now convert to the visual viewport which will account for pinch zoom.
-  VisualViewport& visual_viewport =
-      object->GetDocument().GetPage()->GetVisualViewport();
-  FloatRect rect_in_viewport =
-      visual_viewport.RootFrameToViewport(FloatRect(rect_in_root_frame));
-
-  // RootFrameToViewport doesn't clip so manually apply the viewport clip here.
-  FloatRect viewport_rect =
-      FloatRect(FloatPoint(), FloatSize(visual_viewport.Size()));
-  rect_in_viewport.Intersect(viewport_rect);
-
-  return rect_in_viewport;
-}
-
 // Answers true if |node| is completely outside the user's (visual) viewport.
 // This logic is used by spatnav to rule out offscreen focus candidates and an
 // offscreen activeElement. When activeElement is offscreen, spatnav doesn't use
@@ -184,7 +143,88 @@ FloatRect RectInViewport(const Node& node) {
 // LayoutObject's VisibleContentRect.
 bool IsOffscreen(const Node* node) {
   DCHECK(node);
-  return RectInViewport(*node).IsEmpty();
+
+  LocalFrameView* frame_view = node->GetDocument().View();
+  if (!frame_view)
+    return true;
+
+  DCHECK(!frame_view->NeedsLayout());
+
+  LayoutRect frame_viewport(
+      frame_view->GetScrollableArea()->VisibleContentRect());
+
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return true;
+
+  LayoutRect rect(layout_object->VisualRectInDocument());
+  if (rect.IsEmpty())
+    return true;
+
+  // A document always intersects with its frame's viewport.
+  if (node != node->GetDocument() && !frame_viewport.Intersects(rect))
+    return true;
+
+  // Now we know that the node is visible in the its own frame's viewport (it is
+  // not clipped by a scrollable div). That is, we've taken "element-clipping"
+  // into account - now we only need to ensure that this node isn't clipped by
+  // a frame.
+  IntRect rect_in_root_frame;
+  if (auto* document = DynamicTo<Document>(node))
+    node = document->body();
+  if (node && node->IsElementNode())
+    rect_in_root_frame = ToElement(*node).VisibleBoundsInVisualViewport();
+  return rect_in_root_frame.IsEmpty();
+}
+
+// As IsOffscreen() but returns visibility through the |node|'s frame's viewport
+// after scrolling the frame in |direction|.
+bool IsOffscreenAfterFrameScroll(const Node* node,
+                                 SpatialNavigationDirection direction) {
+  LocalFrameView* frame_view = node->GetDocument().View();
+  if (!frame_view)
+    return true;
+
+  DCHECK(!frame_view->NeedsLayout());
+
+  // If |node| is in the root frame, VisibleContentRect() will include
+  // visual viewport transformation (pinch-zoom) if one exists.
+  LayoutRect frame_viewport(
+      frame_view->GetScrollableArea()->VisibleContentRect());
+
+  // |direction| extends the node's frame's viewport's rect (before doing the
+  // intersection-check) to also include content revealed by one scroll step in
+  // that |direction|.
+  int pixels_per_line_step =
+      ScrollableArea::PixelsPerLineStep(frame_view->GetChromeClient());
+  switch (direction) {
+    case SpatialNavigationDirection::kLeft:
+      frame_viewport.SetX(frame_viewport.X() - pixels_per_line_step);
+      frame_viewport.SetWidth(frame_viewport.Width() + pixels_per_line_step);
+      break;
+    case SpatialNavigationDirection::kRight:
+      frame_viewport.SetWidth(frame_viewport.Width() + pixels_per_line_step);
+      break;
+    case SpatialNavigationDirection::kUp:
+      frame_viewport.SetY(frame_viewport.Y() - pixels_per_line_step);
+      frame_viewport.SetHeight(frame_viewport.Height() + pixels_per_line_step);
+      break;
+    case SpatialNavigationDirection::kDown:
+      frame_viewport.SetHeight(frame_viewport.Height() + pixels_per_line_step);
+      break;
+    default:
+      break;
+  }
+
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return true;
+
+  LayoutRect rect(layout_object->VisualRectInDocument());
+  if (rect.IsEmpty())
+    return true;
+
+  return !frame_viewport.Intersects(rect);
 }
 
 bool HasRemoteFrame(const Node* node) {
@@ -382,13 +422,6 @@ LayoutRect NodeRectInRootFrame(const Node* node, bool ignore_border) {
 
   LayoutRect rect = node->GetDocument().GetFrame()->View()->ConvertToRootFrame(
       node->BoundingBox());
-
-  // Ensure the rect isn't empty. This can happen in some cases as the bounding
-  // box is made up of the corners of multiple child elements. If the first
-  // child is to the right or bottom of the last child, the bounding box will
-  // be empty. Ensure its not empty so intersections with the root frame don't
-  // lie about being off-screen.
-  rect.UniteEvenIfEmpty(LayoutRect(rect.Location(), LayoutSize(1, 1)));
 
   // For authors that use border instead of outline in their CSS, we compensate
   // by ignoring the border when calculating the rect of the focused element.

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -93,7 +94,7 @@ class CORE_EXPORT MutationObserverRegistration final
   }
 
  private:
-  Member<MutationObserver> observer_;
+  TraceWrapperMember<MutationObserver> observer_;
   WeakMember<Node> registration_node_;
   Member<Node> registration_node_keep_alive_;
   typedef HeapHashSet<Member<Node>> NodeHashSet;

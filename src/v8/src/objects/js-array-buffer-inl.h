@@ -77,7 +77,11 @@ void* JSArrayBuffer::allocation_base() const {
 }
 
 bool JSArrayBuffer::is_wasm_memory() const {
-  return IsWasmMemoryBit::decode(bit_field());
+  bool const is_wasm_memory = IsWasmMemoryBit::decode(bit_field());
+  DCHECK_EQ(is_wasm_memory,
+            GetIsolate()->wasm_engine()->memory_tracker()->IsWasmMemory(
+                backing_store()));
+  return is_wasm_memory;
 }
 
 void JSArrayBuffer::set_is_wasm_memory(bool is_wasm_memory) {
@@ -109,6 +113,8 @@ BIT_FIELD_ACCESSORS(JSArrayBuffer, bit_field, was_detached,
                     JSArrayBuffer::WasDetachedBit)
 BIT_FIELD_ACCESSORS(JSArrayBuffer, bit_field, is_shared,
                     JSArrayBuffer::IsSharedBit)
+BIT_FIELD_ACCESSORS(JSArrayBuffer, bit_field, is_growable,
+                    JSArrayBuffer::IsGrowableBit)
 
 size_t JSArrayBufferView::byte_offset() const {
   return READ_UINTPTR_FIELD(*this, kByteOffsetOffset);
@@ -132,17 +138,20 @@ bool JSArrayBufferView::WasDetached() const {
   return JSArrayBuffer::cast(buffer())->was_detached();
 }
 
-size_t JSTypedArray::length() const {
-  // TODO(bmeurer, v8:4153): Change this to size_t later.
-  int length = Smi::cast(raw_length())->value();
-  DCHECK_LE(0, length);
-  return length;
+Object JSTypedArray::length() const { return READ_FIELD(*this, kLengthOffset); }
+
+size_t JSTypedArray::length_value() const {
+  double val = length()->Number();
+  DCHECK_LE(val, kMaxSafeInteger);   // 2^53-1
+  DCHECK_GE(val, -kMaxSafeInteger);  // -2^53+1
+  DCHECK_LE(val, std::numeric_limits<size_t>::max());
+  DCHECK_GE(val, std::numeric_limits<size_t>::min());
+  return static_cast<size_t>(val);
 }
 
-void JSTypedArray::set_length(size_t value) {
-  // TODO(bmeurer, v8:4153): Change this to size_t later.
-  CHECK_LE(value, Smi::kMaxValue);
-  set_raw_length(Smi::FromInt(static_cast<int>(value)), SKIP_WRITE_BARRIER);
+void JSTypedArray::set_length(Object value, WriteBarrierMode mode) {
+  WRITE_FIELD(*this, kLengthOffset, value);
+  CONDITIONAL_WRITE_BARRIER(*this, kLengthOffset, value, mode);
 }
 
 bool JSTypedArray::is_on_heap() const {
@@ -175,7 +184,9 @@ MaybeHandle<JSTypedArray> JSTypedArray::Validate(Isolate* isolate,
   return array;
 }
 
+#ifdef VERIFY_HEAP
 ACCESSORS(JSTypedArray, raw_length, Object, kLengthOffset)
+#endif
 
 }  // namespace internal
 }  // namespace v8

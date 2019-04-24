@@ -40,6 +40,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -65,7 +66,6 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.ArrayList;
@@ -147,8 +147,12 @@ public class BrowserActionActivityTest {
 
     @Before
     public void setUp() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { FirstRunStatus.setFirstRunFlowComplete(true); });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                FirstRunStatus.setFirstRunFlowComplete(true);
+            }
+        });
         mTestDelegate = new TestDelegate();
         mTestObserver = new EmptyTabModelObserver() {
             @Override
@@ -167,8 +171,12 @@ public class BrowserActionActivityTest {
 
     @After
     public void tearDown() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { FirstRunStatus.setFirstRunFlowComplete(false); });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                FirstRunStatus.setFirstRunFlowComplete(false);
+            }
+        });
         mTestServer.stopAndDestroyServer();
     }
 
@@ -241,8 +249,12 @@ public class BrowserActionActivityTest {
     @Test
     @SmallTest
     public void testMenuShownCorrectlyWithFRENotComplete() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { FirstRunStatus.setFirstRunFlowComplete(false); });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                FirstRunStatus.setFirstRunFlowComplete(false);
+            }
+        });
         List<BrowserActionItem> items = createCustomItems();
         BrowserActionActivity activity = startBrowserActionActivity(mTestPage, items, 0);
 
@@ -324,8 +336,12 @@ public class BrowserActionActivityTest {
         final BrowserActionActivity activity = startBrowserActionActivity(mTestPage);
         mOnBrowserActionsMenuShownCallback.waitForCallback(0);
         // Download an url before initialization finishes.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { activity.getHelperForTesting().onItemSelected(itemid, false); });
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                activity.getHelperForTesting().onItemSelected(itemid, false);
+            }
+        });
 
         // If native initialization is not finished, A ProgressDialog should be displayed and
         // chosen item should be pending until initialization is finished.
@@ -461,8 +477,8 @@ public class BrowserActionActivityTest {
         // No notification should be shown.
         Assert.assertFalse(BrowserActionsService.hasBrowserActionsNotification());
 
-        BrowserActionsTabModelSelector selector = TestThreadUtils.runOnUiThreadBlocking(
-                new Callable<BrowserActionsTabModelSelector>() {
+        BrowserActionsTabModelSelector selector =
+                ThreadUtils.runOnUiThreadBlocking(new Callable<BrowserActionsTabModelSelector>() {
                     @Override
                     public BrowserActionsTabModelSelector call() {
                         return BrowserActionsTabModelSelector.getInstance();
@@ -502,8 +518,8 @@ public class BrowserActionActivityTest {
         mOnBrowserActionsMenuShownCallback.waitForCallback(0);
         mOnFinishNativeInitializationCallback.waitForCallback(0);
 
-        BrowserActionsTabModelSelector selector = TestThreadUtils.runOnUiThreadBlocking(
-                new Callable<BrowserActionsTabModelSelector>() {
+        BrowserActionsTabModelSelector selector =
+                ThreadUtils.runOnUiThreadBlocking(new Callable<BrowserActionsTabModelSelector>() {
                     @Override
                     public BrowserActionsTabModelSelector call() {
                         return BrowserActionsTabModelSelector.getInstance();
@@ -565,13 +581,16 @@ public class BrowserActionActivityTest {
     }
 
     private void openTabInBackground(BrowserActionActivity activity) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-            try {
-                activity.getHelperForTesting().onItemSelected(
-                        R.id.browser_actions_open_in_background, false);
-            } finally {
-                StrictMode.setThreadPolicy(oldPolicy);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
+                try {
+                    activity.getHelperForTesting().onItemSelected(
+                            R.id.browser_actions_open_in_background, false);
+                } finally {
+                    StrictMode.setThreadPolicy(oldPolicy);
+                }
             }
         });
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -604,17 +623,23 @@ public class BrowserActionActivityTest {
             }
         });
         String cta2ActivityTabUrl = activity2.getActivityTab().getUrl();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            activity2.getTabCreator(false).createNewTab(
-                    new LoadUrlParams(mTestPage2), TabLaunchType.FROM_CHROME_UI, null);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                activity2.getTabCreator(false).createNewTab(
+                        new LoadUrlParams(mTestPage2), TabLaunchType.FROM_CHROME_UI, null);
+            }
         });
 
         // Save state and destroy both activities.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            activity1.saveState();
-            activity2.saveState();
-            activity1.finishAndRemoveTask();
-            activity2.finishAndRemoveTask();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                activity1.saveState();
+                activity2.saveState();
+                activity1.finishAndRemoveTask();
+                activity2.finishAndRemoveTask();
+            }
         });
 
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -633,10 +658,14 @@ public class BrowserActionActivityTest {
         openTabInBackground(activity3);
 
         // Save the Browser Actions tab states and destroy the selector and activity.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            BrowserActionsTabModelSelector selector = BrowserActionsTabModelSelector.getInstance();
-            selector.saveState();
-            selector.destroy();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                BrowserActionsTabModelSelector selector =
+                        BrowserActionsTabModelSelector.getInstance();
+                selector.saveState();
+                selector.destroy();
+            }
         });
         activity3.finish();
 

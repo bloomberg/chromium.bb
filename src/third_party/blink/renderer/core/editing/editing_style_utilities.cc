@@ -72,10 +72,9 @@ Position AdjustedSelectionStartForStyleComputation(const Position& position) {
 bool EditingStyleUtilities::HasAncestorVerticalAlignStyle(Node& node,
                                                           CSSValueID value) {
   for (Node& runner : NodeTraversal::InclusiveAncestorsOf(node)) {
-    auto* ancestor_style =
-        MakeGarbageCollected<CSSComputedStyleDeclaration>(&runner);
-    if (GetIdentifierValue(ancestor_style, CSSPropertyID::kVerticalAlign) ==
-        value)
+    CSSComputedStyleDeclaration* ancestor_style =
+        CSSComputedStyleDeclaration::Create(&runner);
+    if (GetIdentifierValue(ancestor_style, CSSPropertyVerticalAlign) == value)
       return true;
   }
   return false;
@@ -87,8 +86,8 @@ EditingStyleUtilities::CreateWrappingStyleForAnnotatedSerialization(
   // TODO(editing-dev): Change this function to take |const ContainerNode&|.
   // Tracking bug for this is crbug.com/766448.
   DCHECK(context);
-  EditingStyle* wrapping_style = MakeGarbageCollected<EditingStyle>(
-      context, EditingStyle::kEditingPropertiesInEffect);
+  EditingStyle* wrapping_style =
+      EditingStyle::Create(context, EditingStyle::kEditingPropertiesInEffect);
 
   // Styles that Mail blockquotes contribute should only be placed on the Mail
   // blockquote, to help us differentiate those styles from ones that the user
@@ -109,7 +108,7 @@ EditingStyleUtilities::CreateWrappingStyleForAnnotatedSerialization(
 EditingStyle* EditingStyleUtilities::CreateWrappingStyleForSerialization(
     ContainerNode* context) {
   DCHECK(context);
-  EditingStyle* wrapping_style = MakeGarbageCollected<EditingStyle>();
+  EditingStyle* wrapping_style = EditingStyle::Create();
 
   // When not annotating for interchange, we only preserve inline style
   // declarations.
@@ -164,23 +163,23 @@ EditingStyle* EditingStyleUtilities::CreateStyleAtSelectionStart(
     return nullptr;
 
   EditingStyle* style =
-      MakeGarbageCollected<EditingStyle>(element, EditingStyle::kAllProperties);
+      EditingStyle::Create(element, EditingStyle::kAllProperties);
   style->MergeTypingStyle(&element->GetDocument());
 
   // If |element| has <sub> or <sup> ancestor element, apply the corresponding
   // style(vertical-align) to it so that document.queryCommandState() works with
   // the style. See bug http://crbug.com/582225.
   CSSValueID value_id =
-      GetIdentifierValue(style_to_check, CSSPropertyID::kVerticalAlign);
-  if (value_id == CSSValueID::kSub || value_id == CSSValueID::kSuper) {
-    auto* element_style =
-        MakeGarbageCollected<CSSComputedStyleDeclaration>(element);
-    // Find the ancestor that has CSSValueID::kSub or CSSValueID::kSuper as the
-    // value of CSS vertical-align property.
-    if (GetIdentifierValue(element_style, CSSPropertyID::kVerticalAlign) ==
-            CSSValueID::kBaseline &&
+      GetIdentifierValue(style_to_check, CSSPropertyVerticalAlign);
+  if (value_id == CSSValueSub || value_id == CSSValueSuper) {
+    CSSComputedStyleDeclaration* element_style =
+        CSSComputedStyleDeclaration::Create(element);
+    // Find the ancestor that has CSSValueSub or CSSValueSuper as the value of
+    // CSS vertical-align property.
+    if (GetIdentifierValue(element_style, CSSPropertyVerticalAlign) ==
+            CSSValueBaseline &&
         HasAncestorVerticalAlignStyle(*element, value_id))
-      style->Style()->SetProperty(CSSPropertyID::kVerticalAlign, value_id);
+      style->Style()->SetProperty(CSSPropertyVerticalAlign, value_id);
   }
 
   // If background color is transparent, traverse parent nodes until we hit a
@@ -192,7 +191,7 @@ EditingStyle* EditingStyleUtilities::CreateStyleAtSelectionStart(
     const EphemeralRange range(selection.ToNormalizedEphemeralRange());
     if (const CSSValue* value =
             BackgroundColorValueInEffect(range.CommonAncestorContainer())) {
-      style->SetProperty(CSSPropertyID::kBackgroundColor, value->CssText(),
+      style->SetProperty(CSSPropertyBackgroundColor, value->CssText(),
                          /* important */ false,
                          document.GetSecureContextMode());
     }
@@ -204,32 +203,32 @@ EditingStyle* EditingStyleUtilities::CreateStyleAtSelectionStart(
 bool EditingStyleUtilities::IsTransparentColorValue(const CSSValue* css_value) {
   if (!css_value)
     return true;
-  if (auto* color_value = DynamicTo<CSSColorValue>(css_value))
-    return !color_value->Value().Alpha();
-  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(css_value))
-    return identifier_value->GetValueID() == CSSValueID::kTransparent;
-  return false;
+  if (css_value->IsColorValue())
+    return !ToCSSColorValue(css_value)->Value().Alpha();
+  if (!css_value->IsIdentifierValue())
+    return false;
+  return ToCSSIdentifierValue(css_value)->GetValueID() == CSSValueTransparent;
 }
 
 bool EditingStyleUtilities::HasTransparentBackgroundColor(
     CSSStyleDeclaration* style) {
   const CSSValue* css_value =
-      style->GetPropertyCSSValueInternal(CSSPropertyID::kBackgroundColor);
+      style->GetPropertyCSSValueInternal(CSSPropertyBackgroundColor);
   return IsTransparentColorValue(css_value);
 }
 
 bool EditingStyleUtilities::HasTransparentBackgroundColor(
     CSSPropertyValueSet* style) {
   const CSSValue* css_value =
-      style->GetPropertyCSSValue(CSSPropertyID::kBackgroundColor);
+      style->GetPropertyCSSValue(CSSPropertyBackgroundColor);
   return IsTransparentColorValue(css_value);
 }
 
 const CSSValue* EditingStyleUtilities::BackgroundColorValueInEffect(
     Node* node) {
   for (Node* ancestor = node; ancestor; ancestor = ancestor->parentNode()) {
-    auto* ancestor_style =
-        MakeGarbageCollected<CSSComputedStyleDeclaration>(ancestor);
+    CSSComputedStyleDeclaration* ancestor_style =
+        CSSComputedStyleDeclaration::Create(ancestor);
     if (!HasTransparentBackgroundColor(ancestor_style)) {
       return ancestor_style->GetPropertyCSSValue(
           GetCSSPropertyBackgroundColor());

@@ -11,6 +11,10 @@
 
 namespace WTF {
 template <>
+struct DefaultHash<blink::CSSPropertyID> {
+  typedef IntHash<unsigned> Hash;
+};
+template <>
 struct HashTraits<blink::CSSPropertyID>
     : GenericHashTraits<blink::CSSPropertyID> {
   static const bool kEmptyValueIsZero = true;
@@ -18,7 +22,7 @@ struct HashTraits<blink::CSSPropertyID>
     slot = static_cast<blink::CSSPropertyID>(blink::numCSSPropertyIDs);
   }
   static bool IsDeletedValue(blink::CSSPropertyID value) {
-    return static_cast<int>(value) == blink::numCSSPropertyIDs;
+    return value == blink::numCSSPropertyIDs;
   }
 };
 }  // namespace WTF

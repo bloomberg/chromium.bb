@@ -34,6 +34,11 @@ String TokenToString(const base::UnguessableToken& token) {
 
 }  // namespace
 
+// static
+Serial* Serial::Create(ExecutionContext& execution_context) {
+  return MakeGarbageCollected<Serial>(execution_context);
+}
+
 Serial::Serial(ExecutionContext& execution_context)
     : ContextLifecycleObserver(&execution_context) {}
 
@@ -43,11 +48,6 @@ ExecutionContext* Serial::GetExecutionContext() const {
 
 const AtomicString& Serial::InterfaceName() const {
   return event_target_names::kSerial;
-}
-
-void Serial::ContextDestroyed(ExecutionContext*) {
-  for (auto& entry : port_cache_)
-    entry.value->ContextDestroyed();
 }
 
 ScriptPromise Serial::getPorts(ScriptState* script_state) {
@@ -66,7 +66,7 @@ ScriptPromise Serial::getPorts(ScriptState* script_state) {
                                            kFeaturePolicyBlocked));
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto* resolver = ScriptPromiseResolver::Create(script_state);
   get_ports_promises_.insert(resolver);
 
   EnsureServiceConnection();
@@ -101,7 +101,7 @@ ScriptPromise Serial::requestPort(ScriptState* script_state,
             "Must be handling a user gesture to show a permission request."));
   }
 
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto* resolver = ScriptPromiseResolver::Create(script_state);
   request_port_promises_.insert(resolver);
 
   EnsureServiceConnection();
@@ -110,12 +110,6 @@ ScriptPromise Serial::requestPort(ScriptState* script_state,
                                   WrapPersistent(resolver)));
 
   return resolver->Promise();
-}
-
-void Serial::GetPort(const base::UnguessableToken& token,
-                     device::mojom::blink::SerialPortRequest request) {
-  EnsureServiceConnection();
-  service_->GetPort(token, std::move(request));
 }
 
 void Serial::Trace(Visitor* visitor) {
@@ -161,8 +155,8 @@ void Serial::OnServiceConnectionError() {
 SerialPort* Serial::GetOrCreatePort(mojom::blink::SerialPortInfoPtr info) {
   SerialPort* port = port_cache_.at(TokenToString(info->token));
   if (!port) {
-    port = MakeGarbageCollected<SerialPort>(this, std::move(info));
-    port_cache_.insert(TokenToString(port->token()), port);
+    port = MakeGarbageCollected<SerialPort>(std::move(info));
+    port_cache_.insert(TokenToString(port->Token()), port);
   }
   return port;
 }

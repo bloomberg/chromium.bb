@@ -1,7 +1,7 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html#License
 sd{
-    Version{"2.1.49.82"}
+    Version{"2.1.43.94"}
     durationUnits{
         hm{"h:mm"}
         hms{"h:mm:ss"}
@@ -52,11 +52,6 @@ sd{
                 dnam{"ايڪڙ"}
                 one{"{0} ايڪڙ"}
                 other{"{0} ايڪڙ"}
-            }
-            dunam{
-                dnam{"دنام"}
-                one{"{0} دنام"}
-                other{"{0} دنامز"}
             }
             hectare{
                 dnam{"هيڪٽر"}
@@ -123,11 +118,6 @@ sd{
                 one{"{0} ملي مولز في ليٽر"}
                 other{"{0} ملي مولز في ليٽر"}
             }
-            mole{
-                dnam{"مولز"}
-                one{"{0} مول"}
-                other{"{0} مولز"}
-            }
             part-per-million{
                 dnam{"حصا في ملين"}
                 one{"{0} حصا في ملين"}
@@ -142,11 +132,6 @@ sd{
                 dnam{"‰"}
                 one{"{0}‰"}
                 other{"{0}‰"}
-            }
-            permyriad{
-                dnam{"پيرمائيرڊ"}
-                one{"{0} پيرمائيرڊ"}
-                other{"{0} پيرمائيرڊ"}
             }
         }
         consumption{
@@ -322,20 +307,10 @@ sd{
             }
         }
         energy{
-            british-thermal-unit{
-                dnam{"برٽش ٿرمل يونٽس"}
-                one{"{0} برٽش ٿرمل يونٽ"}
-                other{"{0} برٽش ٿرمل يونٽس"}
-            }
             calorie{
                 dnam{"ڪيلوري"}
                 one{"{0} ڪيلوري"}
                 other{"{0} ڪيلوريز"}
-            }
-            electronvolt{
-                dnam{"اليڪٽرون وولٽس"}
-                one{"{0} اليڪٽرون وولٽ"}
-                other{"{0} اليڪٽرون وولٽز"}
             }
             foodcalorie{
                 dnam{"ڪيلوريز"}
@@ -361,18 +336,6 @@ sd{
                 dnam{"ڪلو واٽ في ڪلاڪ"}
                 one{"{0} ڪلو واٽ في ڪلڪ"}
                 other{"{0} ڪلو واٽ في ڪلڪ"}
-            }
-        }
-        force{
-            newton{
-                dnam{"نيوٽنز"}
-                one{"{0} نيوٽن"}
-                other{"{0} نيوٽنز"}
-            }
-            pound-force{
-                dnam{"پائونڊز آف فورس"}
-                one{"{0} پائونڊ آف فورس"}
-                other{"{0}پائونڊز آف فورس"}
             }
         }
         frequency{
@@ -488,11 +451,6 @@ sd{
                 one{"{0} پوائينٽون"}
                 other{"{0} پوائينٽون"}
             }
-            solar-radius{
-                dnam{"سولر راڊي"}
-                one{"{0} سولر ريڊيس"}
-                other{"{0} سولر راڊي"}
-            }
             yard{
                 dnam{"گز"}
                 one{"{0} گز"}
@@ -505,27 +463,12 @@ sd{
                 one{"{0} لڪس"}
                 other{"{0} لڪس"}
             }
-            solar-luminosity{
-                dnam{"سولر ليومينوسائيٽيز"}
-                one{"{0} سولر ليومينوسٽي"}
-                other{"{0} سولر ليومينوسائيٽيز"}
-            }
         }
         mass{
             carat{
                 dnam{"ڪيرٽ"}
                 one{"{0} ڪيرٽ"}
                 other{"{0} ڪيرٽ"}
-            }
-            dalton{
-                dnam{"ڊالٽنز"}
-                one{"{0} ڊالٽن"}
-                other{"{0} ڊالٽنز"}
-            }
-            earth-mass{
-                dnam{"ارٿ ماسز"}
-                one{"{0} ارٿ ماس"}
-                other{"{0} ارٿ ماسز"}
             }
             gram{
                 dnam{"گرامَ"}
@@ -570,11 +513,6 @@ sd{
                 one{"{0} پائونڊ"}
                 other{"{0} پائونڊ"}
                 per{"{0} في پائونڊ"}
-            }
-            solar-mass{
-                dnam{"سولر ماسز"}
-                one{"{0} سولر ماس"}
-                other{"{0} سولر ماسز"}
             }
             ton{
                 dnam{"ٽن"}
@@ -629,16 +567,6 @@ sd{
                 dnam{"مرڪري جا انچز"}
                 one{"مرڪري جا {0} انچز"}
                 other{"مرڪري جا {0} انچز"}
-            }
-            kilopascal{
-                dnam{"ڪلو پاسڪلز"}
-                one{"{0} ڪلو پاسڪل"}
-                other{"{0} ڪلو پاسڪلز"}
-            }
-            megapascal{
-                dnam{"ميگا پاسڪلز"}
-                one{"{0} ميگا پاسڪل"}
-                other{"{0} ميگا پاسڪلز"}
             }
             millibar{
                 dnam{"ملي بارز"}
@@ -700,28 +628,11 @@ sd{
                 other{"{0} ڪيلونز"}
             }
         }
-        torque{
-            newton-meter{
-                dnam{"نيوٽن-ميٽرز"}
-                one{"{0} نيوٽن-ميٽر"}
-                other{"{0} نيوٽن-ميٽرز"}
-            }
-            pound-foot{
-                dnam{"پائونڊ-فيٽ"}
-                one{"{0} پائونڊ-فوٽ"}
-                other{"{0} پائونڊ-فيٽ"}
-            }
-        }
         volume{
             acre-foot{
                 dnam{"ايڪڙ فٽ"}
                 one{"{0} ايڪڙ فٽ"}
                 other{"{0} ايڪڙ فٽ"}
-            }
-            barrel{
-                dnam{"بيريلز"}
-                one{"{0} بيريلز"}
-                other{"{0} بيريلز"}
             }
             centiliter{
                 dnam{"سينٽي ليٽر"}
@@ -784,11 +695,6 @@ sd{
                 dnam{"پاڻياٺ اونس"}
                 one{"{0} پاڻياٺ اونس"}
                 other{"{0} پاڻياٺ اونس"}
-            }
-            fluid-ounce-imperial{
-                dnam{"Imp. پاڻياٺ آئونسز"}
-                one{"{0} Imp. پاڻياٺ آئونس"}
-                other{"{0} Imp. پاڻياٺ آئونسز"}
             }
             gallon{
                 dnam{"گيلن"}
@@ -1031,11 +937,6 @@ sd{
                 one{"{0} ايڪڙ"}
                 other{"{0} ايڪڙ"}
             }
-            dunam{
-                dnam{"دنام"}
-                one{"{0} دنام"}
-                other{"{0} دنام"}
-            }
             hectare{
                 dnam{"هيڪٽر"}
                 one{"{0} هيڪٽر"}
@@ -1101,11 +1002,6 @@ sd{
                 one{"{0} ملي مولز في ليٽر"}
                 other{"{0} ملي مولز في ليٽر"}
             }
-            mole{
-                dnam{"مول"}
-                one{"{0} mol"}
-                other{"{0} mol"}
-            }
             part-per-million{
                 dnam{"حصا في ملين"}
                 one{"{0} حصا في ملين"}
@@ -1120,11 +1016,6 @@ sd{
                 dnam{"‰"}
                 one{"{0}‰"}
                 other{"{0}‰"}
-            }
-            permyriad{
-                dnam{"پيرمائيرڊ"}
-                one{"{0}‱"}
-                other{"{0}‱"}
             }
         }
         consumption{
@@ -1300,20 +1191,10 @@ sd{
             }
         }
         energy{
-            british-thermal-unit{
-                dnam{"BTU"}
-                one{"{0} Btu"}
-                other{"{0} Btu"}
-            }
             calorie{
                 dnam{"ڪيلوري"}
                 one{"{0} ڪيلوري"}
                 other{"{0} ڪيلوري"}
-            }
-            electronvolt{
-                dnam{"اليڪٽرون وولٽ"}
-                one{"{0} eV"}
-                other{"{0} eV"}
             }
             foodcalorie{
                 dnam{"ڪيلوري"}
@@ -1339,18 +1220,6 @@ sd{
                 dnam{"ڪلو واٽ في ڪلاڪ"}
                 one{"{0} ڪلو واٽ في ڪلڪ"}
                 other{"{0} ڪلو واٽ في ڪلڪ"}
-            }
-        }
-        force{
-            newton{
-                dnam{"نيوٽن"}
-                one{"{0} N"}
-                other{"{0} N"}
-            }
-            pound-force{
-                dnam{"پائونڊ-فورس"}
-                one{"{0} lbf"}
-                other{"{0} lbf"}
             }
         }
         frequency{
@@ -1466,11 +1335,6 @@ sd{
                 one{"{0} پوائينٽون"}
                 other{"{0} پوائينٽون"}
             }
-            solar-radius{
-                dnam{"سولر راڊي"}
-                one{"{0} R☉"}
-                other{"{0} R☉"}
-            }
             yard{
                 dnam{"گز"}
                 one{"{0} گز"}
@@ -1483,27 +1347,12 @@ sd{
                 one{"{0} لڪس"}
                 other{"{0} لڪس"}
             }
-            solar-luminosity{
-                dnam{"سولر ليومينوسائيٽيز"}
-                one{"{0} L☉"}
-                other{"{0} L☉"}
-            }
         }
         mass{
             carat{
                 dnam{"ڪيرٽ"}
                 one{"{0} ڪيرٽ"}
                 other{"{0} ڪيرٽ"}
-            }
-            dalton{
-                dnam{"ڊالٽنز"}
-                one{"{0} Da"}
-                other{"{0} Da"}
-            }
-            earth-mass{
-                dnam{"ارٿ ماسز"}
-                one{"{0} M⊕"}
-                other{"{0} M⊕"}
             }
             gram{
                 dnam{"گرامَ"}
@@ -1548,11 +1397,6 @@ sd{
                 one{"{0} پائونڊ"}
                 other{"{0} پائونڊ"}
                 per{"{0} في پائونڊ"}
-            }
-            solar-mass{
-                dnam{"سولر ماسز"}
-                one{"{0} M☉"}
-                other{"{0} M☉"}
             }
             ton{
                 dnam{"ٽن"}
@@ -1607,16 +1451,6 @@ sd{
                 dnam{"مرڪري جا انچز"}
                 one{"مرڪري جا {0} انچز"}
                 other{"مرڪري جا {0} انچز"}
-            }
-            kilopascal{
-                dnam{"kPa"}
-                one{"{0} kPa"}
-                other{"{0} kPa"}
-            }
-            megapascal{
-                dnam{"MPa"}
-                one{"{0} MPa"}
-                other{"{0} MPa"}
             }
             millibar{
                 dnam{"ملي بارز"}
@@ -1678,28 +1512,11 @@ sd{
                 other{"{0} ڪيلونز"}
             }
         }
-        torque{
-            newton-meter{
-                dnam{"N⋅m"}
-                one{"{0} N⋅m"}
-                other{"{0} N⋅m"}
-            }
-            pound-foot{
-                dnam{"lbf⋅ft"}
-                one{"{0} lbf⋅ft"}
-                other{"{0} lbf⋅ft"}
-            }
-        }
         volume{
             acre-foot{
                 dnam{"ايڪڙ فٽ"}
                 one{"{0} ايڪڙ فٽ"}
                 other{"{0} ايڪڙ فٽ"}
-            }
-            barrel{
-                dnam{"بيريل"}
-                one{"{0} bbl"}
-                other{"{0} bbl"}
             }
             centiliter{
                 dnam{"سينٽي ليٽر"}
@@ -1762,11 +1579,6 @@ sd{
                 dnam{"پاڻياٺ اونس"}
                 one{"{0} پاڻياٺ اونس"}
                 other{"{0} پاڻياٺ اونس"}
-            }
-            fluid-ounce-imperial{
-                dnam{"Imp. fl oz"}
-                one{"{0} fl oz Imp."}
-                other{"{0} fl oz Imp."}
             }
             gallon{
                 dnam{"گيلن"}

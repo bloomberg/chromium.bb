@@ -5,8 +5,8 @@
  * found in the LICENSE file.
  */
 
-#include "ToolUtils.h"
 #include "gm.h"
+#include "sk_tool_utils.h"
 
 #include "SkBitmap.h"
 #include "SkFont.h"
@@ -26,13 +26,12 @@ static SkBitmap make_bmp(int w, int h) {
 
     SkScalar    radius = 3 * SkMaxScalar(wScalar, hScalar);
 
-    SkColor colors[] = {SK_ColorDKGRAY,
-                        ToolUtils::color_to_565(0xFF222255),
-                        ToolUtils::color_to_565(0xFF331133),
-                        ToolUtils::color_to_565(0xFF884422),
-                        ToolUtils::color_to_565(0xFF000022),
-                        SK_ColorWHITE,
-                        ToolUtils::color_to_565(0xFFAABBCC)};
+    SkColor     colors[] = { SK_ColorDKGRAY,
+                             sk_tool_utils::color_to_565(0xFF222255),
+                             sk_tool_utils::color_to_565(0xFF331133),
+                             sk_tool_utils::color_to_565(0xFF884422),
+                             sk_tool_utils::color_to_565(0xFF000022), SK_ColorWHITE,
+                             sk_tool_utils::color_to_565(0xFFAABBCC) };
 
     SkScalar    pos[] = {0,
                          SK_Scalar1 / 6,
@@ -50,7 +49,7 @@ static SkBitmap make_bmp(int w, int h) {
                         pt, radius,
                         colors, pos,
                         SK_ARRAY_COUNT(colors),
-                        SkTileMode::kRepeat,
+                        SkShader::kRepeat_TileMode,
                         0, &mat));
         canvas.drawRect(rect, paint);
         rect.inset(wScalar / 8, hScalar / 8);
@@ -58,7 +57,7 @@ static SkBitmap make_bmp(int w, int h) {
         mat.postScale(SK_Scalar1 / 3, SK_Scalar1 / 3);
     }
 
-    SkFont font(ToolUtils::create_portable_typeface(), wScalar / 2.2f);
+    SkFont font(sk_tool_utils::create_portable_typeface(), wScalar / 2.2f);
 
     paint.setShader(nullptr);
     paint.setColor(SK_ColorLTGRAY);
@@ -111,7 +110,8 @@ protected:
         const SkPoint center = { kRadius, kRadius };
         for (int i = 0; i < 6; ++i) {
             SkScalar angle = 2 * SK_ScalarPI * i / 6;
-            SkPoint point = { SkScalarCos(angle), SkScalarSin(angle) };
+            SkPoint point;
+            point.fY = SkScalarSinCos(angle, &point.fX);
             point.scale(kRadius);
             point = center + point;
             if (0 == i) {
@@ -150,7 +150,7 @@ protected:
         canvas->drawBitmapRect(fBmp, SkRect::MakeIWH(size.fWidth, size.fHeight), &bgPaint);
 
         constexpr char kTxt[] = "Clip Me!";
-        SkFont         font(ToolUtils::create_portable_typeface(), 23);
+        SkFont font(sk_tool_utils::create_portable_typeface(), 23);
         SkScalar textW = font.measureText(kTxt, SK_ARRAY_COUNT(kTxt)-1, kUTF8_SkTextEncoding);
         SkPaint txtPaint;
         txtPaint.setColor(SK_ColorDKGRAY);

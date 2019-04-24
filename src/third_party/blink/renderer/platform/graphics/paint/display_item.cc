@@ -11,8 +11,8 @@ namespace blink {
 struct SameSizeAsDisplayItem {
   virtual ~SameSizeAsDisplayItem() = default;  // Allocate vtable pointer.
   void* pointer;
-  IntRect rect;
-  float outset;
+  LayoutRect rect;
+  LayoutUnit outset;
   int i;
 };
 static_assert(sizeof(DisplayItem) == sizeof(SameSizeAsDisplayItem),
@@ -160,7 +160,7 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
 }
 
 WTF::String DisplayItem::AsDebugString() const {
-  auto json = std::make_unique<JSONObject>();
+  auto json = JSONObject::Create();
   PropertiesAsJSON(*json);
   return json->ToPrettyJSONString();
 }

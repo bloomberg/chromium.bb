@@ -18,7 +18,7 @@ class CertificateProvider {
   virtual ~CertificateProvider() {}
 
   virtual void GetCertificates(
-      base::OnceCallback<void(net::ClientCertIdentityList)> callback) = 0;
+      const base::Callback<void(net::ClientCertIdentityList)>& callback) = 0;
 
   virtual std::unique_ptr<CertificateProvider> Copy() = 0;
 

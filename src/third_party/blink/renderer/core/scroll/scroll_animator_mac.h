@@ -27,8 +27,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLL_ANIMATOR_MAC_H_
 
 #include <memory>
-
-#include "base/mac/scoped_nsobject.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
@@ -37,10 +35,11 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 
-@class BlinkScrollAnimationHelperDelegate;
-@class BlinkScrollbarPainterControllerDelegate;
-@class BlinkScrollbarPainterDelegate;
+OBJC_CLASS BlinkScrollAnimationHelperDelegate;
+OBJC_CLASS BlinkScrollbarPainterControllerDelegate;
+OBJC_CLASS BlinkScrollbarPainterDelegate;
 
 typedef id ScrollbarPainterController;
 
@@ -119,18 +118,16 @@ class CORE_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
   }
 
  private:
-  base::scoped_nsobject<id> scroll_animation_helper_;
-  base::scoped_nsobject<BlinkScrollAnimationHelperDelegate>
+  RetainPtr<id> scroll_animation_helper_;
+  RetainPtr<BlinkScrollAnimationHelperDelegate>
       scroll_animation_helper_delegate_;
 
-  base::scoped_nsobject<ScrollbarPainterController>
-      scrollbar_painter_controller_;
-  base::scoped_nsobject<BlinkScrollbarPainterControllerDelegate>
+  RetainPtr<ScrollbarPainterController> scrollbar_painter_controller_;
+  RetainPtr<BlinkScrollbarPainterControllerDelegate>
       scrollbar_painter_controller_delegate_;
-  base::scoped_nsobject<BlinkScrollbarPainterDelegate>
+  RetainPtr<BlinkScrollbarPainterDelegate>
       horizontal_scrollbar_painter_delegate_;
-  base::scoped_nsobject<BlinkScrollbarPainterDelegate>
-      vertical_scrollbar_painter_delegate_;
+  RetainPtr<BlinkScrollbarPainterDelegate> vertical_scrollbar_painter_delegate_;
 
   void InitialScrollbarPaintTask();
   TaskHandle initial_scrollbar_paint_task_handle_;

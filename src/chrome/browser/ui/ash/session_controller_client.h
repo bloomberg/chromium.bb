@@ -79,7 +79,6 @@ class SessionControllerClient
   void SwitchActiveUser(const AccountId& account_id) override;
   void CycleActiveUser(ash::CycleUserDirection direction) override;
   void ShowMultiProfileLogin() override;
-  void EmitAshInitialized() override;
 
   // Returns true if a multi-profile user can be added to the session or if
   // multiple users are already signed in.

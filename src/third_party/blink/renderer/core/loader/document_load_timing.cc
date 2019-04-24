@@ -95,7 +95,7 @@ void DocumentLoadTiming::MarkNavigationStart() {
 
 std::unique_ptr<TracedValue> DocumentLoadTiming::GetNavigationStartTracingData()
     const {
-  auto data = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> data = TracedValue::Create();
   data->SetString("documentLoaderURL",
                   document_loader_ ? document_loader_->Url().GetString() : "");
   data->SetBoolean("isLoadingMainFrame",

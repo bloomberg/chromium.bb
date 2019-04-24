@@ -207,7 +207,7 @@ void TestChromeBrowserState::Init() {
         static_cast<user_prefs::PrefRegistrySyncable*>(
             prefs_->DeprecatedGetPrefRegistry());
     BrowserStateDependencyManager::GetInstance()
-        ->RegisterBrowserStatePrefsForServices(pref_registry);
+        ->RegisterBrowserStatePrefsForServices(this, pref_registry);
   }
 
   BrowserStateDependencyManager::GetInstance()

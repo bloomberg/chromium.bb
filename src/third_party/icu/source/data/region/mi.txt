@@ -10,11 +10,10 @@ mi{
         IN{"Inia"}
         IT{"Itāria"}
         JP{"Hapani"}
-        MK{"Makerōnia ki te Raki"}
         NZ{"Aotearoa"}
         RU{"Rūhia"}
         US{"Hononga o Amerika"}
         ZZ{"Rohe Tē Mōhiotia"}
     }
-    Version{"2.1.49.82"}
+    Version{"2.1.44.15"}
 }

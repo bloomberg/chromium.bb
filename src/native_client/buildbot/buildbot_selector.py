@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import print_function
-
 import json
 import os
 import subprocess
@@ -368,10 +366,10 @@ def Main():
   # Set all temp directory variants to the same thing.
   env['TMPDIR'] = env['TEMP']
   env['TMP'] = env['TEMP']
-  print('TEMP=%s' % env['TEMP'])
+  print 'TEMP=%s' % env['TEMP']
   sys.stdout.flush()
 
-  print("%s runs: %s\n" % (builder, cmd))
+  print "%s runs: %s\n" % (builder, cmd)
   sys.stdout.flush()
   retcode = subprocess.call(cmd, env=env, shell=True)
   sys.exit(retcode)

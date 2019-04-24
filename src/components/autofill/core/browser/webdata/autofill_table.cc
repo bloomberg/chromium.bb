@@ -1705,8 +1705,8 @@ bool AutofillTable::ClearAllLocalData() {
 bool AutofillTable::RemoveAutofillDataModifiedBetween(
     const base::Time& delete_begin,
     const base::Time& delete_end,
-    std::vector<std::unique_ptr<AutofillProfile>>* profiles,
-    std::vector<std::unique_ptr<CreditCard>>* credit_cards) {
+    std::vector<std::string>* profile_guids,
+    std::vector<std::string>* credit_card_guids) {
   DCHECK(delete_end.is_null() || delete_begin < delete_end);
 
   time_t delete_begin_t = delete_begin.ToTimeT();
@@ -1719,20 +1719,17 @@ bool AutofillTable::RemoveAutofillDataModifiedBetween(
   s_profiles_get.BindInt64(0, delete_begin_t);
   s_profiles_get.BindInt64(1, delete_end_t);
 
-  profiles->clear();
+  profile_guids->clear();
   while (s_profiles_get.Step()) {
     std::string guid = s_profiles_get.ColumnString(0);
-    std::unique_ptr<AutofillProfile> profile = GetAutofillProfile(guid);
-    if (!profile)
-      return false;
-    profiles->push_back(std::move(profile));
+    profile_guids->push_back(guid);
   }
   if (!s_profiles_get.Succeeded())
     return false;
 
   // Remove the profile pieces.
-  for (const std::unique_ptr<AutofillProfile>& profile : *profiles) {
-    if (!RemoveAutofillProfilePieces(profile->guid(), db_))
+  for (const std::string& guid : *profile_guids) {
+    if (!RemoveAutofillProfilePieces(guid, db_))
       return false;
   }
 
@@ -1753,13 +1750,10 @@ bool AutofillTable::RemoveAutofillDataModifiedBetween(
   s_credit_cards_get.BindInt64(0, delete_begin_t);
   s_credit_cards_get.BindInt64(1, delete_end_t);
 
-  credit_cards->clear();
+  credit_card_guids->clear();
   while (s_credit_cards_get.Step()) {
     std::string guid = s_credit_cards_get.ColumnString(0);
-    std::unique_ptr<CreditCard> credit_card = GetCreditCard(guid);
-    if (!credit_card)
-      return false;
-    credit_cards->push_back(std::move(credit_card));
+    credit_card_guids->push_back(guid);
   }
   if (!s_credit_cards_get.Succeeded())
     return false;
@@ -2773,9 +2767,9 @@ bool AutofillTable::GetAllSyncEntityMetadata(
   while (s.Step()) {
     std::string storage_key = s.ColumnString(0);
     std::string serialized_metadata = s.ColumnString(1);
-    auto entity_metadata = std::make_unique<sync_pb::EntityMetadata>();
-    if (entity_metadata->ParseFromString(serialized_metadata)) {
-      metadata_batch->AddMetadata(storage_key, std::move(entity_metadata));
+    sync_pb::EntityMetadata entity_metadata;
+    if (entity_metadata.ParseFromString(serialized_metadata)) {
+      metadata_batch->AddMetadata(storage_key, entity_metadata);
     } else {
       DLOG(WARNING) << "Failed to deserialize AUTOFILL model type "
                        "sync_pb::EntityMetadata.";

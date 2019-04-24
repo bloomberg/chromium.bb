@@ -6,9 +6,13 @@
 
 #include <AppKit/AppKit.h>
 
-#include "base/mac/mac_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
+#include "third_party/blink/renderer/platform/mac/version_util_mac.h"
+
+@interface NSString (YosemiteAdditions)
+- (BOOL)containsString:(NSString*)string;
+@end
 
 namespace blink {
 
@@ -20,7 +24,7 @@ void TestSystemFontContainsString(FontSelectionValue desired_weight,
 }
 
 TEST(FontMatcherMacTest, YosemiteFontWeights) {
-  if (!base::mac::IsOS10_10())
+  if (!IsOS10_10())
     return;
 
   TestSystemFontContainsString(FontSelectionValue(100), @"-UltraLight");

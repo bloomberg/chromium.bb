@@ -16,7 +16,6 @@ include $(top_builddir)/icudefs.mk
 
 OUTPUTFILE=icupkg.inc
 MIDDLE_SO_TARGET=
-PKGDATA_TRAILING_SPACE=" "
 
 all : clean 
 	@echo GENCCODE_ASSEMBLY_TYPE=$(GENCCODE_ASSEMBLY) >> $(OUTPUTFILE)
@@ -36,6 +35,7 @@ all : clean
 	@echo ARFLAGS=$(ARFLAGS) >> $(OUTPUTFILE)
 	@echo RANLIB=$(RANLIB) >> $(OUTPUTFILE)
 	@echo INSTALL_CMD=$(INSTALL) >> $(OUTPUTFILE)
+
 
 clean : 
 	$(RMV) $(OUTPUTFILE)

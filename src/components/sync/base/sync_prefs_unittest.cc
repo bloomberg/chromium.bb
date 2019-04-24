@@ -53,13 +53,22 @@ TEST_F(SyncPrefsTest, InvalidationVersions) {
   }
 }
 
-TEST_F(SyncPrefsTest, PollInterval) {
-  EXPECT_TRUE(sync_prefs_->GetPollInterval().is_zero());
+TEST_F(SyncPrefsTest, ShortPollInterval) {
+  EXPECT_TRUE(sync_prefs_->GetShortPollInterval().is_zero());
 
-  sync_prefs_->SetPollInterval(base::TimeDelta::FromMinutes(30));
+  sync_prefs_->SetShortPollInterval(base::TimeDelta::FromMinutes(30));
 
-  EXPECT_FALSE(sync_prefs_->GetPollInterval().is_zero());
-  EXPECT_EQ(sync_prefs_->GetPollInterval().InMinutes(), 30);
+  EXPECT_FALSE(sync_prefs_->GetShortPollInterval().is_zero());
+  EXPECT_EQ(sync_prefs_->GetShortPollInterval().InMinutes(), 30);
+}
+
+TEST_F(SyncPrefsTest, LongPollInterval) {
+  EXPECT_TRUE(sync_prefs_->GetLongPollInterval().is_zero());
+
+  sync_prefs_->SetLongPollInterval(base::TimeDelta::FromMinutes(60));
+
+  EXPECT_FALSE(sync_prefs_->GetLongPollInterval().is_zero());
+  EXPECT_EQ(sync_prefs_->GetLongPollInterval().InMinutes(), 60);
 }
 
 class MockSyncPrefObserver : public SyncPrefObserver {
@@ -77,12 +86,12 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
   EXPECT_CALL(mock_sync_pref_observer, OnSyncManagedPrefChange(false));
   EXPECT_CALL(mock_sync_pref_observer, OnFirstSetupCompletePrefChange(true));
   EXPECT_CALL(mock_sync_pref_observer, OnFirstSetupCompletePrefChange(false));
-  EXPECT_CALL(mock_sync_pref_observer, OnSyncRequestedPrefChange(true));
   EXPECT_CALL(mock_sync_pref_observer, OnSyncRequestedPrefChange(false));
+  EXPECT_CALL(mock_sync_pref_observer, OnSyncRequestedPrefChange(true));
 
   ASSERT_FALSE(sync_prefs_->IsManaged());
   ASSERT_FALSE(sync_prefs_->IsFirstSetupComplete());
-  ASSERT_FALSE(sync_prefs_->IsSyncRequested());
+  ASSERT_TRUE(sync_prefs_->IsSyncRequested());
 
   sync_prefs_->AddSyncPrefObserver(&mock_sync_pref_observer);
 
@@ -98,10 +107,10 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
   sync_prefs_->ClearPreferences();
   EXPECT_FALSE(sync_prefs_->IsFirstSetupComplete());
 
-  sync_prefs_->SetSyncRequested(true);
-  EXPECT_TRUE(sync_prefs_->IsSyncRequested());
   sync_prefs_->SetSyncRequested(false);
   EXPECT_FALSE(sync_prefs_->IsSyncRequested());
+  sync_prefs_->SetSyncRequested(true);
+  EXPECT_TRUE(sync_prefs_->IsSyncRequested());
 
   sync_prefs_->RemoveSyncPrefObserver(&mock_sync_pref_observer);
 }
@@ -127,7 +136,7 @@ TEST_F(SyncPrefsTest, ClearPreferences) {
 }
 
 // -----------------------------------------------------------------------------
-// Test that manipulate selected types.
+// Test that manipulate preferred data types.
 // -----------------------------------------------------------------------------
 
 TEST_F(SyncPrefsTest, Basic) {
@@ -135,11 +144,11 @@ TEST_F(SyncPrefsTest, Basic) {
   sync_prefs_->SetFirstSetupComplete();
   EXPECT_TRUE(sync_prefs_->IsFirstSetupComplete());
 
-  EXPECT_FALSE(sync_prefs_->IsSyncRequested());
-  sync_prefs_->SetSyncRequested(true);
   EXPECT_TRUE(sync_prefs_->IsSyncRequested());
   sync_prefs_->SetSyncRequested(false);
   EXPECT_FALSE(sync_prefs_->IsSyncRequested());
+  sync_prefs_->SetSyncRequested(true);
+  EXPECT_TRUE(sync_prefs_->IsSyncRequested());
 
   EXPECT_EQ(base::Time(), sync_prefs_->GetLastSyncedTime());
   const base::Time& now = base::Time::Now();
@@ -147,15 +156,14 @@ TEST_F(SyncPrefsTest, Basic) {
   EXPECT_EQ(now, sync_prefs_->GetLastSyncedTime());
 
   EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
-  sync_prefs_->SetSelectedTypes(
+  sync_prefs_->SetDataTypesConfiguration(
       /*keep_everything_synced=*/false,
-      /*registered_types=*/UserSelectableTypeSet::All(),
-      /*selected_types=*/UserSelectableTypeSet::All());
+      /*registered_types=*/UserTypes(),
+      /*preferred_types=*/UserSelectableTypes());
   EXPECT_FALSE(sync_prefs_->HasKeepEverythingSynced());
-  sync_prefs_->SetSelectedTypes(
-      /*keep_everything_synced=*/true,
-      /*registered_types=*/UserSelectableTypeSet::All(),
-      /*selected_types=*/UserSelectableTypeSet());
+  sync_prefs_->SetDataTypesConfiguration(/*keep_everything_synced=*/true,
+                                         /*registered_types=*/UserTypes(),
+                                         /*preferred_types=*/ModelTypeSet());
   EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
 
   EXPECT_TRUE(sync_prefs_->GetEncryptionBootstrapToken().empty());
@@ -163,33 +171,163 @@ TEST_F(SyncPrefsTest, Basic) {
   EXPECT_EQ("token", sync_prefs_->GetEncryptionBootstrapToken());
 }
 
-TEST_F(SyncPrefsTest, SelectedTypesKeepEverythingSynced) {
+TEST_F(SyncPrefsTest, DeleteDirectivesAndProxyTabsMigration) {
+  // Simulate an upgrade to delete directives + proxy tabs support. None of the
+  // new types or their pref group types should be registering, ensuring they
+  // don't have pref values.
+  ModelTypeSet registered_types = UserTypes();
+  registered_types.Remove(PROXY_TABS);
+  registered_types.Remove(TYPED_URLS);
+  registered_types.Remove(SESSIONS);
+  registered_types.Remove(HISTORY_DELETE_DIRECTIVES);
+
+  // Enable all other types.
+  ModelTypeSet initial_preferred_types = UserSelectableTypes();
+  initial_preferred_types.RetainAll(registered_types);
+  sync_prefs_->SetDataTypesConfiguration(/*keep_everything_synced=*/false,
+                                         registered_types,
+                                         initial_preferred_types);
+
+  // Manually enable typed urls (to simulate the old world) and perform the
+  // migration to check it doesn't affect the proxy tab preference value.
+  pref_service_.SetBoolean(prefs::kSyncTypedUrls, true);
+  // TODO(crbug.com/906611): now we make an extra assumption that the migration
+  // can be called a second time and it will do the real migration if during the
+  // first call this migration wasn't needed. Maybe consider splitting this
+  // test?
+  MigrateSessionsToProxyTabsPrefs(&pref_service_);
+
+  // Proxy tabs should not be enabled (since sessions wasn't), but history
+  // delete directives should (since typed urls was).
+  ModelTypeSet preferred_types =
+      sync_prefs_->GetPreferredDataTypes(UserTypes());
+  EXPECT_FALSE(preferred_types.Has(PROXY_TABS));
+  EXPECT_TRUE(preferred_types.Has(HISTORY_DELETE_DIRECTIVES));
+
+  // Now manually enable sessions and perform the migration, which should result
+  // in proxy tabs also being enabled. Also, manually disable typed urls, which
+  // should mean that history delete directives are not enabled.
+  pref_service_.SetBoolean(prefs::kSyncTypedUrls, false);
+  pref_service_.SetBoolean(prefs::kSyncSessions, true);
+  MigrateSessionsToProxyTabsPrefs(&pref_service_);
+
+  preferred_types = sync_prefs_->GetPreferredDataTypes(UserTypes());
+  EXPECT_TRUE(preferred_types.Has(PROXY_TABS));
+  EXPECT_FALSE(preferred_types.Has(HISTORY_DELETE_DIRECTIVES));
+}
+
+TEST_F(SyncPrefsTest, PreferredTypesKeepEverythingSynced) {
   EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
 
-  EXPECT_EQ(UserSelectableTypeSet::All(), sync_prefs_->GetSelectedTypes());
-  for (UserSelectableType type : UserSelectableTypeSet::All()) {
-    sync_prefs_->SetSelectedTypes(
-        /*keep_everything_synced=*/true,
-        /*registered_types=*/UserSelectableTypeSet::All(),
-        /*selected_types=*/{type});
-    EXPECT_EQ(UserSelectableTypeSet::All(), sync_prefs_->GetSelectedTypes());
+  const ModelTypeSet user_types = UserTypes();
+  EXPECT_EQ(user_types, sync_prefs_->GetPreferredDataTypes(user_types));
+  const ModelTypeSet user_visible_types = UserSelectableTypes();
+  for (ModelType type : user_visible_types) {
+    ModelTypeSet preferred_types;
+    preferred_types.Put(type);
+    sync_prefs_->SetDataTypesConfiguration(/*keep_everything_synced=*/true,
+                                           /*registered_types=*/user_types,
+                                           /*preferred_types=*/preferred_types);
+    EXPECT_EQ(user_types, sync_prefs_->GetPreferredDataTypes(user_types));
   }
 }
 
-TEST_F(SyncPrefsTest, SelectedTypesNotKeepEverythingSynced) {
-  sync_prefs_->SetSelectedTypes(
+TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
+  sync_prefs_->SetDataTypesConfiguration(
       /*keep_everything_synced=*/false,
-      /*registered_types=*/UserSelectableTypeSet::All(),
-      /*selected_types=*/UserSelectableTypeSet());
+      /*registered_types=*/UserTypes(),
+      /*preferred_types=*/ModelTypeSet());
 
-  ASSERT_NE(UserSelectableTypeSet::All(), sync_prefs_->GetSelectedTypes());
-  for (UserSelectableType type : UserSelectableTypeSet::All()) {
-    sync_prefs_->SetSelectedTypes(
-        /*keep_everything_synced=*/false,
-        /*registered_types=*/UserSelectableTypeSet::All(),
-        /*selected_types=*/{type});
-    EXPECT_EQ(UserSelectableTypeSet{type}, sync_prefs_->GetSelectedTypes());
+  const ModelTypeSet user_types = UserTypes();
+  ASSERT_NE(user_types, sync_prefs_->GetPreferredDataTypes(user_types));
+  const ModelTypeSet user_visible_types = UserSelectableTypes();
+  for (ModelType type : user_visible_types) {
+    ModelTypeSet preferred_types;
+    preferred_types.Put(type);
+    ModelTypeSet expected_preferred_types(preferred_types);
+    if (type == AUTOFILL) {
+      expected_preferred_types.Put(AUTOFILL_PROFILE);
+      expected_preferred_types.Put(AUTOFILL_WALLET_DATA);
+      expected_preferred_types.Put(AUTOFILL_WALLET_METADATA);
+    }
+    if (type == PREFERENCES) {
+      expected_preferred_types.Put(DICTIONARY);
+      expected_preferred_types.Put(PRIORITY_PREFERENCES);
+      expected_preferred_types.Put(SEARCH_ENGINES);
+    }
+    if (type == APPS) {
+      expected_preferred_types.Put(APP_LIST);
+      expected_preferred_types.Put(APP_SETTINGS);
+      expected_preferred_types.Put(ARC_PACKAGE);
+    }
+    if (type == EXTENSIONS) {
+      expected_preferred_types.Put(EXTENSION_SETTINGS);
+    }
+    if (type == TYPED_URLS) {
+      expected_preferred_types.Put(HISTORY_DELETE_DIRECTIVES);
+      expected_preferred_types.Put(SESSIONS);
+      expected_preferred_types.Put(FAVICON_IMAGES);
+      expected_preferred_types.Put(FAVICON_TRACKING);
+      expected_preferred_types.Put(USER_EVENTS);
+    }
+    if (type == PROXY_TABS) {
+      expected_preferred_types.Put(SESSIONS);
+      expected_preferred_types.Put(FAVICON_IMAGES);
+      expected_preferred_types.Put(FAVICON_TRACKING);
+    }
+
+    expected_preferred_types.PutAll(AlwaysPreferredUserTypes());
+
+    sync_prefs_->SetDataTypesConfiguration(/*keep_everything_synced=*/false,
+                                           /*registered_types=*/user_types,
+                                           /*preferred_types=*/preferred_types);
+    EXPECT_EQ(expected_preferred_types,
+              sync_prefs_->GetPreferredDataTypes(user_types));
   }
+}
+
+// Device info should always be enabled.
+TEST_F(SyncPrefsTest, DeviceInfo) {
+  EXPECT_TRUE(sync_prefs_->GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
+  sync_prefs_->SetDataTypesConfiguration(
+      /*keep_everything_synced=*/true,
+      /*registered_types=*/UserTypes(),
+      /*preferred_types=*/UserSelectableTypes());
+  EXPECT_TRUE(sync_prefs_->GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
+  sync_prefs_->SetDataTypesConfiguration(
+      /*keep_everything_synced=*/false,
+      /*registered_types=*/UserTypes(),
+      /*preferred_types=*/UserSelectableTypes());
+  EXPECT_TRUE(sync_prefs_->GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
+  sync_prefs_->SetDataTypesConfiguration(
+      /*keep_everything_synced=*/false,
+      /*registered_types=*/ModelTypeSet(DEVICE_INFO),
+      /*preferred_types=*/ModelTypeSet());
+  EXPECT_TRUE(sync_prefs_->GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
+}
+
+// User Consents should always be enabled.
+TEST_F(SyncPrefsTest, UserConsents) {
+  EXPECT_TRUE(
+      sync_prefs_->GetPreferredDataTypes(UserTypes()).Has(USER_CONSENTS));
+  sync_prefs_->SetDataTypesConfiguration(
+      /*keep_everything_synced=*/true,
+      /*registered_types=*/UserTypes(),
+      /*preferred_types=*/UserSelectableTypes());
+  EXPECT_TRUE(
+      sync_prefs_->GetPreferredDataTypes(UserTypes()).Has(USER_CONSENTS));
+  sync_prefs_->SetDataTypesConfiguration(
+      /*keep_everything_synced=*/false,
+      /*registered_types=*/UserTypes(),
+      /*preferred_types=*/UserSelectableTypes());
+  EXPECT_TRUE(
+      sync_prefs_->GetPreferredDataTypes(UserTypes()).Has(USER_CONSENTS));
+  sync_prefs_->SetDataTypesConfiguration(
+      /*keep_everything_synced=*/false,
+      /*registered_types=*/ModelTypeSet(USER_CONSENTS),
+      /*preferred_types=*/ModelTypeSet());
+  EXPECT_TRUE(
+      sync_prefs_->GetPreferredDataTypes(UserTypes()).Has(USER_CONSENTS));
 }
 
 }  // namespace

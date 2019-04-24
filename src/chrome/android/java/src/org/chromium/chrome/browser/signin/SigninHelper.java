@@ -18,7 +18,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
@@ -142,10 +141,8 @@ public class SigninHelper {
             return;
         }
 
-        boolean mice_enabled =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY);
         Account syncAccount = mChromeSigninController.getSignedInUser();
-        if (syncAccount == null && !mice_enabled) {
+        if (syncAccount == null) {
             return;
         }
 
@@ -157,7 +154,7 @@ public class SigninHelper {
         }
 
         // Always check for account deleted.
-        if (syncAccount != null && !accountExists(syncAccount)) {
+        if (!accountExists(syncAccount)) {
             // It is possible that Chrome got to this point without account
             // rename notification. Let us signout before doing a rename.
             AsyncTask<Void> task = new AsyncTask<Void>() {
@@ -186,7 +183,7 @@ public class SigninHelper {
         if (accountsChanged) {
             // Account details have changed so inform the token service that credentials
             // should now be available.
-            mOAuth2TokenService.updateAccountList();
+            mOAuth2TokenService.validateAccounts(false);
         }
 
         if (mProfileSyncService != null && AndroidSyncSettings.get().isSyncEnabled()) {

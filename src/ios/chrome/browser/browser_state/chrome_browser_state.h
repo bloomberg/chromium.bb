@@ -121,8 +121,6 @@ class ChromeBrowserState : public web::BrowserState {
 
   // web::BrowserState
   net::URLRequestContextGetter* GetRequestContext() override;
-  void UpdateCorsExemptHeader(
-      network::mojom::NetworkContextParams* params) override;
 
  protected:
   explicit ChromeBrowserState(

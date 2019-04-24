@@ -18,7 +18,6 @@
 #include "api/video/video_codec_constants.h"
 #include "api/video/video_codec_type.h"
 #include "api/video/video_content_type.h"
-#include "api/video/video_frame_type.h"
 #include "api/video/video_rotation.h"
 #include "api/video/video_timing.h"
 #include "common_types.h"  // NOLINT(build/include)
@@ -32,6 +31,12 @@ namespace webrtc {
 // cleaned up. Direct use of its members is strongly discouraged.
 class RTC_EXPORT EncodedImage {
  public:
+  static const size_t kBufferPaddingBytesH264;
+
+  // Some decoders require encoded image buffers to be padded with a small
+  // number of additional bytes (due to over-reading byte readers).
+  static size_t GetBufferPaddingBytes(VideoCodecType codec_type);
+
   EncodedImage();
   EncodedImage(EncodedImage&&);
   // Discouraged: potentially expensive.
@@ -110,7 +115,7 @@ class RTC_EXPORT EncodedImage {
   // NTP time of the capture time in local timebase in milliseconds.
   int64_t ntp_time_ms_ = 0;
   int64_t capture_time_ms_ = 0;
-  VideoFrameType _frameType = VideoFrameType::kVideoFrameDelta;
+  FrameType _frameType = kVideoFrameDelta;
   VideoRotation rotation_ = kVideoRotation_0;
   VideoContentType content_type_ = VideoContentType::UNSPECIFIED;
   bool _completeFrame = false;

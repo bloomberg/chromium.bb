@@ -20,11 +20,9 @@ bool IsLineBreak(const NGPaintFragmentTraversalContext& fragment) {
   const NGPhysicalFragment& physical_fragment =
       fragment.GetFragment()->PhysicalFragment();
   DCHECK(physical_fragment.IsInline());
-  auto* physical_text_fragment =
-      DynamicTo<NGPhysicalTextFragment>(physical_fragment);
-  if (!physical_text_fragment)
+  if (!physical_fragment.IsText())
     return false;
-  return physical_text_fragment->IsLineBreak();
+  return ToNGPhysicalTextFragment(physical_fragment).IsLineBreak();
 }
 
 bool IsInlineLeaf(const NGPaintFragmentTraversalContext& fragment) {

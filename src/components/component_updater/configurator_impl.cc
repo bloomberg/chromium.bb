@@ -34,6 +34,13 @@ namespace {
 const int kDelayOneMinute = 60;
 const int kDelayOneHour = kDelayOneMinute * 60;
 
+// Enables using JSON as an update client protocol encoding instead of XML.
+//
+// The JSON implementation is available behind a flag:
+// --enable-features=UpdateClientUseJSON
+const base::Feature kFeatureUpdateClientUseJSON{
+    "UpdateClientUseJSON", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace
 
 ConfiguratorImpl::ConfiguratorImpl(
@@ -76,8 +83,12 @@ std::vector<GURL> ConfiguratorImpl::UpdateUrl() const {
   if (url_source_override_.is_valid())
     return {GURL(url_source_override_)};
 
-  std::vector<GURL> urls{GURL(kUpdaterJSONDefaultUrl),
-                         GURL(kUpdaterJSONFallbackUrl)};
+  std::vector<GURL> urls =
+      base::FeatureList::IsEnabled(kFeatureUpdateClientUseJSON)
+          ? std::vector<GURL>{GURL(kUpdaterJSONDefaultUrl),
+                              GURL(kUpdaterJSONFallbackUrl)}
+          : std::vector<GURL>{GURL(kUpdaterDefaultUrl),
+                              GURL(kUpdaterFallbackUrl)};
   if (require_encryption_)
     update_client::RemoveUnsecureUrls(&urls);
 
@@ -137,7 +148,9 @@ std::string ConfiguratorImpl::GetAppGuid() const {
 
 std::unique_ptr<update_client::ProtocolHandlerFactory>
 ConfiguratorImpl::GetProtocolHandlerFactory() const {
-  return std::make_unique<update_client::ProtocolHandlerFactoryJSON>();
+  if (base::FeatureList::IsEnabled(kFeatureUpdateClientUseJSON))
+    return std::make_unique<update_client::ProtocolHandlerFactoryJSON>();
+  return std::make_unique<update_client::ProtocolHandlerFactoryXml>();
 }
 
 update_client::RecoveryCRXElevator ConfiguratorImpl::GetRecoveryCRXElevator()

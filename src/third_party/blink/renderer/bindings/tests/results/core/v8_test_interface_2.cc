@@ -10,14 +10,11 @@
 // clang-format off
 #include "third_party/blink/renderer/bindings/tests/results/core/v8_test_interface_2.h"
 
-#include <algorithm>
-
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_configuration.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_for_each_iterator_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_empty.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -28,7 +25,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/wtf/get_ptr.h"
 
 namespace blink {
@@ -273,10 +269,10 @@ static void ForEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  V8ForEachIteratorCallback* callback;
+  ScriptValue callback;
   ScriptValue this_arg;
   if (info[0]->IsFunction()) {
-    callback = V8ForEachIteratorCallback::Create(info[0].As<v8::Function>());
+    callback = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
   } else {
     exception_state.ThrowTypeError("The callback provided as parameter 1 is not a function.");
     return;
@@ -817,7 +813,7 @@ void V8TestInterface2::InstallRuntimeEnabledFeaturesOnTemplate(
   ALLOW_UNUSED_LOCAL(prototype_template);
 
   // Register IDL constants, attributes and operations.
-  if (RuntimeEnabledFeatures::RuntimeFeatureEnabled()) {
+  if (RuntimeEnabledFeatures::FeatureNameEnabled()) {
     static constexpr V8DOMConfiguration::ConstantConfiguration kConfigurations[] = {
         {"CONST_VALUE_1", V8DOMConfiguration::kConstantTypeUnsignedShort, static_cast<int>(1)},
     };

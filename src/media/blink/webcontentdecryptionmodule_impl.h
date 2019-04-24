@@ -9,12 +9,10 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "media/base/cdm_config.h"
 #include "media/blink/media_blink_export.h"
 #include "third_party/blink/public/platform/web_content_decryption_module.h"
 #include "third_party/blink/public/platform/web_content_decryption_module_result.h"
@@ -54,10 +52,6 @@ class MEDIA_BLINK_EXPORT WebContentDecryptionModuleImpl
       blink::WebContentDecryptionModuleResult result) override;
 
   std::unique_ptr<CdmContextRef> GetCdmContextRef();
-
-  std::string GetKeySystem() const;
-
-  CdmConfig GetCdmConfig() const;
 
  private:
   friend CdmSessionAdapter;

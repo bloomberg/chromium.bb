@@ -181,29 +181,27 @@ void ProfileAuthDataTest::PopulateBrowserContext(
       [&](const net::CookieList& cookies) { run_loop.Quit(); }));
   run_loop.Run();
 
-  net::CookieOptions options;
-  options.set_include_httponly();
   cookies->SetCanonicalCookie(
       *net::CanonicalCookie::CreateSanitizedCookie(
           GURL(kSAMLIdPCookieURL), kCookieName, cookie_value,
           kSAMLIdPCookieDomainWithWildcard, std::string(), base::Time(),
           base::Time(), base::Time(), true, false,
-          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT),
-      "https", options, base::DoNothing());
+          net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT),
+      "https", true /*modify_http_only*/, base::DoNothing());
 
   cookies->SetCanonicalCookie(
       *net::CanonicalCookie::CreateSanitizedCookie(
           GURL(kSAMLIdPCookieURL), kCookieName, cookie_value, std::string(),
           std::string(), base::Time(), base::Time(), base::Time(), true, false,
-          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT),
-      "https", options, base::DoNothing());
+          net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT),
+      "https", true /*modify_http_only*/, base::DoNothing());
 
   cookies->SetCanonicalCookie(
       *net::CanonicalCookie::CreateSanitizedCookie(
           GURL(kGAIACookieURL), kCookieName, cookie_value, std::string(),
           std::string(), base::Time(), base::Time(), base::Time(), true, false,
-          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT),
-      "https", options, base::DoNothing());
+          net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT),
+      "https", true /*modify_http_only*/, base::DoNothing());
 }
 
 net::URLRequestContext* ProfileAuthDataTest::GetRequestContext(

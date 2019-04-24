@@ -25,13 +25,6 @@ enum class ProtoDbType {
   USAGE_STATS_WEBSITE_EVENT = 5,
   USAGE_STATS_SUSPENSION = 6,
   USAGE_STATS_TOKEN_MAPPING = 7,
-  DOM_DISTILLER_STORE = 8,
-  DOWNLOAD_STORE = 9,
-  CACHED_IMAGE_METADATA_STORE = 10,
-  FEED_CONTENT_DATABASE = 11,
-  FEED_JOURNAL_DATABASE = 12,
-  REMOTE_SUGGESTIONS_DATABASE = 13,
-  REMOTE_SUGGESTIONS_IMAGE_DATABASE = 14,
 
   LAST,
 };
@@ -50,12 +43,7 @@ constexpr ProtoDbType kObsoleteSharedProtoDbTypeClients[] = {
 
 class SharedProtoDatabaseClientList {
  public:
-  // Determines if the given |db_type| should use a unique or shared DB.
   static bool ShouldUseSharedDB(ProtoDbType db_type);
-
-  // Converts a ProtoDbType to a string, which is used for UMA metrics and field
-  // trials. The strings returned should match the strings on histograms.xml
-  static std::string ProtoDbTypeToString(ProtoDbType db_type);
 };
 
 }  // namespace leveldb_proto

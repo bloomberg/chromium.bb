@@ -10,7 +10,6 @@
 namespace views {
 
 class View;
-struct ViewHierarchyChangedDetails;
 
 // ViewObserver is used to observe changes to a View. The first argument to all
 // ViewObserver functions is the View the observer was added to.
@@ -22,22 +21,18 @@ class VIEWS_EXPORT ViewObserver {
   // Called when |child| is removed as a child of |observed_view|.
   virtual void OnChildViewRemoved(View* observed_view, View* child) {}
 
-  // Called when |observed_view|, an ancestor, or its Widget has its visibility
-  // changed. |starting_view| is who |View::SetVisible()| was called on (or null
-  // if the Widget visibility changed).
-  virtual void OnViewVisibilityChanged(View* observed_view,
-                                       View* starting_view) {}
+  // Called when View::SetVisible() is called with a new value. See
+  // View::IsDrawn() for details on how visibility and drawn differ.
+  virtual void OnViewVisibilityChanged(View* observed_view) {}
+
+  // Called when View::SetEnabled() is called with a new value.
+  virtual void OnViewEnabledChanged(View* observed_view) {}
 
   // Called from View::PreferredSizeChanged().
   virtual void OnViewPreferredSizeChanged(View* observed_view) {}
 
   // Called when the bounds of |observed_view| change.
   virtual void OnViewBoundsChanged(View* observed_view) {}
-
-  // Called when View::ViewHierarchyChanged() is called.
-  virtual void OnViewHierarchyChanged(
-      View* observed_view,
-      const ViewHierarchyChangedDetails& details) {}
 
   // Called when a child is reordered among its siblings, specifically
   // View::ReorderChildView() is called on |observed_view|.
@@ -56,7 +51,7 @@ class VIEWS_EXPORT ViewObserver {
   virtual void OnViewBlurred(View* observed_view) {}
 
  protected:
-  virtual ~ViewObserver() = default;
+  virtual ~ViewObserver() {}
 };
 
 }  // namespace views

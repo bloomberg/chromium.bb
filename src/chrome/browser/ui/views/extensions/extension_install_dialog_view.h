@@ -65,7 +65,7 @@ class ExtensionInstallDialogView : public views::BubbleDialogDelegateView,
   bool ShouldShowCloseButton() const override;
 
   // views::WidgetDelegate:
-  ax::mojom::Role GetAccessibleWindowRole() override;
+  ax::mojom::Role GetAccessibleWindowRole() const override;
   base::string16 GetAccessibleWindowTitle() const override;
   ui::ModalType GetModalType() const override;
 

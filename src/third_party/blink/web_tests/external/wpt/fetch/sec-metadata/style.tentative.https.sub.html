@@ -4,20 +4,17 @@
 <script src=/resources/testharness.js></script>
 <script src=/resources/testharnessreport.js></script>
 <script src=/fetch/sec-metadata/resources/helper.js></script>
-<script src=/common/utils.js></script>
 <body></body>
 <script>
-  let nonce = token();
-
   promise_test(t => {
     return new Promise((resolve, reject) => {
-      let key = "style-same-origin" + nonce;
+      let key = "style-same-origin";
 
       let e = document.createElement('link');
       e.rel = "stylesheet";
       e.href = "https://{{host}}:{{ports[https][0]}}/fetch/sec-metadata/resources/record-header.py?file=" + key;
       e.onload = e => {
-        let expected = {"dest":"style", "site":"same-origin", "user":"", "mode": "no-cors"};
+        let expected = {"dest":"style", "site":"same-origin", "user":"?F", "mode": "no-cors"};
         fetch("/fetch/sec-metadata/resources/record-header.py?retrieve=true&file=" + key)
           .then(response => response.text())
           .then(text => assert_header_equals(text, expected))
@@ -31,13 +28,13 @@
 
   promise_test(t => {
     return new Promise((resolve, reject) => {
-      let key = "style-same-site" + nonce;
+      let key = "style-same-site";
 
       let e = document.createElement('link');
       e.rel = "stylesheet";
       e.href = "https://{{hosts[][www]}}:{{ports[https][0]}}/fetch/sec-metadata/resources/record-header.py?file=" + key;
       e.onload = e => {
-        let expected = {"dest":"style", "site":"same-site", "user":"", "mode": "no-cors"};
+        let expected = {"dest":"style", "site":"same-site", "user":"?F", "mode": "no-cors"};
         fetch("/fetch/sec-metadata/resources/record-header.py?retrieve=true&file=" + key)
           .then(response => response.text())
           .then(text => assert_header_equals(text, expected))
@@ -51,13 +48,13 @@
 
   promise_test(t => {
     return new Promise((resolve, reject) => {
-      let key = "style-cross-site" + nonce;
+      let key = "style-cross-site";
 
       let e = document.createElement('link');
       e.rel = "stylesheet";
       e.href = "https://{{hosts[alt][www]}}:{{ports[https][0]}}/fetch/sec-metadata/resources/record-header.py?file=" + key;
       e.onload = e => {
-        let expected = {"dest":"style", "site":"cross-site", "user":"", "mode": "no-cors"};
+        let expected = {"dest":"style", "site":"cross-site", "user":"?F", "mode": "no-cors"};
         fetch("/fetch/sec-metadata/resources/record-header.py?retrieve=true&file=" + key)
           .then(response => response.text())
           .then(text => assert_header_equals(text, expected))
@@ -71,14 +68,14 @@
 
   promise_test(t => {
     return new Promise((resolve, reject) => {
-      let key = "style-same-origin-cors" + nonce;
+      let key = "style-same-origin";
 
       let e = document.createElement('link');
       e.rel = "stylesheet";
       e.href = "https://{{host}}:{{ports[https][0]}}/fetch/sec-metadata/resources/record-header.py?file=" + key;
       e.crossOrigin = "anonymous";
       e.onload = e => {
-        let expected = {"dest":"style", "site":"same-origin", "user":"", "mode": "cors"};
+        let expected = {"dest":"style", "site":"same-origin", "user":"?F", "mode": "cors"};
         fetch("/fetch/sec-metadata/resources/record-header.py?retrieve=true&file=" + key)
           .then(response => response.text())
           .then(text => assert_header_equals(text, expected))

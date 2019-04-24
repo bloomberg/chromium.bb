@@ -145,8 +145,7 @@ Polymer({
         'prefs.' + preferredLanguagesPrefName + '.value, languages)',
     'spellCheckDictionariesPrefChanged_(' +
         'prefs.spellcheck.dictionaries.value.*, ' +
-        'prefs.spellcheck.forced_dictionaries.value.*, ' +
-        'prefs.spellcheck.blacklisted_dictionaries.value.*, languages)',
+        'prefs.spellcheck.forced_dictionaries.value.*, languages)',
     'translateLanguagesPrefChanged_(' +
         'prefs.translate_blocked_languages.value.*, languages)',
     'updateRemovableLanguages_(' +
@@ -328,20 +327,7 @@ Polymer({
       this.languageSettingsPrivate_.getSpellcheckDictionaryStatuses(
           this.boundOnSpellcheckDictionariesChanged_);
     }
-
-    // Recreate the set of spellcheck forced languages in case a forced
-    // spellcheck language was removed from the languages list.
-    this.set(
-        'languages.forcedSpellCheckLanguages',
-        this.getForcedSpellCheckLanguages_(this.languages.enabled));
     // </if>
-
-    // Update translate target language.
-    new Promise(resolve => {
-      this.languageSettingsPrivate_.getTranslateTargetLanguage(resolve);
-    }).then(result => {
-      this.set('languages.translateTarget', result);
-    });
   },
 
   /**
@@ -358,20 +344,14 @@ Polymer({
     const spellCheckForcedSet =
         this.makeSetFromArray_(/** @type {!Array<string>} */ (
             this.getPref('spellcheck.forced_dictionaries').value));
-    const spellCheckBlacklistedSet =
-        this.makeSetFromArray_(/** @type {!Array<string>} */ (
-            this.getPref('spellcheck.blacklisted_dictionaries').value));
-
     for (let i = 0; i < this.languages.enabled.length; i++) {
       const languageState = this.languages.enabled[i];
-      const isUser = spellCheckSet.has(languageState.language.code);
-      const isForced = spellCheckForcedSet.has(languageState.language.code);
-      const isBlacklisted =
-          spellCheckBlacklistedSet.has(languageState.language.code);
       this.set(
           `languages.enabled.${i}.spellCheckEnabled`,
-          (isUser && !isBlacklisted) || isForced);
-      this.set(`languages.enabled.${i}.isManaged`, isForced || isBlacklisted);
+          spellCheckSet.has(languageState.language.code));
+      this.set(
+          `languages.enabled.${i}.isManaged`,
+          spellCheckForcedSet.has(languageState.language.code));
     }
 
     this.set(
@@ -381,7 +361,7 @@ Polymer({
 
   /**
    * Returns an array of language codes for the spellcheck languages that are
-   * force-enabled by policy, but that are not "enabled" languages.
+   * managed by policy, but that are not "enabled" languages.
    * @param {!Array<!LanguageState>} enabledLanguages An array of enabled
    *     languages.
    * @return {!Array<!string>}
@@ -400,7 +380,6 @@ Polymer({
         forcedLanguages.push({
           language: this.supportedLanguageMap_.get(code),
           isManaged: true,
-          spellCheckEnabled: true,
           downloadDictionaryFailureCount: 0,
         });
       }
@@ -548,15 +527,11 @@ Polymer({
     const enabledLanguageCodes = pref.value.split(',');
     const spellCheckPref = this.getPref('spellcheck.dictionaries');
     const spellCheckForcedPref = this.getPref('spellcheck.forced_dictionaries');
-    const spellCheckBlacklistedPref =
-        this.getPref('spellcheck.blacklisted_dictionaries');
     const spellCheckSet = this.makeSetFromArray_(
         /** @type {!Array<string>} */ (
             spellCheckPref.value.concat(spellCheckForcedPref.value)));
     const spellCheckForcedSet = this.makeSetFromArray_(
         /** @type {!Array<string>} */ (spellCheckForcedPref.value));
-    const spellCheckBlacklistedSet = this.makeSetFromArray_(
-        /** @type {!Array<string>} */ (spellCheckBlacklistedPref.value));
 
     const translateBlockedPref = this.getPref('translate_blocked_languages');
     const translateBlockedSet = this.makeSetFromArray_(
@@ -572,14 +547,11 @@ Polymer({
       }
       const languageState = /** @type {LanguageState} */ ({});
       languageState.language = language;
-      languageState.spellCheckEnabled =
-          spellCheckSet.has(code) && !spellCheckBlacklistedSet.has(code) ||
-          spellCheckForcedSet.has(code);
+      languageState.spellCheckEnabled = spellCheckSet.has(code);
       languageState.translateEnabled = this.isTranslateEnabled_(
           code, !!language.supportsTranslate, translateBlockedSet,
           translateTarget, prospectiveUILanguage);
-      languageState.isManaged =
-          spellCheckForcedSet.has(code) || spellCheckBlacklistedSet.has(code);
+      languageState.isManaged = spellCheckForcedSet.has(code);
       languageState.downloadDictionaryFailureCount = 0;
       enabledLanguageStates.push(languageState);
     }

@@ -12,4 +12,6 @@ WebRTCStats::~WebRTCStats() = default;
 
 WebRTCStatsMember::~WebRTCStatsMember() = default;
 
+WebRTCStatsReportCallback::~WebRTCStatsReportCallback() = default;
+
 }  // namespace blink

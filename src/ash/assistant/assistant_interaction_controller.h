@@ -99,7 +99,6 @@ class AssistantInteractionController
   void OnSpeechRecognitionFinalResult(const std::string& final_result) override;
   void OnSpeechLevelUpdated(float speech_level) override;
   void OnTtsStarted(bool due_to_error) override;
-  void OnWaitStarted() override;
 
   // AssistantViewDelegateObserver:
   void OnDialogPlateButtonPressed(AssistantButtonId id) override;

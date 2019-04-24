@@ -93,8 +93,7 @@ class GeoLanguageProviderTest : public testing::Test {
   TestingPrefServiceSimple local_state_;
 };
 
-TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguages_OldGeo) {
-  scoped_feature_list_.InitAndDisableFeature(kImprovedGeoLanguageData);
+TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguages) {
   // Setup a random place in Madhya Pradesh, India.
   MoveToLocation(23.0, 80.0);
   StartGeoLanguageProvider();
@@ -107,7 +106,8 @@ TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguages_OldGeo) {
   EXPECT_EQ(expected_langs, GetCachedLanguages());
 }
 
-TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguages_India) {
+TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguagesImproved_India) {
+  scoped_feature_list_.InitAndEnableFeature(kImprovedGeoLanguageData);
   // Setup a random place in West Bengal, India.
   MoveToLocation(23.0, 85.7);
   StartGeoLanguageProvider();
@@ -117,7 +117,8 @@ TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguages_India) {
   EXPECT_EQ(expected_langs, GetCurrentGeoLanguages());
 }
 
-TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguages_OutsideIndia) {
+TEST_F(GeoLanguageProviderTest, GetCurrentGeoLanguagesImproved_OutsideIndia) {
+  scoped_feature_list_.InitAndEnableFeature(kImprovedGeoLanguageData);
   // Setup a random place in Montreal, Canada.
   MoveToLocation(45.5, 73.5);
   StartGeoLanguageProvider();
@@ -134,7 +135,7 @@ TEST_F(GeoLanguageProviderTest, NoFrequentCalls) {
   scoped_task_environment_.RunUntilIdle();
 
   const std::vector<std::string>& result = GetCurrentGeoLanguages();
-  std::vector<std::string> expected_langs = {"hi", "en"};
+  std::vector<std::string> expected_langs = {"hi", "mr", "ur"};
   EXPECT_EQ(expected_langs, result);
 
   scoped_task_environment_.FastForwardBy(base::TimeDelta::FromHours(12));
@@ -149,17 +150,17 @@ TEST_F(GeoLanguageProviderTest, ButDoCallInTheNextDay) {
   scoped_task_environment_.RunUntilIdle();
 
   std::vector<std::string> result = GetCurrentGeoLanguages();
-  std::vector<std::string> expected_langs = {"hi", "en"};
+  std::vector<std::string> expected_langs = {"hi", "mr", "ur"};
   EXPECT_EQ(expected_langs, result);
   EXPECT_EQ(expected_langs, GetCachedLanguages());
 
   // Move to another random place in Karnataka, India.
-  MoveToLocation(23.0, 85.7);
+  MoveToLocation(15.0, 75.0);
   scoped_task_environment_.FastForwardBy(base::TimeDelta::FromHours(25));
   EXPECT_EQ(2, GetQueryNextPositionCalledTimes());
 
   result = GetCurrentGeoLanguages();
-  std::vector<std::string> expected_langs_2 = {"hi", "bn", "en"};
+  std::vector<std::string> expected_langs_2 = {"kn", "ur", "te", "mr", "ta"};
   EXPECT_EQ(expected_langs_2, result);
   EXPECT_EQ(expected_langs_2, GetCachedLanguages());
 }
@@ -174,7 +175,7 @@ TEST_F(GeoLanguageProviderTest, CachedLanguagesPresent) {
 
   scoped_task_environment_.RunUntilIdle();
 
-  expected_langs = {"hi", "en"};
+  expected_langs = {"hi", "mr", "ur"};
   EXPECT_EQ(expected_langs, GetCurrentGeoLanguages());
   EXPECT_EQ(expected_langs, GetCachedLanguages());
 }

@@ -31,7 +31,8 @@
 // https://html.spec.whatwg.org/C/#navigator.online
 
 [
+    NoInterfaceObject, // Always used on target of 'implements'
     Exposed=(Window,Worker)
-] interface mixin NavigatorOnLine {
+] interface NavigatorOnLine {
     readonly attribute boolean onLine;
 };

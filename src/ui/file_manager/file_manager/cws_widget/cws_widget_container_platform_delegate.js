@@ -12,7 +12,7 @@
  *   INSTALLING_SPINNER_ALT: string
  * }}
  */
-let CWSWidgetContainerStrings;
+var CWSWidgetContainerStrings;
 
 /**
  * Functions for reporting metrics for the widget.
@@ -23,7 +23,7 @@ let CWSWidgetContainerStrings;
  *   recordInterval: function(string)
  * }}
  */
-let CWSWidgetContainerMetricsImpl;
+var CWSWidgetContainerMetricsImpl;
 
 /**
  * Type for delegate used by CWSWidgetContainer component to access Chrome
@@ -36,4 +36,4 @@ let CWSWidgetContainerMetricsImpl;
  *   requestWebstoreAccessToken: function(function(?string))
  * }}
  */
-let CWSWidgetContainerPlatformDelegate;
+var CWSWidgetContainerPlatformDelegate;

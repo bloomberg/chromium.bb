@@ -36,8 +36,7 @@ struct ManagedPtrDestructor {
 
 // The GC finalizer of a managed object, which does not depend on
 // the template parameter.
-V8_EXPORT_PRIVATE void ManagedObjectFinalizer(
-    const v8::WeakCallbackInfo<void>& data);
+void ManagedObjectFinalizer(const v8::WeakCallbackInfo<void>& data);
 
 // {Managed<T>} is essentially a {std::shared_ptr<T>} allocated on the heap
 // that can be used to manage the lifetime of C++ objects that are shared
@@ -56,8 +55,8 @@ class Managed : public Foreign {
   // Get a raw pointer to the C++ object.
   V8_INLINE CppType* raw() { return GetSharedPtrPtr()->get(); }
 
-  // Get a reference to the shared pointer to the C++ object.
-  V8_INLINE const std::shared_ptr<CppType>& get() { return *GetSharedPtrPtr(); }
+  // Get a copy of the shared pointer to the C++ object.
+  V8_INLINE std::shared_ptr<CppType> get() { return *GetSharedPtrPtr(); }
 
   static Managed cast(Object obj) { return Managed(obj->ptr()); }
   static Managed unchecked_cast(Object obj) { return bit_cast<Managed>(obj); }
@@ -67,9 +66,9 @@ class Managed : public Foreign {
   static Handle<Managed<CppType>> Allocate(Isolate* isolate,
                                            size_t estimated_size,
                                            Args&&... args) {
-    return FromSharedPtr(
-        isolate, estimated_size,
-        std::make_shared<CppType>(std::forward<Args>(args)...));
+    CppType* ptr = new CppType(std::forward<Args>(args)...);
+    return FromSharedPtr(isolate, estimated_size,
+                         std::shared_ptr<CppType>(ptr));
   }
 
   // Create a {Managed<CppType>} from an existing raw {CppType*}. The returned
@@ -78,7 +77,7 @@ class Managed : public Foreign {
                                              size_t estimated_size,
                                              CppType* ptr) {
     return FromSharedPtr(isolate, estimated_size,
-                         std::shared_ptr<CppType>{ptr});
+                         std::shared_ptr<CppType>(ptr));
   }
 
   // Create a {Managed<CppType>} from an existing {std::unique_ptr<CppType>}.
@@ -93,11 +92,11 @@ class Managed : public Foreign {
   // Create a {Managed<CppType>} from an existing {std::shared_ptr<CppType>}.
   static Handle<Managed<CppType>> FromSharedPtr(
       Isolate* isolate, size_t estimated_size,
-      const std::shared_ptr<CppType>& shared_ptr) {
+      std::shared_ptr<CppType> shared_ptr) {
     reinterpret_cast<v8::Isolate*>(isolate)
         ->AdjustAmountOfExternalAllocatedMemory(estimated_size);
     auto destructor = new ManagedPtrDestructor(
-        estimated_size, new std::shared_ptr<CppType>{shared_ptr}, Destructor);
+        estimated_size, new std::shared_ptr<CppType>(shared_ptr), Destructor);
     Handle<Managed<CppType>> handle = Handle<Managed<CppType>>::cast(
         isolate->factory()->NewForeign(reinterpret_cast<Address>(destructor)));
     Handle<Object> global_handle = isolate->global_handles()->Create(*handle);
@@ -119,8 +118,8 @@ class Managed : public Foreign {
         destructor->shared_ptr_ptr_);
   }
 
-  // Called by either isolate shutdown or the {ManagedObjectFinalizer} in order
-  // to actually delete the shared pointer and decrement the shared refcount.
+  // Called by either isolate shutdown or the {ManagedObjectFinalizer} in
+  // order to actually delete the shared pointer (i.e. decrement its refcount).
   static void Destructor(void* ptr) {
     auto shared_ptr_ptr = reinterpret_cast<std::shared_ptr<CppType>*>(ptr);
     delete shared_ptr_ptr;

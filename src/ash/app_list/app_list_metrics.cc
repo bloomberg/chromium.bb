@@ -67,12 +67,6 @@ constexpr char kAppListZeroStateSearchResultUserActionHistogram[] =
 constexpr char kAppListZeroStateSearchResultRemovalHistogram[] =
     "Apps.ZeroStateSearchResutRemovalDecision";
 
-// The UMA histogram that logs the length of the query when user abandons
-// results of a queried search or recommendations of zero state(zero length
-// query) in launcher UI.
-constexpr char kSearchAbandonQueryLengthHistogram[] =
-    "Apps.AppListSearchAbandonQueryLength";
-
 // The different sources from which a search result is displayed. These values
 // are written to logs.  New enum values can be added, but existing enums must
 // never be renumbered or deleted and reused.
@@ -117,11 +111,11 @@ APP_LIST_EXPORT void RecordSearchResultOpenSource(
     return;
 
   ApplistSearchResultOpenedSource source;
-  ash::mojom::AppListViewState state = model->state_fullscreen();
+  AppListViewState state = model->state_fullscreen();
   if (search_model->tablet_mode()) {
     source = ApplistSearchResultOpenedSource::kFullscreenTablet;
   } else {
-    source = state == ash::mojom::AppListViewState::kHalf
+    source = state == AppListViewState::HALF
                  ? ApplistSearchResultOpenedSource::kHalfClamshell
                  : ApplistSearchResultOpenedSource::kFullscreenClamshell;
   }
@@ -151,12 +145,6 @@ void RecordSearchLaunchIndexAndQueryLength(
     UMA_HISTOGRAM_EXACT_LINEAR(kAppListTileLaunchIndexAndQueryLength,
                                logged_value, kMaxLoggedHistogramValue);
   }
-}
-
-void RecordSearchAbandonWithQueryLengthHistogram(int query_length) {
-  UMA_HISTOGRAM_EXACT_LINEAR(kSearchAbandonQueryLengthHistogram,
-                             std::min(query_length, kMaxLoggedQueryLength),
-                             kMaxLoggedQueryLength);
 }
 
 void RecordZeroStateSearchResultUserActionHistogram(

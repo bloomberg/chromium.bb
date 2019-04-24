@@ -125,7 +125,7 @@ namespace {
 
 InterpolationValue ConvertTransform(TransformOperations&& transform) {
   return InterpolationValue(
-      std::make_unique<InterpolableNumber>(0),
+      InterpolableNumber::Create(0),
       CSSTransformNonInterpolableValue::Create(std::move(transform)));
 }
 
@@ -136,8 +136,10 @@ InterpolationValue ConvertTransform(const TransformOperations& transform) {
 class InheritedTransformChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  InheritedTransformChecker(const TransformOperations& inherited_transform)
-      : inherited_transform_(inherited_transform) {}
+  static std::unique_ptr<InheritedTransformChecker> Create(
+      const TransformOperations& inherited_transform) {
+    return base::WrapUnique(new InheritedTransformChecker(inherited_transform));
+  }
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
@@ -145,6 +147,9 @@ class InheritedTransformChecker
   }
 
  private:
+  InheritedTransformChecker(const TransformOperations& inherited_transform)
+      : inherited_transform_(inherited_transform) {}
+
   const TransformOperations inherited_transform_;
 };
 
@@ -168,7 +173,7 @@ InterpolationValue CSSTransformInterpolationType::MaybeConvertInherit(
   const TransformOperations& inherited_transform =
       state.ParentStyle()->Transform();
   conversion_checkers.push_back(
-      std::make_unique<InheritedTransformChecker>(inherited_transform));
+      InheritedTransformChecker::Create(inherited_transform));
   return ConvertTransform(inherited_transform);
 }
 
@@ -177,17 +182,18 @@ InterpolationValue CSSTransformInterpolationType::MaybeConvertValue(
     const StyleResolverState* state,
     ConversionCheckers& conversion_checkers) const {
   DCHECK(state);
-  if (auto* list_value = DynamicTo<CSSValueList>(value)) {
+  if (value.IsValueList()) {
     CSSLengthArray length_array;
-    for (const CSSValue* item : *list_value) {
-      const auto& transform_function = To<CSSFunctionValue>(*item);
-      if (transform_function.FunctionType() == CSSValueID::kMatrix ||
-          transform_function.FunctionType() == CSSValueID::kMatrix3d) {
+    for (const CSSValue* item : ToCSSValueList(value)) {
+      const CSSFunctionValue& transform_function = ToCSSFunctionValue(*item);
+      if (transform_function.FunctionType() == CSSValueMatrix ||
+          transform_function.FunctionType() == CSSValueMatrix3d) {
         length_array.type_flags.Set(CSSPrimitiveValue::kUnitTypePixels);
         continue;
       }
       for (const CSSValue* argument : transform_function) {
-        const auto& primitive_value = To<CSSPrimitiveValue>(*argument);
+        const CSSPrimitiveValue& primitive_value =
+            ToCSSPrimitiveValue(*argument);
         if (!primitive_value.IsLength())
           continue;
         primitive_value.AccumulateLengthArray(length_array);
@@ -219,8 +225,7 @@ PairwiseInterpolationValue CSSTransformInterpolationType::MaybeMergeSingles(
       ToInterpolableNumber(*start.interpolable_value).Value();
   double end_fraction = ToInterpolableNumber(*end.interpolable_value).Value();
   return PairwiseInterpolationValue(
-      std::make_unique<InterpolableNumber>(0),
-      std::make_unique<InterpolableNumber>(1),
+      InterpolableNumber::Create(0), InterpolableNumber::Create(1),
       CSSTransformNonInterpolableValue::Create(
           std::move(ToCSSTransformNonInterpolableValue(
               *start.non_interpolable_value)),

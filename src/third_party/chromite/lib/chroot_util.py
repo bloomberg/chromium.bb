@@ -145,7 +145,8 @@ def SetupBoard(board, update_chroot=True,
   if update_chroot:
     UpdateChroot(board=board, update_host_packages=update_host_packages)
 
-  cmd = ['setup_board', '--skip-toolchain-update', '--skip-chroot-upgrade',
+  cmd = [os.path.join(constants.CROSUTILS_DIR, 'setup_board'),
+         '--skip_toolchain_update', '--skip_chroot_upgrade',
          '--board=%s' % board]
 
   if not use_binary:

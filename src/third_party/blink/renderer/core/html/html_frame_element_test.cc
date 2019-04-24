@@ -6,7 +6,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -21,13 +20,13 @@ TEST_F(HTMLFrameElementTest, DefaultContainerPolicy) {
   document->SetURL(document_url);
   document->UpdateSecurityOrigin(SecurityOrigin::Create(document_url));
 
-  auto* frame_element = MakeGarbageCollected<HTMLFrameElement>(*document);
+  HTMLFrameElement* frame_element = HTMLFrameElement::Create(*document);
 
   frame_element->setAttribute(html_names::kSrcAttr, "http://example.net/");
   frame_element->UpdateContainerPolicyForTests();
 
   const ParsedFeaturePolicy& container_policy =
-      frame_element->GetFramePolicy().container_policy;
+      frame_element->ContainerPolicy();
   EXPECT_EQ(1UL, container_policy.size());
   // Fullscreen should be disabled in this frame
   EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen,

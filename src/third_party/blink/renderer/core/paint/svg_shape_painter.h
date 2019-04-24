@@ -33,7 +33,7 @@ class SVGShapePainter {
 
   void PaintMarkers(const PaintInfo&, const FloatRect& bounding_box);
   void PaintMarker(const PaintInfo&,
-                   LayoutSVGResourceMarker&,
+                   const LayoutSVGResourceMarker&,
                    const MarkerPosition&,
                    float stroke_width);
 

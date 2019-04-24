@@ -22,10 +22,10 @@ namespace {
 const void* const kRenderFrameHostTestExtKey = &kRenderFrameHostTestExtKey;
 
 void OnExecuteJavaScriptResult(const base::android::JavaRef<jobject>& jcallback,
-                               base::Value value) {
+                               const base::Value* value) {
   std::string result;
   JSONStringValueSerializer serializer(&result);
-  bool value_serialized = serializer.SerializeAndOmitBinaryValues(value);
+  bool value_serialized = serializer.SerializeAndOmitBinaryValues(*value);
   DCHECK(value_serialized);
   base::android::RunStringCallbackAndroid(jcallback, result);
 }
@@ -54,10 +54,10 @@ void RenderFrameHostTestExt::ExecuteJavaScript(
     const JavaParamRef<jstring>& jscript,
     const JavaParamRef<jobject>& jcallback) {
   base::string16 script(ConvertJavaStringToUTF16(env, jscript));
-  auto callback = base::BindOnce(
+  auto callback = base::BindRepeating(
       &OnExecuteJavaScriptResult,
       base::android::ScopedJavaGlobalRef<jobject>(env, jcallback));
-  render_frame_host_->ExecuteJavaScriptForTests(script, std::move(callback));
+  render_frame_host_->ExecuteJavaScriptForTests(script, callback);
 }
 
 }  // namespace content

@@ -5,11 +5,9 @@
 #ifndef IOS_WEB_VIEW_SHELL_TEST_EARL_GREY_WEB_VIEW_SHELL_MATCHERS_H_
 #define IOS_WEB_VIEW_SHELL_TEST_EARL_GREY_WEB_VIEW_SHELL_MATCHERS_H_
 
-#import <Foundation/Foundation.h>
-
 #import <string>
 
-@protocol GREYMatcher;
+#import <EarlGrey/EarlGrey.h>
 
 NS_ASSUME_NONNULL_BEGIN
 

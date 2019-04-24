@@ -4,13 +4,11 @@
   @keyframes anim {
   }
 </style>
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/js-test.js"></script>
 <script>
   var keyframes = document.styleSheets[0].rules[0];
-  assert_class_string(keyframes, "CSSKeyframesRule");
-  assert_throws(new TypeError(), () => { keyframes.appendRule(); });
-  assert_throws(new TypeError(), () => { keyframes.deleteRule(); });
-  assert_throws(new TypeError(), () => { keyframes.findRule(); });
-  done();
+  shouldBeType("keyframes", "CSSKeyframesRule");
+  shouldThrow("keyframes.appendRule()");
+  shouldThrow("keyframes.deleteRule()");
+  shouldThrow("keyframes.findRule()");
 </script>

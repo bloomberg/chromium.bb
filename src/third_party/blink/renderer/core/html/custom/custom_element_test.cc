@@ -157,7 +157,7 @@ TEST(CustomElementTest, StateByParser) {
       "<div id=div></div>"
       "<a-a id=v1v0></a-a>"
       "<font-face id=v0></font-face>";
-  auto page_holder = std::make_unique<DummyPageHolder>();
+  std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create();
   Document& document = page_holder->GetDocument();
   document.body()->SetInnerHTMLFromString(String::FromUTF8(body_content));
 
@@ -192,7 +192,7 @@ TEST(CustomElementTest, StateByCreateElement) {
        Element::kV0WaitingForUpgrade},
       {"_-X", CustomElementState::kUncustomized, Element::kV0WaitingForUpgrade},
   };
-  auto page_holder = std::make_unique<DummyPageHolder>();
+  std::unique_ptr<DummyPageHolder> page_holder = DummyPageHolder::Create();
   Document& document = page_holder->GetDocument();
   for (const auto& data : create_element_data) {
     Element* element = document.CreateElementForBinding(data.name);
@@ -216,7 +216,7 @@ TEST(CustomElementTest, StateByCreateElement) {
 TEST(CustomElementTest,
      CreateElement_TagNameCaseHandlingCreatingCustomElement) {
   // register a definition
-  auto holder(std::make_unique<DummyPageHolder>());
+  std::unique_ptr<DummyPageHolder> holder(DummyPageHolder::Create());
   ScriptState* script_state = ToScriptStateForMainWorld(&holder->GetFrame());
   CustomElementRegistry* registry =
       holder->GetFrame().DomWindow()->customElements();

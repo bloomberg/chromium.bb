@@ -3,6 +3,7 @@
 <head>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body id="body">
 
@@ -17,7 +18,7 @@
 
 <script>
 
-test((t) => {
+test_after_layout_and_paint((t) => {
   var table = accessibilityController.accessibleElementById("table");
     assert_equals(table.childrenCount, 2);
     window.captionText = table.childAtIndex(0).childAtIndex(0).name;

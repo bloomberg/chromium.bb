@@ -49,7 +49,9 @@ class CORE_EXPORT DataTransferItemList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit DataTransferItemList(DataTransfer*, DataObject*);
+  static DataTransferItemList* Create(DataTransfer*, DataObject*);
+
+  DataTransferItemList(DataTransfer*, DataObject*);
 
   uint32_t length() const;
   DataTransferItem* item(uint32_t index);

@@ -32,10 +32,14 @@
 
 typedef (File or USVString) FormDataEntryValue;
 
+// TODO(foolip): Remove LegacyInterfaceTypeChecking, which allows for
+// `append('name', null, 'filename')` and `set('name', null, 'filename')` to
+// append/set null values instead of throwing. https://crbug.com/561338
 [
     Constructor(optional HTMLFormElement form),
     RaisesException=Constructor,
-    Exposed=(Window,Worker)
+    Exposed=(Window,Worker),
+    LegacyInterfaceTypeChecking
 ] interface FormData {
     void append(USVString name, USVString value);
     [CallWith=ScriptState] void append(USVString name, Blob value, optional USVString filename);

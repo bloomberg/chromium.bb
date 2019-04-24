@@ -87,7 +87,7 @@ class SpokenFeedbackAppListTest
   void PopulateChips(size_t num) {
     for (size_t i = 0; i < num; i++) {
       search_model->results()->Add(std::make_unique<TestSuggestionChipResult>(
-          base::UTF8ToUTF16("Chip " + base::NumberToString(i))));
+          base::UTF8ToUTF16("Chip " + base::IntToString(i))));
     }
   }
 

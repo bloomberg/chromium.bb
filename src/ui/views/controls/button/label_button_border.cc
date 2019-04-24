@@ -25,11 +25,11 @@ namespace {
 
 // Insets for the unified button images. This assumes that the images
 // are of a 9 grid, of 5x5 size each.
-constexpr int kButtonInsets = 5;
+const int kButtonInsets = 5;
 
 // The text-button hot and pushed image IDs; normal is unadorned by default.
-constexpr int kTextHoveredImages[] = IMAGE_GRID(IDR_TEXTBUTTON_HOVER);
-constexpr int kTextPressedImages[] = IMAGE_GRID(IDR_TEXTBUTTON_PRESSED);
+const int kTextHoveredImages[] = IMAGE_GRID(IDR_TEXTBUTTON_HOVER);
+const int kTextPressedImages[] = IMAGE_GRID(IDR_TEXTBUTTON_PRESSED);
 
 // A helper function to paint the appropriate broder images.
 void PaintHelper(LabelButtonAssetBorder* border,
@@ -49,8 +49,8 @@ void PaintHelper(LabelButtonAssetBorder* border,
 
 }  // namespace
 
-LabelButtonBorder::LabelButtonBorder() = default;
-LabelButtonBorder::~LabelButtonBorder() = default;
+LabelButtonBorder::LabelButtonBorder() {}
+LabelButtonBorder::~LabelButtonBorder() {}
 
 bool LabelButtonBorder::PaintsButtonState(bool focused,
                                           Button::ButtonState state) {
@@ -105,7 +105,7 @@ LabelButtonAssetBorder::LabelButtonAssetBorder(Button::ButtonStyle style) {
   }
 }
 
-LabelButtonAssetBorder::~LabelButtonAssetBorder() = default;
+LabelButtonAssetBorder::~LabelButtonAssetBorder() {}
 
 // static
 gfx::Insets LabelButtonAssetBorder::GetDefaultInsetsForStyle(

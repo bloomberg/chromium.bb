@@ -45,6 +45,7 @@
 #include "chrome/browser/chromeos/login/screens/mock_welcome_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
+#include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/screens/wrong_hwid_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -57,6 +58,7 @@
 #include "chrome/browser/chromeos/policy/fake_auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -69,10 +71,10 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
-#include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
-#include "chromeos/dbus/shill/fake_shill_manager_client.h"
+#include "chromeos/dbus/fake_cryptohome_client.h"
+#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/fake_shill_manager_client.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
 #include "chromeos/geolocation/simple_geolocation_provider.h"
 #include "chromeos/network/network_state.h"
@@ -82,7 +84,6 @@
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/test/chromeos_test_utils.h"
 #include "chromeos/timezone/timezone_request.h"
-#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -362,7 +363,11 @@ class WizardControllerTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kLoginManager);
   }
 
-  ErrorScreen* GetErrorScreen() { return GetOobeUI()->GetErrorScreen(); }
+  ErrorScreen* GetErrorScreen() {
+    return static_cast<BaseScreenDelegate*>(
+               WizardController::default_controller())
+        ->GetErrorScreen();
+  }
 
   OobeUI* GetOobeUI() { return LoginDisplayHost::default_host()->GetOobeUI(); }
 
@@ -500,17 +505,19 @@ class WizardControllerSupervisionTransitionOobeTest
     // Pretend OOBE was complete.
     StartupUtils::MarkOobeCompleted();
 
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    WizardController* wizard_controller =
+        WizardController::default_controller();
+    wizard_controller->is_official_build_ = true;
 
     mock_supervision_transition_screen_view_ =
         std::make_unique<MockSupervisionTransitionScreenView>();
     ExpectBindUnbind(mock_supervision_transition_screen_view_.get());
     mock_supervision_transition_screen_ = MockScreenExpectLifecycle(
         std::make_unique<MockSupervisionTransitionScreen>(
-            mock_supervision_transition_screen_view_.get(),
+            wizard_controller, mock_supervision_transition_screen_view_.get(),
             base::BindRepeating(
                 &WizardController::OnSupervisionTransitionScreenExit,
-                base::Unretained(WizardController::default_controller()))));
+                base::Unretained(wizard_controller))));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -522,7 +529,6 @@ class WizardControllerSupervisionTransitionOobeTest
   MockSupervisionTransitionScreen* mock_supervision_transition_screen_;
   std::unique_ptr<MockSupervisionTransitionScreenView>
       mock_supervision_transition_screen_view_;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerSupervisionTransitionOobeTest);
@@ -564,10 +570,9 @@ class WizardControllerFlowTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
-
     WizardController* wizard_controller =
         WizardController::default_controller();
+    wizard_controller->is_official_build_ = true;
     wizard_controller->SetSharedURLLoaderFactoryForTesting(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_));
@@ -578,7 +583,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     // Set up the mocks for all screens.
     mock_welcome_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWelcomeScreen>(
-            GetOobeUI()->GetWelcomeView(),
+            wizard_controller, wizard_controller, GetOobeUI()->GetWelcomeView(),
             base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -586,7 +591,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
         std::make_unique<MockDemoPreferencesScreenView>();
     mock_demo_preferences_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockDemoPreferencesScreen>(
-            mock_demo_preferences_screen_view_.get(),
+            wizard_controller, mock_demo_preferences_screen_view_.get(),
             base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -594,7 +599,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
         std::make_unique<MockArcTermsOfServiceScreenView>();
     mock_arc_terms_of_service_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockArcTermsOfServiceScreen>(
-            mock_arc_terms_of_service_screen_view_.get(),
+            wizard_controller, mock_arc_terms_of_service_screen_view_.get(),
             base::BindRepeating(
                 &WizardController::OnArcTermsOfServiceScreenExit,
                 base::Unretained(wizard_controller))));
@@ -602,34 +607,34 @@ class WizardControllerFlowTest : public WizardControllerTest {
     device_disabled_screen_view_ =
         std::make_unique<MockDeviceDisabledScreenView>();
     MockScreen(std::make_unique<DeviceDisabledScreen>(
-        device_disabled_screen_view_.get()));
+        wizard_controller, device_disabled_screen_view_.get()));
     EXPECT_CALL(*device_disabled_screen_view_, Show()).Times(0);
 
     mock_network_screen_view_ = std::make_unique<MockNetworkScreenView>();
     mock_network_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockNetworkScreen>(
-            mock_network_screen_view_.get(),
+            wizard_controller, mock_network_screen_view_.get(),
             base::BindRepeating(&WizardController::OnNetworkScreenExit,
                                 base::Unretained(wizard_controller))));
 
     mock_update_view_ = std::make_unique<MockUpdateView>();
     mock_update_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockUpdateScreen>(
-            wizard_controller, mock_update_view_.get(), GetErrorScreen(),
+            wizard_controller, mock_update_view_.get(),
             base::BindRepeating(&WizardController::OnUpdateScreenExit,
                                 base::Unretained(wizard_controller))));
 
     mock_eula_view_ = std::make_unique<MockEulaView>();
     mock_eula_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockEulaScreen>(
-            mock_eula_view_.get(),
+            wizard_controller, mock_eula_view_.get(),
             base::BindRepeating(&WizardController::OnEulaScreenExit,
                                 base::Unretained(wizard_controller))));
 
     mock_enrollment_screen_view_ = std::make_unique<MockEnrollmentScreenView>();
     mock_enrollment_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockEnrollmentScreen>(
-            mock_enrollment_screen_view_.get(),
+            wizard_controller, mock_enrollment_screen_view_.get(),
             base::BindRepeating(&WizardController::OnEnrollmentScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -638,7 +643,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     ExpectSetDelegate(mock_auto_enrollment_check_screen_view_.get());
     mock_auto_enrollment_check_screen_ = MockScreenExpectLifecycle(
         std::make_unique<MockAutoEnrollmentCheckScreen>(
-            mock_auto_enrollment_check_screen_view_.get(), GetErrorScreen(),
+            wizard_controller, mock_auto_enrollment_check_screen_view_.get(),
             base::BindRepeating(
                 &WizardController::OnAutoEnrollmentCheckScreenExit,
                 base::Unretained(wizard_controller))));
@@ -647,7 +652,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     ExpectSetDelegate(mock_wrong_hwid_screen_view_.get());
     mock_wrong_hwid_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWrongHWIDScreen>(
-            mock_wrong_hwid_screen_view_.get(),
+            wizard_controller, mock_wrong_hwid_screen_view_.get(),
             base::BindRepeating(&WizardController::OnWrongHWIDScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -656,7 +661,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     ExpectSetDelegate(mock_enable_debugging_screen_view_.get());
     mock_enable_debugging_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockEnableDebuggingScreen>(
-            mock_enable_debugging_screen_view_.get(),
+            wizard_controller, mock_enable_debugging_screen_view_.get(),
             base::BindRepeating(&WizardController::OnEnableDebuggingScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -664,7 +669,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     ExpectBind(mock_demo_setup_screen_view_.get());
     mock_demo_setup_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockDemoSetupScreen>(
-            mock_demo_setup_screen_view_.get(),
+            wizard_controller, mock_demo_setup_screen_view_.get(),
             base::BindRepeating(&WizardController::OnDemoSetupScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -673,7 +678,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     ExpectBind(mock_demo_preferences_screen_view_.get());
     mock_demo_preferences_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockDemoPreferencesScreen>(
-            mock_demo_preferences_screen_view_.get(),
+            wizard_controller, mock_demo_preferences_screen_view_.get(),
             base::BindRepeating(&WizardController::OnDemoPreferencesScreenExit,
                                 base::Unretained(wizard_controller))));
 
@@ -681,7 +686,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
         std::make_unique<MockArcTermsOfServiceScreenView>();
     mock_arc_terms_of_service_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockArcTermsOfServiceScreen>(
-            mock_arc_terms_of_service_screen_view_.get(),
+            wizard_controller, mock_arc_terms_of_service_screen_view_.get(),
             base::BindRepeating(
                 &WizardController::OnArcTermsOfServiceScreenExit,
                 base::Unretained(wizard_controller))));
@@ -856,8 +861,8 @@ class WizardControllerFlowTest : public WizardControllerTest {
 
  private:
   NetworkPortalDetectorTestImpl* network_portal_detector_ = nullptr;
+
   network::TestURLLoaderFactory test_url_loader_factory_;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardControllerFlowTest);
 };
@@ -1111,7 +1116,9 @@ INSTANTIATE_TEST_SUITE_P(
 
 class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
  protected:
-  WizardControllerDeviceStateTest() {
+  WizardControllerDeviceStateTest()
+      : fake_cryptohome_client_(nullptr),
+        fake_session_manager_client_(nullptr) {
     fake_statistics_provider_.SetMachineStatistic(
         system::kSerialNumberKeyForTest, "test");
     fake_statistics_provider_.SetMachineStatistic(system::kActivateDateKey,
@@ -1137,11 +1144,13 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
   void SetUpInProcessBrowserTestFixture() override {
     WizardControllerFlowTest::SetUpInProcessBrowserTestFixture();
 
-    // We need to initialize some dbus clients here, otherwise this test will
-    // timeout in WaitForAutoEnrollmentState on asan builds. TODO(stevenjb):
-    // Determine which client(s) need to be created and extract and initialize
-    // them. https://crbug.com/949063.
-    DBusThreadManager::GetSetterForTesting();
+    fake_cryptohome_client_ = new FakeCryptohomeClient();
+    DBusThreadManager::GetSetterForTesting()->SetCryptohomeClient(
+        std::unique_ptr<CryptohomeClient>(fake_cryptohome_client_));
+    fake_session_manager_client_ = new FakeSessionManagerClient(
+        FakeSessionManagerClient::PolicyStorageType::kOnDisk);
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
   }
 
   void SetUpOnMainThread() override {
@@ -1175,6 +1184,10 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 
   base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
+
+ protected:
+  FakeCryptohomeClient* fake_cryptohome_client_;
+  FakeSessionManagerClient* fake_session_manager_client_;
 
  private:
   ScopedStubInstallAttributes test_install_attributes_{
@@ -1222,9 +1235,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   EXPECT_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
             auto_enrollment_controller()->state());
   EXPECT_EQ(1,
-            FakeCryptohomeClient::Get()
+            fake_cryptohome_client_
                 ->remove_firmware_management_parameters_from_tpm_call_count());
-  EXPECT_EQ(1, FakeSessionManagerClient::Get()
+  EXPECT_EQ(1, fake_session_manager_client_
                    ->clear_forced_re_enrollment_vpd_call_count());
 }
 
@@ -1272,9 +1285,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
 
   // The error screen shows up if device state could not be retrieved.
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-  CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
-  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
-            GetErrorScreen()->GetParentScreen());
+  EXPECT_EQ(GetErrorScreen(),
+            WizardController::default_controller()->current_screen());
   base::DictionaryValue device_state;
   device_state.SetString(policy::kDeviceStateMode,
                          policy::kDeviceStateRestoreModeDisabled);
@@ -1292,9 +1304,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   CheckCurrentScreen(OobeScreen::SCREEN_DEVICE_DISABLED);
 
   EXPECT_EQ(0,
-            FakeCryptohomeClient::Get()
+            fake_cryptohome_client_
                 ->remove_firmware_management_parameters_from_tpm_call_count());
-  EXPECT_EQ(0, FakeSessionManagerClient::Get()
+  EXPECT_EQ(0, fake_session_manager_client_
                    ->clear_forced_re_enrollment_vpd_call_count());
 
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
@@ -1372,9 +1384,8 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
 
   // The error screen shows up if there's no auto-enrollment decision.
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-  CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
-  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
-            GetErrorScreen()->GetParentScreen());
+  EXPECT_EQ(GetErrorScreen(),
+            WizardController::default_controller()->current_screen());
 
   WaitUntilJSIsReady();
   constexpr char guest_session_link_display[] =
@@ -1385,17 +1396,17 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     // explicitly required).
     EXPECT_EQ("none", JSExecuteStringExpression(guest_session_link_display));
     EXPECT_EQ(
-        0, FakeCryptohomeClient::Get()
+        0, fake_cryptohome_client_
                ->remove_firmware_management_parameters_from_tpm_call_count());
-    EXPECT_EQ(0, FakeSessionManagerClient::Get()
+    EXPECT_EQ(0, fake_session_manager_client_
                      ->clear_forced_re_enrollment_vpd_call_count());
   } else {
     // Check that guest sign-in is allowed if FRE was not explicitly required.
     EXPECT_EQ("block", JSExecuteStringExpression(guest_session_link_display));
     EXPECT_EQ(
-        1, FakeCryptohomeClient::Get()
+        1, fake_cryptohome_client_
                ->remove_firmware_management_parameters_from_tpm_call_count());
-    EXPECT_EQ(1, FakeSessionManagerClient::Get()
+    EXPECT_EQ(1, fake_session_manager_client_
                      ->clear_forced_re_enrollment_vpd_call_count());
   }
 
@@ -1481,9 +1492,8 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
 
     // The error screen shows up.
     EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-    CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
-    EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
-              GetErrorScreen()->GetParentScreen());
+    EXPECT_EQ(GetErrorScreen(),
+              WizardController::default_controller()->current_screen());
 
     WaitUntilJSIsReady();
     constexpr char guest_session_link_display[] =
@@ -1518,9 +1528,9 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
 
     EXPECT_TRUE(StartupUtils::IsOobeCompleted());
     EXPECT_EQ(
-        0, FakeCryptohomeClient::Get()
+        0, fake_cryptohome_client_
                ->remove_firmware_management_parameters_from_tpm_call_count());
-    EXPECT_EQ(0, FakeSessionManagerClient::Get()
+    EXPECT_EQ(0, fake_session_manager_client_
                      ->clear_forced_re_enrollment_vpd_call_count());
   } else {
     // Don't expect that the auto enrollment screen will be hidden, because
@@ -1539,9 +1549,9 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     EXPECT_TRUE(StartupUtils::IsOobeCompleted());
     login_screen_waiter.Wait();
     EXPECT_EQ(
-        0, FakeCryptohomeClient::Get()
+        0, fake_cryptohome_client_
                ->remove_firmware_management_parameters_from_tpm_call_count());
-    EXPECT_EQ(0, FakeSessionManagerClient::Get()
+    EXPECT_EQ(0, fake_session_manager_client_
                      ->clear_forced_re_enrollment_vpd_call_count());
   }
 }
@@ -1618,8 +1628,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   // The error screen shows up if there's no auto-enrollment decision.
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
-            GetErrorScreen()->GetParentScreen());
+  EXPECT_EQ(GetErrorScreen(),
+            WizardController::default_controller()->current_screen());
   base::DictionaryValue device_state;
   device_state.SetString(policy::kDeviceStateMode,
                          policy::kDeviceStateRestoreModeReEnrollmentEnforced);
@@ -1702,8 +1712,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   // The error screen shows up if there's no auto-enrollment decision.
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-  EXPECT_EQ(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK,
-            GetErrorScreen()->GetParentScreen());
+  EXPECT_EQ(GetErrorScreen(),
+            WizardController::default_controller()->current_screen());
 
   WaitUntilJSIsReady();
   constexpr char guest_session_link_display[] =
@@ -2030,8 +2040,18 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
 class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
  protected:
-  WizardControllerBrokenLocalStateTest() = default;
-  ~WizardControllerBrokenLocalStateTest() override = default;
+  WizardControllerBrokenLocalStateTest()
+      : fake_session_manager_client_(nullptr) {}
+
+  ~WizardControllerBrokenLocalStateTest() override {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    WizardControllerTest::SetUpInProcessBrowserTestFixture();
+
+    fake_session_manager_client_ = new FakeSessionManagerClient;
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
+  }
 
   void SetUpOnMainThread() override {
     PrefServiceFactory factory;
@@ -2042,12 +2062,16 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    WizardController::default_controller()->is_official_build_ = true;
+  }
+
+  FakeSessionManagerClient* fake_session_manager_client() const {
+    return fake_session_manager_client_;
   }
 
  private:
   std::unique_ptr<PrefService> local_state_;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  FakeSessionManagerClient* fake_session_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardControllerBrokenLocalStateTest);
 };
@@ -2067,12 +2091,13 @@ IN_PROC_BROWSER_TEST_F(WizardControllerBrokenLocalStateTest,
   ASSERT_FALSE(JSExecuteBooleanExpression("$('error-message').hidden"));
   ASSERT_TRUE(JSExecuteBooleanExpression(
       "$('error-message').classList.contains('ui-state-local-state-error')"));
+  ASSERT_TRUE(JSExecuteBooleanExpression("$('login-header-bar').hidden"));
 
   // Emulates user click on the "Restart and Powerwash" button.
-  ASSERT_EQ(0, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
+  ASSERT_EQ(0, fake_session_manager_client()->start_device_wipe_call_count());
   ASSERT_TRUE(content::ExecuteScript(
       GetWebContents(), "$('error-message-md-powerwash-button').click();"));
-  ASSERT_EQ(1, FakeSessionManagerClient::Get()->start_device_wipe_call_count());
+  ASSERT_EQ(1, fake_session_manager_client()->start_device_wipe_call_count());
 }
 
 class WizardControllerProxyAuthOnSigninTest : public WizardControllerTest {
@@ -2262,16 +2287,11 @@ IN_PROC_BROWSER_TEST_F(WizardControllerEnableDebuggingTest,
   EXPECT_CALL(*mock_welcome_screen_, SetConfiguration(IsNull(), _)).Times(1);
   EXPECT_CALL(*mock_enable_debugging_screen_, Show()).Times(1);
 
-  // Find the enable debugging link element (in the appropriate shadow root),
-  // and click it.
   ASSERT_TRUE(
-      JSExecute("(function() {"
-                "  var root = ['connect', 'welcomeScreen'].reduce("
-                "    (root, id) => root.getElementById(id).shadowRoot,"
-                "    document);"
-                "  root.getElementById('enableDebuggingLink').click();"
-                "})();"));
+      JSExecute("chrome.send('login.WelcomeScreen.userActed', "
+                "['connect-debugging-features']);"));
 
+  // Let update screen smooth time process (time = 0ms).
   content::RunAllPendingInMessageLoop();
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_ENABLE_DEBUGGING);
@@ -2713,10 +2733,9 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
-
     WizardController* wizard_controller =
         WizardController::default_controller();
+    wizard_controller->is_official_build_ = true;
 
     // Clear portal list (as it is by default in OOBE).
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
@@ -2726,14 +2745,14 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
     ExpectBindUnbind(mock_welcome_view_.get());
     mock_welcome_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWelcomeScreen>(
-            mock_welcome_view_.get(),
+            wizard_controller, wizard_controller, mock_welcome_view_.get(),
             base::BindRepeating(&WizardController::OnWelcomeScreenExit,
                                 base::Unretained(wizard_controller))));
 
     mock_enrollment_screen_view_ = std::make_unique<MockEnrollmentScreenView>();
     mock_enrollment_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockEnrollmentScreen>(
-            mock_enrollment_screen_view_.get(),
+            wizard_controller, mock_enrollment_screen_view_.get(),
             base::BindRepeating(&WizardController::OnEnrollmentScreenExit,
                                 base::Unretained(wizard_controller))));
   }
@@ -2747,8 +2766,6 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
 
   std::unique_ptr<MockEnrollmentScreenView> mock_enrollment_screen_view_;
   MockEnrollmentScreen* mock_enrollment_screen_;
-
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerOobeResumeTest);
@@ -2818,7 +2835,9 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    WizardController* wizard_controller =
+        WizardController::default_controller();
+    wizard_controller->is_official_build_ = true;
 
     // Clear portal list (as it is by default in OOBE).
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
@@ -2826,10 +2845,9 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
     mock_welcome_view_ = std::make_unique<MockWelcomeView>();
     mock_welcome_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWelcomeScreen>(
-            mock_welcome_view_.get(),
-            base::BindRepeating(
-                &WizardController::OnWelcomeScreenExit,
-                base::Unretained(WizardController::default_controller()))));
+            wizard_controller, wizard_controller, mock_welcome_view_.get(),
+            base::BindRepeating(&WizardController::OnWelcomeScreenExit,
+                                base::Unretained(wizard_controller))));
   }
 
   void WaitForConfigurationLoaded() {
@@ -2843,7 +2861,6 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
  protected:
   std::unique_ptr<MockWelcomeView> mock_welcome_view_;
   MockWelcomeScreen* mock_welcome_screen_ = nullptr;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerOobeConfigurationTest);
@@ -2882,6 +2899,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
 // TODO(rsgingerrs): Add tests for Recommend Apps UI.
 
 // TODO(alemate): Add tests for Discover UI.
+
+// TODO(xiaoyinh): Add tests for Fingerprint Setup UI.
 
 // TODO(alemate): Add tests for Marketing Opt-In.
 

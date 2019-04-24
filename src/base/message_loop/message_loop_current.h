@@ -23,6 +23,7 @@ class TestWebThreadBundle;
 
 namespace base {
 
+class MessageLoopBase;
 class MessageLoopImpl;
 
 namespace sequence_manager {
@@ -171,7 +172,7 @@ class BASE_EXPORT MessageLoopCurrent {
     ~ScopedNestableTaskAllower();
 
    private:
-    sequence_manager::internal::SequenceManagerImpl* const sequence_manager_;
+    MessageLoopBase* const loop_;
     const bool old_state_;
   };
 
@@ -186,12 +187,17 @@ class BASE_EXPORT MessageLoopCurrent {
   bool IsIdleForTesting();
 
  protected:
-  explicit MessageLoopCurrent(
-      sequence_manager::internal::SequenceManagerImpl* sequence_manager)
-      : current_(sequence_manager) {}
+  // Binds |current| to the current thread. It will from then on be the
+  // MessageLoop driven by MessageLoopCurrent on this thread. This is only meant
+  // to be invoked by the MessageLoop itself.
+  static void BindToCurrentThreadInternal(MessageLoopBase* current);
 
-  static sequence_manager::internal::SequenceManagerImpl*
-  GetCurrentSequenceManagerImpl();
+  // Unbinds |current| from the current thread. Must be invoked on the same
+  // thread that invoked |BindToCurrentThreadInternal(current)|. This is only
+  // meant to be invoked by the MessageLoop itself.
+  static void UnbindFromCurrentThreadInternal(MessageLoopBase* current);
+
+  explicit MessageLoopCurrent(MessageLoopBase* current) : current_(current) {}
 
   friend class MessageLoopImpl;
   friend class MessagePumpLibeventTest;
@@ -201,7 +207,12 @@ class BASE_EXPORT MessageLoopCurrent {
   friend class MessageLoopTaskRunnerTest;
   friend class web::TestWebThreadBundle;
 
-  sequence_manager::internal::SequenceManagerImpl* current_;
+  // Return the pointer to MessageLoop for internal needs.
+  // All other callers should call MessageLoopCurrent::Get().
+  // TODO(altimin): Remove this.
+  MessageLoopBase* ToMessageLoopBaseDeprecated() const { return current_; }
+
+  MessageLoopBase* current_;
 };
 
 #if !defined(OS_NACL)
@@ -252,8 +263,7 @@ class BASE_EXPORT MessageLoopCurrentForUI : public MessageLoopCurrent {
 #endif
 
  private:
-  explicit MessageLoopCurrentForUI(
-      sequence_manager::internal::SequenceManagerImpl* current)
+  explicit MessageLoopCurrentForUI(MessageLoopBase* current)
       : MessageLoopCurrent(current) {}
 
   MessagePumpForUI* GetMessagePumpForUI() const;
@@ -309,8 +319,7 @@ class BASE_EXPORT MessageLoopCurrentForIO : public MessageLoopCurrent {
 #endif  // !defined(OS_NACL_SFI)
 
  private:
-  explicit MessageLoopCurrentForIO(
-      sequence_manager::internal::SequenceManagerImpl* current)
+  explicit MessageLoopCurrentForIO(MessageLoopBase* current)
       : MessageLoopCurrent(current) {}
 
   MessagePumpForIO* GetMessagePumpForIO() const;

@@ -3,6 +3,7 @@
 <head>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body id="body">
 
@@ -23,7 +24,7 @@
 
 <script>
 
-test((t) => {
+test_after_layout_and_paint((t) => {
     var tabList = accessibilityController.accessibleElementById('tablist_1');
     var tab1 = tabList.childAtIndex(0);
     var tab2 = tabList.childAtIndex(1);

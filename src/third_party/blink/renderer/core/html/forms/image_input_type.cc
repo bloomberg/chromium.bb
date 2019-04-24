@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
-#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -49,10 +48,6 @@ inline ImageInputType::ImageInputType(HTMLInputElement& element)
 
 InputType* ImageInputType::Create(HTMLInputElement& element) {
   return MakeGarbageCollected<ImageInputType>(element);
-}
-
-void ImageInputType::CountUsage() {
-  CountUsageIfVisible(WebFeature::kInputTypeImage);
 }
 
 const AtomicString& ImageInputType::FormControlType() const {
@@ -109,12 +104,12 @@ void ImageInputType::HandleDOMActivateEvent(Event& event) {
   event.SetDefaultHandled();
 }
 
-LayoutObject* ImageInputType::CreateLayoutObject(const ComputedStyle& style,
-                                                 LegacyLayout legacy) const {
+LayoutObject* ImageInputType::CreateLayoutObject(
+    const ComputedStyle& style) const {
   if (use_fallback_content_)
-    return LayoutObjectFactory::CreateBlockFlow(GetElement(), style, legacy);
+    return LayoutObjectFactory::CreateBlockFlow(GetElement(), style);
   LayoutImage* image = new LayoutImage(&GetElement());
-  image->SetImageResource(MakeGarbageCollected<LayoutImageResource>());
+  image->SetImageResource(LayoutImageResource::Create());
   return image;
 }
 

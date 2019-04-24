@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      https://www.apache.org/licenses/LICENSE-2.0
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@
 // code. The annotations can also help program analysis tools to identify
 // potential thread safety issues.
 //
+//
 // These annotations are implemented using compiler attributes. Using the macros
 // defined here instead of raw attributes allow for portability and future
 // compatibility.
@@ -33,7 +34,6 @@
 
 #ifndef ABSL_BASE_THREAD_ANNOTATIONS_H_
 #define ABSL_BASE_THREAD_ANNOTATIONS_H_
-
 #if defined(__clang__)
 #define THREAD_ANNOTATION_ATTRIBUTE__(x)   __attribute__((x))
 #else

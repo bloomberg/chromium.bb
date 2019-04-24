@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 
-<script src="../resources/testharness.js"></script>
-<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/js-test.js"></script>
 
 <style>
 @keyframes fade {
@@ -22,7 +21,12 @@
 <input id="target1">
 
 <script>
-var test = async_test("Animations should be canceled when an element is removed from the document.");
+jsTestIsAsync = true;
+
+description("Animations should be canceled when an element is removed from the document.");
+
+if (!window.testRunner)
+    debug("FAIL: This test requires testRunner.");
 
 const expectedValues = [
     // [time, element-id, property, expected-value, tolerance]
@@ -31,8 +35,8 @@ const expectedValues = [
 
 // Timeout so you can see it really animating at the start.
 var input = document.getElementById("target1");
-requestAnimationFrame(test.step_func(() => {
-    requestAnimationFrame(test.step_func_done(() => {
+requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
         input.type = "button";
         input.type = "text";
         // Remove the element, but there's no detachLayoutTree() since it's already detached.
@@ -41,7 +45,8 @@ requestAnimationFrame(test.step_func(() => {
         input.id = "target2";
         // Insert the element again.
         document.body.appendChild(input);
-        assert_equals(document.getAnimations().length, 0);
-    }));
-}));
+        shouldBe("document.getAnimations().length", "0");
+        finishJSTest();
+    });
+});
 </script>

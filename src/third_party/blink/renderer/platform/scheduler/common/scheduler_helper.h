@@ -14,20 +14,17 @@
 #include "base/time/tick_clock.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/common/ukm_task_sampler.h"
 
 namespace blink {
 namespace scheduler {
 
 // Common scheduler functionality for default tasks.
-// TODO(carlscab): This class is not really needed and should be removed
 class PLATFORM_EXPORT SchedulerHelper
     : public base::sequence_manager::SequenceManager::Observer {
  public:
-  // |sequence_manager| must remain valid until Shutdown() is called or the
-  // object is destroyed.
   explicit SchedulerHelper(
-      base::sequence_manager::SequenceManager* sequence_manager);
+      std::unique_ptr<base::sequence_manager::SequenceManager>
+          sequence_manager);
   ~SchedulerHelper() override;
 
   // SequenceManager::Observer implementation:
@@ -68,7 +65,7 @@ class PLATFORM_EXPORT SchedulerHelper
   void Shutdown();
 
   // Returns true if Shutdown() has been called. Otherwise returns false.
-  bool IsShutdown() const { return !sequence_manager_; }
+  bool IsShutdown() const { return !sequence_manager_.get(); }
 
   inline void CheckOnValidThread() const {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -102,15 +99,8 @@ class PLATFORM_EXPORT SchedulerHelper
   double GetSamplingRateForRecordingCPUTime() const;
   bool HasCPUTimingForEachTask() const;
 
-  bool ShouldRecordTaskUkm(bool task_has_thread_time) {
-    return ukm_task_sampler_.ShouldRecordTaskUkm(task_has_thread_time);
-  }
-
   // Test helpers.
   void SetWorkBatchSizeForTesting(int work_batch_size);
-  void SetUkmTaskSamplingRateForTest(double rate) {
-    ukm_task_sampler_.SetUkmTaskSamplingRate(rate);
-  }
 
  protected:
   void InitDefaultQueues(
@@ -118,10 +108,8 @@ class PLATFORM_EXPORT SchedulerHelper
       scoped_refptr<base::sequence_manager::TaskQueue> control_task_queue,
       TaskType default_task_type);
 
-  virtual void ShutdownAllQueues() {}
-
   base::ThreadChecker thread_checker_;
-  base::sequence_manager::SequenceManager* sequence_manager_;  // NOT OWNED
+  std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager_;
 
  private:
   friend class SchedulerHelperTest;
@@ -129,8 +117,6 @@ class PLATFORM_EXPORT SchedulerHelper
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 
   Observer* observer_;  // NOT OWNED
-
-  UkmTaskSampler ukm_task_sampler_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerHelper);
 };

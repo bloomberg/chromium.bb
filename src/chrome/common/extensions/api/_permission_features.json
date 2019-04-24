@@ -66,6 +66,15 @@
       "platform_app", "extension", "legacy_packaged_app", "hosted_app"
     ]
   },
+  "bookmarkManagerPrivate": {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app"],
+    "whitelist": [
+      "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2", // http://crbug.com/312900
+      "D57DE394F36DC1C3220E7604C575D29C51A6C495", // http://crbug.com/319444
+      "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9"  // http://crbug.com/371562
+    ]
+  },
   "bookmarks": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
@@ -301,6 +310,8 @@
     "extension_types": ["extension"],
     "platforms" : ["win", "mac", "linux"],
     "whitelist" : [
+      "FD15C63ABA854733FDCBC1D4D34A71E963A12ABD",  // https://crbug.com/825015
+      "08455FA7CB8734168378F731B00B354CEEE0088F",  // https://crbug.com/825015 - Test Extension
       "86D63D90308742AA65B8B29AE2D39FED2D6DC310",  // https://crbug.com/882461 SecureConnect
       "031E5E4A54C39E4F46E11CE643584E9187915908",  // https://crbug.com/882461 SecureConnect
       "349E89FE0296161007623C0B4096B617D7CECD54",  // https://crbug.com/882461 SecureConnect
@@ -570,6 +581,26 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
+  "preferencesPrivate": [
+    {
+      "channel": "stable",
+      "extension_types": [
+        "extension"
+      ],
+      "whitelist": [
+        "C41AD9DCD670210295614257EF8C9945AD68D86E",  // Google Now
+        "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2",  // http://crbug.com/312900
+        "D57DE394F36DC1C3220E7604C575D29C51A6C495",  // http://crbug.com/319444
+        "3F65507A3B39259B38C8173C6FFA3D12DF64CCE9",  // http://crbug.com/371562
+        "852290F2442EEE45EF673B8DA6090112079012A2"   // http://crbug.com/375484
+      ]
+    },
+    {
+      "channel": "stable",
+      "extension_types": ["platform_app"],
+      "location": "component"
+    }
+  ],
   "privacy": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]

@@ -53,13 +53,13 @@ class TestMenuDelegate : public MenuDelegate {
   MenuItemView* show_context_menu_source_ = nullptr;
 
   // ID of last executed command.
-  int execute_command_id_ = 0;
+  int execute_command_id_;
 
   // The number of times OnMenuClosed was called.
-  int on_menu_closed_called_count_ = 0;
+  int on_menu_closed_called_count_;
 
   // The value of the last call to OnMenuClosed.
-  MenuItemView* on_menu_closed_menu_ = nullptr;
+  MenuItemView* on_menu_closed_menu_;
 
   // The number of times WillHideMenu was called.
   int will_hide_menu_count_ = 0;
@@ -67,7 +67,7 @@ class TestMenuDelegate : public MenuDelegate {
   // The value of the last call to WillHideMenu.
   MenuItemView* will_hide_menu_ = nullptr;
 
-  bool on_perform_drop_called_ = false;
+  bool on_perform_drop_called_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMenuDelegate);
 };

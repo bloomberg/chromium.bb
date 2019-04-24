@@ -169,12 +169,9 @@ class LabelInfo {
   // Just a no-argument constructor and copy constructor.  Actual LabelInfo
   // objects are allocated in std::pair structs in a std::map.
   LabelInfo()
-      : label_(nullptr),
-        is_model_(false),
-        debug_index_(0),
-        refs_(0),
-        assignment_(nullptr),
-        candidates_(nullptr) {}
+      : label_(NULL), is_model_(false), debug_index_(0), refs_(0),
+        assignment_(NULL), candidates_(NULL)
+  {}
 
   ~LabelInfo();
 
@@ -221,7 +218,7 @@ class LabelInfoMaker {
 
   LabelInfo* MakeLabelInfo(Label* label, bool is_model, uint32_t position) {
     LabelInfo& slot = label_infos_[label];
-    if (slot.label_ == nullptr) {
+    if (slot.label_ == NULL) {
       slot.label_ = label;
       slot.is_model_ = is_model;
       slot.debug_index_ = ++debug_label_index_gen_;
@@ -356,7 +353,7 @@ class AssignmentCandidates {
 };
 
 AssignmentCandidates* LabelInfo::candidates() {
-  if (candidates_ == nullptr)
+  if (candidates_ == NULL)
     candidates_ = new AssignmentCandidates(this);
   return candidates_;
 }
@@ -415,7 +412,8 @@ class Shingle {
   Shingle(const Trace& trace, size_t exemplar_position)
       : trace_(trace),
         exemplar_position_(exemplar_position),
-        pattern_(nullptr) {}
+        pattern_(NULL) {
+  }
 
   const Trace& trace_;             // The shingle lives inside trace_.
   size_t exemplar_position_;       // At this position (and other positions).
@@ -515,8 +513,7 @@ class ShinglePattern {
 
   typedef std::set<FreqView, FreqView::Greater> Histogram;
 
-  ShinglePattern()
-      : index_(nullptr), model_coverage_(0), program_coverage_(0) {}
+  ShinglePattern() : index_(NULL), model_coverage_(0), program_coverage_(0) {}
 
   const Index* index_;  // Points to the key in the owning map value_type.
   Histogram model_histogram_;
@@ -527,7 +524,7 @@ class ShinglePattern {
 
 std::string ToString(const ShinglePattern::Index* index) {
   std::string s;
-  if (index == nullptr) {
+  if (index == NULL) {
     s = "<null>";
   } else {
     base::StringAppendF(&s, "<%d: ", index->variables_);
@@ -589,7 +586,7 @@ std::string HistogramToStringFull(const ShinglePattern::Histogram& histogram,
 
 std::string ToString(const ShinglePattern* pattern, size_t snippet_max = 3) {
   std::string s;
-  if (pattern == nullptr) {
+  if (pattern == NULL) {
     s = "<null>";
   } else {
     s = "{";
@@ -818,7 +815,7 @@ class AssignmentProblem {
       // Nothing much we can do with such a short problem.
       return true;
     }
-    instances_.resize(trace_.size() - Shingle::kWidth + 1, nullptr);
+    instances_.resize(trace_.size() - Shingle::kWidth + 1, NULL);
     AddShingles(0, model_end_);
     AddShingles(model_end_, trace_.size());
     InitialClassify();
@@ -909,12 +906,12 @@ class AssignmentProblem {
       pattern->program_histogram_.erase(ShinglePattern::FreqView(shingle));
       pattern->program_coverage_ -= shingle->position_count();
     }
-    shingle->set_pattern(nullptr);
+    shingle->set_pattern(NULL);
   }
 
   void Reclassify(Shingle* shingle) {
     ShinglePattern* pattern = shingle->pattern();
-    LOG_ASSERT(pattern == nullptr);
+    LOG_ASSERT(pattern == NULL);
 
     ShinglePattern::Index index(shingle);
     if (index.variables_ == 0)
@@ -1068,8 +1065,8 @@ class AssignmentProblem {
         for (uint8_t i = 0; i < Shingle::kWidth; ++i) {
           LabelInfo* program_info = program_instance->at(i);
           LabelInfo* model_info = model_instance->at(i);
-          if ((model_info->assignment_ == nullptr) !=
-              (program_info->assignment_ == nullptr)) {
+          if ((model_info->assignment_ == NULL) !=
+              (program_info->assignment_ == NULL)) {
             VLOG(2) << "ERROR " << i
                     << "\n\t"  << ToString(pattern, 10)
                     << "\n\t" << ToString(program_instance)
@@ -1227,7 +1224,7 @@ class AssignmentProblem {
 
 class Adjuster : public AdjustmentMethod {
  public:
-  Adjuster() : prog_(nullptr), model_(nullptr) {}
+  Adjuster() : prog_(NULL), model_(NULL) {}
   ~Adjuster() = default;
 
   bool Adjust(const AssemblyProgram& model, AssemblyProgram* program) {

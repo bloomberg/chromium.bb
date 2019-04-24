@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FAKE_DISPLAY_ITEM_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TESTING_FAKE_DISPLAY_ITEM_CLIENT_H_
 
+#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -14,20 +15,20 @@ namespace blink {
 class FakeDisplayItemClient : public DisplayItemClient {
  public:
   FakeDisplayItemClient(const String& name = "FakeDisplayItemClient",
-                        const IntRect& visual_rect = IntRect())
+                        const LayoutRect& visual_rect = LayoutRect())
       : name_(name), visual_rect_(visual_rect) {}
 
   String DebugName() const final { return name_; }
-  IntRect VisualRect() const override { return visual_rect_; }
-  IntRect PartialInvalidationVisualRect() const override {
+  LayoutRect VisualRect() const override { return visual_rect_; }
+  LayoutRect PartialInvalidationVisualRect() const override {
     return partial_invalidation_visual_rect_;
   }
   void ClearPartialInvalidationVisualRect() const override {
-    partial_invalidation_visual_rect_ = IntRect();
+    partial_invalidation_visual_rect_ = LayoutRect();
   }
 
-  void SetVisualRect(const IntRect& r) { visual_rect_ = r; }
-  void SetPartialInvalidationVisualRect(const IntRect& r) {
+  void SetVisualRect(const LayoutRect& r) { visual_rect_ = r; }
+  void SetPartialInvalidationVisualRect(const LayoutRect& r) {
     Invalidate(PaintInvalidationReason::kRectangle);
     partial_invalidation_visual_rect_ = r;
   }
@@ -37,8 +38,8 @@ class FakeDisplayItemClient : public DisplayItemClient {
 
  private:
   String name_;
-  IntRect visual_rect_;
-  mutable IntRect partial_invalidation_visual_rect_;
+  LayoutRect visual_rect_;
+  mutable LayoutRect partial_invalidation_visual_rect_;
 };
 
 }  // namespace blink

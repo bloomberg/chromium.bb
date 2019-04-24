@@ -21,9 +21,10 @@ std::pair<String, int> ParsePositionMarker(const std::string input8) {
   input16.Ensure16Bit();
   const size_t position = input16.find('|');
   DCHECK(position != kNotFound) << input8 << " should have position marker(|).";
-  String output = input16.Left(position) + input16.Substring(position + 1);
-  output.Ensure16Bit();
-  return {output, position};
+  String text16 = input16.Left(position);
+  text16.append(input16.Substring(position + 1));
+  text16.Ensure16Bit();
+  return {text16, position};
 }
 
 std::string MakeResultText(const String& text, int start, int end) {

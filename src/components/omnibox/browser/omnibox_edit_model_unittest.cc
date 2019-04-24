@@ -22,7 +22,6 @@
 #include "components/omnibox/browser/test_omnibox_edit_controller.h"
 #include "components/omnibox/browser/test_omnibox_edit_model.h"
 #include "components/omnibox/browser/test_omnibox_view.h"
-#include "components/url_formatter/url_fixer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
@@ -141,12 +140,6 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
         base::ASCIIToUTF16(input[i].url_for_editing));
     location_bar_model()->set_url_for_display(
         base::ASCIIToUTF16(input[i].url_for_display));
-
-    // Set the location bar model's URL to be a valid GURL that would generate
-    // the test case's url_for_editing.
-    location_bar_model()->set_url(
-        url_formatter::FixupURL(input[i].url_for_editing, ""));
-
     model()->ResetDisplayTexts();
 
     model()->SetInputInProgress(input[i].is_match_selected_in_popup);
@@ -293,7 +286,6 @@ TEST_F(OmniboxEditModelTest, CurrentMatch) {
   location_bar_model()->set_url(GURL("http://localhost/"));
   location_bar_model()->set_url_for_display(base::ASCIIToUTF16("localhost"));
   model()->ResetDisplayTexts();
-  model()->Revert();
 
   // Tests that we use the formatted full URL instead of the elided URL to
   // generate matches.
@@ -307,7 +299,6 @@ TEST_F(OmniboxEditModelTest, CurrentMatch) {
   // query, instead of the full formatted URL.
   location_bar_model()->set_display_search_terms(base::ASCIIToUTF16("foobar"));
   model()->ResetDisplayTexts();
-  model()->Revert();
 
   {
     AutocompleteMatch match = model()->CurrentMatch(nullptr);

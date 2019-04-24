@@ -126,8 +126,6 @@ config("feature_flags") {
     defines += [ "SAFE_BROWSING_DB_LOCAL" ]
   } else if (safe_browsing_mode == 2) {
     defines += [ "SAFE_BROWSING_DB_REMOTE" ]
-  } else if (safe_browsing_mode == 3) {
-    defines += [ "SAFE_BROWSING_DB_LOCAL" ]
   }
   if (is_official_build) {
     defines += [ "OFFICIAL_BUILD" ]
@@ -272,15 +270,8 @@ config("default_libs") {
   }
 }
 
+# Only //build/config/BUILDCONFIG.gn should reference this.
 group("common_deps") {
-  visibility = [
-    ":executable_deps",
-    ":loadable_module_deps",
-    ":shared_library_deps",
-  ]
-
-  # WARNING: This group is a dependency of **every executable and shared
-  # library**.  Please be careful adding new dependencies here.
   public_deps = []
 
   if (using_sanitizer) {
@@ -308,7 +299,6 @@ group("common_deps") {
   }
 }
 
-# Only the executable template in BUILDCONFIG.gn should reference this.
 group("executable_deps") {
   public_deps = [
     ":common_deps",
@@ -318,14 +308,12 @@ group("executable_deps") {
   }
 }
 
-# Only the loadable_module template in BUILDCONFIG.gn should reference this.
 group("loadable_module_deps") {
   public_deps = [
     ":common_deps",
   ]
 }
 
-# Only the shared_library template in BUILDCONFIG.gn should reference this.
 group("shared_library_deps") {
   public_deps = [
     ":common_deps",

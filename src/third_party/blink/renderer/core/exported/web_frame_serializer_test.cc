@@ -112,9 +112,7 @@ class WebFrameSerializerTest : public testing::Test {
     const WebString local_path_;
   };
 
-  String SerializeFile(const String& url,
-                       const String& file_name,
-                       bool save_with_empty_url) {
+  String SerializeFile(const String& url, const String& file_name) {
     KURL parsed_url(url);
     String file_path("frameserialization/" + file_name);
     RegisterMockedFileURLLoad(parsed_url, file_path, "text/html");
@@ -122,7 +120,7 @@ class WebFrameSerializerTest : public testing::Test {
     SingleLinkRewritingDelegate delegate(parsed_url, WebString("local"));
     SimpleWebFrameSerializerClient serializer_client;
     WebFrameSerializer::Serialize(MainFrameImpl(), &serializer_client,
-                                  &delegate, save_with_empty_url);
+                                  &delegate);
     return serializer_client.ToString();
   }
 
@@ -146,7 +144,7 @@ TEST_F(WebFrameSerializerTest, URLAttributeValues) {
       "script%3E\">external</a>\n"
       "</body></html>";
   String actual_html =
-      SerializeFile("http://www.test.com", "url_attribute_values.html", false);
+      SerializeFile("http://www.test.com", "url_attribute_values.html");
   EXPECT_EQ(expected_html, actual_html);
 }
 
@@ -161,32 +159,16 @@ TEST_F(WebFrameSerializerTest, EncodingAndNormalization) {
       "</head><body>\n"
       "\xe4\xc5\xd1\xe2\n"
       "\n</body></html>";
-  String actual_html = SerializeFile("http://www.test.com",
-                                     "encoding_normalization.html", false);
+  String actual_html =
+      SerializeFile("http://www.test.com", "encoding_normalization.html");
   EXPECT_EQ(expected_html, actual_html);
 }
 
 TEST_F(WebFrameSerializerTest, FromUrlWithMinusMinus) {
   String actual_html =
-      SerializeFile("http://www.test.com?--x--", "text_only_page.html", false);
+      SerializeFile("http://www.test.com?--x--", "text_only_page.html");
   EXPECT_EQ("<!-- saved from url=(0030)http://www.test.com/?-%2Dx-%2D -->",
             actual_html.Substring(1, 60));
-}
-
-TEST_F(WebFrameSerializerTest, WithoutFrameUrl) {
-  const char* expected_html =
-      "<!DOCTYPE html>\n"
-      "<!-- saved from url=(0014)about:internet -->\n"
-      "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; "
-      "charset=EUC-KR\">\n"
-      "<title>Ensure NFC normalization is not performed by frame "
-      "serializer</title>\n"
-      "</head><body>\n"
-      "\xe4\xc5\xd1\xe2\n"
-      "\n</body></html>";
-  String actual_html =
-      SerializeFile("http://www.test.com", "encoding_normalization.html", true);
-  EXPECT_EQ(expected_html, actual_html);
 }
 
 }  // namespace blink

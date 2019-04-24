@@ -31,18 +31,6 @@ Polymer({
     countries: {
       type: Array,
     },
-
-    /**
-     * Reference to OOBE screen object.
-     * @type {!{
-     *     onCountrySelected_: function(string),
-     *     onKeyboardSelected_: function(string),
-     *     onLanguageSelected_: function(string),
-     * }}
-     */
-    screen: {
-      type: Object,
-    },
   },
 
   /**
@@ -76,16 +64,13 @@ Polymer({
   /** Called after resources are updated. */
   updateLocalizedContent: function() {
     assert(loadTimeData);
-    var languageList = /** @type {!Array<OobeTypes.LanguageDsc>} */ (
-        loadTimeData.getValue('languageList'));
+    var languageList = loadTimeData.getValue('languageList');
     this.setLanguageList_(languageList);
 
-    var inputMethodsList = /** @type {!Array<OobeTypes.IMEDsc>} */ (
-        loadTimeData.getValue('inputMethodsList'));
+    var inputMethodsList = loadTimeData.getValue('inputMethodsList');
     this.setInputMethods_(inputMethodsList);
 
-    var countryList = /** @type {!Array<OobeTypes.DemoCountryDsc>} */ (
-        loadTimeData.getValue('demoModeCountryList'));
+    var countryList = loadTimeData.getValue('demoModeCountryList');
     this.setCountryList_(countryList);
 
     this.i18nUpdateLocale();
@@ -142,7 +127,7 @@ Polymer({
 
   /**
    * Handle language selection.
-   * @param {!CustomEvent<!OobeTypes.LanguageDsc>} event
+   * @param {!CustomEvent<!{!OobeTypes.LanguageDsc}>} event
    * @private
    */
   onLanguageSelected_: function(event) {
@@ -153,7 +138,7 @@ Polymer({
 
   /**
    * Handle keyboard layout selection.
-   * @param {!CustomEvent<!OobeTypes.IMEDsc>} event
+   * @param {!CustomEvent<!{!OobeTypes.IMEDsc}>} event
    * @private
    */
   onKeyboardSelected_: function(event) {
@@ -164,7 +149,7 @@ Polymer({
 
   /**
    * Handle country selection.
-   * @param {!CustomEvent<!OobeTypes.DemoCountryDsc>} event
+   * @param {!CustomEvent<!{!OobeTypes.DemoCountryDsc}>} event
    * @private
    */
   onCountrySelected_: function(event) {

@@ -6,7 +6,6 @@
 
 #include "base/time/default_tick_clock.h"
 #include "cc/paint/paint_flags.h"
-#include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
@@ -107,7 +106,6 @@ void TabIcon::SetData(const TabRendererData& data) {
   SetIcon(data.url, data.favicon);
   SetNetworkState(data.network_state);
   SetIsCrashed(data.IsCrashed());
-  has_tab_renderer_data_ = true;
 
   const bool showing_load = ShowingLoadingAnimation();
 
@@ -345,8 +343,9 @@ void TabIcon::MaybePaintFavicon(gfx::Canvas* canvas,
 }
 
 bool TabIcon::HasNonDefaultFavicon() const {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return !favicon_.isNull() && !favicon_.BackedBySameObjectAs(
-                                   favicon::GetDefaultFavicon().AsImageSkia());
+                                   *rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON));
 }
 
 void TabIcon::SetIcon(const GURL& url, const gfx::ImageSkia& icon) {
@@ -393,16 +392,10 @@ void TabIcon::SetIsCrashed(bool is_crashed) {
     hiding_fraction_ = 0.0;
   } else {
     // Transitioned from non-crashed to crashed.
-    if (!has_tab_renderer_data_) {
-      // This is the initial SetData(), so show the crashed icon directly
-      // without animating.
-      should_display_crashed_favicon_ = true;
-    } else {
-      if (!crash_animation_)
-        crash_animation_ = std::make_unique<CrashAnimation>(this);
-      if (!crash_animation_->is_animating())
-        crash_animation_->Start();
-    }
+    if (!crash_animation_)
+      crash_animation_ = std::make_unique<CrashAnimation>(this);
+    if (!crash_animation_->is_animating())
+      crash_animation_->Start();
   }
   SchedulePaint();
 }
@@ -426,11 +419,6 @@ void TabIcon::RefreshLayer() {
 }
 
 gfx::ImageSkia TabIcon::ThemeImage(const gfx::ImageSkia& source) {
-  if (!GetThemeProvider()->HasCustomColor(
-          ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON))
-    return source;
-
-  return gfx::ImageSkiaOperations::CreateColorMask(
-      source,
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON));
+  return gfx::ImageSkiaOperations::CreateHSLShiftedImage(
+      source, GetThemeProvider()->GetTint(ThemeProperties::TINT_BUTTONS));
 }

@@ -25,7 +25,7 @@ namespace blink {
 MediaValues* MediaValues::CreateDynamicIfFrameExists(LocalFrame* frame) {
   if (frame)
     return MediaValuesDynamic::Create(frame);
-  return MakeGarbageCollected<MediaValuesCached>();
+  return MediaValuesCached::Create();
 }
 
 double MediaValues::CalculateViewportWidth(LocalFrame* frame) {
@@ -176,12 +176,10 @@ ColorSpaceGamut MediaValues::CalculateColorGamut(LocalFrame* frame) {
       frame->GetPage()->GetChromeClient().GetScreenInfo());
 }
 
-PreferredColorScheme MediaValues::CalculatePreferredColorScheme(
-    LocalFrame* frame) {
+WebColorScheme MediaValues::CalculatePreferredColorScheme(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetSettings());
-  DCHECK(frame->GetDocument());
-  return frame->GetDocument()->GetStyleEngine().GetPreferredColorScheme();
+  return frame->GetSettings()->GetPreferredColorScheme();
 }
 
 bool MediaValues::CalculatePrefersReducedMotion(LocalFrame* frame) {

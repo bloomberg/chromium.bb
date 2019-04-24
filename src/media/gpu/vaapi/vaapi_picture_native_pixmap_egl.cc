@@ -94,8 +94,7 @@ bool VaapiPictureNativePixmapEgl::Allocate(gfx::BufferFormat format) {
 
   // Convert NativePixmapHandle to NativePixmapDmaBuf.
   scoped_refptr<gfx::NativePixmap> native_pixmap_dmabuf(
-      new gfx::NativePixmapDmaBuf(size_, format,
-                                  std::move(native_pixmap_handle)));
+      new gfx::NativePixmapDmaBuf(size_, format, native_pixmap_handle));
   if (!native_pixmap_dmabuf->AreDmaBufFdsValid()) {
     DLOG(ERROR) << "Invalid dmabuf fds";
     return false;
@@ -117,7 +116,7 @@ bool VaapiPictureNativePixmapEgl::Allocate(gfx::BufferFormat format) {
 
 bool VaapiPictureNativePixmapEgl::ImportGpuMemoryBufferHandle(
     gfx::BufferFormat format,
-    gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) {
+    const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
   return false;

@@ -682,7 +682,6 @@ struct FillingAssistanceTestCase {
 
   const char* description_for_logging;
 
-  bool is_blacklisted = false;
   bool submission_detected = true;
   bool submission_is_successful = true;
 
@@ -748,9 +747,9 @@ void CheckFillingAssistanceTestCase(
     auto recorder =
         CreatePasswordFormMetricsRecorder(is_main_frame_secure, nullptr);
     if (test_case.submission_detected) {
-      recorder->CalculateFillingAssistanceMetric(
-          form_data, saved_usernames, saved_passwords, test_case.is_blacklisted,
-          test_case.interactions_stats);
+      recorder->CalculateFillingAssistanceMetric(form_data, saved_usernames,
+                                                 saved_passwords,
+                                                 test_case.interactions_stats);
     }
 
     if (test_case.submission_is_successful)
@@ -990,9 +989,12 @@ TEST(PasswordFormMetricsRecorder, FillingAssistanceBlacklistedDomain) {
       {.description_for_logging = "Submission while domain is blacklisted",
        .fields = {{.value = "user1"},
                   {.value = "password1", .is_password = true}},
-       .is_blacklisted = true,
+       // A blacklisted domain is represented as empty username and password
+       // but empty username elements are stripped before
+       // PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric is
+       // called.
        .saved_usernames = {},
-       .saved_passwords = {},
+       .saved_passwords = {""},
        .expectation = PasswordFormMetricsRecorder::FillingAssistance::
            kNoSavedCredentialsAndBlacklisted});
 }
@@ -1006,9 +1008,12 @@ TEST(PasswordFormMetricsRecorder,
                   {.value = "password1",
                    .is_password = true,
                    .automatically_filled = true}},
-       .is_blacklisted = true,
+       // A blacklisted domain is represented as empty username and password
+       // but empty username elements are stripped before
+       // PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric is
+       // called.
        .saved_usernames = {"user1"},
-       .saved_passwords = {"password1"},
+       .saved_passwords = {"", "password1"},
        .expectation =
            PasswordFormMetricsRecorder::FillingAssistance::kAutomatic});
 }

@@ -501,7 +501,8 @@ void PasswordManagerBrowserTestBase::WaitForPasswordStore(Browser* browser) {
       PasswordStoreFactory::GetForProfile(browser->profile(),
                                           ServiceAccessType::IMPLICIT_ACCESS);
   PasswordStoreResultsObserver syncer;
-  password_store->GetAllLoginsWithAffiliationAndBrandingInformation(&syncer);
+  password_store->GetAutofillableLoginsWithAffiliationAndBrandingInformation(
+      &syncer);
   syncer.Wait();
 }
 
@@ -683,7 +684,6 @@ void PasswordManagerBrowserTestBase::AddHSTSHost(const std::string& host) {
 void PasswordManagerBrowserTestBase::CheckThatCredentialsStored(
     const std::string& username,
     const std::string& password) {
-  SCOPED_TRACE(::testing::Message() << username << ", " << password);
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(

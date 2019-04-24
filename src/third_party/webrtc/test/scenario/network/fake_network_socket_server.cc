@@ -11,16 +11,15 @@
 #include "test/scenario/network/fake_network_socket_server.h"
 
 #include <utility>
-#include "rtc_base/thread.h"
 
 namespace webrtc {
 namespace test {
 
 FakeNetworkSocketServer::FakeNetworkSocketServer(
     Clock* clock,
-    EndpointsContainer* endpoints_container)
+    std::vector<EndpointNode*> endpoints)
     : clock_(clock),
-      endpoints_container_(endpoints_container),
+      endpoints_(std::move(endpoints)),
       wakeup_(/*manual_reset=*/false, /*initially_signaled=*/false) {}
 FakeNetworkSocketServer::~FakeNetworkSocketServer() = default;
 
@@ -28,9 +27,15 @@ void FakeNetworkSocketServer::OnMessageQueueDestroyed() {
   msg_queue_ = nullptr;
 }
 
-EmulatedEndpoint* FakeNetworkSocketServer::GetEndpointNode(
+EndpointNode* FakeNetworkSocketServer::GetEndpointNode(
     const rtc::IPAddress& ip) {
-  return endpoints_container_->LookupByLocalAddress(ip);
+  for (auto* endpoint : endpoints_) {
+    rtc::IPAddress peerLocalAddress = endpoint->GetPeerLocalAddress();
+    if (peerLocalAddress == ip) {
+      return endpoint;
+    }
+  }
+  RTC_CHECK(false) << "No network found for address" << ip.ToString();
 }
 
 void FakeNetworkSocketServer::Unregister(SocketIoProcessor* io_processor) {

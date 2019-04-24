@@ -16,13 +16,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
  * Tests {@link ChromeBackgroundService}.
@@ -66,7 +65,7 @@ public class ChromeBackgroundServiceTest {
         protected void checkExpectations(final boolean expectedLaunchBrowser,
                 final boolean expectedDidCallOnPersistentSchedulerWakeUp,
                 final boolean expectedDidCallOnBrowserUpgraded) {
-            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+            ThreadUtils.runOnUiThread(() -> {
                 Assert.assertEquals("StartedService", expectedLaunchBrowser, mDidLaunchBrowser);
                 Assert.assertEquals("OnPersistentSchedulerWakeUp",
                         expectedDidCallOnPersistentSchedulerWakeUp,

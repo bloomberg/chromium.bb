@@ -34,10 +34,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
-#include "components/crx_file/crx_verifier.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/extension.h"
 #include "net/base/host_port_pair.h"
 #include "net/dns/mock_host_resolver.h"
@@ -179,10 +177,7 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
   }
 
   void OnKioskExtensionDownloadFailed(const std::string& app_id) override {
-    // Intentionally nothing to do here. Most tests which use this helper don't
-    // care about extension downloading, only about fetching its app data. Also
-    // fake_cws()->SetNoUpdate creates extension which will fail to download due
-    // to missing update URL in manifest.
+    OnKioskAppDataLoadFailure(app_id);
   }
 
   scoped_refptr<content::MessageLoopRunner> runner_;
@@ -230,10 +225,7 @@ class ExternalCachePutWaiter {
 
 class KioskAppManagerTest : public InProcessBrowserTest {
  public:
-  KioskAppManagerTest()
-      : settings_helper_(false),
-        fake_cws_(new FakeCWS()),
-        verifier_format_override_(crx_file::VerifierFormat::CRX3) {}
+  KioskAppManagerTest() : settings_helper_(false), fake_cws_(new FakeCWS()) {}
   ~KioskAppManagerTest() override {}
 
   // InProcessBrowserTest overrides:
@@ -467,8 +459,6 @@ class KioskAppManagerTest : public InProcessBrowserTest {
  private:
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<FakeCWS> fake_cws_;
-  extensions::SandboxedUnpacker::ScopedVerifierFormatOverrideForTest
-      verifier_format_override_;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppManagerTest);
 };

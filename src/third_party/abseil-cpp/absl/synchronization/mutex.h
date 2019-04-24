@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      https://www.apache.org/licenses/LICENSE-2.0
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -157,7 +157,6 @@ class LOCKABLE Mutex {
   //   ABSL_CONST_INIT Mutex mu(absl::kConstInit);
   //   }
   explicit constexpr Mutex(absl::ConstInitType);
-
   ~Mutex();
 
   // Mutex::Lock()
@@ -901,12 +900,10 @@ class SCOPED_LOCKABLE ReleasableMutexLock {
 
 #ifdef ABSL_INTERNAL_USE_NONPROD_MUTEX
 inline constexpr Mutex::Mutex(absl::ConstInitType) : impl_(absl::kConstInit) {}
-
 #else
 inline Mutex::Mutex() : mu_(0) {
   ABSL_TSAN_MUTEX_CREATE(this, __tsan_mutex_not_static);
 }
-
 inline constexpr Mutex::Mutex(absl::ConstInitType) : mu_(0) {}
 
 inline CondVar::CondVar() : cv_(0) {}
@@ -1050,5 +1047,4 @@ void SetMutexDeadlockDetectionMode(OnDeadlockCycle mode);
 extern "C" {
 void AbslInternalMutexYield();
 }  // extern "C"
-
 #endif  // ABSL_SYNCHRONIZATION_MUTEX_H_

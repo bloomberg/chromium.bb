@@ -1,3 +1,0 @@
-[document web]
-++[landmark] xml-roles:region
-++++[text] name='This is an ARIA region.'

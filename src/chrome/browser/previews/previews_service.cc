@@ -11,7 +11,6 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/blacklist/opt_out_blacklist/sql/opt_out_store_sql.h"
@@ -24,7 +23,6 @@
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 
 namespace {
 
@@ -108,11 +106,7 @@ PreviewsService::PreviewsService(content::BrowserContext* browser_context)
           std::make_unique<previews::PreviewsTopHostProviderImpl>(
               browser_context)),
       previews_lite_page_decider_(
-          std::make_unique<PreviewsLitePageDecider>(browser_context)),
-      previews_url_loader_factory_(
-          content::BrowserContext::GetDefaultStoragePartition(
-              Profile::FromBrowserContext(browser_context))
-              ->GetURLLoaderFactoryForBrowserProcess()) {
+          std::make_unique<PreviewsLitePageDecider>(browser_context)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -142,9 +136,8 @@ void PreviewsService::Initialize(
           profile_path.Append(chrome::kPreviewsOptOutDBFilename)),
       optimization_guide_service
           ? std::make_unique<previews::PreviewsOptimizationGuide>(
-                optimization_guide_service, ui_task_runner,
-                background_task_runner, profile_path,
-                previews_top_host_provider_.get(), previews_url_loader_factory_)
+                optimization_guide_service, ui_task_runner, profile_path,
+                previews_top_host_provider_.get())
           : nullptr,
       base::Bind(&IsPreviewsTypeEnabled),
       std::make_unique<previews::PreviewsLogger>(), GetAllowedPreviews(),

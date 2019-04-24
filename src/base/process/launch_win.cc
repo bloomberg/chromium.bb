@@ -21,7 +21,6 @@
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/process/environment_internal.h"
 #include "base/process/kill.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -289,10 +288,6 @@ Process LaunchProcess(const string16& cmdline,
       return Process();
     }
 
-    // Environment options are not implemented for use with |as_user|.
-    DCHECK(!options.clear_environment);
-    DCHECK(options.environment.empty());
-
     BOOL launched = CreateProcessAsUser(
         options.as_user, nullptr, as_writable_wcstr(writable_cmdline), nullptr,
         nullptr, inherit_handles, flags, enviroment_block, current_directory,
@@ -304,32 +299,11 @@ Process LaunchProcess(const string16& cmdline,
       return Process();
     }
   } else {
-    wchar_t* new_environment = nullptr;
-    string16 env_storage;
-    if (options.clear_environment || !options.environment.empty()) {
-      if (options.clear_environment) {
-        static const wchar_t kEmptyEnvironment[] = {0};
-        env_storage =
-            internal::AlterEnvironment(kEmptyEnvironment, options.environment);
-      } else {
-        wchar_t* old_environment = GetEnvironmentStrings();
-        if (!old_environment) {
-          DPLOG(ERROR);
-          return Process();
-        }
-        env_storage =
-            internal::AlterEnvironment(old_environment, options.environment);
-        FreeEnvironmentStrings(old_environment);
-      }
-      new_environment = const_cast<wchar_t*>(env_storage.data());
-      flags |= CREATE_UNICODE_ENVIRONMENT;
-    }
-
     if (!CreateProcess(nullptr, as_writable_wcstr(writable_cmdline), nullptr,
-                       nullptr, inherit_handles, flags, new_environment,
+                       nullptr, inherit_handles, flags, nullptr,
                        current_directory, startup_info, &temp_process_info)) {
-      DPLOG(ERROR) << "Command line:" << std::endl
-                   << UTF16ToUTF8(cmdline) << std::endl;
+      DPLOG(ERROR) << "Command line:" << std::endl << UTF16ToUTF8(cmdline)
+                   << std::endl;
       return Process();
     }
   }

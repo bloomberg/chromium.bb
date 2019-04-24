@@ -60,8 +60,7 @@ class AppNotificationLauncher : public AppIconLoaderDelegate {
 
     pending_notification_->set_icon(*extension_icon_);
     NotificationDisplayService::GetForProfile(profile_)->Display(
-        NotificationHandler::Type::TRANSIENT, *pending_notification_,
-        /*metadata=*/nullptr);
+        NotificationHandler::Type::TRANSIENT, *pending_notification_);
     delete this;
   }
 

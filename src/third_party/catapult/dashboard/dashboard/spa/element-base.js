@@ -5,16 +5,7 @@
 'use strict';
 
 tr.exportTo('cp', () => {
-  const ReduxMixin = PolymerRedux(Redux.createSimpleStore({
-    devtools: {
-      // Do not record changes automatically when in a production environment.
-      shouldRecordChanges: !window.IS_PRODUCTION,
-
-      // Increase the maximum number of actions stored in the history tree. The
-      // oldest actions are removed once maxAge is reached.
-      maxAge: 75,
-    },
-  }));
+  const ReduxMixin = PolymerRedux(Redux.createSimpleStore());
 
   /*
    * This base class mixes Polymer.Element with Polymer-Redux and provides
@@ -25,14 +16,6 @@ tr.exportTo('cp', () => {
     constructor() {
       super();
       this.debounceJobs_ = new Map();
-    }
-
-    add_() {
-      let sum = arguments[0];
-      for (const arg of Array.from(arguments).slice(1)) {
-        sum += arg;
-      }
-      return sum;
     }
 
     isEqual_() {

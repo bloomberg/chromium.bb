@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/wm/overview/delayed_animation_observer.h"
 #include "ash/wm/overview/overview_delegate.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/overview/overview_session.h"
@@ -62,7 +61,6 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // Called when the overview button tray has been long pressed. Enters
   // splitview mode if the active window is snappable. Also enters overview mode
   // if device is not currently in overview mode.
-  // TODO(sammiequon): Move this function to SplitViewController.
   void OnOverviewButtonTrayLongPressed(const gfx::Point& event_location);
 
   // Returns true if we're in start-overview animation.
@@ -81,13 +79,13 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
 
   // OverviewDelegate:
   void OnSelectionEnded() override;
-  void AddExitAnimationObserver(
+  void AddDelayedAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation) override;
-  void RemoveAndDestroyExitAnimationObserver(
+  void RemoveAndDestroyAnimationObserver(
       DelayedAnimationObserver* animation) override;
-  void AddEnterAnimationObserver(
+  void AddStartAnimationObserver(
       std::unique_ptr<DelayedAnimationObserver> animation_observer) override;
-  void RemoveAndDestroyEnterAnimationObserver(
+  void RemoveAndDestroyStartAnimationObserver(
       DelayedAnimationObserver* animation_observer) override;
 
   // ::wm::ActivationChangeObserver:
@@ -104,9 +102,6 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
 
   void set_occlusion_pause_duration_for_end_ms_for_test(int duration) {
     occlusion_pause_duration_for_end_ms_ = duration;
-  }
-  void set_delayed_animation_task_delay_for_test(base::TimeDelta delta) {
-    delayed_animation_task_delay_ = delta;
   }
 
   // Returns wallpaper blur status for testing.
@@ -157,11 +152,6 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   std::unique_ptr<OverviewBlurController> overview_blur_controller_;
 
   base::CancelableOnceClosure reset_pauser_task_;
-
-  // App dragging enters overview right away. This task is used to delay the
-  // |OnStartingAnimationComplete| call so that some animations do not make the
-  // initial setup less performant.
-  base::TimeDelta delayed_animation_task_delay_;
 
   base::ObserverList<OverviewObserver> observers_;
 

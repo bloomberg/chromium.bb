@@ -34,8 +34,7 @@ class XRWebGLLayer final : public XRLayer {
                WebGLRenderingContextBase*,
                scoped_refptr<XRWebGLDrawingBuffer>,
                WebGLFramebuffer*,
-               double framebuffer_scale,
-               bool ignore_depth_values);
+               double framebuffer_scale);
   ~XRWebGLLayer() override;
 
   static XRWebGLLayer* Create(
@@ -58,7 +57,6 @@ class XRWebGLLayer final : public XRLayer {
   bool depth() const { return drawing_buffer_->depth(); }
   bool stencil() const { return drawing_buffer_->stencil(); }
   bool alpha() const { return drawing_buffer_->alpha(); }
-  bool ignoreDepthValues() const { return ignore_depth_values_; }
 
   XRViewport* getViewport(XRView*);
   void requestViewportScaling(double scale_factor);
@@ -91,7 +89,7 @@ class XRWebGLLayer final : public XRLayer {
 
   scoped_refptr<XRWebGLDrawingBuffer::MirrorClient> mirror_client_;
 
-  Member<WebGLRenderingContextBase> webgl_context_;
+  TraceWrapperMember<WebGLRenderingContextBase> webgl_context_;
   scoped_refptr<XRWebGLDrawingBuffer> drawing_buffer_;
   Member<WebGLFramebuffer> framebuffer_;
 
@@ -99,9 +97,8 @@ class XRWebGLLayer final : public XRLayer {
   double requested_viewport_scale_ = 1.0;
   double viewport_scale_ = 1.0;
   bool viewports_dirty_ = true;
-  bool can_mirror_ = false;
+  bool mirroring_ = false;
   bool is_direct_draw_frame = false;
-  bool ignore_depth_values_ = false;
 };
 
 }  // namespace blink

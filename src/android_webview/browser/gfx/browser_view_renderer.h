@@ -143,9 +143,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
                      const gfx::Vector2dF& latest_overscroll_delta,
                      const gfx::Vector2dF& current_fling_velocity) override;
   ui::TouchHandleDrawable* CreateDrawable() override;
-  void CopyOutput(
-      content::SynchronousCompositor* compositor,
-      std::unique_ptr<viz::CopyOutputRequest> copy_request) override;
 
   // CompositorFrameProducer overrides
   base::WeakPtr<CompositorFrameProducer> GetWeakPtr() override;
@@ -154,7 +151,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   void ReturnUsedResources(const std::vector<viz::ReturnedResource>& resources,
                            const CompositorID& compositor_id,
                            uint32_t layer_tree_frame_sink_id) override;
-  void OnParentDrawDataUpdated(
+  void OnParentDrawConstraintsUpdated(
       CompositorFrameConsumer* compositor_frame_consumer) override;
   void OnViewTreeForceDarkStateChanged(
       bool view_tree_force_dark_state) override;
@@ -182,7 +179,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   void ReturnResourceFromParent(
       CompositorFrameConsumer* compositor_frame_consumer);
   void ReleaseHardware();
-  bool DoUpdateParentDrawData();
 
   gfx::Vector2d max_scroll_offset() const;
 
@@ -229,8 +225,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool has_rendered_frame_ = false;
 
   bool offscreen_pre_raster_;
-
-  CopyOutputRequestQueue copy_requests_;
 
   gfx::Vector2d last_on_draw_scroll_offset_;
   gfx::Rect last_on_draw_global_visible_rect_;

@@ -136,28 +136,20 @@ static void cbs_unit_uninit(CodedBitstreamContext *ctx,
     unit->data_bit_padding = 0;
 }
 
-void ff_cbs_fragment_reset(CodedBitstreamContext *ctx,
-                           CodedBitstreamFragment *frag)
+void ff_cbs_fragment_uninit(CodedBitstreamContext *ctx,
+                            CodedBitstreamFragment *frag)
 {
     int i;
 
     for (i = 0; i < frag->nb_units; i++)
         cbs_unit_uninit(ctx, &frag->units[i]);
+    av_freep(&frag->units);
     frag->nb_units = 0;
 
     av_buffer_unref(&frag->data_ref);
     frag->data             = NULL;
     frag->data_size        = 0;
     frag->data_bit_padding = 0;
-}
-
-void ff_cbs_fragment_free(CodedBitstreamContext *ctx,
-                          CodedBitstreamFragment *frag)
-{
-    ff_cbs_fragment_reset(ctx, frag);
-
-    av_freep(&frag->units);
-    frag->nb_units_allocated = 0;
 }
 
 static int cbs_read_fragment_content(CodedBitstreamContext *ctx,
@@ -224,6 +216,8 @@ int ff_cbs_read_extradata(CodedBitstreamContext *ctx,
 {
     int err;
 
+    memset(frag, 0, sizeof(*frag));
+
     err = cbs_fill_fragment_data(ctx, frag, par->extradata,
                                  par->extradata_size);
     if (err < 0)
@@ -241,6 +235,8 @@ int ff_cbs_read_packet(CodedBitstreamContext *ctx,
                        const AVPacket *pkt)
 {
     int err;
+
+    memset(frag, 0, sizeof(*frag));
 
     if (pkt->buf) {
         frag->data_ref = av_buffer_ref(pkt->buf);
@@ -268,6 +264,8 @@ int ff_cbs_read(CodedBitstreamContext *ctx,
                 const uint8_t *data, size_t size)
 {
     int err;
+
+    memset(frag, 0, sizeof(*frag));
 
     err = cbs_fill_fragment_data(ctx, frag, data, size);
     if (err < 0)
@@ -550,34 +548,20 @@ static int cbs_insert_unit(CodedBitstreamContext *ctx,
 {
     CodedBitstreamUnit *units;
 
-    if (frag->nb_units < frag->nb_units_allocated) {
-        units = frag->units;
+    units = av_malloc_array(frag->nb_units + 1, sizeof(*units));
+    if (!units)
+        return AVERROR(ENOMEM);
 
-        if (position < frag->nb_units)
-            memmove(units + position + 1, units + position,
-                    (frag->nb_units - position) * sizeof(*units));
-    } else {
-        units = av_malloc_array(frag->nb_units + 1, sizeof(*units));
-        if (!units)
-            return AVERROR(ENOMEM);
-
-        ++frag->nb_units_allocated;
-
-        if (position > 0)
-            memcpy(units, frag->units, position * sizeof(*units));
-
-        if (position < frag->nb_units)
-            memcpy(units + position + 1, frag->units + position,
-                   (frag->nb_units - position) * sizeof(*units));
-    }
+    if (position > 0)
+        memcpy(units, frag->units, position * sizeof(*units));
+    if (position < frag->nb_units)
+        memcpy(units + position + 1, frag->units + position,
+               (frag->nb_units - position) * sizeof(*units));
 
     memset(units + position, 0, sizeof(*units));
 
-    if (units != frag->units) {
-        av_free(frag->units);
-        frag->units = units;
-    }
-
+    av_freep(&frag->units);
+    frag->units = units;
     ++frag->nb_units;
 
     return 0;
@@ -668,10 +652,16 @@ int ff_cbs_delete_unit(CodedBitstreamContext *ctx,
 
     --frag->nb_units;
 
-    if (frag->nb_units > 0)
+    if (frag->nb_units == 0) {
+        av_freep(&frag->units);
+
+    } else {
         memmove(frag->units + position,
                 frag->units + position + 1,
                 (frag->nb_units - position) * sizeof(*frag->units));
+
+        // Don't bother reallocating the unit array.
+    }
 
     return 0;
 }

@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
-#include "cc/paint/paint_flags.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -40,28 +39,6 @@ class SolidBackground : public Background {
   DISALLOW_COPY_AND_ASSIGN(SolidBackground);
 };
 
-// RoundedRectBackground is a filled solid colored background that has
-// rounded corners.
-class RoundedRectBackground : public Background {
- public:
-  RoundedRectBackground(SkColor color, float radius) : radius_(radius) {
-    SetNativeControlColor(color);
-  }
-
-  void Paint(gfx::Canvas* canvas, View* view) const override {
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(get_color());
-    canvas->DrawRoundRect(gfx::RectF(view->GetLocalBounds()), radius_, flags);
-  }
-
- private:
-  float radius_;
-
-  DISALLOW_COPY_AND_ASSIGN(RoundedRectBackground);
-};
-
 // ThemedSolidBackground is a solid background that stays in sync with a view's
 // native theme.
 class ThemedSolidBackground : public SolidBackground, public ViewObserver {
@@ -73,7 +50,7 @@ class ThemedSolidBackground : public SolidBackground, public ViewObserver {
     observer_.Add(view);
     OnViewNativeThemeChanged(view);
   }
-  ~ThemedSolidBackground() override = default;
+  ~ThemedSolidBackground() override {}
 
   // ViewObserver:
   void OnViewNativeThemeChanged(View* view) override {
@@ -96,7 +73,7 @@ class BackgroundPainter : public Background {
     DCHECK(painter_);
   }
 
-  ~BackgroundPainter() override = default;
+  ~BackgroundPainter() override {}
 
   void Paint(gfx::Canvas* canvas, View* view) const override {
     Painter::PaintPainterAt(canvas, painter_.get(), view->GetLocalBounds());
@@ -110,7 +87,7 @@ class BackgroundPainter : public Background {
 
 Background::Background() : color_(SK_ColorWHITE) {}
 
-Background::~Background() = default;
+Background::~Background() {}
 
 void Background::SetNativeControlColor(SkColor color) {
   color_ = color;
@@ -118,11 +95,6 @@ void Background::SetNativeControlColor(SkColor color) {
 
 std::unique_ptr<Background> CreateSolidBackground(SkColor color) {
   return std::make_unique<SolidBackground>(color);
-}
-
-std::unique_ptr<Background> CreateRoundedRectBackground(SkColor color,
-                                                        float radius) {
-  return std::make_unique<RoundedRectBackground>(color, radius);
 }
 
 std::unique_ptr<Background> CreateThemedSolidBackground(

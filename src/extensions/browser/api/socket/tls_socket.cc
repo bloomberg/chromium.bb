@@ -115,24 +115,23 @@ Socket::SocketType TLSSocket::GetSocketType() const {
 
 int TLSSocket::WriteImpl(net::IOBuffer* io_buffer,
                          int io_buffer_size,
-                         net::CompletionOnceCallback callback) {
+                         const net::CompletionCallback& callback) {
   if (!mojo_data_pump_)
     return net::ERR_SOCKET_NOT_CONNECTED;
-  mojo_data_pump_->Write(
-      io_buffer, io_buffer_size,
-      base::BindOnce(&TLSSocket::OnWriteComplete, base::Unretained(this),
-                     std::move(callback)));
+  mojo_data_pump_->Write(io_buffer, io_buffer_size,
+                         base::BindOnce(&TLSSocket::OnWriteComplete,
+                                        base::Unretained(this), callback));
   return net::ERR_IO_PENDING;
 }
 
-void TLSSocket::OnWriteComplete(net::CompletionOnceCallback callback,
+void TLSSocket::OnWriteComplete(const net::CompletionCallback& callback,
                                 int result) {
   if (result < 0) {
     // Write side has terminated. This can be an error or a graceful close.
     // TCPSocketEventDispatcher doesn't distinguish between the two.
     Disconnect(false /* socket_destroying */);
   }
-  std::move(callback).Run(result);
+  callback.Run(result);
 }
 
 void TLSSocket::OnReadComplete(int result,

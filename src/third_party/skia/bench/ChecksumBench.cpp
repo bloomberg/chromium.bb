@@ -53,7 +53,8 @@ protected:
                 for (int i = 0; i < loops; i++) {
                     SkMD5 md5;
                     md5.write(fData, sizeof(fData));
-                    (void)md5.finish();
+                    SkMD5::Digest digest;
+                    md5.finish(digest);
                 }
             } break;
             case kHash_ChecksumType: {

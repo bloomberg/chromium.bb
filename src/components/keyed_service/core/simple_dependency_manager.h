@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_KEYED_SERVICE_CORE_SIMPLE_DEPENDENCY_MANAGER_H_
 #define COMPONENTS_KEYED_SERVICE_CORE_SIMPLE_DEPENDENCY_MANAGER_H_
 
-#include "base/macros.h"
 #include "components/keyed_service/core/dependency_manager.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 
@@ -28,6 +27,7 @@ class KEYED_SERVICE_EXPORT SimpleDependencyManager : public DependencyManager {
   // |key| is used to prevent multiple registrations on the same BrowserContext
   // in tests.
   void RegisterProfilePrefsForServices(
+      SimpleFactoryKey* key,
       user_prefs::PrefRegistrySyncable* pref_registry);
 
   // Create services for test BrowserContexts - these contexts will not create
@@ -42,8 +42,6 @@ class KEYED_SERVICE_EXPORT SimpleDependencyManager : public DependencyManager {
   // DependencyManager:
   void DumpContextDependencies(void* context) const final;
 #endif  // NDEBUG
-
-  DISALLOW_COPY_AND_ASSIGN(SimpleDependencyManager);
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CORE_SIMPLE_DEPENDENCY_MANAGER_H_

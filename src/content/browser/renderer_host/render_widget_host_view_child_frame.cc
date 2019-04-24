@@ -231,13 +231,13 @@ void RenderWidgetHostViewChildFrame::SetBounds(const gfx::Rect& rect) {
 
 void RenderWidgetHostViewChildFrame::Focus() {}
 
-bool RenderWidgetHostViewChildFrame::HasFocus() {
+bool RenderWidgetHostViewChildFrame::HasFocus() const {
   if (frame_connector_)
     return frame_connector_->HasFocus();
   return false;
 }
 
-bool RenderWidgetHostViewChildFrame::IsSurfaceAvailableForCopy() {
+bool RenderWidgetHostViewChildFrame::IsSurfaceAvailableForCopy() const {
   return GetLocalSurfaceIdAllocation().IsValid();
 }
 
@@ -286,7 +286,7 @@ void RenderWidgetHostViewChildFrame::WasUnOccluded() {
   Show();
 }
 
-gfx::Rect RenderWidgetHostViewChildFrame::GetViewBounds() {
+gfx::Rect RenderWidgetHostViewChildFrame::GetViewBounds() const {
   gfx::Rect rect;
   if (frame_connector_) {
     rect = frame_connector_->screen_space_rect_in_dip();
@@ -310,7 +310,7 @@ gfx::Rect RenderWidgetHostViewChildFrame::GetViewBounds() {
   return rect;
 }
 
-gfx::Size RenderWidgetHostViewChildFrame::GetVisibleViewportSize() {
+gfx::Size RenderWidgetHostViewChildFrame::GetVisibleViewportSize() const {
   // For subframes, the visual viewport corresponds to the main frame size, so
   // this bubbles up to the parent until it hits the main frame's
   // RenderWidgetHostView.
@@ -352,7 +352,7 @@ void RenderWidgetHostViewChildFrame::SetInsets(const gfx::Insets& insets) {
   host()->SynchronizeVisualProperties(!insets_.IsEmpty());
 }
 
-gfx::NativeView RenderWidgetHostViewChildFrame::GetNativeView() {
+gfx::NativeView RenderWidgetHostViewChildFrame::GetNativeView() const {
   // TODO(ekaramad): To accomodate MimeHandlerViewGuest while embedded inside
   // OOPIF-webview, we need to return the native view to be used by
   // RenderWidgetHostViewGuest. Remove this once https://crbug.com/642826 is
@@ -383,7 +383,8 @@ void RenderWidgetHostViewChildFrame::UpdateBackgroundColor() {
   }
 }
 
-gfx::Size RenderWidgetHostViewChildFrame::GetCompositorViewportPixelSize() {
+gfx::Size RenderWidgetHostViewChildFrame::GetCompositorViewportPixelSize()
+    const {
   if (frame_connector_)
     return frame_connector_->local_frame_size_in_pixels();
   return gfx::Size();
@@ -895,7 +896,7 @@ void RenderWidgetHostViewChildFrame::ReclaimResources(
 
 void RenderWidgetHostViewChildFrame::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    const viz::PresentationFeedbackMap& feedbacks) {
+    const base::flat_map<uint32_t, gfx::PresentationFeedback>& feedbacks) {
   host_->ProgressFlingIfNeeded(args.frame_time);
   if (renderer_compositor_frame_sink_)
     renderer_compositor_frame_sink_->OnBeginFrame(args, feedbacks);
@@ -971,7 +972,7 @@ InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(
     // Touchscreen pinch events may be targeted to a child in order to have the
     // child's TouchActionFilter filter them, but we may encounter
     // https://crbug.com/771330 which would let the pinch events through.
-    if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchscreen) {
+    if (gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchscreen) {
       return INPUT_EVENT_ACK_STATE_CONSUMED;
     }
     NOTREACHED();
@@ -982,7 +983,7 @@ InputEventAckState RenderWidgetHostViewChildFrame::FilterInputEvent(
         static_cast<const blink::WebGestureEvent&>(input_event);
     // Zero-velocity touchpad flings are an Aura-specific signal that the
     // touchpad scroll has ended, and should not be forwarded to the renderer.
-    if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad &&
+    if (gesture_event.SourceDevice() == blink::kWebGestureDeviceTouchpad &&
         !gesture_event.data.fling_start.velocity_x &&
         !gesture_event.data.fling_start.velocity_y) {
       // Here we indicate that there was no consumer for this event, as
@@ -1034,7 +1035,8 @@ RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
       BrowserAccessibilityManager::GetEmptyDocument(), delegate);
 }
 
-void RenderWidgetHostViewChildFrame::GetScreenInfo(ScreenInfo* screen_info) {
+void RenderWidgetHostViewChildFrame::GetScreenInfo(
+    ScreenInfo* screen_info) const {
   if (frame_connector_)
     *screen_info = frame_connector_->screen_info();
   else

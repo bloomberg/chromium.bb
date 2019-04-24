@@ -32,7 +32,6 @@ class FileSystemContext;
 class FileSystemFileUtil;
 class FileSystemOperationContext;
 class FileSystemOperationRunner;
-class ObfuscatedFileUtilDelegate;
 }
 
 namespace content {
@@ -93,8 +92,6 @@ class SandboxFileSystemTestHelper {
   }
   storage::FileSystemFileUtil* file_util() const { return file_util_; }
   storage::FileSystemUsageCache* usage_cache();
-
-  storage::ObfuscatedFileUtilDelegate* file_util_delegate();
 
  private:
   void SetUpFileSystem();

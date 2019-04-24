@@ -74,7 +74,8 @@ class ObjCVideoEncoder : public VideoEncoder {
   int32_t Release() override { return [encoder_ releaseEncoder]; }
 
   int32_t Encode(const VideoFrame &frame,
-                 const std::vector<VideoFrameType> *frame_types) override {
+                 const CodecSpecificInfo *codec_specific_info,
+                 const std::vector<FrameType> *frame_types) override {
     NSMutableArray<NSNumber *> *rtcFrameTypes = [NSMutableArray array];
     for (size_t i = 0; i < frame_types->size(); ++i) {
       [rtcFrameTypes addObject:@(RTCFrameType(frame_types->at(i)))];

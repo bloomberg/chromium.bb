@@ -36,7 +36,6 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include "ipc/handle_attachment_fuchsia.h"
 #include "ipc/handle_fuchsia.h"
 #endif
 
@@ -93,7 +92,7 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
 
   switch (value->type()) {
     case base::Value::Type::NONE:
-      break;
+    break;
     case base::Value::Type::BOOLEAN: {
       bool val;
       result = value->GetAsBoolean(&val);
@@ -148,11 +147,6 @@ void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
       }
       break;
     }
-
-    // TODO(crbug.com/859477): Remove after root cause is found.
-    default:
-      CHECK(false);
-      break;
   }
 }
 
@@ -266,9 +260,7 @@ bool ReadValue(const base::Pickle* m,
       break;
     }
     default:
-      // TODO(crbug.com/859477): Remove after root cause is found.
-      CHECK(false);
-      return false;
+    return false;
   }
 
   return true;
@@ -577,100 +569,7 @@ void ParamTraits<base::FileDescriptor>::Log(const param_type& p,
     l->append(base::StringPrintf("FD(%d)", p.fd));
   }
 }
-
-void ParamTraits<base::ScopedFD>::Write(base::Pickle* m, const param_type& p) {
-  // This serialization must be kept in sync with
-  // nacl_message_scanner.cc:WriteHandle().
-  const bool valid = p.is_valid();
-  WriteParam(m, valid);
-
-  if (!valid)
-    return;
-
-  if (!m->WriteAttachment(new internal::PlatformFileAttachment(
-          std::move(const_cast<param_type&>(p))))) {
-    NOTREACHED();
-  }
-}
-
-bool ParamTraits<base::ScopedFD>::Read(const base::Pickle* m,
-                                       base::PickleIterator* iter,
-                                       param_type* r) {
-  r->reset();
-
-  bool valid;
-  if (!ReadParam(m, iter, &valid))
-    return false;
-
-  if (!valid)
-    return true;
-
-  scoped_refptr<base::Pickle::Attachment> attachment;
-  if (!m->ReadAttachment(iter, &attachment))
-    return false;
-
-  if (static_cast<MessageAttachment*>(attachment.get())->GetType() !=
-      MessageAttachment::Type::PLATFORM_FILE) {
-    return false;
-  }
-
-  *r = base::ScopedFD(
-      static_cast<internal::PlatformFileAttachment*>(attachment.get())
-          ->TakePlatformFile());
-  return true;
-}
-
-void ParamTraits<base::ScopedFD>::Log(const param_type& p, std::string* l) {
-  l->append(base::StringPrintf("ScopedFD(%d)", p.get()));
-}
 #endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
-
-#if defined(OS_FUCHSIA)
-void ParamTraits<zx::vmo>::Write(base::Pickle* m, const param_type& p) {
-  // This serialization must be kept in sync with
-  // nacl_message_scanner.cc:WriteHandle().
-  const bool valid = p.is_valid();
-  WriteParam(m, valid);
-
-  if (!valid)
-    return;
-
-  if (!m->WriteAttachment(new internal::HandleAttachmentFuchsia(
-          const_cast<param_type&>(p).release()))) {
-    NOTREACHED();
-  }
-}
-
-bool ParamTraits<zx::vmo>::Read(const base::Pickle* m,
-                                base::PickleIterator* iter,
-                                param_type* r) {
-  r->reset();
-
-  bool valid;
-  if (!ReadParam(m, iter, &valid))
-    return false;
-
-  if (!valid)
-    return true;
-
-  scoped_refptr<base::Pickle::Attachment> attachment;
-  if (!m->ReadAttachment(iter, &attachment))
-    return false;
-
-  if (static_cast<MessageAttachment*>(attachment.get())->GetType() !=
-      MessageAttachment::Type::FUCHSIA_HANDLE) {
-    return false;
-  }
-
-  *r = zx::vmo(static_cast<internal::HandleAttachmentFuchsia*>(attachment.get())
-                   ->Take());
-  return true;
-}
-
-void ParamTraits<zx::vmo>::Log(const param_type& p, std::string* l) {
-  l->append("ZirconVMO");
-}
-#endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_ANDROID)
 void ParamTraits<base::android::ScopedHardwareBufferHandle>::Write(

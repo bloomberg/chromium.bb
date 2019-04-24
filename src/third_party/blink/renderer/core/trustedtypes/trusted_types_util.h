@@ -43,10 +43,6 @@ String CORE_EXPORT GetStringFromTrustedHTML(StringOrTrustedHTML,
                                             const Document*,
                                             ExceptionState&);
 
-String GetStringFromTrustedHTML(const String&,
-                                const Document*,
-                                ExceptionState&);
-
 String CORE_EXPORT GetStringFromTrustedScript(StringOrTrustedScript,
                                               const Document*,
                                               ExceptionState&);

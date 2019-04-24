@@ -239,6 +239,11 @@ class FakePeerConnectionBase : public PeerConnectionInternal {
     return {};
   }
 
+  absl::string_view GetLocalTrackIdBySsrc(uint32_t ssrc) override { return {}; }
+  absl::string_view GetRemoteTrackIdBySsrc(uint32_t ssrc) override {
+    return {};
+  }
+
   sigslot::signal1<DataChannel*>& SignalDataChannelCreated() override {
     return SignalDataChannelCreated_;
   }

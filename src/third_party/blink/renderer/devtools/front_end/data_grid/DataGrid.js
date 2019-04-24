@@ -578,7 +578,6 @@ DataGrid.DataGrid = class extends Common.Object {
   }
 
   /**
-   * The range of |minPercent| and |maxPercent| is [0, 100].
    * @param {number} minPercent
    * @param {number=} maxPercent
    * @param {number=} maxDescentLevel

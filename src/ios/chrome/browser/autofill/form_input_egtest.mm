@@ -27,6 +27,8 @@
 #error "This file requires ARC support."
 #endif
 
+using web::test::ElementSelector;
+
 namespace {
 
 const char kFormElementId1[] = "username";
@@ -104,8 +106,7 @@ void AssertElementIsFocused(const std::string& element_id) {
                                    chrome_test_util::GetCurrentWebState())]
       performAction:web::WebViewTapElement(
                         chrome_test_util::GetCurrentWebState(),
-                        [ElementSelector
-                            selectorWithElementID:kFormElementId1])];
+                        ElementSelector::ElementSelectorId(kFormElementId1))];
 
   id<GREYMatcher> nextButtonMatcher =
       chrome_test_util::ButtonWithAccessibilityLabelId(

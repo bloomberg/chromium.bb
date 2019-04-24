@@ -59,7 +59,6 @@ std::unique_ptr<GrDrawOp> MakeSet(GrRecordingContext*,
                                   int cnt,
                                   GrSamplerState::Filter,
                                   GrAAType,
-                                  SkCanvas::SrcRectConstraint,
                                   const SkMatrix& viewMatrix,
                                   sk_sp<GrColorSpaceXform> textureXform);
 

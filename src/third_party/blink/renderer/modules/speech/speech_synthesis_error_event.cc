@@ -19,7 +19,6 @@ SpeechSynthesisErrorEvent::SpeechSynthesisErrorEvent(
     : SpeechSynthesisEvent(type,
                            init->utterance(),
                            init->charIndex(),
-                           init->charLength(),
                            init->elapsedTime(),
                            init->name()),
       error_(init->error()) {}

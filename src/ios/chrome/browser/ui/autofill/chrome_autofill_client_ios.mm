@@ -10,11 +10,11 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "components/autofill/core/browser/autofill_credit_card_filling_infobar_delegate_mobile.h"
+#include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/form_data_importer.h"
-#include "components/autofill/core/browser/payments/autofill_credit_card_filling_infobar_delegate_mobile.h"
-#include "components/autofill/core/browser/payments/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
-#include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
+#include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/ios/browser/autofill_util.h"
@@ -66,7 +66,7 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
     web::WebState* web_state,
     infobars::InfoBarManager* infobar_manager,
     id<AutofillClientIOSBridge> bridge,
-    password_manager::PasswordManager* password_manager)
+    password_manager::PasswordGenerationManager* password_generation_manager)
     : pref_service_(browser_state->GetPrefs()),
       sync_service_(
           ProfileSyncServiceFactory::GetForBrowserState(browser_state)),
@@ -82,6 +82,7 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
       payments_client_(std::make_unique<payments::PaymentsClient>(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               web_state_->GetBrowserState()->GetURLLoaderFactory()),
+          pref_service_,
           identity_manager_,
           personal_data_manager_,
           web_state_->GetBrowserState()->IsOffTheRecord())),
@@ -91,7 +92,7 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
           personal_data_manager_,
           GetApplicationContext()->GetApplicationLocale())),
       infobar_manager_(infobar_manager),
-      password_manager_(password_manager),
+      password_generation_manager_(password_generation_manager),
       unmask_controller_(browser_state->GetPrefs(),
                          browser_state->IsOffTheRecord()) {}
 
@@ -170,7 +171,9 @@ ChromeAutofillClientIOS::GetSecurityLevelForUmaHistograms() {
   if (!ios_security_state_tab_helper)
     return security_state::SecurityLevel::SECURITY_LEVEL_COUNT;
 
-  return ios_security_state_tab_helper->GetSecurityLevel();
+  security_state::SecurityInfo result;
+  ios_security_state_tab_helper->GetSecurityInfo(&result);
+  return result.security_level;
 }
 
 std::string ChromeAutofillClientIOS::GetPageLanguage() const {
@@ -318,7 +321,9 @@ bool ChromeAutofillClientIOS::IsAutocompleteEnabled() {
 void ChromeAutofillClientIOS::PropagateAutofillPredictions(
     content::RenderFrameHost* rfh,
     const std::vector<FormStructure*>& forms) {
-  password_manager_->ProcessAutofillPredictions(/*driver=*/nullptr, forms);
+  if (password_generation_manager_) {
+    password_generation_manager_->DetectFormsEligibleForGeneration(forms);
+  }
 }
 
 void ChromeAutofillClientIOS::DidFillOrPreviewField(

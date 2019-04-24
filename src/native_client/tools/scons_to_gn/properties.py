@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import print_function
-
 from collections import defaultdict
 
 
@@ -53,7 +51,7 @@ def ConvertSconsPropertyToSubTable(key, items):
 
   # If the name is not in the remap, then keep it
   propname = PROPERTY_REMAP.get(key, key)
-  print("KEY=%s, PROPNAME=%s" % (key, propname))
+  print "KEY=%s, PROPNAME=%s" %(key, propname)
 
   # If this is a compiler flag, we will need to build a new table
   if propname in COMPILER_FLAGS:
@@ -80,3 +78,4 @@ def ParsePropertyTable(table):
       props[k].extend(v)
 
   return props
+

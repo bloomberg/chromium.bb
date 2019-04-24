@@ -2943,27 +2943,32 @@ void CallApiFunctionAndReturn(MacroAssembler* masm, Register function_address,
 
 void Builtins::Generate_CallApiCallback(MacroAssembler* masm) {
   // ----------- S t a t e -------------
-  //  -- cp                  : context
-  //  -- a1                  : api function address
-  //  -- a2                  : arguments count (not including the receiver)
-  //  -- a3                  : call data
-  //  -- a0                  : holder
+  //  -- cp                  : kTargetContext
+  //  -- a1                  : kApiFunctionAddress
+  //  -- a2                  : kArgc
   //  --
   //  -- sp[0]               : last argument
   //  -- ...
   //  -- sp[(argc - 1) * 4]  : first argument
   //  -- sp[(argc + 0) * 4]  : receiver
+  //  -- sp[(argc + 1) * 4]  : kHolder
+  //  -- sp[(argc + 2) * 4]  : kCallData
   // -----------------------------------
 
   Register api_function_address = a1;
   Register argc = a2;
-  Register call_data = a3;
-  Register holder = a0;
   Register scratch = t0;
   Register base = t1;  // For addressing MemOperands on the stack.
 
-  DCHECK(!AreAliased(api_function_address, argc, call_data,
-                     holder, scratch, base));
+  DCHECK(!AreAliased(api_function_address, argc, scratch, base));
+
+  // Stack offsets (without argc).
+  static constexpr int kReceiverOffset = 0 * kPointerSize;
+  static constexpr int kHolderOffset = kReceiverOffset + kPointerSize;
+  static constexpr int kCallDataOffset = kHolderOffset + kPointerSize;
+
+  // Extra stack arguments are: the receiver, kHolder, kCallData.
+  static constexpr int kExtraStackArgumentCount = 3;
 
   typedef FunctionCallbackArguments FCA;
 
@@ -2993,22 +2998,22 @@ void Builtins::Generate_CallApiCallback(MacroAssembler* masm) {
   __ Subu(sp, sp, Operand(FCA::kArgsLength * kPointerSize));
 
   // kHolder.
-  __ sw(holder, MemOperand(sp, 0 * kPointerSize));
+  __ lw(scratch, MemOperand(base, kHolderOffset));
+  __ sw(scratch, MemOperand(sp, 0 * kPointerSize));
 
   // kIsolate.
   __ li(scratch, ExternalReference::isolate_address(masm->isolate()));
   __ sw(scratch, MemOperand(sp, 1 * kPointerSize));
 
-  // kReturnValueDefaultValue and kReturnValue.
+  // kReturnValueDefaultValue, kReturnValue, and kNewTarget.
   __ LoadRoot(scratch, RootIndex::kUndefinedValue);
   __ sw(scratch, MemOperand(sp, 2 * kPointerSize));
   __ sw(scratch, MemOperand(sp, 3 * kPointerSize));
+  __ sw(scratch, MemOperand(sp, 5 * kPointerSize));
 
   // kData.
-  __ sw(call_data, MemOperand(sp, 4 * kPointerSize));
-
-  // kNewTarget.
-  __ sw(scratch, MemOperand(sp, 5 * kPointerSize));
+  __ lw(scratch, MemOperand(base, kCallDataOffset));
+  __ sw(scratch, MemOperand(sp, 4 * kPointerSize));
 
   // Keep a pointer to kHolder (= implicit_args) in a scratch register.
   // We use it below to set up the FunctionCallbackInfo object.
@@ -3037,7 +3042,7 @@ void Builtins::Generate_CallApiCallback(MacroAssembler* masm) {
   // from the API function here.
   // Note: Unlike on other architectures, this stores the number of slots to
   // drop, not the number of bytes.
-  __ Addu(scratch, argc, Operand(FCA::kArgsLength + 1 /* receiver */));
+  __ Addu(scratch, argc, Operand(FCA::kArgsLength + kExtraStackArgumentCount));
   __ sw(scratch, MemOperand(sp, 4 * kPointerSize));
 
   // v8::InvocationCallback's argument.

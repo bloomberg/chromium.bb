@@ -52,6 +52,27 @@
   top: 1px;
 }
 
-.console-prompt-icon.console-prompt-incomplete {
-  opacity: 0.65;
+.command-pin-button::before {
+  content: '\1f4cc';
+}
+
+.command-pin-button {
+  cursor: pointer;
+  position: absolute;
+  top: 1px;
+  right: -40px;
+  opacity: 0;
+  width: 40px;
+}
+
+#console-prompt:hover .command-pin-button {
+  opacity: 0.12;
+}
+
+.-theme-with-dark-background #console-prompt:hover .command-pin-button {
+  opacity: 0.25;
+}
+
+#console-prompt:hover .command-pin-button:hover {
+  opacity: 0.6;
 }

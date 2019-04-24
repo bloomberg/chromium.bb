@@ -21,10 +21,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/update_client/component_unpacker.h"
-#include "components/update_client/patcher.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/test_installer.h"
-#include "components/update_client/unzipper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -107,8 +105,7 @@ TEST_F(ComponentUnpackerTest, UnpackFullCrx) {
       base::MakeRefCounted<ComponentUnpacker>(
           std::vector<uint8_t>(std::begin(jebg_hash), std::end(jebg_hash)),
           test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"), nullptr,
-          config->GetUnzipperFactory()->Create(),
-          config->GetPatcherFactory()->Create(),
+          config->CreateServiceManagerConnector(),
           crx_file::VerifierFormat::CRX2_OR_CRX3);
   component_unpacker->Unpack(base::BindOnce(
       &ComponentUnpackerTest::UnpackComplete, base::Unretained(this)));
@@ -140,7 +137,7 @@ TEST_F(ComponentUnpackerTest, UnpackFileNotFound) {
   scoped_refptr<ComponentUnpacker> component_unpacker =
       base::MakeRefCounted<ComponentUnpacker>(
           std::vector<uint8_t>(std::begin(jebg_hash), std::end(jebg_hash)),
-          test_file("file-not-found.crx"), nullptr, nullptr, nullptr,
+          test_file("file-not-found.crx"), nullptr, nullptr,
           crx_file::VerifierFormat::CRX2_OR_CRX3);
   component_unpacker->Unpack(base::BindOnce(
       &ComponentUnpackerTest::UnpackComplete, base::Unretained(this)));
@@ -159,7 +156,7 @@ TEST_F(ComponentUnpackerTest, UnpackFileHashMismatch) {
       base::MakeRefCounted<ComponentUnpacker>(
           std::vector<uint8_t>(std::begin(abag_hash), std::end(abag_hash)),
           test_file("jebgalgnebhfojomionfpkfelancnnkf.crx"), nullptr, nullptr,
-          nullptr, crx_file::VerifierFormat::CRX2_OR_CRX3);
+          crx_file::VerifierFormat::CRX2_OR_CRX3);
   component_unpacker->Unpack(base::BindOnce(
       &ComponentUnpackerTest::UnpackComplete, base::Unretained(this)));
   RunThreads();

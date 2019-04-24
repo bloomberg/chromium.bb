@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      https://www.apache.org/licenses/LICENSE-2.0
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,6 +17,7 @@
 #include <sstream>
 #include <string>
 
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -27,6 +28,12 @@ TEST(InvokeFlush, String) {
   std::string str = "ABC";
   str_format_internal::InvokeFlush(&str, "DEF");
   EXPECT_EQ(str, "ABCDEF");
+
+#if UTIL_FORMAT_HAS_GLOBAL_STRING
+  std::string str2 = "ABC";
+  str_format_internal::InvokeFlush(&str2, "DEF");
+  EXPECT_EQ(str2, "ABCDEF");
+#endif  // UTIL_FORMAT_HAS_GLOBAL_STRING
 }
 
 TEST(InvokeFlush, Stream) {

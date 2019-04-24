@@ -11,7 +11,7 @@
 
 namespace content {
 
-class RenderProcessHost;
+class RenderFrameHostImpl;
 
 class DevToolsURLLoaderInterceptor {
  public:
@@ -21,11 +21,12 @@ class DevToolsURLLoaderInterceptor {
       base::OnceCallback<void(bool use_fallback,
                               const base::Optional<net::AuthCredentials>&)>;
   // Can only be called on the IO thread.
-  static void HandleAuthRequest(int32_t process_id,
-                                int32_t routing_id,
-                                int32_t request_id,
-                                const net::AuthChallengeInfo& auth_info,
-                                HandleAuthRequestCallback callback);
+  static void HandleAuthRequest(
+      int32_t process_id,
+      int32_t routing_id,
+      int32_t request_id,
+      const scoped_refptr<net::AuthChallengeInfo>& auth_info,
+      HandleAuthRequestCallback callback);
 
   explicit DevToolsURLLoaderInterceptor(
       DevToolsNetworkInterceptor::RequestInterceptedCallback callback);
@@ -50,8 +51,7 @@ class DevToolsURLLoaderInterceptor {
           callback);
 
   bool CreateProxyForInterception(
-      RenderProcessHost* rph,
-      const base::UnguessableToken& frame_token,
+      RenderFrameHostImpl* rfh,
       bool is_navigation,
       bool is_download,
       network::mojom::URLLoaderFactoryRequest* target_factory_request) const;

@@ -282,7 +282,6 @@ void WebRTCInternals::OnGetUserMedia(int rid,
   dict->SetInteger("rid", rid);
   dict->SetInteger("pid", static_cast<int>(pid));
   dict->SetString("origin", origin);
-  dict->SetDouble("timestamp", base::Time::Now().ToJsTime());
   if (audio)
     dict->SetString("audio", audio_constraints);
   if (video)

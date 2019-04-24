@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
-#include "third_party/blink/renderer/platform/geometry/layout_point.h"
+#include "third_party/blink/renderer/platform/geometry/int_point.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
@@ -66,6 +66,8 @@ enum MiddleClickMode {
 class CORE_EXPORT AutoscrollController final
     : public GarbageCollected<AutoscrollController> {
  public:
+  static AutoscrollController* Create(Page&);
+
   explicit AutoscrollController(Page&);
 
   void Trace(blink::Visitor*);
@@ -80,7 +82,7 @@ class CORE_EXPORT AutoscrollController final
   void StopAutoscrollIfNeeded(LayoutObject*);
   void UpdateAutoscrollLayoutObject();
   void UpdateDragAndDrop(Node* target_node,
-                         const FloatPoint& event_position,
+                         const IntPoint& event_position,
                          TimeTicks event_time);
 
   // Middle-click autoscroll.
@@ -107,7 +109,7 @@ class CORE_EXPORT AutoscrollController final
   void ScheduleMainThreadAnimation();
   LayoutBox* autoscroll_layout_object_ = nullptr;
   LayoutBox* pressed_layout_object_ = nullptr;
-  LayoutPoint drag_and_drop_autoscroll_reference_position_;
+  IntPoint drag_and_drop_autoscroll_reference_position_;
   TimeTicks drag_and_drop_autoscroll_start_time_;
 
   // Middle-click autoscroll.

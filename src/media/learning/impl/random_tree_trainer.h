@@ -20,7 +20,7 @@
 namespace media {
 namespace learning {
 
-// Trains RandomTree decision tree classifier / regressor.
+// Trains RandomTree decision tree classifier (doesn't handle regression).
 //
 // Decision trees, including RandomTree, classify instances as follows.  Each
 // non-leaf node is marked with a feature number |i|.  The value of the |i|-th
@@ -71,9 +71,9 @@ namespace learning {
 // See https://en.wikipedia.org/wiki/Random_forest for information.  Note that
 // this is just a single tree, not the whole forest.
 //
-// Note that this variant chooses split points randomly, as described by the
-// ExtraTrees algorithm.  This is slightly different than RandomForest, which
-// chooses split points to improve the split's score.
+// TODO(liberato): Right now, it not-so-randomly selects from the entire set.
+// TODO(liberato): consider PRF or other simplified approximations.
+// TODO(liberato): separate Model and TrainingAlgorithm.  This is the latter.
 class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer
     : public TrainingAlgorithm,
       public HasRandomNumberGenerator {
@@ -135,7 +135,7 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer
       // branch of the split.
       // This is a flat_map since we're likely to have a very small (e.g.,
       // "true / "false") number of targets.
-      TargetHistogram target_histogram;
+      TargetDistribution target_distribution;
     };
 
     // [feature value at this split] = info about which examples take this
@@ -158,13 +158,12 @@ class COMPONENT_EXPORT(LEARNING_IMPL) RandomTreeTrainer
                        const std::vector<size_t>& training_idx,
                        int index);
 
-  // Fill in |nats_remaining| for |split| for a nominal target.
-  // |total_incoming_weight| is the total weight of all instances coming into
-  // the node that we're splitting.
-  void ComputeSplitScore_Nominal(Split* split, double total_incoming_weight);
+  // Fill in |nats_remaining| for |split| for a nominal target.  |total_weight|
+  // is the total weight of all instances coming into this split.
+  void ComputeSplitScore_Nominal(Split* split, double total_weight);
 
   // Fill in |nats_remaining| for |split| for a numeric target.
-  void ComputeSplitScore_Numeric(Split* split, double total_incoming_weight);
+  void ComputeSplitScore_Numeric(Split* split, double total_weight);
 
   // Compute the split point for |training_data| for a nominal feature.
   FeatureValue FindSplitPoint_Nominal(size_t index,

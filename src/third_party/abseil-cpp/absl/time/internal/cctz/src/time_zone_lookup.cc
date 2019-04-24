@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//   https://www.apache.org/licenses/LICENSE-2.0
+//   http://www.apache.org/licenses/LICENSE-2.0
 //
 //   Unless required by applicable law or agreed to in writing, software
 //   distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,11 +20,6 @@
 #include <dlfcn.h>
 #endif
 #endif
-
-#if defined(__APPLE__)
-#include <CoreFoundation/CFTimeZone.h>
-#endif
-
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -126,11 +121,6 @@ time_zone local_time_zone() {
   char* tz_env = nullptr;
 #if defined(_MSC_VER)
   _dupenv_s(&tz_env, nullptr, "TZ");
-#elif defined(__APPLE__)
-  CFTimeZoneRef system_time_zone = CFTimeZoneCopyDefault();
-  CFStringRef tz_name = CFTimeZoneGetName(system_time_zone);
-  tz_env = strdup(CFStringGetCStringPtr(tz_name, CFStringGetSystemEncoding()));
-  CFRelease(system_time_zone);
 #else
   tz_env = std::getenv("TZ");
 #endif
@@ -162,8 +152,6 @@ time_zone local_time_zone() {
   const std::string name = zone;
 #if defined(_MSC_VER)
   free(localtime_env);
-  free(tz_env);
-#elif defined(__APPLE__)
   free(tz_env);
 #endif
 

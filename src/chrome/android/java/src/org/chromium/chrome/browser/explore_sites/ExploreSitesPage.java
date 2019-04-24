@@ -9,10 +9,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -20,7 +22,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.gesturenav.HistoryNavigationLayout;
 import org.chromium.chrome.browser.native_page.BasicNativePage;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.native_page.NativePageHost;
@@ -46,12 +47,12 @@ import java.util.List;
  * Provides functionality when the user interacts with the explore sites page.
  */
 public class ExploreSitesPage extends BasicNativePage {
+    private static final String TAG = "ExploreSitesPage";
     private static final String CONTEXT_MENU_USER_ACTION_PREFIX = "ExploreSites";
     private static final int INITIAL_SCROLL_POSITION = 3;
     private static final int INITIAL_SCROLL_POSITION_PERSONALIZED = 0;
     private static final String NAVIGATION_ENTRY_SCROLL_POSITION_KEY =
             "ExploreSitesPageScrollPosition";
-
     static final PropertyModel.WritableIntPropertyKey STATUS_KEY =
             new PropertyModel.WritableIntPropertyKey();
     static final PropertyModel.WritableIntPropertyKey SCROLL_TO_CATEGORY_KEY =
@@ -59,7 +60,70 @@ public class ExploreSitesPage extends BasicNativePage {
     static final PropertyModel
             .ReadableObjectPropertyKey<ListModel<ExploreSitesCategory>> CATEGORY_LIST_KEY =
             new PropertyModel.ReadableObjectPropertyKey<>();
-    private static final int UNKNOWN_NAV_CATEGORY = -1;
+
+    /**
+     * Custom layout manager that fixes the scrollbar size based on number of items
+     * to provide a scrollbar utility that will not shift as a recylcer view scrolls
+     * between items of different heights.
+     */
+    private class StableScrollLayoutManager extends LinearLayoutManager {
+        // Fixes the scrollbar size so it will not resize.
+        private int mScrollValue;
+
+        StableScrollLayoutManager(Context context) {
+            super(context);
+            setSmoothScrollbarEnabled(false);
+        }
+
+        @Override
+        public int computeVerticalScrollExtent(RecyclerView.State state) {
+            final int count = getItemCount();
+            if (count > 0) {
+                mScrollValue = getHeight() / count;
+                return mScrollValue;
+            }
+            return 0;
+        }
+
+        @Override
+        public int computeVerticalScrollRange(RecyclerView.State state) {
+            // Fix the scroll range.
+            return Math.max((getItemCount() - 1) * mScrollValue, 0);
+        }
+
+        @Override
+        public int computeVerticalScrollOffset(RecyclerView.State state) {
+            final int count = getChildCount();
+            // If this was called before the recycler view fully initialized itself, return 0.
+            if (count <= 0) return 0;
+
+            // Snap to bottom if we scrolled to the bottom.
+            if (findLastCompletelyVisibleItemPosition() == getItemCount() - 1) {
+                return Math.max((getItemCount() - 1) * mScrollValue, 0);
+            }
+
+            // Find the first visible view and check that views are properly initialized.
+            // This includes if a view was recycled or swapped out just now.
+            int firstPos = findFirstVisibleItemPosition();
+            if (firstPos == RecyclerView.NO_POSITION) return 0;
+            View view = findViewByPosition(firstPos);
+            if (view == null) return 0;
+
+            // Top of the view in pixels
+            final int top = getDecoratedTop(view);
+            int height = getDecoratedMeasuredHeight(view);
+            int heightOfScreen;
+            if (height <= 0) {
+                heightOfScreen = 0;
+            } else {
+                heightOfScreen = Math.abs(mScrollValue * top / height);
+            }
+            if (heightOfScreen == 0 && firstPos > 0) {
+                return mScrollValue * firstPos - 1;
+            }
+            return (mScrollValue * firstPos) + heightOfScreen;
+        }
+    }
 
     @IntDef({CatalogLoadingState.LOADING, CatalogLoadingState.SUCCESS, CatalogLoadingState.ERROR})
     @Retention(RetentionPolicy.SOURCE)
@@ -74,13 +138,13 @@ public class ExploreSitesPage extends BasicNativePage {
     private Tab mTab;
     private TabObserver mTabObserver;
     private Profile mProfile;
-    private HistoryNavigationLayout mView;
+    private ViewGroup mView;
     private RecyclerView mRecyclerView;
-    private StableScrollLayoutManager mLayoutManager;
+    private LinearLayoutManager mLayoutManager;
     private String mTitle;
     private PropertyModel mModel;
     private ContextMenuManager mContextMenuManager;
-    private int mNavigateToCategory;
+    private String mNavFragment;
     private boolean mHasFetchedNetworkCatalog;
     private boolean mIsLoaded;
     private int mInitialScrollPosition;
@@ -98,13 +162,13 @@ public class ExploreSitesPage extends BasicNativePage {
         mTab = mHost.getActiveTab();
 
         mTitle = activity.getString(R.string.explore_sites_title);
-        mView = (HistoryNavigationLayout) activity.getLayoutInflater().inflate(
+        mView = (ViewGroup) activity.getLayoutInflater().inflate(
                 R.layout.explore_sites_page_layout, null);
         mProfile = mHost.getActiveTab().getProfile();
         mHasFetchedNetworkCatalog = false;
 
         mModel = new PropertyModel.Builder(STATUS_KEY, SCROLL_TO_CATEGORY_KEY, CATEGORY_LIST_KEY)
-                         .with(CATEGORY_LIST_KEY, new ListModel<>())
+                         .with(CATEGORY_LIST_KEY, new ListModel<ExploreSitesCategory>())
                          .with(STATUS_KEY, CatalogLoadingState.LOADING)
                          .build();
 
@@ -123,15 +187,14 @@ public class ExploreSitesPage extends BasicNativePage {
         // Don't direct reference activity because it might change if tab is reparented.
         Runnable closeContextMenuCallback =
                 () -> host.getActiveTab().getActivity().closeContextMenu();
-        mContextMenuManager = new ContextMenuManager(navDelegate,
-                (enabled) -> {}, closeContextMenuCallback, CONTEXT_MENU_USER_ACTION_PREFIX);
+        mContextMenuManager = new ContextMenuManager(navDelegate, this::setTouchEnabled,
+                closeContextMenuCallback, CONTEXT_MENU_USER_ACTION_PREFIX);
         host.getActiveTab().getWindowAndroid().addContextMenuCloseListener(mContextMenuManager);
 
         CategoryCardAdapter adapterDelegate = new CategoryCardAdapter(
                 mModel, mLayoutManager, iconGenerator, mContextMenuManager, navDelegate, mProfile);
 
-        mView.setTab(mTab);
-        mRecyclerView = mView.findViewById(R.id.explore_sites_category_recycler);
+        mRecyclerView = (RecyclerView) mView.findViewById(R.id.explore_sites_category_recycler);
         RecyclerViewAdapter<CategoryCardViewHolderFactory.CategoryCardViewHolder, Void> adapter =
                 new RecyclerViewAdapter<>(adapterDelegate, new CategoryCardViewHolderFactory());
 
@@ -148,7 +211,7 @@ public class ExploreSitesPage extends BasicNativePage {
         RecordUserAction.record("Android.ExploreSitesPage.Open");
     }
 
-    private void translateToModel(@Nullable List<ExploreSitesCategory> categoryList) {
+    void translateToModel(@Nullable List<ExploreSitesCategory> categoryList) {
         // If list is null or we received an empty catalog from network, show error.
         if (categoryList == null || (categoryList.isEmpty() && mHasFetchedNetworkCatalog)) {
             onUpdatedCatalog(false);
@@ -176,8 +239,15 @@ public class ExploreSitesPage extends BasicNativePage {
             }
         }
 
-        restoreScrollPosition();
-
+        Parcelable savedScrollPosition = getLayoutManagerStateFromNavigationEntry();
+        if (savedScrollPosition != null) {
+            mLayoutManager.onRestoreInstanceState(savedScrollPosition);
+        } else if (mNavFragment != null) {
+            lookupCategoryAndScroll();
+        } else {
+            mModel.set(SCROLL_TO_CATEGORY_KEY,
+                    Math.min(categoryListModel.size() - 1, mInitialScrollPosition));
+        }
         if (mTab != null) {
             // We want to observe page load start so that we can store the recycler view layout
             // state, for making "back" work correctly.
@@ -201,25 +271,6 @@ public class ExploreSitesPage extends BasicNativePage {
         mIsLoaded = true;
     }
 
-    private void restoreScrollPosition() {
-        Parcelable savedScrollPosition = getLayoutManagerStateFromNavigationEntry();
-
-        if (savedScrollPosition != null) {
-            mLayoutManager.onRestoreInstanceState(savedScrollPosition);
-        } else {
-            int scrollPosition = mInitialScrollPosition;
-            if (mNavigateToCategory != UNKNOWN_NAV_CATEGORY) {
-                scrollPosition = lookupCategory();
-            }
-            if (scrollPosition == RecyclerView.NO_POSITION) {
-                // Default to first position.
-                scrollPosition = 0;
-            }
-
-            mModel.set(SCROLL_TO_CATEGORY_KEY, scrollPosition);
-        }
-    }
-
     private void onUpdatedCatalog(Boolean hasFetchedCatalog) {
         if (hasFetchedCatalog) {
             ExploreSitesBridge.getEspCatalog(mProfile, this::translateToModel);
@@ -229,12 +280,8 @@ public class ExploreSitesPage extends BasicNativePage {
         }
     }
 
-    boolean isLoadedForTests() {
+    public boolean isLoadedForTests() {
         return mIsLoaded;
-    }
-
-    int initialScrollPositionForTests() {
-        return mInitialScrollPosition;
     }
 
     @Override
@@ -255,16 +302,13 @@ public class ExploreSitesPage extends BasicNativePage {
     @Override
     public void updateForUrl(String url) {
         super.updateForUrl(url);
-        mNavigateToCategory = UNKNOWN_NAV_CATEGORY;
         try {
-            mNavigateToCategory = Integer.parseInt(new URI(url).getFragment());
-        } catch (URISyntaxException | NumberFormatException ignored) {
+            mNavFragment = new URI(url).getFragment();
+        } catch (URISyntaxException e) {
+            mNavFragment = null;
         }
         if (mModel.get(STATUS_KEY) == CatalogLoadingState.SUCCESS) {
-            int category = lookupCategory();
-            if (category != RecyclerView.NO_POSITION) {
-                mModel.set(SCROLL_TO_CATEGORY_KEY, category);
-            }
+            lookupCategoryAndScroll();
         }
     }
 
@@ -308,8 +352,7 @@ public class ExploreSitesPage extends BasicNativePage {
         Parcel parcel = Parcel.obtain();
         parcel.unmarshall(parcelData, 0, parcelData.length);
         parcel.setDataPosition(0);
-        Parcelable scrollPosition =
-                StableScrollLayoutManager.SavedState.CREATOR.createFromParcel(parcel);
+        Parcelable scrollPosition = LinearLayoutManager.SavedState.CREATOR.createFromParcel(parcel);
         parcel.recycle();
 
         return scrollPosition;
@@ -324,16 +367,20 @@ public class ExploreSitesPage extends BasicNativePage {
         super.destroy();
     }
 
-    private int lookupCategory() {
-        if (mNavigateToCategory != UNKNOWN_NAV_CATEGORY) {
+    private void setTouchEnabled(boolean enabled) {} // Does nothing.
+
+    private void lookupCategoryAndScroll() {
+        try {
+            int id = Integer.parseInt(mNavFragment);
             ListModel<ExploreSitesCategory> categoryList = mModel.get(CATEGORY_LIST_KEY);
             for (int i = 0; i < categoryList.size(); i++) {
-                if (categoryList.get(i).getId() == mNavigateToCategory) {
-                    return i;
+                if (categoryList.get(i).getId() == id) {
+                    mModel.set(SCROLL_TO_CATEGORY_KEY, i);
+                    break;
                 }
             }
-        }
 
-        return RecyclerView.NO_POSITION;
+        } catch (NumberFormatException e) {
+        } // do nothing
     }
 }

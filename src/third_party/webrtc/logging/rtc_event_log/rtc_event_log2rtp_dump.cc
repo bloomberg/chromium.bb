@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
       webrtc::test::RtpFileWriter::Create(
           webrtc::test::RtpFileWriter::FileFormat::kRtpDump, output_file));
 
-  if (!rtp_writer) {
+  if (!rtp_writer.get()) {
     std::cerr << "Error while opening output file: " << output_file
               << std::endl;
     return -1;

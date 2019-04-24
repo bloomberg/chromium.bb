@@ -11,8 +11,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/content/public/cpp/navigable_contents_observer.h"
 #include "services/content/public/mojom/navigable_contents.mojom.h"
 #include "services/content/public/mojom/navigable_contents_factory.mojom.h"
@@ -94,8 +93,8 @@ class COMPONENT_EXPORT(CONTENT_SERVICE_CPP) NavigableContents
 
   void OnEmbedTokenReceived(const base::UnguessableToken& token);
 
-  mojo::Remote<mojom::NavigableContents> contents_;
-  mojo::Receiver<mojom::NavigableContentsClient> client_receiver_;
+  mojom::NavigableContentsPtr contents_;
+  mojo::Binding<mojom::NavigableContentsClient> client_binding_;
   std::unique_ptr<NavigableContentsView> view_;
 
   base::ReentrantObserverList<NavigableContentsObserver> observers_;

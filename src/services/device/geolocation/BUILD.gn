@@ -110,7 +110,7 @@ source_set("geolocation") {
   }
   if (is_chromeos) {
     deps += [
-      "//chromeos/dbus/shill",
+      "//chromeos/dbus",
       "//chromeos/network",
     ]
   }

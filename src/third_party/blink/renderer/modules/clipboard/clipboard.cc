@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/clipboard/clipboard.h"
 
-#include <utility>
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_promise.h"
 
@@ -21,9 +20,8 @@ ScriptPromise Clipboard::readText(ScriptState* script_state) {
   return ClipboardPromise::CreateForReadText(script_state);
 }
 
-ScriptPromise Clipboard::write(ScriptState* script_state,
-                               const HeapVector<Member<ClipboardItem>>& data) {
-  return ClipboardPromise::CreateForWrite(script_state, std::move(data));
+ScriptPromise Clipboard::write(ScriptState* script_state, Blob* data) {
+  return ClipboardPromise::CreateForWrite(script_state, data);
 }
 
 ScriptPromise Clipboard::writeText(ScriptState* script_state,

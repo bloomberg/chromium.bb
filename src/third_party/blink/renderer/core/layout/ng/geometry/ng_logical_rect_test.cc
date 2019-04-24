@@ -5,39 +5,36 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_logical_rect.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 
 namespace blink {
 
 namespace {
 
 struct LogicalRectUniteTestData {
-  const char* test_case;
   NGLogicalRect a;
   NGLogicalRect b;
   NGLogicalRect expected;
 } logical_rect_unite_test_data[] = {
-    {"empty", {}, {}, {}},
-    {"a empty",
-     {},
+    {{}, {}, {}},
+    {{},
      {{LayoutUnit(1), LayoutUnit(2)}, {LayoutUnit(3), LayoutUnit(4)}},
      {{LayoutUnit(1), LayoutUnit(2)}, {LayoutUnit(3), LayoutUnit(4)}}},
-    {"b empty",
-     {{LayoutUnit(1), LayoutUnit(2)}, {LayoutUnit(3), LayoutUnit(4)}},
+    {{{LayoutUnit(1), LayoutUnit(2)}, {LayoutUnit(3), LayoutUnit(4)}},
      {},
      {{LayoutUnit(1), LayoutUnit(2)}, {LayoutUnit(3), LayoutUnit(4)}}},
-    {"a larger",
-     {{LayoutUnit(100), LayoutUnit(50)}, {LayoutUnit(300), LayoutUnit(200)}},
+    {{{LayoutUnit(100), LayoutUnit(50)}, {LayoutUnit(300), LayoutUnit(200)}},
      {{LayoutUnit(200), LayoutUnit(50)}, {LayoutUnit(200), LayoutUnit(200)}},
      {{LayoutUnit(100), LayoutUnit(50)}, {LayoutUnit(300), LayoutUnit(200)}}},
-    {"b larger",
-     {{LayoutUnit(200), LayoutUnit(50)}, {LayoutUnit(200), LayoutUnit(200)}},
+    {{{LayoutUnit(200), LayoutUnit(50)}, {LayoutUnit(200), LayoutUnit(200)}},
      {{LayoutUnit(100), LayoutUnit(50)}, {LayoutUnit(300), LayoutUnit(200)}},
      {{LayoutUnit(100), LayoutUnit(50)}, {LayoutUnit(300), LayoutUnit(200)}}},
 };
 
 std::ostream& operator<<(std::ostream& os,
                          const LogicalRectUniteTestData& data) {
-  return os << "Unite " << data.test_case;
+  WTF::Partitions::Initialize(nullptr);
+  return os << "Unite " << data.a << " and " << data.b;
 }
 
 class NGLogicalRectUniteTest

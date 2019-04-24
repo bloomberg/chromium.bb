@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
@@ -82,10 +83,7 @@ class DispatchingImageProvider : public ImageProvider {
       : playback_image_provider_(std::move(playback_image_provider)),
         paint_worklet_image_provider_(std::move(paint_worklet_image_provider)) {
   }
-  DispatchingImageProvider(const DispatchingImageProvider&) = delete;
   ~DispatchingImageProvider() override = default;
-
-  DispatchingImageProvider& operator=(const DispatchingImageProvider&) = delete;
 
   DispatchingImageProvider(DispatchingImageProvider&& other) = default;
 
@@ -100,6 +98,8 @@ class DispatchingImageProvider : public ImageProvider {
  private:
   PlaybackImageProvider playback_image_provider_;
   PaintWorkletImageProvider paint_worklet_image_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(DispatchingImageProvider);
 };
 
 class RasterTaskImpl : public TileTask {
@@ -139,8 +139,6 @@ class RasterTaskImpl : public TileTask {
     DCHECK(origin_thread_checker_.CalledOnValidThread());
     playback_settings_.image_provider = &image_provider_;
   }
-  RasterTaskImpl(const RasterTaskImpl&) = delete;
-  RasterTaskImpl& operator=(const RasterTaskImpl&) = delete;
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
@@ -207,6 +205,8 @@ class RasterTaskImpl : public TileTask {
   std::unique_ptr<RasterBuffer> raster_buffer_;
   DispatchingImageProvider image_provider_;
   GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(RasterTaskImpl);
 };
 
 TaskCategory TaskCategoryForTileTask(TileTask* task,
@@ -334,8 +334,6 @@ class TaskSetFinishedTaskImpl : public TileTask {
         task_runner_(task_runner),
         on_task_set_finished_callback_(
             std::move(on_task_set_finished_callback)) {}
-  TaskSetFinishedTaskImpl(const TaskSetFinishedTaskImpl&) = delete;
-  TaskSetFinishedTaskImpl& operator=(const TaskSetFinishedTaskImpl&) = delete;
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
@@ -356,6 +354,8 @@ class TaskSetFinishedTaskImpl : public TileTask {
  private:
   base::SequencedTaskRunner* task_runner_;
   const base::RepeatingClosure on_task_set_finished_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskSetFinishedTaskImpl);
 };
 
 class DidFinishRunningAllTilesTask : public TileTask {

@@ -9,6 +9,13 @@
 
 namespace ntp_snippets {
 
+TEST(CategoryTest, FromKnownCategoryShouldReturnSameCategoryForSameInput) {
+  const KnownCategories known_category = KnownCategories::BOOKMARKS;
+  Category first = Category::FromKnownCategory(known_category);
+  Category second = Category::FromKnownCategory(known_category);
+  EXPECT_EQ(first, second);
+}
+
 TEST(CategoryTest, ShouldIdentifyValidIDValues) {
   EXPECT_TRUE(
       Category::IsValidIDValue(static_cast<int>(KnownCategories::ARTICLES)));
@@ -32,7 +39,7 @@ TEST(CategoryFactoryTest,
 
 TEST(CategoryFactoryTest, FromIDValueShouldReturnSameKnownCategory) {
   Category known_category =
-      Category::FromKnownCategory(KnownCategories::READING_LIST);
+      Category::FromKnownCategory(KnownCategories::BOOKMARKS);
   Category known_category_by_id = Category::FromIDValue(known_category.id());
   EXPECT_EQ(known_category, known_category_by_id);
 }

@@ -109,11 +109,12 @@ class LoginShelfViewTest : public LoginTestBase {
       if (!login_shelf_view_->GetViewByID(id)->visible())
         return false;
     }
-    const auto& children = login_shelf_view_->children();
-    const size_t visible_buttons =
-        std::count_if(children.cbegin(), login_shelf_view_->children().cend(),
-                      [](const auto* v) { return v->visible(); });
-    return visible_buttons == ids.size();
+    size_t visible_button_count = 0;
+    for (int i = 0; i < login_shelf_view_->child_count(); ++i) {
+      if (login_shelf_view_->child_at(i)->visible())
+        visible_button_count++;
+    }
+    return visible_button_count == ids.size();
   }
 
   // Check whether the button is enabled.

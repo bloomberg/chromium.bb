@@ -41,17 +41,10 @@ enum AddRuleFlags {
   kRuleHasDocumentSecurityOrigin = 1,
 };
 
-// Some CSS properties do not apply to certain psuedo-elements, and need to be
-// ignored when resolving styles.
-enum class ValidPropertyFilter : unsigned {
-  // All properties are valid. This is the common case.
-  kNoFilter,
-  // Defined in a :cue psuedo-element scope. Only properties listed
-  // in https://w3c.github.io/webvtt/#the-cue-pseudo-element are valid.
-  kCue,
-  // Defined in a :first-letter psuedo-element scope. Only properties listed in
-  // https://drafts.csswg.org/css-pseudo-4/#first-letter-styling are valid.
-  kFirstLetter,
+enum PropertyWhitelistType {
+  kPropertyWhitelistNone,
+  kPropertyWhitelistCue,
+  kPropertyWhitelistFirstLetter,
 };
 
 class CSSSelector;
@@ -111,11 +104,11 @@ class CORE_EXPORT RuleData : public GarbageCollected<RuleData> {
   bool HasDocumentSecurityOrigin() const {
     return has_document_security_origin_;
   }
-  ValidPropertyFilter GetValidPropertyFilter(
+  PropertyWhitelistType PropertyWhitelist(
       bool is_matching_ua_rules = false) const {
     return is_matching_ua_rules
-               ? ValidPropertyFilter::kNoFilter
-               : static_cast<ValidPropertyFilter>(valid_property_filter_);
+               ? kPropertyWhitelistNone
+               : static_cast<PropertyWhitelistType>(property_whitelist_);
   }
   // Try to balance between memory usage (there can be lots of RuleData objects)
   // and good filtering performance.
@@ -145,7 +138,7 @@ class CORE_EXPORT RuleData : public GarbageCollected<RuleData> {
   unsigned specificity_ : 24;
   unsigned link_match_type_ : 2;  //  CSSSelector::LinkMatchMask
   unsigned has_document_security_origin_ : 1;
-  unsigned valid_property_filter_ : 2;
+  unsigned property_whitelist_ : 2;
   // 29 bits above
   // Use plain array instead of a Vector to minimize memory overhead.
   unsigned descendant_selector_identifier_hashes_[kMaximumIdentifierCount];
@@ -177,6 +170,8 @@ static_assert(sizeof(RuleData) == sizeof(SameSizeAsRuleData),
 // ElementRuleCollector::CollectMatchingRules.
 class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
  public:
+  static RuleSet* Create() { return MakeGarbageCollected<RuleSet>(); }
+
   RuleSet() : rule_count_(0) {}
 
   void AddRulesFromSheet(StyleSheetContents*,
@@ -312,6 +307,10 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
 
   class PendingRuleMaps : public GarbageCollected<PendingRuleMaps> {
    public:
+    static PendingRuleMaps* Create() {
+      return MakeGarbageCollected<PendingRuleMaps>();
+    }
+
     PendingRuleMaps() = default;
 
     PendingRuleMap id_rules;
@@ -324,7 +323,7 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
 
   PendingRuleMaps* EnsurePendingRules() {
     if (!pending_rules_)
-      pending_rules_ = MakeGarbageCollected<PendingRuleMaps>();
+      pending_rules_ = PendingRuleMaps::Create();
     return pending_rules_.Get();
   }
 

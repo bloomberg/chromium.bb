@@ -29,6 +29,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
@@ -52,6 +53,7 @@ const char kTestDataDirectory[] = "testDataDirectory";
 const char kTestWebSocketPort[] = "testWebSocketPort";
 const char kFtpServerPort[] = "ftpServer.port";
 const char kEmbeddedTestServerPort[] = "testServer.port";
+const char kNativeCrxBindingsEnabled[] = "nativeCrxBindingsEnabled";
 
 }  // namespace
 
@@ -74,7 +76,9 @@ void ExtensionApiTest::SetUpOnMainThread() {
     test_config_->SetInteger(kEmbeddedTestServerPort,
                              embedded_test_server()->port());
   }
-
+  test_config_->SetBoolean(
+      kNativeCrxBindingsEnabled,
+      base::FeatureList::IsEnabled(extensions_features::kNativeCrxBindings));
   TestGetConfigFunction::set_test_config_state(test_config_.get());
 }
 

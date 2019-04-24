@@ -14,7 +14,7 @@ typedef unsigned char byte;
 // Interface and default implementation for converting addresses and
 // register-numbers to text.  The default implementation is machine
 // specific.
-class V8_EXPORT_PRIVATE NameConverter {
+class NameConverter {
  public:
   virtual ~NameConverter() = default;
   virtual const char* NameOfCPURegister(int reg) const;
@@ -33,6 +33,7 @@ class V8_EXPORT_PRIVATE NameConverter {
  protected:
   v8::internal::EmbeddedVector<char, 128> tmp_buffer_;
 };
+
 
 // A generic Disassembler interface
 class Disassembler {
@@ -55,8 +56,7 @@ class Disassembler {
 
   // Writes one disassembled instruction into 'buffer' (0-terminated).
   // Returns the length of the disassembled machine instruction in bytes.
-  V8_EXPORT_PRIVATE int InstructionDecode(v8::internal::Vector<char> buffer,
-                                          byte* instruction);
+  int InstructionDecode(v8::internal::Vector<char> buffer, byte* instruction);
 
   // Returns -1 if instruction does not mark the beginning of a constant pool,
   // or the number of entries in the constant pool beginning here.
@@ -64,10 +64,9 @@ class Disassembler {
 
   // Write disassembly into specified file 'f' using specified NameConverter
   // (see constructor).
-  V8_EXPORT_PRIVATE static void Disassemble(
-      FILE* f, byte* begin, byte* end,
-      UnimplementedOpcodeAction unimplemented_action =
-          kAbortOnUnimplementedOpcode);
+  static void Disassemble(FILE* f, byte* begin, byte* end,
+                          UnimplementedOpcodeAction unimplemented_action =
+                              kAbortOnUnimplementedOpcode);
 
  private:
   const NameConverter& converter_;

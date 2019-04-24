@@ -39,7 +39,7 @@ GrAALinearizingConvexPathRenderer::GrAALinearizingConvexPathRenderer() {
 
 GrPathRenderer::CanDrawPath
 GrAALinearizingConvexPathRenderer::onCanDrawPath(const CanDrawPathArgs& args) const {
-    if (!(AATypeFlags::kCoverage & args.fAATypeFlags)) {
+    if (GrAAType::kCoverage != args.fAAType) {
         return CanDrawPath::kNo;
     }
     if (!args.fShape->knownToBeConvex()) {
@@ -160,6 +160,7 @@ public:
             bounds.outset(w, w);
         }
         this->setTransformedBounds(bounds, viewMatrix, HasAABloat::kYes, IsZeroArea::kNo);
+        fWideColor = !SkPMColor4fFitsInBytes(color);
     }
 
     const char* name() const override { return "AAFlatteningConvexPathOp"; }
@@ -186,11 +187,11 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
-                                      GrFSAAType fsaaType, GrClampType clampType) override {
+    GrProcessorSet::Analysis finalize(
+            const GrCaps& caps, const GrAppliedClip* clip, GrFSAAType fsaaType) override {
         return fHelper.finalizeProcessors(
-                caps, clip, fsaaType, clampType, GrProcessorAnalysisCoverage::kSingleChannel,
-                &fPaths.back().fColor, &fWideColor);
+                caps, clip, fsaaType, GrProcessorAnalysisCoverage::kSingleChannel,
+                &fPaths.back().fColor);
     }
 
 private:
@@ -227,7 +228,7 @@ private:
     void onPrepareDraws(Target* target) override {
         // Setup GrGeometryProcessor
         sk_sp<GrGeometryProcessor> gp(create_lines_only_gp(target->caps().shaderCaps(),
-                                                           fHelper.compatibleWithCoverageAsAlpha(),
+                                                           fHelper.compatibleWithAlphaAsCoverage(),
                                                            this->viewMatrix(),
                                                            fHelper.usesLocalCoords(),
                                                            fWideColor));

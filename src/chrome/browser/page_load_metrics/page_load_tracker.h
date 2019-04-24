@@ -12,10 +12,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer_delegate.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_update_dispatcher.h"
-#include "chrome/browser/page_load_metrics/resource_tracker.h"
-#include "chrome/browser/scoped_visibility_tracker.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -30,7 +27,6 @@ class WebInputEvent;
 
 namespace content {
 class NavigationHandle;
-class WebContents;
 }  // namespace content
 
 namespace page_load_metrics {
@@ -160,8 +156,7 @@ bool IsNavigationUserInitiated(content::NavigationHandle* handle);
 // provisional load, until a new navigation commits or the navigation fails.
 // MetricsWebContentsObserver manages a set of provisional PageLoadTrackers, as
 // well as a committed PageLoadTracker.
-class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
-                        public PageLoadMetricsObserverDelegate {
+class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
  public:
   // Caller must guarantee that the embedder_interface pointer outlives this
   // class. The PageLoadTracker must not hold on to
@@ -182,28 +177,17 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
                                const mojom::PageLoadTiming& timing) override;
   void OnSubFrameRenderDataChanged(
       content::RenderFrameHost* rfh,
-      const mojom::FrameRenderDataUpdate& render_data) override;
+      const mojom::PageRenderData& render_data) override;
   void OnMainFrameMetadataChanged() override;
-  void OnSubframeMetadataChanged(
-      content::RenderFrameHost* rfh,
-      const mojom::PageLoadMetadata& metadata) override;
+  void OnSubframeMetadataChanged() override;
   void UpdateFeaturesUsage(
       content::RenderFrameHost* rfh,
       const mojom::PageLoadFeatures& new_features) override;
   void UpdateResourceDataUse(
-      content::RenderFrameHost* rfh,
+      int frame_tree_node_id,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources) override;
-  void OnNewDeferredResourceCounts(
-      const mojom::DeferredResourceCounts& new_deferred_resource_data) override;
   void UpdateFrameCpuTiming(content::RenderFrameHost* rfh,
                             const mojom::CpuTiming& timing) override;
-
-  // PageLoadMetricsDelegate implementation:
-  content::WebContents* GetWebContents() const override;
-  base::TimeTicks GetNavigationStart() const override;
-  bool DidCommit() const override;
-  const ScopedVisibilityTracker& GetVisibilityTracker() const override;
-  const ResourceTracker& GetResourceTracker() const override;
 
   void Redirect(content::NavigationHandle* navigation_handle);
   void WillProcessNavigationResponse(
@@ -228,11 +212,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // killed at any time after this method is invoked without further
   // notification.
   void FlushMetricsOnAppEnterBackground();
-
-  // Replaces the |visibility_tracker_| for testing, which can mock a clock.
-  void SetVisibilityTrackerForTesting(const ScopedVisibilityTracker& tracker) {
-    visibility_tracker_ = tracker;
-  }
 
   void NotifyClientRedirectTo(const PageLoadTracker& destination);
 
@@ -355,8 +334,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // The start URL for this page load (before redirects).
   GURL start_url_;
 
-  ScopedVisibilityTracker visibility_tracker_;
-
   // Whether this page load committed.
   bool did_commit_;
 
@@ -406,9 +383,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // always be less than or equal to |aborted_chain_size_|.
   const int aborted_chain_size_same_url_;
 
-  // Keeps track of actively loading resources on the page.
-  ResourceTracker resource_tracker_;
-
   // Interface to chrome features. Must outlive the class.
   PageLoadMetricsEmbedderInterface* const embedder_interface_;
 
@@ -417,8 +391,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   PageLoadMetricsUpdateDispatcher metrics_update_dispatcher_;
 
   const ukm::SourceId source_id_;
-
-  content::WebContents* const web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadTracker);
 };

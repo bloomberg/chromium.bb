@@ -5,10 +5,6 @@
 #ifndef ASH_WM_WINDOW_TRANSIENT_DESCENDANT_ITERATOR_H_
 #define ASH_WM_WINDOW_TRANSIENT_DESCENDANT_ITERATOR_H_
 
-#include "ash/ash_export.h"
-#include "base/bind_helpers.h"
-#include "base/callback.h"
-
 namespace aura {
 class Window;
 }
@@ -16,28 +12,20 @@ class Window;
 namespace ash {
 namespace wm {
 
-using TransientTreeIgnorePredicate =
-    base::RepeatingCallback<bool(aura::Window*)>;
-
 // An iterator class that traverses an aura::Window and all of its transient
 // descendants.
-class ASH_EXPORT WindowTransientDescendantIterator {
+class WindowTransientDescendantIterator {
  public:
   // Creates an empty iterator.
   WindowTransientDescendantIterator();
 
-  ~WindowTransientDescendantIterator();
-
   // Copy constructor required for iterator purposes.
   WindowTransientDescendantIterator(
-      const WindowTransientDescendantIterator& other);
+      const WindowTransientDescendantIterator& other) = default;
 
   // Iterates over |root_window| and all of its transient descendants.
+  // Note |root_window| must not have a transient parent.
   explicit WindowTransientDescendantIterator(aura::Window* root_window);
-
-  WindowTransientDescendantIterator(
-      aura::Window* root_window,
-      TransientTreeIgnorePredicate hide_predicate);
 
   // Prefix increment operator.  This assumes there are more items (i.e.
   // *this != TransientDescendantIterator()).
@@ -58,9 +46,6 @@ class ASH_EXPORT WindowTransientDescendantIterator {
   // The current window that |this| refers to. A null |current_window_| denotes
   // an empty iterator and is used as the last possible value in the traversal.
   aura::Window* current_window_;
-
-  // Windows that satisfy this predicate will not be shown.
-  TransientTreeIgnorePredicate hide_predicate_ = base::NullCallback();
 };
 
 // Provides a virtual container implementing begin() and end() for a sequence of
@@ -88,14 +73,8 @@ class WindowTransientDescendantIteratorRange {
   WindowTransientDescendantIterator end_;
 };
 
-// Returns the range to iterate over the entire transient-window hierarchy which
-// |window| belongs to. If |hide_predicate| is given, windows that satisfy that
-// condition will be skipped.
-ASH_EXPORT WindowTransientDescendantIteratorRange
-GetTransientTreeIterator(aura::Window* window);
-ASH_EXPORT WindowTransientDescendantIteratorRange
-GetTransientTreeIterator(aura::Window* window,
-                         TransientTreeIgnorePredicate hide_predicate);
+WindowTransientDescendantIteratorRange GetTransientTreeIterator(
+    aura::Window* window);
 
 }  // namespace wm
 }  // namespace ash

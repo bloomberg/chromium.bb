@@ -36,7 +36,7 @@ class ParseError(Exception):
 
 
 class Expectation(object):
-    def __init__(self, reason, test, tags, results, lineno,
+    def __init__(self, reason, test, tags, results,
                  retry_on_failure=False):
         """Constructor for expectations.
 
@@ -56,13 +56,11 @@ class Expectation(object):
         self._test = test
         self._tags = frozenset(tags)
         self._results = frozenset(results)
-        self._lineno = lineno
         self.should_retry_on_failure = retry_on_failure
 
     def __eq__(self, other):
         return (self.reason == other.reason and self.test == other.test
-                and self.tags == other.tags and self.results == other.results
-                and self.lineno == other.lineno)
+                and self.tags == other.tags and self.results == other.results)
 
     @property
     def reason(self):
@@ -80,9 +78,6 @@ class Expectation(object):
     def results(self):
         return self._results
 
-    @property
-    def lineno(self):
-        return self._lineno
 
 class TaggedTestListParser(object):
     """Parses lists of tests and expectations for them.
@@ -210,9 +205,8 @@ class TaggedTestListParser(object):
             for t in tags:
                 tags_by_tag_set_id[self._tag_to_tag_set[t]].append(t)
             for tag_intersection in tags_by_tag_set_id.values():
-                if len(tag_intersection) > 1:
-                    error_msg += ('\n  - Tags %s are part of the same tag set' %
-                                  _group_to_string(sorted(tag_intersection)))
+                error_msg += ('\n  - Tags %s are part of the same tag set' %
+                              _group_to_string(sorted(tag_intersection)))
             raise ParseError(lineno, error_msg)
 
         results = []
@@ -230,7 +224,7 @@ class TaggedTestListParser(object):
             except KeyError:
                 raise ParseError(lineno, 'Unknown result type "%s"' % r)
 
-        return Expectation(reason, test, tags, results, lineno, retry_on_failure)
+        return Expectation(reason, test, tags, results, retry_on_failure)
 
 
 class TestExpectations(object):

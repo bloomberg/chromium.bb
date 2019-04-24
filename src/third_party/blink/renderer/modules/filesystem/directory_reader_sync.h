@@ -47,6 +47,11 @@ class DirectoryReaderSync : public DirectoryReaderBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static DirectoryReaderSync* Create(DOMFileSystemBase* file_system,
+                                     const String& full_path) {
+    return MakeGarbageCollected<DirectoryReaderSync>(file_system, full_path);
+  }
+
   DirectoryReaderSync(DOMFileSystemBase*, const String& full_path);
   ~DirectoryReaderSync() override = default;
 
@@ -55,6 +60,9 @@ class DirectoryReaderSync : public DirectoryReaderBase {
   void Trace(blink::Visitor*) override;
 
  private:
+  class EntriesCallbackHelper;
+  class ErrorCallbackHelper;
+
   bool has_called_read_directory_ = false;
   EntrySyncHeapVector entries_;
   base::File::Error error_code_ = base::File::FILE_OK;

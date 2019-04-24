@@ -60,9 +60,11 @@ TEST_F(CompositorAnimationTest, NullDelegate) {
       CompositorAnimation::Create();
   cc::SingleKeyframeEffectAnimation* cc_animation = animation->CcAnimation();
 
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
-  auto keyframe_model = std::make_unique<CompositorKeyframeModel>(
-      *curve, compositor_target_property::TRANSFORM, 0, 1);
+  std::unique_ptr<CompositorAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
+  std::unique_ptr<CompositorKeyframeModel> keyframe_model =
+      CompositorKeyframeModel::Create(
+          *curve, compositor_target_property::TRANSFORM, 1, 0);
   animation->AddKeyframeModel(std::move(keyframe_model));
 
   animation->SetAnimationDelegate(delegate.get());
@@ -89,9 +91,11 @@ TEST_F(CompositorAnimationTest, NotifyFromCCAfterCompositorAnimationDeletion) {
   scoped_refptr<cc::SingleKeyframeEffectAnimation> cc_animation =
       animation->CcAnimation();
 
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
-  auto keyframe_model = std::make_unique<CompositorKeyframeModel>(
-      *curve, compositor_target_property::OPACITY, 0, 1);
+  std::unique_ptr<CompositorAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
+  std::unique_ptr<CompositorKeyframeModel> keyframe_model =
+      CompositorKeyframeModel::Create(
+          *curve, compositor_target_property::OPACITY, 1, 0);
   animation->AddKeyframeModel(std::move(keyframe_model));
 
   animation->SetAnimationDelegate(delegate.get());
@@ -113,7 +117,8 @@ TEST_F(CompositorAnimationTest, NotifyFromCCAfterCompositorAnimationDeletion) {
 
 TEST_F(CompositorAnimationTest,
        CompositorAnimationDeletionDetachesFromCCTimeline) {
-  auto timeline = std::make_unique<CompositorAnimationTimeline>();
+  std::unique_ptr<CompositorAnimationTimeline> timeline =
+      CompositorAnimationTimeline::Create();
   std::unique_ptr<CompositorAnimationTestClient> client(
       new CompositorAnimationTestClient);
 

@@ -5,8 +5,8 @@
 cr.exportPath('management');
 /**
  * @typedef {{
- *   name: string,
- *   permissions: !Array<string>
+ *    name: string,
+ *    permissions: !Array<string>
  * }}
  */
 management.Extension;
@@ -22,32 +22,11 @@ management.ReportingType = {
 
 /**
  * @typedef {{
- *   messageId: string,
- *   reportingType: !management.ReportingType,
+ *    messageId: string,
+ *    reportingType: !management.ReportingType,
  * }}
  */
 management.BrowserReportingResponse;
-
-/**
- * @typedef {{
- *   overview: string,
- *   setup: string,
- *   data: string,
- * }}
- */
-management.ManagedInfo;
-
-/**
- * @typedef {{
- *   accountManagedInfo: ?management.ManagedInfo,
- *   browserManagementNotice: string,
- *   deviceManagedInfo: ?management.ManagedInfo,
- *   extensionReportingTitle: string,
- *   pageSubtitle: string,
- *   overview: string,
- * }}
- */
-management.ManagedDataResponse;
 
 // <if expr="chromeos">
 /**
@@ -59,15 +38,14 @@ management.DeviceReportingType = {
   DEVICE_ACTIVITY: 'device activity',
   STATISTIC: 'device statistics',
   DEVICE: 'device',
-  LOGS: 'logs',
-  PRINT: 'print'
+  LOGS: 'logs'
 };
 
 
 /**
  * @typedef {{
- *   messageId: string,
- *   reportingType: !management.DeviceReportingType,
+ *    messageId: string,
+ *    reportingType: !management.DeviceReportingType,
  * }}
  */
 management.DeviceReportingResponse;
@@ -92,9 +70,6 @@ cr.define('management', function() {
      */
     getDeviceReportingInfo() {}
     // </if>
-
-    /** @return {!Promise<!management.ManagedDataResponse>} */
-    getContextualManagedData() {}
 
     /**
      * @return {!Promise<!Array<!management.BrowserReportingResponse>>} The list
@@ -121,11 +96,6 @@ cr.define('management', function() {
       return cr.sendWithPromise('getDeviceReportingInfo');
     }
     // </if>
-
-    /** @override */
-    getContextualManagedData() {
-      return cr.sendWithPromise('getContextualManagedData');
-    }
 
     /** @override */
     initBrowserReportingInfo() {

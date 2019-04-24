@@ -24,7 +24,7 @@ LearningTaskControllerHelper::LearningTaskControllerHelper(
 
 LearningTaskControllerHelper::~LearningTaskControllerHelper() = default;
 
-void LearningTaskControllerHelper::BeginObservation(base::UnguessableToken id,
+void LearningTaskControllerHelper::BeginObservation(ObservationId id,
                                                     FeatureVector features) {
   auto& pending_example = pending_examples_[id];
 
@@ -41,11 +41,10 @@ void LearningTaskControllerHelper::BeginObservation(base::UnguessableToken id,
 }
 
 void LearningTaskControllerHelper::CompleteObservation(
-    base::UnguessableToken id,
+    ObservationId id,
     const ObservationCompletion& completion) {
   auto iter = pending_examples_.find(id);
-  if (iter == pending_examples_.end())
-    return;
+  DCHECK(iter != pending_examples_.end());
 
   iter->second.example.target_value = completion.target_value;
   iter->second.example.weight = completion.weight;
@@ -53,11 +52,10 @@ void LearningTaskControllerHelper::CompleteObservation(
   ProcessExampleIfFinished(std::move(iter));
 }
 
-void LearningTaskControllerHelper::CancelObservation(
-    base::UnguessableToken id) {
+void LearningTaskControllerHelper::CancelObservation(ObservationId id) {
   auto iter = pending_examples_.find(id);
-  if (iter == pending_examples_.end())
-    return;
+  // If the example has already been completed, then we shouldn't be called.
+  DCHECK(iter != pending_examples_.end());
 
   // This would have to check for pending predictions, if we supported them, and
   // defer destruction until the features arrive.
@@ -68,7 +66,7 @@ void LearningTaskControllerHelper::CancelObservation(
 void LearningTaskControllerHelper::OnFeaturesReadyTrampoline(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     base::WeakPtr<LearningTaskControllerHelper> weak_this,
-    base::UnguessableToken id,
+    ObservationId id,
     FeatureVector features) {
   // TODO(liberato): this would benefit from promises / deferred data.
   auto cb = base::BindOnce(&LearningTaskControllerHelper::OnFeaturesReady,
@@ -80,7 +78,7 @@ void LearningTaskControllerHelper::OnFeaturesReadyTrampoline(
   }
 }
 
-void LearningTaskControllerHelper::OnFeaturesReady(base::UnguessableToken id,
+void LearningTaskControllerHelper::OnFeaturesReady(ObservationId id,
                                                    FeatureVector features) {
   PendingExampleMap::iterator iter = pending_examples_.find(id);
   // It's possible that OnLabelCallbackDestroyed has already run.  That's okay

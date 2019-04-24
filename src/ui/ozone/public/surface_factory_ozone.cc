@@ -5,7 +5,6 @@
 #include "ui/ozone/public/surface_factory_ozone.h"
 
 #include <stdlib.h>
-#include <memory>
 
 #include "base/command_line.h"
 #include "gpu/vulkan/buildflags.h"
@@ -82,7 +81,7 @@ SurfaceFactoryOzone::CreateNativePixmapFromHandle(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
-    gfx::NativePixmapHandle handle) {
+    const gfx::NativePixmapHandle& handle) {
   return nullptr;
 }
 
@@ -91,7 +90,7 @@ SurfaceFactoryOzone::CreateNativePixmapForProtectedBufferHandle(
     gfx::AcceleratedWidget widget,
     gfx::Size size,
     gfx::BufferFormat format,
-    gfx::NativePixmapHandle handle) {
+    const gfx::NativePixmapHandle& handle) {
   return nullptr;
 }
 

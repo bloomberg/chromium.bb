@@ -7,7 +7,6 @@
 #include <string>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -30,11 +29,10 @@ struct FallbackExpectedRun {
 class SymbolsIteratorTest : public testing::Test {
  protected:
   void CheckRuns(const Vector<FallbackTestRun>& runs) {
-    StringBuilder text;
-    text.Ensure16Bit();
+    String text(g_empty_string16_bit);
     Vector<FallbackExpectedRun> expect;
     for (auto& run : runs) {
-      text.Append(String::FromUTF8(run.text.c_str()));
+      text.append(String::FromUTF8(run.text.c_str()));
       expect.push_back(
           FallbackExpectedRun(text.length(), run.font_fallback_priority));
     }
@@ -46,7 +44,7 @@ class SymbolsIteratorTest : public testing::Test {
                   const Vector<FallbackExpectedRun>& expect) {
     unsigned limit;
     FontFallbackPriority font_fallback_priority;
-    size_t run_count = 0;
+    unsigned long run_count = 0;
     while (symbols_iterator->Consume(&limit, &font_fallback_priority)) {
       ASSERT_LT(run_count, expect.size());
       ASSERT_EQ(expect[run_count].limit, limit);

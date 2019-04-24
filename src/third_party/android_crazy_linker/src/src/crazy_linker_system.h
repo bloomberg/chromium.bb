@@ -11,7 +11,6 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-#include "crazy_linker_macros.h"
 #include "crazy_linker_util.h"  // for String
 
 // System abstraction used by the crazy linker.
@@ -49,15 +48,6 @@ class FileDescriptor {
   FileDescriptor(const char* path) : fd_(DoOpenReadOnly(path)) {}
 
   ~FileDescriptor() { Close(); }
-
-  CRAZY_DISALLOW_COPY_OPERATIONS(FileDescriptor)
-
-  // Move operations are allowed.
-  FileDescriptor(FileDescriptor&& other) noexcept : fd_(other.fd_) {
-    other.fd_ = kEmptyFD;
-  }
-
-  FileDescriptor& operator=(FileDescriptor&& other) noexcept;
 
   // Returns true if the descriptor is valid.
   bool IsOk() const { return fd_ != kEmptyFD; }
@@ -125,9 +115,7 @@ class FileDescriptor {
     return ret;
   }
 
- protected:
-  explicit FileDescriptor(HandleType handle) : fd_(handle) {}
-
+ private:
   static int DoOpenReadOnly(const char* path);
   static int DoOpenReadWrite(const char* path);
   static void DoClose(int fd);

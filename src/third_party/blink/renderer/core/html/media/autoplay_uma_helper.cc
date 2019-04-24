@@ -52,6 +52,10 @@ int64_t GetUserGestureStatusForUkmMetric(LocalFrame* frame) {
 
 }  // namespace
 
+AutoplayUmaHelper* AutoplayUmaHelper::Create(HTMLMediaElement* element) {
+  return MakeGarbageCollected<AutoplayUmaHelper>(element);
+}
+
 AutoplayUmaHelper::AutoplayUmaHelper(HTMLMediaElement* element)
     : ContextLifecycleObserver(nullptr),
       element_(element),

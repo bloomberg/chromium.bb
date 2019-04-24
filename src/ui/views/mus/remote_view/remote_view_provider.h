@@ -55,7 +55,8 @@ class RemoteViewProvider : public aura::EmbedRootDelegate {
   // Optional callbacks to be invoked when embed or unembed happens.
   using OnEmbedCallback = base::RepeatingCallback<void(aura::Window* embedder)>;
   using OnUnembedCallback = base::RepeatingClosure;
-  void SetCallbacks(OnEmbedCallback on_embed, OnUnembedCallback on_unembed);
+  void SetCallbacks(const OnEmbedCallback& on_embed,
+                    const OnUnembedCallback& on_unembed);
 
  private:
   friend class test::RemoteViewProviderTestApi;

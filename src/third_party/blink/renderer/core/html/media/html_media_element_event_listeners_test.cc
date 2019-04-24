@@ -80,6 +80,10 @@ class FakeWebMediaPlayer final : public EmptyWebMediaPlayer {
 
 class MediaStubLocalFrameClient : public EmptyLocalFrameClient {
  public:
+  static MediaStubLocalFrameClient* Create() {
+    return MakeGarbageCollected<MediaStubLocalFrameClient>();
+  }
+
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,
@@ -98,8 +102,7 @@ using testing::Return;
 class HTMLMediaElementEventListenersTest : public PageTestBase {
  protected:
   void SetUp() override {
-    SetupPageWithClients(nullptr,
-                         MakeGarbageCollected<MediaStubLocalFrameClient>());
+    SetupPageWithClients(nullptr, MediaStubLocalFrameClient::Create());
   }
 
   void DestroyDocument() { PageTestBase::TearDown(); }
@@ -149,7 +152,7 @@ TEST_F(HTMLMediaElementEventListenersTest, RemovingFromDocumentCollectsAll) {
 
   test::RunPendingTasks();
 
-  ThreadState::Current()->CollectAllGarbageForTesting();
+  ThreadState::Current()->CollectAllGarbage();
 
   // They have been GC'd.
   EXPECT_EQ(weak_persistent_video, nullptr);
@@ -179,7 +182,7 @@ TEST_F(HTMLMediaElementEventListenersTest,
 
   test::RunPendingTasks();
 
-  ThreadState::Current()->CollectAllGarbageForTesting();
+  ThreadState::Current()->CollectAllGarbage();
 
   EXPECT_NE(Video(), nullptr);
   EXPECT_NE(Controls(), nullptr);
@@ -237,6 +240,10 @@ TEST_F(HTMLMediaElementEventListenersTest,
 
 class MockEventListener final : public NativeEventListener {
  public:
+  static MockEventListener* Create() {
+    return MakeGarbageCollected<MockEventListener>();
+  }
+
   MOCK_METHOD2(Invoke, void(ExecutionContext* executionContext, Event*));
 };
 
@@ -270,7 +277,7 @@ TEST_F(HTMLMediaElementWithMockSchedulerTest, OneTimeupdatePerSeek) {
   platform_->RunUntilIdle();
   ASSERT_NE(WebMediaPlayer(), nullptr);
 
-  auto* timeupdate_handler = MakeGarbageCollected<MockEventListener>();
+  MockEventListener* timeupdate_handler = MockEventListener::Create();
   Video()->addEventListener(event_type_names::kTimeupdate, timeupdate_handler);
 
   // Simulate conditions where playback is possible.
@@ -293,12 +300,8 @@ TEST_F(HTMLMediaElementWithMockSchedulerTest, OneTimeupdatePerSeek) {
   EXPECT_CALL(*timeupdate_handler, Invoke(_, _)).Times(0);
   platform_->RunForPeriodSeconds(1);
 
-  EXPECT_CALL(*timeupdate_handler, Invoke(_, _)).Times(1);
-  Video()->pause();
-  platform_->RunUntilIdle();
-
-  // Seek to some time in the past. A completed seek while paused should trigger
-  // a *single* timeupdate.
+  // Seek to some time in the past. A completed seek should trigger a *single*
+  // timeupdate.
   EXPECT_CALL(*timeupdate_handler, Invoke(_, _)).Times(1);
   ASSERT_GE(WebMediaPlayer()->CurrentTime(), 1);
   Video()->setCurrentTime(WebMediaPlayer()->CurrentTime() - 1);
@@ -320,7 +323,7 @@ TEST_F(HTMLMediaElementWithMockSchedulerTest, PeriodicTimeupdateAfterSeek) {
   platform_->RunUntilIdle();
   EXPECT_NE(WebMediaPlayer(), nullptr);
 
-  auto* timeupdate_handler = MakeGarbageCollected<MockEventListener>();
+  MockEventListener* timeupdate_handler = MockEventListener::Create();
   Video()->addEventListener(event_type_names::kTimeupdate, timeupdate_handler);
 
   // Simulate conditions where playback is possible.
@@ -351,14 +354,10 @@ TEST_F(HTMLMediaElementWithMockSchedulerTest, PeriodicTimeupdateAfterSeek) {
   ASSERT_GE(WebMediaPlayer()->CurrentTime(), 1);
   Video()->setCurrentTime(WebMediaPlayer()->CurrentTime() - 1);
   WebMediaPlayer()->FinishSeek();
-
-  // Expect another timeupdate after FinishSeek due to
-  // seeking -> begin scrubbing -> pause -> timeupdate.
-  EXPECT_CALL(*timeupdate_handler, Invoke(_, _)).Times(1);
   platform_->RunUntilIdle();
 
   // Advancing the remainder of the last periodic timeupdate interval should be
-  // insufficient to trigger a new timeupdate event because the seek's
+  // insufficient to triggger a new timeupdate event because the seek's
   // timeupdate occurred only 125ms ago. We desire to fire periodic timeupdates
   // exactly every 250ms from the last timeupdate, and the seek's timeupdate
   // should reset that 250ms ms countdown.

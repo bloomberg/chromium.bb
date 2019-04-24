@@ -21,10 +21,12 @@ ShaderVk::ShaderVk(const gl::ShaderState &data) : ShaderImpl(data) {}
 
 ShaderVk::~ShaderVk() {}
 
-std::shared_ptr<WaitableCompileEvent> ShaderVk::compile(const gl::Context *context,
-                                                        gl::ShCompilerInstance *compilerInstance,
-                                                        ShCompileOptions options)
+ShCompileOptions ShaderVk::prepareSourceAndReturnOptions(const gl::Context *context,
+                                                         std::stringstream *sourceStream,
+                                                         std::string *sourcePath)
 {
+    *sourceStream << mData.getSource();
+
     ShCompileOptions compileOptions = SH_INITIALIZE_UNINITIALIZED_LOCALS;
 
     ContextVk *contextVk = vk::GetImpl(context);
@@ -34,7 +36,13 @@ std::shared_ptr<WaitableCompileEvent> ShaderVk::compile(const gl::Context *conte
         compileOptions |= SH_CLAMP_POINT_SIZE;
     }
 
-    return compileImpl(context, compilerInstance, mData.getSource(), compileOptions | options);
+    return compileOptions;
+}
+
+bool ShaderVk::postTranslateCompile(gl::ShCompilerInstance *compiler, std::string *infoLog)
+{
+    // No work to do here.
+    return true;
 }
 
 std::string ShaderVk::getDebugInfo() const

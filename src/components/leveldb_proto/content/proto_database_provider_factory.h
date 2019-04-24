@@ -5,17 +5,12 @@
 #ifndef COMPONENTS_LEVELDB_PROTO_CONTENT_PROTO_DATABASE_PROVIDER_FACTORY_H_
 #define COMPONENTS_LEVELDB_PROTO_CONTENT_PROTO_DATABASE_PROVIDER_FACTORY_H_
 
-#include <memory>
-
 #include "base/macros.h"
-#include "components/keyed_service/core/simple_keyed_service_factory.h"
-
-class KeyedService;
-class SimpleFactoryKey;
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 namespace base {
 template <typename T>
-class NoDestructor;
+struct DefaultSingletonTraits;
 }  // namespace base
 
 namespace leveldb_proto {
@@ -23,24 +18,25 @@ class ProtoDatabaseProvider;
 
 // A factory for ProtoDatabaseProvider, a class that provides proto databases
 // stored in the appropriate directory for the current profile.
-class ProtoDatabaseProviderFactory : public SimpleKeyedServiceFactory {
+class ProtoDatabaseProviderFactory : public BrowserContextKeyedServiceFactory {
  public:
   // Returns singleton instance of ProtoDatabaseProviderFactory.
   static ProtoDatabaseProviderFactory* GetInstance();
 
-  // Returns ProtoDatabaseProvider associated with |key|, so we can
+  // Returns ProtoDatabaseProvider associated with |context|, so we can
   // instantiate ProtoDatabases that use the appropriate profile directory.
-  static ProtoDatabaseProvider* GetForKey(SimpleFactoryKey* key);
+  static ProtoDatabaseProvider* GetForBrowserContext(
+      content::BrowserContext* context);
 
  private:
-  friend class base::NoDestructor<ProtoDatabaseProviderFactory>;
+  friend struct base::DefaultSingletonTraits<ProtoDatabaseProviderFactory>;
 
   ProtoDatabaseProviderFactory();
   ~ProtoDatabaseProviderFactory() override;
 
-  // SimpleKeyedServiceFactory overrides:
-  std::unique_ptr<KeyedService> BuildServiceInstanceFor(
-      SimpleFactoryKey* key) const override;
+  // BrowserContextKeyedServiceFactory overrides:
+  KeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* context) const override;
 
   DISALLOW_COPY_AND_ASSIGN(ProtoDatabaseProviderFactory);
 };

@@ -46,7 +46,8 @@ void ElementPrecondition::Check(BatchElementChecker* batch_checks,
     base::OnceCallback<void(bool)> callback =
         base::BindOnce(&ElementPrecondition::OnCheckElementExists,
                        weak_ptr_factory_.GetWeakPtr());
-    batch_checks->AddElementCheck(selector, std::move(callback));
+    batch_checks->AddElementCheck(kExistenceCheck, selector,
+                                  std::move(callback));
   }
   for (size_t i = 0; i < form_value_match_.size(); i++) {
     const auto& value_match = form_value_match_[i];

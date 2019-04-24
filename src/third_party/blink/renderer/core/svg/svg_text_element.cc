@@ -29,8 +29,7 @@ inline SVGTextElement::SVGTextElement(Document& doc)
 
 DEFINE_NODE_FACTORY(SVGTextElement)
 
-LayoutObject* SVGTextElement::CreateLayoutObject(const ComputedStyle&,
-                                                 LegacyLayout) {
+LayoutObject* SVGTextElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGText(this);
 }
 

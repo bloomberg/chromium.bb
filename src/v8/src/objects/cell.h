@@ -32,7 +32,7 @@ class Cell : public HeapObject {
   DEFINE_FIELD_OFFSET_CONSTANTS(HeapObject::kHeaderSize,
                                 TORQUE_GENERATED_CELL_FIELDS)
 
-  using BodyDescriptor = FixedBodyDescriptor<kValueOffset, kSize, kSize>;
+  typedef FixedBodyDescriptor<kValueOffset, kSize, kSize> BodyDescriptor;
 
   OBJECT_CONSTRUCTORS(Cell, HeapObject);
 };

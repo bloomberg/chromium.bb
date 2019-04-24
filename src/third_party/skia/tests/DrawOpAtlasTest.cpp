@@ -184,7 +184,6 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrAtlasTextOpPreparation, reporter, ctxInfo) 
 
     auto gpu = context->priv().getGpu();
     auto resourceProvider = context->priv().resourceProvider();
-    auto resourceCache = context->priv().getResourceCache();
     auto drawingManager = context->priv().drawingManager();
     auto textContext = drawingManager->getTextContext();
     auto opMemoryPool = context->priv().opMemoryPool();
@@ -208,12 +207,11 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrAtlasTextOpPreparation, reporter, ctxInfo) 
 
     std::unique_ptr<GrDrawOp> op = textContext->createOp_TestingOnly(
             context, textContext, rtc.get(), paint, font, SkMatrix::I(), text, 16, 16);
-    op->finalize(*context->priv().caps(), nullptr, GrFSAAType::kNone, GrClampType::kAuto);
+    op->finalize(*context->priv().caps(), nullptr, GrFSAAType::kNone);
 
     TestingUploadTarget uploadTarget;
 
-    GrOpFlushState flushState(gpu, resourceProvider, resourceCache,
-                              uploadTarget.writeableTokenTracker());
+    GrOpFlushState flushState(gpu, resourceProvider, uploadTarget.writeableTokenTracker());
     GrOpFlushState::OpArgs opArgs = {
         op.get(),
         rtc->asRenderTargetProxy(),

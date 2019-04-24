@@ -7,7 +7,6 @@
 #ifndef XFA_FXFA_CXFA_FFDOCVIEW_H_
 #define XFA_FXFA_CXFA_FFDOCVIEW_H_
 
-#include <deque>
 #include <memory>
 #include <vector>
 
@@ -16,13 +15,13 @@
 #include "xfa/fxfa/cxfa_ffdoc.h"
 
 class CXFA_BindItems;
+class CXFA_ContainerLayoutItem;
+class CXFA_FFWidgetHandler;
 class CXFA_FFDoc;
 class CXFA_FFWidget;
-class CXFA_FFWidgetHandler;
 class CXFA_Node;
-class CXFA_ReadyNodeIterator;
 class CXFA_Subform;
-class CXFA_ViewLayoutItem;
+class CXFA_ReadyNodeIterator;
 
 extern const XFA_AttributeValue gs_EventActivity[];
 enum XFA_DOCVIEW_LAYOUTSTATUS {
@@ -65,7 +64,7 @@ class CXFA_FFDocView {
   CXFA_FFWidget* GetWidgetByName(const WideString& wsName,
                                  CXFA_FFWidget* pRefWidget);
   CXFA_LayoutProcessor* GetXFALayout() const;
-  void OnPageEvent(CXFA_ViewLayoutItem* pSender, uint32_t dwEvent);
+  void OnPageEvent(CXFA_ContainerLayoutItem* pSender, uint32_t dwEvent);
   void LockUpdate() { m_iLock++; }
   void UnlockUpdate() { m_iLock--; }
   void InvalidateRect(CXFA_FFPageView* pPageView,
@@ -120,11 +119,11 @@ class CXFA_FFDocView {
   UnownedPtr<CXFA_LayoutProcessor> m_pXFADocLayout;
   UnownedPtr<CXFA_Node> m_pFocusNode;
   UnownedPtr<CXFA_FFWidget> m_pFocusWidget;
-  std::deque<CXFA_Node*> m_ValidateNodes;
+  std::vector<CXFA_Node*> m_ValidateNodes;
   std::vector<CXFA_Node*> m_CalculateNodes;
   std::vector<CXFA_BindItems*> m_BindItems;
-  std::deque<CXFA_Node*> m_NewAddedNodes;
-  std::deque<CXFA_Node*> m_IndexChangedSubforms;
+  std::vector<CXFA_Node*> m_NewAddedNodes;
+  std::vector<CXFA_Node*> m_IndexChangedSubforms;
   XFA_DOCVIEW_LAYOUTSTATUS m_iStatus = XFA_DOCVIEW_LAYOUTSTATUS_None;
   int32_t m_iLock = 0;
 };

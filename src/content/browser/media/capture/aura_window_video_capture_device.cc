@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/media/capture/mouse_cursor_overlay_controller.h"
@@ -22,7 +21,6 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_occlusion_tracker.h"
 
 #if defined(OS_CHROMEOS)
 #include "content/browser/media/capture/lame_window_capturer_chromeos.h"
@@ -88,9 +86,6 @@ class AuraWindowVideoCaptureDevice::WindowTracker
         target_window_->GetFrameSinkId().is_valid() &&
 #endif
         true) {
-#if defined(OS_CHROMEOS)
-      force_visible_.emplace(target_window_);
-#endif
       target_window_->AddObserver(this);
       device_task_runner_->PostTask(
           FROM_HERE,
@@ -116,9 +111,6 @@ class AuraWindowVideoCaptureDevice::WindowTracker
 
     target_window_->RemoveObserver(this);
     target_window_ = nullptr;
-#if defined(OS_CHROMEOS)
-    force_visible_.reset();
-#endif
 
     device_task_runner_->PostTask(
         FROM_HERE,
@@ -140,10 +132,6 @@ class AuraWindowVideoCaptureDevice::WindowTracker
   const DesktopMediaID::Type target_type_;
 
   aura::Window* target_window_ = nullptr;
-#if defined(OS_CHROMEOS)
-  base::Optional<aura::WindowOcclusionTracker::ScopedForceVisible>
-      force_visible_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(WindowTracker);
 };

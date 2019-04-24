@@ -6,7 +6,6 @@
 """A git command for managing a local cache of git repositories."""
 
 from __future__ import print_function
-
 import contextlib
 import errno
 import logging
@@ -18,12 +17,7 @@ import threading
 import time
 import subprocess
 import sys
-
-try:
-  import urlparse
-except ImportError:  # For Py3 compatibility
-  import urllib.parse as urlparse
-
+import urlparse
 import zipfile
 
 from download_from_google_storage import Gsutil
@@ -245,14 +239,9 @@ class Mirror(object):
 
   @property
   def bootstrap_bucket(self):
-    b = os.getenv('OVERRIDE_BOOTSTRAP_BUCKET')
-    if b:
-      return b
     u = urlparse.urlparse(self.url)
     if u.netloc == 'chromium.googlesource.com':
       return 'chromium-git-cache'
-    # TODO(tandrii): delete once LUCI migration is completed.
-    # Only public hosts will be supported going forward.
     elif u.netloc == 'chrome-internal.googlesource.com':
       return 'chrome-git-cache'
     # Not recognized.
@@ -269,10 +258,6 @@ class Mirror(object):
     norm_url = parsed.netloc + parsed.path
     if norm_url.endswith('.git'):
       norm_url = norm_url[:-len('.git')]
-
-    # Use the same dir for authenticated URLs and unauthenticated URLs.
-    norm_url = norm_url.replace('googlesource.com/a/', 'googlesource.com/')
-
     return norm_url.replace('-', '--').replace('/', '-').lower()
 
   @staticmethod

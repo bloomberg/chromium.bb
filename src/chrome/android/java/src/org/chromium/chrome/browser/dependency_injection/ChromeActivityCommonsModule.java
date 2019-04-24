@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.dependency_injection;
 
 import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.ACTIVITY_CONTEXT;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 
@@ -76,19 +75,14 @@ public class ChromeActivityCommonsModule {
 
     @Provides
     public ChromeActivity provideChromeActivity() {
-        // Ideally providing Context or Activity should be enough, but currently a lot of code is
-        // coupled specifically to ChromeActivity.
+        // Ideally providing Context should be enough, but currently a lot of code is coupled
+        // specifically to ChromeActivity.
         return mActivity;
     }
 
     @Provides
     @Named(ACTIVITY_CONTEXT)
     public Context provideContext() {
-        return mActivity;
-    }
-
-    @Provides
-    public Activity provideActivity() {
         return mActivity;
     }
 

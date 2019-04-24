@@ -27,9 +27,6 @@ export interface SliceDetails {
   dur?: number;
   priority?: number;
   endState?: string;
-  wakeupTs?: number;
-  wakerUtid?: number;
-  wakerCpu?: number;
 }
 
 export interface QuantizedLoad {

@@ -16,8 +16,7 @@ const PostMessageChannel = (function() {
    * Allowed origins of the hosting page.
    * @type {Array<string>}
    */
-  const ALLOWED_ORIGINS =
-      ['chrome://oobe', 'chrome://chrome-signin', 'chrome://password-change'];
+  const ALLOWED_ORIGINS = ['chrome://oobe', 'chrome://chrome-signin'];
 
   /** @const */
   const PORT_MESSAGE = 'post-message-port-message';

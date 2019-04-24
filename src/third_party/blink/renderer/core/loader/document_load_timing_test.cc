@@ -14,7 +14,7 @@ namespace blink {
 class DocumentLoadTimingTest : public testing::Test {};
 
 TEST_F(DocumentLoadTimingTest, ensureValidNavigationStartAfterEmbedder) {
-  auto dummy_page = std::make_unique<DummyPageHolder>();
+  std::unique_ptr<DummyPageHolder> dummy_page = DummyPageHolder::Create();
   DocumentLoadTiming timing(*(dummy_page->GetDocument().Loader()));
 
   double delta = -1000;
@@ -30,7 +30,7 @@ TEST_F(DocumentLoadTimingTest, ensureValidNavigationStartAfterEmbedder) {
 }
 
 TEST_F(DocumentLoadTimingTest, correctTimingDeltas) {
-  auto dummy_page = std::make_unique<DummyPageHolder>();
+  std::unique_ptr<DummyPageHolder> dummy_page = DummyPageHolder::Create();
   DocumentLoadTiming timing(*(dummy_page->GetDocument().Loader()));
 
   double navigation_start_delta = -456;
@@ -61,7 +61,7 @@ TEST_F(DocumentLoadTimingTest, correctTimingDeltas) {
 TEST_F(DocumentLoadTimingTest, ensureRedirectEndExcludesNextFetch) {
   // Regression test for https://crbug.com/823254.
 
-  auto dummy_page = std::make_unique<DummyPageHolder>();
+  std::unique_ptr<DummyPageHolder> dummy_page = DummyPageHolder::Create();
   DocumentLoadTiming timing(*(dummy_page->GetDocument().Loader()));
 
   base::TimeTicks origin;

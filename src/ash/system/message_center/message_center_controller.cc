@@ -20,7 +20,6 @@
 #include "components/account_id/account_id.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -127,8 +126,8 @@ MessageCenterController::MessageCenterController() {
         std::make_unique<PopupNotificationBlocker>(MessageCenter::Get());
   }
 
-  message_center::RegisterVectorIcons({&vector_icons::kBusinessIcon,
-                                       &kNotificationAssistantIcon,
+  message_center::RegisterVectorIcons({&kNotificationAssistantIcon,
+                                       &kAutoLaunchManagedGuestSessionIcon,
                                        &kNotificationCaptivePortalIcon,
                                        &kNotificationCellularAlertIcon,
                                        &kNotificationDownloadIcon,

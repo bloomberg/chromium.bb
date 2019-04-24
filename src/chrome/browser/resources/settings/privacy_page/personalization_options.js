@@ -13,7 +13,6 @@ Polymer({
   is: 'settings-personalization-options',
 
   behaviors: [
-    PrefsBehavior,
     WebUIListenerBehavior,
   ],
 
@@ -105,20 +104,6 @@ Polymer({
   onRestartTap_: function(e) {
     e.stopPropagation();
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
-  },
-  // </if>
-
-  // <if expr="_google_chrome">
-  /**
-   * @param {!Event} event
-   * @private
-   */
-  onUseSpellingServiceToggle_: function(event) {
-    // If turning on using the spelling service, automatically turn on
-    // spellcheck so that the spelling service can run.
-    if (event.target.checked) {
-      this.setPrefValue('browser.enable_spellchecking', true);
-    }
   },
   // </if>
 

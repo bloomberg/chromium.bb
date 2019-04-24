@@ -49,8 +49,8 @@ HTMLSummaryElement::HTMLSummaryElement(Document& document)
   SetHasCustomStyleCallbacks();
 }
 
-LayoutObject* HTMLSummaryElement::CreateLayoutObject(const ComputedStyle& style,
-                                                     LegacyLayout legacy) {
+LayoutObject* HTMLSummaryElement::CreateLayoutObject(
+    const ComputedStyle& style) {
   // See: crbug.com/603928 - We manually check for other dislay types, then
   // fallback to a regular LayoutBlockFlow as "display: inline;" should behave
   // as an "inline-block".
@@ -59,8 +59,8 @@ LayoutObject* HTMLSummaryElement::CreateLayoutObject(const ComputedStyle& style,
       display == EDisplay::kGrid || display == EDisplay::kInlineGrid ||
       display == EDisplay::kLayoutCustom ||
       display == EDisplay::kInlineLayoutCustom)
-    return LayoutObject::CreateObject(this, style, legacy);
-  return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy);
+    return LayoutObject::CreateObject(this, style);
+  return LayoutObjectFactory::CreateBlockFlow(*this, style);
 }
 
 void HTMLSummaryElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {

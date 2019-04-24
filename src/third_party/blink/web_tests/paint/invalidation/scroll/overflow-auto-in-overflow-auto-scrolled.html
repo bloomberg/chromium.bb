@@ -5,6 +5,8 @@
     <script>
     window.onload = function() {
         if (window.eventSender) {
+            testRunner.dumpAsTextWithPixelResults();
+
             if (window.internals)
                 internals.settings.setScrollAnimatorEnabled(false);
 

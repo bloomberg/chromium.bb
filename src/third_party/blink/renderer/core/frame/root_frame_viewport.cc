@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 
-#include "base/barrier_closure.h"
 #include "cc/input/snap_selection_strategy.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -182,14 +181,15 @@ IntRect RootFrameViewport::VisibleContentRect(
 LayoutRect RootFrameViewport::VisibleScrollSnapportRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   // The effective viewport is the intersection of the visual viewport with the
-  // layout viewport.
+  // layout viewport. However, we don't use visibleContentRect directly since it
+  // floors the scroll offset. Instead, we use ScrollAnimatorBase::currentOffset
+  // and construct a LayoutRect from that.
   LayoutRect frame_rect_in_content = LayoutRect(
-      FloatPoint(LayoutViewport().GetScrollOffset()),
+      FloatPoint(LayoutViewport().GetScrollAnimator().CurrentOffset()),
       FloatSize(
           LayoutViewport().VisibleContentRect(scrollbar_inclusion).Size()));
   LayoutRect visual_rect_in_content = LayoutRect(
-      FloatPoint(LayoutViewport().GetScrollOffset() +
-                 VisualViewport().GetScrollAnimator().CurrentOffset()),
+      FloatPoint(ScrollOffsetFromScrollAnimators()),
       FloatSize(
           VisualViewport().VisibleContentRect(scrollbar_inclusion).Size()));
 
@@ -242,8 +242,7 @@ IntRect RootFrameViewport::ScrollCornerRect() const {
 
 void RootFrameViewport::SetScrollOffset(const ScrollOffset& offset,
                                         ScrollType scroll_type,
-                                        ScrollBehavior scroll_behavior,
-                                        ScrollCallback on_finish) {
+                                        ScrollBehavior scroll_behavior) {
   UpdateScrollAnimator();
 
   if (scroll_behavior == kScrollBehaviorAuto)
@@ -251,19 +250,18 @@ void RootFrameViewport::SetScrollOffset(const ScrollOffset& offset,
 
   if (scroll_type == kAnchoringScroll) {
     DistributeScrollBetweenViewports(offset, scroll_type, scroll_behavior,
-                                     kLayoutViewport, std::move(on_finish));
+                                     kLayoutViewport);
     return;
   }
 
   if (scroll_behavior == kScrollBehaviorSmooth) {
     DistributeScrollBetweenViewports(offset, scroll_type, scroll_behavior,
-                                     kVisualViewport, std::move(on_finish));
+                                     kVisualViewport);
     return;
   }
 
   ScrollOffset clamped_offset = ClampScrollOffset(offset);
-  ScrollableArea::SetScrollOffset(clamped_offset, scroll_type, scroll_behavior,
-                                  std::move(on_finish));
+  ScrollableArea::SetScrollOffset(clamped_offset, scroll_type, scroll_behavior);
 }
 
 ScrollBehavior RootFrameViewport::ScrollBehaviorStyle() const {
@@ -320,8 +318,7 @@ LayoutRect RootFrameViewport::ScrollIntoView(
       GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
                                                  behavior);
     } else {
-      ScrollableArea::SetScrollOffset(new_scroll_offset,
-                                      params.GetScrollType());
+      SetScrollOffset(new_scroll_offset, params.GetScrollType());
     }
   }
 
@@ -342,8 +339,7 @@ void RootFrameViewport::DistributeScrollBetweenViewports(
     const ScrollOffset& offset,
     ScrollType scroll_type,
     ScrollBehavior behavior,
-    ViewportToScrollFirst scroll_first,
-    ScrollCallback on_finish) {
+    ViewportToScrollFirst scroll_first) {
   // Make sure we use the scroll offsets as reported by each viewport's
   // ScrollAnimatorBase, since its ScrollableArea's offset may have the
   // fractional part truncated off.
@@ -353,11 +349,8 @@ void RootFrameViewport::DistributeScrollBetweenViewports(
 
   ScrollOffset delta = offset - old_offset;
 
-  if (delta.IsZero()) {
-    if (on_finish)
-      std::move(on_finish).Run();
+  if (delta.IsZero())
     return;
-  }
 
   ScrollableArea& primary =
       scroll_first == kVisualViewport ? VisualViewport() : LayoutViewport();
@@ -367,14 +360,11 @@ void RootFrameViewport::DistributeScrollBetweenViewports(
   ScrollOffset target_offset = primary.ClampScrollOffset(
       primary.GetScrollAnimator().CurrentOffset() + delta);
 
-  auto all_done = on_finish ? base::BarrierClosure(2, std::move(on_finish))
-                            : base::RepeatingClosure();
-
   // DistributeScrollBetweenViewports can be called from SetScrollOffset,
   // so we assume that aborting sequenced smooth scrolls has been handled.
   // It can also be called from inside an animation to set the offset in
   // each frame. In that case, we shouldn't abort sequenced smooth scrolls.
-  primary.SetScrollOffset(target_offset, scroll_type, behavior, all_done);
+  primary.SetScrollOffset(target_offset, scroll_type, behavior);
 
   // Scroll the secondary viewport if all of the scroll was not applied to the
   // primary viewport.
@@ -383,15 +373,12 @@ void RootFrameViewport::DistributeScrollBetweenViewports(
   ScrollOffset applied = updated_offset - old_offset;
   delta -= applied;
 
-  if (delta.IsZero()) {
-    if (all_done)
-      all_done.Run();
+  if (delta.IsZero())
     return;
-  }
 
   target_offset = secondary.ClampScrollOffset(
       secondary.GetScrollAnimator().CurrentOffset() + delta);
-  secondary.SetScrollOffset(target_offset, scroll_type, behavior, all_done);
+  secondary.SetScrollOffset(target_offset, scroll_type, behavior);
 }
 
 IntSize RootFrameViewport::ScrollOffsetInt() const {

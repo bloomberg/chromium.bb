@@ -123,9 +123,13 @@ for (var mainTestId = 0; mainTestId < expectedResults.length; mainTestId++) {
     testsElement.appendChild(document.createElement("br"));
 }
 
-function runTest() {
-  document.fonts.ready.then(test);
+// We need to run tests after the font downloading succeeded or failed.
+// Using a timer is not ideal, but there seems to be no better options.
+function runTest()
+{
+    window.setTimeout(test, 200);
 }
 </script>
 </body>
 </html>
+

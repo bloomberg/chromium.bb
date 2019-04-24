@@ -75,12 +75,14 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
 
   // Bookmark app windows should match their launch url extension despite
   // their web extents.
-  for (const auto& i : extensions) {
-    if (i.get()->from_bookmark() &&
-        extensions::IsInNavigationScopeForLaunchUrl(
-            extensions::AppLaunchInfo::GetLaunchWebURL(i.get()), url) &&
-        !extensions::LaunchesInWindow(profile, i.get())) {
-      return i.get();
+  if (extensions::util::IsNewBookmarkAppsEnabled()) {
+    for (const auto& i : extensions) {
+      if (i.get()->from_bookmark() &&
+          extensions::IsInNavigationScopeForLaunchUrl(
+              extensions::AppLaunchInfo::GetLaunchWebURL(i.get()), url) &&
+          !extensions::LaunchesInWindow(profile, i.get())) {
+        return i.get();
+      }
     }
   }
   return nullptr;

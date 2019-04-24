@@ -12,8 +12,8 @@
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_loader_client.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
-#include "third_party/blink/renderer/core/script/module_record_resolver.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
+#include "third_party/blink/renderer/core/script/script_module_resolver.h"
 #include "third_party/blink/renderer/core/testing/dummy_modulator.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -48,9 +48,9 @@ class TestSingleModuleClient final : public SingleModuleClient {
   Member<ModuleScript> module_script_;
 };
 
-class TestModuleRecordResolver final : public ModuleRecordResolver {
+class TestScriptModuleResolver final : public ScriptModuleResolver {
  public:
-  TestModuleRecordResolver() {}
+  TestScriptModuleResolver() {}
 
   int RegisterModuleScriptCallCount() const {
     return register_module_script_call_count_;
@@ -64,16 +64,16 @@ class TestModuleRecordResolver final : public ModuleRecordResolver {
     FAIL() << "UnregisterModuleScript shouldn't be called in ModuleMapTest";
   }
 
-  const ModuleScript* GetHostDefined(const ModuleRecord&) const override {
+  const ModuleScript* GetHostDefined(const ScriptModule&) const override {
     NOTREACHED();
     return nullptr;
   }
 
-  ModuleRecord Resolve(const String& specifier,
-                       const ModuleRecord& referrer,
+  ScriptModule Resolve(const String& specifier,
+                       const ScriptModule& referrer,
                        ExceptionState&) override {
     NOTREACHED();
-    return ModuleRecord();
+    return ScriptModule();
   }
 
  private:
@@ -89,14 +89,14 @@ class ModuleMapTestModulator final : public DummyModulator {
 
   void Trace(blink::Visitor*) override;
 
-  TestModuleRecordResolver* GetTestModuleRecordResolver() {
+  TestScriptModuleResolver* GetTestScriptModuleResolver() {
     return resolver_.Get();
   }
   void ResolveFetches();
 
  private:
   // Implements Modulator:
-  ModuleRecordResolver* GetModuleRecordResolver() override {
+  ScriptModuleResolver* GetScriptModuleResolver() override {
     return resolver_.Get();
   }
   ScriptState* GetScriptState() override { return script_state_; }
@@ -136,7 +136,7 @@ class ModuleMapTestModulator final : public DummyModulator {
     return MakeGarbageCollected<TestModuleScriptFetcher>(this);
   }
 
-  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override {
+  Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override {
     return Vector<ModuleRequest>();
   }
 
@@ -161,12 +161,12 @@ class ModuleMapTestModulator final : public DummyModulator {
   HeapVector<Member<TestRequest>> test_requests_;
 
   Member<ScriptState> script_state_;
-  Member<TestModuleRecordResolver> resolver_;
+  Member<TestScriptModuleResolver> resolver_;
 };
 
 ModuleMapTestModulator::ModuleMapTestModulator(ScriptState* script_state)
     : script_state_(script_state),
-      resolver_(MakeGarbageCollected<TestModuleRecordResolver>()) {}
+      resolver_(MakeGarbageCollected<TestScriptModuleResolver>()) {}
 
 void ModuleMapTestModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_requests_);
@@ -202,7 +202,7 @@ void ModuleMapTest::SetUp() {
   GetDocument().SetSecurityOrigin(SecurityOrigin::Create(GetDocument().Url()));
   modulator_ = MakeGarbageCollected<ModuleMapTestModulator>(
       ToScriptStateForMainWorld(&GetFrame()));
-  map_ = MakeGarbageCollected<ModuleMap>(modulator_);
+  map_ = ModuleMap::Create(modulator_);
 }
 
 TEST_F(ModuleMapTest, sequentialRequests) {
@@ -225,7 +225,7 @@ TEST_F(ModuleMapTest, sequentialRequests) {
   platform->RunUntilIdle();
 
   EXPECT_EQ(Modulator()
-                ->GetTestModuleRecordResolver()
+                ->GetTestScriptModuleResolver()
                 ->RegisterModuleScriptCallCount(),
             1);
   EXPECT_TRUE(client->WasNotifyFinished());
@@ -244,7 +244,7 @@ TEST_F(ModuleMapTest, sequentialRequests) {
   platform->RunUntilIdle();
 
   EXPECT_EQ(Modulator()
-                ->GetTestModuleRecordResolver()
+                ->GetTestScriptModuleResolver()
                 ->RegisterModuleScriptCallCount(),
             1)
       << "registerModuleScript sholudn't be called in secondary request.";
@@ -283,7 +283,7 @@ TEST_F(ModuleMapTest, concurrentRequestsShouldJoin) {
   platform->RunUntilIdle();
 
   EXPECT_EQ(Modulator()
-                ->GetTestModuleRecordResolver()
+                ->GetTestScriptModuleResolver()
                 ->RegisterModuleScriptCallCount(),
             1);
 

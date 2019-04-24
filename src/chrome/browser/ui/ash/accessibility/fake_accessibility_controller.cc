@@ -47,6 +47,9 @@ void FakeAccessibilityController::SetFocusHighlightRect(
 void FakeAccessibilityController::SetCaretBounds(
     const gfx::Rect& bounds_in_screen) {}
 
+void FakeAccessibilityController::SetAccessibilityPanelAlwaysVisible(
+    bool always_visible) {}
+
 void FakeAccessibilityController::SetAccessibilityPanelBounds(
     const gfx::Rect& bounds,
     ash::mojom::AccessibilityPanelState state) {}
@@ -71,8 +74,6 @@ void FakeAccessibilityController::ForwardKeyEventsToSwitchAccess(
 
 void FakeAccessibilityController::GetBatteryDescription(
     GetBatteryDescriptionCallback callback) {}
-
-void FakeAccessibilityController::SetVirtualKeyboardVisible(bool is_visible) {}
 
 void FakeAccessibilityController::Bind(mojo::ScopedMessagePipeHandle handle) {
   binding_.Bind(ash::mojom::AccessibilityControllerRequest(std::move(handle)));

@@ -80,20 +80,20 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   Page* CreateWindowDelegate(LocalFrame*,
                              const FrameLoadRequest&,
                              const WebWindowFeatures&,
-                             WebSandboxFlags,
+                             NavigationPolicy,
+                             SandboxFlags,
                              const FeaturePolicy::FeatureState&,
                              const SessionStorageNamespaceId&) override;
   void Show(NavigationPolicy) override;
   void DidOverscroll(const FloatSize& overscroll_delta,
                      const FloatSize& accumulated_overscroll,
                      const FloatPoint& position_in_viewport,
-                     const FloatSize& velocity_in_viewport) override;
-  void SetOverscrollBehavior(LocalFrame& main_frame,
-                             const cc::OverscrollBehavior&) override;
+                     const FloatSize& velocity_in_viewport,
+                     const cc::OverscrollBehavior&) override;
   bool ShouldReportDetailedMessageForSource(LocalFrame&,
                                             const String&) override;
   void AddMessageToConsole(LocalFrame*,
-                           mojom::ConsoleMessageSource,
+                           MessageSource,
                            mojom::ConsoleMessageLevel,
                            const String& message,
                            unsigned line_number,
@@ -232,6 +232,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void OnMouseDown(Node&) override;
   void DidUpdateBrowserControls() const override;
+  void SetOverscrollBehavior(const cc::OverscrollBehavior&) override;
 
   FloatSize ElasticOverscroll() const override;
 
@@ -244,18 +245,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   void RequestDecode(LocalFrame*,
                      const PaintImage&,
                      base::OnceCallback<void(bool)>) override;
-
-  void NotifySwapTime(LocalFrame& frame,
-                      WebWidgetClient::ReportTimeCallback callback) override;
-
-  void FallbackCursorModeLockCursor(LocalFrame* frame,
-                                    bool left,
-                                    bool right,
-                                    bool up,
-                                    bool down) override;
-
-  void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
-                                             bool visible) override;
 
  private:
   bool IsChromeClientImpl() const override { return true; }

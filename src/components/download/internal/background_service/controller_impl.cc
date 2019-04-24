@@ -134,7 +134,6 @@ ControllerImpl::ControllerImpl(
 }
 
 ControllerImpl::~ControllerImpl() {
-  navigation_monitor_->SetObserver(nullptr);
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 }

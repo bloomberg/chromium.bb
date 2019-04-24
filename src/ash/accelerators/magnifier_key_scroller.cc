@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/accelerators/key_hold_detector.h"
-#include "ash/keyboard/keyboard_util.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
@@ -42,7 +41,10 @@ std::unique_ptr<ui::EventHandler> MagnifierKeyScroller::CreateHandler() {
 }
 
 bool MagnifierKeyScroller::ShouldProcessEvent(const ui::KeyEvent* event) const {
-  return IsEnabled() && ash::keyboard_util::IsArrowKeyCode(event->key_code());
+  return IsEnabled() && (event->key_code() == ui::VKEY_UP ||
+                         event->key_code() == ui::VKEY_DOWN ||
+                         event->key_code() == ui::VKEY_LEFT ||
+                         event->key_code() == ui::VKEY_RIGHT);
 }
 
 bool MagnifierKeyScroller::IsStartEvent(const ui::KeyEvent* event) const {

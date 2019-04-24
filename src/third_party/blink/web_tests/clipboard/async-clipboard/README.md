@@ -1,4 +1,4 @@
-spec: https://w3c.github.io/clipboard-apis/#async-clipboard-api
+spec: https://w3c.github.io/clipboard-apis/
 
 This directory contains async clipboard tests automated through use of
 Chrome-specific test helper `permissions-helper.js`. Related tests not requiring

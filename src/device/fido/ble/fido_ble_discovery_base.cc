@@ -11,7 +11,6 @@
 #include "base/no_destructor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -39,17 +38,17 @@ const BluetoothUUID& FidoBleDiscoveryBase::CableAdvertisementUUID() {
 void FidoBleDiscoveryBase::OnStartDiscoverySessionWithFilter(
     std::unique_ptr<BluetoothDiscoverySession> session) {
   SetDiscoverySession(std::move(session));
-  FIDO_LOG(DEBUG) << "Discovery session started.";
+  DVLOG(2) << "Discovery session started.";
   NotifyDiscoveryStarted(true);
 }
 
 void FidoBleDiscoveryBase::OnSetPoweredError() {
-  FIDO_LOG(ERROR) << "Failed to power on the adapter.";
+  DLOG(ERROR) << "Failed to power on the adapter.";
   NotifyDiscoveryStarted(false);
 }
 
 void FidoBleDiscoveryBase::OnStartDiscoverySessionError() {
-  FIDO_LOG(ERROR) << "Discovery session not started.";
+  DLOG(ERROR) << "Discovery session not started.";
   NotifyDiscoveryStarted(false);
 }
 
@@ -67,7 +66,7 @@ bool FidoBleDiscoveryBase::IsCableDevice(const BluetoothDevice* device) const {
 void FidoBleDiscoveryBase::OnGetAdapter(
     scoped_refptr<BluetoothAdapter> adapter) {
   if (!adapter->IsPresent()) {
-    FIDO_LOG(DEBUG) << "bluetooth adapter is not available in current system.";
+    DVLOG(2) << "bluetooth adapter is not available in current system.";
     NotifyDiscoveryStarted(false);
     return;
   }
@@ -75,7 +74,7 @@ void FidoBleDiscoveryBase::OnGetAdapter(
   DCHECK(!adapter_);
   adapter_ = std::move(adapter);
   DCHECK(adapter_);
-  FIDO_LOG(DEBUG) << "Got adapter " << adapter_->GetAddress();
+  DVLOG(2) << "Got adapter " << adapter_->GetAddress();
 
   adapter_->AddObserver(this);
   if (adapter_->IsPowered())

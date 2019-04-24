@@ -32,7 +32,7 @@ RefcountedBrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
     TestingFactory testing_factory) {
   DCHECK(testing_factory);
   return RefcountedKeyedServiceFactory::SetTestingFactoryAndUse(
-      context,
+      context, nullptr /* side_parameter */,
       base::BindRepeating(
           [](const TestingFactory& testing_factory, void* context) {
             return testing_factory.Run(
@@ -45,7 +45,8 @@ RefcountedBrowserContextKeyedServiceFactory::
     RefcountedBrowserContextKeyedServiceFactory(
         const char* name,
         BrowserContextDependencyManager* manager)
-    : RefcountedKeyedServiceFactory(name, manager, BROWSER_CONTEXT) {}
+    : RefcountedKeyedServiceFactory(name, manager) {
+}
 
 RefcountedBrowserContextKeyedServiceFactory::
     ~RefcountedBrowserContextKeyedServiceFactory() {
@@ -55,7 +56,8 @@ scoped_refptr<RefcountedKeyedService>
 RefcountedBrowserContextKeyedServiceFactory::GetServiceForBrowserContext(
     content::BrowserContext* context,
     bool create) {
-  return RefcountedKeyedServiceFactory::GetServiceForContext(context, create);
+  return RefcountedKeyedServiceFactory::GetServiceForContext(
+      context, nullptr /* side_parameter */, create);
 }
 
 content::BrowserContext*
@@ -93,7 +95,8 @@ void RefcountedBrowserContextKeyedServiceFactory::BrowserContextDestroyed(
 
 scoped_refptr<RefcountedKeyedService>
 RefcountedBrowserContextKeyedServiceFactory::BuildServiceInstanceFor(
-    void* context) const {
+    void* context,
+    void* side_parameter) const {
   return BuildServiceInstanceFor(
       static_cast<content::BrowserContext*>(context));
 }

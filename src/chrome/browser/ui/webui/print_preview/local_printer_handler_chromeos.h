@@ -27,16 +27,8 @@ namespace printing {
 
 class LocalPrinterHandlerChromeos : public PrinterHandler {
  public:
-  static std::unique_ptr<LocalPrinterHandlerChromeos> CreateDefault(
-      Profile* profile,
-      content::WebContents* preview_web_contents);
-
-  static std::unique_ptr<LocalPrinterHandlerChromeos> CreateForTesting(
-      Profile* profile,
-      content::WebContents* preview_web_contents,
-      chromeos::CupsPrintersManager* printers_manager,
-      std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer);
-
+  LocalPrinterHandlerChromeos(Profile* profile,
+                              content::WebContents* preview_web_contents);
   ~LocalPrinterHandlerChromeos() override;
 
   // PrinterHandler implementation
@@ -52,19 +44,6 @@ class LocalPrinterHandlerChromeos : public PrinterHandler {
                   PrintCallback callback) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(LocalPrinterHandlerChromeosTest,
-                           GetNativePrinterPolicies);
-
-  explicit LocalPrinterHandlerChromeos(
-      Profile* profile,
-      content::WebContents* preview_web_contents,
-      chromeos::CupsPrintersManager* printers_manager,
-      std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer);
-
-  // Creates a value dictionary containing the printing policies set by
-  // |profile_|.
-  base::Value GetNativePrinterPolicies() const;
-
   void HandlePrinterSetup(std::unique_ptr<chromeos::Printer> printer,
                           GetCapabilityCallback cb,
                           chromeos::PrinterSetupResult result);

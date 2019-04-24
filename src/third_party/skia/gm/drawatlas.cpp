@@ -12,12 +12,12 @@
 #include "SkRSXform.h"
 #include "SkSurface.h"
 #include "SkTextBlob.h"
-#include "ToolUtils.h"
+#include "sk_tool_utils.h"
 
 class DrawAtlasGM : public skiagm::GM {
     static sk_sp<SkImage> MakeAtlas(SkCanvas* caller, const SkRect& target) {
         SkImageInfo info = SkImageInfo::MakeN32Premul(100, 100);
-        auto        surface(ToolUtils::makeSurface(caller, info));
+        auto surface(sk_tool_utils::makeSurface(caller, info));
         SkCanvas* canvas = surface->getCanvas();
         // draw red everywhere, but we don't expect to see it in the draw, testing the notion
         // that drawAtlas draws a subset-region of the atlas.
@@ -157,7 +157,7 @@ static void draw_text_on_path(SkCanvas* canvas, const void* text, size_t length,
 static sk_sp<SkShader> make_shader() {
     SkPoint pts[2] = {{0, 0}, {220, 0}};
     SkColor colors[2] = {SK_ColorRED, SK_ColorBLUE};
-    return SkGradientShader::MakeLinear(pts, colors, nullptr, 2, SkTileMode::kMirror);
+    return SkGradientShader::MakeLinear(pts, colors, nullptr, 2, SkShader::kMirror_TileMode);
 }
 
 static void drawTextPath(SkCanvas* canvas, bool doStroke) {
@@ -212,7 +212,7 @@ DEF_SIMPLE_GM(drawTextRSXform, canvas, 430, 860) {
 // Exercise xform blob and its bounds
 DEF_SIMPLE_GM(blob_rsxform, canvas, 500, 100) {
     SkFont font;
-    font.setTypeface(ToolUtils::create_portable_typeface());
+    font.setTypeface(sk_tool_utils::create_portable_typeface());
     font.setSize(50);
 
     const char text[] = "CrazyXform";
@@ -270,7 +270,7 @@ DEF_SIMPLE_GM(compare_atlas_vertices, canvas, 560, 585) {
     auto verts = make_vertices(image, tex, color);
     const sk_sp<SkColorFilter> filters[] = {
         nullptr,
-        SkColorFilters::Blend(0xFF00FF88, SkBlendMode::kModulate),
+        SkColorFilter::MakeModeFilter(0xFF00FF88, SkBlendMode::kModulate),
     };
     const SkBlendMode modes[] = {
         SkBlendMode::kSrcOver,

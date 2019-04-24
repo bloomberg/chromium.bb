@@ -266,7 +266,7 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   virtual void HandleWindowScaleFactorChanged(float window_scale_factor) = 0;
 
  protected:
-  virtual ~HWNDMessageHandlerDelegate() = default;
+  virtual ~HWNDMessageHandlerDelegate() {}
 };
 
 }  // namespace views

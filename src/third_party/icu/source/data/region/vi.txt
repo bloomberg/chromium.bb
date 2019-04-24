@@ -183,7 +183,7 @@ vi{
         MF{"St. Martin"}
         MG{"Madagascar"}
         MH{"Quần đảo Marshall"}
-        MK{"Bắc Macedonia"}
+        MK{"Macedonia (FYROM)"}
         ML{"Mali"}
         MM{"Myanmar (Miến Điện)"}
         MN{"Mông Cổ"}
@@ -287,8 +287,6 @@ vi{
         VU{"Vanuatu"}
         WF{"Wallis và Futuna"}
         WS{"Samoa"}
-        XA{"XA"}
-        XB{"XB"}
         XK{"Kosovo"}
         YE{"Yemen"}
         YT{"Mayotte"}
@@ -309,5 +307,5 @@ vi{
         CZ{"Cộng hòa Séc"}
         TL{"Đông Timor"}
     }
-    Version{"2.1.49.82"}
+    Version{"2.1.43.65"}
 }

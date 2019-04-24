@@ -50,18 +50,6 @@ int kMaxNumTiles4kVideo = 8;
 // Maximum allowed PID difference for differnet per-layer frame-rate case.
 const int kMaxAllowedPidDIff = 30;
 
-constexpr double kLowRateFactor = 1.0;
-constexpr double kHighRateFactor = 2.0;
-
-// These settings correspond to the settings in vpx_codec_enc_cfg.
-struct Vp8RateSettings {
-  uint32_t rc_undershoot_pct;
-  uint32_t rc_overshoot_pct;
-  uint32_t rc_buf_sz;
-  uint32_t rc_buf_optimal_sz;
-  uint32_t rc_dropframe_thresh;
-};
-
 // Only positive speeds, range for real-time coding currently is: 5 - 8.
 // Lower means slower/better quality, higher means fastest/lower quality.
 int GetCpuSpeed(int width, int height) {
@@ -149,56 +137,6 @@ bool MoreLayersEnabled(const VideoBitrateAllocation& first,
   return false;
 }
 
-uint32_t Interpolate(uint32_t low,
-                     uint32_t high,
-                     double bandwidth_headroom_factor) {
-  RTC_DCHECK_GE(bandwidth_headroom_factor, kLowRateFactor);
-  RTC_DCHECK_LE(bandwidth_headroom_factor, kHighRateFactor);
-
-  // |factor| is between 0.0 and 1.0.
-  const double factor = bandwidth_headroom_factor - kLowRateFactor;
-
-  return static_cast<uint32_t>(((1.0 - factor) * low) + (factor * high) + 0.5);
-}
-
-Vp8RateSettings GetRateSettings(double bandwidth_headroom_factor) {
-  static const Vp8RateSettings low_settings{1000u, 0u, 100u, 30u, 40u};
-  static const Vp8RateSettings high_settings{100u, 15u, 1000u, 600u, 5u};
-
-  if (bandwidth_headroom_factor <= kLowRateFactor) {
-    return low_settings;
-  } else if (bandwidth_headroom_factor >= kHighRateFactor) {
-    return high_settings;
-  }
-
-  Vp8RateSettings settings;
-  settings.rc_undershoot_pct =
-      Interpolate(low_settings.rc_undershoot_pct,
-                  high_settings.rc_undershoot_pct, bandwidth_headroom_factor);
-  settings.rc_overshoot_pct =
-      Interpolate(low_settings.rc_overshoot_pct, high_settings.rc_overshoot_pct,
-                  bandwidth_headroom_factor);
-  settings.rc_buf_sz =
-      Interpolate(low_settings.rc_buf_sz, high_settings.rc_buf_sz,
-                  bandwidth_headroom_factor);
-  settings.rc_buf_optimal_sz =
-      Interpolate(low_settings.rc_buf_optimal_sz,
-                  high_settings.rc_buf_optimal_sz, bandwidth_headroom_factor);
-  settings.rc_dropframe_thresh =
-      Interpolate(low_settings.rc_dropframe_thresh,
-                  high_settings.rc_dropframe_thresh, bandwidth_headroom_factor);
-  return settings;
-}
-
-void UpdateRateSettings(vpx_codec_enc_cfg_t* config,
-                        const Vp8RateSettings& new_settings) {
-  config->rc_undershoot_pct = new_settings.rc_undershoot_pct;
-  config->rc_overshoot_pct = new_settings.rc_overshoot_pct;
-  config->rc_buf_sz = new_settings.rc_buf_sz;
-  config->rc_buf_optimal_sz = new_settings.rc_buf_optimal_sz;
-  config->rc_dropframe_thresh = new_settings.rc_dropframe_thresh;
-}
-
 }  // namespace
 
 void VP9EncoderImpl::EncoderOutputCodedPacketCallback(vpx_codec_cx_pkt* pkt,
@@ -232,8 +170,6 @@ VP9EncoderImpl::VP9EncoderImpl(const cricket::VideoCodec& codec)
       external_ref_control_(false),  // Set in InitEncode because of tests.
       trusted_rate_controller_(RateControlSettings::ParseFromFieldTrials()
                                    .LibvpxVp9TrustedRateController()),
-      dynamic_rate_settings_(
-          RateControlSettings::ParseFromFieldTrials().Vp9DynamicRateSettings()),
       full_superframe_drop_(true),
       first_frame_in_picture_(true),
       ss_info_needed_(false),
@@ -373,33 +309,29 @@ bool VP9EncoderImpl::SetSvcRates(
   return true;
 }
 
-void VP9EncoderImpl::SetRates(const RateControlParameters& parameters) {
+int VP9EncoderImpl::SetRateAllocation(
+    const VideoBitrateAllocation& bitrate_allocation,
+    uint32_t frame_rate) {
   if (!inited_) {
-    RTC_LOG(LS_WARNING) << "SetRates() calll while uninitialzied.";
-    return;
+    return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
   if (encoder_->err) {
-    RTC_LOG(LS_WARNING) << "Encoder in error state: " << encoder_->err;
-    return;
+    return WEBRTC_VIDEO_CODEC_ERROR;
   }
-  if (parameters.framerate_fps < 1.0) {
-    RTC_LOG(LS_WARNING) << "Unsupported framerate: "
-                        << parameters.framerate_fps;
-    return;
+  if (frame_rate < 1) {
+    return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
   }
   // Update bit rate
   if (codec_.maxBitrate > 0 &&
-      parameters.bitrate.get_sum_kbps() > codec_.maxBitrate) {
-    RTC_LOG(LS_WARNING) << "Target bitrate exceeds maximum: "
-                        << parameters.bitrate.get_sum_kbps() << " vs "
-                        << codec_.maxBitrate;
-    return;
+      bitrate_allocation.get_sum_kbps() > codec_.maxBitrate) {
+    return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
   }
 
-  codec_.maxFramerate = static_cast<uint32_t>(parameters.framerate_fps + 0.5);
-  requested_rate_settings_ = parameters;
+  codec_.maxFramerate = frame_rate;
 
-  return;
+  requested_bitrate_allocation_ = bitrate_allocation;
+
+  return WEBRTC_VIDEO_CODEC_OK;
 }
 
 int VP9EncoderImpl::InitEncode(const VideoCodec* inst,
@@ -781,7 +713,8 @@ uint32_t VP9EncoderImpl::MaxIntraTarget(uint32_t optimal_buffer_size) {
 }
 
 int VP9EncoderImpl::Encode(const VideoFrame& input_image,
-                           const std::vector<VideoFrameType>* frame_types) {
+                           const CodecSpecificInfo* codec_specific_info,
+                           const std::vector<FrameType>* frame_types) {
   if (!inited_) {
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
@@ -795,7 +728,7 @@ int VP9EncoderImpl::Encode(const VideoFrame& input_image,
 
   // We only support one stream at the moment.
   if (frame_types && !frame_types->empty()) {
-    if ((*frame_types)[0] == VideoFrameType::kVideoFrameKey) {
+    if ((*frame_types)[0] == kVideoFrameKey) {
       force_key_frame_ = true;
     }
   }
@@ -862,20 +795,11 @@ int VP9EncoderImpl::Encode(const VideoFrame& input_image,
 
   vpx_codec_control(encoder_, VP9E_SET_SVC_LAYER_ID, &layer_id);
 
-  if (requested_rate_settings_) {
-    if (dynamic_rate_settings_) {
-      // Tweak rate control settings based on available network headroom.
-      UpdateRateSettings(
-          config_,
-          GetRateSettings(
-              requested_rate_settings_->bandwidth_allocation.bps<double>() /
-              requested_rate_settings_->bitrate.get_sum_bps()));
-    }
-
+  if (requested_bitrate_allocation_) {
     bool more_layers_requested = MoreLayersEnabled(
-        requested_rate_settings_->bitrate, current_bitrate_allocation_);
+        *requested_bitrate_allocation_, current_bitrate_allocation_);
     bool less_layers_requested = MoreLayersEnabled(
-        current_bitrate_allocation_, requested_rate_settings_->bitrate);
+        current_bitrate_allocation_, *requested_bitrate_allocation_);
     // In SVC can enable new layers only if all lower layers are encoded and at
     // the base temporal layer.
     // This will delay rate allocation change until the next frame on the base
@@ -886,8 +810,8 @@ int VP9EncoderImpl::Encode(const VideoFrame& input_image,
         inter_layer_pred_ != InterLayerPredMode::kOn ||
         (layer_id.spatial_layer_id == 0 && layer_id.temporal_layer_id == 0);
     if (!more_layers_requested || can_upswitch) {
-      current_bitrate_allocation_ = requested_rate_settings_->bitrate;
-      requested_rate_settings_ = absl::nullopt;
+      current_bitrate_allocation_ = *requested_bitrate_allocation_;
+      requested_bitrate_allocation_ = absl::nullopt;
       if (!SetSvcRates(current_bitrate_allocation_)) {
         return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
       }
@@ -1133,7 +1057,6 @@ void VP9EncoderImpl::FillReferenceIndices(const vpx_codec_cx_pkt& pkt,
   if (is_svc_) {
     vpx_svc_ref_frame_config_t enc_layer_conf = {{0}};
     vpx_codec_control(encoder_, VP9E_GET_SVC_REF_FRAME_CONFIG, &enc_layer_conf);
-    int ref_buf_flags = 0;
 
     if (enc_layer_conf.reference_last[layer_id.spatial_layer_id]) {
       const size_t fb_idx =
@@ -1142,7 +1065,6 @@ void VP9EncoderImpl::FillReferenceIndices(const vpx_codec_cx_pkt& pkt,
       if (std::find(ref_buf_list.begin(), ref_buf_list.end(),
                     ref_buf_.at(fb_idx)) == ref_buf_list.end()) {
         ref_buf_list.push_back(ref_buf_.at(fb_idx));
-        ref_buf_flags |= 1 << fb_idx;
       }
     }
 
@@ -1153,7 +1075,6 @@ void VP9EncoderImpl::FillReferenceIndices(const vpx_codec_cx_pkt& pkt,
       if (std::find(ref_buf_list.begin(), ref_buf_list.end(),
                     ref_buf_.at(fb_idx)) == ref_buf_list.end()) {
         ref_buf_list.push_back(ref_buf_.at(fb_idx));
-        ref_buf_flags |= 1 << fb_idx;
       }
     }
 
@@ -1164,22 +1085,8 @@ void VP9EncoderImpl::FillReferenceIndices(const vpx_codec_cx_pkt& pkt,
       if (std::find(ref_buf_list.begin(), ref_buf_list.end(),
                     ref_buf_.at(fb_idx)) == ref_buf_list.end()) {
         ref_buf_list.push_back(ref_buf_.at(fb_idx));
-        ref_buf_flags |= 1 << fb_idx;
       }
     }
-
-    RTC_LOG(LS_VERBOSE) << "Frame " << pic_num << " sl "
-                        << layer_id.spatial_layer_id << " tl "
-                        << layer_id.temporal_layer_id << " refered buffers "
-                        << (ref_buf_flags & (1 << 0) ? 1 : 0)
-                        << (ref_buf_flags & (1 << 1) ? 1 : 0)
-                        << (ref_buf_flags & (1 << 2) ? 1 : 0)
-                        << (ref_buf_flags & (1 << 3) ? 1 : 0)
-                        << (ref_buf_flags & (1 << 4) ? 1 : 0)
-                        << (ref_buf_flags & (1 << 5) ? 1 : 0)
-                        << (ref_buf_flags & (1 << 6) ? 1 : 0)
-                        << (ref_buf_flags & (1 << 7) ? 1 : 0);
-
   } else if (!is_key_frame) {
     RTC_DCHECK_EQ(num_spatial_layers_, 1);
     RTC_DCHECK_EQ(num_temporal_layers_, 1);
@@ -1240,32 +1147,27 @@ void VP9EncoderImpl::UpdateReferenceBuffers(const vpx_codec_cx_pkt& pkt,
   vpx_svc_layer_id_t layer_id = {0};
   vpx_codec_control(encoder_, VP9E_GET_SVC_LAYER_ID, &layer_id);
 
+  const bool is_key_frame =
+      (pkt.data.frame.flags & VPX_FRAME_IS_KEY) ? true : false;
+
   RefFrameBuffer frame_buf(pic_num, layer_id.spatial_layer_id,
                            layer_id.temporal_layer_id);
 
-  if (is_svc_) {
+  if (is_key_frame && layer_id.spatial_layer_id == 0) {
+    // Key frame updates all ref buffers.
+    for (size_t i = 0; i < kNumVp9Buffers; ++i) {
+      ref_buf_[i] = frame_buf;
+    }
+  } else if (is_svc_) {
     vpx_svc_ref_frame_config_t enc_layer_conf = {{0}};
     vpx_codec_control(encoder_, VP9E_GET_SVC_REF_FRAME_CONFIG, &enc_layer_conf);
-    const int update_buffer_slot =
-        enc_layer_conf.update_buffer_slot[layer_id.spatial_layer_id];
 
     for (size_t i = 0; i < kNumVp9Buffers; ++i) {
-      if (update_buffer_slot & (1 << i)) {
+      if (enc_layer_conf.update_buffer_slot[layer_id.spatial_layer_id] &
+          (1 << i)) {
         ref_buf_[i] = frame_buf;
       }
     }
-
-    RTC_LOG(LS_VERBOSE) << "Frame " << pic_num << " sl "
-                        << layer_id.spatial_layer_id << " tl "
-                        << layer_id.temporal_layer_id << " updated buffers "
-                        << (update_buffer_slot & (1 << 0) ? 1 : 0)
-                        << (update_buffer_slot & (1 << 1) ? 1 : 0)
-                        << (update_buffer_slot & (1 << 2) ? 1 : 0)
-                        << (update_buffer_slot & (1 << 3) ? 1 : 0)
-                        << (update_buffer_slot & (1 << 4) ? 1 : 0)
-                        << (update_buffer_slot & (1 << 5) ? 1 : 0)
-                        << (update_buffer_slot & (1 << 6) ? 1 : 0)
-                        << (update_buffer_slot & (1 << 7) ? 1 : 0);
   } else {
     RTC_DCHECK_EQ(num_spatial_layers_, 1);
     RTC_DCHECK_EQ(num_temporal_layers_, 1);
@@ -1401,9 +1303,9 @@ int VP9EncoderImpl::GetEncodedLayerFrame(const vpx_codec_cx_pkt* pkt) {
   RTC_DCHECK(is_key_frame || !force_key_frame_);
 
   // Check if encoded frame is a key frame.
-  encoded_image_._frameType = VideoFrameType::kVideoFrameDelta;
+  encoded_image_._frameType = kVideoFrameDelta;
   if (is_key_frame) {
-    encoded_image_._frameType = VideoFrameType::kVideoFrameKey;
+    encoded_image_._frameType = kVideoFrameKey;
     force_key_frame_ = false;
   }
   RTC_DCHECK_LE(encoded_image_.size(), encoded_image_.capacity());
@@ -1606,6 +1508,7 @@ int VP9DecoderImpl::InitDecode(const VideoCodec* inst, int number_of_cores) {
 
 int VP9DecoderImpl::Decode(const EncodedImage& input_image,
                            bool missing_frames,
+                           const CodecSpecificInfo* codec_specific_info,
                            int64_t /*render_time_ms*/) {
   if (!inited_) {
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
@@ -1615,7 +1518,7 @@ int VP9DecoderImpl::Decode(const EncodedImage& input_image,
   }
   // Always start with a complete key frame.
   if (key_frame_required_) {
-    if (input_image._frameType != VideoFrameType::kVideoFrameKey)
+    if (input_image._frameType != kVideoFrameKey)
       return WEBRTC_VIDEO_CODEC_ERROR;
     // We have a key frame - is it complete?
     if (input_image._completeFrame) {

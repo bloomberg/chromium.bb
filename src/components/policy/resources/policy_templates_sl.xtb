@@ -1,9 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
-<translation id="1002439864875515590">Če je ta pravilnik nastavljen na prazen niz ali ni konfiguriran, sistem <ph name="PRODUCT_OS_NAME" /> med potekom prijave uporabnika ne bo prikazal možnosti samodokončanja.
-      Če je ta pravilnik nastavljen na niz, ki predstavlja ime domene, bo <ph name="PRODUCT_OS_NAME" /> pri prijavi uporabnika prikazal možnost samodokončanja, s čimer bo uporabniku omogočeno, da vnese samo uporabniško ime brez končnice imena domene.  Uporabnik bo lahko prepisal končnico tega imena domene.
-      Če vrednost pravilnika ni veljavna domena, pravilnik ne bo uporabljen.</translation>
 <translation id="101438888985615157">Sukanje zaslona za 180 stopinj</translation>
 <translation id="1016912092715201525">Konfigurira privzeta preverjanja brskalnika v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje, da bi jih spremenili.
 
@@ -90,14 +87,6 @@
       Če pravilnik ni nastavljen, je mogoče predpomnjene uporabnike znova uporabiti v obdobju do 25 ur.
 
       Če je pravilnik nastavljen na 0, je predpomnjenje GPO izklopljeno. Upoštevajte, da se s tem poveča obremenjenost strežnika, saj so GPO-ji znova preneseni ob vsakem prenosu pravilnika, tudi če se niso spremenili.</translation>
-<translation id="1117462881884985156"><ph name="PRODUCT_NAME" /> bo obšel vse strežnike proxy za seznam gostiteljev, naveden tukaj.
-
-          Ta pravilnik velja le, če ste v »Izberite, kako določiti nastavitve strežnika proxy« izbrali ročne nastavitve strežnika proxy in če pravilnik <ph name="PROXY_SETTINGS_POLICY_NAME" /> ni bil določen.
-
-          Če ste za nastavitve pravilnikov za strežnik proxy izbrali drug način, tega pravilnika ne nastavljajte.
-
-          Če želite podrobnejše primere, obiščite:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">Rutine za obravnavo protokolov, nastavljene s tem pravilnikom, se ne uporabljajo pri obravnavi namer za Android.</translation>
 <translation id="1118093128235245168">Dovoli spletnim mestom, da od uporabnika zahtevajo, da omogoči dostop do povezane naprave USB</translation>
 <translation id="1128903365609589950">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih datotek na disk.
@@ -151,7 +140,6 @@
       Če ta pravilnik ni nastavljen, je vrednost privzete pogostosti 3 ure. Najmanjša
       dovoljena vrednost pogostosti je 60 sekund.</translation>
 <translation id="1204263402976895730">Omogočeni tiskalniki v podjetjih</translation>
-<translation id="1216919699175573511">Omogočanje podpore za podpisano izmenjavo HTTP (SXG)</translation>
 <translation id="1219695476179627719">Določa, ali naj se naprava povrne na različico, ki jo določa pravilnik <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />, če se v njej že izvaja novejša različica.
 
       Privzeta nastavitev je RollbackDisabled (povrnitev onemogočena).</translation>
@@ -200,6 +188,7 @@
       Zahteve za združevanje, poslane različnim gostiteljem prek povezav, ki uporabljajo potrdila odjemalca, lahko povzročijo varnostne težave in težave glede zasebnosti, saj bo lokalno pooblastilo preneseno na vse zahteve, tudi če uporabnik tega ni izrecno odobril. Ta pravilnik je začasen in bo odstranjen v eni od prihodnjih različic. Glejte https://crbug.com/855690.
 
       Če ta pravilnik ni nastavljen, bo uporabljeno privzeto delovanje, po katerem ni dovoljeno nobeno združevanje povezav HTTP/2 pri povezavah, ki uporabljajo potrdila odjemalca.</translation>
+<translation id="1353966721814789986">Začetne strani</translation>
 <translation id="1354424209129232709">Največ:</translation>
 <translation id="1354452738176731363">Če je ta pravilnik nastavljen na »false«, zvok v napravi ni na voljo, ko je uporabnik prijavljen.
 
@@ -223,6 +212,7 @@
       Če ta pravilnik ni nastavljen, se lahko omrežna koda izvaja zunaj procesa brskalnika, kar je odvisno od terenskih preizkušanj preizkusa NetworkService.</translation>
 <translation id="1384459581748403878">Sklic: <ph name="REFERENCE_URL" /></translation>
 <translation id="1384653327213929024">Uporabnikom dovoli upravljanje nameščenih potrdil.</translation>
+<translation id="1387596372902085462">Ali naj se omogoči zaupanje zastareli infrastrukturi PKI družbe Symantec Corporation</translation>
 <translation id="1393485621820363363">Omogočeni tiskalniki za naprave v podjetjih</translation>
 <translation id="1397855852561539316">Privzeti URL iskalnika za predlog</translation>
 <translation id="1404043648050567997">Storitev varnega brskanja prikaže opozorilno stran, ko uporabniki pridejo na spletna mesta, ki so označena kot morebiti zlonamerna. Če omogočite to nastavitev, uporabnikom preprečite, da bi z opozorilne strani vseeno šli na zlonamerno spletno mesto.
@@ -312,6 +302,14 @@
       onemogočeno. V tem primeru uporabnik funkcije ne more omogočiti.</translation>
 <translation id="1474273443907024088">Onemogoči funkcijo »False Start« protokola TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> bo obšel vse strežnike proxy za seznam gostiteljev, naveden tukaj.
+
+          Ta pravilnik velja le, če ste v »Izberite, kako določiti nastavitve strežnika proxy« izbrali ročne nastavitve.
+
+          Če ste za nastavitve pravilnika za strežnik proxy izbrali drug način, tega pravilnika ne nastavljajte.
+
+          Če želite podrobnejše primere, obiščite:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Omogoči blokiranje vstavljanja programske opreme tretjih oseb</translation>
 <translation id="1504431521196476721">Potrditev na daljavo</translation>
 <translation id="1507957856411744193">Če je ta pravilnik nastavljen na »true«, se bo izdelek <ph name="PRODUCT_NAME" /> povezal z napravami za predvajanje na vseh naslovih IP, ne samo na zasebnih naslovih RFC1918/RFC4193.
@@ -350,15 +348,14 @@
       Več informacij o Varnem brskanju je na voljo na https://developers.google.com/safe-browsing.</translation>
 <translation id="1583248206450240930">Privzeto uporabi <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="1599424828227887013">Omogočanje osamitve spletnih mest za določene izvore v napravah Android</translation>
+<translation id="1608259529294767544">Ta pravilnik Pomočniku Google odobri dovoljenje za poslušanje, ali je izgovorjena besedna zveza za govorno aktiviranje.
+
+      Če je pravilnik omogočen, Pomočnik Google posluša, ali je izgovorjena besedna zveza za govorno aktiviranje.
+      Če je pravilnik onemogočen, Pomočnik Google ne posluša, ali je izgovorjena besedna zveza za govorno aktiviranje.
+      Če ni nastavljen, se lahko uporabniki odločijo, ali Pomočniku Google odobrijo, da posluša, ali je izgovorjena besedna zveza za govorno aktiviranje.
+      </translation>
 <translation id="1608755754295374538">URL-ji, ki jim bo brez poziva dovoljen dostop do naprav za zajem zvoka</translation>
 <translation id="1615221548356595305">Dovoli združevanje povezav HTTP/2 za te gostitelje, tudi če se uporabljajo potrdila odjemalca</translation>
-<translation id="1615855314789673708">Ponuja konfiguracijo orodja wilco DTC (diagnostična storitev in kontrolnik telemetrije).
-
-      Ta pravilnik omogoča ponujanje konfiguracije orodja wilco DTC, ki jo je mogoče uporabiti, če je wilco DTC na voljo v dani napravi in ga omogoča pravilnik. Velikost konfiguracije ne sme presegati 1 MB (1000000 bajtov) in mora biti kodirana v obliki JSON. Upravlja jo orodje wilco DTC. Kriptografska zgoščena vrednost se uporabi za preverjanje integritete prenosa.
-
-      Konfiguracija se prenese in predpomni. Če se spremeni URL ali zgoščena vrednost, se znova prenese.
-
-      Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.</translation>
 <translation id="1617235075406854669">Omogočanje brisanja zgodovine brskalnika in prenosov</translation>
 <translation id="163200210584085447">Vzorci na tem seznamu se bodo primerjali z varnostnim
       izvorom zahtevajočega URL-ja. Če bo najdeno ujemanje, bo dostop
@@ -384,22 +381,6 @@
       Opozorilo: ni priporočljivo, da nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" /> dodelite aplikaciji za kiosk, saj tako naprava morda ne bo prejemala posodobitev programske opreme in nujnih varnostnih popravkov. Če dodelite nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" />, so uporabniki morda ogroženi.</translation>
 <translation id="1675002386741412210">Na voljo podpora za:</translation>
 <translation id="1689963000958717134">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja za vse uporabnike, v napravo s sistemom <ph name="PRODUCT_OS_NAME" />. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisano na <ph name="ONC_SPEC_URL" /></translation>
-<translation id="1704516734140344991">Konfigurira razpoložljivost in delovanje funkcije posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      Posamezne nastavitve je mogoče določiti v lastnostih datoteke JSON:
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Če je nastavljeno na <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, bodo uporabniki lahko sprožili potek postopka »powerwash« zaradi namestitve posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Če je nastavljeno na <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, bodo uporabniki lahko sprožili postopek posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" />, ki ohranja stanje za celotno napravo (vključno z včlanitvijo v podjetju), vendar izgubi uporabniške podatke. Ta postopek posodobitve je na voljo z različico 68.
-
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: Nadzira, kako so posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" /> uveljavljene za vdelano programsko opremo ranljivih modulov <ph name="TPM_FIRMWARE_UPDATE_TPM" />. Pri vseh postopkih se ohranil stanje lokalne naprave.
-        Če je nastavljeno na 1 ali ni nastavljeno, posodobitve vdelane programske opreme modula TPM niso uveljavljene.
-        Če je nastavljeno na 2, bo vdelana programska oprema modula <ph name="TPM_FIRMWARE_UPDATE_TPM" /> posodobljena ob naslednjem vnovičnem zagonu, ko uporabnik potrdi posodobitev.
-        Če je nastavljeno na 3, bo vdelana programska oprema modula <ph name="TPM_FIRMWARE_UPDATE_TPM" /> posodobljena ob naslednjem vnovičnem zagonu.
-        Če je nastavljeno na 4, bo vdelana programska oprema modula <ph name="TPM_FIRMWARE_UPDATE_TPM" /> posodobljena po včlanitvi, vendar pred prijavo uporabnika.
-        Ta možnost je na voljo z različico 74.
-
-      Če pravilnik ni nastavljen, funkcija posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ne bo na voljo.</translation>
 <translation id="1708496595873025510">Nastavitev omejitve prenosa semen različic</translation>
 <translation id="1717817358640580294">Če pravilnik ni nastavljen in Chromovo čiščenje odkrije neželeno programsko opremo, bo Googlu morda poslalo metapodatke o pregledu v skladu s pravilnikom, nastavljenim z možnostjo SafeBrowsingExtendedReportingEnabled. Chromovo čiščenje bo uporabnika nato pozvalo, ali želi počistiti neželeno programsko opremo. Uporabnik se lahko odloči za pošiljanje rezultatov čiščenja Googlu in tako pripomore k odkrivanju neželene programske opreme v prihodnosti. Ti rezultati vsebujejo metapodatke o datotekah, samodejno nameščene razširitve in registrske ključe, kot je opisano v beli knjigi o zasebnosti za Chrome.
 
@@ -409,6 +390,7 @@
 
       Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="172374442286684480">Vsem spletnim mestom je omogočeno nastavljanje lokalnih podatkov</translation>
+<translation id="1734716591049455502">Nastavitev možnosti za oddaljen dostop</translation>
 <translation id="1736269219679256369">Dovoli nadaljevanje s strani z opozorilom SSL</translation>
 <translation id="1745780278307622857">Ugotavljanje, ali sme brskalnik <ph name="PRODUCT_NAME" /> dovoliti prenos brez preverjanja z Varnim brskanjem, če je datoteka iz zaupanja vrednega vira.
 
@@ -477,6 +459,8 @@
       Če ta pravilnik ni konfiguriran ali če je nastavljen na »tls1.2«, <ph name="PRODUCT_NAME" /> ne izvede več tega preklopa. S tem ni onemogočena podpora za starejše različice TLS-ja, temveč je zgolj določeno, ali <ph name="PRODUCT_NAME" /> ne bo upošteval strežnikov z napakami, ki ne morejo pravilno izvesti pogajanj glede različice.
 
       Če je treba ohraniti združljivost s strežnikom z napakami, je pravilnik lahko nastavljen na »tls1«. To je začasen ukrep in napake v strežniku je treba hitro odpraviti.</translation>
+<translation id="1864269674877167562">Če je ta pravilnik nastavljen na prazen niz ali ni nastavljen, sistem <ph name="PRODUCT_OS_NAME" /> med potekom prijave uporabnika ne bo prikazal možnosti samodokončanja.
+      Če je ta pravilnik nastavljen na niz, ki predstavlja ime domene, bo <ph name="PRODUCT_OS_NAME" /> pri prijavi uporabnika prikazal možnost samodokončanja, s čimer bo uporabniku omogočeno, da vnese samo uporabniško ime brez končnice imena domene. Uporabnik bo lahko prepisal končnico tega imena domene.</translation>
 <translation id="1864382791685519617">Omogoča omrežno predvidevanje v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje te nastavitve.
 
       Ta pravilnik nadzira vnaprejšnji prenos podatkov DNS, vnaprejšnje povezovanje TCP in SSL ter vnaprejšnje upodabljanje spletnih strani.
@@ -546,6 +530,7 @@
       Če je ta nastavitev onemogočena, samodejno izpolnjevanje ne bo nikoli predlagalo ali vneslo podatkov o naslovu in prav tako ne bo shranilo dodatnih podatkov o naslovu, ki jih uporabnik morda vnese med brskanjem v spletu.
 
       Če je ta nastavitev omogočena ali nima nastavljene vrednosti, bo uporabnik lahko nadziral samodejno izpolnjevanje za naslove v uporabniškem vmesniku.</translation>
+<translation id="1960840544413786116">Ali naj se dovoli potrdila, ki jih izdajo lokalna sidra zaupanja in jim manjka razširitev subjectAlternativeName</translation>
 <translation id="1962273523772270623">Omogočanje zbiranja dnevnikov dogodkov tehnologije WebRTC iz Googlovih storitev</translation>
 <translation id="1964634611280150550">Način brez beleženja zgodovine je onemogočen</translation>
 <translation id="1964802606569741174">Ta pravilnik ne vpliva na aplikacijo YouTube za Android. Če naj bo varni način v YouTubu uveljavljen, mora biti namestitev aplikacije YouTube za Android onemogočena.</translation>
@@ -575,6 +560,15 @@
       Če tega pravilnika ne nastavitev, bo brskalnik <ph name="PRODUCT_NAME" /> uporabljal privzeto vrednost 3 ur.
 
       Če okolje podpira obvestila pravilnika, je zakasnitev osvežitve nastavljena na 24 ur (prezrejo se vse privzete nastavitve in vrednost tega pravilnika), ker je pričakovano, da obvestila pravilnika ob vsakokratni zamenjavi pravilnika samodejno vsilijo osvežitev, zaradi česar so pogostejše osvežitve nepotrebne.</translation>
+<translation id="2024149678078029009">Ta pravilnik nadzira ukaz za odpiranje URL-jev v brskalniku <ph name="PRODUCT_NAME" /> pri preklopu iz Internet Explorerja.
+
+      Če dodatek za Internet Explorer »Podpora za starejše brskalnike« ni nameščen, ta pravilnik nima vpliva.
+
+      Če ta pravilnik ni nastavljen, Internet Explorer pri zagonu brskalnika <ph name="PRODUCT_NAME" /> iz Internet Explorerja samodejno zazna pot do izvedljive datoteke brskalnika <ph name="PRODUCT_NAME" />.
+
+      Če je ta pravilnik nastavljen, se uporablja za zagon brskalnika <ph name="PRODUCT_NAME" /> pri preklopu in zagonu brskalnika <ph name="PRODUCT_NAME" /> iz Internet Explorerja.
+
+      Ta pravilnik je mogoče nastaviti na pot do izvedljive datoteke ali na ${chrome} za samodejno zaznavanje Chromove lokacije za namestitev.</translation>
 <translation id="2024476116966025075">Konfiguriranje imena domene, potrebnega za odjemalce za oddaljeni dostop</translation>
 <translation id="2030905906517501646">Privzeta ključna beseda iskalnika</translation>
 <translation id="203096360153626918">Ta pravilnika ne vpliva na aplikacije za Android. Tudi če je ta pravilnik nastavljen na <ph name="FALSE" />, bodo aplikacije lahko preklopile v celozaslonski način.</translation>
@@ -728,6 +722,13 @@
       Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti. Uporabniki bodo kljub temu še vedno lahko omogočili/onemogočili zaslonsko tipkovnico za ljudi s posebnimi potrebami, ki ima prednost pred navidezno tipkovnico, ki jo ureja ta pravilnik. Če želite nadzirati zaslonsko tipkovnico za ljudi s posebnimi potrebami, si oglejte pravilnik |VirtualKeyboardEnabled|.
 
       Če ta pravilnik ni nastavljen, je zaslonska tipkovnica sprva onemogočena, vendar jo lahko uporabnik kadar koli omogoči. Na odločanje o prikazu tipkovnice lahko vplivajo tudi hevristična pravila.</translation>
+<translation id="228659285074633994">Določa trajanje uporabnikove nedejavnosti, po preteku katere se pokaže pogovorno okno z opozorilom, če se napaja iz električnega omrežja.
+
+          Če je pravilnik nastavljen, določa, koliko časa mora biti uporabnik nedejaven, preden <ph name="PRODUCT_OS_NAME" /> prikaže pogovorno okno z opozorilom, da bo izveden ukrep zaradi nedejavnosti.
+
+          Če pravilnik ni nastavljen, pogovorno okno z opozorilom ni prikazano.
+
+          Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik nedejavnosti.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> lahko uporablja Googlovo spletno storitev za preverjanje črkovanja. Če je ta nastavitev omogočena, bo ta storitev vedno uporabljena. Če je ta nastavitev onemogočena, storitev ne bo nikoli uporabljena.
 
       Preverjanje črkovanja je še vedno mogoče z uporabo prenesenega slovarja; ta pravilnik nadzira samo uporabo spletne storitve.
@@ -749,9 +750,13 @@
       Za naprave, ki jih upravlja Active Directory, ta pravilnik podpira razširitev <ph name="MACHINE_NAME_VARIABLE" /> na ime naprave za Active Directory ali njegov podniz. Če je ime naprave na primer <ph name="MACHINE_NAME_EXAMPLE" />, potem <ph name="MACHINE_NAME_VARIABLE_EXAMPLE" /> zamenjajo 4 znaki po 6. mestu, tj. <ph name="MACHINE_NAME_PART_EXAMPLE" />. Položaj temelji na ničli.
       </translation>
 <translation id="2294382669900758280">Predvajanje videoposnetkov v aplikacijah za Android se ne upošteva, tudi če je ta pravilnik nastavljen na <ph name="TRUE" />.</translation>
+<translation id="2298647742290373702">Konfiguriranje privzetega novega zavihka s povezavami v brskalniku <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2299220924812062390">Določi seznam omogočenih vtičnikov</translation>
 <translation id="2303795211377219696">Omogočanje samodejnega izpolnjevanja za kreditne kartice</translation>
 <translation id="2309390639296060546">Privzeta nastavitev geolokacije</translation>
+<translation id="2312134445771258233">Omogoča, da nastavite strani, ki se naložijo pri zagonu.
+
+      Vsebina seznama »URL-ji, ki naj se odprejo ob zagonu« se prezre, razen če v možnosti »Dejanje ob zagonu« izberete »Odpri seznam URL-jev«.</translation>
 <translation id="2327252517317514801">Opredelitev domen, ki smejo dostopati do storitve G Suite</translation>
 <translation id="237494535617297575">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki lahko prikazujejo obvestila.
 
@@ -942,17 +947,12 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je ta nastavitev onemogočena, spletne strani ne morejo uporabljati JavaScripta in uporabnik te vrednosti ne more spremeniti.
 
       Če je ta nastavitev omogočena ali ni nastavljena, lahko spletne strani uporabljajo JavaScript, toda uporabnik lahko to nastavitev spremeni.</translation>
-<translation id="2747157663401642394">Konfigurira nastavitve upravljanja razširitev za <ph name="PRODUCT_NAME" />.
-
-          Ta pravilnik nadzira več nastavitev, vključno z nastavitvami, ki jih nadzirajo kateri koli obstoječi pravilniki, povezani z razširitvami. Ta pravilnik preglasi vse morebitne starejše pravilnike, če so nastavljeni oboji.
-
-          Ta pravilnik preslika ID razširitve ali URL za posodobitev v svojo konfiguracijo. Konfiguracija z ID-jem razširitve bo uporabljena samo za določeno razširitev. Za posebni ID <ph name="DEFAULT_SCOPE" /> je mogoče nastaviti privzeto konfiguracijo, ki se bo uporabila za vse razširitve, ki v tem pravilniku nimajo nastavljene konfiguracije po meri. Konfiguracija z URL-jem za posodobitev bo uporabljena za vse razširitve s točno določenim URL-jem za posodobitev, navedenim v manifestu te razširitve, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC1" />.
-
-          Za primerke sistema Windows, ki niso pridruženi v domeno <ph name="MS_AD_NAME" />, je vsiljeno nameščanje omejeno na aplikacije in razširitve, navedene v Spletni trgovini Chrome.
-
-          Celoten opis mogočih nastavitev in struktura tega pravilnika sta na voljo na https://www.chromium.org/administrators/policy-list-3/extension-settings-full
-          </translation>
 <translation id="2753637905605932878">Omejitev obsega lokalnih vrat UDP, ki jih uporablja tehnologija WebRTC</translation>
+<translation id="2755385841634849932">Ta pravilnik nadzira razpoložljivost Androidovih storitev varnostnega kopiranja in obnovitve.
+
+      Če ta pravilnik ni konfiguriran ali je nastavljen na <ph name="BR_DISABLED" />, sta Androidovi storitvi varnostnega kopiranja in obnovitve onemogočeni in ju uporabnik ne more omogočiti.
+
+      Če je ta pravilnik nastavljen na <ph name="BR_UNDER_USER_CONTROL" />, je uporabnik pozvan, naj izbere, ali želi uporabljati Androidovi storitvi varnostnega kopiranja in obnovitve. Če uporabnik omogoči varnostno kopiranje in obnovitev, so podatki aplikacij za Android naloženi v strežnike storitve Android Backup Service in znova obnovljeni iz njih ob vnovični namestitvi združljivih aplikacij.</translation>
 <translation id="2757054304033424106">Vrste razširitev/aplikacij, katerih namestitev je dovoljena</translation>
 <translation id="2758084448533744848">Določa uveljavljen časovni pas, ki se uporablja za napravo. Če je ta pravilnik nastavljen, uporabniki v napravi ne morejo preglasiti določenega časovnega pasu. Če je vnesena neveljavna vrednost, je pravilnik kljub temu aktiviran s časovnim pasom »GMT«. Če je naveden prazen niz, je pravilnik prezrt.
 
@@ -1075,17 +1075,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če ta pravilnik ni nastavljen, se predvideva uporaba pravilnika <ph name="PRINTERS_ALLOW_ALL" />.
       </translation>
 <translation id="2908277604670530363">Največje dovoljeno število hkratnih povezav s strežnikom proxy</translation>
-<translation id="2948463916588961959">Vsili omogočanje jezikov za preverjanje črkovanja. Neprepoznani jeziki na tem seznamu so prezrti.
-
-      Če omogočite ta pravilnik, je preverjanje črkovanja omogočeno za navedene jezike poleg jezikov, za katere je uporabnik omogočil preverjanje črkovanja.
-
-      Če ne nastavite tega pravilnika ali ga onemogočite, ni sprememb uporabnikovih nastavitev preverjanja črkovanja.
-
-      Če je pravilnik SpellcheckEnabled onemogočen, ta pravilnik nima učinka.
-
-      Če je jezik vključen v ta pravilnik in pravilnik SpellcheckLanguageBlacklist, ima ta pravilnik prednost in jezik za preverjanje črkovanja je omogočen.
-
-      Za zdaj so podprti ti jeziki: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="2952347049958405264">Omejitve:</translation>
 <translation id="2956777931324644324">Ta pravilnik se ne uporablja od uveljavitve različice brskalnika <ph name="PRODUCT_NAME" /> 36.
 
@@ -1131,14 +1120,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3021562480854470924">Število mejnikov, za katere je dovoljena povrnitev</translation>
 <translation id="3023572080620427845">URL datoteke XML, ki vsebuje URL-je, ki naj se naložijo v nadomestnem brskalniku.</translation>
 <translation id="3030000825273123558">Omogoči pošiljanje podatkov</translation>
-<translation id="3033660238345063904">Tu lahko določite URL strežnika proxy.
-
-          Ta pravilnik velja le, če ste v »Izberite, kako določiti nastavitve strežnika proxy« izbrali ročne nastavitve strežnika proxy in če pravilnik <ph name="PROXY_SETTINGS_POLICY_NAME" /> ni bil določen.
-
-          Če ste za nastavitve pravilnikov za strežnik proxy izbrali drug način, tega pravilnika ne nastavljajte.
-
-          Več o drugih možnostih in podrobnejše primere najdete na:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3034580675120919256">Omogoča nastavitev, ali lahko spletna mesta izvajajo JavaScript. Izvajanje JavaScripta je lahko dovoljeno ali zavrnjeno za vsa spletna mesta.
 
           Če ta pravilnik ni nastavljen, bo omogočen pravilnik »AllowJavaScript«, uporabnik pa ga bo lahko spremenil.</translation>
@@ -1211,6 +1192,24 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Če ta nastavitev ni nastavljena, bo <ph name="PRODUCT_NAME" /> dovolil uporabo gostiteljev izvornega pošiljanja na uporabniški ravni.</translation>
 <translation id="3185009703220253572">od različice <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Aplikacije za Android ne morejo dobiti dostopa do ključev podjetja. Ta pravilnik nanje ne vpliva.</translation>
+<translation id="3201273385265130876">Omogoča izbiro strežnika proxy, ki ga uporablja <ph name="PRODUCT_NAME" />, in uporabnikom prepreči spreminjanje nastavitev strežnika proxy.
+
+          Če izberete, da se strežnik proxy ne uporablja in se vedno vzpostavi neposredna povezava, so vse druge možnosti prezrte.
+
+          Če izberete uporabo sistemskih nastavitev strežnika proxy, so vse druge možnosti prezrte.
+
+          Če izberete samodejno zaznavanje strežnika proxy, so vse druge možnosti prezrte.
+
+          Če izberete fiksni način strežnika proxy, lahko v možnostih »Naslov ali URL strežnika proxy« in »Seznam pravil za obvod proxyja, ločenih z vejicami« izberete dodatne nastavitve. Za aplikacije ARC je na voljo samo strežnik proxy HTTP z največjo prednostjo.
+
+          Če za strežnik proxy izberete uporabo skripta .pac, morate v možnosti »URL datoteke .pac za strežnik proxy« navesti URL skripta.
+
+          Podrobne primere si lahko ogledate tukaj:
+          <ph name="PROXY_HELP_URL" />.
+
+          Če omogočite to nastavitev, <ph name="PRODUCT_NAME" /> in aplikacije ARC prezrejo vse možnosti, povezane s strežnikom proxy, navedene v ukazni vrstici.
+
+          Če ta pravilnik ni nastavljen, lahko uporabniki sami izberejo nastavitve strežnika proxy.</translation>
 <translation id="3205825995289802549">Povečaj prvo okno brskalnika pri prvem izvajanju</translation>
 <translation id="3211426942294667684">Nastavitve prijave v brskalnik</translation>
 <translation id="3214164532079860003">Če je ta pravilnik omogočen, se domača stran uvozi iz trenutnega privzetega brskalnika.
@@ -1243,6 +1242,15 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je ta nastavitev omogočena ali ni nastavljena, lahko uporabniki s preverjanjem pristnosti prek računa za Google omogočijo proxy za tiskanje v oblaku.
 
       Če je ta nastavitev onemogočena, uporabniki ne morejo omogočiti proxyja, računalnik pa tiskalnikov ne bo smel dati v skupno rabo s storitvijo <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3307746730474515290">Nadzira, katere vrste aplikacij/razširitev je dovoljeno namestiti in omejuje dostop med izvajanjem.
+
+          Ta nastavitev na seznam dovoljenih shrani vrste aplikacij/razširitev, ki jih je dovoljeno namestiti v izdelku <ph name="PRODUCT_NAME" /> in imajo lahko gostitelji z njimi aplikacijo. Vrednost je seznam nizov, od katerih mora vsak biti nekaj od tega: »extension«, »theme«, »user_script«, »hosted_app«, »legacy_packaged_app«, »platform_app«. Več informacij o teh vrstah je v dokumentaciji razširitev za <ph name="PRODUCT_NAME" />.
+
+          Upoštevajte, da ta pravilnik vpliva tudi na razširitve in aplikacije, ki bodo na silo nameščene prek funkcije ExtensionInstallForcelist.
+
+          Če je ta nastavitev nastavljena, aplikacije vrste, ki ni na seznamu, ne bodo nameščene.
+
+          Če to nastavitve ne nastavite, ne bodo uveljavljene nobene omejitve sprejemljivih vrst razširitev/aplikacij.</translation>
 <translation id="3322771899429619102">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena mesta, ki smejo uporabljati ustvarjanje ključev. Če je vzorec URL-ja v »KeygenBlockedForUrls«, to preglasi te izjeme.
 
          Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultKeygenSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultKeygenSetting« ni nastavljen.</translation>
@@ -1271,17 +1279,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Ta pravilnik je mogoče nastaviti samo kot priporočenega. S tem pravilnikom lahko pomaknete niz priporočenih jezikov na vrh, vendar je uporabnikom vedno dovoljeno izbrati kateri koli jezik, ki ga operacijski sistem <ph name="PRODUCT_OS_NAME" /> podpira za njihovo sejo.
       </translation>
 <translation id="3381968327636295719">Privzeto uporabi brskalnik gostitelja</translation>
-<translation id="3384115339826100753">Omogočanje pravilnika za upravljanje porabe energije s funkcijo preklopa na akumulatorsko napajanje ob konicah.
-
-          Preklop na akumulatorsko napajanje ob konicah predstavlja pravilnik za varčevanje z energijo, ki zmanjša uporabo izmeničnega toka v obdobjih dneva, ko je poraba energije v električnem omrežju največja. Za vsak dan v tednu je mogoče nastaviti začetni in končni čas delovanja v načinu s preklopom na akumulatorsko napajanje ob konicah. V teh obdobjih bo sistem deloval na energijo iz akumulatorja, tudi če je priklopljen na izmenični tok, dokler raven energije v akumulatorju presega določen prag. Po koncu določenega časa bo sistem deloval na izmenični tok, če je priklopljen nanj, akumulatorja pa ne bo obremenjeval. Sistem bo znova deloval normalno, in sicer tako, da bo uporabljal izmenični tok ter polnil akumulator, po začetku določenega začetnega časa za polnjenje.
-
-          Če je ta pravilnik omogočen in sta nastavljena pravilnika DevicePowerPeakShiftBatteryThreshold in DevicePowerPeakShiftDayConfig, je funkcija preklopa na akumulatorsko napajanje ob konicah v napravi vedno omogočena, če jo naprava podpira.
-
-          Če je pravilnik onemogočen, je funkcija preklopa na akumulatorsko napajanje ob konicah vedno onemogočena.
-
-          Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
-
-          Če ta pravilnik ni nastavljen, je funkcija preklopa na akumulatorsko napajanje ob konicah sprva onemogočena in je uporabnik ne more omogočiti.</translation>
 <translation id="3388153794103186066">Omogoča nastavitev seznama URL-jev, ki določajo, katerim spletnim mestom bo samodejno podeljeno dovoljenje za dostop do naprave USB z danim ID-jem izdelka in dobavitelja. Pravilnik je veljaven samo, če vsak element na seznamu vsebuje tako naprave kot tudi URL-je. Vsak element v napravah lahko vsebuje polje z ID-jem dobavitelja in ID-jem izdelka. Vsak izpuščen ID se obravnava kot nadomestni znak z eno izjemo, in sicer, da ID izdelka ne more biti naveden, ne da bi bil naveden tudi ID dobavitelja. Pravilnik sicer ne bo veljaven in bo prezrt.
 
         Model dovoljenj za USB uporablja URL spletnega mesta, ki pošlje zahtevo (»URL z zahtevo«), in URL spletnega mesta z vrhnjim okvirjem (»URL za vdelavo«), da URL-ju z zahtevo podeli dovoljenje za dostop do naprave USB. URL z zahtevo se lahko razlikuje od URL-ja za vdelavo, če je stran, ki pošilja zahtevo, naložena v okviru iframe. Polje »urls« lahko tako vsebuje do dva niza z URL-jem, ločena z vejico, ki določata URL z zahtevo oziroma URL za vdelavo. Če je naveden samo en URL, bo dostop do ustreznih naprav USB podeljen, ko se URL spletnega mesta, ki pošilja zahtevo, ujema s tem URL-jem, ne glede na stanje vdelave. URL-ji v polju »urls« morajo biti veljavni URL-ji, sicer se pravilnik prezre.
@@ -1315,6 +1312,9 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Poskusna nastavitev bo odstranjena, ko bo potek prijave v vrstici združljiv z vsemi poteki sistemov enotne prijave.</translation>
 <translation id="3437924696598384725">Omogočanje uporabnikom, da upravljajo povezave VPN</translation>
+<translation id="3449886121729668969">Določi nastavitve strežnika proxy za izdelek <ph name="PRODUCT_NAME" />. Te nastavitve strežnika proxy so na voljo tudi za aplikacije ARC.
+
+      Ta pravilnik še ni primeren za uporabo, zato ga ne uporabljajte.</translation>
 <translation id="3459509316159669723">Tiskanje</translation>
 <translation id="3460784402832014830">Določa URL, ki ga iskalnik uporablja za nov zavihek s povezavami.
 
@@ -1356,6 +1356,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="350797926066071931">Omogoči Google Prevajalnik</translation>
+<translation id="3512226956150568738">Če je model odjemalske naprave že podpiral ARC, preden je bila zaradi izvajanja ARC-a potrebna selitev na šifriranje ext4, in je omogočen pravilnik »ArcEnabled«, bo možnost delovala kot »AskUser« (vrednost 3). V vseh drugih primerih (če model naprave prej ni podpiral ARC-ja ali če je pravilnik »ArcEnabled« onemogočen) je ta vrednost enakovredna »DisallowArc« (vrednost 0).</translation>
 <translation id="3513655665999652754">Strežnik Quirks Server ponuja konfiguracijske datoteke za posamezne komponente strojne opreme, kot so
       prikazovalni profili ICC za prilagajanje umerjanja monitorja.
 
@@ -1373,7 +1374,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je ta pravilnik nastavljen na »DeveloperToolsDisallowed« (vrednost 2), dostop do orodij za razvijalce ni mogoč in elementov na spletnih mestih ne bo več mogoče pregledovati. Vse bližnjične tipke in vnosi v meniju ali kontekstnem meniju za odpiranje orodij za razvijalce in konzole JavaScript bodo onemogočeni.</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="355118380775352753">Spletna mesta za odpiranje v nadomestnem brskalniku</translation>
-<translation id="3554984410014457319">Omogočanje Pomočniku Google, da posluša, ali je izgovorjena besedna zveza za glasovno aktiviranje</translation>
 <translation id="3577251398714997599">Nastavitve oglasov za spletna mesta z vsiljivimi oglasi</translation>
 <translation id="357917253161699596">Uporabnikom dovoli upravljanje uporabniških potrdil</translation>
 <translation id="3583230441447348508">Določa seznam vnaprej konfiguriranih omrežnih datotečnih sredstev v skupni rabi.
@@ -1497,7 +1497,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Vrednost * na seznamu blokiranih pomeni, da so vsi gostitelji izvornega pošiljanja sporočil blokirani in da bodo naloženi samo gostitelji izvornega pošiljanja sporočil, ki so na seznamu dovoljenih.
 
           Na seznamu dovoljenih so privzeto vsi gostitelji izvornega pošiljanja sporočil, vendar če se s pravilnikom vse gostitelje izvornega pošiljanja sporočil uvrsti na seznam blokiranih, se s seznamom dovoljenih lahko ta pravilnik preglasi.</translation>
-<translation id="3835692988507803626">Vsiljeno onemogočanje jezikov za preverjanje črkovanja.</translation>
 <translation id="3837424079837455272">Ta pravilnik nadzira, ali je v sistem <ph name="PRODUCT_OS_NAME" /> mogoče dodati nove uporabnike. Uporabnikom ne preprečuje prijave v dodatne račune za Google znotraj Androida. Če želite to preprečiti, konfigurirajte pravilnik za Android <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> kot del pravilnika <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
 <translation id="384743459174066962">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki jim ni dovoljeno odpirati pojavnih oken.
 
@@ -1546,6 +1545,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je pravilnik onemogočen, bo uporaba protokola SPDY na voljo.
 
       Če pravilnik ni nastavljen, bo protokol SPDY na voljo.</translation>
+<translation id="3890999316834333174">Pravilniki o hitrem odklepanju</translation>
 <translation id="3891357445869647828">Omogoči JavaScript</translation>
 <translation id="3895557476567727016">Konfigurira privzeti imenik, ki ga <ph name="PRODUCT_NAME" /> uporabi za prenos datotek.
 
@@ -1607,12 +1607,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če nastavitev ni nastavljena ali je onemogočena, naprave s sistemom <ph name="PRODUCT_OS_NAME" /> samodejno preverijo, ali so na voljo posodobitve.
 
       Opozorilo: priporočamo, da so samodejne posodobitve omogočene, tako da bodo uporabniki lahko prejemali posodobitve programske opreme in nujne varnostne popravke. Če izklopite samodejne popravke, so uporabniki morda ogroženi.</translation>
-<translation id="4018000735882846261">Ta pravilnik Pomočniku Google odobri dovoljenje za poslušanje, ali je izgovorjena besedna zveza za govorno aktiviranje.
-
-      Če je pravilnik omogočen, Pomočnik Google posluša, ali je izgovorjena besedna zveza za govorno aktiviranje.
-      Če je pravilnik onemogočen, Pomočnik Google ne posluša, ali je izgovorjena besedna zveza za govorno aktiviranje.
-      Če pravilnik ni nastavljen, Pomočnik Google ne posluša, ali je izgovorjena besedna zveza za govorno aktiviranje.
-      </translation>
 <translation id="4020682745012723568">Aplikacije za Android do piškotkov, prenesenih v uporabnikov profili, ne morejo dostopati.</translation>
 <translation id="402759845255257575">Nobenemu mestu ne dovoli izvajanja JavaScripta</translation>
 <translation id="4027608872760987929">Omogoči privzeti iskalnik</translation>
@@ -1620,6 +1614,13 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Običajno je to onemogočeno kot zaščita pred lažnim predstavljanjem. Če ta pravilnik ni nastavljen, je to onemogočeno in podvsebina drugega ponudnika ne bo mogla odpreti pojavnega pogovornega okna HTTP Basic Auth.</translation>
 <translation id="4056910949759281379">Onemogoči protokol SPDY</translation>
+<translation id="4059515172917655545">Ta pravilnik nadzira razpoložljivost Googlovih lokacijskih storitev.
+
+      Če ta pravilnik ni konfiguriran ali je nastavljen na <ph name="GLS_DISABLED" />, so Googlove lokacijske storitve onemogočene in jih uporabnik ne more omogočiti.
+
+      Če je ta pravilnik nastavljen na <ph name="GLS_UNDER_USER_CONTROL" />, je uporabnik pozvan, naj izbere, ali želi uporabljati Googlove lokacijske storitve. Tako lahko aplikacije za Android s storitvami pošiljajo poizvedbe glede lokacije naprave in omogočeno je pošiljanje anonimnih podatkov o lokaciji Googlu.
+
+      Če je pravilnik <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> nastavljen na <ph name="BLOCK_GEOLOCATION_SETTING" />, je ta pravilnik prezrt in Googlove lokacijske storitve so vedno onemogočene.</translation>
 <translation id="408029843066770167">Omogočanje poizvedb za Googlovo časovno storitev</translation>
 <translation id="408076456549153854">Omogočanje prijave v brskalnik</translation>
 <translation id="4088589230932595924">Vsiljen način brez beleženja zgodovine</translation>
@@ -1636,13 +1637,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Če pravilnik ni nastavljen, velja privzeto trajanje.
 
           Vrednost pravilnika naj bo navedena v milisekundah.</translation>
-<translation id="4105884561459127998">Konfigurira vrsto preverjanja pristnosti za prijave SAML.
-
-      Če ta pravilnik ni nastavljen ali je nastavljen na Default (privzeto, vrednost 0), delovanje prijav SAML določi brskalnik glede na druge dejavnike. V najbolj osnovnem scenariju preverjanje pristnosti uporabnikov in zaščita predpomnjenih uporabniških podatkov temeljita na geslih, ki jih uporabniki ročno vnesejo.
-
-      Če je ta pravilnik nastavljen na ClientCertificate (potrdilo odjemalca, vrednost 1), se preverjanje pristnosti odjemalca uporabi za novo dodane uporabnike, ki se prijavljajo prek SAML-ja. Za take uporabnike se ne uporabljajo gesla in njihovi predpomnjeni lokalni podatki so zaščiteni z ustreznimi kriptografskimi ključi. Ta nastavitev na primer omogoča konfiguriranje preverjanja pristnosti uporabnikov s pametnimi karticami (nameščene morajo biti aplikacije za pametne kartice prek pravilnika DeviceLoginScreenAppInstallList).
-
-      Ta pravilnik vpliva samo na uporabnike, katerih pristnost se preverja z uporabo SAML-ja.</translation>
 <translation id="4105989332710272578">Onemogočanje uveljavljanja pravilnika o preglednosti potrdila za seznam URL-jev</translation>
 <translation id="4121350739760194865">Onemogoči prikaz oglasov za aplikacije na novem zavihku s povezavami.</translation>
 <translation id="4125606414556046117">S tem pravilnikom lahko nastavite sliko za ozadje, prikazano na namizju in na prijavni strani za uporabnika. Pravilnik se nastavi tako, da navedete URL, s katerega lahko <ph name="PRODUCT_OS_NAME" /> prenese sliko za ozadje, in kriptografsko zgoščeno vrednost, ki se uporabi za preverjanje celovitosti prenosa. Slika mora biti v obliki JPEG in njena velikost ne sme presegati 16 MB. URL mora biti dostopen brez preverjanja pristnosti.
@@ -1671,30 +1665,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če tega pravilnika ne nastavite, lahko uporabnik izbere sliko, ki bo prikazana na namizju in v ozadju zaslona za prijavo.</translation>
 <translation id="412697421478384751">Omogoči uporabnikom nastavitev šibkih kod PIN za kodo PIN za zaklenjen zaslon.</translation>
 <translation id="4138655880188755661">Časovna omejitev</translation>
-<translation id="4144164749344898721">Ta pravilnik nadzira različne nastavitve za strategijo upravljanja energije, ko uporabnik postane nedejaven.
-
-          Obstajajo štiri vrste dejanj:
-          * Če je uporabnik nedejaven toliko časa, kot določa |ScreenDim|, se zaslon zatemni.
-          * Če je uporabnik nedejaven toliko časa, kot določa |ScreenOff|, se zaslon izklopi.
-          * Če je uporabnik nedejaven toliko časa, kot določa |IdleWarning|, se prikaže opozorilno pogovorno okno, ki uporabnika obvesti, da se bo izvedlo dejanje zaradi nedejavnosti. Opozorilno sporočilo je prikazano samo, če je dejanje ob nedejavnosti odjava ali izklop.
-          * Če je uporabnik nedejaven toliko časa, kot določa |Idle|, se bo izvedlo dejanje, ki ga določa |IdleAction|.
-
-          Za vsako od navedenih dejanj mora biti zakasnitev navedena v milisekundah, ustrezno dejanje pa se bo sprožilo samo, če je nastavljena vrednost, večja od nič. Če je zakasnitev nastavljena na nič, <ph name="PRODUCT_OS_NAME" /> ne bo izvedel ustreznega dejanja.
-
-          Če za navedene zakasnitve trajanje ni določeno, bo uporabljena privzeta vrednost.
-
-          Upoštevajte, da morajo biti vrednosti za |ScreenDim| manjše ali enake kot vrednosti za |ScreenOff|, vrednosti za |ScreenOff| in |IdleWarning| pa manjše ali enake kot za |Idle|.
-
-          |IdleAction| je lahko eno od štirih dejanj:
-          * |Suspend| (prekinitev)
-          * |Logout| (odjava)
-          * |Shutdown| (zaustavitev)
-          * |DoNothing| (ne naredi ničesar)
-
-          Če vrednost za |IdleAction| ni nastavljena, se bo izvedlo privzeto dejanje, ki je prekinitev.
-
-          Obstajajo tudi ločene nastavitve za napajanje iz električnega omrežja in akumulatorja.
-          </translation>
 <translation id="4150201353443180367">Prikaz</translation>
 <translation id="4157003184375321727">Pošiljanje podatkov o različici operacijskega sistema in vdelane programske opreme</translation>
 <translation id="4157594634940419685">Omogoči dostop do izvornih tiskalnikov CUPS</translation>
@@ -1709,10 +1679,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Glejte tudi RemoteAccessHostDomainList.</translation>
 <translation id="4183229833636799228">Privzeta nastavitev za <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL za preverjanje žetona za preverjanje pristnosti odjemalca za oddaljeni dostop</translation>
-<translation id="4197038214024763371">Če ta pravilnik ni nastavljen ali omogočen, uporabnik lahko uporablja preverjanje črkovanja.
-
-      Če je ta pravilnik onemogočen, uporabnik ne more uporabljati preverjanja črkovanja. Pri tem sta prezrta tudi pravilnika SpellcheckLanguage in SpellcheckLanguageBlacklist.
-      </translation>
 <translation id="4203389617541558220">Omejitev časa delovanja naprave z načrtovanjem samodejnih vnovičnih zagonov.
 
       Če je ta pravilnik nastavljen, določa, kako dolgo lahko deluje naprava, preden se izvede načrtovan samodejni vnovični zagon.
@@ -1764,6 +1730,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Ta pravilnik je izbiren. Če ni nastavljen, bo zahteva za slikovno iskanje poslana z metodo GET.
 
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
+<translation id="427706009709857238">»Omogočanje Pomočniku Google, da posluša, ali je izgovorjena besedna zveza za glasovno aktiviranje«</translation>
 <translation id="4285674129118156176">Omogočanje uporabe ARC-ja nepovezanim uporabnikom</translation>
 <translation id="4298509794364745131">Določa seznam aplikacij, ki jih je mogoče omogočiti kot aplikacije za zapiske na zaklenjenem zaslonu sistema <ph name="PRODUCT_OS_NAME" />.
 
@@ -1775,18 +1742,10 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če pravilnik vsebuje ID aplikacije, še ne pomeni, da lahko uporabnik omogoči aplikacijo kot aplikacijo za zapiske na zaklenjenem zaslonu – v Chromu 61 skupino razpoložljivih aplikacij na primer dodatno omejuje okolje.
 
       Če pravilnik ni nastavljen, ni omejitev pravilnika za skupino aplikacij, ki jih uporabnik lahko omogoči na zaklenjenem zaslonu.</translation>
+<translation id="4309640770189628899">Ali so v protokolu TLS omogočene šifrirne zbirke DHE</translation>
 <translation id="4322842393287974810">Dovoli samodejno zagnani aplikaciji za kiosk brez zamika nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodajanje gumb za odjavo v sistemsko vrstico</translation>
 <translation id="4332177773549877617">Beleženje dogodkov za namestitve aplikacije za Android</translation>
-<translation id="4335292026668105285">Določa trajanje uporabnikove nedejavnosti, po preteku katere je prikazano opozorilno pogovorno okno, če se naprava napaja iz električnega omrežja.
-
-          Če je ta pravilnik nastavljen, določa trajanje, med katerim mora biti uporabnik nedejaven, preden sistem <ph name="PRODUCT_OS_NAME" /> prikaže opozorilno pogovorno okno, ki uporabnika obvesti, da se bo izvedlo dejanje ob nedejavnosti.
-
-          Če ta pravilnik ni nastavljen, ni prikazano opozorilno pogovorno okno.
-
-          Vrednost pravilnika mora biti navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik nedejavnosti.
-
-          Opozorilno sporočilo je prikazano samo, če je dejanje ob nedejavnosti odjava ali izklop.</translation>
 <translation id="4346674324214534449">Omogoča, da nastavite, ali je treba oglase blokirati na spletnih mestih z vsiljivimi oglasi.
 
       Če je ta pravilnik nastavljen na 2, bodo oglasi blokirani na spletnih mestih z vsiljivimi oglasi.
@@ -1840,7 +1799,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Medtem ko je ta pravilnik podprt v zgornjih okoljih, je funkcija, ki jo omogoča, morda na voljo v manj okoljih. Vseh zastarelih funkcij spletnega okolja ni mogoče znova omogočiti; za omejen čas (različno od funkcije do funkcije) je mogoče samo tiste, ki so izrecno navedene spodaj. Splošna oblika zapisa oznake niza bo [DeprecatedFeatureName]_EffectiveUntil[yyyymmdd]. Če vas zanima referenčno gradivo in namen spremembe funkcij spletnega okolja, obiščite http://bit.ly/blinkintents.
       </translation>
 <translation id="4442582539341804154">Omogoči zaklepanje, ko je naprava nedejavna ali preide v stanje pripravljenosti</translation>
-<translation id="4449469846627734399">Nastavitev dnevne konfiguracije funkcije preklopa na akumulatorsko napajanje ob konicah</translation>
 <translation id="4449545651113180484">Sukanje zaslona v smeri urnega kazalca za 270 stopinj</translation>
 <translation id="445270821089253489">Nadzira, kateri podatki o uporabniku in napravi se poročajo.</translation>
 <translation id="4454820008017317557">Pokaži ikono orodne vrstice <ph name="PRODUCT_NAME" /></translation>
@@ -1887,6 +1845,14 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4534500438517478692">Ime omejitve za Android:</translation>
 <translation id="4541530620466526913">Lokalni računi za napravo</translation>
 <translation id="4543502256674577024">Nastavitve posodobitve naprave</translation>
+<translation id="4544079461524242527">Konfigurira nastavitve upravljanja razširitev za <ph name="PRODUCT_NAME" />.
+
+          Ta pravilnik nadzira več nastavitev, vključno z nastavitvami, ki jih nadzirajo kateri koli obstoječi pravilniki, povezani z razširitvami. Ta pravilnik preglasi vse morebitne starejše pravilnike, če so nastavljeni oboji.
+
+          Ta pravilnik preslika ID razširitve ali URL za posodobitev v svojo konfiguracijo. Konfiguracija z ID-jem razširitve bo uporabljena samo za določeno razširitev. Za posebni ID <ph name="DEFAULT_SCOPE" /> je mogoče nastaviti privzeto konfiguracijo, ki se bo uporabila za vse razširitve, ki v tem pravilniku nimajo nastavljene konfiguracije po meri. Konfiguracija z URL-jem za posodobitev bo uporabljena za vse razširitve s točno določenim URL-jem za posodobitev, navedenim v manifestu te razširitve, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC1" />.
+
+          Celoten opis mogočih nastavitev in struktura tega pravilnika sta na voljo na https://www.chromium.org/administrators/policy-list-3/extension-settings-full
+          </translation>
 <translation id="4554651132977135445">Način obdelave povratnih zank pri uporabniških pravilnikih</translation>
 <translation id="4554841826517980623">Ta pravilnik nadzira, ali naj funkcija omrežnih datotečnih sredstev v skupni rabi za izdelek <ph name="PRODUCT_NAME" /> uporablja protokol <ph name="NETBIOS_PROTOCOL" /> za odkrivanje sredstev v skupni rabi v omrežju.
       Če je ta pravilnik omogočen, bo mehanizem za odkrivanje sredstev v skupni rabi uporabljal protokol <ph name="NETBIOS_PROTOCOL" /> za odkrivanje sredstev v skupni rabi v omrežju.
@@ -1904,6 +1870,17 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4613508646038788144">Če je pravilnik onemogočen, lahko programska oprema tretjih oseb vstavlja izvedljivo kodo v Chromove procese. Če pravilnik ni nastavljen ali je omogočen, programska oprema tretjih oseb ne more vstavljati izvedljive kode v Chromove procese.</translation>
 <translation id="4617338332148204752">Preskoči preverjanje metaoznak v izdelku <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Nastavi seznam razširitev, katerih namestitev je dovoljena</translation>
+<translation id="463224920692183755">Določa dejanje, ki se izvede, ko je bil uporabnikov domači imenik ustvarjen s šifriranjem ecryptfs in mora preiti na šifriranje ext4.
+
+      Če ta pravilnik nastavite na »DisallowArc«, bodo aplikacije za Android onemogočene za uporabnika in izvedena ne bo nobena selitev s šifriranja ecryptfs na ext4. Izvajanje aplikacij za Android ne bo preprečeno, če je domači imenik že šifriran s šifriranjem ext4.
+
+      Če ta pravilnik nastavite na »Migrate«, bodo domači imeniki, šifrirani s šifriranjem ecryptfs, samodejno preseljeni na šifriranje ext4 brez zahtevanja soglasja uporabnika.
+
+      Če ta pravilnik nastavite na »Wipe«, bodo domači imeniki, šifrirani s šifriranjem ecryptfs, izbrisani ob prijavi in ustvarjeni bodo novi domači imeniki, šifrirani s šifriranjem ext4. Opozorilo: s tem odstranite uporabnikove lokalne podatke.
+
+      Če ta pravilnik nastavite na »AskUser«, je uporabnikom z domačimi imeniki, šifriranimi s šifriranjem ecryptfs, ponujena selitev.
+
+      Ta pravilnik se ne uporablja za uporabnike kioska. Če ta pravilnik ni nastavljen, bo naprava delovala, kot da bi bila izbrana možnost »DisallowArc«.</translation>
 <translation id="4632343302005518762">Dovoli, da <ph name="PRODUCT_FRAME_NAME" /> obravnava navedene vrste vsebine.</translation>
 <translation id="4632566332417930481">Prepoved uporabe orodij za razvijalce v razširitvah, nameščenih s pravilnikom podjetja, omogočena uporaba orodij za razvijalce v drugih kontekstih</translation>
 <translation id="4633786464238689684">Spremeni privzeti način delovanja zgornje vrstice tipk, da delujejo kot funkcijske tipke.
@@ -1975,6 +1952,22 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4802905909524200151">Konfiguriranje delovanja posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Ob odjavi uporabnika vedno vnovičen zagon.</translation>
 <translation id="4807950475297505572">Uporabniki, pri katerih je minilo največ časa, odkar so bili uporabljeni, se odstranijo, dokler ni dovolj prostora</translation>
+<translation id="4815725774537609998">Ta pravilnik je zastarel, namesto njega uporabite ProxyMode.
+
+          Omogoča nastavitev strežnika proxy, ki ga uporablja <ph name="PRODUCT_NAME" />, in uporabnikom prepreči spreminjanje nastavitev strežnika proxy.
+
+          Če izberete, da se proxy nikoli ne uporablja in se vedno vzpostavi neposredna povezava, so vse druge možnosti prezrte.
+
+          Če izberete uporabo sistemskih nastavitev strežnika proxy ali samodejno zaznavanje strežnika proxy, so vse druge možnosti prezrte.
+
+          Če izberete ročno nastavitev strežnika proxy, lahko v možnostih »Naslov ali URL strežnika proxy«, »URL datoteke .pac za proxy« in »Seznam pravil za obvod strežnika proxy, ločenih z vejicami« izberete dodatne nastavitve. Za aplikacije ARC je na voljo samo strežnik proxy HTTP z največjo prednostjo.
+
+          Podrobne primere si lahko ogledate tukaj:
+          <ph name="PROXY_HELP_URL" />.
+
+          Če omogočite to nastavitev, <ph name="PRODUCT_NAME" /> prezre vse možnosti, povezane s strežnikom proxy, navedene v ukazni vrstici.
+
+          Če ta pravilnik ni nastavljen, lahko uporabniki sami izberejo nastavitve strežnika proxy.</translation>
 <translation id="4816674326202173458">Dovoli poslovnemu uporabniku, da je primarni in sekundarni uporabnik (privzeti način delovanja za neupravljane uporabnike)</translation>
 <translation id="4826326557828204741">Dejanje, ki se izvede, ko pri akumulatorskem napajanju dosežena zakasnitev zaradi nedejavnosti</translation>
 <translation id="4832852360828533362">Poročanje o uporabniku in napravi</translation>
@@ -2013,53 +2006,17 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="4983201894483989687">Dovoli izvajanje zastarelih vtičnikov</translation>
 <translation id="4986560318567565414">Pot do Chroma za preklop z nadomestnega brskalnika.</translation>
 <translation id="4988291787868618635">Dejanje, ki naj se izvede, ko preteče časovni zamik nedejavnosti</translation>
-<translation id="5030889661505907084">
-      Če je pravilnik nastavljen na »true«, ima v primeru spora s pravilnikom okolja prednost pravilnik oblaka.
-      Če je pravilnik nastavljen na »false« ali ni nastavljen, ima v primeru spora s pravilnikom o oblaku prednost pravilnik o okolju.
-
-      Ta pravilnik je na voljo samo kot okolje.
-      </translation>
-<translation id="5034604678285451405">Nastavitev praga za funkcijo preklopa na akumulatorsko napajanje ob konicah v odstotkih.
-
-          Ta pravilnik se uporablja samo, če je omogočen pravilnik DevicePowerPeakShiftEnabled.
-
-          Če ta pravilnik ni konfiguriran ali nastavljen, je funkcija preklopa na akumulatorsko napajanje ob konicah vedno onemogočena.</translation>
+<translation id="4995548127349206948">Ali je omogočeno preverjanje pristnosti NTLMv2.</translation>
 <translation id="5047604665028708335">Omogoči dostop do spletnih mest zunaj paketov vsebine</translation>
 <translation id="5052081091120171147">Če je ta pravilnik omogočen, se zgodovina brskanja uvozi iz trenutnega privzetega brskalnika. Če je omogočen, ta pravilnik vpliva tudi na pogovorno okno za uvoz.
 
      Če je onemogočen, se zgodovina brskanja stran ne uvozi.
 
       Če ni nastavljen, bo uporabnik morda vprašan, ali naj jo uvozi, ali pa bo uvoz izveden samodejno.</translation>
-<translation id="5055312535952606505">Določi nastavitve strežnika proxy za izdelek <ph name="PRODUCT_NAME" />. Te nastavitve strežnika proxy so na voljo tudi za aplikacije ARC.
-
-          Če omogočite to nastavitev, <ph name="PRODUCT_NAME" /> in aplikacije ARC prezrejo vse možnosti, povezane s strežnikom proxy, navedene v ukazni vrstici.
-
-          Če ta pravilnik ni nastavljen, lahko uporabniki sami izberejo nastavitve strežnika proxy.
-
-          Če je nastavljen pravilnik <ph name="PROXY_SETTINGS_POLICY_NAME" />, preglasi katere koli posamezne pravilnike <ph name="PROXY_MODE_POLICY_NAME" />, <ph name="PROXY_PAC_URL_POLICY_NAME" />, <ph name="PROXY_SERVER_POLICY_NAME" />, <ph name="PROXY_BYPASS_POLICY_NAME" /> in <ph name="PROXY_SERVER_MODE_POLICY_NAME" />.
-
-          V polju <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> lahko določite strežnik proxy, ki naj ga uporablja <ph name="PRODUCT_NAME" /> in uporabnikom prepreči spreminjanje nastavitev strežnika proxy.
-
-          Polje <ph name="PROXY_PAC_URL_PROXY_SETTINGS_FIELD" /> je URL za datoteko .pac strežnika proxy.
-
-          Polje <ph name="PROXY_SERVER_PROXY_SETTINGS_FIELD" /> je URL strežnika proxy.
-
-          Polje <ph name="PROXY_BYPASS_LIST_PROXY_SETTINGS_FIELD" /> je seznam gostiteljev strežnika proxy, ki jih <ph name="PRODUCT_NAME" /> obide.
-
-          Polje <ph name="PROXY_SERVER_MODE_PROXY_SETTINGS_FIELD" /> je zastarelo. Uporablja se polje »ProxyMode«. Omogoča določanje strežnika proxy, ki naj ga uporablja <ph name="PRODUCT_NAME" />, in uporabnikom prepreči spreminjanje nastavitev strežnika proxy.
-
-          Če izberete vrednost »direct« kot »ProxyMode«, strežnik proxy ne bo uporabljen in vsa druga polja bodo prezrta.
-
-          Če izberete vrednost »system« kot »ProxyMode«, bo uporabljen strežnik proxy sistema in vsa druga polja bodo prezrta.
-
-          Če izberete vrednost »auto_detect« kot »ProxyMode«, bodo vsa druga polja prezrta.
-
-          Če izberete vrednost »fixed_server« kot »ProxyMode, se uporabita polji »ProxyServer« in »ProxyBypassList«.
-
-          Če izberete vrednost »pac_script« kot »ProxyMode, se uporabita polji »ProxyPacUrl« in »ProxyBypassList«.</translation>
 <translation id="5056708224511062314">Izklop lupe</translation>
 <translation id="5058573563327660283">Izbere strategijo za sproščanje prostora na disku med samodejnim čiščenjem (zastarelo)</translation>
 <translation id="5067143124345820993">Seznam odobrenih uporabnikov za prijavo</translation>
+<translation id="5068140065960598044">Pravilnik oblaka za <ph name="PRODUCT_NAME" /> preglasi pravilnik računalnika.</translation>
 <translation id="5075834892754086022">Če je ta pravilnik nastavljen, se uveljavi najmanjša dovoljena dolžina kode
           PIN. (Absolutna najmanjša dovoljena dolžina kode PIN je 1; manjše vrednosti kot 1
           se obravnavajo kot 1.)
@@ -2106,7 +2063,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če je ta pravilnik nastavljen, se vsak element obravnava kot pravilo, podobno pravilniku <ph name="URL_LIST_POLICY_NAME" />, vendar z obratno logiko: pravila, ki se ujemajo, ne odprejo nadomestnega brskalnika.
 
       Drugače kot pri pravilniku <ph name="URL_LIST_POLICY_NAME" /> pravila veljajo v obeh smereh. Če je nameščen in omogočen dodatek za Internet Explorer, ta prav tako nadzira, ali naj <ph name="IE_PRODUCT_NAME" /> odpre te URL-je v brskalniku <ph name="PRODUCT_NAME" />.</translation>
-<translation id="5124368997194894978">Omogočanje zagona pri napajanju iz električnega omrežja (izmenični tok)</translation>
+<translation id="5130288486815037971">Ali so v protokolu TLS omogočene šifrirne zbirke RC4</translation>
 <translation id="5141670636904227950">Nastavitev privzete vrste lupe, omogočene na prijavnem zaslonu</translation>
 <translation id="5142301680741828703">Vedno upodobi te vzorce URL-jev v programu <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="5148753489738115745">Določite lahko dodatne parametre, ki so uporabljeni, ko <ph name="PRODUCT_FRAME_NAME" /> zažene <ph name="PRODUCT_NAME" />.
@@ -2118,24 +2075,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Najmanjši interval je 30 sekund, največji pa 24 ur –
       vrednosti zunaj tega obsega bodo omejene na ta obseg.</translation>
 <translation id="5163002264923337812">Omogoči stari spletni potek prijave</translation>
-<translation id="5168529971295111207">Ta pravilnik je zastarel, namesto njega uporabite ProxyMode.
-
-          Omogoča izbiro strežnika proxy, ki naj ga uporablja <ph name="PRODUCT_NAME" />, in uporabnikom prepreči spreminjanje nastavitev strežnika proxy.
-
-          Ta pravilnik ima vpliv samo, če je onemogočen pravilnik <ph name="PROXY_SETTINGS_POLICY_NAME" />.
-
-          Če izberete, da se strežnik proxy nikoli ne uporablja in se vedno vzpostavi neposredna povezava, so vse druge možnosti prezrte.
-
-          Če izberete uporabo sistemskih nastavitev strežnika proxy ali samodejno zaznavanje strežnika proxy, bodo vse druge možnosti prezrte.
-
-          Če izberete ročno nastavitev strežnika proxy, lahko v možnostih »Naslov ali URL strežnika proxy«, »URL datoteke .pac za proxy« in »Seznam pravil za obvod strežnika proxy, ločenih z vejicami« izberete dodatne nastavitve. Za aplikacije ARC je na voljo samo strežnik proxy HTTP z največjo prednostjo.
-
-          Podrobne primere si lahko ogledate tukaj:
-          <ph name="PROXY_HELP_URL" />.
-
-          Če omogočite to nastavitev, <ph name="PRODUCT_NAME" /> prezre vse možnosti, povezane s strežnikom proxy, navedene v ukazni vrstici.
-
-          Če ta pravilnik ni nastavljen, lahko uporabniki sami izberejo nastavitve strežnika proxy.</translation>
 <translation id="5182055907976889880">Konfigurira Google Drive v brskalniku <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5183383917553127163">Omogoča, da določite, za katere razširitve ne velja seznam prepovedanih.
 
@@ -2228,6 +2167,13 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če pravilnik ni nastavljen ali je nastavljen na prazen niz oziroma neveljaven obseg vrat, je tehnologiji WebRTC dovoljeno uporabljati katera koli lokalna vrata UDP, ki so na voljo.</translation>
 <translation id="5290940294294002042">Določite seznam vtičnikov, ki jih lahko uporabnik omogoči ali onemogoči</translation>
+<translation id="5304269353650269372">Določa trajanje uporabnikove nedejavnosti, po preteku katere se pokaže pogovorno okno z opozorilom, če se napaja iz akumulatorja.
+
+          Če je pravilnik nastavljen, določa, koliko časa mora biti uporabnik nedejaven, preden <ph name="PRODUCT_OS_NAME" /> prikaže pogovorno okno z opozorilom, da bo izveden ukrep zaradi nedejavnosti.
+
+          Če pravilnik ni nastavljen, pogovorno okno z opozorilom ni prikazano.
+
+          Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik nedejavnosti.</translation>
 <translation id="5307432759655324440">Razpoložljivost načina brez beleženja zgodovine</translation>
 <translation id="5318185076587284965">Gostitelju oddaljenega dostopa omogoči uporabo posredovalnih strežnikov</translation>
 <translation id="5323128137188992869">Omogočanje predvajanja vsebine v napravi z napravo <ph name="PRODUCT_NAME" />.
@@ -2239,7 +2185,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Sicer bo nastavljen na eno od teh vrednosti: »tls1.2« ali »tls1.3«. Če je nastavljen, <ph name="PRODUCT_NAME" /> ne bo uporabljal različic protokolov SSL/TLS, višjih od navedene različice. Neprepoznane vrednosti bodo prezrte.</translation>
 <translation id="5330684698007383292">Dovoli, da <ph name="PRODUCT_FRAME_NAME" /> obravnava te vrste vsebine.</translation>
-<translation id="5331746669335642668">Pravilnik o oblaku za <ph name="PRODUCT_NAME" /> preglasi pravilnik o okolju.</translation>
 <translation id="5365476955714838841">Parametri ukazne vrstice za nadomestni brskalnik.</translation>
 <translation id="5365946944967967336">V orodni vrstici pokaži gumb »Domov«</translation>
 <translation id="5366745336748853475">Omogoča, da določite seznam vzorcev URL-jev, ki določajo spletna mesta, za katera je potrdilo odjemalca samodejno izbrano na zaslonu za prijavo v okviru, v katerem gostuje potek SAML, če spletno mesto zahteva potrdilo. Primer uporabe je konfiguriranje potrdila v napravi, ki je predloženo SAML IdP.
@@ -2312,7 +2257,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="5457065417344056871">Omogočanje načina za goste v brskalniku</translation>
 <translation id="5457924070961220141">Omogoča nastavitev privzetega upodabljalnika HTML, ko je <ph name="PRODUCT_FRAME_NAME" /> nameščen.
           Če ta pravilnik ni nastavljen, je gostiteljskemu brskalniku upodabljanje privzeto dovoljeno, vendar lahko po želji to preglasite in določite, da bo <ph name="PRODUCT_FRAME_NAME" /> privzeto upodabljal strani HTML.</translation>
-<translation id="5458584148602890023">Omogočanje funkcije preklopa na akumulatorsko napajanje ob konicah</translation>
 <translation id="5464816904705580310">Konfiguriranje nastavitev za upravljane uporabnike.</translation>
 <translation id="546726650689747237">Časovni zamik zatemnitve zaslona ob napajanju iz električnega omrežja</translation>
 <translation id="5469143988693423708">Uporabniku je omogočeno izvajanje Crostinija</translation>
@@ -2656,7 +2600,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če ta pravilnik ni nastavljen, je seznam naprav USB, katerih povezavo je mogoče prekiniti, prazen.</translation>
 <translation id="6083631234867522991">Windows (odjemalci s sistemom Windows):</translation>
-<translation id="608788685013546076">Nastavitev praga za funkcijo preklopa na akumulatorsko napajanje ob konicah v odstotkih</translation>
 <translation id="6089679180657323464">Nadzira nastavitve diagnostične storitve wilco in kontrolnika telemetrije.</translation>
 <translation id="6091233616732024397">Vsiljenje prijave uporabnikom, če želijo uporabljati brskalnik</translation>
 <translation id="6093156968240188330">Omogoči oddaljenim uporabnikom uporabo oken s skrbniškimi pravicami v sejah oddaljene pomoči</translation>
@@ -2717,14 +2660,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6155936611791017817">Nastavitev privzetega stanja velikega kazalca na prijavnem zaslonu</translation>
 <translation id="6157537876488211233">Seznam pravil za obvod proxyja, ločenih z vejico</translation>
 <translation id="6158324314836466367">Ime spletne trgovine podjetja (zastarelo)</translation>
-<translation id="6158817306788002298">Tukaj lahko določite URL datoteke .pac za proxy.
-
-          Ta pravilnik velja le, če ste v »Izberite, kako določiti nastavitve strežnika proxy« izbrali ročne nastavitve strežnika proxy in če pravilnik <ph name="PROXY_SETTINGS_POLICY_NAME" /> ni bil določen.
-
-          Če ste za nastavitve pravilnikov za strežnik proxy izbrali drug način, tega pravilnika ne nastavljajte.
-
-          Podrobne primere si lahko ogledate tukaj:
-          <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="6178075938488052838">Ta pravilnik nadzira, kdo lahko začne sejo sistema <ph name="PRODUCT_OS_NAME" />. Uporabnikom ne preprečuje prijave v dodatne račune za Google znotraj Androida. Če želite to preprečiti, konfigurirajte pravilnik za Android <ph name="ACCOUNT_TYPES_WITH_MANAGEMENT_DISABLED_CLOUDDPC_POLICY_NAME" /> kot del pravilnika <ph name="ARC_POLICY_POLICY_NAME" />.</translation>
 <translation id="6181608880636987460">Omogoča nastavitev seznama vzorcev URL-jev, ki določa, katerim spletnim mestom je onemogočeno izvajanje vtičnika <ph name="FLASH_PLUGIN_NAME" />.
 
@@ -2764,17 +2699,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6281043242780654992">Konfigurira pravilnike za izvorno pošiljanje sporočil. Gostitelji izvornega pošiljanja sporočil s seznama blokiranih ne bodo dovoljeni, razen če bodo uvrščeni na seznam dovoljenih.</translation>
 <translation id="6282799760374509080">Omogočanje ali onemogočanje snemanja zvoka</translation>
 <translation id="6284362063448764300">TLS 1.1</translation>
-<translation id="6306608379445125648">Vsili onemogočanje jezikov za preverjanje črkovanja. Neprepoznani jeziki na tem seznamu so prezrti.
-
-      Če omogočite ta pravilnik, je preverjanje črkovanja onemogočeno za navedene jezike. Uporabnik lahko še vedno omogoči ali onemogoči preverjanje črkovanja za jezike, ki niso na seznamu.
-
-      Če ne nastavite tega pravilnika ali ga onemogočite, ni sprememb uporabnikovih nastavitev preverjanja črkovanja.
-
-      Če je pravilnik SpellcheckEnabled onemogočen, ta pravilnik nima učinka.
-
-      Če je jezik vključen v ta pravilnik in pravilnik SpellcheckLanguage, ima prednost pravilnik SpellcheckLanguage in jezik za preverjanje črkovanja je omogočen.
-
-      Za zdaj so podprti ti jeziki: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="6310223829319187614">Omogočanje samodokončanja imena domene med prijavo uporabnika</translation>
 <translation id="6315673513957120120">Chrome prikaže opozorilno stran, ko uporabniki prikrmarijo na spletna mesta, na katerih so napake SSL. Uporabnikom je privzeto (ali če je ta pravilnik omogočen) dovoljeno, da s klikom opustijo te strani z opozorilom.
       Če onemogočite ta pravilnik, uporabnikom ni dovoljeno s klikom opustiti katere koli strani z opozorilom.</translation>
@@ -2788,6 +2712,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Ta pravilnik je izbiren. Če ni nastavljen, bo zahteva za iskanje poslana z metodo GET.
 
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
+<translation id="6367755442345892511">Ali lahko distribucijski kanal za nove izdaje nastavi uporabnik</translation>
 <translation id="6368011194414932347">Konfiguracija URL-ja domače strani</translation>
 <translation id="6368403635025849609">Dovoli JavaScript na teh mestih</translation>
 <translation id="6376659517206731212">Lahko je obvezno</translation>
@@ -2907,17 +2832,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Če ta pravilnik ni nastavljen, je uporabljeno »3« in uporabnik lahko to spremeni.</translation>
 <translation id="663685822663765995">Omejitev barvnega načina tiskanja</translation>
 <translation id="6641981670621198190">Onemogoči podporo za vmesnike API za 3D-grafiko</translation>
-<translation id="6646056064606561298">Omogočanje pravilnika za upravljanje porabe energije z zagonom pri napajanju iz električnega omrežja.
-
-          Zagon pri napajanju iz električnega omrežja omogoča priložnost, da se sistem ob priklopu omrežnega napajanja samodejno zažene iz izklopljenega stanja/stanja mirovanja.
-
-          Če je ta pravilnik omogočen, bo zagon pri napajanju iz električnega omrežja vedno omogočen, če ga naprava podpira.
-
-          Če je pravilnik onemogočen, bo zagon pri napajanju iz električnega omrežja vedno onemogočen.
-
-          Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
-
-          Če ta pravilnik ni nastavljen, je zagon pri napajanju iz električnega omrežja onemogočen in ga uporabnik ne more omogočiti.</translation>
 <translation id="6647965994887675196">Če je pravilnik vklopljen, je mogoče ustvariti in uporabiti zaščitene uporabnike.
 
           Če pravilnik ni vklopljen ali ni nastavljen, ustvarjanje in prijava zaščitenih uporabnikov nista mogoča. Vsi obstoječi zaščiteni  uporabniki so skriti.
@@ -2953,6 +2867,15 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če prijava v drug račun ne bi smela biti dovoljena v načinu brez beleženja zgodovine, blokirajte ta način s pravilnikom »IncognitoModeAvailability«.
 
       Upoštevajte, da bodo lahko uporabniki z blokiranjem piškotkov dostopali do Googlovih storitev v stanju brez preverjanja pristnosti.</translation>
+<translation id="6738326937072482736">Konfigurira razpoložljivost in delovanje funkcije posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      Posamezne nastavitve je mogoče določiti v lastnostih datoteke JSON:
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: Če je nastavljeno na <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, bodo uporabniki lahko sprožili potek postopka »powerwash« zaradi namestitve posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: Če je nastavljeno na <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, lahko uporabniki sprožijo postopek posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" />, ki ohranja stanje za celotno napravo (vključno z včlanitvijo v podjetju), vendar izgubi uporabniške podatke. Ta postopek posodobitve je na voljo z različico 68.
+
+      Če pravilnik ni nastavljen, funkcija posodobitve vdelane programske opreme modula <ph name="TPM_FIRMWARE_UPDATE_TPM" /> ne bo na voljo.</translation>
 <translation id="6757438632136860443">Omogoča nastavitev seznama vzorcev URL-jev, ki določa, katerim spletnim mestom je dovoljeno izvajanje vtičnika <ph name="FLASH_PLUGIN_NAME" />.
 
           Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultPluginsSetting«, kadar je ta pravilnik nastavljen, sicer pa iz osebnih nastavitev uporabnika.</translation>
@@ -3092,7 +3015,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Preden se zaslon zatemni, pametni model zatemnitve oceni, ali je treba zatemnitev zaslona odložiti. Če pametni model zatemnitve odloži zatemnitev zaslona, dejansko podaljša čas do zatemnitve zaslona. V tem primeru se časovna zamika izklopa zaslona in zaklepanja zaslona ter časovni zamik ob nedejavnosti prilagodijo, da ohranijo enako časovno razdaljo od prvotno konfigurirane zakasnitve zatemnitve zaslona.
       Če je pravilnik omogočen ali ni nastavljen, je pametni model zatemnitve omogočen in sme podaljšati čas do zatemnitve zaslona. Če je pravilnik onemogočen, pametni model zatemnitve na zatemnitev zaslona ne vpliva.</translation>
 <translation id="6972540544240464302">Izbira konfiguracije sistema za razporejanje opravil</translation>
-<translation id="6979158407327259162">Google Drive</translation>
 <translation id="6994082778848658360">Določa, kako lahko vgrajena strojna oprema za varnostni element zagotovi dvojno preverjanje pristnosti, če je združljiva s to funkcijo. Gumb za vklop na računalniku zazna fizično prisotnost uporabnika.
 
       Če je izbrana možnost »Onemogočeno«, dvojno preverjanje ni zagotovljeno.
@@ -3100,6 +3022,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je izbrana možnost »U2F«, se integrirano dvojno preverjanje uporablja v skladu z določitvijo FIDO U2F.
 
       Če je izbrana možnost »U2F_EXTENDED«, integrirano dvojno preverjanje zagotovi funkcije U2F in nekatere razširitve za posamezno potrditev.</translation>
+<translation id="6997592395211691850">Ali so potrebna spletna preverjanja OCSP/CRL za lokalna sidra zaupanja?</translation>
 <translation id="7003334574344702284">Če je pravilnik omogočen, se shranjena gesla uvozijo iz prejšnjega privzetega brskalnika. Če je pravilnik omogočen, vpliva tudi na pogovorno okno za uvoz.
 
       Če je onemogočen, se shranjena gesla ne uvozijo.
@@ -3335,6 +3258,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7339315111520512972">Vsili izvajanje omrežne kode v procesu brskalnika</translation>
 <translation id="7340034977315324840">Pošiljanje podatkov o času dejavnosti v napravi</translation>
 <translation id="7343497214039883642">Datoteka s konfiguracijami tiskalnikov v podjetjih za naprave</translation>
+<translation id="7349338075015720646">Določa seznam spletnih aplikacij, ki se namestijo brez obveščanja in brez poseganja uporabnika ter ki jih uporabnik ne more ne odstraniti ne onemogočiti.
+
+      Vsak element na seznamu pravilnika je predmet z dvema členoma: »url« in »launch_container«. »url« mora biti URL spletne aplikacije za namestitev, »launch_container« pa »window« (okno) ali »tab« (zavihek), s čimer je nakazano, kako se bo spletna aplikacija odprla po namestitvi. Če »launch_container« izpustite, se bo aplikacija zagnala v oknu, če jo bo Chrome obravnaval kot moderno spletno aplikacijo, v nasprotnem primeru pa na zavihku.</translation>
 <translation id="735902178936442460">Ta pravilnik nadzira, ali se sporočajo podatki, s katerimi je mogoče prepoznati naprave, na primer ime naprave in omrežni naslovi.
 
       Če ta pravilnik ni nastavljen ali je omogočen, se zbirajo podatki, s katerimi je mogoče prepoznati naprave.
@@ -3353,10 +3279,15 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če ta pravilnik ni nastavljen ali je onemogočen, je funkcija <ph name="TLS_FALSE_START" /> omogočena. Če je omogočen, je funkcija <ph name="TLS_FALSE_START" /> onemogočena.</translation>
 <translation id="7433714841194914373">Omogoči Dinamično iskanje</translation>
 <translation id="7434202861148928348">Konfiguriranje imen domene, potrebnih za odjemalce za oddaljeni dostop</translation>
+<translation id="7443061725198440541">Če ta pravilnik ni nastavljen ali omogočen, uporabnik lahko uporablja preverjanje črkovanja.
+
+      Če je ta pravilnik onemogočen, uporabnik ne more uporabljati preverjanja črkovanja. Pri tem je prezrt tudi pravilnik SpellcheckLanguage.
+      </translation>
 <translation id="7443616896860707393">Ukazni pozivi HTTP Basic Auth iz več izvorov</translation>
 <translation id="7458437477941640506">Brez povrnitve na ciljno različico, če je različica operacijskega sistema novejša kot ciljna. Onemogočene so tudi posodobitve.</translation>
 <translation id="7464991223784276288">Omejitev piškotkov z ujemajočih se URL-jev na trenutno sejo</translation>
 <translation id="7469554574977894907">Omogoči predloge za iskanje</translation>
+<translation id="7474249562477552702">Ali so dovoljena potrdila, podpisana z algoritmom SHA-1, ki jih izdajo lokalna sidra zaupanja</translation>
 <translation id="7485481791539008776">Pravila za izbiro privzetega tiskalnika</translation>
 <translation id="7485730741952775732">Če je ta pravilnik nastavljen, bo gostitelj za oddaljeni dostop na tem URL-ju preverjal žetone za preverjanje pristnosti odjemalcev za oddaljeni dostop, da lahko sprejme povezave. Uporabljati ga je treba v povezavi s pravilnikom RemoteAccessHostTokenUrl.
 
@@ -3370,11 +3301,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če se uporablja ta pravilnik, so uporabniku na voljo vsi tiskalniki z izjemo ID-jev, navedenih v tem pravilniku. ID-ji morajo ustrezati polju »id« ali »guid« v datoteki, določeni v pravilniku <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="7506269062143646163">Omogoča podporo za podpisano izmenjavo HTTP (SXG).
-
-          Če ta pravilnik ni nastavljen ali je omogočen, bo Google Chrome sprejemal spletno vsebino, prikazano kot podpisane izmenjave HTTP.
-
-          Če je ta pravilnik onemogočen, podpisanih izmenjav HTTP ni mogoče naložiti.</translation>
 <translation id="7511361072385293666">Če je ta pravilnik omogočen ali ni nastavljen, je uporaba protokola QUIC v brskalniku <ph name="PRODUCT_NAME" /> dovoljena.
       Če je ta pravilnik onemogočen, uporaba protokola QUIC ni dovoljena.</translation>
 <translation id="7517845714620372896">Določa odstotek svetlosti zaslona.
@@ -3521,17 +3447,17 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Prepoznani identifikatorji vrste povezav so »ethernet«, »wifi«, »wimax«, »bluetooth« in »cellular«.</translation>
 <translation id="7763614521440615342">Prikaz predlogov vsebine na novem zavihku s povezavami</translation>
 <translation id="7765879851993224640">Omogočanje uporabe prijave s funkcijo Smart Lock.</translation>
-<translation id="7772346342637974431">Določa trajanje uporabnikove nedejavnosti, po preteku katere je prikazano opozorilno pogovorno okno, če se naprava napaja iz akumulatorja.
-
-          Če je ta pravilnik nastavljen, določa trajanje, med katerim mora biti uporabnik nedejaven, preden sistem <ph name="PRODUCT_OS_NAME" /> prikaže opozorilno pogovorno okno, ki uporabnika obvesti, da se bo izvedlo dejanje ob nedejavnosti.
-
-          Če ta pravilnik ni nastavljen, ni prikazano opozorilno pogovorno okno.
-
-          Vrednost pravilnika mora biti navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik nedejavnosti.
-
-          Opozorilno sporočilo je prikazano samo, če je dejanje ob nedejavnosti odjava ali izklop.</translation>
 <translation id="7774768074957326919">Uporaba sistemskih nastavitev proxyja</translation>
+<translation id="7775831859772431793">Tu lahko določite URL strežnika proxy.
+
+          Ta pravilnik velja samo, če ste v razdelku »Izberite, kako določiti nastavitve strežnika proxy« izbrali ročne nastavitve.
+
+          Če ste izbrali drug način nastavljanja pravilnikov za strežnik proxy, tega pravilnika ne nastavljajte.
+
+          Več o drugih možnostih in podrobnejše primere najdete na:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7777535871204167559">Zunanje naprave za shranjevanje naj bodo samo za branje</translation>
+<translation id="7781069478569868053">Nov zavihek s povezavami</translation>
 <translation id="7788511847830146438">Za profil</translation>
 <translation id="780603170519840350">Onemogoči uveljavljanje zahtev za preglednost potrdil za seznam zgoščevalnih vrednosti subjectPublicKeyInfo.
 
@@ -3558,6 +3484,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Z nastavitvijo tega pravilnika se preglasi privzeta vrednost 5000 ms. Veljavne vrednosti za ta pravilnik so med 1000 (1 sekunda) do 300.000 (5 minut). Vrednosti, ki niso v tem obsegu, bodo spremenjene na ustrezno mejo obsega.
       Če tega pravilnika ne nastavite, bo <ph name="PRODUCT_NAME" /> uporabil privzeto vrednost 5000 ms.</translation>
 <translation id="7841880500990419427">Najnižja različica TLS-ja za rezervno uporabo</translation>
+<translation id="7842869978353666042">Konfigurira možnosti storitve Google Drive</translation>
 <translation id="7858404742201086014">Če to nastavitev omogočite, se zastareli vtičniki uporabljajo kot običajni.
 
       Če jo onemogočite, zastareli vtičniki ne bodo uporabljeni in uporabniki ne bodo vprašani za dovoljenje, da se jih izvede.
@@ -3577,11 +3504,18 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       OPOMBA: ta pravilnik je bil do različice 45 podprt samo v načinu kioska.</translation>
 <translation id="7912255076272890813">Konfiguracija dovoljenih vrst aplikacij/razširitev</translation>
+<translation id="7915236031252389808">Tu lahko določite URL za datoteko .pac strežnika proxy.
+
+          Ta pravilnik velja le, če ste v razdelku »Izberite, kako določiti nastavitve strežnika proxy« izbrali ročne nastavitve.
+
+         Če ste za nastavitve pravilnika za strežnik proxy izbrali drug način, tega pravilnika ne nastavljajte.
+
+          Če želite podrobnejše primere, obiščite:
+          <ph name="PROXY_HELP_URL" /></translation>
 <translation id="7922358664346625612">Ohrani zadnji zavihek odprt v Chromu.</translation>
 <translation id="793134539373873765">Določa, ali se za prenos posodobitvenih paketov operacijskega sistema uporablja p2p. Če je nastavljeno na »True«, naprave dajo posodobitvene pakete v skupno rabo v krajevnem omrežju in jih poskušajo uporabiti ter s tem morebiti zmanjšati uporabo internetne pasovne širine in zamašitve. Če posodobitveni paket ni na voljo v krajevnem omrežju, ga naprava poskuša prenesti iz posodobitvenegea strežnika. Če je nastavljeno na »False« ali ni nastavljeno, se uporabi p2p.</translation>
 <translation id="7933141401888114454">Omogoči ustvarjanje zaščitenih uporabnikov</translation>
 <translation id="793473937901685727">Nastavitev razpoložljivosti potrdil aplikacijam ARC</translation>
-<translation id="7937491150792971922">Združevanje pravilnikov o seznamu namestitev razširitev iz več virov</translation>
 <translation id="7937766917976512374">Omogočanje ali onemogočanje snemanje videoposnetka</translation>
 <translation id="7941975817681987555">Ne predvidevaj omrežnih dejanj v nobeni omrežni povezavi</translation>
 <translation id="7952958573604504839">Ta pravilnik je zastarel in nadomeščen s pravilnikom <ph name="NETWORK_PREDICTION_OPTIONS_POLICY_NAME" /> v različici M48. Odstranjen je v različici M54.
@@ -3806,6 +3740,12 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
       Če je ta pravilnik onemogočen, statistični podatki ne bodo poslani.
       Če je ta pravilnik omogočen ali ni nastavljen, bodo statistični podatki poslani.</translation>
+<translation id="8377433219608936819">
+      Če je pravilnik nastavljen na »true«, ima v primeru spora s pravilnikom računalnika prednost pravilnik oblaka.
+      Če je pravilnik nastavljen na »false« ali ni nastavljen, ima v primeru spora s pravilnikom oblaka prednost pravilnik računalnika.
+      Če želite več podrobnosti o prednostih pravilnikov, obiščite: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      Ta pravilnik je na voljo samo v primerkih s sistemom Windows, ki so pridruženi v domeno <ph name="MS_AD_NAME" />, ali primerkih s sistemom Windows 10 Pro ali Enterprise, ki so včlanjeni v upravljanje naprav.</translation>
 <translation id="8380490658357556620">Omogoča uporabo posredovalnih strežnikov, ko oddaljeni odjemalci poskušajo vzpostaviti povezavo s tem računalnikom.
 
           Če je ta nastavitev omogočena, lahko oddaljeni odjemalci uporabijo posredovalne strežnike za povezovanje s tem računalnikom, tudi ko neposredna povezava ni na voljo (na primer zaradi omejitve s požarnim zidom).
@@ -3827,6 +3767,7 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
       Več informacij o pravilniku <ph name="IEEM_SITELIST_POLICY" /> za Internet Explorer je na voljo tukaj: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="8402079500086185021">Vedno odpri datoteke PDF v zunanjem pregledovalniku</translation>
+<translation id="8412312801707973447">Ali se izvaja spletni pregled OCSP/CRL</translation>
 <translation id="8417305981081876834">Nastavi največjo dolžino kode PIN za zaklenjen zaslon</translation>
 <translation id="841977920223099909">Sprožilec opozorila zaščite z geslom</translation>
 <translation id="8424255554404582727">Nastavitev privzetega sukanja zaslona, ki se znova uveljavi pri vsakem vnovičnem zagonu</translation>
@@ -3894,9 +3835,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="8548832052135586762">Nastavi tiskanje na samo barvno, samo enobarvno ali brez omejitve barv. Če pravilnik ni nastavljen, ni omejitve.</translation>
 <translation id="8549772397068118889">Opozori pri odpiranju spletnih mest zunaj paketov vsebine</translation>
 <translation id="8566842294717252664">Skrivanje spletne trgovine na novem zavihku s povezavami in v zaganjalniku aplikacij</translation>
-<translation id="8569734380847633643">
-          Če je pravilnik onemogočen, bo operacijski sistem <ph name="PRODUCT_OS_NAME" /> onemogočil povezavo Wi-Fi in uporabniki je ne bodo mogli omogočiti.
-          Če je pravilnik omogočen ali ni nastavljen, bodo uporabniki lahko po želji omogočili ali onemogočili povezavo Wi-Fi.</translation>
 <translation id="857369585509260201">Ta pravilnik je zastarel, namesto njega lahko uporabite BrowserSignin.
 
       Če je ta pravilnik omogočen, se mora uporabnik s svojim profilom prijaviti v brskalnik <ph name="PRODUCT_NAME" />, preden ga lahko uporablja. Privzeta vrednost za pravilnik BrowserGuestModeEnabled bo nastavljena na onemogočeno. Po omogočanju tega pravilnika bodo obstoječi neprijavljeni profili zaklenjeni in nedostopni. Če želite več informacij, preberite članek centra za pomoč.
@@ -3956,13 +3894,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="8685024486845674965">Opozorilo zaščite z geslom sproži vnovična uporaba gesla</translation>
 <translation id="8693243869659262736">Uporaba vgrajenega odjemalca DNS</translation>
 <translation id="8703488928438047864">Poročanje o stanju plošče</translation>
-<translation id="8703872185032220081">Nastavitev dnevne konfiguracije funkcije preklopa na akumulatorsko napajanje ob konicah.
-
-          Ta pravilnik se uporablja samo, če je omogočen pravilnik DevicePowerPeakShiftEnabled.
-
-          Če ta pravilnik ni konfiguriran ali nastavljen, je funkcija preklopa na akumulatorsko napajanje ob konicah vedno onemogočena.
-
-          Opomba: dovoljene vrednosti za polje <ph name="MINUTE_FIELD_NAME" /> v poljih <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> in <ph name="CHARGE_START_TIME_FIELD_NAME" /> so 0, 15, 30, 45.</translation>
 <translation id="8704831857353097849">Seznam onemogočenih vtičnikov</translation>
 <translation id="8711086062295757690">Določa ključno besedo, ki kot bližnjica v naslovni vrstici sproži iskanje za tega ponudnika.
 
@@ -3991,7 +3922,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Če ta nastavitev ni omogočena ali nastavljena, je zgodovino brskanja in zgodovino prenosov mogoče izbrisati
 
       Če je ta nastavitev onemogočena, zgodovine brskanja in zgodovine prenosov ni mogoče izbrisati.</translation>
-<translation id="8757552286070680084">Konfiguracija orodja wilco DTC</translation>
 <translation id="8758831693895931466">Omogočanje obvezne včlanitve v upravljanje v oblaku</translation>
 <translation id="8759829385824155666">Dovoljene vrste šifriranja Kerberos</translation>
 <translation id="8764119899999036911">Določa, ali ustvarjeni SPN za Kerberos temelji na kanoničnem imenu DNS ali na vnesenem izvirnem imenu.
@@ -4014,29 +3944,12 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="8818768076343557335">Predvidevanje omrežnih dejanj v katerem koli omrežju, ki ni mobilno.
           (Zastarelo v različici 50, odstranjeno v različici 52. Če je vrednost 1 nastavljena, bo po različici 52 obravnavana kot 0 – predvidevanje omrežnih dejanj v poljubni omrežni povezavi.)</translation>
 <translation id="8825782996899863372">Opozorilo zaščite z geslom sproži vnovična uporaba gesla na spletnem mestu z lažnim predstavljanjem</translation>
+<translation id="8828766846428537606">Nastavi privzeto domačo stran za <ph name="PRODUCT_NAME" /> in prepreči, da bi jo uporabniki spreminjali.
+
+      Nastavitve domače strani uporabnika so popolnoma zaklenjene, če nastavite, da je domača stran nov zavihek s povezavami oziroma izberete URL za domačo stran. Če ne navedete URL-ja domače strani, bo lahko uporabnik z ukazom »chrome://newtab« še vedno nastavil, da je domača stran nov zavihek s povezavami.</translation>
 <translation id="8833109046074170275">Preverjanje pristnosti prek običajne prijave GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> predpomni aplikacije in razširitve za namestitev za več uporabnikov posamezne naprave, tako jih ni treba prenašati znova za posameznega uporabnika.
       Če ta pravilnik ni nastavljen ali je vrednost nižja od 1 MB, bo sistem <ph name="PRODUCT_OS_NAME" /> uporabil privzeto velikost predpomnilnika.</translation>
-<translation id="8851325571441692315">Omogoča izbiro strežnika proxy, ki naj ga uporablja <ph name="PRODUCT_NAME" />, in uporabnikom prepreči spreminjanje nastavitev strežnika proxy.
-
-          Ta pravilnik ima vpliv samo, če pravilnik <ph name="PROXY_SETTINGS_POLICY_NAME" /> ni določen.
-
-          Če izberete, da se strežnik proxy nikoli ne uporablja in se vedno vzpostavi neposredna povezava, so vse druge možnosti prezrte.
-
-          Če izberete sistemske nastavitve strežnika proxy, so vse druge možnosti prezrte.
-
-          Če izberete samodejno zaznavanje strežnika proxy, so vse druge možnosti prezrte.
-
-          Če izberete fiksni način strežnika proxy, lahko v možnostih »Naslov ali URL strežnika proxy« in »Seznam pravil za obvod strežnika proxy, ločenih z vejicami« izberete dodatne nastavitve. Za aplikacije ARC je na voljo samo strežnik proxy HTTP z največjo prednostjo.
-
-          Če za strežnik proxy izberete uporabo skripta .pac, morate v možnosti »URL datoteke .pac za strežnik proxy« navesti URL skripta.
-
-          Podrobne primere si lahko ogledate tukaj:
-          <ph name="PROXY_HELP_URL" />.
-
-          Če omogočite to nastavitev, <ph name="PRODUCT_NAME" /> in aplikacije ARC prezrejo vse možnosti, povezane s strežnikom proxy, navedene v ukazni vrstici.
-
-          Če ta pravilnik ni nastavljen, lahko uporabniki sami izberejo nastavitve strežnika proxy.</translation>
 <translation id="8858642179038618439">Vsiljenje varnega načina v YouTubu</translation>
 <translation id="8860342862142842017">Onemogoči uveljavljanje preglednosti potrdila za seznam zgoščevalnih vrednosti subjectPublicKeyInfo</translation>
 <translation id="8864975621965365890">Ne prikaže poziva za preklop, ki se prikaže, ko se spletno mesto upodablja z <ph name="PRODUCT_FRAME_NAME" />.</translation>
@@ -4049,8 +3962,18 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Če omogočite ali onemogočite to nastavitev, uporabniki ne morejo spremeniti ali preglasiti te nastavitve v brskalniku <ph name="PRODUCT_NAME" />.
 
       Če te nastavitve ne določite, se lahko uporabnik odloči, ali bo uporabljal to funkcijo.</translation>
+<translation id="8870318296973696995">Domača stran</translation>
 <translation id="8876188741456358123">Preglasi privzeti način obojestranskega tiskanja. Če način ni na voljo, je ta pravilnik prezrt.</translation>
 <translation id="8882006618241293596">Blokiraj vtičnik <ph name="FLASH_PLUGIN_NAME" /> na teh spletnih mestih</translation>
+<translation id="890403179930035128">Vsili preverjanja črkovanja jezikov. Neprepoznani jeziki na tem seznamu so prezrti.
+
+      Če omogočite ta pravilnik, je preverjanje črkovanja omogočeno za navedene jezike poleg jezikov, za katere je uporabnik omogočil preverjanje črkovanja.
+
+      Če ne nastavite tega pravilnika ali ga onemogočite, ni sprememb uporabnikovih nastavitev preverjanja črkovanja.
+
+      Če je pravilnik SpellcheckEnabled onemogočen, ta pravilnik nima učinka.
+
+      Za zdaj so podprti ti jeziki: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk, vi.</translation>
 <translation id="8906768759089290519">Omogoči način gosta</translation>
 <translation id="8908294717014659003">Omogoča nastavitev, ali je spletnim mestom dovoljen dostop do naprav za snemanje predstavnosti. Dostop do naprav za snemanje predstavnosti je lahko privzeto dovoljen ali pa uporabnik dobi poziv, kadar koli spletno mesto želi dostop do naprav za snemanje predstavnosti.
 
@@ -4100,7 +4023,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Več informacij o varnih kontekstih je na voljo na
       https://www.w3.org/TR/secure-contexts/
       </translation>
-<translation id="8939595959513040470">Posredovanje delovne različice Quick Fixa uporabnikom.</translation>
 <translation id="8942616385591203339">Ta pravilnik nadzira, ali je soglasje za sinhronizacijo lahko prikazano uporabniku med prvo prijavo. Če soglasja za sinhronizacijo ne potrebujete za uporabnika, mora biti pravilnik onemogočen.
       Če je onemogočen, soglasje za sinhronizacijo ne bo prikazano.
       Če je omogočen ali ni nastavljen, je soglasje za sinhronizacijo mogoče prikazati.</translation>
@@ -4160,10 +4082,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
       Če tega pravilnika ne nastavite, lahko uporabnik izbere sliko za avatar, ki ga predstavlja na zaslonu za prijavo.</translation>
 <translation id="9035964157729712237">ID-ji razširitev, ki naj bodo izvzete s seznama prepovedanih</translation>
-<translation id="9038058011835642205">Določa seznam spletnih mest, ki so nameščene brez obveščanja in poseganja uporabnika ter jih uporabnik ne more odmestiti ali onemogočiti.
-
-      Vsak element na seznamu pravilnika je predmet z obveznim članom, »url«, in dvema neobveznima članoma, »default_launch_container« in »create_desktop_shortcut«. »url« mora biti URL spletne aplikacije za namestitev, »launch_container« mora biti »window« ali »tab«, ki pokaže, kako naj se spletna aplikacija po namestitvi odpira, član »create_desktop_shortcut« pa mora biti nastavljen na »true«, če naj bo bližnjica na namizju ustvarjena v sistemih Linux in Windows. Če je izpuščen član »default_launch_container«, se aplikacija privzeto odpira na zavihku. Ne glede na vrednost člana »default_launch_container« uporabniki lahko spremenijo, v katerem vsebniku se bo odpirala aplikacija. Če je izpuščen član »create_desktop_shortcuts«, bližnjice na namizju ne bodo ustvarjene.</translation>
-<translation id="9038839118379817310">Omogočanje povezave Wi-Fi</translation>
 <translation id="9039822628127365650">Če je ta pravilnik nastavljen, določa dolžino časa, po katerem je uporabnik samodejno odjavljen, seja pa se konča. Uporabnik je obveščen o preostalem času s časovnikom, prikazanem v sistemski vrstici.
 
       Če ta pravilnik ni nastavljen, dolžina seje ni omejena.
@@ -4172,11 +4090,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 
       Vrednost pravilnika mora biti navedena v milisekundah. Vrednosti so v obsegu od 30 sekund do 24 ur.</translation>
 <translation id="9042911395677044526">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja glede na uporabnika, v napravo s sistemom <ph name="PRODUCT_OS_NAME" />. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisane na <ph name="ONC_SPEC_URL" /></translation>
-<translation id="9050853837490399534">Ta pravilnik nadzira, ali naj bo naprava posodobljena na delovno različico Quick Fixa.
-
-      Če je vrednost pravilnika nastavljena na žeton, ki preslika v delovno različico Quick Fixa, bo naprava posodobljena na ustrezno delovno različico Quick Fixa, če posodobitve ne blokira drug pravilnik.
-
-      Če ta pravilnik ni nastavljen ali njegova vrednost ne preslika v delovno različico Quick Fixa, naprava ne bo posodobljena na delovno različico Quick Fixa. Če naprava že uporablja delovno različico Quick Fixa in pravilnik ni več nastavljen ali njegova vrednost ne preslika več v delovno različico Quick Fixa, bo naprava posodobljena v običajno različico, če posodobitve ne blokira drug pravilnik.</translation>
 <translation id="906631898352326790">
       Če je pravilnik omogočen, se bo vsak naveden izvor s
       seznama, ločenega z vejicami, izvajal v svojem procesu. S tem bodo osamljeni tudi
@@ -4205,6 +4118,31 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="9094064873808699479">Povrnite na ciljno različico in ostanite na njej, če je različica operacijskega sistema novejša kot ciljna. S povrnitvijo pokusite prenesti konfiguracijo na ravni naprave (vključno z omrežnimi poverilnicami), če je to mogoče, vendar ne izvedite povrnitve s popolnim Powerwashem, tudi če obnovitev podatkov ni mogoča (ker ciljna različica ne podpira obnovitve podatkov ali zaradi spremembe, ki ni združljiva s prejšnjo različico).
           Podprto v brskalniku <ph name="PRODUCT_OS_NAME" /> različice 70 in novejših. Pri starejših odjemalcih ta vrednost pomeni, da je povrnitev onemogočena.</translation>
 <translation id="9096086085182305205">Seznam dovoljenih strežnikov za preverjanje pristnosti</translation>
+<translation id="9098553063150791878">Pravilniki za preverjanje pristnosti HTTP</translation>
+<translation id="9103061223348895346">Ta pravilnik nadzira različne nastavitve za strategijo upravljanja energije, ko uporabnik postane nedejaven.
+
+          Obstajajo štiri vrste dejanj:
+          * Če je uporabnik nedejaven toliko časa, kot določa |ScreenDim|, se zaslon zatemni.
+          * Če je uporabnik nedejaven toliko časa, kot določa |ScreenOff|, se zaslon izklopi.
+          * Če je uporabnik nedejaven toliko časa, kot določa |IdleWarning|, se prikaže opozorilno pogovorno okno, ki uporabnika obvesti, da se bo izvedlo dejanje zaradi nedejavnosti.
+          * Če je uporabnik nedejaven toliko časa, kot določa |Idle|, se bo izvedlo dejanje, ki ga določa |IdleAction|.
+
+          Za vsako od navedenih dejanj mora biti zakasnitev navedena v milisekundah, ustrezno dejanje pa se bo sprožilo samo, če je nastavljena vrednost, večja od nič. Če je zakasnitev nastavljena na nič, <ph name="PRODUCT_OS_NAME" /> ne bo izvedel ustreznega dejanja.
+
+          Če za navedene zakasnitve trajanje ni določeno, bo uporabljena privzeta vrednost.
+
+          Upoštevajte, da morajo biti vrednosti za |ScreenDim| manjše ali enake kot vrednosti za |ScreenOff|, vrednosti za |ScreenOff| in |IdleWarning| pa manjše ali enake kot za |Idle|.
+
+          |IdleAction| je lahko eno od štirih dejanj:
+          * |Suspend| (prekinitev)
+          * |Logout| (odjava)
+          * |Shutdown| (zaustavitev)
+          * |DoNothing| (ne naredi ničesar)
+
+          Če vrednost za |IdleAction| ni nastavljena, se bo izvedlo privzeto dejanje, ki je prekinitev.
+
+          Obstajajo tudi ločene nastavitve za napajanje iz električnega omrežja in akumulatorja.
+          </translation>
 <translation id="9105265795073104888">Aplikacijam za Android je dan na voljo samo podnabor nastavitev strežnika proxy. Aplikacije za Android se lahko prostovoljno odločijo, da bodo uporabljale strežnik proxy. V to jih ni mogoče prisiliti.</translation>
 <translation id="9106865192244721694">Omogočanje WebUSB-ja na teh spletnih mestih</translation>
 <translation id="9112727953998243860">Datoteka s konfiguracijami tiskalnikov v podjetjih</translation>
@@ -4263,6 +4201,13 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Če je pravilnik onemogočen, možnost za glave in noge v pogovornem oknu za predogled tiskanja ni izbrana in uporabnik tega ne more spremeniti.
 
       Če je pravilnik omogočen, je možnost za glave in noge v pogovornem oknu za predogled tiskanja izbrana in uporabnik tega ne more spremeniti.</translation>
+<translation id="9210953373038593554">Konfigurira vrsto preverjanja pristnosti za prijave SAML.
+
+      Če ta pravilnik ni nastavljen ali je nastavljen na Default (privzeto, vrednost 0), delovanje prijav SAML določi brskalnik glede na druge dejavnike. V najbolj osnovnem scenariju preverjanje pristnosti uporabnikov in zaščita predpomnjenih uporabniških podatkov temeljita na geslih, ki jih uporabniki ročno vnesejo.
+
+      Če je ta pravilnik nastavljen na ClientCertificate (potrdilo odjemalca, vrednost 1), se preverjanje pristnosti odjemalca uporabi za novo dodane uporabnike, ki se prijavljajo prek SAML-ja. Za take uporabnike se ne uporabljajo gesla in njihovi predpomnjeni lokalni podatki so zaščiteni z ustreznimi kriptografski ključi. Ta nastavitev na primer omogoča konfiguriranje preverjanja pristnosti uporabnikov s pametnimi karticami (nameščene morajo biti aplikacije za pametne kartice prek pravilnika DeviceLoginScreenAppInstallList).
+
+      Ta pravilnik vpliva samo na uporabnike, katerih pristnost se preverja z uporabo SAML-ja.</translation>
 <translation id="9213347477683611358">Konfiguriranje slike za ozadje na ravni naprave, ki je prikazana na zaslonu za prijavo, če ni v napravi prijavljen še noben uporabnik. Pravilnik se nastavi z določanjem URL-ja, s katerega lahko naprava OS Chrome prenese sliko za ozadje, in kriptografske razpršilne vrednosti za preverjanje celovitosti prenosa. Slika mora biti v obliki JPEG in njena velikost ne sme presegati 16 MB. URL mora biti dostopen brez preverjanja pristnosti. Slika za ozadje se prenese in shrani v predpomnilnik. Ob vsaki spremembi URL-ja ali razpršilne vrednosti se znova prenese.
 
       Pravilnik mora biti določen kot niz, ki izraža URL in razpršilno vrednost v obliki JSON, npr.
@@ -4277,15 +4222,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
 <translation id="9217154963008402249">Pogostost omrežnih paketov za spremljanje</translation>
 <translation id="922540222991413931">Konfiguriranje virov za namestitev razširitev, aplikacij in uporabniških skriptov</translation>
 <translation id="924557436754151212">Uvoz shranjenih gesel privzetega brskalnika pri prvem zagonu</translation>
-<translation id="926146562923985266">Ta pravilnik nadzira ukaz za odpiranje URL-jev v brskalniku <ph name="PRODUCT_NAME" /> pri preklopu iz Internet Explorerja.
-
-      Če dodatek za Internet Explorer »Podpora za starejše brskalnike« ni nameščen, ta pravilnik nima vpliva.
-
-      Če ta pravilnik ni nastavljen, Internet Explorer pri zagonu brskalnika <ph name="PRODUCT_NAME" /> iz Internet Explorerja samodejno zazna pot do izvedljive datoteke brskalnika <ph name="PRODUCT_NAME" />.
-
-      Če je ta pravilnik nastavljen, se uporablja za zagon brskalnika <ph name="PRODUCT_NAME" /> pri zagonu brskalnika <ph name="PRODUCT_NAME" /> iz Internet Explorerja.
-
-      Ta pravilnik je mogoče nastaviti na pot do izvedljive datoteke ali na ${chrome} za samodejno zaznavanje Chromove lokacije za namestitev.</translation>
 <translation id="930930237275114205">Nastavi imenik uporabniških podatkov za <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="943865157632139008">Omogoča nastavitev privzetega upodabljalnika HTML-ja, ko je nameščen <ph name="PRODUCT_FRAME_NAME" />.
           Privzeta nastavitev je, da upodabljanje izvaja gostiteljski brskalnik, vendar lahko to preglasite in določite, da <ph name="PRODUCT_FRAME_NAME" /> privzeto upodablja strani HTML.</translation>

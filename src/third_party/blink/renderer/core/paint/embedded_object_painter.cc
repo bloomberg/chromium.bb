@@ -26,7 +26,7 @@ static const float kReplacementTextTextOpacity = 0.55f;
 
 static Font ReplacementTextFont() {
   FontDescription font_description;
-  LayoutTheme::GetTheme().SystemFont(CSSValueID::kWebkitSmallControl,
+  LayoutTheme::GetTheme().SystemFont(CSSValueWebkitSmallControl,
                                      font_description);
   font_description.SetWeight(BoldWeightValue());
   font_description.SetComputedSize(font_description.SpecifiedSize());

@@ -21,6 +21,7 @@
 #include "dawn_native/opengl/ComputePipelineGL.h"
 #include "dawn_native/opengl/DeviceGL.h"
 #include "dawn_native/opengl/Forward.h"
+#include "dawn_native/opengl/InputStateGL.h"
 #include "dawn_native/opengl/PersistentPipelineStateGL.h"
 #include "dawn_native/opengl/PipelineLayoutGL.h"
 #include "dawn_native/opengl/RenderPipelineGL.h"
@@ -46,44 +47,22 @@ namespace dawn_native { namespace opengl {
 
         GLenum VertexFormatType(dawn::VertexFormat format) {
             switch (format) {
-                case dawn::VertexFormat::UChar2:
-                case dawn::VertexFormat::UChar4:
-                case dawn::VertexFormat::UChar2Norm:
-                case dawn::VertexFormat::UChar4Norm:
-                    return GL_UNSIGNED_BYTE;
-                case dawn::VertexFormat::Char2:
-                case dawn::VertexFormat::Char4:
-                case dawn::VertexFormat::Char2Norm:
-                case dawn::VertexFormat::Char4Norm:
-                    return GL_BYTE;
-                case dawn::VertexFormat::UShort2:
-                case dawn::VertexFormat::UShort4:
-                case dawn::VertexFormat::UShort2Norm:
-                case dawn::VertexFormat::UShort4Norm:
-                    return GL_UNSIGNED_SHORT;
-                case dawn::VertexFormat::Short2:
-                case dawn::VertexFormat::Short4:
-                case dawn::VertexFormat::Short2Norm:
-                case dawn::VertexFormat::Short4Norm:
-                    return GL_SHORT;
-                case dawn::VertexFormat::Half2:
-                case dawn::VertexFormat::Half4:
-                    return GL_HALF_FLOAT;
-                case dawn::VertexFormat::Float:
-                case dawn::VertexFormat::Float2:
-                case dawn::VertexFormat::Float3:
-                case dawn::VertexFormat::Float4:
+                case dawn::VertexFormat::FloatR32G32B32A32:
+                case dawn::VertexFormat::FloatR32G32B32:
+                case dawn::VertexFormat::FloatR32G32:
+                case dawn::VertexFormat::FloatR32:
                     return GL_FLOAT;
-                case dawn::VertexFormat::UInt:
-                case dawn::VertexFormat::UInt2:
-                case dawn::VertexFormat::UInt3:
-                case dawn::VertexFormat::UInt4:
-                    return GL_UNSIGNED_INT;
-                case dawn::VertexFormat::Int:
-                case dawn::VertexFormat::Int2:
-                case dawn::VertexFormat::Int3:
-                case dawn::VertexFormat::Int4:
+                case dawn::VertexFormat::IntR32G32B32A32:
+                case dawn::VertexFormat::IntR32G32B32:
+                case dawn::VertexFormat::IntR32G32:
+                case dawn::VertexFormat::IntR32:
                     return GL_INT;
+                case dawn::VertexFormat::UshortR16G16B16A16:
+                case dawn::VertexFormat::UshortR16G16:
+                    return GL_UNSIGNED_SHORT;
+                case dawn::VertexFormat::UnormR8G8B8A8:
+                case dawn::VertexFormat::UnormR8G8:
+                    return GL_UNSIGNED_BYTE;
                 default:
                     UNREACHABLE();
             }
@@ -91,26 +70,11 @@ namespace dawn_native { namespace opengl {
 
         GLboolean VertexFormatIsNormalized(dawn::VertexFormat format) {
             switch (format) {
-                case dawn::VertexFormat::UChar2Norm:
-                case dawn::VertexFormat::UChar4Norm:
-                case dawn::VertexFormat::Char2Norm:
-                case dawn::VertexFormat::Char4Norm:
-                case dawn::VertexFormat::UShort2Norm:
-                case dawn::VertexFormat::UShort4Norm:
-                case dawn::VertexFormat::Short2Norm:
-                case dawn::VertexFormat::Short4Norm:
+                case dawn::VertexFormat::UnormR8G8B8A8:
+                case dawn::VertexFormat::UnormR8G8:
                     return GL_TRUE;
                 default:
                     return GL_FALSE;
-            }
-        }
-
-        GLint GetStencilMaskFromStencilFormat(dawn::TextureFormat depthStencilFormat) {
-            switch (depthStencilFormat) {
-                case dawn::TextureFormat::D32FloatS8Uint:
-                    return 0xFF;
-                default:
-                    UNREACHABLE();
             }
         }
 
@@ -198,7 +162,7 @@ namespace dawn_native { namespace opengl {
             void OnSetVertexBuffers(uint32_t startSlot,
                                     uint32_t count,
                                     Ref<BufferBase>* buffers,
-                                    uint64_t* offsets) {
+                                    uint32_t* offsets) {
                 for (uint32_t i = 0; i < count; ++i) {
                     uint32_t slot = startSlot + i;
                     mVertexBuffers[slot] = ToBackend(buffers[i].Get());
@@ -211,14 +175,15 @@ namespace dawn_native { namespace opengl {
             }
 
             void OnSetPipeline(RenderPipelineBase* pipeline) {
-                if (mLastPipeline == pipeline) {
+                InputStateBase* inputState = pipeline->GetInputState();
+                if (mLastInputState == inputState) {
                     return;
                 }
 
                 mIndexBufferDirty = true;
-                mDirtyVertexBuffers |= pipeline->GetInputsSetMask();
+                mDirtyVertexBuffers |= inputState->GetInputsSetMask();
 
-                mLastPipeline = pipeline;
+                mLastInputState = ToBackend(inputState);
             }
 
             void Apply() {
@@ -228,15 +193,15 @@ namespace dawn_native { namespace opengl {
                 }
 
                 for (uint32_t slot :
-                     IterateBitSet(mDirtyVertexBuffers & mLastPipeline->GetInputsSetMask())) {
+                     IterateBitSet(mDirtyVertexBuffers & mLastInputState->GetInputsSetMask())) {
                     for (uint32_t location :
-                         IterateBitSet(mLastPipeline->GetAttributesUsingInput(slot))) {
-                        auto attribute = mLastPipeline->GetAttribute(location);
+                         IterateBitSet(mLastInputState->GetAttributesUsingInput(slot))) {
+                        auto attribute = mLastInputState->GetAttribute(location);
 
                         GLuint buffer = mVertexBuffers[slot]->GetHandle();
-                        uint64_t offset = mVertexBufferOffsets[slot];
+                        uint32_t offset = mVertexBufferOffsets[slot];
 
-                        auto input = mLastPipeline->GetInput(slot);
+                        auto input = mLastInputState->GetInput(slot);
                         auto components = VertexFormatNumComponents(attribute.format);
                         auto formatType = VertexFormatType(attribute.format);
 
@@ -258,9 +223,9 @@ namespace dawn_native { namespace opengl {
 
             std::bitset<kMaxVertexInputs> mDirtyVertexBuffers;
             std::array<Buffer*, kMaxVertexInputs> mVertexBuffers;
-            std::array<uint64_t, kMaxVertexInputs> mVertexBufferOffsets;
+            std::array<uint32_t, kMaxVertexInputs> mVertexBufferOffsets;
 
-            RenderPipelineBase* mLastPipeline = nullptr;
+            InputState* mLastInputState = nullptr;
         };
 
         // Handles SetBindGroup commands with the specifics of translating to OpenGL texture and
@@ -313,67 +278,8 @@ namespace dawn_native { namespace opengl {
                         glBindBufferRange(GL_SHADER_STORAGE_BUFFER, ssboIndex, buffer,
                                           binding.offset, binding.size);
                     } break;
-
-                    // TODO(shaobo.yan@intel.com): Implement dynamic buffer offset.
-                    case dawn::BindingType::DynamicUniformBuffer:
-                    case dawn::BindingType::DynamicStorageBuffer:
-                        UNREACHABLE();
-                        break;
                 }
             }
-        }
-
-        void ResolveMultisampledRenderTargets(const BeginRenderPassCmd* renderPass) {
-            ASSERT(renderPass != nullptr);
-
-            GLuint readFbo = 0;
-            GLuint writeFbo = 0;
-
-            for (uint32_t i : IterateBitSet(renderPass->colorAttachmentsSet)) {
-                if (renderPass->colorAttachments[i].resolveTarget.Get() != nullptr) {
-                    if (readFbo == 0) {
-                        ASSERT(writeFbo == 0);
-                        glGenFramebuffers(1, &readFbo);
-                        glGenFramebuffers(1, &writeFbo);
-                    }
-
-                    const TextureBase* colorTexture =
-                        renderPass->colorAttachments[i].view->GetTexture();
-                    ASSERT(colorTexture->IsMultisampledTexture());
-                    ASSERT(colorTexture->GetArrayLayers() == 1);
-                    ASSERT(renderPass->colorAttachments[i].view->GetBaseMipLevel() == 0);
-
-                    GLuint colorHandle = ToBackend(colorTexture)->GetHandle();
-                    glBindFramebuffer(GL_READ_FRAMEBUFFER, readFbo);
-                    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                           ToBackend(colorTexture)->GetGLTarget(), colorHandle, 0);
-
-                    const TextureBase* resolveTexture =
-                        renderPass->colorAttachments[i].resolveTarget->GetTexture();
-                    GLuint resolveTextureHandle = ToBackend(resolveTexture)->GetHandle();
-                    GLuint resolveTargetMipmapLevel =
-                        renderPass->colorAttachments[i].resolveTarget->GetBaseMipLevel();
-                    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, writeFbo);
-                    if (resolveTexture->GetArrayLayers() == 1) {
-                        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                               GL_TEXTURE_2D, resolveTextureHandle,
-                                               resolveTargetMipmapLevel);
-                    } else {
-                        GLuint resolveTargetArrayLayer =
-                            renderPass->colorAttachments[i].resolveTarget->GetBaseArrayLayer();
-                        glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                                  resolveTextureHandle, resolveTargetMipmapLevel,
-                                                  resolveTargetArrayLayer);
-                    }
-
-                    glBlitFramebuffer(0, 0, renderPass->width, renderPass->height, 0, 0,
-                                      renderPass->width, renderPass->height, GL_COLOR_BUFFER_BIT,
-                                      GL_NEAREST);
-                }
-            }
-
-            glDeleteFramebuffers(1, &readFbo);
-            glDeleteFramebuffers(1, &writeFbo);
         }
     }  // namespace
 
@@ -503,22 +409,6 @@ namespace dawn_native { namespace opengl {
                     glDeleteFramebuffers(1, &readFBO);
                 } break;
 
-                case Command::CopyTextureToTexture: {
-                    CopyTextureToTextureCmd* copy =
-                        mCommands.NextCommand<CopyTextureToTextureCmd>();
-                    auto& src = copy->source;
-                    auto& dst = copy->destination;
-                    auto& copySize = copy->copySize;
-                    Texture* srcTexture = ToBackend(src.texture.Get());
-                    Texture* dstTexture = ToBackend(dst.texture.Get());
-
-                    glCopyImageSubData(srcTexture->GetHandle(), srcTexture->GetGLTarget(),
-                                       src.level, src.origin.x, src.origin.y, src.slice,
-                                       dstTexture->GetHandle(), dstTexture->GetGLTarget(),
-                                       dst.level, dst.origin.x, dst.origin.y, dst.slice,
-                                       copySize.width, copySize.height, 1);
-                } break;
-
                 default: { UNREACHABLE(); } break;
             }
         }
@@ -601,9 +491,8 @@ namespace dawn_native { namespace opengl {
 
                 // Attach color buffers.
                 if (textureView->GetTexture()->GetArrayLayers() == 1) {
-                    GLenum target = ToBackend(textureView->GetTexture())->GetGLTarget();
-                    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, target,
-                                           texture, textureView->GetBaseMipLevel());
+                    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
+                                           GL_TEXTURE_2D, texture, textureView->GetBaseMipLevel());
                 } else {
                     glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
                                               texture, textureView->GetBaseMipLevel(),
@@ -641,8 +530,8 @@ namespace dawn_native { namespace opengl {
                     glAttachment = GL_STENCIL_ATTACHMENT;
                 }
 
-                GLenum target = ToBackend(textureView->GetTexture())->GetGLTarget();
-                glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, glAttachment, target, texture, 0);
+                glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, glAttachment, GL_TEXTURE_2D, texture,
+                                       0);
 
                 // TODO(kainino@chromium.org): the depth/stencil clears (later in
                 // this function) may be undefined for other texture formats.
@@ -657,7 +546,6 @@ namespace dawn_native { namespace opengl {
 
                 // Load op - color
                 if (attachmentInfo.loadOp == dawn::LoadOp::Clear) {
-                    glColorMaski(i, true, true, true, true);
                     glClearBufferfv(GL_COLOR, i, &attachmentInfo.clearColor.r);
                 }
             }
@@ -672,14 +560,6 @@ namespace dawn_native { namespace opengl {
                                     (attachmentInfo.depthLoadOp == dawn::LoadOp::Clear);
                 bool doStencilClear = TextureFormatHasStencil(attachmentFormat) &&
                                       (attachmentInfo.stencilLoadOp == dawn::LoadOp::Clear);
-
-                if (doDepthClear) {
-                    glDepthMask(GL_TRUE);
-                }
-                if (doStencilClear) {
-                    glStencilMask(GetStencilMaskFromStencilFormat(attachmentFormat));
-                }
-
                 if (doDepthClear && doStencilClear) {
                     glClearBufferfi(GL_DEPTH_STENCIL, 0, attachmentInfo.clearDepth,
                                     attachmentInfo.clearStencil);
@@ -693,7 +573,7 @@ namespace dawn_native { namespace opengl {
         }
 
         RenderPipeline* lastPipeline = nullptr;
-        uint64_t indexBufferBaseOffset = 0;
+        uint32_t indexBufferBaseOffset = 0;
 
         PersistentPipelineState persistentPipelineState;
 
@@ -711,11 +591,6 @@ namespace dawn_native { namespace opengl {
             switch (type) {
                 case Command::EndRenderPass: {
                     mCommands.NextCommand<EndRenderPassCmd>();
-
-                    if (renderPass->sampleCount > 1) {
-                        ResolveMultisampledRenderTargets(renderPass);
-                    }
-
                     glDeleteFramebuffers(1, &fbo);
                     return;
                 } break;
@@ -742,24 +617,23 @@ namespace dawn_native { namespace opengl {
                     pushConstants.Apply(lastPipeline, lastPipeline);
                     inputBuffers.Apply();
 
-                    dawn::IndexFormat indexFormat =
-                        lastPipeline->GetInputStateDescriptor()->indexFormat;
+                    dawn::IndexFormat indexFormat = lastPipeline->GetIndexFormat();
                     size_t formatSize = IndexFormatSize(indexFormat);
                     GLenum formatType = IndexFormatType(indexFormat);
 
                     if (draw->firstInstance > 0) {
-                        glDrawElementsInstancedBaseVertexBaseInstance(
+                        glDrawElementsInstancedBaseInstance(
                             lastPipeline->GetGLPrimitiveTopology(), draw->indexCount, formatType,
                             reinterpret_cast<void*>(draw->firstIndex * formatSize +
                                                     indexBufferBaseOffset),
-                            draw->instanceCount, draw->baseVertex, draw->firstInstance);
+                            draw->instanceCount, draw->firstInstance);
                     } else {
                         // This branch is only needed on OpenGL < 4.2
-                        glDrawElementsInstancedBaseVertex(
+                        glDrawElementsInstanced(
                             lastPipeline->GetGLPrimitiveTopology(), draw->indexCount, formatType,
                             reinterpret_cast<void*>(draw->firstIndex * formatSize +
                                                     indexBufferBaseOffset),
-                            draw->instanceCount, draw->baseVertex);
+                            draw->instanceCount);
                     }
                 } break;
 
@@ -816,7 +690,7 @@ namespace dawn_native { namespace opengl {
                 case Command::SetVertexBuffers: {
                     SetVertexBuffersCmd* cmd = mCommands.NextCommand<SetVertexBuffersCmd>();
                     auto buffers = mCommands.NextData<Ref<BufferBase>>(cmd->count);
-                    auto offsets = mCommands.NextData<uint64_t>(cmd->count);
+                    auto offsets = mCommands.NextData<uint32_t>(cmd->count);
                     inputBuffers.OnSetVertexBuffers(cmd->startSlot, cmd->count, buffers, offsets);
                 } break;
 

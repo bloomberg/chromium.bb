@@ -22,7 +22,7 @@
 
 namespace webrtc {
 
-const float kStandardDPI = 96.0f;
+const int kStandardDPI = 96;
 
 // DesktopFrame represents a video frame captured from the screen.
 class RTC_EXPORT DesktopFrame {

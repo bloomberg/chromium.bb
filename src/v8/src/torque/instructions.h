@@ -30,9 +30,8 @@ class RuntimeFunction;
   V(DeleteRangeInstruction)           \
   V(PushUninitializedInstruction)     \
   V(PushBuiltinPointerInstruction)    \
-  V(CreateFieldReferenceInstruction)  \
-  V(LoadReferenceInstruction)         \
-  V(StoreReferenceInstruction)        \
+  V(LoadObjectFieldInstruction)       \
+  V(StoreObjectFieldInstruction)      \
   V(CallCsaMacroInstruction)          \
   V(CallIntrinsicInstruction)         \
   V(NamespaceConstantInstruction)     \
@@ -204,25 +203,22 @@ struct NamespaceConstantInstruction : InstructionBase {
   NamespaceConstant* constant;
 };
 
-struct CreateFieldReferenceInstruction : InstructionBase {
+struct LoadObjectFieldInstruction : InstructionBase {
   TORQUE_INSTRUCTION_BOILERPLATE()
-  CreateFieldReferenceInstruction(const ClassType* class_type,
-                                  std::string field_name)
+  LoadObjectFieldInstruction(const ClassType* class_type,
+                             std::string field_name)
       : class_type(class_type), field_name(std::move(field_name)) {}
   const ClassType* class_type;
   std::string field_name;
 };
 
-struct LoadReferenceInstruction : InstructionBase {
+struct StoreObjectFieldInstruction : InstructionBase {
   TORQUE_INSTRUCTION_BOILERPLATE()
-  explicit LoadReferenceInstruction(const Type* type) : type(type) {}
-  const Type* type;
-};
-
-struct StoreReferenceInstruction : InstructionBase {
-  TORQUE_INSTRUCTION_BOILERPLATE()
-  explicit StoreReferenceInstruction(const Type* type) : type(type) {}
-  const Type* type;
+  StoreObjectFieldInstruction(const ClassType* class_type,
+                              std::string field_name)
+      : class_type(class_type), field_name(std::move(field_name)) {}
+  const ClassType* class_type;
+  std::string field_name;
 };
 
 struct CallIntrinsicInstruction : InstructionBase {

@@ -361,7 +361,7 @@ TEST_F(InstantServiceTest, SetLocalImage) {
   base::FilePath path(profile_path.AppendASCII(
       chrome::kChromeSearchLocalNtpBackgroundFilename));
   base::WriteFile(path, "background_image", 16);
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 
   instant_service_->SelectLocalBackgroundImage(path);
   thread_bundle()->RunUntilIdle();
@@ -386,7 +386,7 @@ TEST_F(InstantServiceTest, SyncPrefOverridesLocalImage) {
   base::FilePath path(profile_path.AppendASCII(
       chrome::kChromeSearchLocalNtpBackgroundFilename));
   base::WriteFile(path, "background_image", 16);
-  base::ThreadPool::GetInstance()->FlushForTesting();
+  base::TaskScheduler::GetInstance()->FlushForTesting();
 
   instant_service_->SelectLocalBackgroundImage(path);
   thread_bundle()->RunUntilIdle();
@@ -493,47 +493,4 @@ TEST_F(InstantServiceThemeTest, DarkModeHandler) {
   thread_bundle()->RunUntilIdle();
 
   EXPECT_FALSE(theme_info.using_dark_mode);
-}
-
-TEST_F(InstantServiceTest, LocalImageDoesNotHaveAttribution) {
-  ASSERT_FALSE(instant_service_->IsCustomBackgroundSet());
-  const GURL kUrl("https://www.foo.com");
-  const std::string kAttributionLine1 = "foo";
-  const std::string kAttributionLine2 = "bar";
-  const GURL kActionUrl("https://www.bar.com");
-
-  sync_preferences::TestingPrefServiceSyncable* pref_service =
-      profile()->GetTestingPrefService();
-  SetUserSelectedDefaultSearchProvider("{google:baseURL}");
-  instant_service_->AddValidBackdropUrlForTesting(kUrl);
-  instant_service_->SetCustomBackgroundURLWithAttributions(
-      kUrl, kAttributionLine1, kAttributionLine2, kActionUrl);
-
-  ThemeBackgroundInfo* theme_info = instant_service_->GetInitializedThemeInfo();
-  ASSERT_EQ(kAttributionLine1,
-            theme_info->custom_background_attribution_line_1);
-  ASSERT_EQ(kAttributionLine2,
-            theme_info->custom_background_attribution_line_2);
-  ASSERT_EQ(kActionUrl, theme_info->custom_background_attribution_action_url);
-  ASSERT_TRUE(instant_service_->IsCustomBackgroundSet());
-
-  base::FilePath profile_path = profile()->GetPath();
-  base::FilePath path(profile_path.AppendASCII(
-      chrome::kChromeSearchLocalNtpBackgroundFilename));
-  base::WriteFile(path, "background_image", 16);
-  base::ThreadPool::GetInstance()->FlushForTesting();
-
-  instant_service_->SelectLocalBackgroundImage(path);
-  thread_bundle()->RunUntilIdle();
-
-  theme_info = instant_service_->GetInitializedThemeInfo();
-  EXPECT_TRUE(base::StartsWith(theme_info->custom_background_url.spec(),
-                               chrome::kChromeSearchLocalNtpBackgroundUrl,
-                               base::CompareCase::SENSITIVE));
-  EXPECT_TRUE(
-      pref_service->GetBoolean(prefs::kNtpCustomBackgroundLocalToDevice));
-  EXPECT_TRUE(instant_service_->IsCustomBackgroundSet());
-  EXPECT_EQ(std::string(), theme_info->custom_background_attribution_line_1);
-  EXPECT_EQ(std::string(), theme_info->custom_background_attribution_line_2);
-  EXPECT_EQ(GURL(), theme_info->custom_background_attribution_action_url);
 }

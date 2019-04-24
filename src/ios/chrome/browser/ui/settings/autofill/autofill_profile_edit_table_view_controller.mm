@@ -131,7 +131,7 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
   // In the case of server profiles, open the Payments editing page instead.
   if (_autofillProfile.record_type() ==
       autofill::AutofillProfile::SERVER_PROFILE) {
-    GURL paymentsURL = autofill::payments::GetManageAddressesUrl();
+    GURL paymentsURL = autofill::payments::GetManageAddressesUrl(0);
     OpenNewTabCommand* command =
         [OpenNewTabCommand commandWithURLFromChrome:paymentsURL];
     [self.dispatcher closeSettingsUIAndOpenURL:command];
@@ -220,8 +220,8 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
 
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  TableViewTextEditCell* textFieldCell =
-      base::mac::ObjCCastStrict<TableViewTextEditCell>(cell);
+  AutofillEditCell* textFieldCell =
+      base::mac::ObjCCastStrict<AutofillEditCell>(cell);
   textFieldCell.accessibilityIdentifier = textFieldCell.textLabel.text;
   textFieldCell.textField.delegate = self;
   return textFieldCell;
@@ -231,8 +231,8 @@ static const AutofillFieldDisplayInfo kFieldsToDisplay[] = {
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   if (self.tableView.editing) {
     UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
-    TableViewTextEditCell* textFieldCell =
-        base::mac::ObjCCastStrict<TableViewTextEditCell>(cell);
+    AutofillEditCell* textFieldCell =
+        base::mac::ObjCCastStrict<AutofillEditCell>(cell);
     [textFieldCell.textField becomeFirstResponder];
   }
 }

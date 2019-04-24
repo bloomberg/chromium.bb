@@ -72,72 +72,60 @@ function testIsPathShared() {
   const b = new MockDirectoryEntry(mockFileSystem, '/b');
   const bb = new MockDirectoryEntry(mockFileSystem, '/b/b');
 
-  assertFalse(crostini.isPathShared('vm1', a));
-  assertFalse(crostini.isPathShared('vm2', a));
+  assertFalse(crostini.isPathShared(a));
 
-  crostini.registerSharedPath('vm1', a);
-  assertFalse(crostini.isPathShared('vm1', root));
-  assertTrue(crostini.isPathShared('vm1', a));
-  assertTrue(crostini.isPathShared('vm1', aa));
+  crostini.registerSharedPath(a);
+  assertFalse(crostini.isPathShared(root));
+  assertTrue(crostini.isPathShared(a));
+  assertTrue(crostini.isPathShared(aa));
 
-  crostini.registerSharedPath('vm2', a);
-  assertTrue(crostini.isPathShared('vm2', a));
+  crostini.registerSharedPath(bb);
+  assertFalse(crostini.isPathShared(b));
+  assertTrue(crostini.isPathShared(bb));
 
-  crostini.registerSharedPath('vm1', bb);
-  assertFalse(crostini.isPathShared('vm1', b));
-  assertTrue(crostini.isPathShared('vm1', bb));
+  crostini.unregisterSharedPath(bb);
+  assertFalse(crostini.isPathShared(bb));
 
-  crostini.unregisterSharedPath('vm1', bb);
-  assertFalse(crostini.isPathShared('vm1', bb));
-
-  // Test collapsing vm1, but not vm2.  Setup with /a/a, /a/b, /b
-  crostini.unregisterSharedPath('vm1', a);
-  crostini.unregisterSharedPath('vm2', a);
-  crostini.registerSharedPath('vm1', aa);
-  crostini.registerSharedPath('vm1', ab);
-  crostini.registerSharedPath('vm1', b);
-  crostini.registerSharedPath('vm2', aa);
-  assertFalse(crostini.isPathShared('vm1', a));
-  assertFalse(crostini.isPathShared('vm2', a));
-  assertTrue(crostini.isPathShared('vm1', aa));
-  assertTrue(crostini.isPathShared('vm1', ab));
-  assertTrue(crostini.isPathShared('vm1', b));
-  assertTrue(crostini.isPathShared('vm2', aa));
-  // Add /a for vm1, collapses /a/a, /a/b in vm1.
-  crostini.registerSharedPath('vm1', a);
-  assertTrue(crostini.isPathShared('vm1', a));
-  assertTrue(crostini.isPathShared('vm1', aa));
-  assertTrue(crostini.isPathShared('vm1', ab));
-  assertTrue(crostini.isPathShared('vm1', b));
-  assertTrue(crostini.isPathShared('vm2', aa));
-  assertFalse(crostini.isPathShared('vm2', a));
-  // Unregister /a for vm1, /a/a and /a/b should be lost in vm1.
-  crostini.unregisterSharedPath('vm1', a);
-  assertFalse(crostini.isPathShared('vm1', a));
-  assertFalse(crostini.isPathShared('vm1', aa));
-  assertFalse(crostini.isPathShared('vm1', ab));
-  assertTrue(crostini.isPathShared('vm1', b));
-  assertTrue(crostini.isPathShared('vm2', aa));
-  // Register root for vm1, collapses all vm1.
-  crostini.registerSharedPath('vm1', root);
-  assertTrue(crostini.isPathShared('vm1', a));
-  assertTrue(crostini.isPathShared('vm1', aa));
-  assertTrue(crostini.isPathShared('vm1', ab));
-  assertTrue(crostini.isPathShared('vm1', b));
-  // Unregister root for vm1, all vm1 should be lost.
-  crostini.unregisterSharedPath('vm1', root);
-  assertFalse(crostini.isPathShared('vm1', a));
-  assertFalse(crostini.isPathShared('vm1', aa));
-  assertFalse(crostini.isPathShared('vm1', ab));
-  assertFalse(crostini.isPathShared('vm1', b));
-  assertTrue(crostini.isPathShared('vm2', aa));
+  // Test collapsing.  Setup with /a/a, /a/b, /b
+  crostini.unregisterSharedPath(a);
+  crostini.registerSharedPath(aa);
+  crostini.registerSharedPath(ab);
+  crostini.registerSharedPath(b);
+  assertFalse(crostini.isPathShared(a));
+  assertTrue(crostini.isPathShared(aa));
+  assertTrue(crostini.isPathShared(ab));
+  assertTrue(crostini.isPathShared(b));
+  // Add /a, collapses /a/a, /a/b
+  crostini.registerSharedPath(a);
+  assertTrue(crostini.isPathShared(a));
+  assertTrue(crostini.isPathShared(aa));
+  assertTrue(crostini.isPathShared(ab));
+  assertTrue(crostini.isPathShared(b));
+  // Unregister /a, /a/a and /a/b should be lost.
+  crostini.unregisterSharedPath(a);
+  assertFalse(crostini.isPathShared(a));
+  assertFalse(crostini.isPathShared(aa));
+  assertFalse(crostini.isPathShared(ab));
+  assertTrue(crostini.isPathShared(b));
+  // Register root, collapses all.
+  crostini.registerSharedPath(root);
+  assertTrue(crostini.isPathShared(a));
+  assertTrue(crostini.isPathShared(aa));
+  assertTrue(crostini.isPathShared(ab));
+  assertTrue(crostini.isPathShared(b));
+  // Unregister root, all should be lost.
+  crostini.unregisterSharedPath(root);
+  assertFalse(crostini.isPathShared(a));
+  assertFalse(crostini.isPathShared(aa));
+  assertFalse(crostini.isPathShared(ab));
+  assertFalse(crostini.isPathShared(b));
 }
 
 /*
  * Tests disallowed and allowed shared paths.
  */
 function testCanSharePath() {
-  crostini.setEnabled('vm', true);
+  crostini.setEnabled(true);
 
   const mockFileSystem = new MockFileSystem('test');
   const root = new MockDirectoryEntry(mockFileSystem, '/');
@@ -149,22 +137,22 @@ function testCanSharePath() {
   // Test with DriveFs disabled.
   setDriveFsEnabled(false);
   const disallowed = [
-    'computers_grand_root', 'computer', 'drive', 'shared_drives_grand_root',
+    'computers_grand_root', 'computer', 'drive', 'team_drives_grand_root',
     'team_drive', 'test'
   ];
   for (const type of disallowed) {
     volumeManagerRootType =
         /** @type {!VolumeManagerCommon.RootType<string>} */ (type);
-    assertFalse(crostini.canSharePath('vm', root, true));
-    assertFalse(crostini.canSharePath('vm', root, false));
-    assertFalse(crostini.canSharePath('vm', rootFile, true));
-    assertFalse(crostini.canSharePath('vm', rootFile, false));
-    assertFalse(crostini.canSharePath('vm', rootFolder, true));
-    assertFalse(crostini.canSharePath('vm', rootFolder, false));
-    assertFalse(crostini.canSharePath('vm', fooFile, true));
-    assertFalse(crostini.canSharePath('vm', fooFile, false));
-    assertFalse(crostini.canSharePath('vm', fooFolder, true));
-    assertFalse(crostini.canSharePath('vm', fooFolder, false));
+    assertFalse(crostini.canSharePath(root, true));
+    assertFalse(crostini.canSharePath(root, false));
+    assertFalse(crostini.canSharePath(rootFile, true));
+    assertFalse(crostini.canSharePath(rootFile, false));
+    assertFalse(crostini.canSharePath(rootFolder, true));
+    assertFalse(crostini.canSharePath(rootFolder, false));
+    assertFalse(crostini.canSharePath(fooFile, true));
+    assertFalse(crostini.canSharePath(fooFile, false));
+    assertFalse(crostini.canSharePath(fooFolder, true));
+    assertFalse(crostini.canSharePath(fooFolder, false));
   }
 
   // Test with DriveFs enabled.
@@ -173,20 +161,20 @@ function testCanSharePath() {
   // enforces allowed write paths.
   const allowed = [
     'downloads', 'removable', 'android_files', 'drive',
-    'shared_drives_grand_root', 'team_drive'
+    'team_drives_grand_root', 'team_drive'
   ];
   for (const type of allowed) {
     volumeManagerRootType = type;
-    assertTrue(crostini.canSharePath('vm', root, true));
-    assertTrue(crostini.canSharePath('vm', root, false));
-    assertFalse(crostini.canSharePath('vm', rootFile, true));
-    assertTrue(crostini.canSharePath('vm', rootFile, false));
-    assertTrue(crostini.canSharePath('vm', rootFolder, true));
-    assertTrue(crostini.canSharePath('vm', rootFolder, false));
-    assertFalse(crostini.canSharePath('vm', fooFile, true));
-    assertTrue(crostini.canSharePath('vm', fooFile, false));
-    assertTrue(crostini.canSharePath('vm', fooFolder, true));
-    assertTrue(crostini.canSharePath('vm', fooFolder, false));
+    assertTrue(crostini.canSharePath(root, true));
+    assertTrue(crostini.canSharePath(root, false));
+    assertFalse(crostini.canSharePath(rootFile, true));
+    assertTrue(crostini.canSharePath(rootFile, false));
+    assertTrue(crostini.canSharePath(rootFolder, true));
+    assertTrue(crostini.canSharePath(rootFolder, false));
+    assertFalse(crostini.canSharePath(fooFile, true));
+    assertTrue(crostini.canSharePath(fooFile, false));
+    assertTrue(crostini.canSharePath(fooFolder, true));
+    assertTrue(crostini.canSharePath(fooFolder, false));
   }
 
   // TODO(crbug.com/917920): Remove when DriveFS enforces allowed write paths.
@@ -196,13 +184,13 @@ function testCanSharePath() {
   const computerFolder =
       new MockDirectoryEntry(mockFileSystem, '/Computers/My/foo');
   volumeManagerRootType = VolumeManagerCommon.RootType.COMPUTERS_GRAND_ROOT;
-  assertFalse(crostini.canSharePath('vm', root, false));
-  assertFalse(crostini.canSharePath('vm', grandRootFolder, false));
-  assertFalse(crostini.canSharePath('vm', computerRootFolder, false));
-  assertFalse(crostini.canSharePath('vm', computerFolder, false));
+  assertFalse(crostini.canSharePath(root, false));
+  assertFalse(crostini.canSharePath(grandRootFolder, false));
+  assertFalse(crostini.canSharePath(computerRootFolder, false));
+  assertFalse(crostini.canSharePath(computerFolder, false));
   volumeManagerRootType = VolumeManagerCommon.RootType.COMPUTER;
-  assertFalse(crostini.canSharePath('vm', root, false));
-  assertFalse(crostini.canSharePath('vm', grandRootFolder, false));
-  assertFalse(crostini.canSharePath('vm', computerRootFolder, false));
-  assertTrue(crostini.canSharePath('vm', computerFolder, false));
+  assertFalse(crostini.canSharePath(root, false));
+  assertFalse(crostini.canSharePath(grandRootFolder, false));
+  assertFalse(crostini.canSharePath(computerRootFolder, false));
+  assertTrue(crostini.canSharePath(computerFolder, false));
 }

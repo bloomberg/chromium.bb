@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -25,15 +26,6 @@
 #include "services/network/public/cpp/network_quality_tracker.h"
 
 namespace {
-
-void SetDataSaverEnabled(content::BrowserContext* browser_context,
-                         bool enabled) {
-  Profile* profile = Profile::FromBrowserContext(browser_context);
-
-  data_reduction_proxy::DataReductionProxySettings::
-      SetDataSaverEnabledForTesting(profile->GetPrefs(), enabled);
-  base::RunLoop().RunUntilIdle();
-}
 
 // Test version of the observer. Used to wait for the event when the network
 // quality tracker sends the network quality change notification.
@@ -155,7 +147,10 @@ class TestRTTAndThroughputEstimatesObserver
 class DataSaverBrowserTest : public InProcessBrowserTest {
  protected:
   void EnableDataSaver(bool enabled) {
-    SetDataSaverEnabled(browser()->profile(), enabled);
+    PrefService* prefs = browser()->profile()->GetPrefs();
+    prefs->SetBoolean(prefs::kDataSaverEnabled, enabled);
+    // Give the setting notification a chance to propagate.
+    content::RunAllPendingInMessageLoop();
   }
 
   void VerifySaveDataHeader(const std::string& expected_header_value) {
@@ -189,11 +184,13 @@ class DataSaverWithServerBrowserTest : public InProcessBrowserTest {
     test_server_->RegisterRequestHandler(
         base::Bind(&DataSaverWithServerBrowserTest::VerifySaveDataHeader,
                    base::Unretained(this)));
-    test_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+    test_server_->ServeFilesFromSourceDirectory("chrome/test/data");
   }
-
   void EnableDataSaver(bool enabled) {
-    SetDataSaverEnabled(browser()->profile(), enabled);
+    PrefService* prefs = browser()->profile()->GetPrefs();
+    prefs->SetBoolean(prefs::kDataSaverEnabled, enabled);
+    // Give the setting notification a chance to propagate.
+    content::RunAllPendingInMessageLoop();
   }
 
   net::EffectiveConnectionType GetEffectiveConnectionType() const {
@@ -323,7 +320,10 @@ IN_PROC_BROWSER_TEST_F(DataSaverWithServerBrowserTest, HttpRttEstimate) {
 class DataSaverForWorkerBrowserTest : public InProcessBrowserTest {
  protected:
   void EnableDataSaver(bool enabled) {
-    SetDataSaverEnabled(browser()->profile(), enabled);
+    PrefService* prefs = browser()->profile()->GetPrefs();
+    prefs->SetBoolean(prefs::kDataSaverEnabled, enabled);
+    // Give the setting notification a chance to propagate.
+    content::RunAllPendingInMessageLoop();
   }
 
   std::unique_ptr<net::test_server::HttpResponse> CaptureHeaderHandler(

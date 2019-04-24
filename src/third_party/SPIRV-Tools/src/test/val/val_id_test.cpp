@@ -6203,22 +6203,20 @@ TEST_F(ValidateIdWithMessage, IdDefInUnreachableBlock1) {
 %4 = OpTypeFunction %3
 %5 = OpFunction %1 None %2
 %6 = OpLabel
-OpReturn
-%7 = OpLabel
-%8 = OpFunctionCall %3 %9
+%7 = OpFunctionCall %3 %8
 OpUnreachable
 OpFunctionEnd
-%9 = OpFunction %3 None %4
-%10 = OpLabel
-OpReturnValue %8
+%8 = OpFunction %3 None %4
+%9 = OpLabel
+OpReturnValue %7
 OpFunctionEnd
 )";
 
   CompileSuccessfully(spirv, SPV_ENV_UNIVERSAL_1_3);
   EXPECT_EQ(SPV_ERROR_INVALID_ID, ValidateInstructions(SPV_ENV_UNIVERSAL_1_3));
   EXPECT_THAT(getDiagnosticString(),
-              HasSubstr("ID 8[%8] defined in block 7[%7] does not dominate its "
-                        "use in block 10[%10]\n  %10 = OpLabel"));
+              HasSubstr("ID 7[%7] defined in block 6[%6] does not dominate its "
+                        "use in block 9[%9]\n  %9 = OpLabel"));
 }
 
 TEST_F(ValidateIdWithMessage, IdDefInUnreachableBlock2) {

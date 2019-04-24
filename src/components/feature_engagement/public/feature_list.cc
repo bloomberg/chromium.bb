@@ -55,7 +55,6 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHNewTabTipFeature,
     &kIPHNewIncognitoTabTipFeature,
     &kIPHBadgedReadingListFeature,
-    &kIPHBadgedTranslateManualTriggerFeature,
 #endif  // defined(OS_IOS)
 };
 }  // namespace

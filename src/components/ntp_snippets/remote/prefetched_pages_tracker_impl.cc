@@ -4,15 +4,11 @@
 
 #include "components/ntp_snippets/remote/prefetched_pages_tracker_impl.h"
 
-#include <utility>
-
 #include "base/bind.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
-#include "components/offline_pages/core/page_criteria.h"
 
 using offline_pages::OfflinePageItem;
 using offline_pages::OfflinePageModel;
-using offline_pages::PageCriteria;
 
 namespace ntp_snippets {
 
@@ -51,11 +47,8 @@ void PrefetchedPagesTrackerImpl::Initialize(
     // calls to this method. In this case, there is at least one callback
     // already waiting.
     if (initialization_completed_callbacks_.size() == 1) {
-      PageCriteria criteria;
-      criteria.client_namespaces.push_back(
-          offline_pages::kSuggestedArticlesNamespace);
-      offline_page_model_->GetPagesWithCriteria(
-          criteria,
+      offline_page_model_->GetPagesByNamespace(
+          offline_pages::kSuggestedArticlesNamespace,
           base::BindOnce(&PrefetchedPagesTrackerImpl::OfflinePagesLoaded,
                          weak_ptr_factory_.GetWeakPtr()));
     }

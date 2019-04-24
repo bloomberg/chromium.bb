@@ -1,0 +1,97 @@
+syntax = "proto3";
+package chromite.api;
+
+import "build_api.proto";
+import "common.proto";
+
+// Image argument - encapsulate data about an image.
+message Image {
+  // The types of images that can be built.
+  enum Type {
+    IMAGE_TYPE_UNDEFINED = 0;
+    BASE = 1;
+    DEV = 2;
+    TEST = 3;
+  }
+
+  // Path to the image file.
+  string path = 1;
+  // The image type.
+  Type type = 2;
+}
+
+// The image test arguments.
+message CreateImageRequest {
+  // The build target whose image is being built.
+  BuildTarget build_target = 1;
+  // The types of images to build, defaults to building base image.
+  repeated Image.Type image_types = 2;
+  // Whether rootfs verification should be disabled (enabled by default).
+  bool disable_rootfs_verification = 3;
+  // The image version.
+  string version = 4;
+  // Disk layout option. See README.disk_layout and legacy_disk_layout.json in
+  // src/scripts/build_library.
+  string disk_layout = 5;
+  // Used to set the LSB builder path key in /etc/lsb-release. See
+  // chromite/scripts/cros_set_lsb_release.py.
+  string builder_path = 6;
+}
+
+message CreateImageResult {
+  // Whether it completed successfully.
+  bool success = 1;
+  // Images that were built. Will contain no more than one per image type.
+  repeated Image images = 2;
+}
+
+// The image test arguments.
+message TestImageRequest {
+  // The image to be tested.
+  Image image = 1;
+  // The build target whose image is being tested.
+  BuildTarget build_target = 2;
+
+  // Test results options specifications.
+  message Result {
+    // Location where the test results should be written.
+    string directory = 1;
+  }
+  Result result = 3;
+}
+
+message TestImageResult {
+  // Whether all tests passed.
+  bool success = 1;
+}
+
+// The image service.
+service ImageService {
+  option (service_options) = {
+    module: "image",
+  };
+
+  // Build an image.
+  // Example json:
+  // {
+  //  "build_target": {"name": "reef"},
+  // }
+  rpc Create(CreateImageRequest) returns (CreateImageResult) {
+    option (method_options) = {
+      method_chroot_assert: INSIDE,
+    };
+  }
+
+  // Test an image.
+  // Example json:
+  // {
+  //  "build_target": {"name": "reef"},
+  //  "image": {"path": "/mnt/host/source/src/build/images/reef/latest"},
+  //  "result": {"directory": "/tmp/image_test_results"}
+  // }
+  rpc Test(TestImageRequest) returns (TestImageResult) {
+    option (method_options) = {
+      method_chroot_assert: INSIDE,
+    };
+  }
+}

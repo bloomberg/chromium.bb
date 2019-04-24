@@ -129,6 +129,10 @@ void CryptoResultImpl::ClearResolver() {
   resolver_ = nullptr;
 }
 
+CryptoResultImpl* CryptoResultImpl::Create(ScriptState* script_state) {
+  return MakeGarbageCollected<CryptoResultImpl>(script_state);
+}
+
 void CryptoResultImpl::CompleteWithError(WebCryptoErrorType error_type,
                                          const WebString& error_details) {
   if (!resolver_)
@@ -197,7 +201,7 @@ void CryptoResultImpl::CompleteWithKey(const WebCryptoKey& key) {
   if (!resolver_)
     return;
 
-  resolver_->Resolve(MakeGarbageCollected<CryptoKey>(key));
+  resolver_->Resolve(CryptoKey::Create(key));
   ClearResolver();
 }
 
@@ -212,11 +216,9 @@ void CryptoResultImpl::CompleteWithKeyPair(const WebCryptoKey& public_key,
   V8ObjectBuilder key_pair(script_state);
 
   key_pair.Add("publicKey",
-               ScriptValue::From(script_state,
-                                 MakeGarbageCollected<CryptoKey>(public_key)));
+               ScriptValue::From(script_state, CryptoKey::Create(public_key)));
   key_pair.Add("privateKey",
-               ScriptValue::From(script_state,
-                                 MakeGarbageCollected<CryptoKey>(private_key)));
+               ScriptValue::From(script_state, CryptoKey::Create(private_key)));
 
   resolver_->Resolve(key_pair.V8Value());
   ClearResolver();

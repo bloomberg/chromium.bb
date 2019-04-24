@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -89,23 +88,16 @@ class ScreenTimeController
 
   // Request to lock the screen and show the time limits message when the screen
   // is locked.
-  void ForceScreenLockByPolicy();
+  void ForceScreenLockByPolicy(base::Time next_unlock_time);
 
-  // Enables the time limits message in the lock screen and performs tasks that
-  // need to run after the screen is locked.
-  // |active_policy|: Which policy is locking the device, only valid when
-  //                  |visible| is true.
+  // Updates the state of lock screen.
+  // |blocked|: If true, user authentication is disabled and a message is shown
+  //            to indicate when user will be able to unlock the screen.
+  //            If false, authentication is re-enabled, message is dismissed and
+  //            user is able to unlock immediately.
   // |next_unlock_time|: When user will be able to unlock the screen, only valid
   //                     when |visible| is true.
-  void OnScreenLockByPolicy(usage_time_limit::ActivePolicies active_policy,
-                            base::Time next_unlock_time);
-
-  // Disables the time limits message in the lock screen.
-  void OnScreenLockByPolicyEnd();
-
-  // Converts the active policy to its equivalent on the ash enum.
-  base::Optional<ash::mojom::AuthDisabledReason> ConvertLockReason(
-      usage_time_limit::ActivePolicies active_policy);
+  void UpdateLockScreenState(bool blocked, base::Time next_unlock_time);
 
   // Called when the policy of time limits changes.
   void OnPolicyChanged();
@@ -168,6 +160,9 @@ class ScreenTimeController
   TimeLimitNotifier time_limit_notifier_;
 
   PrefChangeRegistrar pref_change_registrar_;
+
+  // Used to update the time limits message, if any, when screen is locked.
+  base::Optional<base::Time> next_unlock_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenTimeController);
 };

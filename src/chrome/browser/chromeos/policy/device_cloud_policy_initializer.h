@@ -125,8 +125,6 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       std::unique_ptr<policy::SigningService> signing_service);
   void SetSystemURLLoaderFactoryForTesting(
       scoped_refptr<network::SharedURLLoaderFactory> system_url_loader_factory);
-  void SetAttestationFlowForTesting(
-      std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow);
 
  private:
   // Signing class implementing the policy::SigningService interface to

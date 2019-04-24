@@ -348,6 +348,7 @@ void PasswordProtectionService::StartRequest(
           web_contents, main_frame_url, password_form_action,
           password_form_frame_url, reused_password_type, matching_domains,
           trigger_type, password_field_exists, this, GetRequestTimeoutInMS()));
+
   request->Start();
   pending_requests_.insert(std::move(request));
 }
@@ -388,25 +389,16 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
       static_cast<int>(100 * content::ZoomLevelToZoomFactor(zoom_level)));
 
   RequestOutcome reason;
-  bool reported_password_reuse_event = false;
   if (CanSendPing(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                   main_frame_url, reused_password_type, &reason)) {
     StartRequest(web_contents, main_frame_url, GURL(), GURL(),
                  reused_password_type, matching_domains,
                  LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                  password_field_exists);
-    // TODO(crbug.com/932741): |is_phishing_url| field isn't populated quite
-    // accurately, will resolve in a follow up cl.
-    MaybeReportPasswordReuseDetected(web_contents, reused_password_type, true);
   } else {
     MaybeLogPasswordReuseLookupEvent(web_contents, reason, nullptr);
-    reported_password_reuse_event = true;
-  }
-  if (CanShowInterstitial(reason, reused_password_type, main_frame_url)) {
-    ShowInterstitial(web_contents, reused_password_type);
-    if (!reported_password_reuse_event)
-      MaybeReportPasswordReuseDetected(web_contents, reused_password_type,
-                                       false);
+    if (CanShowInterstitial(reason, reused_password_type, main_frame_url))
+      ShowInterstitial(web_contents, reused_password_type);
   }
 }
 
@@ -416,16 +408,7 @@ bool PasswordProtectionService::CanSendPing(
     ReusedPasswordType password_type,
     RequestOutcome* reason) {
   *reason = RequestOutcome::UNKNOWN;
-  bool is_pinging_enabled =
-      IsPingingEnabled(trigger_type, password_type, reason);
-  // Pinging is enabled for password_reuse trigger level; however we need to
-  // make sure *reason is set appropriately.
-  PasswordProtectionTrigger trigger_level =
-      GetPasswordProtectionWarningTriggerPref();
-  if (trigger_level == PASSWORD_REUSE) {
-    *reason = RequestOutcome::PASSWORD_ALERT_MODE;
-  }
-  if (is_pinging_enabled &&
+  if (IsPingingEnabled(trigger_type, password_type, reason) &&
       !IsURLWhitelistedForPasswordEntry(main_frame_url, reason)) {
     return true;
   }

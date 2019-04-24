@@ -334,7 +334,7 @@ public class SuggestionsSectionTest {
         Callback<String> callback = mock(Callback.class);
         section.dismissItem(1, callback);
         verify(mDelegate).dismissSection(section);
-        verify(callback).onResult(section.getCategoryInfo().getTitle());
+        verify(callback).onResult(section.getHeaderText());
     }
 
     @Test
@@ -523,6 +523,23 @@ public class SuggestionsSectionTest {
         // The offline status should not change.
         assertNull(suggestions.get(1).getOfflinePageOfflineId());
         verify(mObserver, never()).onItemRangeChanged(any(), anyInt(), anyInt(), any());
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testViewAllAction() {
+        // When all the actions are enabled, ViewAll always has the priority and is shown.
+
+        // Spy so that VerifyAction can check methods being called.
+        SuggestionsCategoryInfo info =
+                spy(new CategoryInfoBuilder(TEST_CATEGORY_ID)
+                                .withAction(ContentSuggestionsAdditionalAction.VIEW_ALL)
+                                .showIfEmpty()
+                                .build());
+        SuggestionsSection section = createSection(info);
+
+        assertTrue(section.getActionItemForTesting().isVisible());
+        verifyAction(section, ContentSuggestionsAdditionalAction.VIEW_ALL);
     }
 
     @Test
@@ -1074,6 +1091,10 @@ public class SuggestionsSectionTest {
         if (action != ContentSuggestionsAdditionalAction.NONE) {
             section.getActionItemForTesting().performAction(mUiDelegate, null, null);
         }
+
+        verify(section.getCategoryInfo(),
+                (action == ContentSuggestionsAdditionalAction.VIEW_ALL ? times(1) : never()))
+                .performViewAllAction(mUiDelegate.getNavigationDelegate());
 
         // noinspection unchecked -- See https://crbug.com/740162 for rationale.
         verify(mUiDelegate.getSuggestionsSource(),

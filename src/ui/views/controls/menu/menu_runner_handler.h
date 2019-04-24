@@ -16,7 +16,7 @@ class Widget;
 // MenuRunnerTestApi) for mocking running of the menu.
 class VIEWS_EXPORT MenuRunnerHandler {
  public:
-  virtual ~MenuRunnerHandler() = default;
+  virtual ~MenuRunnerHandler() {}
   virtual void RunMenuAt(Widget* parent,
                          MenuButton* button,
                          const gfx::Rect& bounds,

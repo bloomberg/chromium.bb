@@ -8,7 +8,6 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/desks/desks_util.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
@@ -20,7 +19,7 @@ using ContainerFinderTest = AshTestBase;
 TEST_F(ContainerFinderTest, GetContainerForWindow) {
   // Create a normal widget in the default container.
   std::unique_ptr<views::Widget> widget = CreateTestWidget(
-      nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(1, 2, 3, 4));
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
   aura::Window* window = widget->GetNativeWindow();
 
   // The window itself is not a container.
@@ -29,7 +28,7 @@ TEST_F(ContainerFinderTest, GetContainerForWindow) {
   // Container lookup finds the default container.
   aura::Window* container = wm::GetContainerForWindow(window);
   ASSERT_TRUE(container);
-  EXPECT_EQ(desks_util::GetActiveDeskContainerId(), container->id());
+  EXPECT_EQ(kShellWindowId_DefaultContainer, container->id());
 }
 
 }  // namespace ash

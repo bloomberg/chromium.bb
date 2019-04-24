@@ -52,16 +52,17 @@ class ArcAppShortcutsSearchProviderTest
     AppListTestBase::TearDown();
   }
 
-  void CreateRanker(const base::Feature& feature,
-                    const std::map<std::string, std::string>& params = {}) {
+  void CreateRanker(const std::map<std::string, std::string>& params = {}) {
     if (!params.empty()) {
-      scoped_feature_list_.InitAndEnableFeatureWithParameters(feature, params);
+      scoped_feature_list_.InitAndEnableFeatureWithParameters(
+          app_list_features::kEnableAppSearchResultRanker, params);
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
       ranker_ =
           std::make_unique<AppSearchResultRanker>(temp_dir_.GetPath(),
                                                   /*is_ephemeral_user=*/false);
     } else {
-      scoped_feature_list_.InitWithFeatures({}, {feature});
+      scoped_feature_list_.InitWithFeatures(
+          {}, {app_list_features::kEnableAppSearchResultRanker});
     }
   }
 
@@ -102,7 +103,7 @@ class ArcAppShortcutsSearchProviderTest
 };
 
 TEST_P(ArcAppShortcutsSearchProviderTest, Basic) {
-  CreateRanker(app_list_features::kEnableZeroStateAppsRanker);
+  CreateRanker();
   EXPECT_EQ(ranker_, nullptr);
   const bool launchable = GetParam();
 
@@ -130,7 +131,7 @@ TEST_P(ArcAppShortcutsSearchProviderTest, Basic) {
 }
 
 TEST_F(ArcAppShortcutsSearchProviderTest, RankerIsDisableWithFlag) {
-  CreateRanker(app_list_features::kEnableQueryBasedAppsRanker);
+  CreateRanker();
   EXPECT_EQ(ranker_, nullptr);
 
   const std::string app_id = AddArcAppAndShortcut(
@@ -160,13 +161,12 @@ TEST_F(ArcAppShortcutsSearchProviderTest, RankerIsDisableWithFlag) {
 }
 
 TEST_F(ArcAppShortcutsSearchProviderTest, RankerImproveScores) {
-  CreateRanker(app_list_features::kEnableQueryBasedAppsRanker,
-               {{"rank_arc_app_shortcuts", "true"}, {"max_items_to_get", "6"}});
+  CreateRanker({{"rank_arc_app_shortcuts", "true"}});
   EXPECT_NE(ranker_, nullptr);
 
   const std::string app_id = AddArcAppAndShortcut(
       CreateAppInfo("FakeName", "FakeActivity", kFakeAppPackageName), true);
-  const size_t kMaxResults = 6;
+  const size_t kMaxResults = 4;
   constexpr char kQuery[] = "shortlabel";
   constexpr char kPrefix[] = "appshortcutsearch://";
   constexpr char kShortcutId[] = "/ShortcutId ";
@@ -186,39 +186,6 @@ TEST_F(ArcAppShortcutsSearchProviderTest, RankerImproveScores) {
   const auto& results = provider->results();
   for (const auto& result : results)
     EXPECT_GT(result->relevance(), 0);
-}
-
-TEST_F(ArcAppShortcutsSearchProviderTest, EmptyQueries) {
-  CreateRanker(app_list_features::kEnableZeroStateAppsRanker,
-               {{"rank_arc_app_shortcuts", "true"}, {"max_items_to_get", "6"}});
-  EXPECT_NE(ranker_, nullptr);
-
-  const std::string app_id = AddArcAppAndShortcut(
-      CreateAppInfo("FakeName", "FakeActivity", kFakeAppPackageName), true);
-  const size_t kMaxResults = 6;
-  constexpr char kQuery[] = "";
-  constexpr char kPrefix[] = "appshortcutsearch://";
-  constexpr char kShortcutId[] = "/ShortcutId ";
-
-  // Create a search provider
-  auto provider = std::make_unique<ArcAppShortcutsSearchProvider>(
-      kMaxResults, profile(), controller_.get(), ranker_.get());
-  arc::IconDecodeRequest::DisableSafeDecodingForTesting();
-
-  for (size_t i = 0; i < kMaxResults; i++) {
-    provider->Train(
-        base::StrCat({kPrefix, app_id, kShortcutId, base::NumberToString(i)}),
-        RankingItemType::kArcAppShortcut);
-  }
-  provider->Start(base::UTF8ToUTF16(kQuery));
-  // Verify search results.
-  const auto& results = provider->results();
-  EXPECT_EQ(results.size(), kMaxResults);
-  for (const auto& result : results) {
-    EXPECT_EQ(ash::SearchResultDisplayType::kRecommendation,
-              result->display_type());
-    EXPECT_GT(result->relevance(), 0);
-  }
 }
 
 INSTANTIATE_TEST_SUITE_P(, ArcAppShortcutsSearchProviderTest, testing::Bool());

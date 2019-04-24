@@ -24,7 +24,6 @@
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "components/variations/net/variations_http_headers.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -45,7 +44,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/cors_exempt_headers.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/network_service_instance.h"
@@ -55,6 +53,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "net/base/completion_callback.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
@@ -180,7 +179,8 @@ void OnLocalStorageUsageInfo(
       base::BarrierClosure(infos.size(), std::move(done_callback));
   for (size_t i = 0; i < infos.size(); ++i) {
     if (!origin_matcher.is_null() &&
-        !origin_matcher.Run(infos[i].origin, special_storage_policy.get())) {
+        !origin_matcher.Run(infos[i].origin.GetURL(),
+                            special_storage_policy.get())) {
       barrier.Run();
       continue;
     }
@@ -215,8 +215,7 @@ void OnSessionStorageUsageInfo(
 
   for (size_t i = 0; i < infos.size(); ++i) {
     if (!origin_matcher.is_null() &&
-        !origin_matcher.Run(url::Origin::Create(infos[i].origin),
-                            special_storage_policy.get())) {
+        !origin_matcher.Run(infos[i].origin, special_storage_policy.get())) {
       barrier.Run();
       continue;
     }
@@ -237,7 +236,7 @@ void ClearLocalStorageOnUIThread(
 
   if (!storage_origin.is_empty()) {
     bool can_delete = origin_matcher.is_null() ||
-                      origin_matcher.Run(url::Origin::Create(storage_origin),
+                      origin_matcher.Run(storage_origin,
                                          special_storage_policy.get());
     if (can_delete) {
       dom_storage_context->DeleteLocalStorage(
@@ -284,18 +283,10 @@ class StoragePartitionImpl::NetworkContextOwner {
   void Initialize(network::mojom::NetworkContextRequest network_context_request,
                   scoped_refptr<net::URLRequestContextGetter> context_getter) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-    network::mojom::NetworkContextParamsPtr network_context_params =
-        network::mojom::NetworkContextParams::New();
-    content::UpdateCorsExemptHeader(network_context_params.get());
-    variations::UpdateCorsExemptHeaderForVariations(
-
-        network_context_params.get());
     context_getter_ = std::move(context_getter);
     network_context_ = std::make_unique<network::NetworkContext>(
         GetNetworkServiceImpl(), std::move(network_context_request),
-        context_getter_->GetURLRequestContext(),
-        network_context_params->cors_exempt_header_list);
+        context_getter_->GetURLRequestContext());
   }
 
  private:
@@ -673,8 +664,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       indexed_db::GetDefaultLevelDBFactory());
 
   partition->cache_storage_context_ = new CacheStorageContextImpl(context);
-  partition->cache_storage_context_->Init(
-      path, context->GetSpecialStoragePolicy(), quota_manager_proxy);
+  partition->cache_storage_context_->Init(path, quota_manager_proxy);
 
   partition->service_worker_context_ = new ServiceWorkerContextWrapper(context);
   partition->service_worker_context_->set_storage_partition(partition.get());
@@ -706,14 +696,11 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->background_fetch_context_ =
       base::MakeRefCounted<BackgroundFetchContext>(
           context, partition->service_worker_context_,
-          partition->cache_storage_context_, quota_manager_proxy,
-          partition->devtools_background_services_context_);
+          partition->cache_storage_context_, quota_manager_proxy);
 
   partition->background_sync_context_ =
       base::MakeRefCounted<BackgroundSyncContextImpl>();
-  partition->background_sync_context_->Init(
-      partition->service_worker_context_,
-      partition->devtools_background_services_context_);
+  partition->background_sync_context_->Init(partition->service_worker_context_);
 
   partition->payment_app_context_ = new PaymentAppContextImpl();
   partition->payment_app_context_->Init(partition->service_worker_context_);
@@ -783,7 +770,13 @@ base::FilePath StoragePartitionImpl::GetPath() {
 }
 
 net::URLRequestContextGetter* StoragePartitionImpl::GetURLRequestContext() {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+  // TODO(jam): enable for all, still used on WebView.
+  // See copy of this ifdef in:
+  //   StoragePartitionImplMap::Get
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    NOTREACHED();
+#endif
   return url_request_context_.get();
 }
 
@@ -1131,7 +1124,7 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::
       continue;
 
     if (!origin_matcher.is_null() &&
-        !origin_matcher.Run(origin, special_storage_policy.get())) {
+        !origin_matcher.Run(origin.GetURL(), special_storage_policy.get())) {
       continue;
     }
 

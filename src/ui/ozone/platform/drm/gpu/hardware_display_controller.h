@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <xf86drmMode.h>
+
 #include <map>
 #include <memory>
 #include <unordered_map>

@@ -6,14 +6,15 @@
 
 #include "base/base64.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_number_conversions.h"
 #include "components/crx_file/id_util.h"
 #include "crypto/sha2.h"
 #include "url/gurl.h"
 
 namespace web_app {
 
-namespace {
+std::string GenerateApplicationNameFromURL(const GURL& url) {
+  return base::StrCat({url.host_piece(), "_", url.path_piece()});
+}
 
 // The following string is used to build the directory name for
 // shortcuts to chrome applications (the kind which are installed
@@ -21,27 +22,12 @@ namespace {
 // for the name of this directory.  Hosts can't include an underscore.
 // By starting this string with an underscore, we ensure that there
 // are no naming conflicts.
-const char kCrxAppPrefix[] = "_crx_";
-
-const char kFocusModePrefix[] = "_focus_";
-int64_t focus_mode_counter = 0;
-
-}  // namespace
-
-std::string GenerateApplicationNameFromURL(const GURL& url) {
-  return base::StrCat({url.host_piece(), "_", url.path_piece()});
-}
+static const char kCrxAppPrefix[] = "_crx_";
 
 std::string GenerateApplicationNameFromAppId(const AppId& app_id) {
   std::string t(kCrxAppPrefix);
   t.append(app_id);
   return t;
-}
-
-// TODO(crbug.com/943194): Move this method to Focus Mode specific file.
-// TODO(crbug.com/943653): Use site's manifest scope as window grouping key.
-std::string GenerateApplicationNameForFocusMode() {
-  return kFocusModePrefix + base::NumberToString(focus_mode_counter++);
 }
 
 AppId GetAppIdFromApplicationName(const std::string& app_name) {

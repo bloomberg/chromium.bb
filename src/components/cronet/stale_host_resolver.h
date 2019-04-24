@@ -91,7 +91,6 @@ class StaleHostResolver : public net::HostResolver {
                  net::HostCache::EntryStaleness* stale_out,
                  bool* secure_out) const override;
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const override;
-  void SetRequestContext(net::URLRequestContext* request_context) override;
 
  private:
   class RequestImpl;

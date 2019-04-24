@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ui_devtools/views/overlay_agent_views.h"
+#include "components/ui_devtools/views/overlay_agent_aura.h"
 
 #include "components/ui_devtools/ui_devtools_unittest_utils.h"
 #include "components/ui_devtools/ui_element.h"
-#include "components/ui_devtools/views/dom_agent_views.h"
+#include "components/ui_devtools/views/dom_agent_aura.h"
+#include "components/ui_devtools/views/overlay_agent_aura.h"
 #include "components/ui_devtools/views/view_element.h"
 #include "components/ui_devtools/views/widget_element.h"
+#include "components/ui_devtools/views/window_element.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
@@ -18,7 +20,6 @@
 #include "ui/views/window/non_client_view.h"
 
 #if defined(USE_AURA)
-#include "components/ui_devtools/views/window_element.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -27,6 +28,7 @@
 namespace ui_devtools {
 
 namespace {
+const SkColor kBackgroundColor = 0;
 
 gfx::Point GetOriginInScreen(views::View* view) {
   gfx::Point point(0, 0);  // Since it's local bounds, origin is always 0,0.
@@ -42,9 +44,10 @@ class OverlayAgentTest : public views::ViewsTestBase {
     fake_frontend_channel_ = std::make_unique<FakeFrontendChannel>();
     uber_dispatcher_ = std::make_unique<protocol::UberDispatcher>(
         fake_frontend_channel_.get());
-    dom_agent_ = DOMAgentViews::Create();
+    aura::Env* env = aura::Env::GetInstance();
+    dom_agent_ = std::make_unique<DOMAgentAura>(env);
     dom_agent_->Init(uber_dispatcher_.get());
-    overlay_agent_ = OverlayAgentViews::Create(dom_agent_.get());
+    overlay_agent_ = std::make_unique<OverlayAgentAura>(dom_agent_.get(), env);
     overlay_agent_->Init(uber_dispatcher_.get());
     overlay_agent_->enable();
     views::ViewsTestBase::SetUp();
@@ -57,24 +60,17 @@ class OverlayAgentTest : public views::ViewsTestBase {
     dom_agent_.reset();
     uber_dispatcher_.reset();
     fake_frontend_channel_.reset();
-    widget_.reset();
     views::ViewsTestBase::TearDown();
   }
 
  protected:
   std::unique_ptr<ui::MouseEvent> MouseEventAtRootLocation(gfx::Point p) {
-#if defined(USE_AURA)
-    ui::EventTarget* target = GetContext();
-#else
-    ui::EventTarget* target = widget()->GetRootView();
-#endif
     auto event = std::make_unique<ui::MouseEvent>(ui::ET_MOUSE_MOVED, p, p,
                                                   ui::EventTimeForNow(),
                                                   ui::EF_NONE, ui::EF_NONE);
-    ui::Event::DispatcherApi(event.get()).set_target(target);
+    ui::Event::DispatcherApi(event.get()).set_target(GetContext());
     return event;
   }
-
   views::View* GetViewAtPoint(int x, int y) {
     gfx::Point point(x, y);
     int element_id = overlay_agent()->FindElementIdTargetedByPoint(
@@ -99,7 +95,6 @@ class OverlayAgentTest : public views::ViewsTestBase {
             node_id));
   }
 
-#if defined(USE_AURA)
   std::unique_ptr<aura::Window> CreateWindowElement(const gfx::Rect& bounds) {
     std::unique_ptr<aura::Window> window = std::make_unique<aura::Window>(
         nullptr, aura::client::WINDOW_TYPE_NORMAL);
@@ -109,38 +104,35 @@ class OverlayAgentTest : public views::ViewsTestBase {
     window->Show();
     return window;
   }
-#endif
 
-  void CreateWidget(const gfx::Rect& bounds) {
-    widget_ = std::make_unique<views::Widget>();
+  std::unique_ptr<views::Widget> CreateWidget(const gfx::Rect& bounds) {
+    auto widget = std::make_unique<views::Widget>();
     views::Widget::InitParams params;
     params.delegate = nullptr;
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds = bounds;
-#if defined(USE_AURA)
     params.parent = GetContext();
-#endif
-    widget_->Init(params);
-    widget_->Show();
+    widget->Init(params);
+    widget->Show();
+    return widget;
   }
 
-  void CreateWidget() {
+  std::unique_ptr<views::Widget> CreateWidget() {
     // Create a widget with default bounds.
     return CreateWidget(gfx::Rect(0, 0, 400, 400));
   }
 
-  views::Widget* widget() { return widget_.get(); }
-  DOMAgentViews* dom_agent() { return dom_agent_.get(); }
-  OverlayAgentViews* overlay_agent() { return overlay_agent_.get(); }
+  DOMAgent* dom_agent() { return dom_agent_.get(); }
+  OverlayAgentAura* overlay_agent() { return overlay_agent_.get(); }
   FakeFrontendChannel* frontend_channel() {
     return fake_frontend_channel_.get();
   }
 
+ private:
   std::unique_ptr<protocol::UberDispatcher> uber_dispatcher_;
   std::unique_ptr<FakeFrontendChannel> fake_frontend_channel_;
-  std::unique_ptr<DOMAgentViews> dom_agent_;
-  std::unique_ptr<OverlayAgentViews> overlay_agent_;
-  std::unique_ptr<views::Widget> widget_;
+  std::unique_ptr<DOMAgentAura> dom_agent_;
+  std::unique_ptr<OverlayAgentAura> overlay_agent_;
 };
 
 #if defined(USE_AURA)
@@ -173,12 +165,12 @@ TEST_F(OverlayAgentTest, FindElementIdTargetedByPointWindow) {
 #endif
 
 TEST_F(OverlayAgentTest, FindElementIdTargetedByPointViews) {
-  CreateWidget();
+  std::unique_ptr<views::Widget> widget = CreateWidget();
 
   std::unique_ptr<protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
 
-  views::View* contents_view = widget()->GetContentsView();
+  views::View* contents_view = widget->GetContentsView();
   contents_view->RemoveAllChildViews(true);
 
   views::View* child_1 = new views::View;
@@ -200,7 +192,7 @@ TEST_F(OverlayAgentTest, FindElementIdTargetedByPointViews) {
   child_1->SetBounds(20, 20, 100, 100);
   child_2->SetBounds(90, 50, 100, 100);
 
-  EXPECT_EQ(GetViewAtPoint(1, 1), widget()->GetContentsView());
+  EXPECT_EQ(GetViewAtPoint(1, 1), widget->GetContentsView());
   EXPECT_EQ(GetViewAtPoint(21, 21), child_1);
   EXPECT_EQ(GetViewAtPoint(170, 130), child_2);
   // At the overlap.
@@ -234,10 +226,7 @@ TEST_F(OverlayAgentTest, HighlightRects) {
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(testing::Message() << "Case: " << test_case.name);
-    CreateWidget(kWidgetBounds);
-    // Can't just use kWidgetBounds because of Mac's menu bar.
-    gfx::Vector2d widget_screen_offset =
-        widget()->GetClientAreaBoundsInScreen().OffsetFromOrigin();
+    std::unique_ptr<views::Widget> widget = CreateWidget(kWidgetBounds);
 
     std::unique_ptr<protocol::DOM::Node> root;
     dom_agent()->getDocument(&root);
@@ -245,7 +234,7 @@ TEST_F(OverlayAgentTest, HighlightRects) {
     // Fish out the client view to serve as superview. Emptying out the content
     // view and adding the subviews directly causes NonClientView's hit test to
     // fail.
-    views::View* contents_view = widget()->GetContentsView();
+    views::View* contents_view = widget->GetContentsView();
     DCHECK_EQ(contents_view->GetClassName(),
               views::NonClientView::kViewClassName);
     views::NonClientView* non_client_view =
@@ -261,13 +250,12 @@ TEST_F(OverlayAgentTest, HighlightRects) {
 
     overlay_agent()->setInspectMode(
         "searchForNode", protocol::Maybe<protocol::Overlay::HighlightConfig>());
-    ui::test::EventGenerator generator(GetRootWindow(widget()));
-    generator.set_assume_window_at_origin(false);
+    ui::test::EventGenerator generator(GetRootWindow(widget.get()));
 
     // Highlight child 1.
     generator.MoveMouseTo(GetOriginInScreen(child_1));
     // Click to pin it.
-    generator.ClickLeftButton();
+    generator.PressLeftButton();
     // Highlight child 2. Now, the distance overlay is showing.
     generator.MoveMouseTo(GetOriginInScreen(child_2));
 
@@ -277,11 +265,11 @@ TEST_F(OverlayAgentTest, HighlightRects) {
     // Check results of pinned and hovered rectangles.
     gfx::Rect expected_pinned_rect =
         client_view->ConvertRectToParent(test_case.first_element_bounds);
-    expected_pinned_rect.Offset(widget_screen_offset);
+    expected_pinned_rect.Offset(kWidgetBounds.OffsetFromOrigin());
     EXPECT_EQ(expected_pinned_rect, overlay_agent()->pinned_rect_);
     gfx::Rect expected_hovered_rect =
         client_view->ConvertRectToParent(test_case.second_element_bounds);
-    expected_hovered_rect.Offset(widget_screen_offset);
+    expected_hovered_rect.Offset(kWidgetBounds.OffsetFromOrigin());
     EXPECT_EQ(expected_hovered_rect, overlay_agent()->hovered_rect_);
     // If we don't explicitly stop inspecting, we'll leave ourselves as
     // a pretarget handler for the root window and UAF in the next test.
@@ -294,7 +282,7 @@ TEST_F(OverlayAgentTest, HighlightRects) {
 // Tests that the correct Overlay events are dispatched to the frontend when
 // hovering and clicking over a UI element in inspect mode.
 TEST_F(OverlayAgentTest, MouseEventsGenerateFEEventsInInspectMode) {
-  CreateWidget();
+  std::unique_ptr<views::Widget> widget = CreateWidget();
 
   std::unique_ptr<protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
@@ -310,17 +298,15 @@ TEST_F(OverlayAgentTest, MouseEventsGenerateFEEventsInInspectMode) {
 
   // Moving the mouse cursor over the widget bounds should request a node
   // highlight.
-  ui::test::EventGenerator generator(GetRootWindow(widget()));
+  ui::test::EventGenerator generator(GetRootWindow(widget.get()));
   generator.MoveMouseBy(p.x(), p.y());
 
-  // Aura platforms generate both ET_MOUSE_ENTERED and ET_MOUSE_MOVED for
-  // this but Mac just generates ET_MOUSE_ENTERED, so just ensure we sent
-  // at least one.
-  EXPECT_GT(GetOverlayNodeHighlightRequestedCount(node_id), 0);
+  // 2 mouse events ET_MOUSE_ENTERED and ET_MOUSE_MOVED are generated.
+  EXPECT_EQ(2, GetOverlayNodeHighlightRequestedCount(node_id));
   EXPECT_EQ(0, GetOverlayInspectNodeRequestedCount(node_id));
 
   // Clicking on the widget should pin that element.
-  generator.ClickLeftButton();
+  generator.PressLeftButton();
 
   // Pin parent node after mouse wheel moves up.
   int parent_id = dom_agent()->GetParentIdOfNodeId(node_id);
@@ -334,21 +320,15 @@ TEST_F(OverlayAgentTest, MouseEventsGenerateFEEventsInInspectMode) {
   int inspect_node_notification_count =
       GetOverlayInspectNodeRequestedCount(node_id);
 
-  // Press escape to exit inspect mode. We're intentionally not supporting
-  // this on Mac due do difficulties in receiving key events without aura::Env.
-#if defined(USE_AURA)
+  // Press escape to exit inspect mode.
   generator.PressKey(ui::KeyboardCode::VKEY_ESCAPE, ui::EventFlags::EF_NONE);
+
   // Upon exiting inspect mode, the element is inspected and highlighted.
   EXPECT_EQ(inspect_node_notification_count + 1,
             GetOverlayInspectNodeRequestedCount(node_id));
   ui::Layer* highlighting_layer = overlay_agent()->layer_for_highlighting();
-  const SkColor kBackgroundColor = 0;
   EXPECT_EQ(kBackgroundColor, highlighting_layer->GetTargetColor());
   EXPECT_TRUE(highlighting_layer->visible());
-#else
-  overlay_agent()->setInspectMode(
-      "none", protocol::Maybe<protocol::Overlay::HighlightConfig>());
-#endif
 
   int highlight_notification_count =
       GetOverlayNodeHighlightRequestedCount(node_id);
@@ -436,7 +416,7 @@ TEST_F(OverlayAgentTest, HighlightEmptyOrInvisibleWindow) {
 #endif
 
 TEST_F(OverlayAgentTest, HighlightWidget) {
-  CreateWidget();
+  std::unique_ptr<views::Widget> widget = CreateWidget();
 
   std::unique_ptr<protocol::DOM::Node> root;
   dom_agent()->getDocument(&root);
@@ -444,7 +424,7 @@ TEST_F(OverlayAgentTest, HighlightWidget) {
   int widget_id =
       dom_agent()
           ->element_root()
-          ->FindUIElementIdForBackendElement<views::Widget>(widget());
+          ->FindUIElementIdForBackendElement<views::Widget>(widget.get());
   DCHECK_NE(widget_id, 0);
 
   overlay_agent()->highlightNode(nullptr, widget_id);

@@ -9,7 +9,7 @@
 
 #include <memory>
 
-class CPDF_Font;
+#include "core/fpdfapi/font/cpdf_font.h"
 
 class CFX_StockFontArray {
  public:

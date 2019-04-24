@@ -59,12 +59,10 @@ IN_PROC_BROWSER_TEST_F(DesktopMediaPickerViewsBrowserTest, InvokeUi_default) {
 }
 
 IN_PROC_BROWSER_TEST_F(DesktopMediaPickerViewsBrowserTest,
-                       InitiallyFocusesDisabledOK) {
+                       InitiallyFocusesCancel) {
   ShowUi(std::string());
   views::DialogDelegate* dialog =
       picker_->GetDialogViewForTesting()->AsDialogDelegate();
-  EXPECT_EQ(dialog->GetDialogClientView()->ok_button(),
+  EXPECT_EQ(dialog->GetDialogClientView()->cancel_button(),
             dialog->DialogDelegate::GetInitiallyFocusedView());
-  EXPECT_FALSE(picker_->GetDialogViewForTesting()->IsDialogButtonEnabled(
-      ui::DIALOG_BUTTON_OK));
 }

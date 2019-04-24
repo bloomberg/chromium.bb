@@ -27,13 +27,11 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.tasks.tabgroup.TabGroupModelFilter;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -125,14 +123,7 @@ class GridTabSwitcherMediator
                     mShouldIgnoreNextSelect = false;
                     return;
                 }
-                if (mContainerViewModel.get(IS_VISIBLE)) {
-                    TabModelFilter modelFilter = mTabModelSelector.getTabModelFilterProvider()
-                                                         .getCurrentTabModelFilter();
-                    if (modelFilter instanceof TabGroupModelFilter) {
-                        ((TabGroupModelFilter) modelFilter).recordSessionsCount(tab);
-                    }
-                    setVisibility(false);
-                }
+                setVisibility(false);
             }
         };
 

@@ -21,7 +21,7 @@ BluetoothDiscoveryFilter::~BluetoothDiscoveryFilter() = default;
 
 bool BluetoothDiscoveryFilter::GetRSSI(int16_t* out_rssi) const {
   DCHECK(out_rssi);
-  if (!rssi_)
+  if (!rssi_.get())
     return false;
 
   *out_rssi = *rssi_;
@@ -29,12 +29,15 @@ bool BluetoothDiscoveryFilter::GetRSSI(int16_t* out_rssi) const {
 }
 
 void BluetoothDiscoveryFilter::SetRSSI(int16_t rssi) {
-  rssi_ = rssi;
+  if (!rssi_.get())
+    rssi_.reset(new int16_t());
+
+  *rssi_ = rssi;
 }
 
 bool BluetoothDiscoveryFilter::GetPathloss(uint16_t* out_pathloss) const {
   DCHECK(out_pathloss);
-  if (!pathloss_)
+  if (!pathloss_.get())
     return false;
 
   *out_pathloss = *pathloss_;
@@ -42,7 +45,10 @@ bool BluetoothDiscoveryFilter::GetPathloss(uint16_t* out_pathloss) const {
 }
 
 void BluetoothDiscoveryFilter::SetPathloss(uint16_t pathloss) {
-  pathloss_ = pathloss;
+  if (!pathloss_.get())
+    pathloss_.reset(new uint16_t());
+
+  *pathloss_ = pathloss;
 }
 
 BluetoothTransport BluetoothDiscoveryFilter::GetTransport() const {
@@ -82,8 +88,15 @@ void BluetoothDiscoveryFilter::CopyFrom(
   } else
     uuids_.clear();
 
-  rssi_ = filter.rssi_;
-  pathloss_ = filter.pathloss_;
+  if (filter.rssi_.get()) {
+    SetRSSI(*filter.rssi_);
+  } else
+    rssi_.reset();
+
+  if (filter.pathloss_.get()) {
+    SetPathloss(*filter.pathloss_);
+  } else
+    pathloss_.reset();
 }
 
 std::unique_ptr<device::BluetoothDiscoveryFilter>
@@ -120,17 +133,17 @@ BluetoothDiscoveryFilter::Merge(
       result->AddUUID(uuid);
   }
 
-  if ((filter_a->rssi_ && filter_b->pathloss_) ||
-      (filter_a->pathloss_ && filter_b->rssi_)) {
+  if ((filter_a->rssi_.get() && filter_b->pathloss_.get()) ||
+      (filter_a->pathloss_.get() && filter_b->rssi_.get())) {
     // if both rssi and pathloss filtering is enabled in two different
     // filters, we can't tell which filter is more generic, and we don't set
     // proximity filtering on merged filter.
     return result;
   }
 
-  if (filter_a->rssi_ && filter_b->rssi_) {
+  if (filter_a->rssi_.get() && filter_b->rssi_.get()) {
     result->SetRSSI(std::min(*filter_a->rssi_, *filter_b->rssi_));
-  } else if (filter_a->pathloss_ && filter_b->pathloss_) {
+  } else if (filter_a->pathloss_.get() && filter_b->pathloss_.get()) {
     result->SetPathloss(std::max(*filter_a->pathloss_, *filter_b->pathloss_));
   }
 
@@ -139,13 +152,14 @@ BluetoothDiscoveryFilter::Merge(
 
 bool BluetoothDiscoveryFilter::Equals(
     const BluetoothDiscoveryFilter& other) const {
-  if ((rssi_.has_value() != other.rssi_.has_value()) ||
-      (rssi_ && other.rssi_ && *rssi_ != *other.rssi_)) {
+  if (((!!rssi_.get()) != (!!other.rssi_.get())) ||
+      (rssi_.get() && other.rssi_.get() && *rssi_ != *other.rssi_)) {
     return false;
   }
 
-  if ((pathloss_.has_value() != other.pathloss_.has_value()) ||
-      (pathloss_ && other.pathloss_ && *pathloss_ != *other.pathloss_)) {
+  if (((!!pathloss_.get()) != (!!other.pathloss_.get())) ||
+      (pathloss_.get() && other.pathloss_.get() &&
+       *pathloss_ != *other.pathloss_)) {
     return false;
   }
 
@@ -162,7 +176,7 @@ bool BluetoothDiscoveryFilter::Equals(
 }
 
 bool BluetoothDiscoveryFilter::IsDefault() const {
-  return !(rssi_ || pathloss_ || uuids_.size() ||
+  return !(rssi_.get() || pathloss_.get() || uuids_.size() ||
            transport_ != BLUETOOTH_TRANSPORT_DUAL);
 }
 

@@ -4,11 +4,11 @@
 
 #include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 
-#include "base/format_macros.h"
-#include "base/rand_util.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -40,10 +40,11 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
     : source_id_(source_id),
       recorder_(recorder),
       event_name_("Blink.UpdateTime"),
-      mean_milliseconds_between_samples_(30000),
-      next_event_time_(CurrentTimeTicks()) {
+      event_frequency_(TimeDelta::FromSeconds(30)),
+      last_flushed_time_(CurrentTimeTicks()) {
   // Record average and worst case for the primary metric.
-  primary_metric_.reset();
+  primary_metric_.worst_case_metric_name = "MainFrame.WorstCase";
+  primary_metric_.average_metric_name = "MainFrame.Average";
 
   // Define the UMA for the primary metric.
   primary_metric_.uma_counter.reset(
@@ -60,55 +61,65 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
   if (!bucket_thresholds().size()) {
     threshold_substrings.push_back(".All");
   } else {
-    threshold_substrings.push_back(String::Format(
-        ".LessThan%" PRId64 "ms", bucket_thresholds()[0].InMilliseconds()));
+    threshold_substrings.push_back(
+        String::Format(".LessThan%lums",
+                       (unsigned long)bucket_thresholds()[0].InMilliseconds()));
     for (wtf_size_t i = 1; i < bucket_thresholds().size(); ++i) {
-      threshold_substrings.push_back(
-          String::Format(".%" PRId64 "msTo%" PRId64 "ms",
-                         bucket_thresholds()[i - 1].InMilliseconds(),
-                         bucket_thresholds()[i].InMilliseconds()));
+      threshold_substrings.push_back(String::Format(
+          ".%lumsTo%lums",
+          (unsigned long)bucket_thresholds()[i - 1].InMilliseconds(),
+          (unsigned long)bucket_thresholds()[i].InMilliseconds()));
     }
     threshold_substrings.push_back(String::Format(
-        ".MoreThan%" PRId64 "ms",
-        bucket_thresholds()[bucket_thresholds().size() - 1].InMilliseconds()));
+        ".MoreThan%lums",
+        (unsigned long)bucket_thresholds()[bucket_thresholds().size() - 1]
+            .InMilliseconds()));
   }
 
   // Populate all the sub-metrics.
   absolute_metric_records_.ReserveInitialCapacity(kCount);
   main_frame_percentage_records_.ReserveInitialCapacity(kCount);
   for (unsigned i = 0; i < (unsigned)kCount; ++i) {
-    const MetricInitializationData& metric_data = metrics_data()[i];
+    const auto& metric_name = metric_strings()[i];
 
     // Absolute records report the absolute time for each metric, both
     // average and worst case. They have an associated UMA too that we
     // own and allocate here.
     auto& absolute_record = absolute_metric_records_.emplace_back();
+    absolute_record.worst_case_metric_name = metric_name;
+    absolute_record.worst_case_metric_name.append(".WorstCase");
+    absolute_record.average_metric_name = metric_name;
+    absolute_record.average_metric_name.append(".Average");
     absolute_record.reset();
-    StringBuilder uma_name;
-    uma_name.Append(uma_preamble);
-    uma_name.Append(metric_data.name);
-    uma_name.Append(uma_postscript);
-    if (metric_data.has_uma) {
-      absolute_record.uma_counter.reset(new CustomCountHistogram(
-          uma_name.ToString().Utf8().data(), 0, 10000000, 50));
-    }
+    String uma_name = uma_preamble;
+    uma_name.append(metric_name);
+    uma_name.append(uma_postscript);
+    absolute_record.uma_counter.reset(
+        new CustomCountHistogram(uma_name.Utf8().data(), 0, 10000000, 50));
 
-    // Percentage records report the ratio of each metric to the primary metric,
+    // Ratio records report the ratio of each metric to the primary metric,
     // average and worst case. UMA counters are also associated with the
     // ratios and we allocate and own them here.
     auto& percentage_record = main_frame_percentage_records_.emplace_back();
+    percentage_record.worst_case_metric_name = metric_name;
+    percentage_record.worst_case_metric_name.append(".WorstCaseRatio");
+    percentage_record.average_metric_name = metric_name;
+    percentage_record.average_metric_name.append(".AverageRatio");
     percentage_record.reset();
     for (auto bucket_substring : threshold_substrings) {
-      StringBuilder uma_percentage_name;
-      uma_percentage_name.Append(uma_percentage_preamble);
-      uma_percentage_name.Append(metric_data.name);
-      uma_percentage_name.Append(uma_percentage_postscript);
-      uma_percentage_name.Append(bucket_substring);
+      String uma_percentage_name = uma_percentage_preamble;
+      uma_percentage_name.append(metric_name);
+      uma_percentage_name.append(uma_percentage_postscript);
+      uma_percentage_name.append(bucket_substring);
       percentage_record.uma_counters_per_bucket.push_back(
           std::make_unique<CustomCountHistogram>(
-              uma_percentage_name.ToString().Utf8().data(), 0, 10000000, 50));
+              uma_percentage_name.Utf8().data(), 0, 10000000, 50));
     }
   }
+}
+
+LocalFrameUkmAggregator::~LocalFrameUkmAggregator() {
+  Flush(TimeTicks());
 }
 
 LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer
@@ -126,13 +137,16 @@ void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
                                            TimeTicks end) {
   TimeDelta duration = end - start;
 
-  // Accumulate for UKM and record the UMA
+  // Append the duration to the appropriate metrics record.
   DCHECK_LT(metric_index, absolute_metric_records_.size());
   auto& record = absolute_metric_records_[metric_index];
-  record.interval_duration += duration;
+  if (duration > record.worst_case_duration)
+    record.worst_case_duration = duration;
+  record.total_duration += duration;
+  ++record.sample_count;
+
   // Record the UMA
-  if (record.uma_counter)
-    record.uma_counter->CountMicroseconds(duration);
+  record.uma_counter->CountMicroseconds(duration);
 
   // Only record ratios when inside a main frame.
   if (in_main_frame_update_) {
@@ -156,8 +170,14 @@ void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(TimeTicks start,
   // Record UMA
   primary_metric_.uma_counter->CountMicroseconds(duration);
 
+  if (duration.is_zero())
+    return;
+
   // Record primary time information
-  primary_metric_.interval_duration = duration;
+  if (duration > primary_metric_.worst_case_duration)
+    primary_metric_.worst_case_duration = duration;
+  primary_metric_.total_duration += duration;
+  ++primary_metric_.sample_count;
 
   // Compute all the dependent metrics, after finding which bucket we're in
   // for UMA data.
@@ -172,143 +192,58 @@ void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(TimeTicks start,
     unsigned percentage =
         (unsigned)floor(record.interval_duration.InMicrosecondsF() * 100.0 /
                         duration.InMicrosecondsF());
+    if (percentage > record.worst_case_percentage)
+      record.worst_case_percentage = percentage;
+    record.total_percentage += percentage;
+    ++record.sample_count;
     record.uma_counters_per_bucket[bucket_index]->Count(percentage);
+    record.interval_duration = TimeDelta();
   }
 
-  // Record here to avoid resetting the ratios before this data point is
+  has_data_ = true;
+
+  // Flush here to avoid resetting the ratios before this data point is
   // recorded.
-  UpdateEventTimeAndRecordEventIfNeeded(end);
-
-  // Reset for the next frame.
-  ResetAllMetrics();
+  FlushIfNeeded(end);
 }
 
-void LocalFrameUkmAggregator::UpdateEventTimeAndRecordEventIfNeeded(
-    TimeTicks current_time) {
-  // When a long frame comes in, it might cover more than one interval
-  // sampled. That's quite unlikely given the mean interval is 30s and
-  // a single frame is rarely longer, but it may happen. Report multiple
-  // events for the long frame so that we can detect it in the data, and
-  // also to weigh long frames more because they are the primary source
-  // of user frustration and we want to know about that.
-  // TODO(schenney) Adjust the mean sample interval so that we do not
-  // get our events throttled by the UKM system. For M-73 only 1 in 212
-  // events are being sent.
-  while (current_time >= next_event_time_) {
-    RecordEvent();
-    next_event_time_ += SampleInterval();
+void LocalFrameUkmAggregator::FlushIfNeeded(TimeTicks current_time) {
+  if (current_time >= last_flushed_time_ + event_frequency_)
+    Flush(current_time);
+}
+
+void LocalFrameUkmAggregator::Flush(TimeTicks current_time) {
+  last_flushed_time_ = current_time;
+  if (!has_data_)
+    return;
+  DCHECK(primary_metric_.sample_count);
+
+  ukm::UkmEntryBuilder builder(source_id_, event_name_.Utf8().data());
+  builder.SetMetric(primary_metric_.worst_case_metric_name.Utf8().data(),
+                    primary_metric_.worst_case_duration.InMicroseconds());
+  builder.SetMetric(primary_metric_.average_metric_name.Utf8().data(),
+                    primary_metric_.total_duration.InMicroseconds() /
+                        static_cast<int64_t>(primary_metric_.sample_count));
+  for (auto& record : absolute_metric_records_) {
+    if (record.sample_count == 0)
+      continue;
+    builder.SetMetric(record.worst_case_metric_name.Utf8().data(),
+                      record.worst_case_duration.InMicroseconds());
+    builder.SetMetric(record.average_metric_name.Utf8().data(),
+                      record.total_duration.InMicroseconds() /
+                          static_cast<int64_t>(record.sample_count));
   }
-}
-
-void LocalFrameUkmAggregator::RecordEvent() {
-  ukm::builders::Blink_UpdateTime builder(source_id_);
-  builder.SetMainFrame(primary_metric_.interval_duration.InMicroseconds());
-  for (unsigned i = 0; i < (unsigned)kCount; ++i) {
-    MetricId id = static_cast<MetricId>(i);
-    auto& absolute_record = absolute_metric_records_[(unsigned)id];
-    auto& percentage_record = main_frame_percentage_records_[(unsigned)id];
-    unsigned percentage = (unsigned)floor(
-        percentage_record.interval_duration.InMicrosecondsF() * 100.0 /
-        primary_metric_.interval_duration.InMicrosecondsF());
-    switch (id) {
-      case kCompositing:
-        builder
-            .SetCompositing(absolute_record.interval_duration.InMicroseconds())
-            .SetCompositingPercentage(percentage);
-        break;
-      case kCompositingCommit:
-        builder
-            .SetCompositingCommit(
-                absolute_record.interval_duration.InMicroseconds())
-            .SetCompositingCommitPercentage(percentage);
-        break;
-      case kIntersectionObservation:
-        builder
-            .SetIntersectionObservation(
-                absolute_record.interval_duration.InMicroseconds())
-            .SetIntersectionObservationPercentage(percentage);
-        break;
-      case kPaint:
-        builder.SetPaint(absolute_record.interval_duration.InMicroseconds())
-            .SetPaintPercentage(percentage);
-        break;
-      case kPrePaint:
-        builder.SetPrePaint(absolute_record.interval_duration.InMicroseconds())
-            .SetPrePaintPercentage(percentage);
-        break;
-      case kStyleAndLayout:
-        builder
-            .SetStyleAndLayout(
-                absolute_record.interval_duration.InMicroseconds())
-            .SetStyleAndLayoutPercentage(percentage);
-        break;
-      case kForcedStyleAndLayout:
-        builder
-            .SetForcedStyleAndLayout(
-                absolute_record.interval_duration.InMicroseconds())
-            .SetForcedStyleAndLayoutPercentage(percentage);
-        break;
-      case kScrollingCoordinator:
-        builder
-            .SetScrollingCoordinator(
-                absolute_record.interval_duration.InMicroseconds())
-            .SetScrollingCoordinatorPercentage(percentage);
-        break;
-      case kHandleInputEvents:
-        builder
-            .SetHandleInputEvents(
-                absolute_record.interval_duration.InMicroseconds())
-            .SetHandleInputEventsPercentage(percentage);
-        break;
-      case kAnimate:
-        builder.SetAnimate(absolute_record.interval_duration.InMicroseconds())
-            .SetAnimatePercentage(percentage);
-        break;
-      case kUpdateLayers:
-        builder
-            .SetUpdateLayers(absolute_record.interval_duration.InMicroseconds())
-            .SetUpdateLayersPercentage(percentage);
-        break;
-      case kProxyCommit:
-        builder
-            .SetProxyCommit(absolute_record.interval_duration.InMicroseconds())
-            .SetProxyCommitPercentage(percentage);
-        break;
-      case kCount:
-      case kMainFrame:
-        NOTREACHED();
-        break;
-    }
+  for (auto& record : main_frame_percentage_records_) {
+    if (record.sample_count == 0)
+      continue;
+    builder.SetMetric(record.worst_case_metric_name.Utf8().data(),
+                      record.worst_case_percentage);
+    builder.SetMetric(record.average_metric_name.Utf8().data(),
+                      record.total_percentage / record.sample_count);
+    record.reset();
   }
   builder.Record(recorder_);
-}
-
-void LocalFrameUkmAggregator::ResetAllMetrics() {
-  primary_metric_.reset();
-  for (auto& record : absolute_metric_records_)
-    record.reset();
-  for (auto& record : main_frame_percentage_records_)
-    record.reset();
-}
-
-TimeDelta LocalFrameUkmAggregator::SampleInterval() {
-  // Return the test interval if set
-  if (interval_for_test_ > TimeDelta())
-    return interval_for_test_;
-
-  // Sample from an exponential distribution to give a poisson distribution
-  // of samples per time unit. In this case, a mean of one sample per
-  // mean_milliseconds_between_samples_. The exponential distribution tends
-  // to give more samples in the range (0, mean) than in the range
-  // [mean, infinity). Intuitively, the (0, mean) is bounded and can only
-  // influence the mean so much, while the [mean, infinity) range is infinite
-  // and can generate some long interval times (though there is less than 1%
-  // chance of an interval mofre than 5 * mean).
-  // RandDouble() returns [0,1), but we need (0,1]. If RandDouble() is
-  // uniformly random, so is 1-RandDouble(), so use it to adjust the range.
-  double sample =
-      -mean_milliseconds_between_samples_ * log(1.0 - base::RandDouble());
-  return TimeDelta::FromMillisecondsD(sample);
+  has_data_ = false;
 }
 
 }  // namespace blink

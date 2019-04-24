@@ -31,7 +31,6 @@ class MockAlsaWrapper : public AlsaWrapper {
   MOCK_METHOD1(PcmDrain, int(snd_pcm_t* handle));
   MOCK_METHOD1(PcmDrop, int(snd_pcm_t* handle));
   MOCK_METHOD2(PcmDelay, int(snd_pcm_t* handle, snd_pcm_sframes_t* delay));
-  MOCK_METHOD1(PcmResume, int(snd_pcm_t* handle));
   MOCK_METHOD3(PcmWritei,
                snd_pcm_sframes_t(snd_pcm_t* handle,
                                  const void* buffer,
@@ -56,8 +55,6 @@ class MockAlsaWrapper : public AlsaWrapper {
   MOCK_METHOD1(PcmHwParamsMalloc, int(snd_pcm_hw_params_t** hw_params));
   MOCK_METHOD2(PcmHwParamsAny,
                int(snd_pcm_t* handle, snd_pcm_hw_params_t* hw_params));
-  MOCK_METHOD1(PcmHwParamsCanResume, int(snd_pcm_hw_params_t* hw_params));
-
   MOCK_METHOD3(PcmHwParamsSetRateResample,
                int(snd_pcm_t* handle,
                    snd_pcm_hw_params_t* hw_params,

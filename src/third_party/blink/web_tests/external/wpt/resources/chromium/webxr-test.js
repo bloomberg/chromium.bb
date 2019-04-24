@@ -328,16 +328,9 @@ class MockRuntime {
   }
 
   getEnvironmentIntegrationProvider(environmentProviderRequest) {
-    this.environmentProviderBinding_ = new mojo.AssociatedBinding(
+    let environmentProviderBinding = new mojo.AssociatedBinding(
         device.mojom.XREnvironmentIntegrationProvider, this,
         environmentProviderRequest);
-  }
-
-  // Note that if getEnvironmentProvider hasn't finished running yet this will
-  // be undefined. It's recommended that you allow a successful task to post
-  // first before attempting to close.
-  closeEnvironmentIntegrationProvider() {
-    this.environmentProviderBinding_.close();
   }
 
   updateSessionGeometry(frame_size, display_rotation) {

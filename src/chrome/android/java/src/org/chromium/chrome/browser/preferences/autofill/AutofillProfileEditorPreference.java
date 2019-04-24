@@ -50,7 +50,7 @@ public class AutofillProfileEditorPreference extends Preference {
 
     private void prepareAddressEditor() {
         AddressEditor addressEditor =
-                new AddressEditor(AddressEditor.Purpose.AUTOFILL_SETTINGS, /*saveToDisk=*/true);
+                new AddressEditor(/*emailFieldIncluded=*/true, /*saveToDisk=*/true);
         addressEditor.setEditorDialog(mEditorDialog);
 
         addressEditor.edit(mAutofillAddress, new Callback<AutofillAddress>() {

@@ -49,9 +49,9 @@ sk_sp<SkColorFilter> GetConversionFilter(
 
   switch (dst_interpolation_space) {
     case kInterpolationSpaceLinear:
-      return SkColorFilters::SRGBToLinearGamma();
+      return SkColorFilter::MakeSRGBToLinearGamma();
     case kInterpolationSpaceSRGB:
-      return SkColorFilters::LinearToSRGBGamma();
+      return SkColorFilter::MakeLinearToSRGBGamma();
   }
 
   NOTREACHED();

@@ -9,6 +9,13 @@
 login.createScreen('KioskEnableScreen', 'kiosk-enable', function() {
   return {
     EXTERNAL_API: ['enableKioskForTesting', 'onCompleted'],
+    /**
+     * Header text of the screen.
+     * @type {string}
+     */
+    get header() {
+      return loadTimeData.getString('kioskEnableTitle');
+    },
 
     /**
      * Buttons in oobe wizard's button strip.

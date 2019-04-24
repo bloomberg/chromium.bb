@@ -246,7 +246,7 @@ public class AwContentsClientShouldInterceptRequestTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testDoesNotCrashOnInvalidData_NullInputStream() throws Throwable {
+    public void testDoesNotCrashOnInvalidData() throws Throwable {
         final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
 
         mShouldInterceptRequestHelper.setReturnValue(
@@ -254,45 +254,16 @@ public class AwContentsClientShouldInterceptRequestTest {
         int callCount = mShouldInterceptRequestHelper.getCallCount();
         mActivityTestRule.loadUrlAsync(mAwContents, aboutPageUrl);
         mShouldInterceptRequestHelper.waitForCallback(callCount);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    public void testDoesNotCrashOnInvalidData_NullMimeEncodingAndZeroLengthStream()
-            throws Throwable {
-        final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
 
         mShouldInterceptRequestHelper.setReturnValue(
                 new AwWebResourceResponse(null, null, new ByteArrayInputStream(new byte[0])));
-        int callCount = mShouldInterceptRequestHelper.getCallCount();
+        callCount = mShouldInterceptRequestHelper.getCallCount();
         mActivityTestRule.loadUrlAsync(mAwContents, aboutPageUrl);
         mShouldInterceptRequestHelper.waitForCallback(callCount);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    public void testDoesNotCrashOnInvalidData_NullMimeEncodingAndInputStream() throws Throwable {
-        final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
 
         mShouldInterceptRequestHelper.setReturnValue(
                 new AwWebResourceResponse(null, null, null));
-        int callCount = mShouldInterceptRequestHelper.getCallCount();
-        mActivityTestRule.loadUrlAsync(mAwContents, aboutPageUrl);
-        mShouldInterceptRequestHelper.waitForCallback(callCount);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    public void testDoesNotCrashOnInvalidData_ResponseWithAllNullValues() throws Throwable {
-        final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
-
-        mShouldInterceptRequestHelper.setReturnValue(new AwWebResourceResponse(null /* mime type */,
-                null /* encoding */, null /* input stream */, 0 /* status code */,
-                null /* reason phrase */, null /* response headers */));
-        int callCount = mShouldInterceptRequestHelper.getCallCount();
+        callCount = mShouldInterceptRequestHelper.getCallCount();
         mActivityTestRule.loadUrlAsync(mAwContents, aboutPageUrl);
         mShouldInterceptRequestHelper.waitForCallback(callCount);
     }

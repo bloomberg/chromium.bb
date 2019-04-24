@@ -5,14 +5,10 @@
 #ifndef IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_
 #define IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_
 
-#import <Foundation/Foundation.h>
+#import <EarlGrey/EarlGrey.h>
 
-#include <string>
-
+#include "ios/web/public/test/element_selector.h"
 #include "url/gurl.h"
-
-@class ElementSelector;
-@protocol GREYMatcher;
 
 namespace chrome_test_util {
 
@@ -105,7 +101,8 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Waits for the current web view to contain an element matching |selector|.
 // If the condition is not met within a timeout, a GREYAssert is induced.
-+ (void)waitForWebViewContainingElement:(ElementSelector*)selector;
++ (void)waitForWebViewContainingElement:
+    (const web::test::ElementSelector)selector;
 
 // Waits for there to be no web view containing |text|. If the condition is not
 // met within a timeout, a GREYAssert is induced.

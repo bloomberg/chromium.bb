@@ -69,8 +69,8 @@ PairwiseInterpolationValue ShadowInterpolationFunctions::MaybeMergeSingles(
 InterpolationValue ShadowInterpolationFunctions::ConvertShadowData(
     const ShadowData& shadow_data,
     double zoom) {
-  auto interpolable_list =
-      std::make_unique<InterpolableList>(kShadowComponentIndexCount);
+  std::unique_ptr<InterpolableList> interpolable_list =
+      InterpolableList::Create(kShadowComponentIndexCount);
   interpolable_list->Set(kShadowX,
                          LengthInterpolationFunctions::CreateInterpolablePixels(
                              shadow_data.X() / zoom));
@@ -93,29 +93,26 @@ InterpolationValue ShadowInterpolationFunctions::ConvertShadowData(
 
 InterpolationValue ShadowInterpolationFunctions::MaybeConvertCSSValue(
     const CSSValue& value) {
-  const auto* shadow = DynamicTo<CSSShadowValue>(value);
-  if (!shadow)
+  if (!value.IsShadowValue())
     return nullptr;
+  const CSSShadowValue& shadow = ToCSSShadowValue(value);
 
   ShadowStyle style = kNormal;
-  if (shadow->style) {
-    if (shadow->style->GetValueID() == CSSValueID::kInset)
+  if (shadow.style) {
+    if (shadow.style->GetValueID() == CSSValueInset)
       style = kInset;
     else
       return nullptr;
   }
 
-  auto interpolable_list =
-      std::make_unique<InterpolableList>(kShadowComponentIndexCount);
+  std::unique_ptr<InterpolableList> interpolable_list =
+      InterpolableList::Create(kShadowComponentIndexCount);
   static_assert(kShadowX == 0, "Enum ordering check.");
   static_assert(kShadowY == 1, "Enum ordering check.");
   static_assert(kShadowBlur == 2, "Enum ordering check.");
   static_assert(kShadowSpread == 3, "Enum ordering check.");
   const CSSPrimitiveValue* lengths[] = {
-      shadow->x.Get(),
-      shadow->y.Get(),
-      shadow->blur.Get(),
-      shadow->spread.Get(),
+      shadow.x.Get(), shadow.y.Get(), shadow.blur.Get(), shadow.spread.Get(),
   };
   for (wtf_size_t i = 0; i < base::size(lengths); i++) {
     if (lengths[i]) {
@@ -131,9 +128,9 @@ InterpolationValue ShadowInterpolationFunctions::MaybeConvertCSSValue(
     }
   }
 
-  if (shadow->color) {
+  if (shadow.color) {
     std::unique_ptr<InterpolableValue> interpolable_color =
-        CSSColorInterpolationType::MaybeCreateInterpolableColor(*shadow->color);
+        CSSColorInterpolationType::MaybeCreateInterpolableColor(*shadow.color);
     if (!interpolable_color)
       return nullptr;
     interpolable_list->Set(kShadowColor, std::move(interpolable_color));

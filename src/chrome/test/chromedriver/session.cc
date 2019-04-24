@@ -72,9 +72,7 @@ Session::Session(const std::string& id)
       page_load_timeout(kDefaultPageLoadTimeout),
       script_timeout(kDefaultScriptTimeout),
       auto_reporting_enabled(false),
-      strict_file_interactability(false),
-      click_count(0),
-      mouse_click_timestamp(base::TimeTicks::Now()) {}
+      strict_file_interactability(false){}
 
 Session::Session(const std::string& id, std::unique_ptr<Chrome> chrome)
     : id(id),
@@ -90,9 +88,7 @@ Session::Session(const std::string& id, std::unique_ptr<Chrome> chrome)
       page_load_timeout(kDefaultPageLoadTimeout),
       script_timeout(kDefaultScriptTimeout),
       auto_reporting_enabled(false),
-      strict_file_interactability(false),
-      click_count(0),
-      mouse_click_timestamp(base::TimeTicks::Now()) {}
+      strict_file_interactability(false){}
 
 Session::~Session() {}
 

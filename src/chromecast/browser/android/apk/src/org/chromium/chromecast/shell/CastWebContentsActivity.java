@@ -10,7 +10,6 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.KeyEvent;
@@ -113,7 +112,8 @@ public class CastWebContentsActivity extends Activity {
                     // Set flags to both exit sleep mode when this activity starts and
                     // avoid entering sleep mode while playing media. If an app that shouldn't turn
                     // on the screen is launching, we don't add TURN_SCREEN_ON.
-                    if (CastWebContentsIntentUtils.shouldTurnOnScreen(intent)) turnScreenOn();
+                    if (CastWebContentsIntentUtils.shouldTurnOnScreen(intent))
+                        window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
                     window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 })));
 
@@ -288,14 +288,6 @@ public class CastWebContentsActivity extends Activity {
     @Override
     public boolean dispatchTrackballEvent(MotionEvent ev) {
         return false;
-    }
-
-    private void turnScreenOn() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            setTurnScreenOn(true);
-        } else {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-        }
     }
 
     @RemovableInRelease

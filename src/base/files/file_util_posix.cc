@@ -406,17 +406,6 @@ bool CopyDirectoryExcl(const FilePath& from_path,
 }
 #endif  // !defined(OS_NACL_NONSFI)
 
-bool CreatePipe(ScopedFD* read_fd, ScopedFD* write_fd, bool non_blocking) {
-  int fds[2];
-  bool created =
-      non_blocking ? CreateLocalNonBlockingPipe(fds) : (0 == pipe(fds));
-  if (!created)
-    return false;
-  read_fd->reset(fds[0]);
-  write_fd->reset(fds[1]);
-  return true;
-}
-
 bool CreateLocalNonBlockingPipe(int fds[2]) {
 #if defined(OS_LINUX)
   return pipe2(fds, O_CLOEXEC | O_NONBLOCK) == 0;

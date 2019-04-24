@@ -102,10 +102,7 @@ public class BackgroundTaskSchedulerUmaTest {
         assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_NOTIFICATION_SCHEDULER,
                 BackgroundTaskSchedulerUma.toUmaEnumValueFromTaskId(
                         TaskIds.NOTIFICATION_SCHEDULER_JOB_ID));
-        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_NOTIFICATION_TRIGGER,
-                BackgroundTaskSchedulerUma.toUmaEnumValueFromTaskId(
-                        TaskIds.NOTIFICATION_TRIGGER_JOB_ID));
-        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_COUNT, 22);
+        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_COUNT, 21);
     }
 
     @Test

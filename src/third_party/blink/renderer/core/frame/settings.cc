@@ -65,6 +65,10 @@ static const bool kDefaultSelectTrailingWhitespaceEnabled = false;
 Settings::Settings()
     : text_autosizing_enabled_(false) SETTINGS_INITIALIZER_LIST {}
 
+std::unique_ptr<Settings> Settings::Create() {
+  return base::WrapUnique(new Settings);
+}
+
 SETTINGS_SETTER_BODIES
 
 void Settings::SetDelegate(SettingsDelegate* delegate) {
@@ -109,12 +113,11 @@ void Settings::SetForceDarkModeEnabled(bool enabled) {
   force_dark_mode_ = enabled;
 
   if (force_dark_mode_) {
-    SetDarkMode(DarkMode::kInvertLightness);
-    SetDarkModeImagePolicy(DarkModeImagePolicy::kFilterSmart);
+    SetHighContrastMode(DarkMode::kInvertLightness);
+    SetHighContrastImagePolicy(DarkModeImagePolicy::kFilterSmart);
   } else {
-    SetDarkMode(DarkMode::kOff);
+    SetHighContrastMode(DarkMode::kOff);
   }
-  Invalidate(SettingsDelegate::kColorSchemeChange);
 }
 
 }  // namespace blink

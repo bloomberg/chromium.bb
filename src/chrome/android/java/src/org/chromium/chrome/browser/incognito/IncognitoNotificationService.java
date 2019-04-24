@@ -20,16 +20,15 @@ import android.text.TextUtils;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.BrowserStartupController;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -59,15 +58,14 @@ public class IncognitoNotificationService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        PostTask.runSynchronously(
-                UiThreadTaskTraits.DEFAULT, IncognitoUtils::closeAllIncognitoTabs);
+        ThreadUtils.runOnUiThreadBlocking(IncognitoUtils::closeAllIncognitoTabs);
 
         boolean clearedIncognito = IncognitoUtils.deleteIncognitoStateFiles();
 
         // If we failed clearing all of the incognito tabs, then do not dismiss the notification.
         if (!clearedIncognito) return;
 
-        PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             if (IncognitoUtils.doIncognitoTabsExist()) {
                 assert false : "Not all incognito tabs closed as expected";
                 return;
@@ -82,7 +80,7 @@ public class IncognitoNotificationService extends IntentService {
             }
         });
 
-        PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             // Now ensure that the snapshots in recents are all cleared for Tabbed activities
             // to remove any trace of incognito mode.
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {

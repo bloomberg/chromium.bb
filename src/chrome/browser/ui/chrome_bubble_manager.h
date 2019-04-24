@@ -42,7 +42,6 @@ class ChromeBubbleManager : public BubbleManager,
     void OnBubbleNeverShown(BubbleReference bubble) override;
     void OnBubbleClosed(BubbleReference bubble,
                         BubbleCloseReason reason) override;
-    void OnBubbleShown(BubbleReference bubble) override;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ChromeBubbleMetrics);

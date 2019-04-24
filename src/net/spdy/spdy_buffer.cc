@@ -51,7 +51,7 @@ class SpdyBuffer::SharedFrameIOBuffer : public IOBuffer {
  private:
   ~SharedFrameIOBuffer() override {
     // Prevent ~IOBuffer() from trying to delete |data_|.
-    data_ = nullptr;
+    data_ = NULL;
   }
 
   const scoped_refptr<SharedFrame> shared_frame_;

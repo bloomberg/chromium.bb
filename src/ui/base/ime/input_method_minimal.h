@@ -5,7 +5,6 @@
 #ifndef UI_BASE_IME_INPUT_METHOD_MINIMAL_H_
 #define UI_BASE_IME_INPUT_METHOD_MINIMAL_H_
 
-#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/ime/input_method_base.h"
 
@@ -13,8 +12,7 @@ namespace ui {
 
 // A minimal implementation of ui::InputMethod, which supports only the direct
 // input without any compositions or conversions.
-class COMPONENT_EXPORT(UI_BASE_IME) InputMethodMinimal
-    : public InputMethodBase {
+class UI_BASE_IME_EXPORT InputMethodMinimal : public InputMethodBase {
  public:
   explicit InputMethodMinimal(internal::InputMethodDelegate* delegate);
   ~InputMethodMinimal() override;

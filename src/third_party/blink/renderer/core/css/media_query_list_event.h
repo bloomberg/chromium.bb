@@ -16,6 +16,14 @@ class MediaQueryListEvent final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static MediaQueryListEvent* Create(MediaQueryList* list) {
+    return MakeGarbageCollected<MediaQueryListEvent>(list);
+  }
+
+  static MediaQueryListEvent* Create(const String& media, bool matches) {
+    return MakeGarbageCollected<MediaQueryListEvent>(media, matches);
+  }
+
   static MediaQueryListEvent* Create(
       const AtomicString& event_type,
       const MediaQueryListEventInit* initializer) {

@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 
-class Profile;
+class PrefService;
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -23,7 +23,7 @@ class DataReductionProxyIOData;
 // ProfileImplIOData.
 std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
 CreateDataReductionProxyChromeIOData(
-    Profile* profile,
+    PrefService* prefs,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_thread_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread_runner);
 

@@ -43,8 +43,6 @@ namespace blink {
 // instead.
 template <typename T>
 class SharedPersistent : public RefCounted<SharedPersistent<T>> {
-  USING_FAST_MALLOC(SharedPersistent);
-
  public:
   static scoped_refptr<SharedPersistent<T>> Create(v8::Local<T> value,
                                                    v8::Isolate* isolate) {

@@ -600,8 +600,7 @@ static inline void tm2_null_res_block(TM2Context *ctx, AVFrame *pic, int bx, int
 {
     int i;
     int ct;
-    unsigned left, right;
-    int diff;
+    int left, right, diff;
     int deltas[16];
     TM2_INIT_POINTERS();
 

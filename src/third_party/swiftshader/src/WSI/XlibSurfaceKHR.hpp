@@ -16,11 +16,8 @@
 #define SWIFTSHADER_XLIBSURFACEKHR_HPP
 
 #include "Vulkan/VkObject.hpp"
-#include "Vulkan/VkImage.hpp"
 #include "libX11.hpp"
 #include "VkSurfaceKHR.hpp"
-
-#include <map>
 
 namespace vk {
 
@@ -36,16 +33,10 @@ public:
 
 	void getSurfaceCapabilities(VkSurfaceCapabilitiesKHR *pSurfaceCapabilities) const override;
 
-	virtual void attachImage(PresentImage* image) override;
-	virtual void detachImage(PresentImage* image) override;
-	void present(PresentImage* image) override;
-
 private:
 	Display *pDisplay;
 	Window window;
-	GC gc;
-	Visual *visual = nullptr;
-	std::map<PresentImage*, XImage*> imageMap;
+
 };
 
 }

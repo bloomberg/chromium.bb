@@ -54,7 +54,6 @@
 <translation id="1319608975892113573">ไม่มีข้อความที่ยกมาก่อนหน้า</translation>
 <translation id="1321576897702511272">ซ่อนความช่วยเหลือของ ChromeVox</translation>
 <translation id="1325946044405407859">สีแทน</translation>
-<translation id="1331634987653814322">การตั้งค่าอักษรเบรลล์</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> จาก <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">พูดอักขระและคำ</translation>
 <translation id="1334570596456017464">ตัวห้อย</translation>
@@ -99,7 +98,6 @@
 <translation id="1616111909442424068">สีน้ำตาลข้าวสาลี</translation>
 <translation id="1618597272655350600">แจ้งคำอธิบายแบบเต็มของตำแหน่งปัจจุบัน</translation>
 <translation id="1627222324347828322">สีขาวโกสต์ไวท์</translation>
-<translation id="1630688379087270943">ระบุตัวเอียง:</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{เครื่องหมายมากกว่า}other{# เครื่องหมายมากกว่า}}</translation>
 <translation id="1653266918374749391">ส่วนหัวระดับ 3 ก่อนหน้า</translation>
 <translation id="1657616855184033958">แสดงตัวกรองสตรีมเหตุการณ์</translation>
@@ -320,7 +318,6 @@
 <translation id="3286390186030710347">แถบเลื่อน</translation>
 <translation id="3299925995433437805">ไม่มีลิงก์ที่เคยเข้าชมถัดไป</translation>
 <translation id="3300348286427369683">รองรับรูปแบบ Rich Text ขณะนี้ ChromeVox สนับสนุนช่องแบบ Rich Text ซึ่งรวมถึงคำสั่งข้าม การกำหนดเส้นทางเคอร์เซอร์เบรลล์ การเลือก และอื่นๆ</translation>
-<translation id="3304756947457041303">ปรับแต่งการระบุ Rich Text</translation>
 <translation id="3307886118343381874">ไปที่ด้านล่างของตาราง</translation>
 <translation id="3311969765485641742">กด Alt+Shift+A เพื่อดูการแจ้งเตือน</translation>
 <translation id="3312997241656799641">ลิงก์ที่เคยเข้าชมถัดไป</translation>
@@ -407,7 +404,6 @@
 <translation id="3930498801443296724">การเน้นข้อความ</translation>
 <translation id="3936394396199829062">สีชมพูลาเวนเดอร์บลัช</translation>
 <translation id="3941269780691800708">พูดข้อความที่อยู่ใต้เมาส์</translation>
-<translation id="394953087167197343">ระบุการสะกดผิด:</translation>
 <translation id="3962990492275676168">เริ่มอ่านจากตำแหน่งปัจจุบัน</translation>
 <translation id="3970951409746498040">สีน้ำตาลแซนดีบราวน์</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -454,7 +450,6 @@
 <translation id="42164919740161077">สีฟ้าคาเด็ตบลู</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{เครื่องหมายขีดกลาง}other{# เครื่องหมายขีดกลาง}}</translation>
 <translation id="421884353938374759">ตัวเลือกสี</translation>
-<translation id="4221071177874897997">ระบุตัวหนา:</translation>
 <translation id="4229646983878045487">วันที่ เวลา</translation>
 <translation id="4230834257931120629">สีเทาอมฟ้าอ่อน</translation>
 <translation id="4231102694147661229">เปิดใช้ตัวเลือกสำหรับนักพัฒนาซอฟต์แวร์</translation>
@@ -552,7 +547,6 @@
 <translation id="489907760999452556">ลิงก์ภายใน</translation>
 <translation id="4915087353619183190">กำลังเริ่มโหมดการเรียนรู้ กดแป้น QWERTY กดแป้นอักษรเบรลล์แบบรีเฟรชได้ หรือใช้ท่าทางสัมผัสด้วยการแตะเพื่อดูข้อมูลเกี่ยวกับฟังก์ชันของแป้นหรือท่าทางสัมผัสนั้น กดปุ่ม Control พร้อมกับแป้น W หรือปุ่ม Escape เพื่อออก</translation>
 <translation id="492295894462528572">คำนำ</translation>
-<translation id="4943781537993885772">รูปแบบที่แสดง</translation>
 <translation id="495170559598752135">การทำงาน</translation>
 <translation id="4953585991029886728">แก้ไขข้อความ</translation>
 <translation id="4954534434583049121">ข้อความอ้างอิงก่อนหน้า</translation>
@@ -651,7 +645,6 @@
 <translation id="5574412348552378458">โหมดการเรียนรู้ ChromeVox</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">แก้ไขข้อความ, รายการอีเมล</translation>
-<translation id="5586942249556966598">ไม่ดำเนินการใดๆ</translation>
 <translation id="5597170376237141345">ช่องทำเครื่องหมายถัดไป</translation>
 <translation id="5597933780944041114">ไม่มีส่วนหัวถัดไป</translation>
 <translation id="5598905979683743333">ปุ่มตัวเลือก <ph name="NAME" /> ที่ไม่ได้เลือกไว้</translation>
@@ -719,7 +712,6 @@
 <translation id="6006050241733874051">ฟอร์ม</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{เครื่องหมายแบ็คสแลช}other{# เครื่องหมายแบ็คสแลช}}</translation>
 <translation id="6017514345406065928">สีเขียว</translation>
-<translation id="6021969570711251331">แทรกสลับ</translation>
 <translation id="6034000775414344507">เทาอ่อน</translation>
 <translation id="6037602951055904232">เลื่อนไปข้างหน้า</translation>
 <translation id="6042826534790431634">กด Search+Space เพื่อเปิดใช้งาน</translation>
@@ -757,7 +749,6 @@
 <translation id="6348869651006731065">สีเทาหม่น</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{สัญลักษณ์หัวข้อย่อย}other{สัญลักษณ์หัวข้อย่อย # ตัว}}</translation>
 <translation id="6355910664415701303">ไม่มีรายการก่อนหน้า</translation>
-<translation id="6360318852623800555">แอตทริบิวต์ Rich Text</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">ส่วนหัวก่อนหน้า</translation>
 <translation id="6376999910001533545">สีน้ำตาลแดง</translation>
@@ -771,7 +762,6 @@
 <translation id="6438968337250688271">เมนู <ph name="NAME" /></translation>
 <translation id="6444046323172968959">ช่องโต้ตอบการแจ้งเตือน</translation>
 <translation id="6452403590345320472">สารบัญ</translation>
-<translation id="6454456397828627257">แสดงคู่กัน</translation>
 <translation id="6459511626086141404">รูปแบบแป้นแบบราบ</translation>
 <translation id="6468049171101508116">ปุ่มถัดไป</translation>
 <translation id="646954774886932461">ดัชนี</translation>
@@ -933,7 +923,6 @@
 <translation id="762020119231868829">หยุดชั่วคราววิดเจ็ตสื่อที่กำลังเล่นอยู่ทั้งหมด</translation>
 <translation id="7625690649919402823">ตารางถัดไป</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />) ระดับ <ph name="GRADE" /></translation>
-<translation id="763535765081585392">ระบุการขีดเส้นใต้:</translation>
 <translation id="7639968568612851608">เทาเข้ม</translation>
 <translation id="7641134354185483015">ไม่มีส่วนหัวระดับ 3 ก่อนหน้า</translation>
 <translation id="7659376057562985921">ช่องข้อความ <ph name="NAME" /> <ph name="VALUE" /></translation>
@@ -1169,7 +1158,6 @@
 <translation id="8943175951035496220">ไม่มีเซลล์ทางด้านขวา</translation>
 <translation id="8943282376843390568">เหลืองมะนาว</translation>
 <translation id="8946628535652548639">ถ<ph name="TABLECELLROWINDEX" />ค<ph name="TABLECELLCOLUMNINDEX" /></translation>
-<translation id="8957142051395645063">ประกาศ</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">ไม่จำ</translation>
 <translation id="900114243503212879">ไฟล์</translation>

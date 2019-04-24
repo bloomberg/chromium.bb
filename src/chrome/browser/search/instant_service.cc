@@ -635,12 +635,6 @@ void InstantService::ApplyOrResetCustomBackgroundThemeInfo() {
     std::string local_string(chrome::kChromeSearchLocalNtpBackgroundUrl);
     GURL timestamped_url(local_string + "?ts=" + time_string);
     GetInitializedThemeInfo()->custom_background_url = timestamped_url;
-    GetInitializedThemeInfo()->custom_background_attribution_line_1 =
-        std::string();
-    GetInitializedThemeInfo()->custom_background_attribution_line_2 =
-        std::string();
-    GetInitializedThemeInfo()->custom_background_attribution_action_url =
-        GURL();
     return;
   }
 

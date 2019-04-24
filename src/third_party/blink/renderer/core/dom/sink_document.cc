@@ -32,6 +32,10 @@ namespace blink {
 
 class SinkDocumentParser : public RawDataDocumentParser {
  public:
+  static SinkDocumentParser* Create(SinkDocument* document) {
+    return MakeGarbageCollected<SinkDocumentParser>(document);
+  }
+
   explicit SinkDocumentParser(SinkDocument* document)
       : RawDataDocumentParser(document) {}
 
@@ -47,7 +51,7 @@ SinkDocument::SinkDocument(const DocumentInit& initializer)
 }
 
 DocumentParser* SinkDocument::CreateParser() {
-  return MakeGarbageCollected<SinkDocumentParser>(this);
+  return SinkDocumentParser::Create(this);
 }
 
 }  // namespace blink

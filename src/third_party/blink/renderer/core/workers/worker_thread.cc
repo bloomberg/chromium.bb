@@ -165,27 +165,27 @@ void WorkerThread::EvaluateClassicScript(
                       WTF::Passed(std::move(cached_meta_data)), stack_id));
 }
 
-void WorkerThread::FetchAndRunClassicScript(
+void WorkerThread::ImportClassicScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
-      CrossThreadBind(&WorkerThread::FetchAndRunClassicScriptOnWorkerThread,
+      CrossThreadBind(&WorkerThread::ImportClassicScriptOnWorkerThread,
                       CrossThreadUnretained(this), script_url,
                       WTF::Passed(outside_settings_object.CopyData()),
                       stack_id));
 }
 
-void WorkerThread::FetchAndRunModuleScript(
+void WorkerThread::ImportModuleScript(
     const KURL& script_url,
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     network::mojom::FetchCredentialsMode credentials_mode) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
       *GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
-      CrossThreadBind(&WorkerThread::FetchAndRunModuleScriptOnWorkerThread,
+      CrossThreadBind(&WorkerThread::ImportModuleScriptOnWorkerThread,
                       CrossThreadUnretained(this), script_url,
                       WTF::Passed(outside_settings_object.CopyData()),
                       credentials_mode));
@@ -468,7 +468,8 @@ void WorkerThread::InitializeOnWorkerThread(
             WorkerThreadDebugger::From(GetIsolate()))
       debugger->WorkerThreadCreated(this);
 
-    if (GlobalScope()->ScriptController()->Initialize(url_for_debugger)) {
+    if (GlobalScope()->ScriptController()->InitializeContext(
+            String(), url_for_debugger)) {
       worker_reporting_proxy_.DidInitializeWorkerContext();
       v8::HandleScope handle_scope(GetIsolate());
       Platform::Current()->WorkerContextCreated(
@@ -518,20 +519,20 @@ void WorkerThread::EvaluateClassicScriptOnWorkerThread(
                                       std::move(cached_meta_data), stack_id);
 }
 
-void WorkerThread::FetchAndRunClassicScriptOnWorkerThread(
+void WorkerThread::ImportClassicScriptOnWorkerThread(
     const KURL& script_url,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
     const v8_inspector::V8StackTraceId& stack_id) {
   To<WorkerGlobalScope>(GlobalScope())
-      ->FetchAndRunClassicScript(
+      ->ImportClassicScript(
           script_url,
           *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               std::move(outside_settings_object)),
           stack_id);
 }
 
-void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
+void WorkerThread::ImportModuleScriptOnWorkerThread(
     const KURL& script_url,
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         outside_settings_object,
@@ -540,7 +541,7 @@ void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
   // TODO(nhiroki): Consider excluding this code path from WorkerThread like
   // Worklets.
   To<WorkerGlobalScope>(GlobalScope())
-      ->FetchAndRunModuleScript(
+      ->ImportModuleScript(
           script_url,
           *MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
               std::move(outside_settings_object)),

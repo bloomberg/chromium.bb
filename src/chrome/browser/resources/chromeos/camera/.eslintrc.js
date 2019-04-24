@@ -147,7 +147,6 @@ module.exports = {
   },
   'extends': 'eslint:recommended',
   'globals': {
-    'cros': 'readable',
     'ImageCapture': 'readable',
     'webkitRequestFileSystem': 'readable',
   },

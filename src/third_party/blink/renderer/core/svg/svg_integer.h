@@ -45,7 +45,7 @@ class SVGInteger final : public SVGPropertyHelper<SVGInteger> {
     return MakeGarbageCollected<SVGInteger>(value);
   }
 
-  explicit SVGInteger(int = 0);
+  explicit SVGInteger(int);
 
   virtual SVGInteger* Clone() const;
 

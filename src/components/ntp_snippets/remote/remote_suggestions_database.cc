@@ -17,6 +17,13 @@ using leveldb_proto::ProtoDatabase;
 using leveldb_proto::ProtoDatabaseProvider;
 
 namespace {
+// Statistics are logged to UMA with this string as part of histogram name. They
+// can all be found under LevelDB.*.NTPSnippets. Changing this needs to
+// synchronize with histograms.xml, AND will also become incompatible with older
+// browsers still reporting the previous values.
+const char kDatabaseUMAClientName[] = "NTPSnippets";
+const char kImageDatabaseUMAClientName[] = "NTPSnippetImages";
+
 const char kSnippetDatabaseFolder[] = "snippets";
 const char kImageDatabaseFolder[] = "images";
 
@@ -26,48 +33,44 @@ const size_t kDatabaseWriteBufferSizeBytes = 128 << 10;
 namespace ntp_snippets {
 
 RemoteSuggestionsDatabase::RemoteSuggestionsDatabase(
-    leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
     const base::FilePath& database_dir)
     : RemoteSuggestionsDatabase(
-          proto_database_provider,
-          database_dir,
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
+               base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
+          database_dir) {}
 
 RemoteSuggestionsDatabase::RemoteSuggestionsDatabase(
-    leveldb_proto::ProtoDatabaseProvider* proto_database_provider,
-    const base::FilePath& database_dir,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const base::FilePath& database_dir)
     : RemoteSuggestionsDatabase(
-          proto_database_provider->GetDB<SnippetProto>(
-              leveldb_proto::ProtoDbType::REMOTE_SUGGESTIONS_DATABASE,
-              database_dir.AppendASCII(kSnippetDatabaseFolder),
-              task_runner),
-          proto_database_provider->GetDB<SnippetImageProto>(
-              leveldb_proto::ProtoDbType::REMOTE_SUGGESTIONS_IMAGE_DATABASE,
-              database_dir.AppendASCII(kImageDatabaseFolder),
-              task_runner)) {}
+          ProtoDatabaseProvider::CreateUniqueDB<SnippetProto>(task_runner),
+          ProtoDatabaseProvider::CreateUniqueDB<SnippetImageProto>(task_runner),
+          database_dir) {}
 
 RemoteSuggestionsDatabase::RemoteSuggestionsDatabase(
     std::unique_ptr<ProtoDatabase<SnippetProto>> database,
-    std::unique_ptr<ProtoDatabase<SnippetImageProto>> image_database)
+    std::unique_ptr<ProtoDatabase<SnippetImageProto>> image_database,
+    const base::FilePath& database_dir)
     : database_(std::move(database)),
       database_initialized_(false),
       image_database_(std::move(image_database)),
       image_database_initialized_(false),
       weak_ptr_factory_(this) {
+  base::FilePath snippet_dir = database_dir.AppendASCII(kSnippetDatabaseFolder);
   leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
   options.reuse_logs = false;  // Consumes less RAM over time.
   options.write_buffer_size = kDatabaseWriteBufferSizeBytes;
 
-  database_->Init(options,
+  database_->Init(kDatabaseUMAClientName, snippet_dir, options,
                   base::BindOnce(&RemoteSuggestionsDatabase::OnDatabaseInited,
                                  weak_ptr_factory_.GetWeakPtr()));
 
+  base::FilePath image_dir = database_dir.AppendASCII(kImageDatabaseFolder);
   image_database_->Init(
-      options, base::BindOnce(&RemoteSuggestionsDatabase::OnImageDatabaseInited,
-                              weak_ptr_factory_.GetWeakPtr()));
+      kImageDatabaseUMAClientName, image_dir, options,
+      base::BindOnce(&RemoteSuggestionsDatabase::OnImageDatabaseInited,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 RemoteSuggestionsDatabase::~RemoteSuggestionsDatabase() = default;
@@ -177,10 +180,9 @@ void RemoteSuggestionsDatabase::GarbageCollectImages(
       weak_ptr_factory_.GetWeakPtr(), std::move(alive_snippet_ids)));
 }
 
-void RemoteSuggestionsDatabase::OnDatabaseInited(
-    leveldb_proto::Enums::InitStatus status) {
+void RemoteSuggestionsDatabase::OnDatabaseInited(bool success) {
   DCHECK(!database_initialized_);
-  if (status != leveldb_proto::Enums::InitStatus::kOK) {
+  if (!success) {
     DVLOG(1) << "RemoteSuggestionsDatabase init failed.";
     OnDatabaseError();
     return;
@@ -237,10 +239,9 @@ void RemoteSuggestionsDatabase::OnDatabaseSaved(bool success) {
   }
 }
 
-void RemoteSuggestionsDatabase::OnImageDatabaseInited(
-    leveldb_proto::Enums::InitStatus status) {
+void RemoteSuggestionsDatabase::OnImageDatabaseInited(bool success) {
   DCHECK(!image_database_initialized_);
-  if (status != leveldb_proto::Enums::InitStatus::kOK) {
+  if (!success) {
     DVLOG(1) << "RemoteSuggestionsDatabase init failed.";
     OnDatabaseError();
     return;

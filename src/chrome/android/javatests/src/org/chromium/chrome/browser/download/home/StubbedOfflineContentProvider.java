@@ -15,7 +15,6 @@ import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
-import org.chromium.components.offline_items_collection.RenameResult;
 import org.chromium.components.offline_items_collection.ShareCallback;
 import org.chromium.components.offline_items_collection.VisualsCallback;
 
@@ -109,9 +108,4 @@ public class StubbedOfflineContentProvider implements OfflineContentProvider {
 
     @Override
     public void cancelDownload(ContentId id) {}
-
-    @Override
-    public void renameItem(ContentId id, String name, Callback<Integer /*RenameResult*/> callback) {
-        mHandler.post(() -> callback.onResult(RenameResult.SUCCESS));
-    }
 }

@@ -18,7 +18,7 @@ namespace content {
 namespace {
 
 const blink::WebGestureDevice kSourceDevice =
-    blink::WebGestureDevice::kTouchscreen;
+    blink::kWebGestureDeviceTouchscreen;
 
 }  // namespace
 
@@ -1520,7 +1520,7 @@ TEST_P(TouchActionFilterTest, ScrollBeginWithoutTapDownWithKnownTouchAction) {
 TEST_P(TouchActionFilterTest, TouchpadScroll) {
   WebGestureEvent scroll_begin =
       SyntheticWebGestureEventBuilder::BuildScrollBegin(
-          2, 3, blink::WebGestureDevice::kTouchpad);
+          2, 3, blink::kWebGestureDeviceTouchpad);
 
   // cc::kTouchActionNone filters out only touchscreen scroll events.
   ResetTouchAction();

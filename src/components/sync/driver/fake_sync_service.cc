@@ -61,11 +61,26 @@ bool FakeSyncService::HasObserver(const SyncServiceObserver* observer) const {
   return false;
 }
 
+void FakeSyncService::AddPreferenceProvider(
+    SyncTypePreferenceProvider* provider) {}
+
+void FakeSyncService::RemovePreferenceProvider(
+    SyncTypePreferenceProvider* provider) {}
+
+bool FakeSyncService::HasPreferenceProvider(
+    SyncTypePreferenceProvider* provider) const {
+  return false;
+}
+
 void FakeSyncService::StopAndClear() {}
 
 void FakeSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {}
 
 ModelTypeSet FakeSyncService::GetRegisteredDataTypes() const {
+  return ModelTypeSet();
+}
+
+ModelTypeSet FakeSyncService::GetForcedDataTypes() const {
   return ModelTypeSet();
 }
 
@@ -86,17 +101,11 @@ GoogleServiceAuthError FakeSyncService::GetAuthError() const {
   return GoogleServiceAuthError();
 }
 
-base::Time FakeSyncService::GetAuthErrorTime() const {
-  return base::Time();
-}
-
-bool FakeSyncService::RequiresClientUpgrade() const {
-  return false;
-}
-
 UserShare* FakeSyncService::GetUserShare() const {
   return user_share_.get();
 }
+
+void FakeSyncService::ReenableDatatype(ModelType type) {}
 
 void FakeSyncService::ReadyForStartChanged(ModelType type) {}
 
@@ -104,33 +113,31 @@ syncer::SyncTokenStatus FakeSyncService::GetSyncTokenStatus() const {
   return syncer::SyncTokenStatus();
 }
 
-bool FakeSyncService::QueryDetailedSyncStatusForDebugging(
-    SyncStatus* result) const {
+bool FakeSyncService::QueryDetailedSyncStatus(SyncStatus* result) const {
   return false;
 }
 
-base::Time FakeSyncService::GetLastSyncedTimeForDebugging() const {
+base::Time FakeSyncService::GetLastSyncedTime() const {
   return base::Time();
 }
 
-SyncCycleSnapshot FakeSyncService::GetLastCycleSnapshotForDebugging() const {
+SyncCycleSnapshot FakeSyncService::GetLastCycleSnapshot() const {
   return SyncCycleSnapshot();
 }
 
-std::unique_ptr<base::Value> FakeSyncService::GetTypeStatusMapForDebugging() {
+std::unique_ptr<base::Value> FakeSyncService::GetTypeStatusMap() {
   return nullptr;
 }
 
-const GURL& FakeSyncService::GetSyncServiceUrlForDebugging() const {
+const GURL& FakeSyncService::sync_service_url() const {
   return sync_service_url_;
 }
 
-std::string FakeSyncService::GetUnrecoverableErrorMessageForDebugging() const {
+std::string FakeSyncService::unrecoverable_error_message() const {
   return std::string();
 }
 
-base::Location FakeSyncService::GetUnrecoverableErrorLocationForDebugging()
-    const {
+base::Location FakeSyncService::unrecoverable_error_location() const {
   return base::Location();
 }
 
@@ -150,7 +157,7 @@ base::WeakPtr<JsController> FakeSyncService::GetJsController() {
   return base::WeakPtr<JsController>();
 }
 
-void FakeSyncService::GetAllNodesForDebugging(
+void FakeSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
 
 void FakeSyncService::SetInvalidationsForSessionsEnabled(bool enabled) {}

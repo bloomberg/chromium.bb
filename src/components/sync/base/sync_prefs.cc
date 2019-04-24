@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/reading_list/features/reading_list_buildflags.h"
 #include "components/sync/base/pref_names.h"
 
 namespace syncer {
@@ -31,16 +30,41 @@ const char kSyncNigoriStateForPassphraseTransition[] =
 // Obsolete pref that used to store a bool on whether Sync has an auth error.
 const char kSyncHasAuthError[] = "sync.has_auth_error";
 
-// Obsolete pref that used to store the timestamp of first sync.
-const char kSyncFirstSyncTime[] = "sync.first_sync_time";
+// Groups of prefs that always have the same value as a "master" pref.
+// For example, the APPS group has {APP_LIST, APP_SETTINGS}
+// (as well as APPS, but that is implied), so
+//   pref_groups_[APPS] =       { APP_LIST, APP_SETTINGS }
+//   pref_groups_[EXTENSIONS] = { EXTENSION_SETTINGS }
+// etc.
+using PrefGroupsMap = std::map<ModelType, ModelTypeSet>;
+PrefGroupsMap ComputePrefGroups() {
+  PrefGroupsMap pref_groups;
+  pref_groups[APPS].Put(APP_SETTINGS);
+  pref_groups[APPS].Put(APP_LIST);
+  pref_groups[APPS].Put(ARC_PACKAGE);
 
-// Obsolete pref that used to store long poll intervals received by the server.
-const char kSyncLongPollIntervalSeconds[] = "sync.long_poll_interval";
+  pref_groups[AUTOFILL].Put(AUTOFILL_PROFILE);
+  pref_groups[AUTOFILL].Put(AUTOFILL_WALLET_DATA);
+  pref_groups[AUTOFILL].Put(AUTOFILL_WALLET_METADATA);
 
-#if defined(OS_CHROMEOS)
-// Obsolete pref.
-const char kSyncSpareBootstrapToken[] = "sync.spare_bootstrap_token";
-#endif  // defined(OS_CHROMEOS)
+  pref_groups[EXTENSIONS].Put(EXTENSION_SETTINGS);
+
+  pref_groups[PREFERENCES].Put(DICTIONARY);
+  pref_groups[PREFERENCES].Put(PRIORITY_PREFERENCES);
+  pref_groups[PREFERENCES].Put(SEARCH_ENGINES);
+
+  pref_groups[TYPED_URLS].Put(HISTORY_DELETE_DIRECTIVES);
+  pref_groups[TYPED_URLS].Put(SESSIONS);
+  pref_groups[TYPED_URLS].Put(FAVICON_IMAGES);
+  pref_groups[TYPED_URLS].Put(FAVICON_TRACKING);
+  pref_groups[TYPED_URLS].Put(USER_EVENTS);
+
+  pref_groups[PROXY_TABS].Put(SESSIONS);
+  pref_groups[PROXY_TABS].Put(FAVICON_IMAGES);
+  pref_groups[PROXY_TABS].Put(FAVICON_TRACKING);
+
+  return pref_groups;
+}
 
 std::vector<std::string> GetObsoleteUserTypePrefs() {
   return {prefs::kSyncAutofillProfile,
@@ -77,37 +101,6 @@ void RegisterObsoleteUserTypePrefs(user_prefs::PrefRegistrySyncable* registry) {
   for (const std::string& obsolete_pref : GetObsoleteUserTypePrefs()) {
     registry->RegisterBooleanPref(obsolete_pref, false);
   }
-}
-
-const char* GetPrefNameForType(UserSelectableType type) {
-  switch (type) {
-    case UserSelectableType::kBookmarks:
-      return prefs::kSyncBookmarks;
-    case UserSelectableType::kPreferences:
-      return prefs::kSyncPreferences;
-    case UserSelectableType::kPasswords:
-      return prefs::kSyncPasswords;
-    case UserSelectableType::kAutofill:
-      return prefs::kSyncAutofill;
-    case UserSelectableType::kThemes:
-      return prefs::kSyncThemes;
-    case UserSelectableType::kHistory:
-      // kSyncTypedUrls used here for historic reasons and pref backward
-      // compatibility.
-      return prefs::kSyncTypedUrls;
-    case UserSelectableType::kExtensions:
-      return prefs::kSyncExtensions;
-    case UserSelectableType::kApps:
-      return prefs::kSyncApps;
-#if BUILDFLAG(ENABLE_READING_LIST)
-    case UserSelectableType::kReadingList:
-      return prefs::kSyncReadingList;
-#endif
-    case UserSelectableType::kTabs:
-      return prefs::kSyncTabs;
-  }
-  NOTREACHED();
-  return nullptr;
 }
 
 }  // namespace
@@ -148,10 +141,10 @@ void SyncPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   // Actual user-controlled preferences.
   registry->RegisterBooleanPref(prefs::kSyncFirstSetupComplete, false);
-  registry->RegisterBooleanPref(prefs::kSyncSuppressStart, true);
+  registry->RegisterBooleanPref(prefs::kSyncSuppressStart, false);
   registry->RegisterBooleanPref(prefs::kSyncKeepEverythingSynced, true);
-  for (UserSelectableType type : UserSelectableTypeSet::All()) {
-    RegisterTypeSelectedPref(registry, type);
+  for (ModelType type : UserSelectableTypes()) {
+    RegisterDataTypePreferredPref(registry, type);
   }
 
   // Internal or bookkeeping prefs.
@@ -160,12 +153,19 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kSyncBagOfChips, std::string());
   registry->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   registry->RegisterInt64Pref(prefs::kSyncLastPollTime, 0);
-  registry->RegisterInt64Pref(prefs::kSyncPollIntervalSeconds, 0);
+  // TODO(crbug.com/938865): Remove this pref.
+  registry->RegisterInt64Pref(prefs::kSyncFirstSyncTime, 0);
+  registry->RegisterInt64Pref(prefs::kSyncShortPollIntervalSeconds, 0);
+  registry->RegisterInt64Pref(prefs::kSyncLongPollIntervalSeconds, 0);
   registry->RegisterBooleanPref(prefs::kSyncManaged, false);
   registry->RegisterStringPref(prefs::kSyncEncryptionBootstrapToken,
                                std::string());
   registry->RegisterStringPref(prefs::kSyncKeystoreEncryptionBootstrapToken,
                                std::string());
+#if defined(OS_CHROMEOS)
+  // TODO(crbug.com/938869): Remove this pref.
+  registry->RegisterStringPref(prefs::kSyncSpareBootstrapToken, "");
+#endif
   registry->RegisterBooleanPref(prefs::kSyncPassphrasePrompted, false);
   registry->RegisterIntegerPref(prefs::kSyncMemoryPressureWarningCount, -1);
   registry->RegisterBooleanPref(prefs::kSyncShutdownCleanly, false);
@@ -181,11 +181,6 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterStringPref(kSyncNigoriStateForPassphraseTransition,
                                std::string());
   registry->RegisterBooleanPref(kSyncHasAuthError, false);
-  registry->RegisterInt64Pref(kSyncFirstSyncTime, 0);
-  registry->RegisterInt64Pref(kSyncLongPollIntervalSeconds, 0);
-#if defined(OS_CHROMEOS)
-  registry->RegisterStringPref(kSyncSpareBootstrapToken, "");
-#endif
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -201,11 +196,13 @@ void SyncPrefs::RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
 void SyncPrefs::ClearPreferences() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  ClearDirectoryConsistencyPreferences();
-
+  pref_service_->ClearPref(prefs::kSyncCacheGuid);
+  pref_service_->ClearPref(prefs::kSyncBirthday);
+  pref_service_->ClearPref(prefs::kSyncBagOfChips);
   pref_service_->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service_->ClearPref(prefs::kSyncLastPollTime);
-  pref_service_->ClearPref(prefs::kSyncPollIntervalSeconds);
+  pref_service_->ClearPref(prefs::kSyncShortPollIntervalSeconds);
+  pref_service_->ClearPref(prefs::kSyncLongPollIntervalSeconds);
   pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncKeystoreEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncPassphrasePrompted);
@@ -217,17 +214,10 @@ void SyncPrefs::ClearPreferences() {
   // since they're never actually set as user preferences.
 
   // Note: We do *not* clear prefs which are directly user-controlled such as
-  // the set of selected types here, so that if the user ever chooses to enable
-  // Sync again, they start off with their previous settings by default.
+  // the set of preferred data types here, so that if the user ever chooses to
+  // enable Sync again, they start off with their previous settings by default.
   // We do however require going through first-time setup again.
   pref_service_->ClearPref(prefs::kSyncFirstSetupComplete);
-}
-
-void SyncPrefs::ClearDirectoryConsistencyPreferences() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  pref_service_->ClearPref(prefs::kSyncCacheGuid);
-  pref_service_->ClearPref(prefs::kSyncBirthday);
-  pref_service_->ClearPref(prefs::kSyncBagOfChips);
 }
 
 bool SyncPrefs::IsFirstSetupComplete() const {
@@ -253,16 +243,6 @@ void SyncPrefs::SetSyncRequested(bool is_requested) {
   pref_service_->SetBoolean(prefs::kSyncSuppressStart, !is_requested);
 }
 
-void SyncPrefs::SetSyncRequestedIfNotSetExplicitly() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // GetUserPrefValue() returns nullptr if there is no user-set value for this
-  // pref (there might still be a non-default value, e.g. from a policy, but we
-  // explicitly don't care about that here).
-  if (!pref_service_->GetUserPrefValue(prefs::kSyncSuppressStart)) {
-    pref_service_->SetBoolean(prefs::kSyncSuppressStart, false);
-  }
-}
-
 base::Time SyncPrefs::GetLastSyncedTime() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::Time::FromInternalValue(
@@ -285,15 +265,27 @@ void SyncPrefs::SetLastPollTime(base::Time time) {
   pref_service_->SetInt64(prefs::kSyncLastPollTime, time.ToInternalValue());
 }
 
-base::TimeDelta SyncPrefs::GetPollInterval() const {
+base::TimeDelta SyncPrefs::GetShortPollInterval() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return base::TimeDelta::FromSeconds(
-      pref_service_->GetInt64(prefs::kSyncPollIntervalSeconds));
+      pref_service_->GetInt64(prefs::kSyncShortPollIntervalSeconds));
 }
 
-void SyncPrefs::SetPollInterval(base::TimeDelta interval) {
+void SyncPrefs::SetShortPollInterval(base::TimeDelta interval) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  pref_service_->SetInt64(prefs::kSyncPollIntervalSeconds,
+  pref_service_->SetInt64(prefs::kSyncShortPollIntervalSeconds,
+                          interval.InSeconds());
+}
+
+base::TimeDelta SyncPrefs::GetLongPollInterval() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return base::TimeDelta::FromSeconds(
+      pref_service_->GetInt64(prefs::kSyncLongPollIntervalSeconds));
+}
+
+void SyncPrefs::SetLongPollInterval(base::TimeDelta interval) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->SetInt64(prefs::kSyncLongPollIntervalSeconds,
                           interval.InSeconds());
 }
 
@@ -302,35 +294,43 @@ bool SyncPrefs::HasKeepEverythingSynced() const {
   return pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced);
 }
 
-UserSelectableTypeSet SyncPrefs::GetSelectedTypes() const {
+ModelTypeSet SyncPrefs::GetPreferredDataTypes(
+    ModelTypeSet registered_types) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced)) {
-    return UserSelectableTypeSet::All();
+    return registered_types;
   }
 
-  UserSelectableTypeSet selected_types;
-  for (UserSelectableType type : UserSelectableTypeSet::All()) {
-    const char* pref_name = GetPrefNameForType(type);
-    DCHECK(pref_name);
-    if (pref_service_->GetBoolean(pref_name)) {
-      selected_types.Put(type);
+  ModelTypeSet preferred_types = AlwaysPreferredUserTypes();
+
+  for (ModelType type : Intersection(UserSelectableTypes(), registered_types)) {
+    if (IsDataTypeChosen(type)) {
+      preferred_types.Put(type);
     }
   }
-  return selected_types;
+
+  preferred_types = ResolvePrefGroups(preferred_types);
+  preferred_types.RetainAll(registered_types);
+  return preferred_types;
 }
 
-void SyncPrefs::SetSelectedTypes(bool keep_everything_synced,
-                                 UserSelectableTypeSet registered_types,
-                                 UserSelectableTypeSet selected_types) {
+void SyncPrefs::SetDataTypesConfiguration(bool keep_everything_synced,
+                                          ModelTypeSet registered_types,
+                                          ModelTypeSet chosen_types) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(UserSelectableTypes().HasAll(chosen_types));
+  // TODO(crbug.com/906611): remove |registered_types| parameter. It have no
+  // real usage and needed only to control the absence of behavioral changes
+  // during the landing of the patch. Also consider removal of this parameter
+  // from the getter.
+  DCHECK(registered_types.HasAll(chosen_types));
 
   pref_service_->SetBoolean(prefs::kSyncKeepEverythingSynced,
                             keep_everything_synced);
 
-  for (UserSelectableType type : registered_types) {
-    const char* pref_name = GetPrefNameForType(type);
-    pref_service_->SetBoolean(pref_name, selected_types.Has(type));
+  for (ModelType type : Intersection(UserSelectableTypes(), registered_types)) {
+    SetDataTypeChosen(type, chosen_types.Has(type));
   }
 
   for (SyncPrefObserver& observer : sync_pref_observers_) {
@@ -364,9 +364,80 @@ void SyncPrefs::SetKeystoreEncryptionBootstrapToken(const std::string& token) {
 }
 
 // static
-const char* SyncPrefs::GetPrefNameForTypeForTesting(UserSelectableType type) {
-  return GetPrefNameForType(type);
+const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
+  switch (type) {
+    case UNSPECIFIED:
+    case TOP_LEVEL_FOLDER:
+    case AUTOFILL_PROFILE:
+    case AUTOFILL_WALLET_DATA:
+    case AUTOFILL_WALLET_METADATA:
+    case SEARCH_ENGINES:
+    case APP_SETTINGS:
+    case EXTENSION_SETTINGS:
+    case DEPRECATED_APP_NOTIFICATIONS:
+    case HISTORY_DELETE_DIRECTIVES:
+    case DEPRECATED_SYNCED_NOTIFICATIONS:
+    case DEPRECATED_SYNCED_NOTIFICATION_APP_INFO:
+    case DICTIONARY:
+    case FAVICON_IMAGES:
+    case FAVICON_TRACKING:
+    case DEVICE_INFO:
+    case PRIORITY_PREFERENCES:
+    case SUPERVISED_USER_SETTINGS:
+    case DEPRECATED_SUPERVISED_USERS:
+    case DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS:
+    case DEPRECATED_ARTICLES:
+    case APP_LIST:
+    case DEPRECATED_WIFI_CREDENTIALS:
+    case SUPERVISED_USER_WHITELISTS:
+    case ARC_PACKAGE:
+    case PRINTERS:
+    case USER_EVENTS:
+    case SECURITY_EVENTS:
+    case MOUNTAIN_SHARES:
+    case USER_CONSENTS:
+    case SEND_TAB_TO_SELF:
+    case NIGORI:
+    case EXPERIMENTS:
+    case MODEL_TYPE_COUNT:
+    case SESSIONS:
+      break;
+    case BOOKMARKS:
+      return prefs::kSyncBookmarks;
+    case PREFERENCES:
+      return prefs::kSyncPreferences;
+    case PASSWORDS:
+      return prefs::kSyncPasswords;
+    case AUTOFILL:
+      return prefs::kSyncAutofill;
+    case THEMES:
+      return prefs::kSyncThemes;
+    case TYPED_URLS:
+      return prefs::kSyncTypedUrls;
+    case EXTENSIONS:
+      return prefs::kSyncExtensions;
+    case APPS:
+      return prefs::kSyncApps;
+    case READING_LIST:
+      return prefs::kSyncReadingList;
+    case PROXY_TABS:
+      return prefs::kSyncTabs;
+  }
+  NOTREACHED() << "No pref mapping for type " << ModelTypeToString(type);
+  return nullptr;
 }
+
+#if defined(OS_CHROMEOS)
+std::string SyncPrefs::GetSpareBootstrapToken() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return pref_service_->GetString(prefs::kSyncSpareBootstrapToken);
+}
+
+void SyncPrefs::SetSpareBootstrapToken(const std::string& token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_->SetString(prefs::kSyncSpareBootstrapToken, token);
+}
+#endif
 
 void SyncPrefs::OnSyncManagedPrefChanged() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -393,12 +464,41 @@ void SyncPrefs::SetManagedForTest(bool is_managed) {
 }
 
 // static
-void SyncPrefs::RegisterTypeSelectedPref(
+void SyncPrefs::RegisterDataTypePreferredPref(
     user_prefs::PrefRegistrySyncable* registry,
-    UserSelectableType type) {
-  const char* pref_name = GetPrefNameForType(type);
+    ModelType type) {
+  const char* pref_name = GetPrefNameForDataType(type);
   DCHECK(pref_name);
   registry->RegisterBooleanPref(pref_name, false);
+}
+
+bool SyncPrefs::IsDataTypeChosen(ModelType type) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const char* pref_name = GetPrefNameForDataType(type);
+  DCHECK(pref_name);
+  DCHECK(IsUserSelectableType(type));
+
+  return pref_service_->GetBoolean(pref_name);
+}
+
+void SyncPrefs::SetDataTypeChosen(ModelType type, bool is_chosen) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const char* pref_name = GetPrefNameForDataType(type);
+  DCHECK(pref_name);
+  DCHECK(IsUserSelectableType(type));
+
+  pref_service_->SetBoolean(pref_name, is_chosen);
+}
+
+// static
+ModelTypeSet SyncPrefs::ResolvePrefGroups(ModelTypeSet types) {
+  ModelTypeSet types_with_groups = types;
+  for (const auto& pref_group : ComputePrefGroups()) {
+    if (types.Has(pref_group.first)) {
+      types_with_groups.PutAll(pref_group.second);
+    }
+  }
+  return types_with_groups;
 }
 
 void SyncPrefs::SetCacheGuid(const std::string& cache_guid) {
@@ -432,6 +532,19 @@ std::string SyncPrefs::GetBagOfChips() const {
   std::string decoded;
   base::Base64Decode(encoded, &decoded);
   return decoded;
+}
+
+base::Time SyncPrefs::GetFirstSyncTime() const {
+  return base::Time::FromInternalValue(
+      pref_service_->GetInt64(prefs::kSyncFirstSyncTime));
+}
+
+void SyncPrefs::SetFirstSyncTime(base::Time time) {
+  pref_service_->SetInt64(prefs::kSyncFirstSyncTime, time.ToInternalValue());
+}
+
+void SyncPrefs::ClearFirstSyncTime() {
+  pref_service_->ClearPref(prefs::kSyncFirstSyncTime);
 }
 
 bool SyncPrefs::IsPassphrasePrompted() const {
@@ -525,19 +638,5 @@ void ClearObsoleteClearServerDataPrefs(PrefService* pref_service) {
 void ClearObsoleteAuthErrorPrefs(PrefService* pref_service) {
   pref_service->ClearPref(kSyncHasAuthError);
 }
-
-void ClearObsoleteFirstSyncTime(PrefService* pref_service) {
-  pref_service->ClearPref(kSyncFirstSyncTime);
-}
-
-void ClearObsoleteSyncLongPollIntervalSeconds(PrefService* pref_service) {
-  pref_service->ClearPref(kSyncLongPollIntervalSeconds);
-}
-
-#if defined(OS_CHROMEOS)
-void ClearObsoleteSyncSpareBootstrapToken(PrefService* pref_service) {
-  pref_service->ClearPref(kSyncSpareBootstrapToken);
-}
-#endif  // defined(OS_CHROMEOS)
 
 }  // namespace syncer

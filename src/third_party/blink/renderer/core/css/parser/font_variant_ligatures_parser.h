@@ -28,26 +28,26 @@ class FontVariantLigaturesParser {
   ParseResult ConsumeLigature(CSSParserTokenRange& range) {
     CSSValueID value_id = range.Peek().Id();
     switch (value_id) {
-      case CSSValueID::kNoCommonLigatures:
-      case CSSValueID::kCommonLigatures:
+      case CSSValueNoCommonLigatures:
+      case CSSValueCommonLigatures:
         if (saw_common_ligatures_value_)
           return ParseResult::kDisallowedValue;
         saw_common_ligatures_value_ = true;
         break;
-      case CSSValueID::kNoDiscretionaryLigatures:
-      case CSSValueID::kDiscretionaryLigatures:
+      case CSSValueNoDiscretionaryLigatures:
+      case CSSValueDiscretionaryLigatures:
         if (saw_discretionary_ligatures_value_)
           return ParseResult::kDisallowedValue;
         saw_discretionary_ligatures_value_ = true;
         break;
-      case CSSValueID::kNoHistoricalLigatures:
-      case CSSValueID::kHistoricalLigatures:
+      case CSSValueNoHistoricalLigatures:
+      case CSSValueHistoricalLigatures:
         if (saw_historical_ligatures_value_)
           return ParseResult::kDisallowedValue;
         saw_historical_ligatures_value_ = true;
         break;
-      case CSSValueID::kNoContextual:
-      case CSSValueID::kContextual:
+      case CSSValueNoContextual:
+      case CSSValueContextual:
         if (saw_contextual_ligatures_value_)
           return ParseResult::kDisallowedValue;
         saw_contextual_ligatures_value_ = true;
@@ -61,7 +61,7 @@ class FontVariantLigaturesParser {
 
   CSSValue* FinalizeValue() {
     if (!result_->length())
-      return CSSIdentifierValue::Create(CSSValueID::kNormal);
+      return CSSIdentifierValue::Create(CSSValueNormal);
     return result_.Release();
   }
 

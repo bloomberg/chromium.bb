@@ -7,17 +7,12 @@
 In theory you shouldn't need anything else in subprocess, or this module failed.
 """
 
+import cStringIO
 import codecs
 import errno
-import io
 import logging
 import os
-
-try:
-  import Queue
-except ImportError:  # For Py3 compatibility
-  import queue as Queue
-
+import Queue
 import subprocess
 import sys
 import time
@@ -25,8 +20,7 @@ import threading
 
 # Cache the string-escape codec to ensure subprocess can find it later.
 # See crbug.com/912292#c2 for context.
-if sys.version_info.major == 2:
-  codecs.lookup('string-escape')
+codecs.lookup('string-escape')
 
 # Constants forwarded from subprocess.
 PIPE = subprocess.PIPE
@@ -214,8 +208,7 @@ class Popen(subprocess.Popen):
       # the list.
       kwargs['shell'] = bool(sys.platform=='win32')
 
-    if isinstance(args, str) or (sys.version_info.major == 2 and
-                                 isinstance(args, unicode)):
+    if isinstance(args, basestring):
       tmp_str = args
     elif isinstance(args, (list, tuple)):
       tmp_str = ' '.join(args)
@@ -255,7 +248,7 @@ class Popen(subprocess.Popen):
     try:
       with self.popen_lock:
         super(Popen, self).__init__(args, **kwargs)
-    except OSError as e:
+    except OSError, e:
       if e.errno == errno.EAGAIN and sys.platform == 'cygwin':
         # Convert fork() emulation failure into a CygwinRebaseError().
         raise CygwinRebaseError(
@@ -292,7 +285,7 @@ class Popen(subprocess.Popen):
 
     def write_stdin():
       try:
-        stdin_io = io.BytesIO(input)
+        stdin_io = cStringIO.StringIO(input)
         while True:
           data = stdin_io.read(1024)
           if data:
@@ -458,8 +451,7 @@ def communicate(args, timeout=None, nag_timer=None, nag_max=None, **kwargs):
   """
   stdin = kwargs.pop('stdin', None)
   if stdin is not None:
-    if isinstance(stdin, str) or (sys.version_info.major == 2 and
-                                  isinstance(stdin, unicode)):
+    if isinstance(stdin, basestring):
       # When stdin is passed as an argument, use it as the actual input data and
       # set the Popen() parameter accordingly.
       kwargs['stdin'] = PIPE

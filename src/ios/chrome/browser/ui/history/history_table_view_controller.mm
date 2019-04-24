@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #include "ios/chrome/browser/ui/history/history_entries_status_item.h"
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
@@ -32,11 +33,9 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
+#import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
-#import "ios/chrome/browser/url_loading/url_loading_service.h"
-#import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -134,6 +133,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 @synthesize finishedLoading = _finishedLoading;
 @synthesize historyService = _historyService;
 @synthesize imageDataSource = _imageDataSource;
+@synthesize loader = _loader;
 @synthesize loading = _loading;
 @synthesize localDispatcher = _localDispatcher;
 @synthesize searchController = _searchController;
@@ -1043,19 +1043,29 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Opens URL in a new non-incognito tab and dismisses the history view.
 - (void)openURLInNewTab:(const GURL&)URL {
-  UrlLoadParams params = UrlLoadParams::InNewTab(URL);
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithURL:URL
+                                    referrer:web::Referrer()
+                                 inIncognito:NO
+                                inBackground:NO
+                                    appendTo:kLastTab];
+
   [self.localDispatcher dismissHistoryWithCompletion:^{
-    UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
+    [self.loader webPageOrderedOpen:command];
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
 }
 
 // Opens URL in a new incognito tab and dismisses the history view.
 - (void)openURLInNewIncognitoTab:(const GURL&)URL {
-  UrlLoadParams params = UrlLoadParams::InNewTab(URL);
-  params.in_incognito = YES;
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithURL:URL
+                                    referrer:web::Referrer()
+                                 inIncognito:YES
+                                inBackground:NO
+                                    appendTo:kLastTab];
   [self.localDispatcher dismissHistoryWithCompletion:^{
-    UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
+    [self.loader webPageOrderedOpen:command];
     [self.presentationDelegate showActiveIncognitoTabFromHistory];
   }];
 }
@@ -1066,11 +1076,11 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 - (void)openURL:(const GURL&)URL {
   new_tab_page_uma::RecordAction(_browserState,
                                  new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
-  UrlLoadParams params = UrlLoadParams::InCurrentTab(URL);
-  params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
-  params.load_strategy = self.loadStrategy;
+  web::NavigationManager::WebLoadParams params(URL);
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  ChromeLoadParams chromeParams(params);
   [self.localDispatcher dismissHistoryWithCompletion:^{
-    UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
+    [self.loader loadURLWithParams:chromeParams];
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
 }

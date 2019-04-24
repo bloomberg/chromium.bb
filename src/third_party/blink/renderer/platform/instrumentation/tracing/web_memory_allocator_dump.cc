@@ -26,7 +26,8 @@ void WebMemoryAllocatorDump::AddString(const char* name,
                                        const char* units,
                                        const String& value) {
   StringUTF8Adaptor adapter(value);
-  memory_allocator_dump_->AddString(name, units, adapter.AsStdString());
+  std::string utf8(adapter.Data(), adapter.length());
+  memory_allocator_dump_->AddString(name, units, utf8);
 }
 
 WebMemoryAllocatorDumpGuid WebMemoryAllocatorDump::Guid() const {

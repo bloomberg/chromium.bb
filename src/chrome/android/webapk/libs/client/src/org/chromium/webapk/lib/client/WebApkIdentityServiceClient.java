@@ -13,7 +13,6 @@ import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
 
-import org.chromium.base.task.TaskTraits;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.lib.common.identity_service.IIdentityService;
 
@@ -41,7 +40,7 @@ public class WebApkIdentityServiceClient {
      */
     public static final int SHELL_APK_VERSION_SUPPORTING_SWITCH_RUNTIME_HOST = 6;
 
-    public static final String ACTION_WEBAPK_IDENTITY_SERVICE = "org.webapk.IDENTITY_SERVICE_API";
+    private static final String ACTION_WEBAPK_IDENTITY_SERVICE = "org.webapk.IDENTITY_SERVICE_API";
     private static final String TAG = "cr_WebApkIdentityService";
 
     private static WebApkIdentityServiceClient sInstance;
@@ -49,16 +48,16 @@ public class WebApkIdentityServiceClient {
     /** Manages connections between the browser application and WebAPK Identity services. */
     private WebApkServiceConnectionManager mConnectionManager;
 
-    public static WebApkIdentityServiceClient getInstance(TaskTraits uiThreadTaskTraits) {
+    public static WebApkIdentityServiceClient getInstance() {
         if (sInstance == null) {
-            sInstance = new WebApkIdentityServiceClient(uiThreadTaskTraits);
+            sInstance = new WebApkIdentityServiceClient();
         }
         return sInstance;
     }
 
-    private WebApkIdentityServiceClient(TaskTraits uiThreadTaskTraits) {
+    private WebApkIdentityServiceClient() {
         mConnectionManager = new WebApkServiceConnectionManager(
-                uiThreadTaskTraits, null /* category */, ACTION_WEBAPK_IDENTITY_SERVICE);
+                null /* category */, ACTION_WEBAPK_IDENTITY_SERVICE);
     }
 
     /**

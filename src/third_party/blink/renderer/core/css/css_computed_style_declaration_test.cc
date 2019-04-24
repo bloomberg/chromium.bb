@@ -26,10 +26,11 @@ TEST_F(CSSComputedStyleDeclarationTest, CleanAncestorsNoRecalc) {
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
 
   Element* target = GetDocument().getElementById("target");
-  auto* computed = MakeGarbageCollected<CSSComputedStyleDeclaration>(target);
+  CSSComputedStyleDeclaration* computed =
+      CSSComputedStyleDeclaration::Create(target);
 
   EXPECT_STREQ("rgb(0, 128, 0)",
-               computed->GetPropertyValue(CSSPropertyID::kColor).Utf8().data());
+               computed->GetPropertyValue(CSSPropertyColor).Utf8().data());
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
 }
 
@@ -54,10 +55,11 @@ TEST_F(CSSComputedStyleDeclarationTest, CleanShadowAncestorsNoRecalc) {
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
 
   Element* target = shadow_root.getElementById("target");
-  auto* computed = MakeGarbageCollected<CSSComputedStyleDeclaration>(target);
+  CSSComputedStyleDeclaration* computed =
+      CSSComputedStyleDeclaration::Create(target);
 
   EXPECT_STREQ("rgb(0, 128, 0)",
-               computed->GetPropertyValue(CSSPropertyID::kColor).Utf8().data());
+               computed->GetPropertyValue(CSSPropertyColor).Utf8().data());
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
 }
 
@@ -90,10 +92,11 @@ TEST_F(CSSComputedStyleDeclarationTest, NeedsAdjacentStyleRecalc) {
   EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdateForNode(*c_span, true));
   EXPECT_FALSE(container->NeedsAdjacentStyleRecalc());
 
-  auto* computed = MakeGarbageCollected<CSSComputedStyleDeclaration>(c_span);
+  CSSComputedStyleDeclaration* computed =
+      CSSComputedStyleDeclaration::Create(c_span);
 
   EXPECT_STREQ("rgb(0, 128, 0)",
-               computed->GetPropertyValue(CSSPropertyID::kColor).Utf8().data());
+               computed->GetPropertyValue(CSSPropertyColor).Utf8().data());
 
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdateForNode(*d_span));

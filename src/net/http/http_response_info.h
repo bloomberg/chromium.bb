@@ -7,9 +7,7 @@
 
 #include <string>
 
-#include "base/optional.h"
 #include "base/time/time.h"
-#include "net/base/auth.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/base/proxy_server.h"
@@ -22,6 +20,7 @@ class Pickle;
 
 namespace net {
 
+class AuthChallengeInfo;
 class HttpResponseHeaders;
 class IOBufferWithSize;
 class SSLCertRequestInfo;
@@ -190,7 +189,7 @@ class NET_EXPORT HttpResponseInfo {
 
   // If the response headers indicate a 401 or 407 failure, then this structure
   // will contain additional information about the authentication challenge.
-  base::Optional<AuthChallengeInfo> auth_challenge;
+  scoped_refptr<AuthChallengeInfo> auth_challenge;
 
   // The SSL client certificate request info.
   // TODO(wtc): does this really belong in HttpResponseInfo?  I put it here

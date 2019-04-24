@@ -9,6 +9,5 @@ include_rules = [
   "+media/base/android",
   "+net/base",
   "+net/cookies",
-  "+ppapi/buildflags",
   "+services/preferences/public",
 ]

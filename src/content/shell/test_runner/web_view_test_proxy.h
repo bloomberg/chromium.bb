@@ -67,8 +67,7 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl {
   template <typename... Args>
   explicit WebViewTestProxy(Args&&... args)
       : RenderViewImpl(std::forward<Args>(args)...) {}
-  void Initialize(WebTestInterfaces* interfaces,
-                  std::unique_ptr<WebTestDelegate> delegate);
+  void Initialize(WebTestInterfaces* interfaces, WebTestDelegate* delegate);
 
   // WebViewClient implementation.
   blink::WebView* CreateView(blink::WebLocalFrame* creator,
@@ -76,6 +75,7 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl {
                              const blink::WebWindowFeatures& features,
                              const blink::WebString& frame_name,
                              blink::WebNavigationPolicy policy,
+                             bool suppress_opener,
                              blink::WebSandboxFlags sandbox_flags,
                              const blink::FeaturePolicy::FeatureState&,
                              const blink::SessionStorageNamespaceId&
@@ -88,7 +88,7 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl {
   // Exposed for our TestRunner harness.
   using RenderViewImpl::ApplyPageHidden;
 
-  WebTestDelegate* delegate() { return delegate_.get(); }
+  WebTestDelegate* delegate() { return delegate_; }
   TestInterfaces* test_interfaces() { return test_interfaces_; }
   AccessibilityController* accessibility_controller() {
     return &accessibility_controller_;
@@ -107,7 +107,7 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl {
   TestRunner* GetTestRunner();
 
   TestInterfaces* test_interfaces_ = nullptr;
-  std::unique_ptr<WebTestDelegate> delegate_;
+  WebTestDelegate* delegate_ = nullptr;
 
   AccessibilityController accessibility_controller_{this};
   TextInputController text_input_controller_{this};

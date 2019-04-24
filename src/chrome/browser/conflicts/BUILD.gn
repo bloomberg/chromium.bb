@@ -10,12 +10,8 @@ source_set("module_info") {
     "module_info_win.h",
   ]
 
-  public_deps = [
-    "//base",
-    "//content/public/common",
-  ]
-
   deps = [
+    "//base",
     "//base:i18n",
     "//chrome/common/safe_browsing:binary_feature_extractor",
   ]

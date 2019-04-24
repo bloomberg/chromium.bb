@@ -8,26 +8,19 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/scoped_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/native_theme/native_theme_observer.h"
 
 class Profile;
 
 namespace base {
 class RefCountedMemory;
-class Value;
 }
 
 namespace content {
 class RenderProcessHost;
-}
-
-namespace ui {
-class NativeTheme;
 }
 
 // This class keeps a cache of NTP resources (HTML and CSS) so we don't have to
@@ -35,8 +28,7 @@ class NativeTheme;
 // Note: This is only used for incognito and guest mode NTPs (NewTabUI), as well
 // as for (non-incognito) app launcher pages (AppLauncherPageUI).
 class NTPResourceCache : public content::NotificationObserver,
-                         public KeyedService,
-                         public ui::NativeThemeObserver {
+                         public KeyedService {
  public:
   enum WindowType {
     NORMAL,
@@ -50,7 +42,7 @@ class NTPResourceCache : public content::NotificationObserver,
   base::RefCountedMemory* GetNewTabHTML(WindowType win_type);
   base::RefCountedMemory* GetNewTabCSS(WindowType win_type);
 
-  // content::NotificationObserver:
+  // content::NotificationObserver interface.
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
@@ -59,9 +51,6 @@ class NTPResourceCache : public content::NotificationObserver,
       Profile* profile, content::RenderProcessHost* render_host);
 
  private:
-  // ui::NativeThemeObserver:
-  void OnNativeThemeUpdated(ui::NativeTheme* updated_theme) override;
-
   void OnPreferenceChanged();
 
   // Invalidates the NTPResourceCache.
@@ -81,8 +70,6 @@ class NTPResourceCache : public content::NotificationObserver,
 
   void CreateNewTabGuestHTML();
 
-  void SetDarkKey(base::Value* dict);
-
   Profile* profile_;
 
   scoped_refptr<base::RefCountedMemory> new_tab_html_;
@@ -96,8 +83,6 @@ class NTPResourceCache : public content::NotificationObserver,
 
   // Set based on platform_util::IsSwipeTrackingFromScrollEventsEnabled.
   bool is_swipe_tracking_from_scroll_events_enabled_;
-
-  ScopedObserver<ui::NativeTheme, NTPResourceCache> theme_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPResourceCache);
 };

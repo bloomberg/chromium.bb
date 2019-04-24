@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_HTML_TEMPLATE_ELEMENT_H_
 
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 
 namespace blink {
 
@@ -58,7 +59,7 @@ class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
                                        CloneChildrenFlag) override;
   void DidMoveToNewDocument(Document& old_document) override;
 
-  mutable Member<TemplateContentDocumentFragment> content_;
+  mutable TraceWrapperMember<TemplateContentDocumentFragment> content_;
 };
 
 }  // namespace blink

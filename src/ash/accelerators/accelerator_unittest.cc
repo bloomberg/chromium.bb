@@ -18,7 +18,6 @@
 #include "ash/wm/window_util.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/user_action_tester.h"
-#include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/network/network_handler.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "services/ws/test_window_tree_client.h"
@@ -71,13 +70,11 @@ class AcceleratorTest : public AshTestBase, public OverviewObserver {
 
     Shell::Get()->overview_controller()->AddObserver(this);
 
-    chromeos::shill_clients::InitializeFakes();
     chromeos::NetworkHandler::Initialize();
   }
 
   void TearDown() override {
     chromeos::NetworkHandler::Shutdown();
-    chromeos::shill_clients::Shutdown();
 
     Shell::Get()->overview_controller()->RemoveObserver(this);
 

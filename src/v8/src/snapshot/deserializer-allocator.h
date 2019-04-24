@@ -57,8 +57,7 @@ class DeserializerAllocator final {
   // ------- Reservation Methods -------
   // Methods related to memory reservations (prior to deserialization).
 
-  V8_EXPORT_PRIVATE void DecodeReservation(
-      const std::vector<SerializedData::Reservation>& res);
+  void DecodeReservation(const std::vector<SerializedData::Reservation>& res);
   bool ReserveSpace();
 
   bool ReservationsAreFullyUsed() const;

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.exportPath('management');
+
 /**
  * @typedef {{
- *   messageIds: !Array<string>,
- *   icon: string,
+ *    messageIds: !Array<string>,
+ *    icon: string,
  * }}
  */
 management.BrowserReportingData;
@@ -44,27 +44,16 @@ Polymer({
      * @private
      */
     localTrustRoots_: String,
-
-    /** @private */
-    managementOverview_: String,
-
-    /** @private {?management.ManagedInfo} */
-    deviceManagedInfo_: Object,
     // </if>
 
-    /** @private {?management.ManagedInfo} */
-    accountManagedInfo_: Object,
-
-    /** @private */
-    subtitle_: String,
-
-    // <if expr="not chromeos">
-    /** @private */
-    managementNoticeHtml_: String,
-    // </if>
-
-    /** @private */
-    extensionReportingSubtitle_: String,
+    /**
+     * Indicates if the search field in visible in the toolbar.
+     * @private
+     */
+    showSearchInToolbar_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @private {?management.ManagementBrowserProxy} */
@@ -74,16 +63,14 @@ Polymer({
   attached() {
     document.documentElement.classList.remove('loading');
     this.browserProxy_ = management.ManagementBrowserProxyImpl.getInstance();
-    this.updateManagedFields_();
     this.initBrowserReportingInfo_();
 
     this.addWebUIListener(
         'browser-reporting-info-updated',
         reportingInfo => this.onBrowserReportingInfoReceived_(reportingInfo));
 
-    this.addWebUIListener('managed_state_changed', () => {
-      this.updateManagedFields_();
-    });
+    this.addWebUIListener(
+        'update-load-time-data', data => loadTimeData.overrideValues(data));
 
     this.getExtensions_();
     // <if expr="chromeos">
@@ -137,9 +124,9 @@ Polymer({
   /** @private */
   getLocalTrustRootsInfo_() {
     this.browserProxy_.getLocalTrustRootsInfo().then(trustRootsConfigured => {
-      this.localTrustRoots_ = trustRootsConfigured ?
-          loadTimeData.getString('managementTrustRootsConfigured') :
-          '';
+      this.localTrustRoots_ = loadTimeData.getString(
+          trustRootsConfigured ? 'managementTrustRootsConfigured' :
+                                 'managementTrustRootsNotConfigured');
     });
   },
 
@@ -175,8 +162,6 @@ Polymer({
         return 'cr:computer';
       case management.DeviceReportingType.LOGS:
         return 'management:report';
-      case management.DeviceReportingType.PRINT:
-        return 'cr:print';
       default:
         return 'cr:computer';
     }
@@ -220,34 +205,5 @@ Polymer({
       default:
         return 'cr:security';
     }
-  },
-
-  /**
-   * Handles the 'search-changed' event fired from the toolbar.
-   * Redirects to the settings page initialized the the current
-   * search query.
-   * @param {!CustomEvent<string>} e
-   * @private
-   */
-  onSearchChanged_: function(e) {
-    const query = e.detail;
-    window.location.href =
-        `chrome://settings?search=${encodeURIComponent(query)}`;
-  },
-
-  /** @private */
-  updateManagedFields_() {
-    this.browserProxy_.getContextualManagedData().then(data => {
-      this.extensionReportingSubtitle_ = data.extensionReportingTitle;
-      this.subtitle_ = data.pageSubtitle;
-      this.accountManagedInfo_ = data.accountManagedInfo;
-      // <if expr="chromeos">
-      this.managementOverview_ = data.overview;
-      this.deviceManagedInfo_ = data.deviceManagedInfo;
-      // </if>
-      // <if expr="not chromeos">
-      this.managementNoticeHtml_ = data.browserManagementNotice;
-      // </if>
-    });
   },
 });

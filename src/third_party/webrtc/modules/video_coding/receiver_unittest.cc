@@ -13,6 +13,7 @@
 #include <queue>
 #include <vector>
 
+#include "common_types.h"  // NOLINT(build/include)
 #include "modules/video_coding/encoded_frame.h"
 #include "modules/video_coding/jitter_buffer_common.h"
 #include "modules/video_coding/packet.h"
@@ -55,13 +56,11 @@ class TestVCMReceiver : public ::testing::Test {
     return receiver_.InsertPacket(packet);
   }
 
-  int32_t InsertFrame(VideoFrameType frame_type, bool complete) {
+  int32_t InsertFrame(FrameType frame_type, bool complete) {
     int num_of_packets = complete ? 1 : 2;
     stream_generator_->GenerateFrame(
-        frame_type,
-        (frame_type != VideoFrameType::kEmptyFrame) ? num_of_packets : 0,
-        (frame_type == VideoFrameType::kEmptyFrame) ? 1 : 0,
-        clock_->TimeInMilliseconds());
+        frame_type, (frame_type != kEmptyFrame) ? num_of_packets : 0,
+        (frame_type == kEmptyFrame) ? 1 : 0, clock_->TimeInMilliseconds());
     int32_t ret = InsertPacketAndPop(0);
     if (!complete) {
       // Drop the second packet.
@@ -87,13 +86,15 @@ class TestVCMReceiver : public ::testing::Test {
 };
 
 TEST_F(TestVCMReceiver, NonDecodableDuration_Empty) {
+  // Enable NACK and with no RTT thresholds for disabling retransmission delay.
+  receiver_.SetNackMode(kNack, -1, -1);
   const size_t kMaxNackListSize = 1000;
   const int kMaxPacketAgeToNack = 1000;
   const int kMaxNonDecodableDuration = 500;
   const int kMinDelayMs = 500;
   receiver_.SetNackSettings(kMaxNackListSize, kMaxPacketAgeToNack,
                             kMaxNonDecodableDuration);
-  EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameKey, true), kNoError);
+  EXPECT_GE(InsertFrame(kVideoFrameKey, true), kNoError);
   // Advance time until it's time to decode the key frame.
   clock_->AdvanceTimeMilliseconds(kMinDelayMs);
   EXPECT_TRUE(DecodeNextFrame());
@@ -103,6 +104,8 @@ TEST_F(TestVCMReceiver, NonDecodableDuration_Empty) {
 }
 
 TEST_F(TestVCMReceiver, NonDecodableDuration_NoKeyFrame) {
+  // Enable NACK and with no RTT thresholds for disabling retransmission delay.
+  receiver_.SetNackMode(kNack, -1, -1);
   const size_t kMaxNackListSize = 1000;
   const int kMaxPacketAgeToNack = 1000;
   const int kMaxNonDecodableDuration = 500;
@@ -110,7 +113,7 @@ TEST_F(TestVCMReceiver, NonDecodableDuration_NoKeyFrame) {
                             kMaxNonDecodableDuration);
   const int kNumFrames = kDefaultFrameRate * kMaxNonDecodableDuration / 1000;
   for (int i = 0; i < kNumFrames; ++i) {
-    EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameDelta, true), kNoError);
+    EXPECT_GE(InsertFrame(kVideoFrameDelta, true), kNoError);
   }
   bool request_key_frame = false;
   std::vector<uint16_t> nack_list = receiver_.NackList(&request_key_frame);
@@ -118,6 +121,8 @@ TEST_F(TestVCMReceiver, NonDecodableDuration_NoKeyFrame) {
 }
 
 TEST_F(TestVCMReceiver, NonDecodableDuration_OneIncomplete) {
+  // Enable NACK and with no RTT thresholds for disabling retransmission delay.
+  receiver_.SetNackMode(kNack, -1, -1);
   const size_t kMaxNackListSize = 1000;
   const int kMaxPacketAgeToNack = 1000;
   const int kMaxNonDecodableDuration = 500;
@@ -128,12 +133,12 @@ TEST_F(TestVCMReceiver, NonDecodableDuration_OneIncomplete) {
                             kMaxNonDecodableDuration);
   timing_.set_min_playout_delay(kMinDelayMs);
   int64_t key_frame_inserted = clock_->TimeInMilliseconds();
-  EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameKey, true), kNoError);
+  EXPECT_GE(InsertFrame(kVideoFrameKey, true), kNoError);
   // Insert an incomplete frame.
-  EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameDelta, false), kNoError);
+  EXPECT_GE(InsertFrame(kVideoFrameDelta, false), kNoError);
   // Insert enough frames to have too long non-decodable sequence.
   for (int i = 0; i < kMaxNonDecodableDurationFrames; ++i) {
-    EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameDelta, true), kNoError);
+    EXPECT_GE(InsertFrame(kVideoFrameDelta, true), kNoError);
   }
   // Advance time until it's time to decode the key frame.
   clock_->AdvanceTimeMilliseconds(kMinDelayMs - clock_->TimeInMilliseconds() -
@@ -146,6 +151,8 @@ TEST_F(TestVCMReceiver, NonDecodableDuration_OneIncomplete) {
 }
 
 TEST_F(TestVCMReceiver, NonDecodableDuration_NoTrigger) {
+  // Enable NACK and with no RTT thresholds for disabling retransmission delay.
+  receiver_.SetNackMode(kNack, -1, -1);
   const size_t kMaxNackListSize = 1000;
   const int kMaxPacketAgeToNack = 1000;
   const int kMaxNonDecodableDuration = 500;
@@ -156,13 +163,13 @@ TEST_F(TestVCMReceiver, NonDecodableDuration_NoTrigger) {
                             kMaxNonDecodableDuration);
   timing_.set_min_playout_delay(kMinDelayMs);
   int64_t key_frame_inserted = clock_->TimeInMilliseconds();
-  EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameKey, true), kNoError);
+  EXPECT_GE(InsertFrame(kVideoFrameKey, true), kNoError);
   // Insert an incomplete frame.
-  EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameDelta, false), kNoError);
+  EXPECT_GE(InsertFrame(kVideoFrameDelta, false), kNoError);
   // Insert all but one frame to not trigger a key frame request due to
   // too long duration of non-decodable frames.
   for (int i = 0; i < kMaxNonDecodableDurationFrames - 1; ++i) {
-    EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameDelta, true), kNoError);
+    EXPECT_GE(InsertFrame(kVideoFrameDelta, true), kNoError);
   }
   // Advance time until it's time to decode the key frame.
   clock_->AdvanceTimeMilliseconds(kMinDelayMs - clock_->TimeInMilliseconds() -
@@ -176,6 +183,8 @@ TEST_F(TestVCMReceiver, NonDecodableDuration_NoTrigger) {
 }
 
 TEST_F(TestVCMReceiver, NonDecodableDuration_NoTrigger2) {
+  // Enable NACK and with no RTT thresholds for disabling retransmission delay.
+  receiver_.SetNackMode(kNack, -1, -1);
   const size_t kMaxNackListSize = 1000;
   const int kMaxPacketAgeToNack = 1000;
   const int kMaxNonDecodableDuration = 500;
@@ -186,14 +195,14 @@ TEST_F(TestVCMReceiver, NonDecodableDuration_NoTrigger2) {
                             kMaxNonDecodableDuration);
   timing_.set_min_playout_delay(kMinDelayMs);
   int64_t key_frame_inserted = clock_->TimeInMilliseconds();
-  EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameKey, true), kNoError);
+  EXPECT_GE(InsertFrame(kVideoFrameKey, true), kNoError);
   // Insert enough frames to have too long non-decodable sequence, except that
   // we don't have any losses.
   for (int i = 0; i < kMaxNonDecodableDurationFrames; ++i) {
-    EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameDelta, true), kNoError);
+    EXPECT_GE(InsertFrame(kVideoFrameDelta, true), kNoError);
   }
   // Insert an incomplete frame.
-  EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameDelta, false), kNoError);
+  EXPECT_GE(InsertFrame(kVideoFrameDelta, false), kNoError);
   // Advance time until it's time to decode the key frame.
   clock_->AdvanceTimeMilliseconds(kMinDelayMs - clock_->TimeInMilliseconds() -
                                   key_frame_inserted);
@@ -206,6 +215,8 @@ TEST_F(TestVCMReceiver, NonDecodableDuration_NoTrigger2) {
 }
 
 TEST_F(TestVCMReceiver, NonDecodableDuration_KeyFrameAfterIncompleteFrames) {
+  // Enable NACK and with no RTT thresholds for disabling retransmission delay.
+  receiver_.SetNackMode(kNack, -1, -1);
   const size_t kMaxNackListSize = 1000;
   const int kMaxPacketAgeToNack = 1000;
   const int kMaxNonDecodableDuration = 500;
@@ -216,14 +227,14 @@ TEST_F(TestVCMReceiver, NonDecodableDuration_KeyFrameAfterIncompleteFrames) {
                             kMaxNonDecodableDuration);
   timing_.set_min_playout_delay(kMinDelayMs);
   int64_t key_frame_inserted = clock_->TimeInMilliseconds();
-  EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameKey, true), kNoError);
+  EXPECT_GE(InsertFrame(kVideoFrameKey, true), kNoError);
   // Insert an incomplete frame.
-  EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameDelta, false), kNoError);
+  EXPECT_GE(InsertFrame(kVideoFrameDelta, false), kNoError);
   // Insert enough frames to have too long non-decodable sequence.
   for (int i = 0; i < kMaxNonDecodableDurationFrames; ++i) {
-    EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameDelta, true), kNoError);
+    EXPECT_GE(InsertFrame(kVideoFrameDelta, true), kNoError);
   }
-  EXPECT_GE(InsertFrame(VideoFrameType::kVideoFrameKey, true), kNoError);
+  EXPECT_GE(InsertFrame(kVideoFrameKey, true), kNoError);
   // Advance time until it's time to decode the key frame.
   clock_->AdvanceTimeMilliseconds(kMinDelayMs - clock_->TimeInMilliseconds() -
                                   key_frame_inserted);
@@ -265,7 +276,7 @@ class SimulatedClockWithFrames : public SimulatedClock {
     bool frame_injected = false;
     while (!timestamps_.empty() &&
            timestamps_.front().arrive_time <= end_time) {
-      RTC_DCHECK_GE(timestamps_.front().arrive_time, start_time);
+      RTC_DCHECK(timestamps_.front().arrive_time >= start_time);
 
       SimulatedClock::AdvanceTimeMicroseconds(timestamps_.front().arrive_time -
                                               TimeInMicroseconds());
@@ -293,7 +304,7 @@ class SimulatedClockWithFrames : public SimulatedClock {
                  size_t size) {
     int64_t previous_arrive_timestamp = 0;
     for (size_t i = 0; i < size; i++) {
-      RTC_CHECK_GE(arrive_timestamps[i], previous_arrive_timestamp);
+      RTC_CHECK(arrive_timestamps[i] >= previous_arrive_timestamp);
       timestamps_.push(TimestampPair(arrive_timestamps[i] * 1000,
                                      render_timestamps[i] * 1000));
       previous_arrive_timestamp = arrive_timestamps[i];
@@ -311,7 +322,7 @@ class SimulatedClockWithFrames : public SimulatedClock {
 
   void GenerateAndInsertFrame(int64_t render_timestamp_ms) {
     VCMPacket packet;
-    stream_generator_->GenerateFrame(VideoFrameType::kVideoFrameKey,
+    stream_generator_->GenerateFrame(FrameType::kVideoFrameKey,
                                      1,  // media packets
                                      0,  // empty packets
                                      render_timestamp_ms);

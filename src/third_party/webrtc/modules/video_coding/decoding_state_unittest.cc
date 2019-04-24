@@ -9,6 +9,7 @@
  */
 
 #include "modules/video_coding/decoding_state.h"
+#include "common_types.h"  // NOLINT(build/include)
 #include "modules/rtp_rtcp/source/rtp_video_header.h"
 #include "modules/video_coding/codecs/interface/common_constants.h"
 #include "modules/video_coding/codecs/vp8/include/vp8_globals.h"
@@ -37,7 +38,7 @@ TEST(TestDecodingState, FrameContinuity) {
   packet.video_header.is_first_packet_in_frame = true;
   packet.timestamp = 1;
   packet.seqNum = 0xffff;
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   packet.video_header.codec = kVideoCodecVP8;
   auto& vp8_header =
       packet.video_header.video_type_header.emplace<RTPVideoHeaderVP8>();
@@ -49,12 +50,12 @@ TEST(TestDecodingState, FrameContinuity) {
   // Always start with a key frame.
   dec_state.Reset();
   EXPECT_FALSE(dec_state.ContinuousFrame(&frame));
-  packet.frameType = VideoFrameType::kVideoFrameKey;
+  packet.frameType = kVideoFrameKey;
   EXPECT_LE(0, frame_key.InsertPacket(packet, 0, frame_data));
   EXPECT_TRUE(dec_state.ContinuousFrame(&frame_key));
   dec_state.SetState(&frame);
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   // Use pictureId
   packet.video_header.is_first_packet_in_frame = false;
   vp8_header.pictureId = 0x0002;
@@ -170,7 +171,7 @@ TEST(TestDecodingState, UpdateOldPacket) {
   VCMPacket packet;
   packet.timestamp = 1;
   packet.seqNum = 1;
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   FrameData frame_data;
   frame_data.rtt_ms = 0;
   frame_data.rolling_average_packets_per_frame = -1;
@@ -185,14 +186,14 @@ TEST(TestDecodingState, UpdateOldPacket) {
   // Now insert empty packet belonging to the same frame.
   packet.timestamp = 1;
   packet.seqNum = 2;
-  packet.frameType = VideoFrameType::kEmptyFrame;
+  packet.frameType = kEmptyFrame;
   packet.sizeBytes = 0;
   dec_state.UpdateOldPacket(&packet);
   EXPECT_EQ(dec_state.sequence_num(), 2);
   // Now insert delta packet belonging to the same frame.
   packet.timestamp = 1;
   packet.seqNum = 3;
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   packet.sizeBytes = 1400;
   dec_state.UpdateOldPacket(&packet);
   EXPECT_EQ(dec_state.sequence_num(), 3);
@@ -200,7 +201,7 @@ TEST(TestDecodingState, UpdateOldPacket) {
   // sequence number.
   packet.timestamp = 0;
   packet.seqNum = 4;
-  packet.frameType = VideoFrameType::kEmptyFrame;
+  packet.frameType = kEmptyFrame;
   packet.sizeBytes = 0;
   dec_state.UpdateOldPacket(&packet);
   EXPECT_EQ(dec_state.sequence_num(), 3);
@@ -214,7 +215,7 @@ TEST(TestDecodingState, MultiLayerBehavior) {
   // tl0PicIdx 0, temporal id 0.
   VCMFrameBuffer frame;
   VCMPacket packet;
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   packet.video_header.codec = kVideoCodecVP8;
   packet.timestamp = 0;
   packet.seqNum = 0;
@@ -265,7 +266,7 @@ TEST(TestDecodingState, MultiLayerBehavior) {
   // Insert key frame - should update sync value.
   // A key frame is always a base layer.
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameKey;
+  packet.frameType = kVideoFrameKey;
   packet.video_header.is_first_packet_in_frame = true;
   packet.timestamp = 5;
   packet.seqNum = 5;
@@ -279,7 +280,7 @@ TEST(TestDecodingState, MultiLayerBehavior) {
   // After sync, a continuous PictureId is required
   // (continuous base layer is not enough )
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   packet.timestamp = 6;
   packet.seqNum = 6;
   vp8_header.tl0PicIdx = 3;
@@ -289,7 +290,7 @@ TEST(TestDecodingState, MultiLayerBehavior) {
   EXPECT_TRUE(dec_state.ContinuousFrame(&frame));
   EXPECT_TRUE(dec_state.full_sync());
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   packet.video_header.is_first_packet_in_frame = true;
   packet.timestamp = 8;
   packet.seqNum = 8;
@@ -304,7 +305,7 @@ TEST(TestDecodingState, MultiLayerBehavior) {
 
   // Insert a non-ref frame - should update sync value.
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   packet.video_header.is_first_packet_in_frame = true;
   packet.timestamp = 9;
   packet.seqNum = 9;
@@ -324,7 +325,7 @@ TEST(TestDecodingState, MultiLayerBehavior) {
   // Base layer.
   frame.Reset();
   dec_state.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   packet.video_header.is_first_packet_in_frame = true;
   packet.markerBit = 1;
   packet.timestamp = 0;
@@ -338,7 +339,7 @@ TEST(TestDecodingState, MultiLayerBehavior) {
   EXPECT_TRUE(dec_state.full_sync());
   // Layer 2 - 2 packets (insert one, lose one).
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   packet.video_header.is_first_packet_in_frame = true;
   packet.markerBit = 0;
   packet.timestamp = 1;
@@ -351,7 +352,7 @@ TEST(TestDecodingState, MultiLayerBehavior) {
   EXPECT_TRUE(dec_state.ContinuousFrame(&frame));
   // Layer 1
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   packet.video_header.is_first_packet_in_frame = true;
   packet.markerBit = 1;
   packet.timestamp = 2;
@@ -370,7 +371,7 @@ TEST(TestDecodingState, DiscontinuousPicIdContinuousSeqNum) {
   VCMFrameBuffer frame;
   VCMPacket packet;
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameKey;
+  packet.frameType = kVideoFrameKey;
   packet.video_header.codec = kVideoCodecVP8;
   packet.timestamp = 0;
   packet.seqNum = 0;
@@ -389,7 +390,7 @@ TEST(TestDecodingState, DiscontinuousPicIdContinuousSeqNum) {
   // Continuous sequence number but discontinuous picture id. This implies a
   // a loss and we have to fall back to only decoding the base layer.
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   packet.timestamp += 3000;
   ++packet.seqNum;
   vp8_header.temporalIdx = 1;
@@ -425,7 +426,7 @@ TEST(TestDecodingState, PictureIdRepeat) {
   VCMDecodingState dec_state;
   VCMFrameBuffer frame;
   VCMPacket packet;
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   packet.video_header.codec = kVideoCodecVP8;
   packet.timestamp = 0;
   packet.seqNum = 0;
@@ -478,7 +479,7 @@ TEST(TestDecodingState, FrameContinuityFlexibleModeKeyFrame) {
   frame_data.rolling_average_packets_per_frame = -1;
 
   // Key frame as first frame
-  packet.frameType = VideoFrameType::kVideoFrameKey;
+  packet.frameType = kVideoFrameKey;
   EXPECT_LE(0, frame.InsertPacket(packet, 0, frame_data));
   EXPECT_TRUE(dec_state.ContinuousFrame(&frame));
   dec_state.SetState(&frame);
@@ -492,7 +493,7 @@ TEST(TestDecodingState, FrameContinuityFlexibleModeKeyFrame) {
 
   // Ref to 11, continuous
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   vp9_hdr.picture_id = 12;
   vp9_hdr.num_ref_pics = 1;
   vp9_hdr.pid_diff[0] = 1;
@@ -522,14 +523,14 @@ TEST(TestDecodingState, FrameContinuityFlexibleModeOutOfOrderFrames) {
   frame_data.rolling_average_packets_per_frame = -1;
 
   // Key frame as first frame
-  packet.frameType = VideoFrameType::kVideoFrameKey;
+  packet.frameType = kVideoFrameKey;
   EXPECT_LE(0, frame.InsertPacket(packet, 0, frame_data));
   EXPECT_TRUE(dec_state.ContinuousFrame(&frame));
   dec_state.SetState(&frame);
 
   // Ref to 10, continuous
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   vp9_hdr.picture_id = 15;
   vp9_hdr.num_ref_pics = 1;
   vp9_hdr.pid_diff[0] = 5;
@@ -578,23 +579,23 @@ TEST(TestDecodingState, FrameContinuityFlexibleModeGeneral) {
   frame_data.rolling_average_packets_per_frame = -1;
 
   // Key frame as first frame
-  packet.frameType = VideoFrameType::kVideoFrameKey;
+  packet.frameType = kVideoFrameKey;
   EXPECT_LE(0, frame.InsertPacket(packet, 0, frame_data));
   EXPECT_TRUE(dec_state.ContinuousFrame(&frame));
 
   // Delta frame as first frame
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   EXPECT_LE(0, frame.InsertPacket(packet, 0, frame_data));
   EXPECT_FALSE(dec_state.ContinuousFrame(&frame));
 
   // Key frame then delta frame
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameKey;
+  packet.frameType = kVideoFrameKey;
   EXPECT_LE(0, frame.InsertPacket(packet, 0, frame_data));
   dec_state.SetState(&frame);
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   vp9_hdr.num_ref_pics = 1;
   vp9_hdr.picture_id = 15;
   vp9_hdr.pid_diff[0] = 5;
@@ -638,7 +639,7 @@ TEST(TestDecodingState, FrameContinuityFlexibleModeGeneral) {
 
   // Key Frame, continuous
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameKey;
+  packet.frameType = kVideoFrameKey;
   vp9_hdr.picture_id = VCMDecodingState::kFrameDecodedLength - 2;
   vp9_hdr.num_ref_pics = 0;
   EXPECT_LE(0, frame.InsertPacket(packet, 0, frame_data));
@@ -647,7 +648,7 @@ TEST(TestDecodingState, FrameContinuityFlexibleModeGeneral) {
 
   // Frame at last index, ref to KF, continuous
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   vp9_hdr.picture_id = VCMDecodingState::kFrameDecodedLength - 1;
   vp9_hdr.num_ref_pics = 1;
   vp9_hdr.pid_diff[0] = 1;
@@ -683,7 +684,7 @@ TEST(TestDecodingState, FrameContinuityFlexibleModeGeneral) {
 
   // Key frame, continuous
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameKey;
+  packet.frameType = kVideoFrameKey;
   vp9_hdr.picture_id = 25;
   vp9_hdr.num_ref_pics = 0;
   EXPECT_LE(0, frame.InsertPacket(packet, 0, frame_data));
@@ -692,7 +693,7 @@ TEST(TestDecodingState, FrameContinuityFlexibleModeGeneral) {
 
   // Ref to KF, continuous
   frame.Reset();
-  packet.frameType = VideoFrameType::kVideoFrameDelta;
+  packet.frameType = kVideoFrameDelta;
   vp9_hdr.picture_id = 26;
   vp9_hdr.num_ref_pics = 1;
   vp9_hdr.pid_diff[0] = 1;

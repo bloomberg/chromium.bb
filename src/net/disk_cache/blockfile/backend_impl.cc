@@ -12,7 +12,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/hash/hash.h"
+#include "base/hash.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
@@ -150,16 +150,15 @@ BackendImpl::BackendImpl(
     const base::FilePath& path,
     scoped_refptr<BackendCleanupTracker> cleanup_tracker,
     const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
-    net::CacheType cache_type,
     net::NetLog* net_log)
-    : Backend(cache_type),
-      cleanup_tracker_(std::move(cleanup_tracker)),
+    : cleanup_tracker_(std::move(cleanup_tracker)),
       background_queue_(this, FallbackToInternalIfNull(cache_thread)),
       path_(path),
       block_files_(path),
       mask_(0),
       max_size_(0),
       up_ticks_(0),
+      cache_type_(net::DISK_CACHE),
       uma_report_(0),
       user_flags_(0),
       init_(false),
@@ -180,15 +179,14 @@ BackendImpl::BackendImpl(
     const base::FilePath& path,
     uint32_t mask,
     const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
-    net::CacheType cache_type,
     net::NetLog* net_log)
-    : Backend(cache_type),
-      background_queue_(this, FallbackToInternalIfNull(cache_thread)),
+    : background_queue_(this, FallbackToInternalIfNull(cache_thread)),
       path_(path),
       block_files_(path),
       mask_(mask),
       max_size_(0),
       up_ticks_(0),
+      cache_type_(net::DISK_CACHE),
       uma_report_(0),
       user_flags_(kMask),
       init_(false),
@@ -263,14 +261,14 @@ int BackendImpl::SyncInit() {
   Trace("Init");
 
   if (data_->header.experiment != NO_EXPERIMENT &&
-      GetCacheType() != net::DISK_CACHE) {
+      cache_type_ != net::DISK_CACHE) {
     // No experiment for other caches.
     return net::ERR_FAILED;
   }
 
   if (!(user_flags_ & kNoRandom)) {
     // The unit test controls directly what to test.
-    new_eviction_ = (GetCacheType() == net::DISK_CACHE);
+    new_eviction_ = (cache_type_ == net::DISK_CACHE);
   }
 
   if (!CheckIndex()) {
@@ -281,7 +279,7 @@ int BackendImpl::SyncInit() {
   if (!restarted_ && (create_files || !data_->header.num_entries))
     ReportError(ERR_CACHE_CREATED);
 
-  if (!(user_flags_ & kNoRandom) && GetCacheType() == net::DISK_CACHE &&
+  if (!(user_flags_ & kNoRandom) && cache_type_ == net::DISK_CACHE &&
       !InitExperiment(&data_->header, create_files)) {
     return net::ERR_FAILED;
   }
@@ -301,10 +299,10 @@ int BackendImpl::SyncInit() {
     return net::ERR_FAILED;
 
   // We want to minimize the changes to cache for an AppCache.
-  if (GetCacheType() == net::APP_CACHE) {
+  if (cache_type() == net::APP_CACHE) {
     DCHECK(!new_eviction_);
     read_only_ = true;
-  } else if (GetCacheType() == net::SHADER_CACHE) {
+  } else if (cache_type() == net::SHADER_CACHE) {
     DCHECK(!new_eviction_);
   }
 
@@ -366,7 +364,7 @@ void BackendImpl::CleanupCache() {
   }
   block_files_.CloseFiles();
   FlushIndex();
-  index_ = nullptr;
+  index_ = NULL;
   ptr_factory_.InvalidateWeakPtrs();
   done_.Signal();
 }
@@ -420,7 +418,7 @@ int BackendImpl::SyncDoomAllEntries() {
 
 int BackendImpl::SyncDoomEntriesBetween(const base::Time initial_time,
                                         const base::Time end_time) {
-  DCHECK_NE(net::APP_CACHE, GetCacheType());
+  DCHECK_NE(net::APP_CACHE, cache_type_);
   if (end_time.is_null())
     return SyncDoomEntriesSince(initial_time);
 
@@ -443,7 +441,7 @@ int BackendImpl::SyncDoomEntriesBetween(const base::Time initial_time,
         node->GetLastUsed() < end_time) {
       node->DoomImpl();
     } else if (node->GetLastUsed() < initial_time) {
-      next = nullptr;
+      next = NULL;
       SyncEndEnumeration(std::move(iterator));
     }
   }
@@ -452,7 +450,7 @@ int BackendImpl::SyncDoomEntriesBetween(const base::Time initial_time,
 }
 
 int BackendImpl::SyncCalculateSizeOfAllEntries() {
-  DCHECK_NE(net::APP_CACHE, GetCacheType());
+  DCHECK_NE(net::APP_CACHE, cache_type_);
   if (disabled_)
     return net::ERR_FAILED;
 
@@ -462,7 +460,7 @@ int BackendImpl::SyncCalculateSizeOfAllEntries() {
 // We use OpenNextEntryImpl to retrieve elements from the cache, until we get
 // entries that are too old.
 int BackendImpl::SyncDoomEntriesSince(const base::Time initial_time) {
-  DCHECK_NE(net::APP_CACHE, GetCacheType());
+  DCHECK_NE(net::APP_CACHE, cache_type_);
   if (disabled_)
     return net::ERR_FAILED;
 
@@ -506,12 +504,12 @@ void BackendImpl::SyncOnExternalCacheHit(const std::string& key) {
   scoped_refptr<EntryImpl> cache_entry =
       MatchEntry(key, hash, false, Addr(), &error);
   if (cache_entry && ENTRY_NORMAL == cache_entry->entry()->Data()->state)
-    UpdateRank(cache_entry.get(), GetCacheType() == net::SHADER_CACHE);
+    UpdateRank(cache_entry.get(), cache_type() == net::SHADER_CACHE);
 }
 
 scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
   if (disabled_)
-    return nullptr;
+    return NULL;
 
   TimeTicks start = TimeTicks::Now();
   uint32_t hash = base::Hash(key);
@@ -522,7 +520,7 @@ scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
       MatchEntry(key, hash, false, Addr(), &error);
   if (cache_entry && ENTRY_NORMAL != cache_entry->entry()->Data()->state) {
     // The entry was already evicted.
-    cache_entry = nullptr;
+    cache_entry = NULL;
     web_fonts_histogram::RecordEvictedEntry(key);
   } else if (!cache_entry) {
     web_fonts_histogram::RecordCacheMiss(key);
@@ -535,7 +533,7 @@ scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
 
   if (!cache_entry) {
     stats_.OnEvent(Stats::OPEN_MISS);
-    return nullptr;
+    return NULL;
   }
 
   eviction_.OnOpenEntry(cache_entry.get());
@@ -556,7 +554,7 @@ scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
 
 scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
   if (disabled_ || key.empty())
-    return nullptr;
+    return NULL;
 
   TimeTicks start = TimeTicks::Now();
   uint32_t hash = base::Hash(key);
@@ -578,7 +576,7 @@ scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
     if (!parent && data_->table[hash & mask_]) {
       // We should have corrected the problem.
       NOTREACHED();
-      return nullptr;
+      return NULL;
     }
   }
 
@@ -599,7 +597,7 @@ scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
   if (!block_files_.CreateBlock(BLOCK_256, num_blocks, &entry_address)) {
     LOG(ERROR) << "Create entry failed " << key.c_str();
     stats_.OnEvent(Stats::CREATE_ERROR);
-    return nullptr;
+    return NULL;
   }
 
   Addr node_address(0);
@@ -607,7 +605,7 @@ scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
     block_files_.DeleteBlock(entry_address, false);
     LOG(ERROR) << "Create entry failed " << key.c_str();
     stats_.OnEvent(Stats::CREATE_ERROR);
-    return nullptr;
+    return NULL;
   }
 
   scoped_refptr<EntryImpl> cache_entry(
@@ -619,7 +617,7 @@ scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
     block_files_.DeleteBlock(node_address, false);
     LOG(ERROR) << "Create entry failed " << key.c_str();
     stats_.OnEvent(Stats::CREATE_ERROR);
-    return nullptr;
+    return NULL;
   }
 
   cache_entry->BeginLogging(net_log_, true);
@@ -653,7 +651,7 @@ scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
 scoped_refptr<EntryImpl> BackendImpl::OpenNextEntryImpl(
     Rankings::Iterator* iterator) {
   if (disabled_)
-    return nullptr;
+    return NULL;
 
   const int kListsToSearch = 3;
   scoped_refptr<EntryImpl> entries[kListsToSearch];
@@ -668,7 +666,7 @@ scoped_refptr<EntryImpl> BackendImpl::OpenNextEntryImpl(
     }
     if (!ret) {
       iterator->Reset();
-      return nullptr;
+      return NULL;
     }
   } else {
     // Get the next entry from the last list, and the actual entries for the
@@ -704,7 +702,7 @@ scoped_refptr<EntryImpl> BackendImpl::OpenNextEntryImpl(
 
   if (newest < 0 || oldest < 0) {
     iterator->Reset();
-    return nullptr;
+    return NULL;
   }
 
   scoped_refptr<EntryImpl> next_entry = entries[newest];
@@ -732,6 +730,11 @@ bool BackendImpl::SetMaxSize(int64_t max_bytes) {
   return true;
 }
 
+void BackendImpl::SetType(net::CacheType type) {
+  DCHECK_NE(net::MEMORY_CACHE, type);
+  cache_type_ = type;
+}
+
 base::FilePath BackendImpl::GetFileName(Addr address) const {
   if (!address.is_separate_file() || !address.is_initialized()) {
     NOTREACHED();
@@ -744,7 +747,7 @@ base::FilePath BackendImpl::GetFileName(Addr address) const {
 
 MappedFile* BackendImpl::File(Addr address) {
   if (disabled_)
-    return nullptr;
+    return NULL;
   return block_files_.GetFile(address);
 }
 
@@ -801,7 +804,7 @@ LruData* BackendImpl::GetLruData() {
 }
 
 void BackendImpl::UpdateRank(EntryImpl* entry, bool modified) {
-  if (read_only_ || (!modified && GetCacheType() == net::SHADER_CACHE))
+  if (read_only_ || (!modified && cache_type() == net::SHADER_CACHE))
     return;
   eviction_.UpdateRank(entry, modified);
 }
@@ -932,7 +935,7 @@ EntryImpl* BackendImpl::GetOpenEntry(CacheRankingsBlock* rankings) const {
     return it->second;
   }
 
-  return nullptr;
+  return NULL;
 }
 
 int32_t BackendImpl::GetCurrentEntryId() const {
@@ -940,7 +943,7 @@ int32_t BackendImpl::GetCurrentEntryId() const {
 }
 
 int64_t BackendImpl::MaxFileSize() const {
-  return GetCacheType() == net::PNACL_CACHE ? max_size_ : max_size_ / 8;
+  return cache_type() == net::PNACL_CACHE ? max_size_ : max_size_ / 8;
 }
 
 void BackendImpl::ModifyStorageSize(int32_t old_size, int32_t new_size) {
@@ -990,9 +993,9 @@ bool BackendImpl::IsLoaded() const {
 
 std::string BackendImpl::HistogramName(const char* name, int experiment) const {
   if (!experiment)
-    return base::StringPrintf("DiskCache.%d.%s", GetCacheType(), name);
-  return base::StringPrintf("DiskCache.%d.%s_%d", GetCacheType(), name,
-                            experiment);
+    return base::StringPrintf("DiskCache.%d.%s", cache_type_, name);
+  return base::StringPrintf("DiskCache.%d.%s_%d", cache_type_,
+                            name, experiment);
 }
 
 base::WeakPtr<BackendImpl> BackendImpl::GetWeakPtr() {
@@ -1231,6 +1234,10 @@ void BackendImpl::FlushIndex() {
 
 // ------------------------------------------------------------------------
 
+net::CacheType BackendImpl::GetCacheType() const {
+  return cache_type_;
+}
+
 int32_t BackendImpl::GetEntryCount() const {
   if (!index_.get() || disabled_)
     return 0;
@@ -1427,7 +1434,7 @@ bool BackendImpl::InitBackingStore(bool* file_created) {
   if (*file_created)
     ret = CreateBackingStore(file.get());
 
-  file = nullptr;
+  file = NULL;
   if (!ret)
     return false;
 
@@ -1489,7 +1496,7 @@ bool BackendImpl::InitStats() {
       return false;
 
     data_->header.stats = address.value();
-    return stats_.Init(nullptr, 0, address);
+    return stats_.Init(NULL, 0, address);
   }
 
   if (!address.is_block_file()) {
@@ -1511,7 +1518,7 @@ bool BackendImpl::InitStats() {
 
   if (!stats_.Init(data.get(), size, address))
     return false;
-  if (GetCacheType() == net::DISK_CACHE && ShouldReportAgain())
+  if (cache_type_ == net::DISK_CACHE && ShouldReportAgain())
     stats_.InitSizeHistogram();
   return true;
 }
@@ -1572,8 +1579,8 @@ void BackendImpl::PrepareForRestart() {
   disabled_ = true;
   data_->header.crash = 0;
   index_->Flush();
-  index_ = nullptr;
-  data_ = nullptr;
+  index_ = NULL;
+  data_ = NULL;
   block_files_.CloseFiles();
   rankings_.Reset();
   init_ = false;
@@ -1599,7 +1606,7 @@ int BackendImpl::NewEntry(Addr address, scoped_refptr<EntryImpl>* entry) {
   scoped_refptr<EntryImpl> cache_entry(
       new EntryImpl(this, address, read_only_));
   IncreaseNumRefs();
-  *entry = nullptr;
+  *entry = NULL;
 
   TimeTicks start = TimeTicks::Now();
   if (!cache_entry->entry()->Load())
@@ -1695,7 +1702,7 @@ scoped_refptr<EntryImpl> BackendImpl::MatchEntry(const std::string& key,
 
       if (parent_entry.get()) {
         parent_entry->SetNextAddress(child);
-        parent_entry = nullptr;
+        parent_entry = NULL;
       } else {
         data_->table[hash & mask_] = child.value();
       }
@@ -1707,7 +1714,7 @@ scoped_refptr<EntryImpl> BackendImpl::MatchEntry(const std::string& key,
         // It is important to call DestroyInvalidEntry after removing this
         // entry from the table.
         DestroyInvalidEntry(cache_entry.get());
-        cache_entry = nullptr;
+        cache_entry = NULL;
       } else {
         Trace("NewEntry failed on MatchEntry 0x%x", address.value());
       }
@@ -1721,19 +1728,19 @@ scoped_refptr<EntryImpl> BackendImpl::MatchEntry(const std::string& key,
     DCHECK_EQ(hash & mask_, cache_entry->entry()->Data()->hash & mask_);
     if (cache_entry->IsSameEntry(key, hash)) {
       if (!cache_entry->Update())
-        cache_entry = nullptr;
+        cache_entry = NULL;
       found = true;
       if (find_parent && entry_addr.value() != address.value()) {
         Trace("Entry not on the index 0x%x", address.value());
         *match_error = true;
-        parent_entry = nullptr;
+        parent_entry = NULL;
       }
       break;
     }
     if (!cache_entry->Update())
-      cache_entry = nullptr;
+      cache_entry = NULL;
     parent_entry = cache_entry;
-    cache_entry = nullptr;
+    cache_entry = NULL;
     if (!parent_entry.get())
       break;
 
@@ -1741,15 +1748,15 @@ scoped_refptr<EntryImpl> BackendImpl::MatchEntry(const std::string& key,
   }
 
   if (parent_entry.get() && (!find_parent || !found))
-    parent_entry = nullptr;
+    parent_entry = NULL;
 
   if (find_parent && entry_addr.is_initialized() && !cache_entry.get()) {
     *match_error = true;
-    parent_entry = nullptr;
+    parent_entry = NULL;
   }
 
   if (cache_entry.get() && (find_parent || !found))
-    cache_entry = nullptr;
+    cache_entry = NULL;
 
   FlushIndex();
 
@@ -1769,7 +1776,7 @@ bool BackendImpl::OpenFollowingEntryFromList(
   Rankings::ScopedRankingsBlock rankings(&rankings_, *from_entry);
   CacheRankingsBlock* next_block = rankings_.GetNext(rankings.get(), list);
   Rankings::ScopedRankingsBlock next(&rankings_, next_block);
-  *from_entry = nullptr;
+  *from_entry = NULL;
 
   *next_entry = GetEnumeratedEntry(next.get(), list);
   if (!*next_entry)
@@ -1783,7 +1790,7 @@ scoped_refptr<EntryImpl> BackendImpl::GetEnumeratedEntry(
     CacheRankingsBlock* next,
     Rankings::List list) {
   if (!next || disabled_)
-    return nullptr;
+    return NULL;
 
   scoped_refptr<EntryImpl> entry;
   int rv = NewEntry(Addr(next->Data()->contents), &entry);
@@ -1794,18 +1801,18 @@ scoped_refptr<EntryImpl> BackendImpl::GetEnumeratedEntry(
       // There is nothing linked from the index. Delete the rankings node.
       DeleteBlock(next->address(), true);
     }
-    return nullptr;
+    return NULL;
   }
 
   if (entry->dirty()) {
     // We cannot trust this entry.
     InternalDoomEntry(entry.get());
-    return nullptr;
+    return NULL;
   }
 
   if (!entry->Update()) {
     STRESS_NOTREACHED();
-    return nullptr;
+    return NULL;
   }
 
   // Note that it is unfortunate (but possible) for this entry to be clean, but
@@ -1828,7 +1835,7 @@ scoped_refptr<EntryImpl> BackendImpl::ResurrectEntry(
     deleted_entry = nullptr;
     stats_.OnEvent(Stats::CREATE_MISS);
     Trace("create entry miss ");
-    return nullptr;
+    return NULL;
   }
 
   // We are attempting to create an entry and found out that the entry was
@@ -2010,7 +2017,7 @@ void BackendImpl::ReportStats() {
   stats_.ResetRatios();
   stats_.SetCounter(Stats::TRIM_ENTRY, 0);
 
-  if (GetCacheType() == net::DISK_CACHE)
+  if (cache_type_ == net::DISK_CACHE)
     block_files_.ReportStats();
 }
 

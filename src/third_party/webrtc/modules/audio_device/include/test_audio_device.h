@@ -17,7 +17,6 @@
 
 #include "api/array_view.h"
 #include "api/scoped_refptr.h"
-#include "api/task_queue/task_queue_factory.h"
 #include "modules/audio_device/include/audio_device.h"
 #include "modules/audio_device/include/audio_device_defines.h"
 #include "rtc_base/buffer.h"
@@ -83,11 +82,6 @@ class TestAudioDeviceModule : public AudioDeviceModule {
       std::unique_ptr<Capturer> capturer,
       std::unique_ptr<Renderer> renderer,
       float speed = 1);
-  static rtc::scoped_refptr<TestAudioDeviceModule> Create(
-      TaskQueueFactory* task_queue_factory,
-      std::unique_ptr<Capturer> capturer,
-      std::unique_ptr<Renderer> renderer,
-      float speed = 1);
 
   // Returns a Capturer instance that generates a signal of |num_channels|
   // channels where every second frame is zero and every second frame is evenly
@@ -113,10 +107,7 @@ class TestAudioDeviceModule : public AudioDeviceModule {
 
   // Returns a Capturer instance that gets its data from a file.
   // Automatically detects sample rate and num of channels.
-  // |repeat| - if true, the file will be replayed from the start when we reach
-  // the end of file.
-  static std::unique_ptr<Capturer> CreateWavFileReader(std::string filename,
-                                                       bool repeat = false);
+  static std::unique_ptr<Capturer> CreateWavFileReader(std::string filename);
 
   // Returns a Renderer instance that writes its data to a file.
   static std::unique_ptr<Renderer> CreateWavFileWriter(
@@ -143,10 +134,7 @@ class TestAudioDeviceModule : public AudioDeviceModule {
 
   // Returns a Capturer instance that gets its data from a file.
   // Automatically detects sample rate and num of channels.
-  // |repeat| - if true, the file will be replayed from the start when we reach
-  // the end of file.
-  static std::unique_ptr<Capturer> CreateWavFileReader(rtc::PlatformFile file,
-                                                       bool repeat = false);
+  static std::unique_ptr<Capturer> CreateWavFileReader(rtc::PlatformFile file);
 
   // Returns a Renderer instance that writes its data to a file.
   static std::unique_ptr<Renderer> CreateWavFileWriter(

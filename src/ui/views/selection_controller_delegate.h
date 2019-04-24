@@ -58,7 +58,7 @@ class VIEWS_EXPORT SelectionControllerDelegate {
   virtual void UpdateSelectionClipboard() = 0;
 
  protected:
-  virtual ~SelectionControllerDelegate() = default;
+  virtual ~SelectionControllerDelegate() {}
 };
 
 }  // namespace views

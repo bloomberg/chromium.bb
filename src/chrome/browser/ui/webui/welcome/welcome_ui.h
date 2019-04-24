@@ -28,10 +28,6 @@ class WelcomeUI : public content::WebUIController {
       size_t background_index,
       const content::WebUIDataSource::GotDataCallback& callback);
 
- protected:
-  // Visible for testing.
-  static bool IsGzipped(const std::string& path);
-
  private:
   void StorePageSeen(Profile* profile);
   std::unique_ptr<nux::NtpBackgroundFetcher> background_fetcher_;

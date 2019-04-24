@@ -112,7 +112,6 @@ void GrMtlBuffer::internalMap(size_t sizeInBytes) {
         fMappedBuffer = fMtlBuffer;
         fMapPtr = fMappedBuffer.contents;
     } else {
-        SK_BEGIN_AUTORELEASE_BLOCK
         // TODO: We can't ensure that map will only be called once on static access buffers until
         // we actually enable dynamic access.
         // SkASSERT(fMappedBuffer == nil);
@@ -124,7 +123,6 @@ void GrMtlBuffer::internalMap(size_t sizeInBytes) {
                                                       options: MTLResourceStorageModeShared];
 #endif
         fMapPtr = fMappedBuffer.contents;
-        SK_END_AUTORELEASE_BLOCK
     }
     VALIDATE();
 }
@@ -147,7 +145,6 @@ void GrMtlBuffer::internalUnmap(size_t sizeInBytes) {
     [fMappedBuffer didModifyRange: NSMakeRange(0, sizeInBytes)];
 #endif
     if (!fIsDynamic) {
-        SK_BEGIN_AUTORELEASE_BLOCK
         id<MTLBlitCommandEncoder> blitCmdEncoder =
                 [this->mtlGpu()->commandBuffer() blitCommandEncoder];
         [blitCmdEncoder copyFromBuffer: fMappedBuffer
@@ -156,7 +153,6 @@ void GrMtlBuffer::internalUnmap(size_t sizeInBytes) {
                      destinationOffset: 0
                                   size: sizeInBytes];
         [blitCmdEncoder endEncoding];
-        SK_END_AUTORELEASE_BLOCK
     }
     fMappedBuffer = nil;
     fMapPtr = nullptr;

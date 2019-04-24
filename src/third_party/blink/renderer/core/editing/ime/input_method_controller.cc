@@ -68,7 +68,7 @@ void DispatchCompositionUpdateEvent(LocalFrame& frame, const String& text) {
   if (!target)
     return;
 
-  auto* event = MakeGarbageCollected<CompositionEvent>(
+  CompositionEvent* event = CompositionEvent::Create(
       event_type_names::kCompositionupdate, frame.DomWindow(), text);
   target->DispatchEvent(*event);
 }
@@ -83,7 +83,7 @@ void DispatchCompositionEndEvent(LocalFrame& frame, const String& text) {
   if (!target)
     return;
 
-  auto* event = MakeGarbageCollected<CompositionEvent>(
+  CompositionEvent* event = CompositionEvent::Create(
       event_type_names::kCompositionend, frame.DomWindow(), text);
   EventDispatcher::DispatchScopedEvent(*target, *event);
 }
@@ -160,9 +160,9 @@ void InsertTextDuringCompositionWithEvents(
   if (!frame.GetDocument())
     return;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited. see http://crbug.com/590369 for more details.
-  frame.GetDocument()->UpdateStyleAndLayout();
+  frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   const bool is_incremental_insertion = NeedsIncrementalInsertion(frame, text);
 
@@ -174,7 +174,7 @@ void InsertTextDuringCompositionWithEvents(
       // https://crbug.com/693481
       if (text.IsEmpty())
         TypingCommand::DeleteSelection(*frame.GetDocument(), 0);
-      frame.GetDocument()->UpdateStyleAndLayout();
+      frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
       TypingCommand::InsertText(*frame.GetDocument(), text, options,
                                 composition_type, is_incremental_insertion);
       break;
@@ -296,9 +296,9 @@ Element* RootEditableElementOfSelection(const FrameSelection& frameSelection) {
   // element as editable[1]
   // [1] http://crbug.com/712761
 
-  // TODO(editing-dev): Use of UpdateStyleAndLayout
+  // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited. see http://crbug.com/590369 for more details.
-  frameSelection.GetDocument().UpdateStyleAndLayout();
+  frameSelection.GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   const VisibleSelection& visibleSeleciton =
       frameSelection.ComputeVisibleSelectionInDOMTree();
   return RootEditableElementOf(visibleSeleciton.Start());
@@ -364,6 +364,10 @@ int ComputeAutocapitalizeFlags(const Element* element) {
 }  // anonymous namespace
 
 enum class InputMethodController::TypingContinuation { kContinue, kEnd };
+
+InputMethodController* InputMethodController::Create(LocalFrame& frame) {
+  return MakeGarbageCollected<InputMethodController>(frame);
+}
 
 InputMethodController::InputMethodController(LocalFrame& frame)
     : frame_(&frame), has_composition_(false) {}
@@ -449,7 +453,7 @@ bool InputMethodController::FinishComposingText(
 
   // TODO(editing-dev): Use of UpdateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited. see http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   const String& composing = ComposingText();
 
   // Suppress input event (if we hit the is_too_long case) and compositionend
@@ -474,7 +478,7 @@ bool InputMethodController::FinishComposingText(
 
     // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited. see http://crbug.com/590369 for more details.
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
     const EphemeralRange& old_selection_range =
         EphemeralRangeForOffsets(old_offsets);
@@ -650,9 +654,9 @@ bool InputMethodController::ReplaceCompositionAndMoveCaret(
   if (!ReplaceComposition(text))
     return false;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited. see http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   AddImeTextSpans(ime_text_spans, root_editable_element, text_start);
 
@@ -735,7 +739,7 @@ bool InputMethodController::DispatchCompositionStartEvent(const String& text) {
   if (!target)
     return IsAvailable();
 
-  auto* event = MakeGarbageCollected<CompositionEvent>(
+  CompositionEvent* event = CompositionEvent::Create(
       event_type_names::kCompositionstart, GetFrame().DomWindow(), text);
   target->DispatchEvent(*event);
 
@@ -766,9 +770,9 @@ void InputMethodController::SetComposition(
   if (!target)
     return;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited. see http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   PlainTextRange selected_range = CreateSelectionRangeForSetComposition(
       selection_start, selection_end, text.length());
@@ -806,9 +810,9 @@ void InputMethodController::SetComposition(
         return;
     }
 
-    // TODO(editing-dev): Use of UpdateStyleAndLayout
+    // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited. see http://crbug.com/590369 for more details.
-    GetDocument().UpdateStyleAndLayout();
+    GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
     SetEditableSelectionOffsets(selected_range);
     return;
@@ -835,9 +839,9 @@ void InputMethodController::SetComposition(
   if (!IsAvailable())
     return;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited. see http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // The undo stack could become empty if a JavaScript event handler calls
   // execCommand('undo') to pop elements off the stack. Or, the top element of
@@ -874,9 +878,9 @@ void InputMethodController::SetComposition(
   if (base_node->GetLayoutObject())
     base_node->GetLayoutObject()->SetShouldDoFullPaintInvalidation();
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited. see http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   // We shouldn't close typing in the middle of setComposition.
   SetEditableSelectionOffsets(selected_range, TypingContinuation::kContinue);
@@ -908,7 +912,7 @@ void InputMethodController::SetComposition(
   if (ime_text_spans.IsEmpty()) {
     GetDocument().Markers().AddCompositionMarker(
         CompositionEphemeralRange(), Color::kTransparent,
-        ui::mojom::ImeTextSpanThickness::kThin,
+        ws::mojom::ImeTextSpanThickness::kThin,
         LayoutTheme::GetTheme().PlatformDefaultCompositionBackgroundColor());
     return;
   }
@@ -1120,7 +1124,7 @@ bool InputMethodController::DeleteSelection() {
 }
 
 bool InputMethodController::MoveCaret(int new_caret_position) {
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   PlainTextRange selected_range =
       CreateRangeForSelection(new_caret_position, new_caret_position, 0);
   if (selected_range.IsNull())
@@ -1299,9 +1303,9 @@ WebTextInputInfo InputMethodController::TextInputInfo() const {
   if (!GetFrame().GetEditor().CanEdit())
     return info;
 
-  // TODO(editing-dev): The use of UpdateStyleAndLayout
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
   // needs to be audited.  see http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       GetDocument().Lifecycle());

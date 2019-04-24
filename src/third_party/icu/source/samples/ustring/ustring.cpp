@@ -23,9 +23,6 @@
 *   with ICU.
 */
 
-#define __STDC_FORMAT_MACROS 1
-#include <inttypes.h>
-
 #include <stdio.h>
 #include "unicode/utypes.h"
 #include "unicode/uchar.h"
@@ -302,7 +299,7 @@ static void demoCaseMapInC() {
     if(U_SUCCESS(errorCode)) {
         printUString("full-lowercased/en: ", buffer, length);
     } else {
-        printf("error in u_strToLower(en)=%" PRId32 " error=%s\n", length, u_errorName(errorCode));
+        printf("error in u_strToLower(en)=%ld error=%s\n", length, u_errorName(errorCode));
     }
     /* lowercase/Turkish */
     errorCode=U_ZERO_ERROR;
@@ -310,7 +307,7 @@ static void demoCaseMapInC() {
     if(U_SUCCESS(errorCode)) {
         printUString("full-lowercased/tr: ", buffer, length);
     } else {
-        printf("error in u_strToLower(tr)=%" PRId32 " error=%s\n", length, u_errorName(errorCode));
+        printf("error in u_strToLower(tr)=%ld error=%s\n", length, u_errorName(errorCode));
     }
     /* uppercase/English */
     errorCode=U_ZERO_ERROR;
@@ -318,7 +315,7 @@ static void demoCaseMapInC() {
     if(U_SUCCESS(errorCode)) {
         printUString("full-uppercased/en: ", buffer, length);
     } else {
-        printf("error in u_strToUpper(en)=%" PRId32 " error=%s\n", length, u_errorName(errorCode));
+        printf("error in u_strToUpper(en)=%ld error=%s\n", length, u_errorName(errorCode));
     }
     /* uppercase/Turkish */
     errorCode=U_ZERO_ERROR;
@@ -326,7 +323,7 @@ static void demoCaseMapInC() {
     if(U_SUCCESS(errorCode)) {
         printUString("full-uppercased/tr: ", buffer, length);
     } else {
-        printf("error in u_strToUpper(tr)=%" PRId32 " error=%s\n", length, u_errorName(errorCode));
+        printf("error in u_strToUpper(tr)=%ld error=%s\n", length, u_errorName(errorCode));
     }
     /* titlecase/English */
     errorCode=U_ZERO_ERROR;
@@ -334,7 +331,7 @@ static void demoCaseMapInC() {
     if(U_SUCCESS(errorCode)) {
         printUString("full-titlecased/en: ", buffer, length);
     } else {
-        printf("error in u_strToTitle(en)=%" PRId32 " error=%s\n", length, u_errorName(errorCode));
+        printf("error in u_strToTitle(en)=%ld error=%s\n", length, u_errorName(errorCode));
     }
     /* titlecase/Turkish */
     errorCode=U_ZERO_ERROR;
@@ -342,7 +339,7 @@ static void demoCaseMapInC() {
     if(U_SUCCESS(errorCode)) {
         printUString("full-titlecased/tr: ", buffer, length);
     } else {
-        printf("error in u_strToTitle(tr)=%" PRId32 " error=%s\n", length, u_errorName(errorCode));
+        printf("error in u_strToTitle(tr)=%ld error=%s\n", length, u_errorName(errorCode));
     }
     /* case-fold/default */
     errorCode=U_ZERO_ERROR;
@@ -350,7 +347,7 @@ static void demoCaseMapInC() {
     if(U_SUCCESS(errorCode)) {
         printUString("full-case-folded/default: ", buffer, length);
     } else {
-        printf("error in u_strFoldCase(default)=%" PRId32 " error=%s\n", length, u_errorName(errorCode));
+        printf("error in u_strFoldCase(default)=%ld error=%s\n", length, u_errorName(errorCode));
     }
     /* case-fold/Turkic */
     errorCode=U_ZERO_ERROR;
@@ -358,7 +355,7 @@ static void demoCaseMapInC() {
     if(U_SUCCESS(errorCode)) {
         printUString("full-case-folded/Turkic: ", buffer, length);
     } else {
-        printf("error in u_strFoldCase(Turkic)=%" PRId32 " error=%s\n", length, u_errorName(errorCode));
+        printf("error in u_strFoldCase(Turkic)=%ld error=%s\n", length, u_errorName(errorCode));
     }
 }
 
@@ -464,7 +461,7 @@ demoUnicodeStringStorage() {
     printUnicodeString("readonly-aliasing string after modification: ", three);
     // the aliased array is not modified
     for(i=0; i<three.length(); ++i) {
-        printf("readonly buffer[%d] after modifying its string: 0x%" PRId32 "\n",
+        printf("readonly buffer[%d] after modifying its string: 0x%lx\n",
                i, readonly[i]);
     }
     // setTo() readonly alias
@@ -486,7 +483,7 @@ demoUnicodeStringStorage() {
     // a modification writes through to the buffer
     four.setCharAt(1, 0x39);
     for(i=0; i<four.length(); ++i) {
-        printf("writeable-alias backing buffer[%d]=0x%" PRId32 " "
+        printf("writeable-alias backing buffer[%d]=0x%lx "
                "after modification\n", i, writeable[i]);
     }
     // a copy will not alias any more;
@@ -494,7 +491,7 @@ demoUnicodeStringStorage() {
     two=four;
     two.setCharAt(1, 0x21);
     for(i=0; i<two.length(); ++i) {
-        printf("writeable-alias backing buffer[%d]=0x%" PRId32 " after "
+        printf("writeable-alias backing buffer[%d]=0x%lx after "
                "modification of string copy\n", i, writeable[i]);
     }
     // setTo() writeable alias, capacity==length
@@ -506,8 +503,8 @@ demoUnicodeStringStorage() {
     one.truncate(one.length()-1);
     // we still operate on the copy
     one.setCharAt(1, 0x25);
-    printf("string after growing too much and then shrinking[1]=0x%" PRId32 "\n"
-           "                          backing store for this[1]=0x%" PRId32 "\n",
+    printf("string after growing too much and then shrinking[1]=0x%lx\n"
+           "                          backing store for this[1]=0x%lx\n",
            one.charAt(1), writeable[1]);
     // if we need it in the original buffer, then extract() to it
     // extract() does not do anything if the string aliases that same buffer
@@ -519,7 +516,7 @@ demoUnicodeStringStorage() {
     }
     one.extract(0, i, writeable);
     for(i=0; i<UPRV_LENGTHOF(writeable); ++i) {
-        printf("writeable-alias backing buffer[%d]=0x%" PRId32 " after re-extract\n",
+        printf("writeable-alias backing buffer[%d]=0x%lx after re-extract\n",
                i, writeable[i]);
     }
 }

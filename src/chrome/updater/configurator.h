@@ -23,6 +23,10 @@ namespace base {
 class Version;
 }  // namespace base
 
+namespace service_manager {
+class Connector;
+}  // namespace service_manager
+
 namespace update_client {
 class ActivityDataService;
 class NetworkFetcherFactory;
@@ -33,7 +37,8 @@ namespace updater {
 
 class Configurator : public update_client::Configurator {
  public:
-  Configurator();
+  explicit Configurator(
+      std::unique_ptr<service_manager::Connector> connector_prototype);
 
   // Configurator for update_client::Configurator.
   int InitialDelay() const override;
@@ -52,8 +57,8 @@ class Configurator : public update_client::Configurator {
   std::string GetDownloadPreference() const override;
   scoped_refptr<update_client::NetworkFetcherFactory> GetNetworkFetcherFactory()
       override;
-  scoped_refptr<update_client::UnzipperFactory> GetUnzipperFactory() override;
-  scoped_refptr<update_client::PatcherFactory> GetPatcherFactory() override;
+  std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
+      const override;
   bool EnabledDeltas() const override;
   bool EnabledComponentUpdates() const override;
   bool EnabledBackgroundDownloader() const override;
@@ -71,10 +76,12 @@ class Configurator : public update_client::Configurator {
   friend class base::RefCountedThreadSafe<Configurator>;
   ~Configurator() override;
 
-  std::unique_ptr<PrefService> pref_service_;
+  // connector_prototype__ is a connector to the updater's service_manager,
+  // through which mojo calls can be made. Connectors have thread-affinity, so
+  // this connector serves as a template that can be cloned for specific uses.
+  std::unique_ptr<service_manager::Connector> connector_prototype_;
+
   scoped_refptr<update_client::NetworkFetcherFactory> network_fetcher_factory_;
-  scoped_refptr<update_client::UnzipperFactory> unzip_factory_;
-  scoped_refptr<update_client::PatcherFactory> patch_factory_;
   DISALLOW_COPY_AND_ASSIGN(Configurator);
 };
 

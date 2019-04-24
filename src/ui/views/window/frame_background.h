@@ -87,29 +87,29 @@ class VIEWS_EXPORT FrameBackground {
   // Fills the frame side and bottom borders with the frame color.
   void FillFrameBorders(gfx::Canvas* canvas, const View* view) const;
 
-  SkColor frame_color_ = 0;
-  bool use_custom_frame_ = true;
-  bool is_active_ = true;
-  bool incognito_ = false;
+  SkColor frame_color_;
+  bool use_custom_frame_;
+  bool is_active_;
+  bool incognito_;
   gfx::ImageSkia theme_image_;
-  int theme_image_y_inset_ = 0;
+  int theme_image_y_inset_;
   gfx::ImageSkia theme_overlay_image_;
-  int top_area_height_ = 0;
+  int top_area_height_;
 
   // Images for the sides of the frame.
-  const gfx::ImageSkia* left_edge_ = nullptr;
-  const gfx::ImageSkia* top_edge_ = nullptr;
-  const gfx::ImageSkia* right_edge_ = nullptr;
-  const gfx::ImageSkia* bottom_edge_ = nullptr;
+  const gfx::ImageSkia* left_edge_;
+  const gfx::ImageSkia* top_edge_;
+  const gfx::ImageSkia* right_edge_;
+  const gfx::ImageSkia* bottom_edge_;
 
   // Images for the corners of the frame.
-  const gfx::ImageSkia* top_left_corner_ = nullptr;
-  const gfx::ImageSkia* top_right_corner_ = nullptr;
-  const gfx::ImageSkia* bottom_left_corner_ = nullptr;
-  const gfx::ImageSkia* bottom_right_corner_ = nullptr;
+  const gfx::ImageSkia* top_left_corner_;
+  const gfx::ImageSkia* top_right_corner_;
+  const gfx::ImageSkia* bottom_left_corner_;
+  const gfx::ImageSkia* bottom_right_corner_;
 
   // Vertical inset for theme image when drawing maximized.
-  int maximized_top_inset_ = 0;
+  int maximized_top_inset_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameBackground);
 };

@@ -73,8 +73,6 @@ struct Format final : private angle::NonCopyable
     }
     size_t getImageCopyBufferAlignment() const;
 
-    bool hasEmulatedChannels() const;
-
     angle::FormatID angleFormatID;
     GLenum internalFormat;
     angle::FormatID textureFormatID;

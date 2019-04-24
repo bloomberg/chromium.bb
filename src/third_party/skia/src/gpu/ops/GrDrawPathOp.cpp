@@ -25,12 +25,12 @@ static constexpr GrUserStencilSettings kCoverPass{
 };
 
 GrDrawPathOpBase::GrDrawPathOpBase(uint32_t classID, const SkMatrix& viewMatrix, GrPaint&& paint,
-                                   GrPathRendering::FillType fill, GrAA aa)
+                                   GrPathRendering::FillType fill, GrAAType aaType)
         : INHERITED(classID)
         , fViewMatrix(viewMatrix)
         , fInputColor(paint.getColor4f())
         , fFillType(fill)
-        , fDoAA(GrAA::kYes == aa)
+        , fAAType(aaType)
         , fProcessorSet(std::move(paint)) {}
 
 #ifdef SK_DEBUG
@@ -44,8 +44,8 @@ SkString GrDrawPathOp::dumpInfo() const {
 
 GrPipeline::InitArgs GrDrawPathOpBase::pipelineInitArgs(const GrOpFlushState& state) {
     GrPipeline::InitArgs args;
-    if (fDoAA) {
-        args.fInputFlags |= GrPipeline::InputFlags::kHWAntialias;
+    if (GrAATypeIsHW(fAAType)) {
+        args.fFlags |= GrPipeline::kHWAntialias_Flag;
     }
     args.fUserStencil = &kCoverPass;
     args.fCaps = &state.caps();
@@ -55,11 +55,10 @@ GrPipeline::InitArgs GrDrawPathOpBase::pipelineInitArgs(const GrOpFlushState& st
 }
 
 const GrProcessorSet::Analysis& GrDrawPathOpBase::doProcessorAnalysis(
-        const GrCaps& caps, const GrAppliedClip* clip, GrFSAAType fsaaType,
-        GrClampType clampType) {
+        const GrCaps& caps, const GrAppliedClip* clip, GrFSAAType fsaaType) {
     fAnalysis = fProcessorSet.finalize(
             fInputColor, GrProcessorAnalysisCoverage::kNone, clip, &kCoverPass, fsaaType, caps,
-            clampType, &fInputColor);
+            &fInputColor);
     return fAnalysis;
 }
 
@@ -78,11 +77,11 @@ void init_stencil_pass_settings(const GrOpFlushState& flushState,
 std::unique_ptr<GrDrawOp> GrDrawPathOp::Make(GrRecordingContext* context,
                                              const SkMatrix& viewMatrix,
                                              GrPaint&& paint,
-                                             GrAA aa,
+                                             GrAAType aaType,
                                              GrPath* path) {
     GrOpMemoryPool* pool = context->priv().opMemoryPool();
 
-    return pool->allocate<GrDrawPathOp>(viewMatrix, std::move(paint), aa, path);
+    return pool->allocate<GrDrawPathOp>(viewMatrix, std::move(paint), aaType, path);
 }
 
 void GrDrawPathOp::onExecute(GrOpFlushState* state, const SkRect& chainBounds) {

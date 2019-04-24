@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/install_flag.h"
@@ -272,10 +273,9 @@ bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
 
   // TODO(crbug.com/761107): Change this so that we don't need to parse JSON
   // in the browser process.
-  auto ruleset_source =
-      declarative_net_request::RulesetSource::CreateStatic(*extension());
-  declarative_net_request::IndexAndPersistJSONRulesetResult result =
-      ruleset_source.IndexAndPersistJSONRulesetUnsafe();
+  declarative_net_request::IndexAndPersistRulesResult result =
+      declarative_net_request::IndexAndPersistRulesUnsafe(
+          declarative_net_request::RulesetSource::Create(*extension()));
   if (!result.success) {
     *error = std::move(result.error);
     return false;

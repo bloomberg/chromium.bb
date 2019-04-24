@@ -140,7 +140,8 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> CreateNV12Texture(
   data.SysMemPitch = size.width();
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
-  HRESULT hr = d3d11_device->CreateTexture2D(&desc, &data, &texture);
+  HRESULT hr =
+      d3d11_device->CreateTexture2D(&desc, &data, texture.GetAddressOf());
   CHECK(SUCCEEDED(hr));
   return texture;
 }
@@ -895,7 +896,7 @@ TEST_F(DirectCompositionPixelTest, VideoHandleSwapchain) {
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
       CreateNV12Texture(d3d11_device, texture_size, true);
   Microsoft::WRL::ComPtr<IDXGIResource1> resource;
-  texture.As(&resource);
+  texture.CopyTo(resource.GetAddressOf());
   HANDLE handle = 0;
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
@@ -946,7 +947,7 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyBoundsRect) {
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
       CreateNV12Texture(d3d11_device, texture_size, true);
   Microsoft::WRL::ComPtr<IDXGIResource1> resource;
-  texture.As(&resource);
+  texture.CopyTo(resource.GetAddressOf());
   HANDLE handle = 0;
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
@@ -1002,7 +1003,7 @@ TEST_F(DirectCompositionPixelTest, SkipVideoLayerEmptyContentsRect) {
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
       CreateNV12Texture(d3d11_device, texture_size, true);
   Microsoft::WRL::ComPtr<IDXGIResource1> resource;
-  texture.As(&resource);
+  texture.CopyTo(resource.GetAddressOf());
   HANDLE handle = 0;
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
@@ -1057,7 +1058,7 @@ TEST_F(DirectCompositionPixelTest, NV12SwapChain) {
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
       CreateNV12Texture(d3d11_device, texture_size, true);
   Microsoft::WRL::ComPtr<IDXGIResource1> resource;
-  texture.As(&resource);
+  texture.CopyTo(resource.GetAddressOf());
   HANDLE handle = 0;
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
@@ -1123,7 +1124,7 @@ TEST_F(DirectCompositionPixelTest, NonZeroBoundsOffset) {
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
       CreateNV12Texture(d3d11_device, texture_size, true);
   Microsoft::WRL::ComPtr<IDXGIResource1> resource;
-  texture.As(&resource);
+  texture.CopyTo(resource.GetAddressOf());
   HANDLE handle = 0;
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);
@@ -1191,7 +1192,7 @@ TEST_F(DirectCompositionPixelTest, ResizeVideoLayer) {
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
       CreateNV12Texture(d3d11_device, texture_size, true);
   Microsoft::WRL::ComPtr<IDXGIResource1> resource;
-  texture.As(&resource);
+  texture.CopyTo(resource.GetAddressOf());
   HANDLE handle = 0;
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,
                                &handle);

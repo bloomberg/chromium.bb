@@ -50,8 +50,9 @@ function GearMenu(element) {
    * @const
    * @private
    */
-  this.volumeSpaceOuterBar_ =
-      assertInstanceof(this.volumeSpaceInnerBar_.parentElement, HTMLElement);
+  this.volumeSpaceOuterBar_ = assertInstanceof(
+      this.volumeSpaceInnerBar_.parentElement,
+      HTMLElement);
 
   /**
    * @type {!HTMLElement}

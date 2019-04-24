@@ -708,8 +708,8 @@ TEST_P(IOSurfaceClientBufferTest, NegativeValidationBadAttributes)
     }
 }
 
-// Test IOSurface pbuffers can be made current
-TEST_P(IOSurfaceClientBufferTest, MakeCurrent)
+// Test IOSurface pbuffers cannot be made current
+TEST_P(IOSurfaceClientBufferTest, MakeCurrentDisallowed)
 {
     ScopedIOSurfaceRef ioSurface = CreateSinglePlaneIOSurface(10, 10, 'BGRA', 4);
 
@@ -718,13 +718,8 @@ TEST_P(IOSurfaceClientBufferTest, MakeCurrent)
 
     EGLContext context = getEGLWindow()->getContext();
     EGLBoolean result  = eglMakeCurrent(mDisplay, pbuffer, pbuffer, context);
-    EXPECT_EGL_TRUE(result);
-    EXPECT_EGL_SUCCESS();
-    // The test harness expects the EGL state to be restored before the test exits.
-    result = eglMakeCurrent(mDisplay, getEGLWindow()->getSurface(), getEGLWindow()->getSurface(),
-                            context);
-    EXPECT_EGL_TRUE(result);
-    EXPECT_EGL_SUCCESS();
+    EXPECT_EGL_FALSE(result);
+    EXPECT_EGL_ERROR(EGL_BAD_SURFACE);
 }
 
 // TODO(cwallez@chromium.org): Test setting width and height to less than the IOSurface's work as

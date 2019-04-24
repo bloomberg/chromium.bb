@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/svg/svg_number_tear_off.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -64,19 +63,12 @@ class SVGAnimatedNumber : public ScriptWrappable,
 
   SVGAnimatedNumber(SVGElement* context_element,
                     const QualifiedName& attribute_name,
-                    float initial_number)
-      : SVGAnimatedNumber(context_element,
-                          attribute_name,
-                          MakeGarbageCollected<SVGNumber>(initial_number)) {}
-
-  SVGAnimatedNumber(SVGElement* context_element,
-                    const QualifiedName& attribute_name,
                     SVGNumber* initial_value)
       : SVGAnimatedProperty<SVGNumber>(
             context_element,
             attribute_name,
             initial_value,
-            CSSPropertyID::kInvalid,
+            CSSPropertyInvalid,
             static_cast<unsigned>(initial_value->Value())),
         parent_number_optional_number_(nullptr) {}
 

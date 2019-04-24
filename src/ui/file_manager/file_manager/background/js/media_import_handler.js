@@ -62,6 +62,7 @@ importer.MediaImportHandler.IMPORTS_TAG_VALUE = 'media';
 /** @override */
 importer.MediaImportHandler.prototype.importFromScanResult = function(
     scanResult, destination, directoryPromise) {
+
   const task = new importer.MediaImportHandler.ImportTask(
       this.generateTaskId_(), this.historyLoader_, scanResult, directoryPromise,
       destination, this.getDisposition_);
@@ -95,8 +96,8 @@ importer.MediaImportHandler.prototype.generateTaskId_ = function() {
  * @param {string} updateType
  * @private
  */
-importer.MediaImportHandler.prototype.onTaskProgress_ = function(
-    task, updateType) {
+importer.MediaImportHandler.prototype.onTaskProgress_ =
+    function(task, updateType) {
   const UpdateType = importer.TaskQueue.UpdateType;
 
   let item = this.progressCenter_.getItemById(task.taskId);
@@ -187,8 +188,8 @@ importer.MediaImportHandler.prototype.retryTaskFailedEntries_ = function(task) {
  * @param {string} updateType
  * @param {Object=} updateInfo
  */
-importer.MediaImportHandler.prototype
-    .onFileImported_ = (task, updateType, updateInfo) => {
+importer.MediaImportHandler.prototype.onFileImported_ =
+    (task, updateType, updateInfo) => {
   if (updateType !==
       importer.MediaImportHandler.ImportTask.UpdateType.ENTRY_CHANGED) {
     return;
@@ -204,10 +205,10 @@ importer.MediaImportHandler.prototype
       info.destination,
       'private',  // Scoped to just this app.
       importer.MediaImportHandler.IMPORTS_TAG_KEY,
-      importer.MediaImportHandler.IMPORTS_TAG_VALUE, () => {
+      importer.MediaImportHandler.IMPORTS_TAG_VALUE,
+      () => {
         if (chrome.runtime.lastError) {
-          console.error(
-              'Unable to tag imported media: ' +
+          console.error('Unable to tag imported media: ' +
               chrome.runtime.lastError.message);
         }
       });
@@ -421,21 +422,20 @@ importer.MediaImportHandler.ImportTask.prototype.importScanEntries_ =
  */
 importer.MediaImportHandler.ImportTask.prototype.markDuplicatesImported_ =
     function() {
-  this.historyLoader_.getHistory()
-      .then(
-          /**
-           * @param {!importer.ImportHistory} history
-           */
-          history => {
-            this.scanResult_.getDuplicateFileEntries().forEach(
-                /**
-                 * @param {!FileEntry} entry
-                 * @this {importer.MediaImportHandler.ImportTask}
-                 */
-                entry => {
-                  history.markImported(entry, this.destination_);
-                });
-          })
+  this.historyLoader_.getHistory().then(
+      /**
+      * @param {!importer.ImportHistory} history
+      */
+      history => {
+        this.scanResult_.getDuplicateFileEntries().forEach(
+            /**
+            * @param {!FileEntry} entry
+            * @this {importer.MediaImportHandler.ImportTask}
+            */
+            entry => {
+              history.markImported(entry, this.destination_);
+            });
+      })
       .catch(importer.getLogger().catcher('import-task-mark-dupes-imported'));
 };
 
@@ -460,26 +460,27 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ = function(
   this.getDisposition_(
           entry, importer.Destination.GOOGLE_DRIVE, importer.ScanMode.CONTENT)
       .then(/**
-             * @param {!importer.Disposition} disposition The disposition
-             *     of the entry. Either some sort of dupe, or an original.
-             */
-            disposition => {
-              if (disposition === importer.Disposition.ORIGINAL) {
-                return this.copy_(entry, destinationDirectory);
-              }
-              this.duplicateFilesCount_++;
-              this.markAsImported_(entry);
-            })
+   * @param {!importer.Disposition} disposition The disposition
+   *     of the entry. Either some sort of dupe, or an original.
+   */
+  disposition => {
+    if (disposition === importer.Disposition.ORIGINAL) {
+      return this.copy_(entry, destinationDirectory);
+    }
+    this.duplicateFilesCount_++;
+    this.markAsImported_(entry);
+  })
       // Regardless of the result of this copy, push on to the next file.
       .then(completionCallback)
       .catch(/** @param {*} error */
-             error => {
-               importer.getLogger().catcher('import-task-import-one')(error);
-               // TODO(oka): Retry copies only when failed due to
-               // insufficient disk space. crbug.com/788692.
-               this.failedEntries_.push(entry);
-               completionCallback();
-             });
+  error => {
+    importer.getLogger().catcher('import-task-import-one')(
+        error);
+    // TODO(oka): Retry copies only when failed due to
+    // insufficient disk space. crbug.com/788692.
+    this.failedEntries_.push(entry);
+    completionCallback();
+  });
 };
 
 /**
@@ -490,8 +491,8 @@ importer.MediaImportHandler.ImportTask.prototype.importOne_ = function(
  *     promise will reject if an error occurs.
  * @private
  */
-importer.MediaImportHandler.ImportTask.prototype.copy_ = function(
-    entry, destinationDirectory) {
+importer.MediaImportHandler.ImportTask.prototype.copy_ =
+    function(entry, destinationDirectory) {
   // A count of the current number of processed bytes for this entry.
   let currentBytes = 0;
 
@@ -523,9 +524,10 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ = function(
     destinationEntry.size = entry.size;
     this.notify(
         /** @type {importer.TaskQueue.UpdateType} */
-        (importer.MediaImportHandler.ImportTask.UpdateType.ENTRY_CHANGED), {
+            (importer.MediaImportHandler.ImportTask.UpdateType.ENTRY_CHANGED),
+        {
           sourceUrl: sourceUrl,
-          destination: destinationEntry,
+          destination: destinationEntry
         });
     this.notify(importer.TaskQueue.UpdateType.PROGRESS);
   };
@@ -559,13 +561,18 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ = function(
   fileOperationUtil.deduplicatePath(destinationDirectory, entry.name)
       .then(
           /**
-           * Performs the copy using the given deduped filename.
-           * @param {string} destinationFilename
-           */
+          * Performs the copy using the given deduped filename.
+          * @param {string} destinationFilename
+          */
           destinationFilename => {
             this.cancelCallback_ = fileOperationUtil.copyTo(
-                entry, destinationDirectory, destinationFilename,
-                onEntryChanged, onProgress, onComplete, onError);
+                entry,
+                destinationDirectory,
+                destinationFilename,
+                onEntryChanged,
+                onProgress,
+                onComplete,
+                onError);
           },
           resolver.reject)
       .catch(importer.getLogger().catcher('import-task-copy'));
@@ -577,12 +584,15 @@ importer.MediaImportHandler.ImportTask.prototype.copy_ = function(
  * @param {!FileEntry} entry
  * @param {!FileEntry} destinationEntry
  */
-importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ = function(
-    entry, destinationEntry) {
+importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ =
+    function(entry, destinationEntry) {
   this.remainingFilesCount_--;
-  this.historyLoader_.getHistory()
-      .then(history => {
-        history.markCopied(entry, this.destination_, destinationEntry.toURL());
+  this.historyLoader_.getHistory().then(
+      history => {
+        history.markCopied(
+            entry,
+            this.destination_,
+            destinationEntry.toURL());
       })
       .catch(importer.getLogger().catcher('import-task-mark-as-copied'));
 };
@@ -591,15 +601,14 @@ importer.MediaImportHandler.ImportTask.prototype.markAsCopied_ = function(
  * @param {!FileEntry} entry
  * @private
  */
-importer.MediaImportHandler.ImportTask.prototype.markAsImported_ = function(
-    entry) {
+importer.MediaImportHandler.ImportTask.prototype.markAsImported_ =
+    function(entry) {
   this.remainingFilesCount_--;
-  this.historyLoader_.getHistory()
-      .then(
-          /** @param {!importer.ImportHistory} history */
-          history => {
-            history.markImported(entry, this.destination_);
-          })
+  this.historyLoader_.getHistory().then(
+      /** @param {!importer.ImportHistory} history */
+      history => {
+        history.markImported(entry, this.destination_);
+      })
       .catch(importer.getLogger().catcher('import-task-mark-as-imported'));
 };
 
@@ -611,7 +620,9 @@ importer.MediaImportHandler.ImportTask.prototype.onSuccess_ = function() {
 /**
  * Sends import statistics to analytics.
  */
-importer.MediaImportHandler.ImportTask.prototype.sendImportStats_ = function() {
+importer.MediaImportHandler.ImportTask.prototype.sendImportStats_ =
+    function() {
+
   const scanStats = this.scanResult_.getStatistics();
 
   metrics.recordMediumCount(
@@ -635,11 +646,12 @@ importer.MediaImportHandler.ImportTask.prototype.sendImportStats_ = function() {
   scanStats.duplicates[importer.Disposition.CONTENT_DUPLICATE] =
       this.duplicateFilesCount_;
 
-  Object.keys(scanStats.duplicates).forEach(disposition => {
-    const count = scanStats.duplicates[
-        /** @type {!importer.Disposition} */ (disposition)];
-    totalDeduped += count;
-  }, this);
+  Object.keys(scanStats.duplicates).forEach(
+      disposition => {
+        const count = scanStats.duplicates[
+            /** @type {!importer.Disposition} */ (disposition)];
+        totalDeduped += count;
+      }, this);
 
   metrics.recordMediumCount('MediaImport.Duplicates', totalDeduped);
 };

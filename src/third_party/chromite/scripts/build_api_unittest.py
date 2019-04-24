@@ -7,27 +7,19 @@
 
 from __future__ import print_function
 
-import os
-
-from chromite.api.gen.chromite.api import build_api_test_pb2
+from chromite.api.gen import build_api_test_pb2
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import osutils
 from chromite.scripts import build_api
 
 
-class RouterTest(cros_test_lib.MockTempDirTestCase):
+class RouterTest(cros_test_lib.MockTestCase):
   """Test Router functionality."""
   _INPUT_JSON = '{"id":"Input ID"}'
 
   def setUp(self):
     self.router = build_api.Router()
     self.router.Register(build_api_test_pb2)
-
-    self.input_file = os.path.join(self.tempdir, 'input.json')
-    self.output_file = os.path.join(self.tempdir, 'output.json')
-
-    osutils.WriteFile(self.input_file, self._INPUT_JSON)
 
   def testInputOutputMethod(self):
     """Test input/output handling."""
@@ -38,7 +30,7 @@ class RouterTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(self.router, '_GetMethod', return_value=impl)
 
     self.router.Route('chromite.api.TestApiService', 'InputOutputMethod',
-                      self.input_file, self.output_file)
+                      self._INPUT_JSON)
 
   def testRenameMethod(self):
     """Test implementation name config."""
@@ -49,7 +41,7 @@ class RouterTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(self.router, '_GetMethod', side_effect=_GetMethod)
 
     self.router.Route('chromite.api.TestApiService', 'RenamedMethod',
-                      self.input_file, self.output_file)
+                      self._INPUT_JSON)
 
   def testInsideServiceChrootAsserts(self):
     """Test the chroot assertion handling with service inside configured."""
@@ -68,28 +60,24 @@ class RouterTest(cros_test_lib.MockTempDirTestCase):
     # Not inside chroot with inside requirement should raise an error.
     with self.assertRaises(cros_build_lib.DieSystemExit):
       self.router.Route('chromite.api.InsideChrootApiService',
-                        'InsideServiceInsideMethod', self.input_file,
-                        self.output_file)
+                        'InsideServiceInsideMethod', self._INPUT_JSON)
 
     # Inside chroot with inside requirement.
     is_inside = should_be_called = True
     self.router.Route('chromite.api.InsideChrootApiService',
-                      'InsideServiceInsideMethod', self.input_file,
-                      self.output_file)
+                      'InsideServiceInsideMethod', self._INPUT_JSON)
 
     # Inside chroot with outside override should raise assertion.
     is_inside = True
     should_be_called = False
     with self.assertRaises(cros_build_lib.DieSystemExit):
       self.router.Route('chromite.api.InsideChrootApiService',
-                        'InsideServiceOutsideMethod', self.input_file,
-                        self.output_file)
+                        'InsideServiceOutsideMethod', self._INPUT_JSON)
 
     is_inside = False
     should_be_called = True
     self.router.Route('chromite.api.InsideChrootApiService',
-                      'InsideServiceOutsideMethod', self.input_file,
-                      self.output_file)
+                      'InsideServiceOutsideMethod', self._INPUT_JSON)
 
   def testOutsideServiceChrootAsserts(self):
     """Test the chroot assertion handling with service outside configured."""
@@ -108,26 +96,22 @@ class RouterTest(cros_test_lib.MockTempDirTestCase):
     is_inside = False
     should_be_called = True
     self.router.Route('chromite.api.OutsideChrootApiService',
-                      'OutsideServiceOutsideMethod', self.input_file,
-                      self.output_file)
+                      'OutsideServiceOutsideMethod', self._INPUT_JSON)
 
     # Inside chroot with outside requirement should raise error.
     is_inside = True
     should_be_called = False
     with self.assertRaises(cros_build_lib.DieSystemExit):
       self.router.Route('chromite.api.OutsideChrootApiService',
-                        'OutsideServiceOutsideMethod', self.input_file,
-                        self.output_file)
+                        'OutsideServiceOutsideMethod', self._INPUT_JSON)
 
     # Outside chroot with inside override should raise error.
     is_inside = should_be_called = False
     with self.assertRaises(cros_build_lib.DieSystemExit):
       self.router.Route('chromite.api.OutsideChrootApiService',
-                        'OutsideServiceInsideMethod', self.input_file,
-                        self.output_file)
+                        'OutsideServiceInsideMethod', self._INPUT_JSON)
 
     # Inside chroot with inside override should be fine.
     is_inside = should_be_called = True
     self.router.Route('chromite.api.OutsideChrootApiService',
-                      'OutsideServiceInsideMethod', self.input_file,
-                      self.output_file)
+                      'OutsideServiceInsideMethod', self._INPUT_JSON)

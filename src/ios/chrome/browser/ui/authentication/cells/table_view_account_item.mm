@@ -34,7 +34,7 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
   if (self) {
     self.cellClass = [TableViewAccountCell class];
     self.accessibilityTraits |= UIAccessibilityTraitButton;
-    _mode = TableViewAccountModeEnabled;
+    _enabled = YES;
   }
   return self;
 }
@@ -57,8 +57,8 @@ const CGFloat kHorizontalErrorIconFixedSize = 25;
         UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
   }
 
-  cell.userInteractionEnabled = self.mode == TableViewAccountModeEnabled;
-  if (self.mode != TableViewAccountModeDisabled) {
+  if (self.isEnabled) {
+    cell.userInteractionEnabled = YES;
     cell.contentView.alpha = 1;
     UIImageView* accessoryImage =
         base::mac::ObjCCastStrict<UIImageView>(cell.accessoryView);

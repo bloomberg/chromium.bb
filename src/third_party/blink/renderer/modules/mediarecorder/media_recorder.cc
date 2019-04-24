@@ -90,8 +90,7 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
     if (options->hasAudioBitsPerSecond() || options->hasBitsPerSecond()) {
       if (audio_bps > kLargestAutoAllocatedOpusBitRate) {
         context->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning,
+            kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
             "Clamping calculated audio bitrate (" + String::Number(audio_bps) +
                 "bps) to the maximum (" +
                 String::Number(kLargestAutoAllocatedOpusBitRate) + "bps)"));
@@ -100,8 +99,7 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
 
       if (audio_bps < kSmallestPossibleOpusBitRate) {
         context->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning,
+            kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
             "Clamping calculated audio bitrate (" + String::Number(audio_bps) +
                 "bps) to the minimum (" +
                 String::Number(kSmallestPossibleOpusBitRate) + "bps)"));
@@ -121,8 +119,7 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
     if (options->hasVideoBitsPerSecond() || options->hasBitsPerSecond()) {
       if (video_bps < kSmallestPossibleVpxBitRate) {
         context->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning,
+            kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
             "Clamping calculated video bitrate (" + String::Number(video_bps) +
                 "bps) to the minimum (" +
                 String::Number(kSmallestPossibleVpxBitRate) + "bps)"));
@@ -337,7 +334,7 @@ void MediaRecorder::WriteData(const char* data,
   }
 
   if (!blob_data_) {
-    blob_data_ = std::make_unique<BlobData>();
+    blob_data_ = BlobData::Create();
     blob_data_->SetContentType(mime_type_);
   }
   if (data)
@@ -360,8 +357,8 @@ void MediaRecorder::OnError(const WebString& message) {
 }
 
 void MediaRecorder::CreateBlobEvent(Blob* blob, double timecode) {
-  ScheduleDispatchEvent(MakeGarbageCollected<BlobEvent>(
-      event_type_names::kDataavailable, blob, timecode));
+  ScheduleDispatchEvent(
+      BlobEvent::Create(event_type_names::kDataavailable, blob, timecode));
 }
 
 void MediaRecorder::StopRecording() {

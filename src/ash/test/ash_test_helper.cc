@@ -23,7 +23,6 @@
 #include "ash/system/screen_layout_observer.h"
 #include "ash/test/ash_test_views_delegate.h"
 #include "ash/test_shell_delegate.h"
-#include "ash/wm/overview/overview_controller.h"
 #include "ash/ws/window_service_owner.h"
 #include "base/bind.h"
 #include "base/guid.h"
@@ -31,8 +30,9 @@
 #include "base/strings/string_split.h"
 #include "base/token.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/dbus/audio/cras_audio_client.h"
-#include "chromeos/dbus/power/power_policy_controller.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/hammerd/hammerd_client.h"
+#include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
@@ -55,7 +55,7 @@
 #include "ui/aura/test/event_generator_delegate_aura.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
-#include "ui/base/ime/init/input_method_initializer.h"
+#include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/platform_window_defaults.h"
 #include "ui/base/ui_base_features.h"
@@ -158,12 +158,20 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   if (!test_shell_delegate_)
     test_shell_delegate_ = new TestShellDelegate;
 
+  if (!chromeos::DBusThreadManager::IsInitialized()) {
+    chromeos::DBusThreadManager::Initialize(
+        chromeos::DBusThreadManager::kShared);
+    chromeos::HammerdClient::Initialize(
+        chromeos::DBusThreadManager::Get()->GetSystemBus());
+    dbus_thread_manager_initialized_ = true;
+  }
+
   if (!bluez::BluezDBusManager::IsInitialized()) {
-    bluez::BluezDBusManager::InitializeFake();
+    bluez::BluezDBusManager::Initialize();
     bluez_dbus_manager_initialized_ = true;
   }
 
-  chromeos::PowerManagerClient::InitializeFake();
+  chromeos::PowerManagerClient::Initialize();
 
   if (!chromeos::PowerPolicyController::IsInitialized()) {
     chromeos::PowerPolicyController::Initialize(
@@ -171,7 +179,6 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
     power_policy_controller_initialized_ = true;
   }
 
-  chromeos::CrasAudioClient::InitializeFake();
   // Create CrasAudioHandler for testing since g_browser_process is not
   // created in AshTestBase tests.
   chromeos::CrasAudioHandler::InitializeForTesting();
@@ -228,14 +235,13 @@ void AshTestHelper::SetUp(bool start_session, bool provide_local_state) {
   CreateWindowService();
 
   // Create the test keyboard controller observer to respond to
-  // OnLoadKeyboardContentsRequested().
+  // OnLoadKeyboardContentsRequested() and enable the virtual keyboard. Note:
+  // enabling the keyboard just makes it available, it does not show it or
+  // otherwise affect behavior.
   test_keyboard_controller_observer_ =
       std::make_unique<TestKeyboardControllerObserver>(
           shell->ash_keyboard_controller());
-
-  // Remove the app dragging animations delay for testing purposes.
-  shell->overview_controller()->set_delayed_animation_task_delay_for_test(
-      base::TimeDelta());
+  shell->ash_keyboard_controller()->EnableKeyboard();
 }
 
 void AshTestHelper::TearDown() {
@@ -254,7 +260,6 @@ void AshTestHelper::TearDown() {
   base::RunLoop().RunUntilIdle();
 
   chromeos::CrasAudioHandler::Shutdown();
-  chromeos::CrasAudioClient::Shutdown();
 
   if (power_policy_controller_initialized_) {
     chromeos::PowerPolicyController::Shutdown();
@@ -267,6 +272,12 @@ void AshTestHelper::TearDown() {
     device::BluetoothAdapterFactory::Shutdown();
     bluez::BluezDBusManager::Shutdown();
     bluez_dbus_manager_initialized_ = false;
+  }
+
+  if (dbus_thread_manager_initialized_) {
+    chromeos::HammerdClient::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
+    dbus_thread_manager_initialized_ = false;
   }
 
   ui::TerminateContextFactoryForTests();

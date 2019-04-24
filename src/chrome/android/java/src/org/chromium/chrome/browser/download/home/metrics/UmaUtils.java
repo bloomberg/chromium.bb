@@ -40,7 +40,7 @@ public class UmaUtils {
     // Please treat this list as append only and keep it in sync with
     // Android.DownloadManager.List.View.Actions in enums.xml.
     @IntDef({ViewAction.OPEN, ViewAction.RESUME, ViewAction.PAUSE, ViewAction.CANCEL,
-            ViewAction.MENU_SHARE, ViewAction.MENU_DELETE, ViewAction.RETRY, ViewAction.MENU_RENAME})
+            ViewAction.MENU_SHARE, ViewAction.MENU_DELETE, ViewAction.RETRY})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewAction {
         int OPEN = 0;
@@ -50,8 +50,7 @@ public class UmaUtils {
         int MENU_SHARE = 4;
         int MENU_DELETE = 5;
         int RETRY = 6;
-        int MENU_RENAME = 7;
-        int NUM_ENTRIES = 8;
+        int NUM_ENTRIES = 7;
     }
 
     // Please treat this list as append only and keep it in sync with
@@ -121,9 +120,6 @@ public class UmaUtils {
                 break;
             case ViewAction.RETRY:
                 userActionSuffix = "Retry";
-                break;
-            case ViewAction.MENU_RENAME:
-                userActionSuffix = "MenuRename";
                 break;
             default:
                 assert false : "Unexpected action " + action + " passed to recordItemAction.";

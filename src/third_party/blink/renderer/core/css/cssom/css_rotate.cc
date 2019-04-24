@@ -26,7 +26,7 @@ bool IsValidRotateAngle(const CSSNumericValue* value) {
 CSSRotate* FromCSSRotate(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1UL);
   CSSNumericValue* angle =
-      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0)));
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
   return CSSRotate::Create(angle);
 }
 
@@ -34,13 +34,13 @@ CSSRotate* FromCSSRotate3d(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 4UL);
 
   CSSNumericValue* x =
-      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0)));
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
   CSSNumericValue* y =
-      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(1)));
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(1)));
   CSSNumericValue* z =
-      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(2)));
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(2)));
   CSSNumericValue* angle =
-      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(3)));
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(3)));
 
   return CSSRotate::Create(x, y, z, angle);
 }
@@ -49,16 +49,16 @@ CSSRotate* FromCSSRotateXYZ(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1UL);
 
   CSSNumericValue* angle =
-      CSSNumericValue::FromCSSValue(To<CSSPrimitiveValue>(value.Item(0)));
+      CSSNumericValue::FromCSSValue(ToCSSPrimitiveValue(value.Item(0)));
 
   switch (value.FunctionType()) {
-    case CSSValueID::kRotateX:
+    case CSSValueRotateX:
       return CSSRotate::Create(CSSUnitValue::Create(1), CSSUnitValue::Create(0),
                                CSSUnitValue::Create(0), angle);
-    case CSSValueID::kRotateY:
+    case CSSValueRotateY:
       return CSSRotate::Create(CSSUnitValue::Create(0), CSSUnitValue::Create(1),
                                CSSUnitValue::Create(0), angle);
-    case CSSValueID::kRotateZ:
+    case CSSValueRotateZ:
       return CSSRotate::Create(CSSUnitValue::Create(0), CSSUnitValue::Create(0),
                                CSSUnitValue::Create(1), angle);
     default:
@@ -117,13 +117,13 @@ CSSRotate* CSSRotate::Create(CSSNumericValue* x,
 
 CSSRotate* CSSRotate::FromCSSValue(const CSSFunctionValue& value) {
   switch (value.FunctionType()) {
-    case CSSValueID::kRotate:
+    case CSSValueRotate:
       return FromCSSRotate(value);
-    case CSSValueID::kRotate3d:
+    case CSSValueRotate3d:
       return FromCSSRotate3d(value);
-    case CSSValueID::kRotateX:
-    case CSSValueID::kRotateY:
-    case CSSValueID::kRotateZ:
+    case CSSValueRotateX:
+    case CSSValueRotateY:
+    case CSSValueRotateZ:
       return FromCSSRotateXYZ(value);
     default:
       NOTREACHED();
@@ -167,8 +167,8 @@ const CSSFunctionValue* CSSRotate::ToCSSValue() const {
   DCHECK(z_->to(CSSPrimitiveValue::UnitType::kNumber));
   DCHECK(angle_->to(CSSPrimitiveValue::UnitType::kRadians));
 
-  CSSFunctionValue* result = MakeGarbageCollected<CSSFunctionValue>(
-      is2D() ? CSSValueID::kRotate : CSSValueID::kRotate3d);
+  CSSFunctionValue* result =
+      CSSFunctionValue::Create(is2D() ? CSSValueRotate : CSSValueRotate3d);
   if (!is2D()) {
     const CSSValue* x = x_->ToCSSValue();
     const CSSValue* y = y_->ToCSSValue();

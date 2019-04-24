@@ -69,7 +69,7 @@ class MHTMLLoadingTest : public testing::Test {
     auto params = std::make_unique<WebNavigationParams>();
     params->url = url;
     params->response = WebURLResponse(url);
-    params->response.SetMimeType("multipart/related");
+    params->response.SetMIMEType("multipart/related");
     params->response.SetHttpStatusCode(200);
     params->response.SetExpectedContentLength(buffer->size());
     auto body_loader = std::make_unique<StaticDataNavigationBodyLoader>();
@@ -119,9 +119,8 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlags) {
 
   // Full sandboxing with the exception to new top-level windows should be
   // turned on.
-  EXPECT_EQ(WebSandboxFlags::kAll &
-                ~(WebSandboxFlags::kPopups |
-                  WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts),
+  EXPECT_EQ(kSandboxAll & ~(kSandboxPopups |
+                            kSandboxPropagatesToAuxiliaryBrowsingContexts),
             document->GetSandboxFlags());
 
   // MHTML document should be loaded into unique origin.
@@ -139,9 +138,8 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlags) {
   Document* child_document = child_frame->GetDocument();
   ASSERT_TRUE(child_document);
 
-  EXPECT_EQ(WebSandboxFlags::kAll &
-                ~(WebSandboxFlags::kPopups |
-                  WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts),
+  EXPECT_EQ(kSandboxAll & ~(kSandboxPopups |
+                            kSandboxPropagatesToAuxiliaryBrowsingContexts),
             child_document->GetSandboxFlags());
 
   // MHTML document should be loaded into unique origin.
@@ -165,9 +163,8 @@ TEST_F(MHTMLLoadingTest, EnforceSandboxFlagsInXSLT) {
 
   // Full sandboxing with the exception to new top-level windows should be
   // turned on.
-  EXPECT_EQ(WebSandboxFlags::kAll &
-                ~(WebSandboxFlags::kPopups |
-                  WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts),
+  EXPECT_EQ(kSandboxAll & ~(kSandboxPopups |
+                            kSandboxPropagatesToAuxiliaryBrowsingContexts),
             document->GetSandboxFlags());
 
   // MHTML document should be loaded into unique origin.

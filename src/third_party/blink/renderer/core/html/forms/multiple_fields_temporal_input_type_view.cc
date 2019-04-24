@@ -318,6 +318,13 @@ MultipleFieldsTemporalInputTypeView::MultipleFieldsTemporalInputTypeView(
       picker_indicator_is_visible_(false),
       picker_indicator_is_always_visible_(false) {}
 
+MultipleFieldsTemporalInputTypeView*
+MultipleFieldsTemporalInputTypeView::Create(HTMLInputElement& element,
+                                            BaseTemporalInputType& input_type) {
+  return MakeGarbageCollected<MultipleFieldsTemporalInputTypeView>(element,
+                                                                   input_type);
+}
+
 MultipleFieldsTemporalInputTypeView::~MultipleFieldsTemporalInputTypeView() =
     default;
 
@@ -416,7 +423,7 @@ void MultipleFieldsTemporalInputTypeView::HandleFocusInEvent(
       GetElement().GetDocument().GetPage()->GetFocusController().AdvanceFocus(
           type);
   } else if (type == kWebFocusTypeNone || type == kWebFocusTypeMouse ||
-             type == kWebFocusTypePage || type == kWebFocusTypeAccessKey) {
+             type == kWebFocusTypePage) {
     edit->FocusByOwner(old_focused_element);
   } else {
     edit->FocusByOwner();
@@ -593,8 +600,8 @@ void MultipleFieldsTemporalInputTypeView::HidePickerIndicator() {
     return;
   picker_indicator_is_visible_ = false;
   DCHECK(GetPickerIndicatorElement());
-  GetPickerIndicatorElement()->SetInlineStyleProperty(CSSPropertyID::kDisplay,
-                                                      CSSValueID::kNone);
+  GetPickerIndicatorElement()->SetInlineStyleProperty(CSSPropertyDisplay,
+                                                      CSSValueNone);
 }
 
 void MultipleFieldsTemporalInputTypeView::ShowPickerIndicator() {
@@ -602,8 +609,7 @@ void MultipleFieldsTemporalInputTypeView::ShowPickerIndicator() {
     return;
   picker_indicator_is_visible_ = true;
   DCHECK(GetPickerIndicatorElement());
-  GetPickerIndicatorElement()->RemoveInlineStyleProperty(
-      CSSPropertyID::kDisplay);
+  GetPickerIndicatorElement()->RemoveInlineStyleProperty(CSSPropertyDisplay);
 }
 
 void MultipleFieldsTemporalInputTypeView::FocusAndSelectClearButtonOwner() {
@@ -628,13 +634,13 @@ void MultipleFieldsTemporalInputTypeView::UpdateClearButtonVisibility() {
 
   if (GetElement().IsRequired() ||
       !GetDateTimeEditElement()->AnyEditableFieldsHaveValues()) {
-    clear_button->SetInlineStyleProperty(CSSPropertyID::kOpacity, 0.0,
+    clear_button->SetInlineStyleProperty(CSSPropertyOpacity, 0.0,
                                          CSSPrimitiveValue::UnitType::kNumber);
-    clear_button->SetInlineStyleProperty(CSSPropertyID::kPointerEvents,
-                                         CSSValueID::kNone);
+    clear_button->SetInlineStyleProperty(CSSPropertyPointerEvents,
+                                         CSSValueNone);
   } else {
-    clear_button->RemoveInlineStyleProperty(CSSPropertyID::kOpacity);
-    clear_button->RemoveInlineStyleProperty(CSSPropertyID::kPointerEvents);
+    clear_button->RemoveInlineStyleProperty(CSSPropertyOpacity);
+    clear_button->RemoveInlineStyleProperty(CSSPropertyPointerEvents);
   }
 }
 

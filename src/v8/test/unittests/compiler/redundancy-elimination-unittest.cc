@@ -35,10 +35,8 @@ class RedundancyEliminationTest : public GraphTest {
         isolate()->factory()->NewSharedFunctionInfoForBuiltin(
             isolate()->factory()->empty_string(), Builtins::kIllegal);
     shared->set_raw_outer_scope_info_or_feedback_metadata(*metadata);
-    Handle<ClosureFeedbackCellArray> closure_feedback_cell_array =
-        ClosureFeedbackCellArray::New(isolate(), shared);
     Handle<FeedbackVector> feedback_vector =
-        FeedbackVector::New(isolate(), shared, closure_feedback_cell_array);
+        FeedbackVector::New(isolate(), shared);
     vector_slot_pairs_.push_back(VectorSlotPair());
     vector_slot_pairs_.push_back(
         VectorSlotPair(feedback_vector, slot1, UNINITIALIZED));
@@ -196,47 +194,6 @@ TEST_F(RedundancyEliminationTest,
 }
 
 // -----------------------------------------------------------------------------
-// CheckNonEmptyString
-
-TEST_F(RedundancyEliminationTest,
-       CheckNonEmptyStringSubsumedByCheckNonEmptyOneByteString) {
-  Node* value = Parameter(0);
-  Node* effect = graph()->start();
-  Node* control = graph()->start();
-
-  Node* check1 = effect = graph()->NewNode(
-      simplified()->CheckNonEmptyOneByteString(), value, effect, control);
-  Reduction r1 = Reduce(check1);
-  ASSERT_TRUE(r1.Changed());
-  EXPECT_EQ(r1.replacement(), check1);
-
-  Node* check2 = effect = graph()->NewNode(simplified()->CheckNonEmptyString(),
-                                           value, effect, control);
-  Reduction r2 = Reduce(check2);
-  ASSERT_TRUE(r2.Changed());
-  EXPECT_EQ(r2.replacement(), check1);
-}
-
-TEST_F(RedundancyEliminationTest,
-       CheckNonEmptyStringSubsumedByCheckNonEmptyTwoByteString) {
-  Node* value = Parameter(0);
-  Node* effect = graph()->start();
-  Node* control = graph()->start();
-
-  Node* check1 = effect = graph()->NewNode(
-      simplified()->CheckNonEmptyTwoByteString(), value, effect, control);
-  Reduction r1 = Reduce(check1);
-  ASSERT_TRUE(r1.Changed());
-  EXPECT_EQ(r1.replacement(), check1);
-
-  Node* check2 = effect = graph()->NewNode(simplified()->CheckNonEmptyString(),
-                                           value, effect, control);
-  Reduction r2 = Reduce(check2);
-  ASSERT_TRUE(r2.Changed());
-  EXPECT_EQ(r2.replacement(), check1);
-}
-
-// -----------------------------------------------------------------------------
 // CheckString
 
 TEST_F(RedundancyEliminationTest,
@@ -248,68 +205,6 @@ TEST_F(RedundancyEliminationTest,
 
     Node* check1 = effect = graph()->NewNode(
         simplified()->CheckInternalizedString(), value, effect, control);
-    Reduction r1 = Reduce(check1);
-    ASSERT_TRUE(r1.Changed());
-    EXPECT_EQ(r1.replacement(), check1);
-
-    Node* check2 = effect = graph()->NewNode(
-        simplified()->CheckString(feedback), value, effect, control);
-    Reduction r2 = Reduce(check2);
-    ASSERT_TRUE(r2.Changed());
-    EXPECT_EQ(r2.replacement(), check1);
-  }
-}
-
-TEST_F(RedundancyEliminationTest, CheckStringSubsumedByCheckNonEmptyString) {
-  TRACED_FOREACH(VectorSlotPair, feedback, vector_slot_pairs()) {
-    Node* value = Parameter(0);
-    Node* effect = graph()->start();
-    Node* control = graph()->start();
-
-    Node* check1 = effect = graph()->NewNode(
-        simplified()->CheckNonEmptyString(), value, effect, control);
-    Reduction r1 = Reduce(check1);
-    ASSERT_TRUE(r1.Changed());
-    EXPECT_EQ(r1.replacement(), check1);
-
-    Node* check2 = effect = graph()->NewNode(
-        simplified()->CheckString(feedback), value, effect, control);
-    Reduction r2 = Reduce(check2);
-    ASSERT_TRUE(r2.Changed());
-    EXPECT_EQ(r2.replacement(), check1);
-  }
-}
-
-TEST_F(RedundancyEliminationTest,
-       CheckStringSubsumedByCheckNonEmptyOneByteString) {
-  TRACED_FOREACH(VectorSlotPair, feedback, vector_slot_pairs()) {
-    Node* value = Parameter(0);
-    Node* effect = graph()->start();
-    Node* control = graph()->start();
-
-    Node* check1 = effect = graph()->NewNode(
-        simplified()->CheckNonEmptyOneByteString(), value, effect, control);
-    Reduction r1 = Reduce(check1);
-    ASSERT_TRUE(r1.Changed());
-    EXPECT_EQ(r1.replacement(), check1);
-
-    Node* check2 = effect = graph()->NewNode(
-        simplified()->CheckString(feedback), value, effect, control);
-    Reduction r2 = Reduce(check2);
-    ASSERT_TRUE(r2.Changed());
-    EXPECT_EQ(r2.replacement(), check1);
-  }
-}
-
-TEST_F(RedundancyEliminationTest,
-       CheckStringSubsumedByCheckNonEmptyTwoByteString) {
-  TRACED_FOREACH(VectorSlotPair, feedback, vector_slot_pairs()) {
-    Node* value = Parameter(0);
-    Node* effect = graph()->start();
-    Node* control = graph()->start();
-
-    Node* check1 = effect = graph()->NewNode(
-        simplified()->CheckNonEmptyTwoByteString(), value, effect, control);
     Reduction r1 = Reduce(check1);
     ASSERT_TRUE(r1.Changed());
     EXPECT_EQ(r1.replacement(), check1);
@@ -697,114 +592,6 @@ TEST_F(RedundancyEliminationTest, CheckedTaggedToTaggedSigned) {
       Node* check2 = effect =
           graph()->NewNode(simplified()->CheckedTaggedToTaggedSigned(feedback2),
                            value, effect, control);
-      Reduction r2 = Reduce(check2);
-      ASSERT_TRUE(r2.Changed());
-      EXPECT_EQ(r2.replacement(), check1);
-    }
-  }
-}
-
-// -----------------------------------------------------------------------------
-// CheckedCompressedToTaggedPointer
-
-TEST_F(RedundancyEliminationTest, CheckedCompressedToTaggedPointer) {
-  TRACED_FOREACH(VectorSlotPair, feedback1, vector_slot_pairs()) {
-    TRACED_FOREACH(VectorSlotPair, feedback2, vector_slot_pairs()) {
-      Node* value = Parameter(0);
-      Node* effect = graph()->start();
-      Node* control = graph()->start();
-
-      Node* check1 = effect = graph()->NewNode(
-          simplified()->CheckedCompressedToTaggedPointer(feedback1), value,
-          effect, control);
-      Reduction r1 = Reduce(check1);
-      ASSERT_TRUE(r1.Changed());
-      EXPECT_EQ(r1.replacement(), check1);
-
-      Node* check2 = effect = graph()->NewNode(
-          simplified()->CheckedCompressedToTaggedPointer(feedback2), value,
-          effect, control);
-      Reduction r2 = Reduce(check2);
-      ASSERT_TRUE(r2.Changed());
-      EXPECT_EQ(r2.replacement(), check1);
-    }
-  }
-}
-
-// -----------------------------------------------------------------------------
-// CheckedCompressedToTaggedSigned
-
-TEST_F(RedundancyEliminationTest, CheckedCompressedToTaggedSigned) {
-  TRACED_FOREACH(VectorSlotPair, feedback1, vector_slot_pairs()) {
-    TRACED_FOREACH(VectorSlotPair, feedback2, vector_slot_pairs()) {
-      Node* value = Parameter(0);
-      Node* effect = graph()->start();
-      Node* control = graph()->start();
-
-      Node* check1 = effect = graph()->NewNode(
-          simplified()->CheckedCompressedToTaggedSigned(feedback1), value,
-          effect, control);
-      Reduction r1 = Reduce(check1);
-      ASSERT_TRUE(r1.Changed());
-      EXPECT_EQ(r1.replacement(), check1);
-
-      Node* check2 = effect = graph()->NewNode(
-          simplified()->CheckedCompressedToTaggedSigned(feedback2), value,
-          effect, control);
-      Reduction r2 = Reduce(check2);
-      ASSERT_TRUE(r2.Changed());
-      EXPECT_EQ(r2.replacement(), check1);
-    }
-  }
-}
-
-// -----------------------------------------------------------------------------
-// CheckedTaggedToCompressedPointer
-
-TEST_F(RedundancyEliminationTest, CheckedTaggedToCompressedPointer) {
-  TRACED_FOREACH(VectorSlotPair, feedback1, vector_slot_pairs()) {
-    TRACED_FOREACH(VectorSlotPair, feedback2, vector_slot_pairs()) {
-      Node* value = Parameter(0);
-      Node* effect = graph()->start();
-      Node* control = graph()->start();
-
-      Node* check1 = effect = graph()->NewNode(
-          simplified()->CheckedTaggedToCompressedPointer(feedback1), value,
-          effect, control);
-      Reduction r1 = Reduce(check1);
-      ASSERT_TRUE(r1.Changed());
-      EXPECT_EQ(r1.replacement(), check1);
-
-      Node* check2 = effect = graph()->NewNode(
-          simplified()->CheckedTaggedToCompressedPointer(feedback2), value,
-          effect, control);
-      Reduction r2 = Reduce(check2);
-      ASSERT_TRUE(r2.Changed());
-      EXPECT_EQ(r2.replacement(), check1);
-    }
-  }
-}
-
-// -----------------------------------------------------------------------------
-// CheckedTaggedToCompressedSigned
-
-TEST_F(RedundancyEliminationTest, CheckedTaggedToCompressedSigned) {
-  TRACED_FOREACH(VectorSlotPair, feedback1, vector_slot_pairs()) {
-    TRACED_FOREACH(VectorSlotPair, feedback2, vector_slot_pairs()) {
-      Node* value = Parameter(0);
-      Node* effect = graph()->start();
-      Node* control = graph()->start();
-
-      Node* check1 = effect = graph()->NewNode(
-          simplified()->CheckedTaggedToCompressedSigned(feedback1), value,
-          effect, control);
-      Reduction r1 = Reduce(check1);
-      ASSERT_TRUE(r1.Changed());
-      EXPECT_EQ(r1.replacement(), check1);
-
-      Node* check2 = effect = graph()->NewNode(
-          simplified()->CheckedTaggedToCompressedSigned(feedback2), value,
-          effect, control);
       Reduction r2 = Reduce(check2);
       ASSERT_TRUE(r2.Changed());
       EXPECT_EQ(r2.replacement(), check1);

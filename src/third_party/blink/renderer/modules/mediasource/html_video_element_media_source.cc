@@ -47,8 +47,8 @@ VideoPlaybackQuality* HTMLVideoElementMediaSource::getVideoPlaybackQuality(
     corrupted = web_media_player->CorruptedFrameCount();
   }
 
-  return MakeGarbageCollected<VideoPlaybackQuality>(video_element.GetDocument(),
-                                                    total, dropped, corrupted);
+  return VideoPlaybackQuality::Create(video_element.GetDocument(), total,
+                                      dropped, corrupted);
 }
 
 }  // namespace blink

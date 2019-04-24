@@ -137,13 +137,6 @@ public class AwContentsStatics {
         return FindAddress.findAddress(addr);
     }
 
-    /**
-     * Returns true if WebView is running in multi process mode.
-     */
-    public static boolean isMultiProcessEnabled() {
-        return nativeIsMultiProcessEnabled();
-    }
-
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
@@ -156,5 +149,4 @@ public class AwContentsStatics {
     private static native void nativeSetSafeBrowsingWhitelist(
             String[] urls, Callback<Boolean> callback);
     private static native void nativeSetCheckClearTextPermitted(boolean permitted);
-    private static native boolean nativeIsMultiProcessEnabled();
 }

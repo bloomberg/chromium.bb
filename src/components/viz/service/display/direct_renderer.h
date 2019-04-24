@@ -157,9 +157,9 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
                      bool use_render_pass_scissor);
 
   const cc::FilterOperations* FiltersForPass(RenderPassId render_pass_id) const;
-  const cc::FilterOperations* BackdropFiltersForPass(
+  const cc::FilterOperations* BackgroundFiltersForPass(
       RenderPassId render_pass_id) const;
-  const gfx::RRectF* BackdropFilterBoundsForPass(
+  const gfx::RRectF* BackgroundFilterBoundsForPass(
       RenderPassId render_pass_id) const;
 
   // Private interface implemented by subclasses for use by DirectRenderer.
@@ -209,8 +209,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   gfx::Size surface_size_for_swap_buffers() const {
     return reshape_surface_size_;
   }
-
-  bool ShouldApplyRoundedCorner(const DrawQuad* quad) const;
 
   const RendererSettings* const settings_;
   OutputSurface* const output_surface_;

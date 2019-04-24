@@ -105,7 +105,7 @@ class NFA {
            const char* p);
 
   // Returns text version of capture information, for debugging.
-  std::string FormatCapture(const char** capture);
+  string FormatCapture(const char** capture);
 
   inline void CopyCapture(const char** dst, const char** src);
 
@@ -288,24 +288,14 @@ void NFA::AddToThreadq(Threadq* q, int id0, int c, const StringPiece& context,
     case kInstByteRange:
       if (!ip->Matches(c))
         goto Next;
-
-      // Save state; will pick up at next byte.
-      t = Incref(t0);
-      *tp = t;
-      if (ExtraDebug)
-        fprintf(stderr, " + %d%s\n", id, FormatCapture(t0->capture).c_str());
-
-      if (ip->hint() == 0)
-        break;
-      a = {id+ip->hint(), NULL};
-      goto Loop;
+      FALLTHROUGH_INTENDED;
 
     case kInstMatch:
       // Save state; will pick up at next byte.
       t = Incref(t0);
       *tp = t;
       if (ExtraDebug)
-        fprintf(stderr, " ! %d%s\n", id, FormatCapture(t0->capture).c_str());
+        fprintf(stderr, " + %d%s\n", id, FormatCapture(t0->capture).c_str());
 
     Next:
       if (ip->last())
@@ -425,8 +415,9 @@ int NFA::Step(Threadq* runq, Threadq* nextq, int c, const StringPiece& context,
   return 0;
 }
 
-std::string NFA::FormatCapture(const char** capture) {
-  std::string s;
+string NFA::FormatCapture(const char** capture) {
+  string s;
+
   for (int i = 0; i < ncapture_; i+=2) {
     if (capture[i] == NULL)
       StringAppendF(&s, "(?,?)");
@@ -491,8 +482,7 @@ bool NFA::Search(const StringPiece& text, const StringPiece& const_context,
 
   if (ExtraDebug)
     fprintf(stderr, "NFA::Search %s (context: %s) anchored=%d longest=%d\n",
-            std::string(text).c_str(), std::string(context).c_str(), anchored,
-            longest);
+            string(text).c_str(), string(context).c_str(), anchored, longest);
 
   // Set up search.
   Threadq* runq = &q0_;

@@ -40,7 +40,6 @@ source_set("probes_src") {
     "../../tracing:tracing",
     "android_log",
     "filesystem",
-    "packages_list",
     "power",
     "ps",
     "sys_stats",
@@ -73,7 +72,6 @@ source_set("unittests") {
     "../../tracing:test_support",
     "android_log:unittests",
     "filesystem:unittests",
-    "packages_list:unittests",
     "ps:unittests",
     "sys_stats:unittests",
   ]

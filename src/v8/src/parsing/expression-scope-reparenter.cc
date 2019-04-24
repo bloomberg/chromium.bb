@@ -54,7 +54,9 @@ void Reparenter::VisitClassLiteral(ClassLiteral* class_literal) {
 #if DEBUG
   // The same goes for the rest of the class, but we do some
   // sanity checking in debug mode.
-  for (ClassLiteralProperty* prop : *class_literal->properties()) {
+  ZonePtrList<ClassLiteralProperty>* props = class_literal->properties();
+  for (int i = 0; i < props->length(); ++i) {
+    ClassLiteralProperty* prop = props->at(i);
     // No need to visit the values, since all values are functions with
     // the class scope on their scope chain.
     DCHECK(prop->value()->IsFunctionLiteral());

@@ -257,7 +257,8 @@ public final class LaunchTest {
         // the host browser to relaunch it again.
         {
             SharedPreferences.Editor editor = WebApkSharedPreferences.getPrefs(mAppContext).edit();
-            editor.putLong(WebApkSharedPreferences.PREF_REQUEST_HOST_BROWSER_RELAUNCH_TIMESTAMP,
+            editor.putLong(
+                    WebApkSharedPreferences.SHARED_PREF_REQUEST_HOST_BROWSER_RELAUNCH_TIMESTAMP,
                     System.currentTimeMillis() - 1);
             editor.apply();
 
@@ -271,7 +272,8 @@ public final class LaunchTest {
         // the host browser to relaunch it.
         {
             SharedPreferences.Editor editor = WebApkSharedPreferences.getPrefs(mAppContext).edit();
-            editor.putLong(WebApkSharedPreferences.PREF_REQUEST_HOST_BROWSER_RELAUNCH_TIMESTAMP, 1);
+            editor.putLong(
+                    WebApkSharedPreferences.SHARED_PREF_REQUEST_HOST_BROWSER_RELAUNCH_TIMESTAMP, 1);
             editor.apply();
 
             Robolectric.buildActivity(H2OMainActivity.class, launchIntent).create();

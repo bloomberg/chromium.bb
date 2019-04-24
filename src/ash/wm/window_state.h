@@ -73,11 +73,6 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // Each subclass defines its own behavior and transition for each WMEvent.
   class State {
    public:
-    // Animation type of updating window bounds for entering current state.
-    // "IMMEDIATE" means update bounds directly without animation. "STEP_END"
-    // means update bounds at the end of the animation.
-    enum EnterAnimationType { DEFAULT, IMMEDIATE, STEP_END };
-
     State() {}
     virtual ~State() {}
 
@@ -102,16 +97,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     // Called when the window is being destroyed.
     virtual void OnWindowDestroying(WindowState* window_state) {}
 
-    EnterAnimationType enter_animation_type() const {
-      return enter_animation_type_;
-    }
-    void set_enter_animation_type(EnterAnimationType type) {
-      enter_animation_type_ = type;
-    }
-
    private:
-    EnterAnimationType enter_animation_type_ = DEFAULT;
-
     DISALLOW_COPY_AND_ASSIGN(State);
   };
 
@@ -423,13 +409,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
       const gfx::Rect& bounds,
       gfx::Tween::Type animation_type = gfx::Tween::EASE_OUT);
 
-  // Called before the state change and update PIP related state, such as next
-  // window animation type, upon state change.
-  void OnPrePipStateChange(mojom::WindowStateType old_window_state_type);
-
-  // Called after the state change and update PIP related state, such as next
-  // window animation type, upon state change.
-  void OnPostPipStateChange(mojom::WindowStateType old_window_state_type);
+  // Update PIP related state, such as next window animation type, upon
+  // state change.
+  void UpdatePipState(mojom::WindowStateType old_window_state_type);
 
   // Update the PIP bounds if necessary. This may need to happen when the
   // display work area changes, or if system ui regions like the virtual

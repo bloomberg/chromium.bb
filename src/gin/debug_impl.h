@@ -13,6 +13,10 @@ namespace gin {
 class DebugImpl {
  public:
   static v8::JitCodeEventHandler GetJitCodeEventHandler();
+#if defined(OS_WIN)
+  static Debug::CodeRangeCreatedCallback GetCodeRangeCreatedCallback();
+  static Debug::CodeRangeDeletedCallback GetCodeRangeDeletedCallback();
+#endif
 };
 
 }  // namespace gin

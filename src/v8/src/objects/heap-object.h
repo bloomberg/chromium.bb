@@ -16,8 +16,6 @@
 namespace v8 {
 namespace internal {
 
-class Heap;
-
 // HeapObject is the superclass for all classes describing heap allocated
 // objects.
 class HeapObject : public Object {
@@ -116,7 +114,7 @@ class HeapObject : public Object {
   // Returns true if the object contains a tagged value at given offset.
   // It is used for invalid slots filtering. If the offset points outside
   // of the object or to the map word, the result is UNDEFINED (!!!).
-  V8_EXPORT_PRIVATE bool IsValidSlot(Map map, int offset);
+  bool IsValidSlot(Map map, int offset);
 
   // Returns the heap object's size in bytes
   inline int Size() const;
@@ -131,7 +129,9 @@ class HeapObject : public Object {
   // Does not invoke write barrier, so should only be assigned to
   // during marking GC.
   inline ObjectSlot RawField(int byte_offset) const;
+  static inline ObjectSlot RawField(const HeapObject obj, int offset);
   inline MaybeObjectSlot RawMaybeWeakField(int byte_offset) const;
+  static inline MaybeObjectSlot RawMaybeWeakField(HeapObject obj, int offset);
 
   DECL_CAST(HeapObject)
 
@@ -149,7 +149,7 @@ class HeapObject : public Object {
   void PrintHeader(std::ostream& os, const char* id);  // NOLINT
 #endif
   DECL_PRINTER(HeapObject)
-  EXPORT_DECL_VERIFIER(HeapObject)
+  DECL_VERIFIER(HeapObject)
 #ifdef VERIFY_HEAP
   inline void VerifyObjectField(Isolate* isolate, int offset);
   inline void VerifySmiField(int offset);
@@ -173,7 +173,7 @@ class HeapObject : public Object {
   bool CanBeRehashed() const;
 
   // Rehash the object based on the layout inferred from its map.
-  void RehashBasedOnMap(ReadOnlyRoots root);
+  void RehashBasedOnMap(ReadOnlyRoots roots);
 
   // Layout description.
 #define HEAP_OBJECT_FIELDS(V) \

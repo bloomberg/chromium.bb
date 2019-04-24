@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/android/build_info.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/task/post_task.h"
@@ -101,7 +100,7 @@ CdmMessageFilterAndroid::CdmMessageFilterAndroid(
     bool force_to_support_secure_codecs)
     : BrowserMessageFilter(EncryptedMediaMsgStart),
       task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
       can_persist_data_(can_persist_data),
       force_to_support_secure_codecs_(force_to_support_secure_codecs) {}
 
@@ -169,10 +168,6 @@ void CdmMessageFilterAndroid::OnQueryKeySystemSupport(
 
   response->is_persistent_license_supported =
       MediaDrmBridge::IsPersistentLicenseTypeSupported(request.key_system);
-
-  response->is_cbcs_encryption_supported =
-      media::MediaCodecUtil::PlatformSupportsCbcsEncryption(
-          base::android::BuildInfo::GetInstance()->sdk_int());
 }
 
 void CdmMessageFilterAndroid::OnGetPlatformKeySystemNames(

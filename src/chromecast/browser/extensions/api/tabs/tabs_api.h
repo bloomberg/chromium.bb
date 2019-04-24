@@ -17,7 +17,7 @@
 #include "url/gurl.h"
 
 namespace chromecast {
-class CastWebContents;
+struct ActiveWebview;
 }
 
 namespace content {
@@ -112,7 +112,7 @@ class TabsDuplicateFunction : public UIThreadExtensionFunction {
 class TabsHighlightFunction : public UIThreadExtensionFunction {
   ~TabsHighlightFunction() override {}
   ResponseAction Run() override;
-  bool HighlightTab(const std::vector<chromecast::CastWebContents*>& tabs,
+  bool HighlightTab(const std::vector<chromecast::ActiveWebview>& tabs,
                     ui::ListSelectionModel* selection,
                     int* active_index,
                     int index,

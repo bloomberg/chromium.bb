@@ -4,19 +4,14 @@
 
 #include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 
-#include <utility>
-
-#include "third_party/blink/renderer/core/geometry/dom_point_init.h"
-#include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
-#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
 
 // makes a deep copy of transformationMatrix
 XRRigidTransform::XRRigidTransform(
     const TransformationMatrix& transformationMatrix)
-    : matrix_(std::make_unique<TransformationMatrix>(transformationMatrix)) {
+    : matrix_(TransformationMatrix::Create(transformationMatrix)) {
   DecomposeMatrix();
 }
 
@@ -25,7 +20,7 @@ XRRigidTransform::XRRigidTransform(
     std::unique_ptr<TransformationMatrix> transformationMatrix)
     : matrix_(std::move(transformationMatrix)) {
   if (!matrix_) {
-    matrix_ = std::make_unique<TransformationMatrix>();
+    matrix_ = TransformationMatrix::Create();
   }
   DecomposeMatrix();
 }
@@ -38,13 +33,9 @@ void XRRigidTransform::DecomposeMatrix() {
     position_ =
         DOMPointReadOnly::Create(decomposed.translate_x, decomposed.translate_y,
                                  decomposed.translate_z, 1.0);
-
-    // TODO(https://crbug.com/929841): Minuses are needed as a workaround for
-    // bug in TransformationMatrix so that callers can still pass non-inverted
-    // quaternions.
     orientation_ = makeNormalizedQuaternion(
-        -decomposed.quaternion_x, -decomposed.quaternion_y,
-        -decomposed.quaternion_z, decomposed.quaternion_w);
+        decomposed.quaternion_x, decomposed.quaternion_y,
+        decomposed.quaternion_z, decomposed.quaternion_w);
   } else {
     // TODO: Is this the correct way to handle a failure here?
     position_ = DOMPointReadOnly::Create(0.0, 0.0, 0.0, 1.0);
@@ -69,11 +60,7 @@ XRRigidTransform& XRRigidTransform::operator=(const XRRigidTransform& other) {
       other.orientation_->x(), other.orientation_->y(), other.orientation_->z(),
       other.orientation_->w());
   if (other.matrix_) {
-    matrix_ = std::make_unique<TransformationMatrix>(*(other.matrix_.get()));
-  }
-  if (other.inv_matrix_) {
-    inv_matrix_ =
-        std::make_unique<TransformationMatrix>(*(other.inv_matrix_.get()));
+    matrix_ = TransformationMatrix::Create(*(other.matrix_.get()));
   }
 
   return *this;
@@ -109,21 +96,10 @@ DOMFloat32Array* XRRigidTransform::matrix() {
   return transformationMatrixToDOMFloat32Array(*matrix_);
 }
 
-XRRigidTransform* XRRigidTransform::inverse() {
-  return MakeGarbageCollected<XRRigidTransform>(InverseTransformMatrix());
-}
-
 TransformationMatrix XRRigidTransform::InverseTransformMatrix() {
-  // Only compute inverse matrix when it's requested, but cache it once we do.
-  // matrix_ does not change once the XRRigidTransfrorm has been constructed, so
-  // the caching is safe.
-  if (!inv_matrix_) {
-    EnsureMatrix();
-    DCHECK(matrix_->IsInvertible());
-    inv_matrix_ = std::make_unique<TransformationMatrix>(matrix_->Inverse());
-  }
-
-  return *inv_matrix_;
+  EnsureMatrix();
+  DCHECK(matrix_->IsInvertible());
+  return matrix_->Inverse();
 }
 
 TransformationMatrix XRRigidTransform::TransformMatrix() {
@@ -133,7 +109,7 @@ TransformationMatrix XRRigidTransform::TransformMatrix() {
 
 void XRRigidTransform::EnsureMatrix() {
   if (!matrix_) {
-    matrix_ = std::make_unique<TransformationMatrix>();
+    matrix_ = TransformationMatrix::Create();
     TransformationMatrix::DecomposedType decomp;
     memset(&decomp, 0, sizeof(decomp));
     decomp.perspective_w = 1;

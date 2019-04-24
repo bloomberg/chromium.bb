@@ -107,8 +107,9 @@ CJS_Result CJX_ExclGroup::selectedMember(
     return CJS_Result::Success(runtime->NewNull());
 
   CFXJSE_Value* value =
-      GetDocument()->GetScriptContext()->GetOrCreateJSBindingFromMap(
-          pReturnNode);
+      GetDocument()->GetScriptContext()->GetJSValueFromMap(pReturnNode);
+  if (!value)
+    return CJS_Result::Success(runtime->NewNull());
 
   return CJS_Result::Success(
       value->DirectGetValue().Get(runtime->GetIsolate()));

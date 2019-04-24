@@ -7,10 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-// The accessibility identifier of the clear browsing data view.
-extern NSString* const kClearBrowsingDataViewAccessibilityIdentifier;
+// The accessibility identifier of the privacy settings collection view.
+extern NSString* const kClearBrowsingDataCollectionViewAccessibilityIdentifier;
 
-// The accessibility identifiers of the cells in the clear browsing data view.
+// The accessibility identifiers of the cells in the collection view.
 extern NSString* const kClearBrowsingHistoryCellAccessibilityIdentifier;
 extern NSString* const kClearCookiesCellAccessibilityIdentifier;
 extern NSString* const kClearCacheCellAccessibilityIdentifier;

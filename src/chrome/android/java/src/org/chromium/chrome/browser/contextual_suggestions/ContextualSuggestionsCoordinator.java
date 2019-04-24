@@ -8,7 +8,6 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.ActivityLifecycleDispatcher;
@@ -118,7 +117,8 @@ public class ContextualSuggestionsCoordinator implements Destroyable {
         SuggestionsUiDelegateImpl uiDelegate = new SuggestionsUiDelegateImpl(suggestionsSource,
                 new ContextualSuggestionsEventReporter(mTabModelSelector, suggestionsSource),
                 navigationDelegate, mProfile, mBottomSheetController.getBottomSheet(),
-                ChromeApplication.getReferencePool(), mBottomSheetController.getSnackbarManager());
+                mActivity.getChromeApplication().getReferencePool(),
+                mBottomSheetController.getSnackbarManager());
 
         mContentCoordinator.showSuggestions(mActivity, mProfile, uiDelegate, mModel,
                 mActivity.getWindowAndroid(), mActivity::closeContextMenu);

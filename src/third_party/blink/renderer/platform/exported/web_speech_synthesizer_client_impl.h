@@ -52,11 +52,9 @@ class WebSpeechSynthesizerClientImpl final
   void DidResumeSpeaking(const WebSpeechSynthesisUtterance&) override;
   void SpeakingErrorOccurred(const WebSpeechSynthesisUtterance&) override;
   void WordBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
-                                 unsigned char_index,
-                                 unsigned char_length) override;
+                                 unsigned char_index) override;
   void SentenceBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
-                                     unsigned char_index,
-                                     unsigned char_length) override;
+                                     unsigned char_index) override;
 
   void Trace(blink::Visitor*);
 

@@ -14,7 +14,8 @@ namespace chromeos {
 
 class MockDemoSetupScreen : public DemoSetupScreen {
  public:
-  MockDemoSetupScreen(DemoSetupScreenView* view,
+  MockDemoSetupScreen(BaseScreenDelegate* base_screen_delegate,
+                      DemoSetupScreenView* view,
                       const ScreenExitCallback& exit_callback);
   ~MockDemoSetupScreen() override;
 

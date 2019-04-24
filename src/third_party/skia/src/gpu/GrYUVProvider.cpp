@@ -6,8 +6,6 @@
  */
 
 #include "GrYUVProvider.h"
-
-#include "GrCaps.h"
 #include "GrClip.h"
 #include "GrColorSpaceXform.h"
 #include "GrProxyProvider.h"
@@ -19,8 +17,8 @@
 #include "SkCachedData.h"
 #include "SkRefCnt.h"
 #include "SkResourceCache.h"
-#include "SkYUVAIndex.h"
 #include "SkYUVPlanesCache.h"
+#include "SkYUVAIndex.h"
 #include "effects/GrYUVtoRGBEffect.h"
 
 sk_sp<SkCachedData> GrYUVProvider::getPlanes(SkYUVASizeInfo* size,
@@ -150,11 +148,7 @@ sk_sp<GrTextureProxy> GrYUVProvider::refAsTextureProxy(GrRecordingContext* ctx,
                                                           dataStoragePtr);
 
         auto proxyProvider = ctx->priv().proxyProvider();
-        auto clearFlag = kNone_GrSurfaceFlags;
-        if (ctx->priv().caps()->shouldInitializeTextures() && fit == SkBackingFit::kApprox) {
-            clearFlag = kPerformInitialClear_GrSurfaceFlag;
-        }
-        yuvTextureProxies[i] = proxyProvider->createTextureProxy(yuvImage, clearFlag,
+        yuvTextureProxies[i] = proxyProvider->createTextureProxy(yuvImage, kNone_GrSurfaceFlags,
                                                                  1, SkBudgeted::kYes, fit);
 
         SkASSERT(yuvTextureProxies[i]->width() == yuvSizeInfo.fSizes[i].fWidth);

@@ -17,6 +17,8 @@ enum class ChildProcessImportance {
   NORMAL = 0,
   MODERATE,
   IMPORTANT,
+  // Place holder to represent number of values.
+  COUNT,
 };
 
 }  // namespace content

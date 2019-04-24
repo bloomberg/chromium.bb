@@ -32,20 +32,14 @@
 #include "third_party/blink/renderer/core/html/forms/checkbox_input_type.h"
 
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
-#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
-#include "third_party/blink/renderer/core/page/spatial_navigation.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
 namespace blink {
 
 InputType* CheckboxInputType::Create(HTMLInputElement& element) {
   return MakeGarbageCollected<CheckboxInputType>(element);
-}
-
-void CheckboxInputType::CountUsage() {
-  CountUsageIfVisible(WebFeature::kInputTypeCheckbox);
 }
 
 const AtomicString& CheckboxInputType::FormControlType() const {
@@ -62,13 +56,9 @@ String CheckboxInputType::ValueMissingText() const {
 }
 
 void CheckboxInputType::HandleKeyupEvent(KeyboardEvent& event) {
-  // Use Space key simulated click by default.
-  // Use Enter key simulated click when Spatial Navigation enabled.
-  if (event.key() == " " ||
-      (IsSpatialNavigationEnabled(GetElement().GetDocument().GetFrame()) &&
-       event.key() == "Enter")) {
-    DispatchSimulatedClickIfActive(event);
-  }
+  if (event.key() != " ")
+    return;
+  DispatchSimulatedClickIfActive(event);
 }
 
 ClickHandlingState* CheckboxInputType::WillDispatchClick() {

@@ -49,11 +49,11 @@ class ClientCertStoreChromeOS : public net::ClientCertStore {
 
   // net::ClientCertStore:
   void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
-                      ClientCertListCallback callback) override;
+                      const ClientCertListCallback& callback) override;
 
  private:
   void GotAdditionalCerts(const net::SSLCertRequestInfo* request,
-                          ClientCertListCallback callback,
+                          const ClientCertListCallback& callback,
                           net::ClientCertIdentityList additional_certs);
 
   net::ClientCertIdentityList GetAndFilterCertsOnWorkerThread(

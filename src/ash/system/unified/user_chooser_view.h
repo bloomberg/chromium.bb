@@ -35,7 +35,8 @@ class UserItemButton : public views::Button, public views::ButtonListener {
   void SetCaptureState(mojom::MediaCaptureState capture_states);
 
   // views::Button:
-  base::string16 GetTooltipText(const gfx::Point& p) const override;
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

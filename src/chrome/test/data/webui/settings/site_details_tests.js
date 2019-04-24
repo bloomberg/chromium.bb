@@ -126,6 +126,9 @@ suite('SiteDetails', function() {
     // flag string.
     const optionalSiteDetailsContentSettingsTypes =
         /** @type {!settings.ContentSettingsType : string} */ ({});
+    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
+                                                .CLIPBOARD] =
+        'enableClipboardContentSetting';
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes.ADS] =
         'enableSafeBrowsingSubresourceFilter';
 
@@ -135,9 +138,6 @@ suite('SiteDetails', function() {
     optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
                                                 .PAYMENT_HANDLER] =
         'enablePaymentHandlerContentSetting';
-    optionalSiteDetailsContentSettingsTypes[settings.ContentSettingsTypes
-                                                .SERIAL_PORTS] =
-        'enableExperimentalWebPlatformFeatures';
     browserProxy.setPrefs(prefs);
 
     // First, explicitly set all the optional settings to false.
@@ -293,6 +293,7 @@ suite('SiteDetails', function() {
     browserProxy.setPrefs(prefs);
     // Make sure all the possible content settings are shown for this test.
     loadTimeData.overrideValues({enableSafeBrowsingSubresourceFilter: true});
+    loadTimeData.overrideValues({enableClipboardContentSetting: true});
     loadTimeData.overrideValues({enableSensorsContentSetting: true});
     loadTimeData.overrideValues({enablePaymentHandlerContentSetting: true});
     testElement = createSiteDetails('https://foo.com:443');

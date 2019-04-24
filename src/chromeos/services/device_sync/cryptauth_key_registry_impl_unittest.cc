@@ -5,7 +5,6 @@
 #include "chromeos/services/device_sync/cryptauth_key_registry_impl.h"
 
 #include "base/stl_util.h"
-#include "chromeos/services/device_sync/cryptauth_constants.h"
 #include "chromeos/services/device_sync/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,11 +48,11 @@ class DeviceSyncCryptAuthKeyRegistryImplTest : public testing::Test {
 TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, GetActiveKey_NoActiveKey) {
   CryptAuthKey sym_key("symmetric-key", CryptAuthKey::Status::kInactive,
                        cryptauthv2::KeyType::RAW256, "sym-handle");
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  sym_key);
 
   EXPECT_FALSE(
-      key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kLegacyMasterKey));
+      key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair));
 }
 
 TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, GetActiveKey) {
@@ -62,13 +61,13 @@ TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, GetActiveKey) {
   CryptAuthKey asym_key("public-key", "private-key",
                         CryptAuthKey::Status::kActive,
                         cryptauthv2::KeyType::P256, "asym-handle");
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  sym_key);
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  asym_key);
 
   const CryptAuthKey* key =
-      key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kLegacyMasterKey);
+      key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair);
   ASSERT_TRUE(key);
   EXPECT_EQ(asym_key, *key);
 }
@@ -76,19 +75,18 @@ TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, GetActiveKey) {
 TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, AddKey) {
   CryptAuthKey sym_key("symmetric-key", CryptAuthKey::Status::kActive,
                        cryptauthv2::KeyType::RAW256, "sym-handle");
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  sym_key);
   const CryptAuthKeyBundle* key_bundle =
-      key_registry()->GetKeyBundle(CryptAuthKeyBundle::Name::kLegacyMasterKey);
+      key_registry()->GetKeyBundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   ASSERT_TRUE(key_bundle);
 
   const CryptAuthKey* active_key =
-      key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kLegacyMasterKey);
+      key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair);
   ASSERT_TRUE(active_key);
   EXPECT_EQ(sym_key, *active_key);
 
-  CryptAuthKeyBundle expected_bundle(
-      CryptAuthKeyBundle::Name::kLegacyMasterKey);
+  CryptAuthKeyBundle expected_bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   expected_bundle.AddKey(sym_key);
   EXPECT_EQ(expected_bundle, *key_bundle);
 
@@ -102,14 +100,14 @@ TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, AddKey) {
   CryptAuthKey asym_key("public-key", "private-key",
                         CryptAuthKey::Status::kActive,
                         cryptauthv2::KeyType::P256, "asym-handle");
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  asym_key);
 
   expected_bundle.AddKey(asym_key);
   EXPECT_EQ(expected_bundle, *key_bundle);
 
   active_key =
-      key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kLegacyMasterKey);
+      key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair);
   ASSERT_TRUE(active_key);
   EXPECT_EQ(asym_key, *active_key);
 
@@ -125,23 +123,22 @@ TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, SetActiveKey) {
   CryptAuthKey asym_key("public-key", "private-key",
                         CryptAuthKey::Status::kActive,
                         cryptauthv2::KeyType::P256, "asym-handle");
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  sym_key);
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  asym_key);
 
-  key_registry()->SetActiveKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->SetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                "sym-handle");
 
   const CryptAuthKey* key =
-      key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kLegacyMasterKey);
+      key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair);
   EXPECT_TRUE(key);
 
   sym_key.set_status(CryptAuthKey::Status::kActive);
   EXPECT_EQ(sym_key, *key);
 
-  CryptAuthKeyBundle expected_bundle(
-      CryptAuthKeyBundle::Name::kLegacyMasterKey);
+  CryptAuthKeyBundle expected_bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   expected_bundle.AddKey(sym_key);
   asym_key.set_status(CryptAuthKey::Status::kInactive);
   expected_bundle.AddKey(asym_key);
@@ -158,18 +155,17 @@ TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, DeactivateKeys) {
   CryptAuthKey asym_key("public-key", "private-key",
                         CryptAuthKey::Status::kActive,
                         cryptauthv2::KeyType::P256, "asym-handle");
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  sym_key);
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  asym_key);
 
-  key_registry()->DeactivateKeys(CryptAuthKeyBundle::Name::kLegacyMasterKey);
+  key_registry()->DeactivateKeys(CryptAuthKeyBundle::Name::kUserKeyPair);
 
   EXPECT_FALSE(
-      key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kLegacyMasterKey));
+      key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair));
 
-  CryptAuthKeyBundle expected_bundle(
-      CryptAuthKeyBundle::Name::kLegacyMasterKey);
+  CryptAuthKeyBundle expected_bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   expected_bundle.AddKey(sym_key);
   asym_key.set_status(CryptAuthKey::Status::kInactive);
   expected_bundle.AddKey(asym_key);
@@ -186,16 +182,16 @@ TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, DeleteKey) {
   CryptAuthKey asym_key("public-key", "private-key",
                         CryptAuthKey::Status::kActive,
                         cryptauthv2::KeyType::P256, "asym-handle");
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  sym_key);
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  asym_key);
 
-  key_registry()->DeleteKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->DeleteKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                             "sym-handle");
 
   const CryptAuthKeyBundle* key_bundle =
-      key_registry()->GetKeyBundle(CryptAuthKeyBundle::Name::kLegacyMasterKey);
+      key_registry()->GetKeyBundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   ASSERT_TRUE(key_bundle);
 
   EXPECT_FALSE(
@@ -203,8 +199,7 @@ TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, DeleteKey) {
   EXPECT_TRUE(
       base::ContainsKey(key_bundle->handle_to_key_map(), "asym-handle"));
 
-  CryptAuthKeyBundle expected_bundle(
-      CryptAuthKeyBundle::Name::kLegacyMasterKey);
+  CryptAuthKeyBundle expected_bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   expected_bundle.AddKey(asym_key);
   base::Value expected_dict(base::Value::Type::DICTIONARY);
   expected_dict.SetKey(
@@ -216,24 +211,23 @@ TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, DeleteKey) {
 TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, SetKeyDirective) {
   CryptAuthKey sym_key("symmetric-key", CryptAuthKey::Status::kInactive,
                        cryptauthv2::KeyType::RAW256, "sym-handle");
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  sym_key);
 
   cryptauthv2::KeyDirective key_directive;
   key_directive.set_enroll_time_millis(1000);
-  key_registry()->SetKeyDirective(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+  key_registry()->SetKeyDirective(CryptAuthKeyBundle::Name::kUserKeyPair,
                                   key_directive);
 
   const CryptAuthKeyBundle* key_bundle =
-      key_registry()->GetKeyBundle(CryptAuthKeyBundle::Name::kLegacyMasterKey);
+      key_registry()->GetKeyBundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   ASSERT_TRUE(key_bundle);
 
   EXPECT_TRUE(key_bundle->key_directive());
   EXPECT_EQ(key_directive.SerializeAsString(),
             key_bundle->key_directive()->SerializeAsString());
 
-  CryptAuthKeyBundle expected_bundle(
-      CryptAuthKeyBundle::Name::kLegacyMasterKey);
+  CryptAuthKeyBundle expected_bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   expected_bundle.AddKey(sym_key);
   expected_bundle.set_key_directive(key_directive);
   base::Value expected_dict(base::Value::Type::DICTIONARY);
@@ -245,19 +239,18 @@ TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest, SetKeyDirective) {
 
 TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest,
        ConstructorPopulatesBundlesUsingPref) {
-  CryptAuthKey asym_key(
-      "public-key", "private-key", CryptAuthKey::Status::kActive,
-      cryptauthv2::KeyType::P256, kCryptAuthFixedUserKeyPairHandle);
-  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
-                                 asym_key);
-
+  CryptAuthKey asym_key("public-key", "private", CryptAuthKey::Status::kActive,
+                        cryptauthv2::KeyType::P256, "asym-handle");
   CryptAuthKey sym_key("symmetric-key", CryptAuthKey::Status::kActive,
                        cryptauthv2::KeyType::RAW256, "sym-handle");
-  cryptauthv2::KeyDirective key_directive;
-  key_directive.set_enroll_time_millis(1000);
+  key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
+                                 asym_key);
   key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kLegacyMasterKey,
                                  sym_key);
-  key_registry()->SetKeyDirective(CryptAuthKeyBundle::Name::kLegacyMasterKey,
+
+  cryptauthv2::KeyDirective key_directive;
+  key_directive.set_enroll_time_millis(1000);
+  key_registry()->SetKeyDirective(CryptAuthKeyBundle::Name::kUserKeyPair,
                                   key_directive);
 
   // A new registry using the same pref service that was just written.
@@ -269,18 +262,19 @@ TEST_F(DeviceSyncCryptAuthKeyRegistryImplTest,
   const CryptAuthKeyBundle* key_bundle_user_key_pair =
       key_registry()->GetKeyBundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   ASSERT_TRUE(key_bundle_user_key_pair);
-  CryptAuthKeyBundle expected_bundle_user_key_pair(
-      CryptAuthKeyBundle::Name::kUserKeyPair);
-  expected_bundle_user_key_pair.AddKey(asym_key);
-  EXPECT_EQ(expected_bundle_user_key_pair, *key_bundle_user_key_pair);
 
   const CryptAuthKeyBundle* key_bundle_legacy_master_key =
       key_registry()->GetKeyBundle(CryptAuthKeyBundle::Name::kLegacyMasterKey);
-  ASSERT_TRUE(key_bundle_legacy_master_key);
+
+  CryptAuthKeyBundle expected_bundle_user_key_pair(
+      CryptAuthKeyBundle::Name::kUserKeyPair);
+  expected_bundle_user_key_pair.AddKey(asym_key);
+  expected_bundle_user_key_pair.set_key_directive(key_directive);
+  EXPECT_EQ(expected_bundle_user_key_pair, *key_bundle_user_key_pair);
+
   CryptAuthKeyBundle expected_bundle_legacy_master_key(
       CryptAuthKeyBundle::Name::kLegacyMasterKey);
   expected_bundle_legacy_master_key.AddKey(sym_key);
-  expected_bundle_legacy_master_key.set_key_directive(key_directive);
   EXPECT_EQ(expected_bundle_legacy_master_key, *key_bundle_legacy_master_key);
 }
 

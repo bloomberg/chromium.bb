@@ -111,8 +111,6 @@ WaitUntilObserver* WaitUntilObserver::Create(ExecutionContext* context,
 }
 
 void WaitUntilObserver::WillDispatchEvent() {
-  DCHECK(GetExecutionContext());
-
   // When handling a notificationclick, paymentrequest, or backgroundfetchclick
   // event, we want to allow one window to be focused or opened. These calls are
   // allowed between the call to willDispatchEvent() and the last call to
@@ -120,7 +118,7 @@ void WaitUntilObserver::WillDispatchEvent() {
   // between willDispatchEvent() and didDispatchEvent().
   if (type_ == kNotificationClick || type_ == kPaymentRequest ||
       type_ == kBackgroundFetchClick) {
-    GetExecutionContext()->AllowWindowInteraction();
+    execution_context_->AllowWindowInteraction();
   }
 
   DCHECK_EQ(EventDispatchState::kInitial, event_dispatch_state_);
@@ -134,26 +132,23 @@ void WaitUntilObserver::DidDispatchEvent(bool event_dispatch_failed) {
   MaybeCompleteEvent();
 }
 
-// https://w3c.github.io/ServiceWorker/#dom-extendableevent-waituntil
-bool WaitUntilObserver::WaitUntil(ScriptState* script_state,
+void WaitUntilObserver::WaitUntil(ScriptState* script_state,
                                   ScriptPromise script_promise,
                                   ExceptionState& exception_state,
                                   PromiseSettledCallback on_promise_fulfilled,
                                   PromiseSettledCallback on_promise_rejected) {
   DCHECK_NE(event_dispatch_state_, EventDispatchState::kInitial);
 
-  // 1. `If the isTrusted attribute is false, throw an "InvalidStateError"
-  // DOMException.`
-  // This might not yet be implemented.
-
-  // 2. `If not active, throw an "InvalidStateError" DOMException.`
-  if (!IsEventActive()) {
+  if (!IsEventActive(script_state)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
         "The event handler is already finished and no extend lifetime "
         "promises are outstanding.");
-    return false;
+    return;
   }
+
+  if (!execution_context_)
+    return;
 
   // When handling a notificationclick event, we want to allow one window to
   // be focused or opened. See comments in ::willDispatchEvent(). When
@@ -165,33 +160,42 @@ bool WaitUntilObserver::WaitUntil(ScriptState* script_state,
                                                    FROM_HERE);
   }
 
-  // 3. `Add f to the extend lifetime promises.`
-  // 4. `Increment the pending promises count by one.`
   IncrementPendingPromiseCount();
   script_promise.Then(
       ThenFunction::CreateFunction(script_state, this, ThenFunction::kFulfilled,
                                    std::move(on_promise_fulfilled)),
       ThenFunction::CreateFunction(script_state, this, ThenFunction::kRejected,
                                    std::move(on_promise_rejected)));
-  return true;
 }
 
-// https://w3c.github.io/ServiceWorker/#extendableevent-active
-bool WaitUntilObserver::IsEventActive() const {
-  // `An ExtendableEvent object is said to be active when its timed out flag is
-  // unset and either its pending promises count is greater than zero or its
-  // dispatch flag is set.`
-  return pending_promises_ > 0 || IsDispatchingEvent();
-}
+bool WaitUntilObserver::IsEventActive(ScriptState* script_state) const {
+  if (pending_promises_ > 0)
+    return true;
 
-bool WaitUntilObserver::IsDispatchingEvent() const {
-  return event_dispatch_state_ == EventDispatchState::kDispatching;
+  switch (event_dispatch_state_) {
+    case EventDispatchState::kDispatching:
+      // DidDispatchEvent() is called after both the event handler
+      // execution finished and microtasks queued by the event handler execution
+      // finished, it's hard to get the precise time point between the 2
+      // execution phases.
+      // So even in EventDispatchState::kDispatching state at this time point,
+      // running microtask indicates that event handler execution has actually
+      // finished, in such case if there aren't any outstanding extend lifetime
+      // promises.
+      return !v8::MicrotasksScope::IsRunningMicrotasks(
+          script_state->GetIsolate());
+    case EventDispatchState::kInitial:
+    case EventDispatchState::kDispatched:
+    case EventDispatchState::kFailed:
+      return false;
+  }
+  NOTREACHED();
 }
 
 WaitUntilObserver::WaitUntilObserver(ExecutionContext* context,
                                      EventType type,
                                      int event_id)
-    : ContextClient(context),
+    : execution_context_(context),
       type_(type),
       event_id_(event_id),
       consume_window_interaction_timer_(
@@ -219,7 +223,7 @@ void WaitUntilObserver::DecrementPendingPromiseCount() {
 }
 
 void WaitUntilObserver::MaybeCompleteEvent() {
-  if (!GetExecutionContext())
+  if (!execution_context_)
     return;
 
   switch (event_dispatch_state_) {
@@ -242,7 +246,7 @@ void WaitUntilObserver::MaybeCompleteEvent() {
   }
 
   ServiceWorkerGlobalScopeClient* client =
-      ServiceWorkerGlobalScopeClient::From(GetExecutionContext());
+      ServiceWorkerGlobalScopeClient::From(execution_context_);
   mojom::ServiceWorkerEventStatus status =
       (event_dispatch_state_ == EventDispatchState::kFailed ||
        has_rejected_promise_)
@@ -265,8 +269,7 @@ void WaitUntilObserver::MaybeCompleteEvent() {
       client->DidHandleFetchEvent(event_id_, status);
       break;
     case kInstall:
-      To<ServiceWorkerGlobalScope>(*GetExecutionContext())
-          .SetIsInstalling(false);
+      To<ServiceWorkerGlobalScope>(*execution_context_).SetIsInstalling(false);
       client->DidHandleInstallEvent(event_id_, status);
       break;
     case kMessage:
@@ -302,15 +305,17 @@ void WaitUntilObserver::MaybeCompleteEvent() {
       client->DidHandleBackgroundFetchSuccessEvent(event_id_, status);
       break;
   }
+  execution_context_ = nullptr;
 }
 
 void WaitUntilObserver::ConsumeWindowInteraction(TimerBase*) {
-  if (ExecutionContext* context = GetExecutionContext())
-    context->ConsumeWindowInteraction();
+  if (!execution_context_)
+    return;
+  execution_context_->ConsumeWindowInteraction();
 }
 
 void WaitUntilObserver::Trace(blink::Visitor* visitor) {
-  ContextClient::Trace(visitor);
+  visitor->Trace(execution_context_);
 }
 
 }  // namespace blink

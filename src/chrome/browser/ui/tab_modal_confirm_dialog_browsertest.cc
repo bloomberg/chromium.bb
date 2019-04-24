@@ -22,9 +22,12 @@
 MockTabModalConfirmDialogDelegate::MockTabModalConfirmDialogDelegate(
     content::WebContents* web_contents,
     Delegate* delegate)
-    : TabModalConfirmDialogDelegate(web_contents), delegate_(delegate) {}
+    : TabModalConfirmDialogDelegate(web_contents),
+      delegate_(delegate) {
+}
 
-MockTabModalConfirmDialogDelegate::~MockTabModalConfirmDialogDelegate() {}
+MockTabModalConfirmDialogDelegate::~MockTabModalConfirmDialogDelegate() {
+}
 
 base::string16 MockTabModalConfirmDialogDelegate::GetTitle() {
   return base::string16();
@@ -54,7 +57,8 @@ TabModalConfirmDialogTest::TabModalConfirmDialogTest()
       dialog_(NULL),
       accepted_count_(0),
       canceled_count_(0),
-      closed_count_(0) {}
+      closed_count_(0) {
+}
 
 void TabModalConfirmDialogTest::SetUpOnMainThread() {
   delegate_ = new MockTabModalConfirmDialogDelegate(

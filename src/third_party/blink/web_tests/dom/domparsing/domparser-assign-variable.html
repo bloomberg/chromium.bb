@@ -2,16 +2,24 @@
         "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-<script src="../../resources/testharness.js"></script>
-<script src="../../resources/testharnessreport.js"></script>
 <script>
-test(() => {
+function debug(str) {
+    var c = document.getElementById('console')
+    c.appendChild(document.createTextNode(str + '\n'));
+}
+
+function runTests() {
+    if (window.testRunner) testRunner.dumpAsText();
+    
     var parser = new DOMParser();
-    parser.test = "test";
-}, "This creates a DOMParser object and tries to assign it to a variable. If the test is successful, it should not crash");
+    parser.test = "test"
+}
 
 </script>
 </head>
-<body>
+<body onload="runTests();">
+This creates a DOMParser object and tries to assign it to a variable. If the test is successful, it should not crash. 
+<pre id="console">
+</pre>
 </body>
 </html>

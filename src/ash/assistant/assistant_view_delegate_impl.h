@@ -52,8 +52,7 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   mojom::ConsentStatus GetConsentStatus() const override;
   ::wm::CursorManager* GetCursorManager() override;
   void GetNavigableContentsFactoryForView(
-      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
-      override;
+      content::mojom::NavigableContentsFactoryRequest request) override;
   aura::Window* GetRootWindowForNewWindows() override;
   bool IsLaunchWithMicOpen() const override;
   bool IsTabletMode() const override;

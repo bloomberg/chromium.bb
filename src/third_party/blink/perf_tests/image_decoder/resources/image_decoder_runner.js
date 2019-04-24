@@ -1,17 +1,10 @@
-function runImageDecoderPerfTests(imageFile, testDescription,
-                                  alsoMeasureYUVDecoding = false) {
+function runImageDecoderPerfTests(imageFile, testDescription) {
   var isDone = false;
 
   function runTest() {
     var image = new Image();
 
-    // NB: Because it is part of the Image.Decode() specification to wait for
-    // all data to be received before attempting a decode (including for frames
-    // of an animated image), we must remember this metric is only for a single
-    // ImageDecoder::Decode call (as opposed to progressive decoding).
-    //
-    // Therefore, we avoid disc read overhead and put timing as part of
-    // the onload callback.
+    // When all the data is available...
     image.onload = function() {
       PerfTestRunner.addRunTestStartMarker();
       var startTime = PerfTestRunner.now();
@@ -31,7 +24,7 @@ function runImageDecoderPerfTests(imageFile, testDescription,
           var minRunTime = 100.0;
           setTimeout(runTest, Math.max(0, minRunTime - runTime));
         }
-      }).catch(error => console.log(error.message));
+      });
     }
 
     // Begin fetching the data
@@ -50,8 +43,7 @@ function runImageDecoderPerfTests(imageFile, testDescription,
       iterationCount: 20,
       description: testDescription,
       tracingCategories: 'blink',
-      traceEventsToMeasure: ['ImageFrameGenerator::decode'].concat(alsoMeasureYUVDecoding ?
-                                                                  ['ImageFrameGenerator::decodeToYUV'] : []),
+      traceEventsToMeasure: ['ImageFrameGenerator::decode'],
     });
   };
 }

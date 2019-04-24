@@ -6,13 +6,15 @@
 
 #include "base/containers/span.h"
 #include "base/logging.h"
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 
 namespace cc {
 
 TransferCacheTestHelper::TransferCacheTestHelper(GrContext* context)
     : context_(context) {
   if (!context_) {
-    owned_context_ = GrContext::MakeMock(nullptr);
+    sk_sp<const GrGLInterface> gl_interface(GrGLCreateNullInterface());
+    owned_context_ = GrContext::MakeGL(std::move(gl_interface));
     context_ = owned_context_.get();
   }
 }

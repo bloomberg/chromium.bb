@@ -192,7 +192,7 @@ void FileSystemDispatcher::Remove(const KURL& path,
                                   std::unique_ptr<VoidCallbacks> callbacks) {
   GetFileSystemManager().Remove(
       path, recursive,
-      WTF::Bind(&FileSystemDispatcher::DidRemove, WrapWeakPersistent(this),
+      WTF::Bind(&FileSystemDispatcher::DidFinish, WrapWeakPersistent(this),
                 std::move(callbacks)));
 }
 
@@ -202,7 +202,7 @@ void FileSystemDispatcher::RemoveSync(
     std::unique_ptr<VoidCallbacks> callbacks) {
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
   GetFileSystemManager().Remove(path, recursive, &error_code);
-  DidRemove(std::move(callbacks), error_code);
+  DidFinish(std::move(callbacks), error_code);
 }
 
 void FileSystemDispatcher::ReadMetadata(
@@ -428,7 +428,7 @@ void FileSystemDispatcher::Cancel(int request_id_to_cancel,
 
 void FileSystemDispatcher::CreateSnapshotFile(
     const KURL& file_path,
-    std::unique_ptr<SnapshotFileCallbackBase> callbacks) {
+    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   GetFileSystemManager().CreateSnapshotFile(
       file_path, WTF::Bind(&FileSystemDispatcher::DidCreateSnapshotFile,
                            WrapWeakPersistent(this), std::move(callbacks)));
@@ -436,7 +436,7 @@ void FileSystemDispatcher::CreateSnapshotFile(
 
 void FileSystemDispatcher::CreateSnapshotFileSync(
     const KURL& file_path,
-    std::unique_ptr<SnapshotFileCallbackBase> callbacks) {
+    std::unique_ptr<AsyncFileSystemCallbacks> callbacks) {
   base::File::Info file_info;
   base::FilePath platform_path;
   base::File::Error error_code = base::File::FILE_ERROR_FAILED;
@@ -475,16 +475,9 @@ void FileSystemDispatcher::DidResolveURL(
   }
 }
 
-void FileSystemDispatcher::DidRemove(std::unique_ptr<VoidCallbacks> callbacks,
-                                     base::File::Error error_code) {
-  if (error_code == base::File::Error::FILE_OK)
-    callbacks->DidSucceed();
-  else
-    callbacks->DidFail(error_code);
-}
-
-void FileSystemDispatcher::DidFinish(std::unique_ptr<EntryCallbacks> callbacks,
-                                     base::File::Error error_code) {
+void FileSystemDispatcher::DidFinish(
+    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
+    base::File::Error error_code) {
   if (error_code == base::File::Error::FILE_OK)
     callbacks->DidSucceed();
   else
@@ -568,7 +561,7 @@ void FileSystemDispatcher::DidCancel(StatusCallback callback,
 }
 
 void FileSystemDispatcher::DidCreateSnapshotFile(
-    std::unique_ptr<SnapshotFileCallbackBase> callbacks,
+    std::unique_ptr<AsyncFileSystemCallbacks> callbacks,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
     base::File::Error error_code,
@@ -577,7 +570,7 @@ void FileSystemDispatcher::DidCreateSnapshotFile(
     FileMetadata file_metadata = FileMetadata::From(file_info);
     file_metadata.platform_path = FilePathToWebString(platform_path);
 
-    auto blob_data = std::make_unique<BlobData>();
+    std::unique_ptr<BlobData> blob_data = BlobData::Create();
     blob_data->AppendFile(file_metadata.platform_path, 0, file_metadata.length,
                           InvalidFileTime());
     scoped_refptr<BlobDataHandle> snapshot_blob =

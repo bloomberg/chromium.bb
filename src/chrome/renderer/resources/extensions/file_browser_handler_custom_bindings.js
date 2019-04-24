@@ -4,12 +4,22 @@
 
 // Custom binding for the fileBrowserHandler API.
 
+var binding =
+    apiBridge || require('binding').Binding.create('fileBrowserHandler');
+
+var registerArgumentMassager = bindingUtil ?
+    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
+    require('event_bindings').registerArgumentMassager;
 var fileBrowserNatives = requireNative('file_browser_handler');
 var GetExternalFileEntry = fileBrowserNatives.GetExternalFileEntry;
-var fileBrowserHandlerInternal = getInternalApi('fileBrowserHandlerInternal');
+var fileBrowserHandlerInternal =
+    getInternalApi ?
+        getInternalApi('fileBrowserHandlerInternal') :
+        require('binding').Binding.create('fileBrowserHandlerInternal')
+            .generate();
 
-bindingUtil.registerEventArgumentMassager('fileBrowserHandler.onExecute',
-                                          function(args, dispatch) {
+registerArgumentMassager('fileBrowserHandler.onExecute',
+                         function(args, dispatch) {
   if (args.length < 2) {
     dispatch(args);
     return;
@@ -27,7 +37,7 @@ bindingUtil.registerEventArgumentMassager('fileBrowserHandler.onExecute',
   dispatch(args);
 });
 
-apiBridge.registerCustomHook(function(bindingsAPI) {
+binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('selectFile',
@@ -49,3 +59,6 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
         selectionParams, $Function.bind(internalCallback, null, callback));
   });
 });
+
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

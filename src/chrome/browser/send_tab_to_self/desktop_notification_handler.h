@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SEND_TAB_TO_SELF_DESKTOP_NOTIFICATION_HANDLER_H_
 
 #include <string>
-#include <vector>
 
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/send_tab_to_self/receiving_ui_handler.h"
@@ -27,9 +26,8 @@ class DesktopNotificationHandler : public NotificationHandler,
   ~DesktopNotificationHandler() override;
 
   // ReceivingUiHandler implementation.
-  void DisplayNewEntries(
-      const std::vector<const SendTabToSelfEntry*>& new_entries) override;
-  void DismissEntries(const std::vector<std::string>& guids) override;
+  void DisplayNewEntry(const SendTabToSelfEntry* entry) override;
+  void DismissEntry(const SendTabToSelfEntry* entry) override;
 
   // NotificationHandler implementation.
   void OnClose(Profile* profile,
@@ -37,6 +35,7 @@ class DesktopNotificationHandler : public NotificationHandler,
                const std::string& notification_id,
                bool by_user,
                base::OnceClosure completed_closure) override;
+
   void OnClick(Profile* profile,
                const GURL& origin,
                const std::string& notification_id,
@@ -44,15 +43,8 @@ class DesktopNotificationHandler : public NotificationHandler,
                const base::Optional<base::string16>& reply,
                base::OnceClosure completed_closure) override;
 
-  // When the user share a tab, a confirmation notification will be shown.
-  // Displays a notification telling the user that the tab was successfully
-  // sent.
-  void DisplaySendingConfirmation(const SendTabToSelfEntry& entry);
-  // Displays a notification telling the user that the tab could not be sent.
-  void DisplayFailureMessage(const GURL& url);
-
  protected:
-  Profile* const profile_;
+  Profile* profile_;
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationHandler);
 };
 

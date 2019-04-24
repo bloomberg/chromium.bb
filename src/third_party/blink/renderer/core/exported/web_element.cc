@@ -144,6 +144,10 @@ WebNode WebElement::ShadowRoot() const {
   return WebNode(root);
 }
 
+bool WebElement::HasNonEmptyLayoutSize() const {
+  return ConstUnwrap<Element>()->HasNonEmptyLayoutSize();
+}
+
 WebRect WebElement::BoundsInViewport() const {
   return ConstUnwrap<Element>()->BoundsInViewport();
 }

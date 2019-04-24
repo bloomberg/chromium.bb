@@ -9,10 +9,8 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
-#include "ash/app_list/views/search_box_view.h"
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_controller.h"
-#include "ash/keyboard/ash_keyboard_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -36,45 +34,15 @@ bool IsTabletMode() {
       ->IsTabletModeWindowManagerEnabled();
 }
 
-app_list::AppListView* GetAppListView() {
-  return Shell::Get()->app_list_controller()->presenter()->GetView();
-}
-
 bool GetExpandArrowViewVisibility() {
-  return GetAppListView()
+  return Shell::Get()
+      ->app_list_controller()
+      ->presenter()
+      ->GetView()
       ->app_list_main_view()
       ->contents_view()
       ->expand_arrow_view()
       ->visible();
-}
-
-app_list::SearchBoxView* GetSearchBoxView() {
-  return GetAppListView()
-      ->app_list_main_view()
-      ->contents_view()
-      ->GetSearchBoxView();
-}
-
-aura::Window* GetVirtualKeyboardWindow() {
-  return Shell::Get()
-      ->ash_keyboard_controller()
-      ->keyboard_controller()
-      ->GetKeyboardWindow();
-}
-
-void ShowAppListNow() {
-  Shell::Get()->app_list_controller()->presenter()->Show(
-      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
-      base::TimeTicks::Now());
-}
-
-void DismissAppListNow() {
-  Shell::Get()->app_list_controller()->presenter()->Dismiss(
-      base::TimeTicks::Now());
-}
-
-aura::Window* GetAppListViewNativeWindow() {
-  return GetAppListView()->get_fullscreen_widget_for_test()->GetNativeView();
 }
 
 }  // namespace
@@ -124,119 +92,6 @@ TEST_F(AppListControllerImplTest, UpdateExpandArrowViewVisibility) {
   // No activatable windows. Hide the expand arrow view.
   w2.reset();
   EXPECT_FALSE(GetExpandArrowViewVisibility());
-}
-
-// In clamshell mode, when the AppListView's bottom is on the display edge
-// and app list state is HALF, the rounded corners should be hidden
-// (https://crbug.com/942084).
-TEST_F(AppListControllerImplTest, HideRoundingCorners) {
-  Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
-      keyboard::mojom::KeyboardEnableFlag::kShelfEnabled);
-
-  // Show the app list view and click on the search box with mouse. So the
-  // VirtualKeyboard is shown.
-  ShowAppListNow();
-  GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
-
-  // Wait until the virtual keyboard shows on the screen.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
-
-  // Test the following things:
-  // (1) AppListView is at the top of the screen.
-  // (2) AppListView's state is HALF.
-  // (3) AppListBackgroundShield is translated to hide the rounded corners.
-  aura::Window* native_window =
-      GetAppListView()->get_fullscreen_widget_for_test()->GetNativeView();
-  gfx::Rect app_list_screen_bounds = native_window->GetBoundsInScreen();
-  EXPECT_EQ(0, app_list_screen_bounds.y());
-  EXPECT_EQ(ash::mojom::AppListViewState::kHalf,
-            GetAppListView()->app_list_state());
-  gfx::Transform expected_transform;
-  expected_transform.Translate(0, -app_list::kAppListBackgroundRadius);
-  EXPECT_EQ(
-      expected_transform,
-      GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());
-
-  // Set the search box inactive and wait until the virtual keyboard is hidden.
-  GetSearchBoxView()->SetSearchBoxActive(false, ui::ET_MOUSE_PRESSED);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
-
-  // Test that the rounded corners should show again.
-  expected_transform = gfx::Transform();
-  EXPECT_EQ(
-      expected_transform,
-      GetAppListView()->GetAppListBackgroundShieldForTest()->GetTransform());
-}
-
-// Verifies that in clamshell mode the bounds of AppListView are correct when
-// the AppListView is in PEEKING state and the virtual keyboard is enabled (see
-// https://crbug.com/944233).
-TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenVKeyboardEnabled) {
-  Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
-      keyboard::mojom::KeyboardEnableFlag::kShelfEnabled);
-
-  // Show the AppListView and click on the search box with mouse. So the
-  // VirtualKeyboard is shown. Wait until the virtual keyboard shows.
-  ShowAppListNow();
-  GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
-
-  // Hide the AppListView. Wait until the virtual keyboard is hidden as well.
-  DismissAppListNow();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
-
-  // Show the AppListView again. Check the following things:
-  // (1) Virtual keyboard does not show.
-  // (2) AppListView is in PEEKING state.
-  // (3) AppListView's bounds are the same as the preferred bounds for
-  // the PEEKING state.
-  ShowAppListNow();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ash::mojom::AppListViewState::kPeeking,
-            GetAppListView()->app_list_state());
-  EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
-  EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
-                ash::mojom::AppListViewState::kPeeking),
-            GetAppListViewNativeWindow()->bounds());
-}
-
-// Verifies that in tablet mode, the AppListView has correct bounds when the
-// virtual keyboard is dismissed (see https://crbug.com/944133).
-TEST_F(AppListControllerImplTest, CheckAppListViewBoundsWhenDismissVKeyboard) {
-  Shell::Get()->ash_keyboard_controller()->SetEnableFlag(
-      keyboard::mojom::KeyboardEnableFlag::kShelfEnabled);
-
-  // Show the AppListView and click on the search box with mouse so the
-  // VirtualKeyboard is shown. Wait until the virtual keyboard shows.
-  ShowAppListNow();
-  GetSearchBoxView()->SetSearchBoxActive(true, ui::ET_MOUSE_PRESSED);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
-
-  // Turn on the tablet mode. The virtual keyboard should still show.
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  EXPECT_TRUE(IsTabletMode());
-  EXPECT_TRUE(GetVirtualKeyboardWindow()->IsVisible());
-
-  // Close the virtual keyboard. Wait until it is hidden.
-  Shell::Get()->ash_keyboard_controller()->HideKeyboard(
-      mojom::HideReason::kUser);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(nullptr, GetVirtualKeyboardWindow());
-
-  // Check the following things:
-  // (1) AppListView's state is FULLSCREEN_SEARCH
-  // (2) AppListView's bounds are the same as the preferred bounds for
-  // the FULLSCREEN_SEARCH state.
-  EXPECT_EQ(ash::mojom::AppListViewState::kFullscreenSearch,
-            GetAppListView()->app_list_state());
-  EXPECT_EQ(GetAppListView()->GetPreferredWidgetBoundsForState(
-                ash::mojom::AppListViewState::kFullscreenSearch),
-            GetAppListViewNativeWindow()->bounds());
 }
 
 class AppListControllerImplMetricsTest : public AshTestBase {

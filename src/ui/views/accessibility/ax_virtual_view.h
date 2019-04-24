@@ -39,7 +39,6 @@ class AXUniqueId;
 
 namespace views {
 
-class AXAuraObjCache;
 class View;
 class ViewAccessibility;
 
@@ -129,10 +128,8 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
   gfx::NativeViewAccessible GetNSWindow() override;
   gfx::NativeViewAccessible GetParent() override;
-  gfx::Rect GetBoundsRect(
-      const ui::AXCoordinateSystem coordinate_system,
-      const ui::AXClippingBehavior clipping_behavior,
-      ui::AXOffscreenResult* offscreen_result) const override;
+  gfx::Rect GetClippedScreenBoundsRect() const override;
+  gfx::Rect GetUnclippedScreenBoundsRect() const override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
@@ -144,8 +141,8 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   // Gets the real View that owns our shallowest virtual ancestor,, if any.
   View* GetOwnerView() const;
 
-  // Gets or creates a wrapper suitable for use with tree sources.
-  AXVirtualViewWrapper* GetOrCreateWrapper(views::AXAuraObjCache* cache);
+  // Gets a wrapper suitable for use with tree sources.
+  AXVirtualViewWrapper* GetWrapper() const;
 
   // Handle a request from assistive technology to perform an action on this
   // virtual view. Returns true on success, but note that the success/failure is
@@ -172,11 +169,11 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
 
   // Weak. Owns us if not nullptr.
   // Either |parent_view_| or |virtual_parent_view_| should be set but not both.
-  ViewAccessibility* parent_view_ = nullptr;
+  ViewAccessibility* parent_view_;
 
   // Weak. Owns us if not nullptr.
   // Either |parent_view_| or |virtual_parent_view_| should be set but not both.
-  AXVirtualView* virtual_parent_view_ = nullptr;
+  AXVirtualView* virtual_parent_view_;
 
   // We own our children.
   std::vector<std::unique_ptr<AXVirtualView>> children_;

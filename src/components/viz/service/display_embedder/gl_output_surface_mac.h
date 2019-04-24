@@ -14,7 +14,7 @@ class GLOutputSurfaceMac : public GLOutputSurfaceBufferQueue {
  public:
   GLOutputSurfaceMac(scoped_refptr<VizProcessContextProvider> context_provider,
                      gpu::SurfaceHandle surface_handle,
-                     UpdateVSyncParametersCallback update_vsync_callback,
+                     SyntheticBeginFrameSource* synthetic_begin_frame_source,
                      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                      bool allow_overlays);
   ~GLOutputSurfaceMac() override;

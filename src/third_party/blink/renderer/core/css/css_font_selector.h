@@ -42,6 +42,10 @@ class FontDescription;
 
 class CORE_EXPORT CSSFontSelector : public FontSelector {
  public:
+  static CSSFontSelector* Create(Document* document) {
+    return MakeGarbageCollected<CSSFontSelector>(document);
+  }
+
   explicit CSSFontSelector(Document*);
   ~CSSFontSelector() override;
 

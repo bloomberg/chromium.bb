@@ -21,11 +21,7 @@
 #include "src/trace_processor/ftrace_descriptors.h"
 #include "src/trace_processor/sqlite_utils.h"
 
-#include "perfetto/trace/ftrace/binder.pbzero.h"
-#include "perfetto/trace/ftrace/clk.pbzero.h"
-#include "perfetto/trace/ftrace/ftrace.pbzero.h"
-#include "perfetto/trace/ftrace/ftrace_event.pbzero.h"
-#include "perfetto/trace/ftrace/sched.pbzero.h"
+#include "perfetto/trace/ftrace/ftrace_event.pb.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -48,7 +44,7 @@ void RawTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
 StorageSchema RawTable::CreateStorageSchema() {
   const auto& raw = storage_->raw_events();
   return StorageSchema::Builder()
-      .AddGenericNumericColumn("id", RowIdAccessor(TableId::kRawEvents))
+      .AddColumn<IdColumn>("id", TableId::kRawEvents)
       .AddOrderedNumericColumn("ts", &raw.timestamps())
       .AddStringColumn("name", &raw.name_ids(), &storage_->string_pool())
       .AddNumericColumn("cpu", &raw.cpus())
@@ -74,7 +70,7 @@ int RawTable::BestIndex(const QueryConstraints& qc, BestIndexInfo* info) {
   return SQLITE_OK;
 }
 
-void RawTable::FormatSystraceArgs(NullTermStringView event_name,
+void RawTable::FormatSystraceArgs(const std::string& event_name,
                                   ArgSetId arg_set_id,
                                   base::StringWriter* writer) {
   const auto& set_ids = storage_->args().set_ids();
@@ -111,13 +107,13 @@ void RawTable::FormatSystraceArgs(NullTermStringView event_name,
     const auto& value = args.arg_values()[arg_row];
 
     writer->AppendChar(' ');
-    writer->AppendString(key.c_str(), key.size());
+    writer->AppendString(key.c_str(), key.length());
     writer->AppendChar('=');
     value_fn(value);
   };
 
   if (event_name == "sched_switch") {
-    using SS = protos::pbzero::SchedSwitchFtraceEvent;
+    using SS = protos::SchedSwitchFtraceEvent;
     write_arg(SS::kPrevCommFieldNumber - 1, write_value);
     write_arg(SS::kPrevPidFieldNumber - 1, write_value);
     write_arg(SS::kPrevPrioFieldNumber - 1, write_value);
@@ -131,7 +127,7 @@ void RawTable::FormatSystraceArgs(NullTermStringView event_name,
     write_arg(SS::kNextPrioFieldNumber - 1, write_value);
     return;
   } else if (event_name == "sched_wakeup") {
-    using SW = protos::pbzero::SchedWakeupFtraceEvent;
+    using SW = protos::SchedWakeupFtraceEvent;
     write_arg(SW::kCommFieldNumber - 1, write_value);
     write_arg(SW::kPidFieldNumber - 1, write_value);
     write_arg(SW::kPrioFieldNumber - 1, write_value);
@@ -151,14 +147,14 @@ void RawTable::FormatSystraceArgs(NullTermStringView event_name,
     write_arg(1 /* cpu_id */, write_value);
     return;
   } else if (event_name == "clk_set_rate") {
-    using CSR = protos::pbzero::ClkSetRateFtraceEvent;
+    using CSR = protos::ClkSetRateFtraceEvent;
     writer->AppendLiteral(" ");
     write_value_at_index(CSR::kNameFieldNumber - 1, write_value);
     writer->AppendLiteral(" ");
     write_value_at_index(CSR::kRateFieldNumber - 1, write_value);
     return;
   } else if (event_name == "binder_transaction") {
-    using BT = protos::pbzero::BinderTransactionFtraceEvent;
+    using BT = protos::BinderTransactionFtraceEvent;
     writer->AppendString(" transaction=");
     write_value_at_index(BT::kDebugIdFieldNumber - 1, write_value);
     writer->AppendString(" dest_node=");
@@ -180,30 +176,29 @@ void RawTable::FormatSystraceArgs(NullTermStringView event_name,
         });
     return;
   } else if (event_name == "binder_transaction_alloc_buf") {
-    using BTAB = protos::pbzero::BinderTransactionAllocBufFtraceEvent;
+    using BTAB = protos::BinderTransactionAllocBufFtraceEvent;
     writer->AppendString(" transaction=");
     write_value_at_index(BTAB::kDebugIdFieldNumber - 1, write_value);
     write_arg(BTAB::kDataSizeFieldNumber - 1, write_value);
     write_arg(BTAB::kOffsetsSizeFieldNumber - 1, write_value);
     return;
   } else if (event_name == "binder_transaction_received") {
-    using BTR = protos::pbzero::BinderTransactionReceivedFtraceEvent;
+    using BTR = protos::BinderTransactionReceivedFtraceEvent;
     writer->AppendString(" transaction=");
     write_value_at_index(BTR::kDebugIdFieldNumber - 1, write_value);
     return;
   } else if (event_name == "print") {
-    using P = protos::pbzero::PrintFtraceEvent;
+    using P = protos::PrintFtraceEvent;
+    write_arg(P::kIpFieldNumber - 1, write_value);
+    write_arg(P::kBufFieldNumber - 1, [this, writer](const Variadic& value) {
+      const auto& str = storage_->GetString(value.string_value);
 
-    uint32_t arg_row = start_row + P::kBufFieldNumber - 1;
-    const auto& args = storage_->args();
-    const auto& value = args.arg_values()[arg_row];
-    const auto& str = storage_->GetString(value.string_value);
-    // If the last character is a newline in a print, just drop it.
-    auto chars_to_print = !str.empty() && str.c_str()[str.size() - 1] == '\n'
-                              ? str.size() - 1
-                              : str.size();
-    writer->AppendChar(' ');
-    writer->AppendString(str.c_str(), chars_to_print);
+      // If the last character is a newline in a print, just drop it.
+      auto chars_to_print = str.size() > 0 && str[str.size() - 1] == '\n'
+                                ? str.size() - 1
+                                : str.size();
+      writer->AppendString(str.c_str(), chars_to_print);
+    });
     return;
   }
 
@@ -244,11 +239,7 @@ void RawTable::ToSystrace(sqlite3_context* ctx,
 
   const auto& event_name = storage_->GetString(raw_evts.name_ids()[row]);
   writer.AppendChar(' ');
-  if (event_name == "print") {
-    writer.AppendString("tracing_mark_write");
-  } else {
-    writer.AppendString(event_name.c_str(), event_name.size());
-  }
+  writer.AppendString(event_name.c_str(), event_name.size());
   writer.AppendChar(':');
 
   FormatSystraceArgs(event_name, raw_evts.arg_set_ids()[row], &writer);

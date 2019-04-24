@@ -74,10 +74,12 @@
 
 namespace blink {
 
-enum class GlobalObjectReusePolicy;
-
 class CORE_EXPORT EmptyChromeClient : public ChromeClient {
  public:
+  static EmptyChromeClient* Create() {
+    return MakeGarbageCollected<EmptyChromeClient>();
+  }
+
   ~EmptyChromeClient() override = default;
   void ChromeDestroyed() override {}
 
@@ -96,9 +98,8 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void DidOverscroll(const FloatSize&,
                      const FloatSize&,
                      const FloatPoint&,
-                     const FloatSize&) override {}
-  void SetOverscrollBehavior(LocalFrame& frame,
-                             const cc::OverscrollBehavior&) override {}
+                     const FloatSize&,
+                     const cc::OverscrollBehavior&) override {}
 
   void BeginLifecycleUpdates() override {}
   void StartDeferringCommits(base::TimeDelta timeout) override {}
@@ -118,7 +119,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
     return false;
   }
   void AddMessageToConsole(LocalFrame*,
-                           mojom::ConsoleMessageSource,
+                           MessageSource,
                            mojom::ConsoleMessageLevel,
                            const String&,
                            unsigned,
@@ -135,7 +136,8 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   Page* CreateWindowDelegate(LocalFrame*,
                              const FrameLoadRequest&,
                              const WebWindowFeatures&,
-                             WebSandboxFlags,
+                             NavigationPolicy,
+                             SandboxFlags,
                              const FeaturePolicy::FeatureState&,
                              const SessionStorageNamespaceId&) override {
     return nullptr;
@@ -219,15 +221,6 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   void UnregisterPopupOpeningObserver(PopupOpeningObserver*) override {}
   void NotifyPopupOpeningObservers() const override {}
 
-  void FallbackCursorModeLockCursor(LocalFrame* frame,
-                                    bool left,
-                                    bool right,
-                                    bool up,
-                                    bool down) override {}
-
-  void FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
-                                             bool visible) override {}
-
   void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) override {}
 
   void InstallSupplements(LocalFrame&) override {}
@@ -235,6 +228,10 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
 class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
  public:
+  static EmptyLocalFrameClient* Create() {
+    return MakeGarbageCollected<EmptyLocalFrameClient>();
+  }
+
   EmptyLocalFrameClient() = default;
   ~EmptyLocalFrameClient() override = default;
 
@@ -260,12 +257,13 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       const ResourceResponse&) override {}
 
   void DispatchDidHandleOnloadEvents() override {}
+  void DispatchWillCommitProvisionalLoad() override {}
   void DispatchDidStartProvisionalLoad(DocumentLoader*) override {}
   void DispatchDidReceiveTitle(const String&) override {}
   void DispatchDidChangeIcons(IconType) override {}
   void DispatchDidCommitLoad(HistoryItem*,
                              WebHistoryCommitType,
-                             GlobalObjectReusePolicy) override {}
+                             WebGlobalObjectReusePolicy) override {}
   void DispatchDidFailProvisionalLoad(const ResourceError&,
                                       WebHistoryCommitType) override {}
   void DispatchDidFailLoad(const ResourceError&,
@@ -275,7 +273,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DispatchDidChangeThemeColor() override {}
 
   void BeginNavigation(const ResourceRequest&,
-                       network::mojom::RequestContextFrameType,
                        Document* origin_document,
                        DocumentLoader*,
                        WebNavigationType,
@@ -334,8 +331,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   LocalFrame* CreateFrame(const AtomicString&, HTMLFrameOwnerElement*) override;
   std::pair<RemoteFrame*, base::UnguessableToken> CreatePortal(
       HTMLPortalElement*,
-      mojom::blink::PortalAssociatedRequest) override;
-  RemoteFrame* AdoptPortal(HTMLPortalElement*) override;
+      mojom::blink::PortalRequest) override;
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement&,
                                        const KURL&,
                                        const Vector<String>&,
@@ -384,7 +380,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
     return nullptr;
   }
   std::unique_ptr<WebApplicationCacheHost> CreateApplicationCacheHost(
-      DocumentLoader*,
       WebApplicationCacheHostClient*) override;
 
   void SetTextCheckerClientForTesting(WebTextCheckClient*);
@@ -413,6 +408,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   }
 
   Frame* FindFrame(const AtomicString& name) const override;
+
+  const FeaturePolicy::FeatureState& GetOpenerFeatureState() const override;
 
  protected:
   // Not owned
@@ -446,7 +443,6 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
                 bool should_replace_current_entry,
                 bool is_opener_navigation,
                 bool prevent_sandboxed_download,
-                bool initiator_frame_is_ad,
                 mojom::blink::BlobURLTokenPtr) override {}
   unsigned BackForwardLength() override { return 0; }
   void CheckCompleted() override {}

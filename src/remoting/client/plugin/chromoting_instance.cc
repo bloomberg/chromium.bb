@@ -23,7 +23,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -225,15 +225,15 @@ bool ChromotingInstance::Init(uint32_t argc,
   // Start all the threads.
   context_.Start();
 
-  // Initialize ThreadPool. ThreadPool::StartWithDefaultParams() doesn't
+  // Initialize TaskScheduler. TaskScheduler::StartWithDefaultParams() doesn't
   // work on NACL.
-  base::ThreadPool::Create("RemotingChromeApp");
+  base::TaskScheduler::Create("RemotingChromeApp");
   // TODO(etiennep): Change this to 2 in future CL.
   constexpr int kBackgroundMaxThreads = 3;
   constexpr int kForegroundMaxThreads = 3;
   constexpr base::TimeDelta kSuggestedReclaimTime =
       base::TimeDelta::FromSeconds(30);
-  base::ThreadPool::GetInstance()->Start(
+  base::TaskScheduler::GetInstance()->Start(
       {{kBackgroundMaxThreads, kSuggestedReclaimTime},
        {kForegroundMaxThreads, kSuggestedReclaimTime}});
 

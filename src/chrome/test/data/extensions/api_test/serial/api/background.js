@@ -9,12 +9,13 @@ function shouldSkipPort(portName) {
   return portName.match(/[Bb]luetooth/);
 }
 
-var createTestArrayBuffer = function(dataLength) {
-  var buffer = new ArrayBuffer(dataLength);
+var createTestArrayBuffer = function() {
+  var bufferSize = 8;
+  var buffer = new ArrayBuffer(bufferSize);
 
   var uint8View = new Uint8Array(buffer);
-  for (var i = 0; i < dataLength; i++) {
-    uint8View[i] = (42 + i * 2) & 0xFF;  // An arbitrary pattern.
+  for (var i = 0; i < bufferSize; i++) {
+    uint8View[i] = 42 + i * 2;  // An arbitrary pattern.
   }
   return buffer;
 }
@@ -22,14 +23,13 @@ var createTestArrayBuffer = function(dataLength) {
 var testSerial = function() {
   var serialPort = null;
   var connectionId = -1;
-  var receiveTries = 20;
-  var sendBuffer = createTestArrayBuffer(8);
+  var receiveTries = 10;
+  var sendBuffer = createTestArrayBuffer();
   var sendBufferUint8View = new Uint8Array(sendBuffer);
   var bufferLength = sendBufferUint8View.length;
   var receiveBuffer = new ArrayBuffer(bufferLength);
   var receiveBufferUint8View = new Uint8Array(receiveBuffer);
   var bytesToReceive = bufferLength;
-  var has_read_error = false;
 
   var operation = 0;
   var doNextOperation = function() {
@@ -63,18 +63,9 @@ var testSerial = function() {
         serial.send(connectionId, sendBuffer, onSend);
         break;
       case 7:
-        sendBuffer = createTestArrayBuffer(16 * 1024);
-        sendBufferUint8View = new Uint8Array(sendBuffer);
-        bufferLength = sendBufferUint8View.length;
-        receiveBuffer = new ArrayBuffer(bufferLength);
-        receiveBufferUint8View = new Uint8Array(receiveBuffer);
-        bytesToReceive = bufferLength;
-        serial.send(connectionId, sendBuffer, onSend);
-        break;
-      case 8:
         serial.disconnect(connectionId, onDisconnect);
         break;
-      case 9:
+      case 8:
         serial.getConnections(onGetConnectionsEmpty);
         break;
       default:
@@ -120,9 +111,7 @@ var testSerial = function() {
     if (bytesToReceive == 0) {
       chrome.test.assertEq(sendBufferUint8View, receiveBufferUint8View,
                            'Buffer received was not equal to buffer sent.');
-      if (!has_read_error) {
-        doNextOperation();
-      }
+      doNextOperation();
     } else if (--receiveTries <= 0) {
       chrome.test.fail('receive() failed to return requested number of bytes.');
     }
@@ -131,7 +120,6 @@ var testSerial = function() {
   var onReceiveError = function(errorInfo) {
     chrome.test.assertEq(connectionId, errorInfo.connectionId,
                          "Unmatch connectionId for ReceiveError");
-    has_read_error = true;
     if (errorInfo.error == "parity_error") {
       serial.getInfo(connectionId, onGetInfoToReconnect);
     } else {
@@ -152,8 +140,6 @@ var testSerial = function() {
     if (connectionInfo.paused != false) {
       chrome.test.fail('Failed to reconnect on read error.');
     }
-    has_read_error = false;
-    doNextOperation();
   };
 
   var onSend = function(sendInfo) {

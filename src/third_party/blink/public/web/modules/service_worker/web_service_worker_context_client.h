@@ -163,7 +163,7 @@ class WebServiceWorkerContextClient {
                                const WebString& source_url) {}
 
   // Called when a console message was written.
-  virtual void ReportConsoleMessage(blink::mojom::ConsoleMessageSource source,
+  virtual void ReportConsoleMessage(int source,
                                     blink::mojom::ConsoleMessageLevel level,
                                     const WebString& message,
                                     int line_number,

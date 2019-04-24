@@ -121,7 +121,7 @@ class BreakLocation {
   friend class BreakIterator;
 };
 
-class V8_EXPORT_PRIVATE BreakIterator {
+class BreakIterator {
  public:
   explicit BreakIterator(Handle<DebugInfo> debug_info);
 
@@ -207,7 +207,7 @@ class DebugFeatureTracker {
 // active breakpoints in them. This debug info is held in the heap root object
 // debug_info which is a FixedArray. Each entry in this list is of class
 // DebugInfo.
-class V8_EXPORT_PRIVATE Debug {
+class Debug {
  public:
   // Debug event triggers.
   void OnDebugBreak(Handle<FixedArray> break_points_hit);
@@ -449,7 +449,7 @@ class V8_EXPORT_PRIVATE Debug {
   void ClearAllDebuggerHints();
 
   // Wraps logic for clearing and maybe freeing all debug infos.
-  using DebugInfoClearFunction = std::function<void(Handle<DebugInfo>)>;
+  typedef std::function<void(Handle<DebugInfo>)> DebugInfoClearFunction;
   void ClearAllDebugInfos(const DebugInfoClearFunction& clear_function);
 
   void FindDebugInfo(Handle<DebugInfo> debug_info, DebugInfoListNode** prev,

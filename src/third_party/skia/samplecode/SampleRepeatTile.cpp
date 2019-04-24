@@ -31,11 +31,11 @@ static void make_bitmap(SkBitmap* bm) {
     canvas.drawLine(0, 0, SkIntToScalar(W), 0, paint);
 }
 
-static void make_paint(SkPaint* paint, SkTileMode tm) {
+static void make_paint(SkPaint* paint, SkShader::TileMode tm) {
     SkBitmap bm;
     make_bitmap(&bm);
 
-    paint->setShader(bm.makeShader(tm, tm));
+    paint->setShader(SkShader::MakeBitmapShader(bm, tm, tm));
 }
 
 class RepeatTileView : public Sample {
@@ -55,7 +55,7 @@ protected:
 
     void onDrawContent(SkCanvas* canvas) override {
         SkPaint paint;
-        make_paint(&paint, SkTileMode::kRepeat);
+        make_paint(&paint, SkShader::kRepeat_TileMode);
 
 //        canvas->scale(SK_Scalar1*2, SK_Scalar1);
         canvas->translate(SkIntToScalar(100), SkIntToScalar(100));

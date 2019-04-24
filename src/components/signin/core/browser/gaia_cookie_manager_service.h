@@ -69,7 +69,8 @@ struct MultiloginParameters {
 // Also checks the External CC result to ensure no services that consume the
 // GAIA cookie are blocked (such as youtube). This is executed once for the
 // lifetime of this object, when the first call is made to AddAccountToCookie.
-class GaiaCookieManagerService : public GaiaAuthConsumer,
+class GaiaCookieManagerService : public KeyedService,
+                                 public GaiaAuthConsumer,
                                  public network::mojom::CookieChangeListener,
                                  public OAuth2TokenService::Consumer {
  public:
@@ -244,7 +245,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   ~GaiaCookieManagerService() override;
 
   void InitCookieListener();
-  void Shutdown();
+  void Shutdown() override;
 
   void AddAccountToCookie(
       const std::string& account_id,
@@ -372,7 +373,7 @@ class GaiaCookieManagerService : public GaiaAuthConsumer,
   // Callback for CookieManager::SetCanonicalCookie.
   void OnCookieSet(const std::string& cookie_name,
                    const std::string& cookie_domain,
-                   net::CanonicalCookie::CookieInclusionStatus status);
+                   bool success);
 
   // Final call in the Setting accounts in cookie procedure. Virtual for testing
   // purposes.

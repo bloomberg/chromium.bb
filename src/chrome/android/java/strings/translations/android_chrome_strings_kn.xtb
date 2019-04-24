@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
 <translation id="1006017844123154345">ಆನ್‌ಲೈನ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
+<translation id="1023450834687746199">ನೀವು <ph name="APP_NAME" />ಸಲುವಾಗಿನ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿದ್ದೀರಿ.</translation>
 <translation id="1036727731225946849"><ph name="WEBAPK_NAME" /> ಅನ್ನು ಸೇರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1041308826830691739">ವೆಬ್‌ಸೈಟ್‌ಗಳ ಮೂಲಕ</translation>
 <translation id="1049743911850919806">ಅದೃಶ್ಯ</translation>
@@ -82,6 +83,7 @@
 <translation id="1553358976309200471">Chrome ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
 <translation id="1569387923882100876">ಸಂಪರ್ಕಿಸಲಾದ ಸಾಧನ</translation>
 <translation id="1571304935088121812">ಬಳಕೆದಾರಹೆಸರು ನಕಲಿಸಿ</translation>
+<translation id="1576370611341449972">ವೈ-ಫೈ ಲಭ್ಯವಿದ್ದಾಗ ಮಾತ್ರ ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತದೆ</translation>
 <translation id="1612196535745283361">ಸಾಧನಗಳನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಲು Chrome ಗೆ ಸ್ಥಳ ಪ್ರವೇಶ ಅಗತ್ಯವಿದೆ. ಸ್ಥಳ ಪ್ರವೇಶವನ್ನು <ph name="BEGIN_LINK" />
 ಈ ಸಾಧನಕ್ಕೆ ಆಫ್ ಮಾಡಲಾಗಿದೆ<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">ಕ್ಯಾಮರಾ</translation>
@@ -118,9 +120,9 @@
 <translation id="1883903952484604915">ನನ್ನ ಫೈಲ್‌ಗಳು</translation>
 <translation id="1887786770086287077">ಈ ಸಾಧನದ ಸ್ಥಳ ಪ್ರವೇಶ ಆಫ್ ಆಗಿದೆ. ಅದನ್ನು <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಆನ್ ಮಾಡಿ.</translation>
 <translation id="1891331835972267886"><ph name="APP_NAME" /> Chrome ನಲ್ಲಿ ತೆರೆಯುತ್ತದೆ. ಮುಂದುವರಿಸುವ ಮೂಲಕ, ನೀವು Chrome ನ <ph name="BEGIN_LINK1" />ಸೇವಾ ನಿಯಮಗಳು<ph name="END_LINK1" /> ಮತ್ತು <ph name="BEGIN_LINK2" />ಗೌಪ್ಯತಾ ಸೂಚನೆ<ph name="END_LINK2" /> ಗೆ ಒಪ್ಪುತ್ತಿರುವಿರಿ.</translation>
+<translation id="189172778771606813">ನ್ಯಾವಿಗೇಶನ್ ಡ್ರಾಯರ್ ಮುಚ್ಚಿರಿ</translation>
 <translation id="1919345977826869612">ಜಾಹೀರಾತುಗಳು</translation>
 <translation id="1919950603503897840">ಸಂಪರ್ಕಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ</translation>
-<translation id="1922076542920281912">Chrome ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ಪ್ರವೇಶಿಸುವುದಕ್ಕೆ ಅನುಮತಿಸಲು, <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಸ್ಥಳವನ್ನು ಕೂಡ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="1923695749281512248"><ph name="FILE_SIZE_WITH_UNITS" /> ರಲ್ಲಿ <ph name="BYTES_DOWNLOADED_WITH_UNITS" /> ಡೌನ್‌ಲೋಡ್ ಆಗಿದೆ</translation>
 <translation id="19288952978244135">Chrome ಮರುತೆರೆಯಿರಿ.</translation>
 <translation id="1933845786846280168">ಟ್ಯಾಬ್ ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
@@ -146,11 +148,9 @@
 <translation id="2018707881002649255">ನೀವು ಕೆಳಗೆ ಆಯ್ಕೆ ಮಾಡುವ ಸಂಪರ್ಕಗಳನ್ನು <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ವೆಬ್‌ಸೈಟ್‌ ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತದೆ.</translation>
 <translation id="2021896219286479412">ಪೂರ್ಣ ಪರದೆ ಸೈಟ್ ನಿಯಂತ್ರಣಗಳು</translation>
 <translation id="2038563949887743358">ಡೆಸ್ಕ್‌ಟಾಪ್ ಸೈಟ್ ವಿನಂತಿಯನ್ನು ಆನ್ ಮಾಡಿ</translation>
-<translation id="2041019821020695769">Chrome ನಿಮಗೆ ಅಧಿಸೂಚನೆಗಳನ್ನು ಕಳುಹಿಸುವುದಕ್ಕೆ ಅನುಮತಿಸಲು, <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಅಧಿಸೂಚನೆಗಳನ್ನು ಕೂಡ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" />ಆ್ಯಪ್‌ನ ಡೇಟಾವು Chrome ನಲ್ಲಿಯೂ ಇದೆ</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> GB ಇತರ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">ಫೈಲ್‌ನ ವಿಸ್ತರಣೆಯನ್ನು ಬದಲಿಸಿದರೆ, ಅದು ಅನಿರೀಕ್ಷಿತ ವರ್ತನೆಗೆ ಕಾರಣವಾಗಬಹುದು ಅಥವಾ ನಿಮ್ಮ ಸಾಧನಕ್ಕೆ ಹಾನಿ ಮಾಡಬಹುದು.</translation>
 <translation id="2056878612599315956">ಸೈಟ್ ಅನ್ನು ಅಮಾನತುಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="2063713494490388661">ಹುಡುಕಲು ಟ್ಯಾಪ್‌ ಮಾಡಿ</translation>
 <translation id="2079545284768500474">ರದ್ದುಮಾಡಿ</translation>
@@ -217,7 +217,6 @@
 <translation id="2536728043171574184">ಈ ಪುಟದ ಆಫ್‌ಲೈನ್ ನಕಲನ್ನು ವೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2546283357679194313">ಕುಕೀಗಳು ಮತ್ತು ಸೈಟ್ ಡೇಟಾ</translation>
 <translation id="2567385386134582609">ಚಿತ್ರ</translation>
-<translation id="257088987046510401">ಥೀಮ್‌ಗಳು</translation>
 <translation id="2570922361219980984">ಈ ಸಾಧನದ ಸ್ಥಳ ಪ್ರವೇಶ ಸಹ ಆಫ್ ಆಗಿದೆ. ಅದನ್ನು <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಆನ್ ಮಾಡಿ.</translation>
 <translation id="257931822824936280">ವಿಸ್ತರಿಸಲಾಗಿದೆ - ಕುಗ್ಗಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="2581165646603367611">ಇದು ಕುಕೀಗಳು, ಸಂಗ್ರಹ ಮತ್ತು ಪ್ರಮುಖವಲ್ಲವೆಂದು Chrome ಭಾವಿಸುವ ಸೈಟ್‌ಗಳ ಇತರ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸುತ್ತದೆ.</translation>
@@ -243,15 +242,17 @@
 <translation id="271033894570825754">ಹೊಸತು</translation>
 <translation id="2728754400939377704">ಸೈಟ್ ಪ್ರಕಾರ ವಿಂಗಡಿಸಿ</translation>
 <translation id="2744248271121720757">ತತ್‌ಕ್ಷಣ ಹುಡುಕಲು ಅಥವಾ ಸಂಬಂಧಿತ ಕ್ರಿಯೆಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಪದವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
+<translation id="2760323196215778921">Chrome ಗಾಗಿ ನೀವು ಈ ಅನುಮತಿಯನ್ನು ಸಹ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ. ವಿವರಗಳಿಗಾಗಿ <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು<ph name="END_LINK" /> ವೀಕ್ಷಿಸಿ.</translation>
 <translation id="2762000892062317888">ಈಗತಾನೇ</translation>
 <translation id="2777555524387840389"><ph name="SECONDS" /> ಸೆಕೆಂಡುಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="2779651927720337254">ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="2781151931089541271">1 ಸೆಕೆಂಡು ಉಳಿದಿದೆ</translation>
+<translation id="2784212955220061919">ಲೈಟ್ ಮೋಡ್‍ನಲ್ಲಿ, Chrome ವೇಗವಾಗಿ ಪುಟಗಳನ್ನು ಲೋಡ್ ಮಾಡುತ್ತದೆ, ಮತ್ತು ಡೇಟಾವನ್ನು ಸುಮಾರು ಶೇಕಡಾ 60 ರಷ್ಟು ಕಡಿಮೆ ಬಳಸುತ್ತದೆ. Google ನ ಕ್ಲೌಡ್ ತಂತ್ರಜ್ಞಾನವು, ನೀವು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳನ್ನು ಆಪ್ಟಿಮೈಸ್ ಮಾಡುತ್ತದೆ.</translation>
+<translation id="2785336755839207516">ನೀವು <ph name="APP_NAME" />ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿದ್ದೀರಿ.</translation>
 <translation id="2803478378562657435">ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಮತ್ತು ಪಾಸ್‌ವರ್ಡ್ ಆಯ್ಕೆಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2810645512293415242">ಡೇಟಾ ಉಳಿಸಲು ಮತ್ತು ವೇಗವಾಗಿ ಲೋಡ್ ಮಾಡಲು ಪುಟವನ್ನು ಸರಳೀಕೃತಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="281504910091592009">ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ನಿಮ್ಮ <ph name="BEGIN_LINK" />Google ಖಾತೆಯಲ್ಲಿ<ph name="END_LINK" /> ವೀಕ್ಷಿಸಿ ಮತ್ತು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="2818669890320396765">ನಿಮ್ಮ ಎಲ್ಲಾ ಸಾಧನಗಳಲ್ಲಿ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು, ಸೈನ್ ಇನ್ ಮಾಡಿ ಮತ್ತು ಸಿಂಕ್ ಆನ್ ಮಾಡಿ</translation>
-<translation id="2822354292072154809">ನೀವು <ph name="CHOSEN_OBJECT_NAME" /> ಗಾಗಿ ಎಲ್ಲಾ ಸೈಟ್ ಅನುಮತಿಗಳನ್ನು ಖಚಿತವಾಗಿಯೂ ಮರುಹೊಂದಿಸಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="2836148919159985482">ಪೂರ್ಣಪರದೆಯನ್ನು ನಿರ್ಗಮಿಸಲು ಹಿಂದೆ ಬಟನ್ ಸ್ಪರ್ಶಿಸಿ.</translation>
 <translation id="2842985007712546952">ಮೂಲ ಫೋಲ್ಡರ್‌</translation>
 <translation id="2845873210977809562">ತೆರೆದಿರುವ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚಲಾಗಿದೆ</translation>
@@ -266,9 +267,10 @@
 <translation id="290376772003165898"><ph name="LANGUAGE" /> ನಲ್ಲಿನ ಪುಟ ಇಲ್ಲವೇ?</translation>
 <translation id="2910701580606108292">ಸಂರಕ್ಷಿತ ವಿಷಯವನ್ನು ಪ್ಲೇ ಮಾಡಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿಸುವ ಮೊದಲು ಕೇಳಿ</translation>
 <translation id="2913331724188855103">ಕುಕೀ ಡೇಟಾವನ್ನು ಉಳಿಸಲು ಮತ್ತು ರೀಡ್ ಮಾಡಲು ಸೈಟ್‌ಗಳನ್ನು ಅನುಮತಿಸಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
-<translation id="2923908459366352541">ಹೆಸರು ಅಮಾನ್ಯವಾಗಿದೆ</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> ಸಂಗ್ರಹಣೆ</translation>
+<translation id="2941880727166628951">ನನ್ನ ಸಾಧನಗಳಿಗೆ ಕಳುಹಿಸಿ</translation>
 <translation id="2956410042958133412">ಈ ಖಾತೆಯನ್ನು <ph name="PARENT_NAME_1" /> ಮತ್ತು <ph name="PARENT_NAME_2" /> ಅವರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ.</translation>
+<translation id="2960796085439532066">ಹಕ್ಕುಸ್ವಾಮ್ಯ <ph name="YEAR" /> Google Inc. ಎಲ್ಲಾ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.</translation>
 <translation id="2962095958535813455">ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ಗಳಿಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ</translation>
 <translation id="2968755619301702150">ಪ್ರಮಾಣಪತ್ರ ವೀಕ್ಷಕ</translation>
 <translation id="2979025552038692506">ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
@@ -362,20 +364,20 @@
 <translation id="3712575778697986964">ಡೇಟಾ ಉಳಿಸುವಿಕೆಯನ್ನು ಮರುಹೊಂದಿಸಬೇಕೇ?</translation>
 <translation id="3714981814255182093">ಹುಡುಕು ಪಟ್ಟಿಯನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="3716182511346448902">ಈ ಪುಟವು ಅತಿ ಹೆಚ್ಚು ಮೆಮೊರಿಯನ್ನು ಬಳಸಿಕೊಳ್ಳುತ್ತದೆ, ಆದ್ದರಿಂದ Chrome ಇದನ್ನು ವಿರಾಮಗೊಳಿಸಿದೆ.</translation>
-<translation id="3730075448226062617">Chrome ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್‌ಗೆ ಪ್ರವೇಶಿಸುವುದಕ್ಕೆ ಅನುಮತಿಸಲು, <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಮೈಕ್ರೋಫೋನ್ ಅನ್ನು ಕೂಡ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> ನಲ್ಲಿ ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> MB ಇತರ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="3744111561329211289">ಹಿನ್ನೆಲೆ ಸಿಂಕ್</translation>
 <translation id="3745176700485982507">ಈ ಪುಟದಲ್ಲಿ ನಿಮ್ಮ ಮೆಚ್ಚಿನ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಗೆ ಲಿಂಕ್‌ಗಳನ್ನು ಕಾಣಬಹುದು.</translation>
 <translation id="3771001275138982843">ಅಪ್‌ಡೇಟ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="3773755127849930740">ಜೋಡಿಸುವಿಕೆ ಅನುಮತಿಸಲು <ph name="BEGIN_LINK" />ಬ್ಲೂಟೂತ್ ಆನ್ ಮಾಡಿ<ph name="END_LINK" /></translation>
-<translation id="3775705724665058594">ನಿಮ್ಮ ಸಾಧನಗಳಿಗೆ ಕಳುಹಿಸಿ</translation>
 <translation id="3778956594442850293">ಮುಖಪುಟದ ಪರದೆಗೆ ಸೇರಿಸಲಾಗಿದೆ</translation>
 <translation id="3781011235031427080">ಇಂತಹ ಇನ್ನಷ್ಟು ಶೀಟ್ ಅನ್ನು ಅರ್ಧದಷ್ಟು ಎತ್ತರದಲ್ಲಿ ತೆರೆಯಲಾಗಿದೆ</translation>
 <translation id="3789841737615482174">ಸ್ಥಾಪಿಸು</translation>
 <translation id="3810838688059735925">ವೀಡಿಯೊ</translation>
 <translation id="3810973564298564668">ನಿರ್ವಹಿಸು</translation>
+<translation id="3814315701645566481">ನೀವು <ph name="URL" /> ನ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲು ಬಯಸುವಿರಾ?</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ಡೌನ್‌ಲೋಡ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗಿದೆ</translation>
+<translation id="3819562311292413223">ನಿಮಗಾಗಿ ಲೇಖನಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="3822502789641063741">ಸೈಟ್ ಸಂಗ್ರಹಣೆ ತೆರವುಗೊಳಿಸುವುದೇ?</translation>
 <translation id="385051799172605136">ಹಿಂದೆ</translation>
 <translation id="3859306556332390985">ಮುಂದಕ್ಕೆ ಸೀಕ್ ಮಾಡಿ</translation>
@@ -484,7 +486,6 @@
 <translation id="4634124774493850572">ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ</translation>
 <translation id="4645575059429386691">ನಿಮ್ಮ ಪೋಷಕರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ</translation>
 <translation id="4648718555153979859">ನಿಮ್ಮ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಇಲ್ಲಿ ಒಟ್ಟಿಗೆ ಸಮೂಹಗೊಳಿಸಲಾಗಿದೆ</translation>
-<translation id="4650364565596261010">ಸಿಸ್ಟಂ ಡಿಫಾಲ್ಟ್</translation>
 <translation id="4660011489602794167">ಕೀಬೋರ್ಡ್ ತೋರಿಸಿ</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಅಳಿಸಲಾಗಿದೆ</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ಅನ್ನು ನಿಮ್ಮ ಮುಖಪುಟ ಪರದೆಗೆ ಸೇರಿಸಲಾಗಿದೆ</translation>
@@ -524,7 +525,6 @@
 <translation id="488187801263602086">ಫೈಲ್‌ ಮರುಹೆಸರಿಸಿ</translation>
 <translation id="4882831918239250449">ಹುಡುಕಾಟ, ಜಾಹೀರಾತುಗಳು ಮತ್ತು ಇನ್ನೂ ಹೆಚ್ಚಿನವುಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸಲು ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು ಹೇಗೆ ಬಳಸಲಾಗಿದೆ ಎಂಬುದನ್ನು ನಿಯಂತ್ರಿಸಿ</translation>
 <translation id="4883379392681899581">ಖಾಸಗಿ ಮೋಡ್‌ನಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
-<translation id="4883854917563148705">ನಿರ್ವಹಿಸಲಾಗುವ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಮರುಹೊಂದಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="4885273946141277891">ಬೆಂಬಲಿಸದಿರುವ Chrome ನಿದರ್ಶನಗಳ ಸಂಖ್ಯೆ.</translation>
 <translation id="4910889077668685004">ಪಾವತಿ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
 <translation id="4913161338056004800">ಅಂಕಿ ಅಂಶಗಳನ್ನು ಮರುಹೊಂದಿಸಿ</translation>
@@ -536,8 +536,6 @@
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ನಿಮ್ಮ ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳುತ್ತಿದೆ</translation>
 <translation id="4961107849584082341">ಈ ಪುಟವನ್ನು ಯಾವ ಭಾಷೆಗಾದರೂ ಅನುವಾದಿಸಿ</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" /> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾದ ಖಾತೆಯಿಂದ ನೀವು ಸೈನ್ ಔಟ್ ಮಾಡುತ್ತಿರುವಿರಿ. ಇದು ಈ ಸಾಧನದಿಂದ ನಿಮ್ಮ Chrome ಡೇಟಾವನ್ನು ಅಳಿಸುತ್ತದೆ, ಆದರೆ ನಿಮ್ಮ ಡೇಟಾ ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿಯೇ ಇರುತ್ತದೆ.</translation>
-<translation id="4962975101802056554">ಸಾಧನಕ್ಕೆ ನೀಡಿರುವ ಎಲ್ಲಾ ಅನುಮತಿಗಳನ್ನು ಹಿಂಪಡೆಯಿರಿ</translation>
-<translation id="4970824347203572753">ನಿಮ್ಮ ಸ್ಥಳದಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="497421865427891073">ಮುಂದಕ್ಕೆ ಹೋಗು</translation>
 <translation id="4988210275050210843">ಫೈಲ್ ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">ಪುಟಗಳು</translation>
@@ -565,6 +563,7 @@
 <translation id="5152843274749979095">ಯಾವುದೇ ಬೆಂಬಲಿತ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಸ್ಥಾಪಿಸಲಾಗಿಲ್ಲ</translation>
 <translation id="5161254044473106830">ಶೀರ್ಷಿಕೆ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{1 ಡೌನ್‌ಲೋಡ್‌ ವಿಫಲವಾಗಿದೆ.}one{# ಡೌನ್‌ಲೋಡ್‌ಗಳು ವಿಫಲವಾಗಿವೆ.}other{# ಡೌನ್‌ಲೋಡ್‌ಗಳು ವಿಫಲವಾಗಿವೆ.}}</translation>
+<translation id="5168917394043976756">ನ್ಯಾವಿಗೇಶನ್ ಡ್ರಾಯರ್ ತೆರೆಯಿರಿ</translation>
 <translation id="5184329579814168207">Chrome ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="5199929503336119739">ಕೆಲಸದ ಪ್ರೊಫೈಲ್</translation>
 <translation id="5210286577605176222">ಹಿಂದಿನ ಟ್ಯಾಬ್‌ಗೆ ಹೋಗಿ</translation>
@@ -606,7 +605,6 @@
 <translation id="5487521232677179737">ಡೇಟಾ ತೆರವುಗೊಳಿಸು</translation>
 <translation id="5494752089476963479">ಅನಪೇಕ್ಷಿತ ಅಥವಾ ತಪ್ಪುದಾರಿಗೆಳೆಯುವ ಜಾಹೀರಾತುಗಳನ್ನು ತೋರಿಸುವ ಸೈಟ್‌ಗಳಲ್ಲಿ ಜಾಹೀರಾತುಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="5497272504048921382">ತೆರೆದಿರುವ ಟ್ಯಾಬ್‌ಗಳು</translation>
-<translation id="5500777121964041360">ನಿಮ್ಮ ಸ್ಥಳದಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲದಿರಬಹುದು</translation>
 <translation id="550684401320795253">Chrome ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="5512137114520586844">ಈ ಖಾತೆಯನ್ನು <ph name="PARENT_NAME" /> ಅವರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ.</translation>
 <translation id="5514904542973294328">ಈ ಸಾಧನದ ನಿರ್ವಾಹಕರಿಂದ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
@@ -675,7 +673,6 @@
 <translation id="5937580074298050696"><ph name="AMOUNT" /> ಉಳಿಸಲಾಗಿದೆ</translation>
 <translation id="5939518447894949180">ಮರುಹೊಂದಿಸು</translation>
 <translation id="5942872142862698679">ಹುಡುಕಲು Google ಬಳಸಲಾಗುತ್ತಿದೆ</translation>
-<translation id="5944669582486359588">ಲೈಟ್ ಮೋಡ್‍ನಲ್ಲಿ, Chrome ವೇಗವಾಗಿ ಪುಟಗಳನ್ನು ಲೋಡ್ ಮಾಡುತ್ತದೆ, ಮತ್ತು ಸಾಮಾನ್ಯಕ್ಕಿಂತ ಶೇಕಡಾ 60 ರಷ್ಟು ಕಡಿಮೆ ಡೇಟಾವನ್ನು ಬಳಸುತ್ತದೆ. Google ನ ಕ್ಲೌಡ್ ತಂತ್ರಜ್ಞಾನವು, ನೀವು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳನ್ನು ಆಪ್ಟಿಮೈಸ್ ಮಾಡುತ್ತದೆ.</translation>
 <translation id="5952764234151283551">ನೀವು ಸಂಪರ್ಕಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರುವ ಪುಟದ URL ಅನ್ನು Google ಗೆ ಕಳುಹಿಸುತ್ತದೆ</translation>
 <translation id="5956665950594638604">ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ Chrome ಸಹಾಯ ಕೇಂದ್ರ ತೆರೆಯಿರಿ</translation>
 <translation id="5958275228015807058">ಡೌನ್‌ಲೋಡ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಫೈಲ್‌ಗಳು ಮತ್ತು ಪುಟಗಳನ್ನು ಹುಡುಕಿ</translation>
@@ -706,7 +703,6 @@
 <translation id="618993374665929060">ಇಂತಹ ಇನ್ನಷ್ಟು ಶೀಟ್ ಅನ್ನು ಪೂರ್ಣ ಎತ್ತರದಲ್ಲಿ ತೆರೆಯಲಾಗಿದೆ</translation>
 <translation id="6192333916571137726">ಫೈಲ್‌ ಅನ್ನು ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಿ</translation>
 <translation id="6192792657125177640">ವಿನಾಯಿತಿಗಳು</translation>
-<translation id="6194112207524046168">Chrome ನಿಮ್ಮ ಕ್ಯಾಮರಾವನ್ನು ಪ್ರವೇಶಿಸುವುದಕ್ಕೆ ಅನುಮತಿಸಲು, <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಕ್ಯಾಮರಾವನ್ನು ಕೂಡ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="6196640612572343990">ಥರ್ಡ್ ಪಾರ್ಟಿ ಕುಕೀಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="6206551242102657620">ಸಂಪರ್ಕ ಸುರಕ್ಷಿತವಾಗಿದೆ. ಸೈಟ್ ಮಾಹಿತಿ</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ಅಲ್ಲವೇ?</translation>
@@ -836,6 +832,7 @@
 <translation id="7031882061095297553">ಇದಕ್ಕೆ ಸಿಂಕ್ ಮಾಡಿ</translation>
 <translation id="7032663816368481562">ನೀವು ವಿಳಾಸ ಪಟ್ಟಿಯಲ್ಲಿ 'ಇಂತಹುದೇ ಇನ್ನಷ್ಟು' <ph name="ICON" /> ಎಂಬ ಬಟನ್ ಅನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿದಾಗ, ಸಂಬಂಧಿತ ಪುಟಗಳಿಗೆ ತ್ವರಿತ ಲಿಂಕ್‌ಗಳನ್ನು ತೋರಿಸುತ್ತದೆ. ನೀವು ಭೇಟಿ ನೀಡುವ ಪುಟಗಳ URLಗಳನ್ನು Google ಗೆ ಕಳುಹಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="7034608350006174882">Google Pay ಬಳಸುವ ಕಾರ್ಡ್‌ಗಳು ಮತ್ತು ವಿಳಾಸಗಳು</translation>
+<translation id="7037082443972906537">ಹೆಸರು ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="7053983685419859001">ನಿರ್ಬಂಧಿಸು</translation>
 <translation id="7055152154916055070">ಮರುನಿರ್ದೇಶಿಸುವಿಕೆಯನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ:</translation>
 <translation id="7062545763355031412">ಸಮ್ಮತಿಸಿ ಮತ್ತು ಖಾತೆಗಳನ್ನು ಬದಲಾಯಿಸಿ</translation>
@@ -861,7 +858,6 @@
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ಅನ್ನು ಆಯ್ಕೆಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7253272406652746122">ನಿಮ್ಮ ಸಾಧನದ ಸೆಟ್ಟಿಂಗ್‌‌ಗಳ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ಖಾತೆಗಳ ಪುಟದಿಂದ Google ಖಾತೆಯನ್ನು ಸೇರಿಸಿ.</translation>
 <translation id="7274013316676448362">ನಿರ್ಬಂಧಿಸಿರುವ ಸೈಟ್</translation>
-<translation id="7290209999329137901">ಮರುಹೆಸರಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ</translation>
 <translation id="7291387454912369099">ಅಸಿಸ್ಟೆಂಟ್ ಟ್ರಿಗರ್ ಮಾಡಿದ ಚೆಕ್ಔಟ್</translation>
 <translation id="729975465115245577">ನಿಮ್ಮ ಸಾಧನವು ಪಾಸ್‌ವರ್ಡ್‌ ಫೈಲ್ ಅನ್ನು ಸಂಗ್ರಹಿಸಿಡಲು ಅಪ್ಲಿಕೇಶನ್‌ ಅನ್ನು ಹೊಂದಿಲ್ಲ.</translation>
 <translation id="7302081693174882195">ವಿವರಗಳು: ಉಳಿಸಿದ ಡೇಟಾ ಪ್ರಮಾಣದ ಆಧಾರದಲ್ಲಿ ವಿಂಗಡಿಸಲಾಗಿದೆ</translation>
@@ -892,7 +888,6 @@
 <translation id="7475688122056506577">SD ಕಾರ್ಡ್ ಕಂಡುಬಂದಿಲ್ಲ. ನಿಮ್ಮ ಕೆಲವು ಫೈಲ್‌ಗಳು ಕಾಣೆಯಾಗಿರಬಹುದು.</translation>
 <translation id="7479104141328977413">ಟ್ಯಾಬ್ ನಿರ್ವಹಣೆ</translation>
 <translation id="7481312909269577407">ಫಾರ್ವರ್ಡ್</translation>
-<translation id="7482697587265222445">ಟ್ಯಾಬ್ ಅನ್ನು ನಿಮ್ಮ ಸಾಧನಗಳಿಗೆ ಕಳುಹಿಸಲಾಗಿದೆ</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (<ph name="TIME_SINCE_UPDATE" /> ಅಪ್‌ಡೇಟ್‌ ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="7494879913343971937">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="7494974237137038751">ಉಳಿತಾಯವಾದ ಡೇಟಾ</translation>
@@ -933,7 +928,6 @@
 <translation id="7765158879357617694">ಸರಿಸು</translation>
 <translation id="7769602470925380267">ಸಮ್ಮತಿಸಿ ಮತ್ತು ಸೈನ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="7772032839648071052">ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ದೃಢೀಕರಿಸಿ</translation>
-<translation id="7772375229873196092"><ph name="APP_NAME" /> ಅನ್ನು ಮುಚ್ಚಿ</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ಮತ್ತು ಇನ್ನೂ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ಮತ್ತು ಇನ್ನೂ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 ಮತ್ತು ಇನ್ನೂ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7781829728241885113">ನಿನ್ನೆ</translation>
 <translation id="7791543448312431591">ಸೇರಿಸು</translation>
@@ -941,7 +935,6 @@
 <translation id="7810647596859435254">ಇದರೊಂದಿಗೆ ತೆರೆಯಿರಿ...</translation>
 <translation id="7821588508402923572">ನಿಮ್ಮ ಡೇಟಾ ಉಳಿತಾಯಗಳು ಇಲ್ಲಿ ಕಾಣಿಸಿಕೊಳ್ಳುತ್ತವೆ</translation>
 <translation id="7837721118676387834">ನಿರ್ದಿಷ್ಟ ಸೈಟ್‌ಗೆ ಮ್ಯೂಟ್ ಮಾಡಲಾದ ವೀಡಿಯೊಗಳ ಸ್ವಯಂಪ್ಲೇ ಅನುಮತಿಸಿ.</translation>
-<translation id="7838340937077326045">ನೀವು ಖಂಡಿತವಾಗಿಯೂ ಫೈಲ್ ವಿಸ್ತರಣೆಯನ್ನು ಬದಲಾಯಿಸಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="7846076177841592234">ಆಯ್ಕೆ ರದ್ದುಮಾಡಿ</translation>
 <translation id="784934925303690534">ಸಮಯ ವ್ಯಾಪ್ತಿ</translation>
 <translation id="7851858861565204677">ಇತರ ಸಾಧನಗಳು</translation>
@@ -973,6 +966,7 @@
 <translation id="8037750541064988519"><ph name="DAYS" /> ದಿನಗಳು ಉಳಿದಿವೆ</translation>
 <translation id="804335162455518893">SD ಕಾರ್ಡ್ ಕಂಡುಬಂದಿಲ್ಲ</translation>
 <translation id="805047784848435650">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸದ ಆಧಾರಿಸಿ</translation>
+<translation id="8051303708327298699">Chrome ಗಾಗಿ ನೀವು ಈ ಅನುಮತಿಗಳನ್ನು ಸಹ ಆನ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ. ವಿವರಗಳಿಗಾಗಿ <ph name="BEGIN_LINK" />Android ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು<ph name="END_LINK" /> ವೀಕ್ಷಿಸಿ.</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB  ಲಭ್ಯವಿದೆ</translation>
 <translation id="8058746566562539958">ಹೊಸ Chrome ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="8063895661287329888">ಬುಕ್‌ಮಾರ್ಕ್‌ ಸೇರಿಸಲು ವಿಫಲವಾಗಿದೆ.</translation>
@@ -996,7 +990,6 @@
 <translation id="8200772114523450471">ಪುನರಾರಂಭಿಸು</translation>
 <translation id="8209050860603202033">ಚಿತ್ರವನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB ಡೌನ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="8224471946457685718">ವೈ-ಫೈಯಲ್ಲಿ ನಿಮಗಾಗಿ ಲೇಖನಗಳನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="8232956427053453090">ಡೇಟಾವನ್ನುಇರಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="8249310407154411074">ಮೇಲಕ್ಕೆ ಸರಿಸಿ</translation>
 <translation id="8250920743982581267">ಡಾಕ್ಯುಮೆಂಟ್‌ಗಳು</translation>
@@ -1049,6 +1042,7 @@
 <translation id="8583805026567836021">ಖಾತೆಯ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="860043288473659153">ಕಾರ್ಡ್‌ಹೋಲ್ಡರ್ ಹೆಸರು</translation>
 <translation id="8609465669617005112">ಮೇಲೆ ಸರಿಸು</translation>
+<translation id="8611192991944347781">ಡೇಟಾವನ್ನು ನಿರ್ವಹಿಸಿ</translation>
 <translation id="8616006591992756292">ನಿಮ್ಮ Google ಖಾತೆಯು <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಇತರ ವಿಧಗಳ ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸವನ್ನು ಹೊಂದಿರಬಹುದು.</translation>
 <translation id="8617240290563765734">ಡೌನ್‌ಲೋಡ್‌ ಮಾಡಲಾದ ವಿಷಯದಲ್ಲಿ ಸೂಚಿಸಲಾದ ನಿರ್ದಿಷ್ಟ URL ತೆರೆಯುವುದೇ?</translation>
 <translation id="8636825310635137004">ನಿಮ್ಮ ಇತರ ಸಾಧನಗಳಿಂದ ನಿಮ್ಮ ಟ್ಯಾಬ್‌ಗಳನ್ನು ಪಡೆದುಕೊಳ್ಳಲು, ಸಿಂಕ್‌ ಆನ್‌ ಮಾಡಿ.</translation>

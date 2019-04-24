@@ -11,13 +11,11 @@
 
 #include <map>
 #include <memory>
-#include <utility>
 #include <vector>
 
 #include "api/video_codecs/vp8_frame_config.h"
 #include "api/video_codecs/vp8_temporal_layers.h"
 #include "modules/video_coding/codecs/vp8/include/temporal_layers_checker.h"
-#include "modules/video_coding/include/video_codec_interface.h"
 #include "modules/video_coding/utility/frame_dropper.h"
 #include "rtc_base/rate_statistics.h"
 #include "rtc_base/time_utils.h"
@@ -27,7 +25,7 @@ namespace webrtc {
 struct CodecSpecificInfoVP8;
 class Clock;
 
-class ScreenshareLayers final : public Vp8FrameBufferController {
+class ScreenshareLayers : public Vp8TemporalLayers {
  public:
   static const double kMaxTL0FpsReduction;
   static const double kAcceptableTargetOvershoot;
@@ -36,55 +34,28 @@ class ScreenshareLayers final : public Vp8FrameBufferController {
   explicit ScreenshareLayers(int num_temporal_layers);
   ~ScreenshareLayers() override;
 
-  size_t StreamCount() const override;
-
-  bool SupportsEncoderFrameDropping(size_t stream_index) const override;
+  bool SupportsEncoderFrameDropping() const override;
 
   // Returns the recommended VP8 encode flags needed. May refresh the decoder
   // and/or update the reference buffers.
-  Vp8FrameConfig NextFrameConfig(size_t stream_index,
-                                 uint32_t rtp_timestamp) override;
+  Vp8FrameConfig UpdateLayerConfig(uint32_t rtp_timestamp) override;
 
   // New target bitrate, per temporal layer.
-  void OnRatesUpdated(size_t stream_index,
-                      const std::vector<uint32_t>& bitrates_bps,
+  void OnRatesUpdated(const std::vector<uint32_t>& bitrates_bps,
                       int framerate_fps) override;
 
   // Update the encoder configuration with target bitrates or other parameters.
   // Returns true iff the configuration was actually modified.
-  bool UpdateConfiguration(size_t stream_index, Vp8EncoderConfig* cfg) override;
+  bool UpdateConfiguration(Vp8EncoderConfig* cfg) override;
 
-  void OnEncodeDone(size_t stream_index,
-                    uint32_t rtp_timestamp,
+  void OnEncodeDone(uint32_t rtp_timestamp,
                     size_t size_bytes,
                     bool is_keyframe,
                     int qp,
-                    CodecSpecificInfo* info) override;
-
-  void OnFrameDropped(size_t stream_index, uint32_t rtp_timestamp) override;
-
-  void OnPacketLossRateUpdate(float packet_loss_rate) override;
-
-  void OnRttUpdate(int64_t rtt_ms) override;
-
-  void OnLossNotification(
-      const VideoEncoder::LossNotification& loss_notification) override;
+                    CodecSpecificInfoVP8* vp8_info) override;
 
  private:
   enum class TemporalLayerState : int { kDrop, kTl0, kTl1, kTl1Sync };
-
-  struct DependencyInfo {
-    DependencyInfo() = default;
-    DependencyInfo(absl::string_view indication_symbols,
-                   Vp8FrameConfig frame_config)
-        : decode_target_indications(
-              GenericFrameInfo::DecodeTargetInfo(indication_symbols)),
-          frame_config(frame_config) {}
-
-    absl::InlinedVector<GenericFrameInfo::DecodeTargetIndication, 10>
-        decode_target_indications;
-    Vp8FrameConfig frame_config;
-  };
 
   bool TimeToSync(int64_t timestamp) const;
   uint32_t GetCodecTargetBitrateKbps() const;
@@ -100,13 +71,12 @@ class ScreenshareLayers final : public Vp8FrameBufferController {
   int max_qp_;
   uint32_t max_debt_bytes_;
 
-  std::map<uint32_t, DependencyInfo> pending_frame_configs_;
+  std::map<uint32_t, Vp8FrameConfig> pending_frame_configs_;
 
   // Configured max framerate.
   absl::optional<uint32_t> target_framerate_;
   // Incoming framerate from capturer.
   absl::optional<uint32_t> capture_framerate_;
-
   // Tracks what framerate we actually encode, and drops frames on overshoot.
   RateStatistics encode_framerate_;
   bool bitrate_updated_;
@@ -137,8 +107,6 @@ class ScreenshareLayers final : public Vp8FrameBufferController {
   } layers_[kMaxNumTemporalLayers];
 
   void UpdateHistograms();
-  TemplateStructure GetTemplateStructure(int num_layers) const;
-
   // Data for histogram statistics.
   struct Stats {
     int64_t first_frame_time_ms_ = -1;

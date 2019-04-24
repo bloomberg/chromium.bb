@@ -69,6 +69,7 @@
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
 #include "net/log/net_log.h"
+#include "net/ssl/channel_id_service.h"
 #include "url/origin.h"
 
 using base::Time;
@@ -336,13 +337,22 @@ size_t CountCookiesForPossibleDeletion(
 }  // namespace
 
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
+                             ChannelIDService* channel_id_service,
                              NetLog* net_log)
     : CookieMonster(
           std::move(store),
+          channel_id_service,
           base::TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds),
           net_log) {}
 
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
+                             base::TimeDelta last_access_threshold,
+                             NetLog* net_log)
+    : CookieMonster(std::move(store), nullptr, last_access_threshold, net_log) {
+}
+
+CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
+                             ChannelIDService* channel_id_service,
                              base::TimeDelta last_access_threshold,
                              NetLog* net_log)
     : initialized_(false),
@@ -352,6 +362,7 @@ CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
       net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::COOKIE_STORE)),
       store_(std::move(store)),
       last_access_threshold_(last_access_threshold),
+      channel_id_service_(channel_id_service),
       last_statistic_record_time_(base::Time::Now()),
       persist_session_cookies_(false),
       weak_ptr_factory_(this) {
@@ -359,10 +370,21 @@ CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
   cookieable_schemes_.insert(
       cookieable_schemes_.begin(), kDefaultCookieableSchemes,
       kDefaultCookieableSchemes + kDefaultCookieableSchemesCount);
+  if (channel_id_service_ && store_) {
+    // |store_| can outlive this CookieMonster, but there are no guarantees
+    // about the lifetime of |channel_id_service_| relative to |store_|. The
+    // only guarantee is that |channel_id_service_| will outlive this
+    // CookieMonster. To avoid the PersistentCookieStore retaining a pointer to
+    // the ChannelIDStore via this callback after this CookieMonster is
+    // destroyed, CookieMonster's d'tor sets the callback to a null callback.
+    store_->SetBeforeFlushCallback(
+        base::Bind(&ChannelIDStore::Flush,
+                   base::Unretained(channel_id_service_->GetChannelIDStore())));
+  }
   net_log_.BeginEvent(
       NetLogEventType::COOKIE_STORE_ALIVE,
       base::BindRepeating(&NetLogCookieMonsterConstructorCallback,
-                          store != nullptr));
+                          store != nullptr, channel_id_service != nullptr));
 }
 
 // Asynchronous CookieMonster API
@@ -398,7 +420,7 @@ void CookieMonster::SetAllCookiesAsync(const CookieList& list,
 void CookieMonster::SetCanonicalCookieAsync(
     std::unique_ptr<CanonicalCookie> cookie,
     std::string source_scheme,
-    const CookieOptions& options,
+    bool modify_http_only,
     SetCookiesCallback callback) {
   DCHECK(cookie->IsCanonical());
 
@@ -409,7 +431,7 @@ void CookieMonster::SetCanonicalCookieAsync(
           // the callback on |*this|, so the callback will not outlive
           // the object.
           &CookieMonster::SetCanonicalCookie, base::Unretained(this),
-          std::move(cookie), std::move(source_scheme), options,
+          std::move(cookie), std::move(source_scheme), modify_http_only,
           std::move(callback)),
       domain);
 }
@@ -493,19 +515,15 @@ void CookieMonster::DeleteSessionCookiesAsync(
 }
 
 void CookieMonster::SetCookieableSchemes(
-    const std::vector<std::string>& schemes,
-    SetCookieableSchemesCallback callback) {
+    const std::vector<std::string>& schemes) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Calls to this method will have no effect if made after a WebView or
   // CookieManager instance has been created.
-  if (initialized_) {
-    MaybeRunCookieCallback(std::move(callback), false);
+  if (initialized_)
     return;
-  }
 
   cookieable_schemes_ = schemes;
-  MaybeRunCookieCallback(std::move(callback), true);
 }
 
 // This function must be called before the CookieMonster is used.
@@ -566,6 +584,10 @@ void CookieMonster::DumpMemoryStats(
 CookieMonster::~CookieMonster() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (channel_id_service_ && store_) {
+    store_->SetBeforeFlushCallback(base::Closure());
+  }
+
   // TODO(mmenke): Does it really make sense to run
   // CookieChanged callbacks when the CookieStore is destroyed?
   for (auto cookie_it = cookies_.begin(); cookie_it != cookies_.end();) {
@@ -589,7 +611,7 @@ void CookieMonster::GetAllCookies(GetCookieListCallback callback) {
   // Note that this does not prune cookies to be below our limits (if we've
   // exceeded them) the way that calling GarbageCollect() would.
   GarbageCollectExpired(
-      Time::Now(), CookieMapItPair(cookies_.begin(), cookies_.end()), nullptr);
+      Time::Now(), CookieMapItPair(cookies_.begin(), cookies_.end()), NULL);
 
   // Copy the CanonicalCookie pointers from the map so that we can use the same
   // sorter as elsewhere, then copy the result out.
@@ -706,7 +728,8 @@ void CookieMonster::SetCookieWithOptions(const GURL& url,
   }
 
   DCHECK(cc);
-  SetCanonicalCookie(std::move(cc), url.scheme(), options, std::move(callback));
+  SetCanonicalCookie(std::move(cc), url.scheme(), !options.exclude_httponly(),
+                     std::move(callback));
 }
 
 void CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie,
@@ -777,8 +800,8 @@ void CookieMonster::FetchAllCookies() {
 
   // We bind in the current time so that we can report the wall-clock time for
   // loading cookies.
-  store_->Load(base::BindOnce(&CookieMonster::OnLoaded,
-                              weak_ptr_factory_.GetWeakPtr(), TimeTicks::Now()),
+  store_->Load(base::Bind(&CookieMonster::OnLoaded,
+                          weak_ptr_factory_.GetWeakPtr(), TimeTicks::Now()),
                net_log_);
 }
 
@@ -1180,7 +1203,7 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
 
 void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
                                        std::string source_scheme,
-                                       const CookieOptions& options,
+                                       bool modify_http_only,
                                        SetCookiesCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -1193,7 +1216,7 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
     return;
   }
 
-  if (cc->IsHttpOnly() && options.exclude_httponly()) {
+  if ((cc->IsHttpOnly() && !modify_http_only)) {
     MaybeRunCookieCallback(
         std::move(callback),
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_HTTP_ONLY);
@@ -1218,9 +1241,9 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
 
   base::Time creation_date_to_inherit;
 
-  CanonicalCookie::CookieInclusionStatus status = DeleteAnyEquivalentCookie(
-      key, *cc, secure_source, options.exclude_httponly(), already_expired,
-      &creation_date_to_inherit);
+  CanonicalCookie::CookieInclusionStatus status =
+      DeleteAnyEquivalentCookie(key, *cc, secure_source, !modify_http_only,
+                                already_expired, &creation_date_to_inherit);
 
   if (status != CanonicalCookie::CookieInclusionStatus::INCLUDE) {
     std::string error;
@@ -1820,8 +1843,8 @@ void CookieMonster::DoCookieCallbackForHostOrDomain(
       auto it = tasks_pending_for_key_.find(key);
       if (it == tasks_pending_for_key_.end()) {
         store_->LoadCookiesForKey(
-            key, base::BindOnce(&CookieMonster::OnKeyLoaded,
-                                weak_ptr_factory_.GetWeakPtr(), key));
+            key, base::Bind(&CookieMonster::OnKeyLoaded,
+                            weak_ptr_factory_.GetWeakPtr(), key));
         it = tasks_pending_for_key_
                  .insert(std::make_pair(
                      key, base::circular_deque<base::OnceClosure>()))

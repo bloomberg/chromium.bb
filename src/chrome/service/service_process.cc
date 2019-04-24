@@ -25,8 +25,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/scheduler_worker_pool_params.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/task_scheduler/scheduler_worker_pool_params.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -49,7 +49,6 @@
 #include "components/prefs/json_pref_store.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
-#include "mojo/public/cpp/platform/features.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_fetcher.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -154,19 +153,19 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
   quit_closure_ = std::move(quit_closure);
   service_process_state_ = std::move(state);
 
-  // Initialize ThreadPool.
+  // Initialize TaskScheduler.
   constexpr int kMaxBackgroundThreads = 2;
   constexpr int kMaxForegroundThreads = 6;
   constexpr base::TimeDelta kSuggestedReclaimTime =
       base::TimeDelta::FromSeconds(30);
 
-  base::ThreadPool::Create("CloudPrintServiceProcess");
-  base::ThreadPool::GetInstance()->Start(
+  base::TaskScheduler::Create("CloudPrintServiceProcess");
+  base::TaskScheduler::GetInstance()->Start(
       {{kMaxBackgroundThreads, kSuggestedReclaimTime},
        {kMaxForegroundThreads, kSuggestedReclaimTime,
         base::SchedulerBackwardCompatibility::INIT_COM_STA}});
 
-  // The NetworkChangeNotifier must be created after ThreadPool because it
+  // The NetworkChangeNotifier must be created after TaskScheduler because it
   // posts tasks to it.
   network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
   network_connection_tracker_ =
@@ -271,8 +270,8 @@ bool ServiceProcess::Teardown() {
   shutdown_event_.Signal();
   io_thread_.reset();
 
-  if (base::ThreadPool::GetInstance())
-    base::ThreadPool::GetInstance()->Shutdown();
+  if (base::TaskScheduler::GetInstance())
+    base::TaskScheduler::GetInstance()->Shutdown();
 
   // The NetworkChangeNotifier must be destroyed after all other threads that
   // might use it have been shut down.
@@ -346,14 +345,7 @@ mojo::ScopedMessagePipeHandle ServiceProcess::CreateChannelMessagePipe() {
 #endif
 
   mojo::PlatformChannelServerEndpoint server_endpoint;
-#if defined(OS_MACOSX)
-  // Mach receive rights (named server channels) are not Clone-able.
-  if (base::FeatureList::IsEnabled(mojo::features::kMojoChannelMac)) {
-    server_endpoint = std::move(server_endpoint_);
-  } else {
-    server_endpoint = server_endpoint_.Clone();
-  }
-#elif defined(OS_POSIX)
+#if defined(OS_POSIX)
   server_endpoint = server_endpoint_.Clone();
 #elif defined(OS_WIN)
   mojo::NamedPlatformChannel::Options options;

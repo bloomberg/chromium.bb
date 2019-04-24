@@ -385,9 +385,8 @@ void ResourcesHLSL::outputAtomicCounterBuffer(TInfoSinkBase &out,
                                               const int binding,
                                               const unsigned int registerIndex)
 {
-    // Atomic counter memory access is not incoherent
-    out << "uniform globallycoherent RWByteAddressBuffer "
-        << getAtomicCounterNameForBinding(binding) << " : register(u" << registerIndex << ");\n";
+    out << "uniform RWByteAddressBuffer " << getAtomicCounterNameForBinding(binding)
+        << " : register(u" << registerIndex << ");\n";
 }
 
 void ResourcesHLSL::uniformsHeader(TInfoSinkBase &out,

@@ -26,8 +26,6 @@ class CORE_EXPORT CrossThreadKeywordValue final : public CrossThreadStyleValue {
   }
   CSSStyleValue* ToCSSStyleValue() override;
 
-  std::unique_ptr<CrossThreadStyleValue> IsolatedCopy() const override;
-
   bool operator==(const CrossThreadStyleValue&) const override;
 
  private:

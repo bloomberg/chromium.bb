@@ -16,6 +16,7 @@ login.createScreen(
 
         /** @override */
         onBeforeShow: function(data) {
+          Oobe.getInstance().headerHidden = true;
           $('supervision-transition-md')
               .setIsRemovingSupervision(
                   data['isRemovingSupervision'] ? true : false);

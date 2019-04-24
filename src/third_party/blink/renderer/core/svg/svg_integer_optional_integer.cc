@@ -32,7 +32,6 @@
 
 #include "third_party/blink/renderer/core/svg/svg_animation_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -47,14 +46,14 @@ void SVGIntegerOptionalInteger::Trace(blink::Visitor* visitor) {
 }
 
 SVGIntegerOptionalInteger* SVGIntegerOptionalInteger::Clone() const {
-  return MakeGarbageCollected<SVGIntegerOptionalInteger>(
-      first_integer_->Clone(), second_integer_->Clone());
+  return SVGIntegerOptionalInteger::Create(first_integer_->Clone(),
+                                           second_integer_->Clone());
 }
 
 SVGPropertyBase* SVGIntegerOptionalInteger::CloneForAnimation(
     const String& value) const {
-  auto* clone = MakeGarbageCollected<SVGIntegerOptionalInteger>(
-      MakeGarbageCollected<SVGInteger>(0), MakeGarbageCollected<SVGInteger>(0));
+  SVGIntegerOptionalInteger* clone =
+      Create(SVGInteger::Create(0), SVGInteger::Create(0));
   clone->SetValueAsString(value);
   return clone;
 }

@@ -49,6 +49,7 @@
 #include "components/gwp_asan/buildflags/buildflags.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/services/heap_profiling/public/cpp/sampling_profiler_wrapper.h"
+#include "components/services/heap_profiling/public/cpp/stream.h"
 #include "components/tracing/common/tracing_sampler_profiler.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_client.h"
@@ -109,7 +110,6 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/dbus/dbus_helper.h"
-#include "chrome/browser/chromeos/startup_settings_cache.h"
 #include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/hugepage_text/hugepage_text.h"
@@ -118,7 +118,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/java_exception_reporter.h"
 #include "chrome/browser/android/crash/pure_java_exception_handler.h"
-#include "chrome/common/chrome_descriptors.h"
+#include "chrome/common/descriptors_android.h"
 #else
 // Diagnostics is only available on non-android platforms.
 #include "chrome/browser/diagnostics/diagnostics_controller.h"
@@ -531,7 +531,6 @@ void ChromeMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   std::string actual_locale =
       LoadLocalState(chrome_feature_list_creator_.get(), is_running_tests);
   chrome_feature_list_creator_->SetApplicationLocale(actual_locale);
-  chrome_feature_list_creator_->OverrideCachedUIStrings();
 }
 
 bool ChromeMainDelegate::ShouldCreateFeatureList() {
@@ -899,14 +898,8 @@ void ChromeMainDelegate::PreSandboxStartup() {
     // via the preference prefs::kApplicationLocale. The browser process uses
     // the --lang flag to pass the value of the PrefService in here. Maybe
     // this value could be passed in a different way.
-    std::string locale = command_line.GetSwitchValueASCII(switches::kLang);
-#if defined(OS_CHROMEOS)
-    if (process_type == service_manager::switches::kZygoteProcess) {
-      DCHECK(locale.empty());
-      // See comment at ReadAppLocale() for why we do this.
-      locale = chromeos::startup_settings_cache::ReadAppLocale();
-    }
-#endif
+    const std::string locale =
+        command_line.GetSwitchValueASCII(switches::kLang);
 #if defined(OS_ANDROID)
     // The renderer sandbox prevents us from accessing our .pak files directly.
     // Therefore file descriptors to the .pak files that we need are passed in

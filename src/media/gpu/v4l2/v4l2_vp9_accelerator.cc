@@ -205,11 +205,12 @@ scoped_refptr<VP9Picture> V4L2VP9Accelerator::CreateVP9Picture() {
   return new V4L2VP9Picture(dec_surface);
 }
 
-bool V4L2VP9Accelerator::SubmitDecode(const scoped_refptr<VP9Picture>& pic,
-                                      const Vp9SegmentationParams& segm_params,
-                                      const Vp9LoopFilterParams& lf_params,
-                                      const Vp9ReferenceFrameVector& ref_frames,
-                                      const base::Closure& done_cb) {
+bool V4L2VP9Accelerator::SubmitDecode(
+    const scoped_refptr<VP9Picture>& pic,
+    const Vp9SegmentationParams& segm_params,
+    const Vp9LoopFilterParams& lf_params,
+    const std::vector<scoped_refptr<VP9Picture>>& ref_pictures,
+    const base::Closure& done_cb) {
   const Vp9FrameHeader* frame_hdr = pic->frame_hdr.get();
   DCHECK(frame_hdr);
 
@@ -273,14 +274,13 @@ bool V4L2VP9Accelerator::SubmitDecode(const scoped_refptr<VP9Picture>& pic,
 
   struct v4l2_ctrl_vp9_decode_param v4l2_decode_param;
   memset(&v4l2_decode_param, 0, sizeof(v4l2_decode_param));
-  DCHECK_EQ(kVp9NumRefFrames, base::size(v4l2_decode_param.ref_frames));
+  DCHECK_EQ(ref_pictures.size(), base::size(v4l2_decode_param.ref_frames));
 
   std::vector<scoped_refptr<V4L2DecodeSurface>> ref_surfaces;
-  for (size_t i = 0; i < kVp9NumRefFrames; ++i) {
-    auto ref_pic = ref_frames.GetFrame(i);
-    if (ref_pic) {
+  for (size_t i = 0; i < ref_pictures.size(); ++i) {
+    if (ref_pictures[i]) {
       scoped_refptr<V4L2DecodeSurface> ref_surface =
-          VP9PictureToV4L2DecodeSurface(ref_pic);
+          VP9PictureToV4L2DecodeSurface(ref_pictures[i]);
 
       v4l2_decode_param.ref_frames[i] = ref_surface->GetReferenceID();
       ref_surfaces.push_back(ref_surface);
@@ -295,13 +295,13 @@ bool V4L2VP9Accelerator::SubmitDecode(const scoped_refptr<VP9Picture>& pic,
 
   for (size_t i = 0; i < base::size(frame_hdr->ref_frame_idx); ++i) {
     uint8_t idx = frame_hdr->ref_frame_idx[i];
-    if (idx >= kVp9NumRefFrames)
+    if (idx >= ref_pictures.size())
       return false;
 
     struct v4l2_vp9_reference_frame* v4l2_ref_frame =
         &v4l2_decode_param.active_ref_frames[i];
 
-    scoped_refptr<VP9Picture> ref_pic = ref_frames.GetFrame(idx);
+    scoped_refptr<VP9Picture> ref_pic = ref_pictures[idx];
     if (ref_pic) {
       scoped_refptr<V4L2DecodeSurface> ref_surface =
           VP9PictureToV4L2DecodeSurface(ref_pic);

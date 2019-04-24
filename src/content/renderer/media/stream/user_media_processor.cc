@@ -20,13 +20,17 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/renderer/media/stream/local_media_stream_audio_source.h"
+#include "content/renderer/media/stream/local_video_capturer_source.h"
 #include "content/renderer/media/stream/media_stream_audio_processor.h"
+#include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_audio.h"
 #include "content/renderer/media/stream/media_stream_constraints_util_video_content.h"
+#include "content/renderer/media/stream/media_stream_constraints_util_video_device.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
+#include "content/renderer/media/stream/media_stream_video_capturer_source.h"
+#include "content/renderer/media/stream/media_stream_video_track.h"
 #include "content/renderer/media/stream/processed_local_audio_source.h"
 #include "content/renderer/media/stream/user_media_client_impl.h"
-#include "content/renderer/media/video_capture/local_video_capturer_source.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_frame_impl.h"
@@ -43,10 +47,6 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
 
@@ -59,8 +59,7 @@ using blink::MediaStreamType;
 using blink::StreamControls;
 using blink::TrackControls;
 using blink::WebMediaStreamSource;
-using EchoCancellationType =
-    blink::AudioProcessingProperties::EchoCancellationType;
+using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
 
 namespace {
 
@@ -160,7 +159,7 @@ void SurfaceAudioProcessingSettings(blink::WebMediaStreamSource* source) {
   // If the source is a processed source, get the properties from it.
   if (ProcessedLocalAudioSource* processed_source =
           ProcessedLocalAudioSource::From(source_impl)) {
-    blink::AudioProcessingProperties properties =
+    AudioProcessingProperties properties =
         processed_source->audio_processing_properties();
     WebMediaStreamSource::EchoCancellationMode echo_cancellation_mode;
 
@@ -196,10 +195,10 @@ void SurfaceAudioProcessingSettings(blink::WebMediaStreamSource* source) {
   }
 }
 
-std::vector<blink::VideoInputDeviceCapabilities> ToVideoInputDeviceCapabilities(
+std::vector<VideoInputDeviceCapabilities> ToVideoInputDeviceCapabilities(
     const std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>&
         input_capabilities) {
-  std::vector<blink::VideoInputDeviceCapabilities> capabilities;
+  std::vector<VideoInputDeviceCapabilities> capabilities;
   for (const auto& capability : input_capabilities) {
     capabilities.emplace_back(capability->device_id, capability->group_id,
                               capability->formats, capability->facing_mode);
@@ -254,16 +253,16 @@ class UserMediaProcessor::RequestInfo
   State state() const { return state_; }
   void set_state(State state) { state_ = state; }
 
-  const blink::AudioCaptureSettings& audio_capture_settings() const {
+  const AudioCaptureSettings& audio_capture_settings() const {
     return audio_capture_settings_;
   }
-  void SetAudioCaptureSettings(const blink::AudioCaptureSettings& settings,
+  void SetAudioCaptureSettings(const AudioCaptureSettings& settings,
                                bool is_content_capture) {
     DCHECK(settings.HasValue());
     is_audio_content_capture_ = is_content_capture;
     audio_capture_settings_ = settings;
   }
-  const blink::VideoCaptureSettings& video_capture_settings() const {
+  const VideoCaptureSettings& video_capture_settings() const {
     return video_capture_settings_;
   }
   bool is_video_content_capture() const {
@@ -272,7 +271,7 @@ class UserMediaProcessor::RequestInfo
   bool is_video_device_capture() const {
     return video_capture_settings_.HasValue() && !is_video_content_capture_;
   }
-  void SetVideoCaptureSettings(const blink::VideoCaptureSettings& settings,
+  void SetVideoCaptureSettings(const VideoCaptureSettings& settings,
                                bool is_content_capture) {
     DCHECK(settings.HasValue());
     is_video_content_capture_ = is_content_capture;
@@ -331,9 +330,9 @@ class UserMediaProcessor::RequestInfo
 
   std::unique_ptr<UserMediaRequest> request_;
   State state_ = State::NOT_SENT_FOR_GENERATION;
-  blink::AudioCaptureSettings audio_capture_settings_;
+  AudioCaptureSettings audio_capture_settings_;
   bool is_audio_content_capture_ = false;
-  blink::VideoCaptureSettings video_capture_settings_;
+  VideoCaptureSettings video_capture_settings_;
   bool is_video_content_capture_ = false;
   blink::WebMediaStream web_stream_;
   StreamControls stream_controls_;
@@ -387,12 +386,12 @@ UserMediaProcessor::RequestInfo::CreateAndStartVideoTrack(
   DCHECK(source.GetType() == blink::WebMediaStreamSource::kTypeVideo);
   DCHECK(web_request().Video());
   DCHECK(video_capture_settings_.HasValue());
-  blink::MediaStreamVideoSource* native_source =
-      blink::MediaStreamVideoSource::GetVideoSource(source);
+  MediaStreamVideoSource* native_source =
+      MediaStreamVideoSource::GetVideoSource(source);
   DCHECK(native_source);
   sources_.push_back(source);
   sources_waiting_for_callback_.push_back(native_source);
-  return blink::MediaStreamVideoTrack::CreateVideoTrack(
+  return MediaStreamVideoTrack::CreateVideoTrack(
       native_source, video_capture_settings_.track_adapter_settings(),
       video_capture_settings_.noise_reduction(), is_video_content_capture_,
       video_capture_settings_.min_frame_rate(),
@@ -639,17 +638,17 @@ void UserMediaProcessor::SelectVideoDeviceSettings(
   DCHECK(IsDeviceMediaType(
       current_request_info_->stream_controls()->video.stream_type));
 
-  blink::VideoDeviceCaptureCapabilities capabilities;
+  VideoDeviceCaptureCapabilities capabilities;
   capabilities.device_capabilities =
       ToVideoInputDeviceCapabilities(video_input_capabilities);
   capabilities.noise_reduction_capabilities = {base::Optional<bool>(),
                                                base::Optional<bool>(true),
                                                base::Optional<bool>(false)};
-  blink::VideoCaptureSettings settings = SelectSettingsVideoDeviceCapture(
+  VideoCaptureSettings settings = SelectSettingsVideoDeviceCapture(
       std::move(capabilities), web_request.VideoConstraints(),
-      blink::MediaStreamVideoSource::kDefaultWidth,
-      blink::MediaStreamVideoSource::kDefaultHeight,
-      blink::MediaStreamVideoSource::kDefaultFrameRate);
+      MediaStreamVideoSource::kDefaultWidth,
+      MediaStreamVideoSource::kDefaultHeight,
+      MediaStreamVideoSource::kDefaultFrameRate);
   if (!settings.HasValue()) {
     blink::WebString failed_constraint_name =
         blink::WebString::FromASCII(settings.failed_constraint_name());
@@ -671,7 +670,7 @@ void UserMediaProcessor::SelectVideoContentSettings() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(current_request_info_);
   gfx::Size screen_size = GetScreenSize();
-  blink::VideoCaptureSettings settings = SelectSettingsVideoContentCapture(
+  VideoCaptureSettings settings = SelectSettingsVideoContentCapture(
       current_request_info_->web_request().VideoConstraints(),
       current_request_info_->stream_controls()->video.stream_type,
       screen_size.width(), screen_size.height());
@@ -1004,22 +1003,6 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16),  // min
       media::SampleFormatToBitsPerChannel(media::kSampleFormatS16)   // max
   };
-  auto device_parameters = audio_source->device().input;
-  if (device_parameters.IsValid()) {
-    capabilities.channel_count = {1, device_parameters.channels()};
-    capabilities.sample_rate = {std::min(blink::kAudioProcessingSampleRate,
-                                         device_parameters.sample_rate()),
-                                std::max(blink::kAudioProcessingSampleRate,
-                                         device_parameters.sample_rate())};
-    double fallback_latency =
-        static_cast<double>(blink::kFallbackAudioLatencyMs) / 1000;
-    double min_latency, max_latency;
-    std::tie(min_latency, max_latency) =
-        GetMinMaxLatenciesForAudioParameters(device_parameters);
-    capabilities.latency = {std::min(fallback_latency, min_latency),
-                            std::max(fallback_latency, max_latency)};
-  }
-
   capabilities.device_id = blink::WebString::FromUTF8(device.id);
   if (device.group_id)
     capabilities.group_id = blink::WebString::FromUTF8(*device.group_id);
@@ -1041,7 +1024,7 @@ UserMediaProcessor::CreateAudioSource(
   // If the audio device is a loopback device (for screen capture), or if the
   // constraints/effects parameters indicate no audio processing is needed,
   // create an efficient, direct-path MediaStreamAudioSource instance.
-  blink::AudioProcessingProperties audio_processing_properties =
+  AudioProcessingProperties audio_processing_properties =
       current_request_info_->audio_capture_settings()
           .audio_processing_properties();
   if (IsScreenCaptureMediaType(device.type) ||
@@ -1049,9 +1032,7 @@ UserMediaProcessor::CreateAudioSource(
           audio_processing_properties)) {
     return std::make_unique<LocalMediaStreamAudioSource>(
         render_frame_->GetRoutingID(), device,
-        base::OptionalOrNullptr(current_request_info_->audio_capture_settings()
-                                    .requested_buffer_size()),
-        stream_controls->disable_local_echo, source_ready, task_runner_);
+        stream_controls->disable_local_echo, source_ready);
   }
 
   // The audio device is not associated with screen capture and also requires
@@ -1059,11 +1040,10 @@ UserMediaProcessor::CreateAudioSource(
   return std::make_unique<ProcessedLocalAudioSource>(
       render_frame_->GetRoutingID(), device,
       stream_controls->disable_local_echo, audio_processing_properties,
-      source_ready, dependency_factory_, task_runner_);
+      source_ready, dependency_factory_);
 }
 
-std::unique_ptr<blink::MediaStreamVideoSource>
-UserMediaProcessor::CreateVideoSource(
+std::unique_ptr<MediaStreamVideoSource> UserMediaProcessor::CreateVideoSource(
     const MediaStreamDevice& device,
     const blink::WebPlatformMediaStreamSource::SourceStoppedCallback&
         stop_callback) {
@@ -1071,12 +1051,10 @@ UserMediaProcessor::CreateVideoSource(
   DCHECK(current_request_info_);
   DCHECK(current_request_info_->video_capture_settings().HasValue());
 
-  return std::make_unique<blink::MediaStreamVideoCapturerSource>(
-      render_frame_->GetWebFrame(), stop_callback, device,
+  return std::make_unique<MediaStreamVideoCapturerSource>(
+      render_frame_->GetRoutingID(), stop_callback, device,
       current_request_info_->video_capture_settings().capture_params(),
-      base::BindRepeating(
-          &LocalVideoCapturerSource::Create,
-          render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
+      base::BindRepeating(&LocalVideoCapturerSource::Create));
 }
 
 void UserMediaProcessor::StartTracks(const std::string& label) {
@@ -1493,14 +1471,14 @@ UserMediaProcessor::GetMediaDevicesDispatcher() {
   return media_devices_dispatcher_cb_.Run();
 }
 
-const blink::AudioCaptureSettings&
-UserMediaProcessor::AudioCaptureSettingsForTesting() const {
+const AudioCaptureSettings& UserMediaProcessor::AudioCaptureSettingsForTesting()
+    const {
   DCHECK(current_request_info_);
   return current_request_info_->audio_capture_settings();
 }
 
-const blink::VideoCaptureSettings&
-UserMediaProcessor::VideoCaptureSettingsForTesting() const {
+const VideoCaptureSettings& UserMediaProcessor::VideoCaptureSettingsForTesting()
+    const {
   DCHECK(current_request_info_);
   return current_request_info_->video_capture_settings();
 }

@@ -41,6 +41,10 @@
 
 namespace blink {
 
+TreeOrderedMap* TreeOrderedMap::Create() {
+  return MakeGarbageCollected<TreeOrderedMap>();
+}
+
 TreeOrderedMap::TreeOrderedMap() = default;
 
 #if DCHECK_IS_ON()

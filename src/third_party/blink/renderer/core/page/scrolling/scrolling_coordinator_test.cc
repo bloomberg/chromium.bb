@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/style_sheet_list.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
-#include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -47,7 +46,6 @@
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
-#include "third_party/blink/renderer/core/html/html_object_element.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -247,91 +245,86 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
   ASSERT_TRUE(root_scroll_layer);
   ASSERT_FALSE(root_scroll_layer->GetMainThreadScrollingReasons());
 
-  // Layer position constraints are only used by the cc property tree builder
-  // and are not set when blink generates property trees.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    Document* document = GetFrame()->GetDocument();
-    {
-      Element* element = document->getElementById("div-tl");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
-                  !constraint.is_fixed_to_bottom_edge());
-    }
-    {
-      Element* element = document->getElementById("div-tr");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
-                  !constraint.is_fixed_to_bottom_edge());
-    }
-    {
-      Element* element = document->getElementById("div-bl");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
-                  constraint.is_fixed_to_bottom_edge());
-    }
-    {
-      Element* element = document->getElementById("div-br");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
-                  constraint.is_fixed_to_bottom_edge());
-    }
-    {
-      Element* element = document->getElementById("span-tl");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
-                  !constraint.is_fixed_to_bottom_edge());
-    }
-    {
-      Element* element = document->getElementById("span-tr");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
-                  !constraint.is_fixed_to_bottom_edge());
-    }
-    {
-      Element* element = document->getElementById("span-bl");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
-                  constraint.is_fixed_to_bottom_edge());
-    }
-    {
-      Element* element = document->getElementById("span-br");
-      ASSERT_TRUE(element);
-      cc::Layer* layer = CcLayerFromElement(element);
-      ASSERT_TRUE(layer);
-      cc::LayerPositionConstraint constraint = layer->position_constraint();
-      ASSERT_TRUE(constraint.is_fixed_position());
-      ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
-                  constraint.is_fixed_to_bottom_edge());
-    }
+  Document* document = GetFrame()->GetDocument();
+  {
+    Element* element = document->getElementById("div-tl");
+    ASSERT_TRUE(element);
+    cc::Layer* layer = CcLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    cc::LayerPositionConstraint constraint = layer->position_constraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
+                !constraint.is_fixed_to_bottom_edge());
+  }
+  {
+    Element* element = document->getElementById("div-tr");
+    ASSERT_TRUE(element);
+    cc::Layer* layer = CcLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    cc::LayerPositionConstraint constraint = layer->position_constraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
+                !constraint.is_fixed_to_bottom_edge());
+  }
+  {
+    Element* element = document->getElementById("div-bl");
+    ASSERT_TRUE(element);
+    cc::Layer* layer = CcLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    cc::LayerPositionConstraint constraint = layer->position_constraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
+                constraint.is_fixed_to_bottom_edge());
+  }
+  {
+    Element* element = document->getElementById("div-br");
+    ASSERT_TRUE(element);
+    cc::Layer* layer = CcLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    cc::LayerPositionConstraint constraint = layer->position_constraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
+                constraint.is_fixed_to_bottom_edge());
+  }
+  {
+    Element* element = document->getElementById("span-tl");
+    ASSERT_TRUE(element);
+    cc::Layer* layer = CcLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    cc::LayerPositionConstraint constraint = layer->position_constraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
+                !constraint.is_fixed_to_bottom_edge());
+  }
+  {
+    Element* element = document->getElementById("span-tr");
+    ASSERT_TRUE(element);
+    cc::Layer* layer = CcLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    cc::LayerPositionConstraint constraint = layer->position_constraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
+                !constraint.is_fixed_to_bottom_edge());
+  }
+  {
+    Element* element = document->getElementById("span-bl");
+    ASSERT_TRUE(element);
+    cc::Layer* layer = CcLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    cc::LayerPositionConstraint constraint = layer->position_constraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(!constraint.is_fixed_to_right_edge() &&
+                constraint.is_fixed_to_bottom_edge());
+  }
+  {
+    Element* element = document->getElementById("span-br");
+    ASSERT_TRUE(element);
+    cc::Layer* layer = CcLayerFromElement(element);
+    ASSERT_TRUE(layer);
+    cc::LayerPositionConstraint constraint = layer->position_constraint();
+    ASSERT_TRUE(constraint.is_fixed_position());
+    ASSERT_TRUE(constraint.is_fixed_to_right_edge() &&
+                constraint.is_fixed_to_bottom_edge());
   }
 }
 
@@ -1004,8 +997,8 @@ TEST_P(ScrollingCoordinatorTest, WindowTouchEventHandlerInvalidation) {
   // Adding a blocking window event handler should create a touch action region.
   auto* listener =
       MakeGarbageCollected<ScrollingCoordinatorMockEventListener>();
-  auto* resolved_options =
-      MakeGarbageCollected<AddEventListenerOptionsResolved>();
+  AddEventListenerOptionsResolved* resolved_options =
+      AddEventListenerOptionsResolved::Create();
   resolved_options->setPassive(false);
   GetFrame()->DomWindow()->addEventListener(event_type_names::kTouchstart,
                                             listener, resolved_options);
@@ -1021,85 +1014,6 @@ TEST_P(ScrollingCoordinatorTest, WindowTouchEventHandlerInvalidation) {
   region = cc_layer->touch_action_region().GetRegionForTouchAction(
       TouchAction::kTouchActionNone);
   EXPECT_TRUE(region.IsEmpty());
-}
-
-// Ensure we don't crash when a plugin becomes a LayoutInline
-TEST_P(ScrollingCoordinatorTest, PluginBecomesLayoutInline) {
-  HistogramTester histogram_tester;
-  LoadHTML(R"HTML(
-    <style>
-      body {
-        margin: 0;
-        height: 3000px;
-      }
-    </style>
-    <object id="plugin" type="appilcation/x-webkit-test-plugin"></object>
-    <script>
-      document.getElementById("plugin")
-              .appendChild(document.createElement("label"))
-    </script>
-  )HTML");
-
-  // This test passes if it doesn't crash. We're trying to make sure
-  // ScrollingCoordinator can deal with LayoutInline plugins when generating
-  // NonFastScrollableRegions.
-  HTMLObjectElement* plugin =
-      ToHTMLObjectElement(GetFrame()->GetDocument()->getElementById("plugin"));
-  ASSERT_TRUE(plugin->GetLayoutObject()->IsLayoutInline());
-  ForceFullCompositingUpdate();
-}
-
-// Ensure NonFastScrollableRegions are correctly generated for both fixed and
-// in-flow plugins that need them.
-TEST_P(ScrollingCoordinatorTest, NonFastScrollableRegionsForPlugins) {
-  HistogramTester histogram_tester;
-  LoadHTML(R"HTML(
-    <style>
-      body {
-        margin: 0;
-        height: 3000px;
-      }
-      #plugin {
-        width: 300px;
-        height: 300px;
-      }
-      #pluginfixed {
-        width: 200px;
-        height: 200px;
-      }
-      #fixed {
-        position: fixed;
-        top: 500px;
-      }
-    </style>
-    <div id="fixed">
-      <object id="pluginfixed" type="application/x-webkit-test-plugin"></object>
-    </div>
-    <object id="plugin" type="application/x-webkit-test-plugin"></object>
-  )HTML");
-
-  HTMLObjectElement* plugin =
-      ToHTMLObjectElement(GetFrame()->GetDocument()->getElementById("plugin"));
-  HTMLObjectElement* plugin_fixed = ToHTMLObjectElement(
-      GetFrame()->GetDocument()->getElementById("pluginfixed"));
-  // NonFastScrollableRegions are generated for plugins that require wheel
-  // events.
-  plugin->OwnedPlugin()->SetWantsWheelEvents(true);
-  plugin_fixed->OwnedPlugin()->SetWantsWheelEvents(true);
-
-  ForceFullCompositingUpdate();
-
-  Region scrolling;
-  Region fixed;
-  Page* page = GetFrame()->GetPage();
-  page->GetScrollingCoordinator()
-      ->ComputeShouldHandleScrollGestureOnMainThreadRegion(
-          To<LocalFrame>(page->MainFrame()), &scrolling, &fixed);
-
-  EXPECT_TRUE(scrolling.IsRect());
-  EXPECT_TRUE(fixed.IsRect());
-  EXPECT_EQ(scrolling.Rects().at(0), IntRect(0, 0, 300, 300));
-  EXPECT_EQ(fixed.Rects().at(0), IntRect(0, 500, 200, 200));
 }
 
 TEST_P(ScrollingCoordinatorTest, overflowScrolling) {
@@ -1360,54 +1274,6 @@ TEST_P(ScrollingCoordinatorTest, FrameIsScrollableDidChange) {
 
   ForceFullCompositingUpdate();
   EXPECT_FALSE(GetFrame()->View()->FrameIsScrollableDidChange());
-}
-
-TEST_P(ScrollingCoordinatorTest, ScrollOffsetClobberedBeforeCompositingUpdate) {
-  // This test fails without BGPT enabled. https://crbug.com/930636.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    return;
-  LoadHTML(R"HTML(
-          <!DOCTYPE html>
-          <style>
-            #container {
-              width: 300px;
-              height: 300px;
-              overflow: auto;
-              will-change: transform;
-            }
-            #spacer {
-              height: 1000px;
-            }
-          </style>
-          <div id="container">
-            <div id="spacer"></div>
-          </div>
-      )HTML");
-  ForceFullCompositingUpdate();
-
-  Element* container = GetFrame()->GetDocument()->getElementById("container");
-  ScrollableArea* scroller =
-      ToLayoutBox(container->GetLayoutObject())->GetScrollableArea();
-  cc::Layer* cc_layer = scroller->LayerForScrolling()->CcLayer();
-
-  ASSERT_EQ(0, scroller->GetScrollOffset().Height());
-
-  // Simulate 100px of scroll coming from the compositor thread during a commit.
-  gfx::ScrollOffset compositor_delta(0, 100.f);
-  cc_layer->SetNeedsCommit();
-  cc_layer->SetScrollOffsetFromImplSide(compositor_delta);
-  EXPECT_EQ(compositor_delta.y(), scroller->GetScrollOffset().Height());
-  EXPECT_EQ(compositor_delta, cc_layer->CurrentScrollOffset());
-
-  // Before updating compositing or the lifecycle, set the scroll offset back
-  // to what it was before the commit from the main thread.
-  scroller->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll);
-
-  // Ensure the offset is up-to-date on the cc::Layer even though, as far as
-  // the main thread is concerned, it was unchanged since the last time we
-  // pushed the scroll offset.
-  ForceFullCompositingUpdate();
-  EXPECT_EQ(gfx::ScrollOffset(), cc_layer->CurrentScrollOffset());
 }
 
 TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {

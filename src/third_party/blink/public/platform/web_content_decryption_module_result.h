@@ -60,7 +60,7 @@ class WebContentDecryptionModuleResult {
   // Called when the operation fails.
   BLINK_PLATFORM_EXPORT void CompleteWithError(
       WebContentDecryptionModuleException,
-      uint32_t system_code,
+      unsigned long system_code,
       const WebString& message);
 
 #if INSIDE_BLINK

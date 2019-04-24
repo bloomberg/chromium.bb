@@ -17,7 +17,8 @@ namespace blink {
 
 // Tests that a float animation with one keyframe works as expected.
 TEST(WebFloatAnimationCurveTest, OneFloatKeyframe) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
+  std::unique_ptr<CompositorFloatAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
   curve->AddKeyframe(
       CompositorFloatKeyframe(0, 2, *LinearTimingFunction::Shared()));
   EXPECT_FLOAT_EQ(2, curve->GetValue(-1));
@@ -29,7 +30,8 @@ TEST(WebFloatAnimationCurveTest, OneFloatKeyframe) {
 
 // Tests that a float animation with two keyframes works as expected.
 TEST(WebFloatAnimationCurveTest, TwoFloatKeyframe) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
+  std::unique_ptr<CompositorFloatAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
   curve->AddKeyframe(
       CompositorFloatKeyframe(0, 2, *LinearTimingFunction::Shared()));
   curve->AddKeyframe(
@@ -43,7 +45,8 @@ TEST(WebFloatAnimationCurveTest, TwoFloatKeyframe) {
 
 // Tests that a float animation with three keyframes works as expected.
 TEST(WebFloatAnimationCurveTest, ThreeFloatKeyframe) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
+  std::unique_ptr<CompositorFloatAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
   curve->AddKeyframe(
       CompositorFloatKeyframe(0, 2, *LinearTimingFunction::Shared()));
   curve->AddKeyframe(
@@ -61,7 +64,8 @@ TEST(WebFloatAnimationCurveTest, ThreeFloatKeyframe) {
 
 // Tests that a float animation with multiple keys at a given time works sanely.
 TEST(WebFloatAnimationCurveTest, RepeatedFloatKeyTimes) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
+  std::unique_ptr<CompositorFloatAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
   curve->AddKeyframe(
       CompositorFloatKeyframe(0, 4, *LinearTimingFunction::Shared()));
   curve->AddKeyframe(
@@ -86,7 +90,8 @@ TEST(WebFloatAnimationCurveTest, RepeatedFloatKeyTimes) {
 
 // Tests that the keyframes may be added out of order.
 TEST(WebFloatAnimationCurveTest, UnsortedKeyframes) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
+  std::unique_ptr<CompositorFloatAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
   curve->AddKeyframe(
       CompositorFloatKeyframe(2, 8, *LinearTimingFunction::Shared()));
   curve->AddKeyframe(
@@ -105,7 +110,8 @@ TEST(WebFloatAnimationCurveTest, UnsortedKeyframes) {
 
 // Tests that a cubic bezier timing function works as expected.
 TEST(WebFloatAnimationCurveTest, CubicBezierTimingFunction) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
+  std::unique_ptr<CompositorFloatAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
   scoped_refptr<CubicBezierTimingFunction> cubic =
       CubicBezierTimingFunction::Create(0.25, 0, 0.75, 1);
   curve->AddKeyframe(CompositorFloatKeyframe(0, 0, *cubic));
@@ -123,7 +129,8 @@ TEST(WebFloatAnimationCurveTest, CubicBezierTimingFunction) {
 
 // Tests that an ease timing function works as expected.
 TEST(WebFloatAnimationCurveTest, EaseTimingFunction) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
+  std::unique_ptr<CompositorFloatAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
   curve->AddKeyframe(
       CompositorFloatKeyframe(0, 0,
                               *CubicBezierTimingFunction::Preset(
@@ -142,7 +149,8 @@ TEST(WebFloatAnimationCurveTest, EaseTimingFunction) {
 
 // Tests using a linear timing function.
 TEST(WebFloatAnimationCurveTest, LinearTimingFunction) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
+  std::unique_ptr<CompositorFloatAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
   curve->AddKeyframe(
       CompositorFloatKeyframe(0, 0, *LinearTimingFunction::Shared()));
   curve->AddKeyframe(
@@ -156,7 +164,8 @@ TEST(WebFloatAnimationCurveTest, LinearTimingFunction) {
 
 // Tests that an ease in timing function works as expected.
 TEST(WebFloatAnimationCurveTest, EaseInTimingFunction) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
+  std::unique_ptr<CompositorFloatAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
   curve->AddKeyframe(CompositorFloatKeyframe(
       0, 0,
       *CubicBezierTimingFunction::Preset(
@@ -175,7 +184,8 @@ TEST(WebFloatAnimationCurveTest, EaseInTimingFunction) {
 
 // Tests that an ease in timing function works as expected.
 TEST(WebFloatAnimationCurveTest, EaseOutTimingFunction) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
+  std::unique_ptr<CompositorFloatAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
   curve->AddKeyframe(CompositorFloatKeyframe(
       0, 0,
       *CubicBezierTimingFunction::Preset(
@@ -194,7 +204,8 @@ TEST(WebFloatAnimationCurveTest, EaseOutTimingFunction) {
 
 // Tests that an ease in timing function works as expected.
 TEST(WebFloatAnimationCurveTest, EaseInOutTimingFunction) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
+  std::unique_ptr<CompositorFloatAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
   curve->AddKeyframe(CompositorFloatKeyframe(
       0, 0,
       *CubicBezierTimingFunction::Preset(
@@ -213,7 +224,8 @@ TEST(WebFloatAnimationCurveTest, EaseInOutTimingFunction) {
 
 // Tests that an ease in timing function works as expected.
 TEST(WebFloatAnimationCurveTest, CustomBezierTimingFunction) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
+  std::unique_ptr<CompositorFloatAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
   double x1 = 0.3;
   double y1 = 0.2;
   double x2 = 0.8;
@@ -234,7 +246,8 @@ TEST(WebFloatAnimationCurveTest, CustomBezierTimingFunction) {
 
 // Tests that the default timing function is indeed ease.
 TEST(WebFloatAnimationCurveTest, DefaultTimingFunction) {
-  auto curve = std::make_unique<CompositorFloatAnimationCurve>();
+  std::unique_ptr<CompositorFloatAnimationCurve> curve =
+      CompositorFloatAnimationCurve::Create();
   curve->AddKeyframe(
       CompositorFloatKeyframe(0, 0,
                               *CubicBezierTimingFunction::Preset(

@@ -17,7 +17,7 @@
 
 namespace content {
 
-float GetScaleFactorForView(RenderWidgetHostView* view) {
+float GetScaleFactorForView(const RenderWidgetHostView* view) {
   if (view)
     return view->GetDeviceScaleFactor();
   ScreenInfo screen_info;
@@ -25,17 +25,17 @@ float GetScaleFactorForView(RenderWidgetHostView* view) {
   return screen_info.device_scale_factor;
 }
 
-gfx::Point ConvertViewPointToDIP(RenderWidgetHostView* view,
+gfx::Point ConvertViewPointToDIP(const RenderWidgetHostView* view,
                                  const gfx::Point& point_in_pixel) {
   return gfx::ConvertPointToDIP(GetScaleFactorForView(view), point_in_pixel);
 }
 
-gfx::Size ConvertViewSizeToPixel(RenderWidgetHostView* view,
+gfx::Size ConvertViewSizeToPixel(const RenderWidgetHostView* view,
                                  const gfx::Size& size_in_dip) {
   return gfx::ConvertSizeToPixel(GetScaleFactorForView(view), size_in_dip);
 }
 
-gfx::Rect ConvertViewRectToPixel(RenderWidgetHostView* view,
+gfx::Rect ConvertViewRectToPixel(const RenderWidgetHostView* view,
                                  const gfx::Rect& rect_in_dip) {
   return gfx::ConvertRectToPixel(GetScaleFactorForView(view), rect_in_dip);
 }

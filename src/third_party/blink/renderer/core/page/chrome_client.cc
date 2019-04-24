@@ -22,8 +22,6 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 
 #include <algorithm>
-#include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -32,6 +30,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/loader/network_hints_interface.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
@@ -103,7 +102,8 @@ Page* ChromeClient::CreateWindow(
     LocalFrame* frame,
     const FrameLoadRequest& r,
     const WebWindowFeatures& features,
-    WebSandboxFlags sandbox_flags,
+    NavigationPolicy navigation_policy,
+    SandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state,
     const SessionStorageNamespaceId& session_storage_namespace_id) {
   if (!CanOpenUIElementIfDuringPageDismissal(
@@ -111,8 +111,8 @@ Page* ChromeClient::CreateWindow(
     return nullptr;
   }
 
-  return CreateWindowDelegate(frame, r, features, sandbox_flags,
-                              opener_feature_state,
+  return CreateWindowDelegate(frame, r, features, navigation_policy,
+                              sandbox_flags, opener_feature_state,
                               session_storage_namespace_id);
 }
 
@@ -184,11 +184,8 @@ void ChromeClient::MouseDidMoveOverElement(LocalFrame& frame,
                                            const HitTestResult& result) {
   if (!result.GetScrollbar() && result.InnerNode() &&
       result.InnerNode()->GetDocument().IsDNSPrefetchEnabled()) {
-    WebPrescientNetworking* web_prescient_networking =
-        Platform::Current()->PrescientNetworking();
-    if (web_prescient_networking) {
-      web_prescient_networking->PrefetchDNS(result.AbsoluteLinkURL().Host());
-    }
+    NetworkHintsInterfaceImpl().DnsPrefetchHost(
+        result.AbsoluteLinkURL().Host());
   }
 
   ShowMouseOverURL(result);
@@ -256,12 +253,11 @@ bool ChromeClient::Print(LocalFrame* frame) {
     return false;
   }
 
-  if (frame->GetDocument()->IsSandboxed(WebSandboxFlags::kModals)) {
+  if (frame->GetDocument()->IsSandboxed(kSandboxModals)) {
     UseCounter::Count(frame->GetDocument(),
                       WebFeature::kDialogInSandboxedContext);
     frame->Console().AddMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
+        kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
         "Ignored call to 'print()'. The document is sandboxed, and the "
         "'allow-modals' keyword is not set."));
     return false;

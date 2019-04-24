@@ -21,6 +21,7 @@
 #include "dawn_native/metal/BufferMTL.h"
 #include "dawn_native/metal/CommandBufferMTL.h"
 #include "dawn_native/metal/ComputePipelineMTL.h"
+#include "dawn_native/metal/InputStateMTL.h"
 #include "dawn_native/metal/PipelineLayoutMTL.h"
 #include "dawn_native/metal/QueueMTL.h"
 #include "dawn_native/metal/RenderPipelineMTL.h"
@@ -30,15 +31,12 @@
 #include "dawn_native/metal/SwapChainMTL.h"
 #include "dawn_native/metal/TextureMTL.h"
 
-#include <type_traits>
-
 namespace dawn_native { namespace metal {
 
     Device::Device(AdapterBase* adapter, id<MTLDevice> mtlDevice)
         : DeviceBase(adapter),
           mMtlDevice([mtlDevice retain]),
-          mMapTracker(new MapRequestTracker(this)),
-          mCompletedSerial(0) {
+          mMapTracker(new MapRequestTracker(this)) {
         [mMtlDevice retain];
         mCommandQueue = [mMtlDevice newCommandQueue];
     }
@@ -49,7 +47,7 @@ namespace dawn_native { namespace metal {
         // store the pendingSerial before SubmitPendingCommandBuffer then wait for it to be passed.
         // Instead we submit and wait for the serial before the next pendingCommandSerial.
         SubmitPendingCommandBuffer();
-        while (GetCompletedCommandSerial() != mLastSubmittedSerial) {
+        while (mCompletedSerial != mLastSubmittedSerial) {
             usleep(100);
         }
         Tick();
@@ -85,6 +83,9 @@ namespace dawn_native { namespace metal {
         const ComputePipelineDescriptor* descriptor) {
         return new ComputePipeline(this, descriptor);
     }
+    InputStateBase* Device::CreateInputState(InputStateBuilder* builder) {
+        return new InputState(builder);
+    }
     ResultOrError<PipelineLayoutBase*> Device::CreatePipelineLayoutImpl(
         const PipelineLayoutDescriptor* descriptor) {
         return new PipelineLayout(this, descriptor);
@@ -117,8 +118,7 @@ namespace dawn_native { namespace metal {
     }
 
     Serial Device::GetCompletedCommandSerial() const {
-        static_assert(std::is_same<Serial, uint64_t>::value, "");
-        return mCompletedSerial.load();
+        return mCompletedSerial;
     }
 
     Serial Device::GetLastSubmittedCommandSerial() const {
@@ -130,14 +130,12 @@ namespace dawn_native { namespace metal {
     }
 
     void Device::TickImpl() {
-        Serial completedSerial = GetCompletedCommandSerial();
-
-        mDynamicUploader->Tick(completedSerial);
-        mMapTracker->Tick(completedSerial);
+        mDynamicUploader->Tick(mCompletedSerial);
+        mMapTracker->Tick(mCompletedSerial);
 
         if (mPendingCommands != nil) {
             SubmitPendingCommandBuffer();
-        } else if (completedSerial == mLastSubmittedSerial) {
+        } else if (mCompletedSerial == mLastSubmittedSerial) {
             // If there's no GPU work in flight we still need to artificially increment the serial
             // so that CPU operations waiting on GPU completion can know they don't have to wait.
             mCompletedSerial++;
@@ -162,45 +160,18 @@ namespace dawn_native { namespace metal {
             return;
         }
 
+        // Ok, ObjC blocks are weird. My understanding is that local variables are captured by value
+        // so this-> works as expected. However it is unclear how members are captured, (are they
+        // captured using this-> or by value?) so we make a copy of the pendingCommandSerial on the
+        // stack.
         mLastSubmittedSerial++;
-
-        // Replace mLastSubmittedCommands with the mutex held so we avoid races between the
-        // schedule handler and this code.
-        {
-            std::lock_guard<std::mutex> lock(mLastSubmittedCommandsMutex);
-            [mLastSubmittedCommands release];
-            mLastSubmittedCommands = mPendingCommands;
-        }
-
-        // Ok, ObjC blocks are weird. My understanding is that local variables are captured by
-        // value so this-> works as expected. However it is unclear how members are captured, (are
-        // they captured using this-> or by value?). To be safe we copy members to local variables
-        // to ensure they are captured "by value".
-
-        // Free mLastSubmittedCommands as soon as it is scheduled so that it doesn't hold
-        // references to its resources. Make a local copy of pendingCommands first so it is
-        // captured "by-value" by the block.
-        id<MTLCommandBuffer> pendingCommands = mPendingCommands;
-
-        [mPendingCommands addScheduledHandler:^(id<MTLCommandBuffer>) {
-            // This is DRF because we hold the mutex for mLastSubmittedCommands and pendingCommands
-            // is a local value (and not the member itself).
-            std::lock_guard<std::mutex> lock(mLastSubmittedCommandsMutex);
-            if (this->mLastSubmittedCommands == pendingCommands) {
-                [this->mLastSubmittedCommands release];
-                this->mLastSubmittedCommands = nil;
-            }
-        }];
-
-        // Update the completed serial once the completed handler is fired. Make a local copy of
-        // mLastSubmittedSerial so it is captured by value.
         Serial pendingSerial = mLastSubmittedSerial;
         [mPendingCommands addCompletedHandler:^(id<MTLCommandBuffer>) {
-            ASSERT(pendingSerial > mCompletedSerial.load());
             this->mCompletedSerial = pendingSerial;
         }];
 
         [mPendingCommands commit];
+        [mPendingCommands release];
         mPendingCommands = nil;
     }
 
@@ -215,10 +186,10 @@ namespace dawn_native { namespace metal {
     }
 
     MaybeError Device::CopyFromStagingToBuffer(StagingBufferBase* source,
-                                               uint64_t sourceOffset,
+                                               uint32_t sourceOffset,
                                                BufferBase* destination,
-                                               uint64_t destinationOffset,
-                                               uint64_t size) {
+                                               uint32_t destinationOffset,
+                                               uint32_t size) {
         id<MTLBuffer> uploadBuffer = ToBackend(source)->GetBufferHandle();
         id<MTLBuffer> buffer = ToBackend(destination)->GetMTLBuffer();
         id<MTLCommandBuffer> commandBuffer = GetPendingCommandBuffer();
@@ -245,10 +216,4 @@ namespace dawn_native { namespace metal {
 
         return new Texture(this, descriptor, ioSurface, plane);
     }
-
-    void Device::WaitForCommandsToBeScheduled() {
-        SubmitPendingCommandBuffer();
-        [mLastSubmittedCommands waitUntilScheduled];
-    }
-
 }}  // namespace dawn_native::metal

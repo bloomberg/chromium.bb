@@ -35,10 +35,8 @@ void SecurityInterstitialPageController::Install(
     return;
 
   v8::Local<v8::Object> global = context->Global();
-  global
-      ->Set(context, gin::StringToV8(isolate, "certificateErrorPageController"),
-            controller.ToV8())
-      .Check();
+  global->Set(gin::StringToV8(isolate, "certificateErrorPageController"),
+              controller.ToV8());
 }
 
 SecurityInterstitialPageController::SecurityInterstitialPageController(

@@ -25,7 +25,6 @@ struct JSOps {
   const byte* relocation_end() const { return code->relocation_end(); }
   int relocation_size() const { return code->relocation_size(); }
   Address code_comments() const { return code->code_comments(); }
-  int code_comments_size() const { return code->code_comments_size(); }
 };
 
 struct WasmOps {
@@ -46,7 +45,6 @@ struct WasmOps {
   }
   int relocation_size() const { return code->reloc_info().length(); }
   Address code_comments() const { return code->code_comments(); }
-  int code_comments_size() const { return code->code_comments_size(); }
 };
 
 struct CodeDescOps {
@@ -72,7 +70,6 @@ struct CodeDescOps {
   Address code_comments() const {
     return instruction_start() + code_desc->code_comments_offset;
   }
-  int code_comments_size() const { return code_desc->code_comments_size; }
 };
 }  // namespace
 
@@ -99,7 +96,6 @@ DISPATCH(const byte*, relocation_start)
 DISPATCH(const byte*, relocation_end)
 DISPATCH(int, relocation_size)
 DISPATCH(Address, code_comments)
-DISPATCH(int, code_comments_size)
 
 #undef DISPATCH
 

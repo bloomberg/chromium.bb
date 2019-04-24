@@ -68,8 +68,7 @@ void DiceAccountsMenu::Show(views::View* anchor_view,
     anchor_bounds.Inset(anchor_bounds.width(), 0, 0, 0);
 
   runner_->RunMenuAt(anchor_view->GetWidget(), menu_button, anchor_bounds,
-                     views::MenuAnchorPosition::kTopRight,
-                     ui::MENU_SOURCE_MOUSE);
+                     views::MENU_ANCHOR_TOPRIGHT, ui::MENU_SOURCE_MOUSE);
 }
 
 DiceAccountsMenu::~DiceAccountsMenu() {}

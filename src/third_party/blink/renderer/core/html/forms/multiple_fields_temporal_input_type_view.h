@@ -53,6 +53,9 @@ class MultipleFieldsTemporalInputTypeView final
   USING_GARBAGE_COLLECTED_MIXIN(MultipleFieldsTemporalInputTypeView);
 
  public:
+  static MultipleFieldsTemporalInputTypeView* Create(HTMLInputElement&,
+                                                     BaseTemporalInputType&);
+
   MultipleFieldsTemporalInputTypeView(HTMLInputElement&,
                                       BaseTemporalInputType&);
   ~MultipleFieldsTemporalInputTypeView() override;

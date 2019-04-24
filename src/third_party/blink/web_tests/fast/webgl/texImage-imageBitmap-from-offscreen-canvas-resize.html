@@ -4,8 +4,10 @@
 <script src="./resources/tex-image-and-sub-image-image-bitmap-utils-resize.js"></script>
 <body>
 <script>
-if (window.testRunner)
+if (window.testRunner) {
+    testRunner.dumpAsTextWithPixelResults();
     testRunner.waitUntilDone();
+}
 
 function setCanvasToRedGreen(ctx) {
     var width = ctx.canvas.width;

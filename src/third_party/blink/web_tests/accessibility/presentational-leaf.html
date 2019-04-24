@@ -1,13 +1,14 @@
 <!DOCTYPE HTML>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div class="container" id="container1">
   <img id="img1" src="missing-image.png" alt="Missing">
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axImg1 = accessibilityController.accessibleElementById("img1");
     assert_equals(axImg1.name, "Missing");
     assert_equals(axImg1.childrenCount, 0);
@@ -19,7 +20,7 @@ test(function(t) {
 </div>
 
 <script>
-test(function(t) {
+test_after_layout_and_paint(function(t) {
     var axImg2 = accessibilityController.accessibleElementById("img2");
     assert_equals(axImg2, undefined);
     var axContainer2 = accessibilityController.accessibleElementById("container2");

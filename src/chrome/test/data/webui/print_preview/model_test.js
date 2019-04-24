@@ -9,6 +9,7 @@ cr.define('model_test', function() {
     SetPolicySettings: 'set policy settings',
     GetPrintTicket: 'get print ticket',
     GetCloudPrintTicket: 'get cloud print ticket',
+    UpdateRecentDestinations: 'update recent destinations',
     ChangeDestination: 'change destination'
   };
 
@@ -42,15 +43,10 @@ cr.define('model_test', function() {
         isFitToPageEnabled: false,
         isCollateEnabled: true,
         isDuplexEnabled: true,
-        isDuplexShortEdge: false,
         isLandscapeEnabled: false,
         isColorEnabled: true,
         vendorOptions: {},
       };
-      if (cr.isChromeOS) {
-        stickySettingsDefault.isPinEnabled = false;
-        stickySettingsDefault.pinValue = '';
-      }
 
       // Non-default state
       const stickySettingsChange = {
@@ -66,7 +62,6 @@ cr.define('model_test', function() {
         isFitToPageEnabled: true,
         isCollateEnabled: false,
         isDuplexEnabled: false,
-        isDuplexShortEdge: true,
         isLandscapeEnabled: true,
         isColorEnabled: false,
         vendorOptions: {
@@ -74,10 +69,6 @@ cr.define('model_test', function() {
           printArea: 6,
         },
       };
-      if (cr.isChromeOS) {
-        stickySettingsChange.isPinEnabled = true;
-        stickySettingsChange.pinValue = '0000';
-      }
 
       /**
        * @param {string} setting The name of the setting to check.
@@ -88,8 +79,8 @@ cr.define('model_test', function() {
        *     reset to its default value.
        */
       const testStickySetting = function(setting, field) {
-        let promise = test_util.eventToPromise('sticky-setting-changed', model);
-        model.setSetting(setting, stickySettingsChange[field]);
+        let promise = test_util.eventToPromise('save-sticky-settings', model);
+        model.set(`settings.${setting}.value`, stickySettingsChange[field]);
         return promise.then(
             /**
              * @param {!CustomEvent} e Event containing the serialized settings
@@ -103,40 +94,31 @@ cr.define('model_test', function() {
                 assertDeepEquals(toCompare[settingName], settings[settingName]);
               });
               let restorePromise =
-                  test_util.eventToPromise('sticky-setting-changed', model);
-              model.setSetting(setting, stickySettingsDefault[field]);
+                  test_util.eventToPromise('save-sticky-settings', model);
+              model.set(
+                  `settings.${setting}.value`, stickySettingsDefault[field]);
               return restorePromise;
             });
       };
 
       model.applyStickySettings();
-      let promise =
-          testStickySetting('collate', 'isCollateEnabled')
-              .then(() => testStickySetting('color', 'isColorEnabled'))
-              .then(
-                  () => testStickySetting(
-                      'cssBackground', 'isCssBackgroundEnabled'))
-              .then(() => testStickySetting('dpi', 'dpi'))
-              .then(() => testStickySetting('duplex', 'isDuplexEnabled'))
-              .then(
-                  () =>
-                      testStickySetting('duplexShortEdge', 'isDuplexShortEdge'))
-              .then(() => testStickySetting('fitToPage', 'isFitToPageEnabled'))
-              .then(
-                  () => testStickySetting(
-                      'headerFooter', 'isHeaderFooterEnabled'))
-              .then(() => testStickySetting('layout', 'isLandscapeEnabled'))
-              .then(() => testStickySetting('margins', 'marginsType'))
-              .then(() => testStickySetting('mediaSize', 'mediaSize'))
-              .then(() => testStickySetting('customScaling', 'customScaling'))
-              .then(() => testStickySetting('scaling', 'scaling'))
-              .then(() => testStickySetting('fitToPage', 'isFitToPageEnabled'))
-              .then(() => testStickySetting('vendorItems', 'vendorOptions'));
-      if (cr.isChromeOS) {
-        promise = promise.then(() => testStickySetting('pin', 'isPinEnabled'))
-                      .then(() => testStickySetting('pinValue', 'pinValue'));
-      }
-      return promise;
+      return testStickySetting('collate', 'isCollateEnabled')
+          .then(() => testStickySetting('color', 'isColorEnabled'))
+          .then(
+              () =>
+                  testStickySetting('cssBackground', 'isCssBackgroundEnabled'))
+          .then(() => testStickySetting('dpi', 'dpi'))
+          .then(() => testStickySetting('duplex', 'isDuplexEnabled'))
+          .then(() => testStickySetting('fitToPage', 'isFitToPageEnabled'))
+          .then(
+              () => testStickySetting('headerFooter', 'isHeaderFooterEnabled'))
+          .then(() => testStickySetting('layout', 'isLandscapeEnabled'))
+          .then(() => testStickySetting('margins', 'marginsType'))
+          .then(() => testStickySetting('mediaSize', 'mediaSize'))
+          .then(() => testStickySetting('customScaling', 'customScaling'))
+          .then(() => testStickySetting('scaling', 'scaling'))
+          .then(() => testStickySetting('fitToPage', 'isFitToPageEnabled'))
+          .then(() => testStickySetting('vendorItems', 'vendorOptions'));
     });
 
     /**
@@ -195,7 +177,6 @@ cr.define('model_test', function() {
         customScaling: true,
         scaling: '90',
         duplex: true,
-        duplexShortEdge: true,
         cssBackground: true,
         selectionOnly: true,
         headerFooter: false,
@@ -206,10 +187,6 @@ cr.define('model_test', function() {
         },
         ranges: [{from: 2, to: 2}],
       };
-      if (cr.isChromeOS) {
-        settingsChange.pin = true;
-        settingsChange.pinValue = '0000';
-      }
 
       // Update settings
       Object.keys(settingsChange).forEach(setting => {
@@ -254,16 +231,11 @@ cr.define('model_test', function() {
           print_preview_test_utils.getCddTemplateWithAdvancedSettings(2)
               .capabilities;
 
-      if (cr.isChromeOS) {
-        // Make device managed. It's used for testing pin setting behavior.
-        loadTimeData.overrideValues({isEnterpriseManaged: true});
-      }
       initializeModel();
       model.destination = testDestination;
       const defaultTicket =
           model.createPrintTicket(testDestination, false, false);
-
-      const expectedDefaultTicketObject = {
+      const expectedDefaultTicket = JSON.stringify({
         mediaSize: testDestination.capabilities.printer.media_size.option[0],
         pageCount: 3,
         landscape: false,
@@ -292,20 +264,20 @@ cr.define('model_test', function() {
         pageWidth: 612,
         pageHeight: 792,
         showSystemDialog: false,
-      };
-      expectEquals(JSON.stringify(expectedDefaultTicketObject), defaultTicket);
+      });
+      expectEquals(expectedDefaultTicket, defaultTicket);
 
       // Toggle all the values and create a new print ticket.
       toggleSettings(testDestination);
       const newTicket = model.createPrintTicket(testDestination, false, false);
-      const expectedNewTicketObject = {
+      const expectedNewTicket = JSON.stringify({
         mediaSize: testDestination.capabilities.printer.media_size.option[1],
         pageCount: 1,
         landscape: true,
         color: testDestination.getNativeColorModel(false),
         headerFooterEnabled: false,
         marginsType: print_preview.ticket_items.MarginsTypeValue.CUSTOM,
-        duplex: print_preview_new.DuplexMode.SHORT_EDGE,
+        duplex: print_preview_new.DuplexMode.LONG_EDGE,
         copies: 2,
         collate: false,
         shouldPrintBackgrounds: true,
@@ -333,12 +305,8 @@ cr.define('model_test', function() {
           marginBottom: 300,
           marginLeft: 400,
         },
-      };
-      if (cr.isChromeOS) {
-        expectedNewTicketObject.pinValue = '0000';
-      }
-
-      expectEquals(JSON.stringify(expectedNewTicketObject), newTicket);
+      });
+      expectEquals(expectedNewTicket, newTicket);
     });
 
     /**
@@ -396,7 +364,7 @@ cr.define('model_test', function() {
             type: testDestination.getSelectedColorOption(false).type,
           },
           copies: {copies: 2},
-          duplex: {type: 'SHORT_EDGE'},
+          duplex: {type: 'LONG_EDGE'},
           media_size: {
             width_microns: 215900,
             height_microns: 215900,
@@ -413,6 +381,55 @@ cr.define('model_test', function() {
         },
       });
       expectEquals(expectedNewTicket, newTicket);
+    });
+
+    /**
+     * @param {!Array<string>} expectedDestinationIds An array of the expected
+     *     recent destination ids.
+     */
+    function assertRecentDestinations(expectedDestinationIds) {
+      assertEquals(
+          expectedDestinationIds.length, model.recentDestinations.length);
+      expectedDestinationIds.forEach((expectedId, index) => {
+        assertEquals(expectedId, model.recentDestinations[index].id);
+      });
+    }
+
+    /**
+     * Tests that the destination being set correctly updates the recent
+     * destinations array.
+     */
+    test(assert(TestNames.UpdateRecentDestinations), function() {
+      initializeModel();
+      model.applyStickySettings();
+
+      let localDestinations = [];
+      let destinations =
+          print_preview_test_utils.getDestinations(null, localDestinations);
+
+      // Recent destinations start out empty.
+      assertRecentDestinations([]);
+
+      // Simulate setting a destination.
+      model.destination = destinations[0];
+      assertRecentDestinations(['ID1']);
+
+      // Set a new destination
+      model.destination = destinations[1];
+      assertRecentDestinations(['ID2', 'ID1']);
+
+      // Reselect a recent destination. Still 2 destinations, but in a
+      // different order.
+      model.destination = destinations[0];
+      assertRecentDestinations(['ID1', 'ID2']);
+
+      // Select a third destination
+      model.destination = destinations[2];
+      assertRecentDestinations(['ID3', 'ID1', 'ID2']);
+
+      // Select a fourth destination. List does not grow.
+      model.destination = destinations[3];
+      assertRecentDestinations(['ID4', 'ID3', 'ID1']);
     });
 
     test(assert(TestNames.ChangeDestination), function() {

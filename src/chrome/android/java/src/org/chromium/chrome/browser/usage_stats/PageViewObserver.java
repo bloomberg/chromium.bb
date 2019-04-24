@@ -107,13 +107,14 @@ public class PageViewObserver {
 
     /** Notify PageViewObserver that {@code fqdn} was just suspended or un-suspended. */
     public void notifySiteSuspensionChanged(String fqdn, boolean isSuspended) {
-        if (fqdn.equals(mLastFqdn)) {
-            SuspendedTab suspendedTab = SuspendedTab.from(mCurrentTab);
+        if (mLastFqdn != null && mLastFqdn.equals(fqdn)) {
             if (isSuspended) {
-                suspendedTab.show(fqdn);
+                SuspendedTab.from(mCurrentTab).show(fqdn);
                 return;
-            } else if (!isSuspended && suspendedTab.isShowing()
-                    && fqdn.equals(suspendedTab.getFqdn())) {
+            }
+
+            SuspendedTab suspendedTab = SuspendedTab.get(mCurrentTab);
+            if (suspendedTab != null && !isSuspended && suspendedTab.getFqdn().equals(fqdn)) {
                 suspendedTab.removeIfPresent();
                 mCurrentTab.reload();
             }
@@ -125,15 +126,9 @@ public class PageViewObserver {
         boolean didSuspend = false;
         boolean sameDomain = mLastFqdn != null && mLastFqdn.equals(newFqdn);
 
-        SuspendedTab suspendedTab = SuspendedTab.from(mCurrentTab);
-        if (mSuspensionTracker.isWebsiteSuspended(newFqdn)) {
-            suspendedTab.show(newFqdn);
+        if (newFqdn != null && mSuspensionTracker.isWebsiteSuspended(newFqdn)) {
+            SuspendedTab.from(mCurrentTab).show(newFqdn);
             didSuspend = true;
-        } else if (suspendedTab.isShowing()) {
-            suspendedTab.removeIfPresent();
-            if (!mCurrentTab.isLoading()) {
-                mCurrentTab.reload();
-            }
         }
 
         if (sameDomain) return;

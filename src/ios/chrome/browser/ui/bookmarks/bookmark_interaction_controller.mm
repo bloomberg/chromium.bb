@@ -35,7 +35,6 @@
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_presentation_controller_delegate.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_util.h"
@@ -310,16 +309,9 @@ enum class PresentedState {
   [_parentController
       dismissViewControllerAnimated:animated
                          completion:^{
-                           // TODO(crbug.com/940856): Make sure navigaton
-                           // controller doesn't keep any controllers. Without
-                           // this there's a memory leak of (almost) every BHVC
-                           // the user visits.
-                           [self.bookmarkNavigationController
-                               setViewControllers:@[]
-                                         animated:NO];
-
                            self.bookmarkBrowser.homeDelegate = nil;
                            self.bookmarkBrowser = nil;
+                           self.bookmarkNavigationController = nil;
                            self.bookmarkTransitioningDelegate = nil;
                            self.bookmarkNavigationController = nil;
                            self.bookmarkNavigationControllerDelegate = nil;
@@ -546,10 +538,11 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
     LoadJavaScriptURL(url, _browserState, _webStateList->GetActiveWebState());
     return;
   }
-  UrlLoadParams params = UrlLoadParams::InCurrentTab(url);
-  params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  web::NavigationManager::WebLoadParams params(url);
+  params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+  ChromeLoadParams chromeParams(params);
   UrlLoadingServiceFactory::GetForBrowserState(_currentBrowserState)
-      ->Load(params);
+      ->LoadUrlInCurrentTab(chromeParams);
 }
 
 - (void)openURLInNewTab:(const GURL&)url
@@ -557,11 +550,14 @@ bookmarkHomeViewControllerWantsDismissal:(BookmarkHomeViewController*)controller
            inBackground:(BOOL)inBackground {
   // TODO(crbug.com/695749):  Open bookmarklet in new tab doesn't work.  See how
   // to deal with this later.
-  UrlLoadParams params = UrlLoadParams::InNewTab(url);
-  params.SetInBackground(inBackground);
-  params.in_incognito = inIncognito;
+  OpenNewTabCommand* command =
+      [[OpenNewTabCommand alloc] initWithURL:url
+                                    referrer:web::Referrer()
+                                 inIncognito:inIncognito
+                                inBackground:inBackground
+                                    appendTo:kLastTab];
   UrlLoadingServiceFactory::GetForBrowserState(_currentBrowserState)
-      ->Load(params);
+      ->OpenUrlInNewTab(command);
 }
 
 @end

@@ -7,24 +7,26 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
+
+namespace ios {
+class ChromeBrowserState;
+}
 
 @protocol InfobarContainerConsumer;
 @protocol SigninPresenter;
 @protocol SyncPresenter;
-class WebStateList;
+@class TabModel;
 
-@interface InfobarContainerMediator
-    : NSObject <InfobarBadgeUIDelegate, UpgradeCenterClient>
+@interface InfobarContainerMediator : NSObject<UpgradeCenterClient>
 
 // Designated initializer. None of the parameters are retained.
-// TODO(crbug.com/927064): The legacy consumer won't be needed once
-// legacyInfobars are no longer supported.
+// TODO(crbug.com/927064): BrowserState shouldn't be passed to the mediator, the
+// legacy consumer won't be needed once legacyInfobars are no longer supported.
 - (instancetype)initWithConsumer:(id<InfobarContainerConsumer>)consumer
                   legacyConsumer:(id<InfobarContainerConsumer>)legacyConsumer
-                    webStateList:(WebStateList*)webStateList
-    NS_DESIGNATED_INITIALIZER;
+                    browserState:(ios::ChromeBrowserState*)browserState
+                        tabModel:(TabModel*)tabModel NS_DESIGNATED_INITIALIZER;
 ;
 
 - (instancetype)init NS_UNAVAILABLE;

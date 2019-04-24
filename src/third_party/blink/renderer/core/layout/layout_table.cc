@@ -85,9 +85,6 @@ void LayoutTable::StyleDidChange(StyleDifference diff,
                                  const ComputedStyle* old_style) {
   LayoutBlock::StyleDidChange(diff, old_style);
 
-  if (ShouldCollapseBorders())
-    SetHasNonCollapsedBorderDecoration(false);
-
   bool old_fixed_table_layout =
       old_style ? old_style->IsFixedTableLayout() : false;
 
@@ -338,12 +335,11 @@ void LayoutTable::UpdateLogicalWidth() {
       available_content_logical_width =
           (container_width_in_inline_direction - margin_total)
               .ClampNegativeToZero();
-      auto* containing_block_flow = DynamicTo<LayoutBlockFlow>(cb);
-      if (ShrinkToAvoidFloats() && containing_block_flow &&
-          containing_block_flow->ContainsFloats() &&
+      if (ShrinkToAvoidFloats() && cb->IsLayoutBlockFlow() &&
+          ToLayoutBlockFlow(cb)->ContainsFloats() &&
           !has_perpendicular_containing_block) {
         available_content_logical_width = ShrinkLogicalWidthToAvoidFloats(
-            margin_start, margin_end, containing_block_flow);
+            margin_start, margin_end, ToLayoutBlockFlow(cb));
       }
     }
 
@@ -928,8 +924,6 @@ void LayoutTable::InvalidateCollapsedBordersForAllCellsIfNeeded() {
            cell = cell->NextCell()) {
         DCHECK_EQ(cell->Table(), this);
         cell->InvalidateCollapsedBorderValues();
-        cell->SetHasNonCollapsedBorderDecoration(
-            !ShouldCollapseBorders() && cell->StyleRef().HasBorderDecoration());
       }
     }
   }

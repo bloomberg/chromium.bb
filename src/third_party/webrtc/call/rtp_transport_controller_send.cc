@@ -58,7 +58,6 @@ TargetRateConstraints ConvertConstraints(const BitrateConstraints& contraints,
 RtpTransportControllerSend::RtpTransportControllerSend(
     Clock* clock,
     webrtc::RtcEventLog* event_log,
-    NetworkStatePredictorFactoryInterface* predictor_factory,
     NetworkControllerFactoryInterface* controller_factory,
     const BitrateConstraints& bitrate_config,
     std::unique_ptr<ProcessThread> process_thread,
@@ -70,7 +69,7 @@ RtpTransportControllerSend::RtpTransportControllerSend(
       observer_(nullptr),
       controller_factory_override_(controller_factory),
       controller_factory_fallback_(
-          absl::make_unique<GoogCcNetworkControllerFactory>(predictor_factory)),
+          absl::make_unique<GoogCcNetworkControllerFactory>(event_log)),
       process_interval_(controller_factory_fallback_->GetProcessInterval()),
       last_report_block_time_(Timestamp::ms(clock_->TimeInMilliseconds())),
       reset_feedback_on_route_change_(
@@ -86,8 +85,6 @@ RtpTransportControllerSend::RtpTransportControllerSend(
           "rtp_send_controller",
           TaskQueueFactory::Priority::NORMAL)) {
   initial_config_.constraints = ConvertConstraints(bitrate_config, clock_);
-  initial_config_.event_log = event_log;
-  initial_config_.key_value_config = &trial_based_config_;
   RTC_DCHECK(bitrate_config.start_bitrate_bps > 0);
 
   pacer_.SetPacingRates(bitrate_config.start_bitrate_bps, 0);
@@ -107,13 +104,14 @@ RtpVideoSenderInterface* RtpTransportControllerSend::CreateRtpVideoSender(
     const RtpConfig& rtp_config,
     int rtcp_report_interval_ms,
     Transport* send_transport,
+    bool is_svc,
     const RtpSenderObservers& observers,
     RtcEventLog* event_log,
     std::unique_ptr<FecController> fec_controller,
     const RtpSenderFrameEncryptionConfig& frame_encryption_config) {
   video_rtp_senders_.push_back(absl::make_unique<RtpVideoSender>(
       clock_, suspended_ssrcs, states, rtp_config, rtcp_report_interval_ms,
-      send_transport, observers,
+      send_transport, is_svc, observers,
       // TODO(holmer): Remove this circular dependency by injecting
       // the parts of RtpTransportControllerSendInterface that are really used.
       this, event_log, &retransmission_rate_limiter_, std::move(fec_controller),
@@ -168,8 +166,7 @@ void RtpTransportControllerSend::SetAllocatedSendBitrateLimits(
     int max_padding_bitrate_bps,
     int max_total_bitrate_bps) {
   RTC_DCHECK_RUN_ON(&task_queue_);
-  streams_config_.min_total_allocated_bitrate =
-      DataRate::bps(min_send_bitrate_bps);
+  streams_config_.min_pacing_rate = DataRate::bps(min_send_bitrate_bps);
   streams_config_.max_padding_rate = DataRate::bps(max_padding_bitrate_bps);
   streams_config_.max_total_allocated_bitrate =
       DataRate::bps(max_total_bitrate_bps);
@@ -403,7 +400,7 @@ void RtpTransportControllerSend::OnReceivedRtcpReceiverReport(
     report.receive_time = Timestamp::ms(now_ms);
     report.round_trip_time = TimeDelta::ms(rtt_ms);
     report.smoothed = false;
-    if (controller_ && !report.round_trip_time.IsZero())
+    if (controller_)
       PostUpdates(controller_->OnRoundTripTimeUpdate(report));
   });
 }
@@ -475,7 +472,7 @@ void RtpTransportControllerSend::UpdateInitialConstraints(
 void RtpTransportControllerSend::StartProcessPeriodicTasks() {
   if (!pacer_queue_update_task_.Running()) {
     pacer_queue_update_task_ = RepeatingTaskHandle::DelayedStart(
-        task_queue_.Get(), kPacerQueueUpdateInterval, [this]() {
+        &task_queue_, kPacerQueueUpdateInterval, [this]() {
           RTC_DCHECK_RUN_ON(&task_queue_);
           TimeDelta expected_queue_time =
               TimeDelta::ms(pacer_.ExpectedQueueTimeMs());
@@ -487,7 +484,7 @@ void RtpTransportControllerSend::StartProcessPeriodicTasks() {
   controller_task_.Stop();
   if (process_interval_.IsFinite()) {
     controller_task_ = RepeatingTaskHandle::DelayedStart(
-        task_queue_.Get(), process_interval_, [this]() {
+        &task_queue_, process_interval_, [this]() {
           RTC_DCHECK_RUN_ON(&task_queue_);
           UpdateControllerWithTimeInterval();
           return process_interval_;

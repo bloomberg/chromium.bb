@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/platform/heap/gc_info.h"
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
 #include "third_party/blink/renderer/platform/heap/process_heap.h"
+#include "third_party/blink/renderer/platform/heap/stack_frame_depth.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/heap/worklist.h"
@@ -199,6 +200,8 @@ class PLATFORM_EXPORT ThreadHeap {
   static inline bool IsHeapObjectAlive(const UntracedMember<T>& member) {
     return IsHeapObjectAlive(member.Get());
   }
+
+  StackFrameDepth& GetStackFrameDepth() { return stack_frame_depth_; }
 
   MarkingWorklist* GetMarkingWorklist() const {
     return marking_worklist_.get();
@@ -471,6 +474,7 @@ class PLATFORM_EXPORT ThreadHeap {
   // No duplicates allowed for ephemeron callbacks. Hence, we use a hashmap
   // with the key being the HashTable.
   WTF::HashMap<void*, EphemeronCallback> ephemeron_callbacks_;
+  StackFrameDepth stack_frame_depth_;
 
   std::unique_ptr<HeapCompact> compaction_;
 

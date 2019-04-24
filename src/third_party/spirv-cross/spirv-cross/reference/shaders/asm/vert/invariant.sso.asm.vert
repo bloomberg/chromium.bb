@@ -14,7 +14,6 @@ vec4 _main()
 
 void main()
 {
-    vec4 _14 = _main();
-    gl_Position = _14;
+    gl_Position = _main();
 }
 

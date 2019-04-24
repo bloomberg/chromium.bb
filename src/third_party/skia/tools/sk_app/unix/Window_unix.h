@@ -74,8 +74,6 @@ public:
         }
     }
 
-    void setRequestedDisplayParams(const DisplayParams&, bool allowReattach) override;
-
 private:
     void closeWindow();
 
@@ -92,10 +90,6 @@ private:
     int      fPendingWidth;
     int      fPendingHeight;
     bool     fPendingResize;
-
-    BackendType fBackend;
-
-    typedef Window INHERITED;
 };
 
 }   // namespace sk_app

@@ -8,10 +8,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "components/viz/test/test_context_provider.h"
-#include "gpu/command_buffer/client/shared_image_interface.h"
-#include "gpu/command_buffer/common/shared_image_usage.h"
+#include "components/viz/test/test_gles2_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/color_space.h"
 
 namespace viz {
 namespace {
@@ -24,25 +22,22 @@ TEST(TextureDeleterTest, Destroy) {
       TestContextProvider::Create();
   context_provider->BindToCurrentThread();
 
-  auto* sii = context_provider->SharedImageInterface();
-
-  gpu::Mailbox mailbox =
-      sii->CreateSharedImage(ResourceFormat::RGBA_8888, gfx::Size(1, 1),
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
+  GLuint texture_id = 0u;
+  context_provider->ContextGL()->GenTextures(1, &texture_id);
 
   EXPECT_TRUE(context_provider->HasOneRef());
-  EXPECT_EQ(1u, sii->shared_image_count());
+  EXPECT_EQ(1u, context_provider->TestContextGL()->NumTextures());
 
   std::unique_ptr<SingleReleaseCallback> cb =
-      deleter->GetReleaseCallback(context_provider, mailbox);
+      deleter->GetReleaseCallback(context_provider, texture_id);
   EXPECT_FALSE(context_provider->HasOneRef());
-  EXPECT_EQ(1u, sii->shared_image_count());
+  EXPECT_EQ(1u, context_provider->TestContextGL()->NumTextures());
 
   // When the deleter is destroyed, it immediately drops its ref on the
-  // ContextProvider, and deletes the shared image.
+  // ContextProvider, and deletes the texture.
   deleter = nullptr;
   EXPECT_TRUE(context_provider->HasOneRef());
-  EXPECT_EQ(0u, sii->shared_image_count());
+  EXPECT_EQ(0u, context_provider->TestContextGL()->NumTextures());
 
   // Run the scoped release callback before destroying it, but it won't do
   // anything.
@@ -56,26 +51,23 @@ TEST(TextureDeleterTest, NullTaskRunner) {
       TestContextProvider::Create();
   context_provider->BindToCurrentThread();
 
-  auto* sii = context_provider->SharedImageInterface();
-
-  gpu::Mailbox mailbox =
-      sii->CreateSharedImage(ResourceFormat::RGBA_8888, gfx::Size(1, 1),
-                             gfx::ColorSpace(), gpu::SHARED_IMAGE_USAGE_GLES2);
+  GLuint texture_id = 0u;
+  context_provider->ContextGL()->GenTextures(1, &texture_id);
 
   EXPECT_TRUE(context_provider->HasOneRef());
-  EXPECT_EQ(1u, sii->shared_image_count());
+  EXPECT_EQ(1u, context_provider->TestContextGL()->NumTextures());
 
   std::unique_ptr<SingleReleaseCallback> cb =
-      deleter->GetReleaseCallback(context_provider, mailbox);
+      deleter->GetReleaseCallback(context_provider, texture_id);
   EXPECT_FALSE(context_provider->HasOneRef());
-  EXPECT_EQ(1u, sii->shared_image_count());
+  EXPECT_EQ(1u, context_provider->TestContextGL()->NumTextures());
 
   cb->Run(gpu::SyncToken(), false);
 
   // With no task runner the callback will immediately drops its ref on the
-  // ContextProvider and delete the shared image.
+  // ContextProvider and delete the texture.
   EXPECT_TRUE(context_provider->HasOneRef());
-  EXPECT_EQ(0u, sii->shared_image_count());
+  EXPECT_EQ(0u, context_provider->TestContextGL()->NumTextures());
 }
 
 }  // namespace

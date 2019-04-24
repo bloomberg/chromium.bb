@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="../settings_vars_css.html">
 
 <!-- Common styles for CUPS printer settings. -->
 <dom-module id="cups-printer-shared">
@@ -46,8 +47,7 @@
       }
 
       [slot='dialog-body'] .settings-box .browse-button {
-        margin-bottom: 8px;
-        margin-inline-start: 12px;
+        margin-inline-start: 5px;
       }
 
       [slot='dialog-body'] .last {
@@ -78,7 +78,7 @@
         padding: 0 24px;
         text-align: start;
         width: 100%;
-        @apply --cr-actionable;
+        @apply --settings-actionable;
       }
 
       .list-item:focus {

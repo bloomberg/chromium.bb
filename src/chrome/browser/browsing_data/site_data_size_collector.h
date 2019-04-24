@@ -54,7 +54,7 @@ class SiteDataSizeCollector {
  private:
   // Callback methods to be invoked when fetching the data is complete.
   void OnAppCacheModelInfoLoaded(
-      const std::list<content::StorageUsageInfo>& info_list);
+      scoped_refptr<content::AppCacheInfoCollection>);
   void OnCookiesModelInfoLoaded(const net::CookieList& cookie_list);
   void OnDatabaseModelInfoLoaded(const DatabaseInfoList& database_info_list);
   void OnLocalStorageModelInfoLoaded(

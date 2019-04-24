@@ -155,8 +155,6 @@ class PageHandler : public DevToolsDomainHandler,
       std::unique_ptr<GetAppManifestCallback> callback) override;
 
   Response SetWebLifecycleState(const std::string& state) override;
-  void GetInstallabilityErrors(
-      std::unique_ptr<GetInstallabilityErrorsCallback> callback) override;
 
  private:
   enum EncodingFormat { PNG, JPEG };

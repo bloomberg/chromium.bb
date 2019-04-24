@@ -118,16 +118,13 @@ class CacheEntry : public DoublyLinkedListNode<CacheEntry> {
 
 class DecoderCacheEntry final : public CacheEntry {
  public:
-  DecoderCacheEntry(const ImageFrameGenerator* generator,
-                    int count,
-                    std::unique_ptr<ImageDecoder> decoder,
-                    cc::PaintImage::GeneratorClientId client_id)
-      : CacheEntry(generator, count),
-        cached_decoder_(std::move(decoder)),
-        size_(SkISize::Make(cached_decoder_->DecodedSize().Width(),
-                            cached_decoder_->DecodedSize().Height())),
-        alpha_option_(cached_decoder_->GetAlphaOption()),
-        client_id_(client_id) {}
+  static std::unique_ptr<DecoderCacheEntry> Create(
+      const ImageFrameGenerator* generator,
+      std::unique_ptr<ImageDecoder> decoder,
+      cc::PaintImage::GeneratorClientId client_id) {
+    return base::WrapUnique(
+        new DecoderCacheEntry(generator, 0, std::move(decoder), client_id));
+  }
 
   size_t MemoryUsageInBytes() const override {
     return size_.width() * size_.height() * 4;
@@ -161,6 +158,17 @@ class DecoderCacheEntry final : public CacheEntry {
   ImageDecoder* CachedDecoder() const { return cached_decoder_.get(); }
 
  private:
+  DecoderCacheEntry(const ImageFrameGenerator* generator,
+                    int count,
+                    std::unique_ptr<ImageDecoder> decoder,
+                    cc::PaintImage::GeneratorClientId client_id)
+      : CacheEntry(generator, count),
+        cached_decoder_(std::move(decoder)),
+        size_(SkISize::Make(cached_decoder_->DecodedSize().Width(),
+                            cached_decoder_->DecodedSize().Height())),
+        alpha_option_(cached_decoder_->GetAlphaOption()),
+        client_id_(client_id) {}
+
   std::unique_ptr<ImageDecoder> cached_decoder_;
   SkISize size_;
   ImageDecoder::AlphaOption alpha_option_;
@@ -244,7 +252,9 @@ class PLATFORM_EXPORT ImageDecodingStore final {
   USING_FAST_MALLOC(ImageDecodingStore);
 
  public:
-  ImageDecodingStore();
+  static std::unique_ptr<ImageDecodingStore> Create() {
+    return base::WrapUnique(new ImageDecodingStore);
+  }
   ~ImageDecodingStore();
 
   static ImageDecodingStore& Instance();
@@ -277,6 +287,8 @@ class PLATFORM_EXPORT ImageDecodingStore final {
   int DecoderCacheEntries();
 
  private:
+  ImageDecodingStore();
+
   void Prune();
 
   // Called by the memory pressure listener when the memory pressure rises.

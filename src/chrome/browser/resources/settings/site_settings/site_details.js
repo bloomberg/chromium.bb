@@ -55,14 +55,6 @@ Polymer({
     },
 
     /** @private */
-    enableExperimentalWebPlatformFeatures_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures');
-      },
-    },
-
-    /** @private */
     enableSiteSettings_: {
       type: Boolean,
       value: function() {

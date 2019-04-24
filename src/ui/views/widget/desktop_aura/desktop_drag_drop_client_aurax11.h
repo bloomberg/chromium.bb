@@ -17,7 +17,6 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/x/x11.h"
@@ -219,14 +218,14 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   std::unique_ptr<X11DragContext> target_current_context_;
 
   // The modifier state for the most recent mouse move.
-  int current_modifier_state_ = ui::EF_NONE;
+  int current_modifier_state_;
 
   // The Aura window that is currently under the cursor. We need to manually
   // keep track of this because Windows will only call our drag enter method
   // once when the user enters the associated X Window. But inside that X
   // Window there could be multiple aura windows, so we need to generate drag
   // enter events for them.
-  aura::Window* target_window_ = nullptr;
+  aura::Window* target_window_;
 
   // Because Xdnd messages don't contain the position in messages other than
   // the XdndPosition message, we must manually keep track of the last position
@@ -236,7 +235,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
 
   // In the Xdnd protocol, we aren't supposed to send another XdndPosition
   // message until we have received a confirming XdndStatus message.
-  bool waiting_on_status_ = false;
+  bool waiting_on_status_;
 
   // If we would send an XdndPosition message while we're waiting for an
   // XdndStatus response, we need to cache the latest details we'd send.
@@ -250,12 +249,12 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // When the mouse is released, we need to wait for the last XdndStatus message
   // only if we have previously received a status message from
   // |source_current_window_|.
-  bool status_received_since_enter_ = false;
+  bool status_received_since_enter_;
 
   // Source side information.
-  ui::OSExchangeDataProviderAuraX11 const* source_provider_ = nullptr;
-  ::Window source_current_window_ = x11::None;
-  SourceState source_state_ = SOURCE_STATE_OTHER;
+  ui::OSExchangeDataProviderAuraX11 const* source_provider_;
+  ::Window source_current_window_;
+  SourceState source_state_;
 
   // The current drag-drop client that has an active operation. Since we have
   // multiple root windows and multiple DesktopDragDropClientAuraX11 instances
@@ -263,15 +262,14 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   static DesktopDragDropClientAuraX11* g_current_drag_drop_client;
 
   // The operation bitfield as requested by StartDragAndDrop.
-  int drag_operation_ = 0;
+  int drag_operation_;
 
   // We offer the other window a list of possible operations,
   // XdndActionsList. This is the requested action from the other window. This
   // is DRAG_NONE if we haven't sent out an XdndPosition message yet, haven't
   // yet received an XdndStatus or if the other window has told us that there's
   // no action that we can agree on.
-  ui::DragDropTypes::DragOperation negotiated_operation_ =
-      ui::DragDropTypes::DRAG_NONE;
+  ui::DragDropTypes::DragOperation negotiated_operation_;
 
   // Ends the move loop if the target is too slow to respond after the mouse is
   // released.
@@ -286,7 +284,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // The offset of |drag_widget_| relative to the mouse position.
   gfx::Vector2d drag_widget_offset_;
 
-  base::WeakPtrFactory<DesktopDragDropClientAuraX11> weak_ptr_factory_{this};
+  base::WeakPtrFactory<DesktopDragDropClientAuraX11> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopDragDropClientAuraX11);
 };

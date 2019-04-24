@@ -145,6 +145,7 @@ class DisplayWGL : public DisplayGL
     };
     std::map<IUnknown *, D3DObjectHandle> mRegisteredD3DDevices;
 
+    bool mHasWorkerContexts;
     bool mUseARBShare;
 };
 

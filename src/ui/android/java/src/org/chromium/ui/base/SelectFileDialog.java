@@ -31,6 +31,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.ui.ContactsPickerListener;
 import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.R;
 import org.chromium.ui.UiUtils;
@@ -47,7 +48,8 @@ import java.util.concurrent.TimeUnit;
  * a set of accepted file types. The path of the selected file is passed to the native dialog.
  */
 @JNINamespace("ui")
-public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPickerListener {
+public class SelectFileDialog
+        implements WindowAndroid.IntentCallback, ContactsPickerListener, PhotoPickerListener {
     private static final String TAG = "SelectFileDialog";
     private static final String IMAGE_TYPE = "image/";
     private static final String VIDEO_TYPE = "video/";
@@ -155,7 +157,11 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
                         new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION));
 
         List<String> missingPermissions = new ArrayList<>();
-        if (shouldUsePhotoPicker()) {
+        if (shouldUseContactsPicker()) {
+            if (!window.hasPermission(Manifest.permission.READ_CONTACTS)) {
+                missingPermissions.add(Manifest.permission.READ_CONTACTS);
+            }
+        } else if (shouldUsePhotoPicker()) {
             if (BuildInfo.isAtLeastQ()) {
                 String newImagePermission = "android.permission.READ_MEDIA_IMAGES";
                 if (!window.hasPermission(newImagePermission)) {
@@ -243,6 +249,14 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
 
         Activity activity = mWindowAndroid.getActivity().get();
 
+        // Use the new contacts picker, if available.
+        // TODO(finnur): Remove this code path (for opening the Contacts Picker dialog).
+        if (shouldUseContactsPicker()
+                && UiUtils.showContactsPicker(
+                        activity, this, mAllowMultiple, true, true, true, "")) {
+            return;
+        }
+
         // Use the new photo picker, if available.
         List<String> imageMimeTypes = convertToImageMimeTypes(mFileTypes);
         if (shouldUsePhotoPicker()
@@ -309,6 +323,19 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
         List<String> imageMimeTypes = convertToImageMimeTypes(mFileTypes);
         return !captureImage() && imageMimeTypes != null && UiUtils.shouldShowPhotoPicker()
                 && mWindowAndroid.getActivity().get() != null;
+    }
+
+    /**
+     * Determines whether the contacts picker should be used for this select file request.  To be
+     * applicable for the contacts picker, the following must be true:
+     *   1.) Only text/json+contacts must be specicied as an accepted type.
+     *   2.) The contacts picker is supported by the embedder (i.e. Chrome).
+     *   3.) There is a valid Android Activity associated with the file request.
+     */
+    private boolean shouldUseContactsPicker() {
+        if (mFileTypes.size() != 1) return false;
+        if (!mFileTypes.get(0).equals("text/json+contacts")) return false;
+        return UiUtils.shouldShowContactsPicker() && mWindowAndroid.getActivity().get() != null;
     }
 
     /**
@@ -396,6 +423,24 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback, PhotoPick
                     new GetCameraIntentTask(true, mWindowAndroid, this)
                             .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
+                break;
+        }
+    }
+
+    @Override
+    public void onContactsPickerUserAction(
+            @ContactsPickerAction int action, String contactsJson, List<Contact> contacts) {
+        switch (action) {
+            case ContactsPickerAction.CANCEL:
+                onFileNotSelected();
+                break;
+
+            case ContactsPickerAction.CONTACTS_SELECTED:
+                nativeOnContactsSelected(mNativeSelectFileDialog, contactsJson);
+                break;
+
+            case ContactsPickerAction.SELECT_ALL:
+            case ContactsPickerAction.UNDO_SELECT_ALL:
                 break;
         }
     }

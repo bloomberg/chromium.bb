@@ -13,14 +13,10 @@ var OobeTypes = {};
 /**
  * ChromeOS OOBE language descriptor.
  * @typedef {{
- *   code: (string|undefined),
- *   displayName: (string|undefined),
- *   nativeDisplayName: (string|undefined),
- *   optionGroupName: (string|undefined),
- *   selected: boolean,
- *   textDirection: (string|undefined),
- *   title: string,
- *   value: string,
+ *   code: (String|undefined),
+ *   displayName: (String|undefined),
+ *   textDirection: (String|undefined),
+ *   nativeDisplayName: (String|undefined),
  * }}
  */
 OobeTypes.LanguageDsc;
@@ -28,10 +24,9 @@ OobeTypes.LanguageDsc;
 /**
  * ChromeOS OOBE input method descriptor.
  * @typedef {{
- *   optionGroupName: (string|undefined),
- *   selected: boolean,
- *   title: string,
- *   value: string,
+ *   value: (String|undefined),
+ *   title: (String|undefined),
+ *   selected: (Boolean|undefined),
  * }}
  */
 OobeTypes.IMEDsc;
@@ -39,9 +34,9 @@ OobeTypes.IMEDsc;
 /**
  * ChromeOS OOBE demo country descriptor.
  * @typedef {{
- *   value: !string,
- *   title: (string|undefined),
- *   selected: (boolean|undefined),
+ *   value: (String|undefined),
+ *   title: (String|undefined),
+ *   selected: (Boolean|undefined),
  * }}
  */
 OobeTypes.DemoCountryDsc;
@@ -49,11 +44,11 @@ OobeTypes.DemoCountryDsc;
 /**
  * A set of flags of accessibility options for ChromeOS OOBE.
  * @typedef {{
- *   highContrastEnabled: boolean,
- *   spokenFeedbackEnabled: boolean,
- *   screenMagnifierEnabled: boolean,
- *   largeCursorEnabled: boolean,
- *   virtualKeyboardEnabled: boolean,
+ *   highContrastEnabled: Boolean,
+ *   spokenFeedbackEnabled: Boolean,
+ *   screenMagnifierEnabled: Boolean,
+ *   largeCursorEnabled: Boolean,
+ *   virtualKeyboardEnabled: Boolean,
  * }}
  */
 OobeTypes.A11yStatuses;
@@ -75,7 +70,7 @@ OobeTypes.Timezone;
  * @typedef {{
  *   value: (OobeTypes.Timezone|undefined),
  *   title: (String|undefined),
- *   selected: (boolean|undefined),
+ *   selected: (Boolean|undefined),
  * }}
  */
 OobeTypes.TimezoneDsc;
@@ -84,18 +79,18 @@ OobeTypes.TimezoneDsc;
  * OOBE configuration, allows automation during OOBE.
  * Keys are also listed in chrome/browser/chromeos/login/configuration_keys.h
  * @typedef {{
- *   language: (string|undefined),
- *   inputMethod: (string|undefined),
- *   welcomeNext: (boolean|undefined),
- *   enableDemoMode: (boolean|undefined),
- *   demoPreferencesNext: (boolean|undefined),
- *   networkSelectGuid: (string|undefined),
- *   networkOfflineDemo: (boolean|undefined),
- *   eulaAutoAccept: (boolean|undefined),
- *   eulaSendStatistics: (boolean|undefined),
- *   networkUseConnected: (boolean|undefined),
- *   updateSkipNonCritical: (boolean|undefined),
- *   arcTosAutoAccept: (boolean|undefined),
+ *   language: string|undefined,
+ *   inputMethod: string|undefined,
+ *   welcomeNext: boolean|undefined,
+ *   enableDemoMode: boolean|undefined,
+ *   demoPreferencesNext: boolean|undefined,
+ *   networkSelectGuid: string|undefined,
+ *   networkOfflineDemo: boolean|undefined,
+ *   eulaAutoAccept: boolean|undefined,
+ *   eulaSendStatistics: boolean|undefined,
+ *   networkUseConnected: boolean|undefined,
+ *   updateSkipNonCritical: boolean|undefined,
+ *   arcTosAutoAccept: boolean|undefined,
  * }}
  */
 OobeTypes.OobeConfiguration;

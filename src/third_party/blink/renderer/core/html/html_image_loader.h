@@ -30,6 +30,10 @@ namespace blink {
 
 class CORE_EXPORT HTMLImageLoader final : public ImageLoader {
  public:
+  static HTMLImageLoader* Create(Element* element) {
+    return MakeGarbageCollected<HTMLImageLoader>(element);
+  }
+
   explicit HTMLImageLoader(Element*);
   ~HTMLImageLoader() override;
 

@@ -1,11 +1,11 @@
 # Using an Android Emulator
-Always use x86 emulators (or x86\_64 for testing 64-bit APKs). Although arm
-emulators exist, they are so slow that they are not worth your time.
+Always use x86 emulators. Although arm emulators exist, they are so slow that
+they are not worth your time.
 
 ## Building for Emulation
 You need to target the correct architecture via GN args:
 ```gn
-target_cpu = "x86"  # or "x64" if you have an x86_64 emulator
+target_cpu = "x86"
 ```
 
 ## Creating an Emulator Image
@@ -79,7 +79,8 @@ $ ~/Android/Sdk/emulator/emulator @EMULATOR_ID
 You can run an emulator without creating a window on your desktop (useful for
 `ssh`):
 ```shell
-$ ~/Android/Sdk/emulator/emulator -no-window @EMULATOR_ID
+$ sudo apt-get install xvfb-run
+$ xvfb-run ~/Android/Sdk/emulator/emulator -gpu off @EMULATOR_ID
 ```
 
 ### Writable system partition

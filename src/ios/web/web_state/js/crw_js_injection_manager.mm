@@ -59,7 +59,7 @@
 }
 
 - (void)executeJavaScript:(NSString*)script
-        completionHandler:(void (^)(id, NSError*))completionHandler {
+        completionHandler:(web::JavaScriptResultBlock)completionHandler {
   [_receiver executeJavaScript:script completionHandler:completionHandler];
 }
 

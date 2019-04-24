@@ -52,6 +52,7 @@ class ASH_EXPORT LoginMenuView : public LoginBaseBubbleView {
   ~LoginMenuView() override;
 
   void OnHighLightChange(int item_index, bool by_selection);
+  int FindNextItem(bool reverse);
 
   // LoginBaseBubbleView:
   LoginButton* GetBubbleOpener() const override;
@@ -62,8 +63,6 @@ class ASH_EXPORT LoginMenuView : public LoginBaseBubbleView {
   void VisibilityChanged(View* starting_from, bool is_visible) override;
 
  private:
-  views::View* FindNextItem(bool reverse);
-
   // Owned by this class.
   views::ScrollView* scroller_ = nullptr;
 

@@ -40,30 +40,30 @@ namespace {
 
 // The frame border is only visible in restored mode and is hardcoded to 4 px on
 // each side regardless of the system window border size.
-constexpr int kFrameBorderThickness = 4;
+const int kFrameBorderThickness = 4;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
-constexpr int kResizeAreaCornerSize = 16;
+const int kResizeAreaCornerSize = 16;
 // The titlebar never shrinks too short to show the caption button plus some
 // padding below it.
-constexpr int kCaptionButtonHeightWithPadding = 19;
+const int kCaptionButtonHeightWithPadding = 19;
 // The titlebar has a 2 px 3D edge along the top and bottom.
-constexpr int kTitlebarTopAndBottomEdgeThickness = 2;
+const int kTitlebarTopAndBottomEdgeThickness = 2;
 // The icon is inset 2 px from the left frame border.
-constexpr int kIconLeftSpacing = 2;
+const int kIconLeftSpacing = 2;
 // The space between the window icon and the title text.
-constexpr int kTitleIconOffsetX = 4;
+const int kTitleIconOffsetX = 4;
 // The space between the title text and the caption buttons.
-constexpr int kTitleCaptionSpacing = 5;
+const int kTitleCaptionSpacing = 5;
 
 #if defined(OS_CHROMEOS)
 // Chrome OS uses a dark gray.
-constexpr SkColor kDefaultColorFrame = SkColorSetRGB(109, 109, 109);
-constexpr SkColor kDefaultColorFrameInactive = SkColorSetRGB(176, 176, 176);
+const SkColor kDefaultColorFrame = SkColorSetRGB(109, 109, 109);
+const SkColor kDefaultColorFrameInactive = SkColorSetRGB(176, 176, 176);
 #else
 // Windows and Linux use a blue.
-constexpr SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
-constexpr SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
+const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
+const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
 #endif
 
 const gfx::FontList& GetTitleFontList() {
@@ -84,9 +84,20 @@ void LayoutButton(ImageButton* button, const gfx::Rect& bounds) {
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameView, public:
 
-CustomFrameView::CustomFrameView() : frame_background_(new FrameBackground()) {}
+CustomFrameView::CustomFrameView()
+    : frame_(NULL),
+      window_icon_(NULL),
+      minimize_button_(NULL),
+      maximize_button_(NULL),
+      restore_button_(NULL),
+      close_button_(NULL),
+      frame_background_(new FrameBackground()),
+      minimum_title_bar_x_(0),
+      maximum_title_bar_x_(-1) {
+}
 
-CustomFrameView::~CustomFrameView() = default;
+CustomFrameView::~CustomFrameView() {
+}
 
 void CustomFrameView::Init(Widget* frame) {
   frame_ = frame;
@@ -313,7 +324,7 @@ int CustomFrameView::IconSize() const {
   return display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSMICON);
 #else
   // The icon never shrinks below 16 px on a side.
-  constexpr int kIconMinimumSize = 16;
+  const int kIconMinimumSize = 16;
   return std::max(GetTitleFontList().GetHeight(), kIconMinimumSize);
 #endif
 }
@@ -510,7 +521,7 @@ void CustomFrameView::LayoutWindowControls() {
   const std::vector<views::FrameButton>& trailing_buttons =
       button_order->trailing_buttons();
 
-  ImageButton* button = nullptr;
+  ImageButton* button = NULL;
   for (auto it = leading_buttons.begin(); it != leading_buttons.end(); ++it) {
     button = GetImageButton(*it);
     if (!button)
@@ -547,7 +558,7 @@ void CustomFrameView::LayoutTitleBar() {
   // The window title position is calculated based on the icon position, even
   // when there is no icon.
   gfx::Rect icon_bounds(IconBounds());
-  bool show_window_icon = window_icon_ != nullptr;
+  bool show_window_icon = window_icon_ != NULL;
   if (show_window_icon)
     window_icon_->SetBoundsRect(icon_bounds);
 
@@ -601,7 +612,7 @@ ImageButton* CustomFrameView::InitWindowCaptionButton(
 }
 
 ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
-  ImageButton* button = nullptr;
+  ImageButton* button = NULL;
   switch (frame_button) {
     case views::FRAME_BUTTON_MINIMIZE: {
       button = minimize_button_;
@@ -610,7 +621,7 @@ ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
       bool should_show = frame_->widget_delegate()->CanMinimize();
       button->SetVisible(should_show);
       if (!should_show)
-        return nullptr;
+        return NULL;
 
       break;
     }
@@ -623,7 +634,7 @@ ImageButton* CustomFrameView::GetImageButton(views::FrameButton frame_button) {
       bool should_show = frame_->widget_delegate()->CanMaximize();
       button->SetVisible(should_show);
       if (!should_show)
-        return nullptr;
+        return NULL;
 
       break;
     }

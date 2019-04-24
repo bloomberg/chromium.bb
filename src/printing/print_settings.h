@@ -200,9 +200,6 @@ class PRINTING_EXPORT PrintSettings {
 
   void set_username(const std::string& username) { username_ = username; }
   const std::string& username() const { return username_; }
-
-  void set_pin_value(const std::string& pin_value) { pin_value_ = pin_value; }
-  const std::string& pin_value() const { return pin_value_; }
 #endif
 
   // Cookie generator. It is used to initialize PrintedDocument with its
@@ -290,9 +287,6 @@ class PRINTING_EXPORT PrintSettings {
 
   // Username if it's required by the printer.
   std::string username_;
-
-  // PIN code entered by the user.
-  std::string pin_value_;
 #endif
 };
 

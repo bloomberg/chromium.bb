@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_quic_transport.h"
 
-#include "net/quic/platform/impl/quic_chromium_clock.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
+#include "net/third_party/quic/platform/impl/quic_chromium_clock.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
@@ -350,8 +350,8 @@ ScriptPromise RTCQuicTransport::getStats(ScriptState* script_state,
         "The RTCQuicTransport's state is not 'connecting' or 'connected'.");
     return ScriptPromise();
   }
-  auto* promise_resolver =
-      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* promise_resolver =
+      ScriptPromiseResolver::Create(script_state);
   uint32_t request_id = ++get_stats_id_counter_;
   stats_promise_map_.Set(request_id, promise_resolver);
   proxy_->GetStats(request_id);
@@ -389,7 +389,7 @@ void RTCQuicTransport::OnRemoteStopped() {
 
 void RTCQuicTransport::OnStream(QuicStreamProxy* stream_proxy) {
   RTCQuicStream* stream = AddStream(stream_proxy);
-  DispatchEvent(*MakeGarbageCollected<RTCQuicStreamEvent>(stream));
+  DispatchEvent(*RTCQuicStreamEvent::Create(stream));
 }
 
 static RTCQuicTransportStats* CreateRTCQuicTransportStats(

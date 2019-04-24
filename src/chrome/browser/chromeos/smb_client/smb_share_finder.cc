@@ -7,10 +7,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/smb_client/discovery/mdns_host_locator.h"
 #include "chrome/browser/chromeos/smb_client/smb_constants.h"
-#include "chrome/browser/chromeos/smb_client/smb_errors.h"
 
 namespace chromeos {
 namespace smb_client {
@@ -137,9 +135,6 @@ void SmbShareFinder::OnSharesFound(
     const smbprovider::DirectoryEntryListProto& entries) {
   DCHECK_GT(host_counter_, 0u);
   --host_counter_;
-
-  UMA_HISTOGRAM_ENUMERATION("NativeSmbFileShare.GetSharesResult",
-                            TranslateErrorToMountResult(error));
 
   if (error != smbprovider::ErrorType::ERROR_OK) {
     LOG(ERROR) << "Error finding shares: " << error;

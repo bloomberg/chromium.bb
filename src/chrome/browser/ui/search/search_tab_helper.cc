@@ -35,7 +35,6 @@
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/search/search.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/navigation_details.h"
@@ -101,8 +100,7 @@ void RecordNewTabLoadTime(content::WebContents* contents) {
 bool IsHistorySyncEnabled(Profile* profile) {
   syncer::SyncService* sync = ProfileSyncServiceFactory::GetForProfile(profile);
   return sync && sync->IsSyncFeatureEnabled() &&
-         sync->GetUserSettings()->GetSelectedTypes().Has(
-             syncer::UserSelectableType::kHistory);
+         sync->GetUserSettings()->GetChosenDataTypes().Has(syncer::TYPED_URLS);
 }
 
 }  // namespace
@@ -175,7 +173,7 @@ void SearchTabHelper::DidStartNavigation(
     return;
   }
 
-  if (search::IsNTPOrRelatedURL(navigation_handle->GetURL(), profile())) {
+  if (search::IsNTPURL(navigation_handle->GetURL(), profile())) {
     // Set the title on any pending entry corresponding to the NTP. This
     // prevents any flickering of the tab title.
     content::NavigationEntry* entry =

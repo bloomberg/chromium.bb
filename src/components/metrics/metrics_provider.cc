@@ -39,7 +39,7 @@ bool MetricsProvider::HasIndependentMetrics() {
 
 void MetricsProvider::ProvideIndependentMetrics(
     base::OnceCallback<void(bool)> done_callback,
-    ChromeUserMetricsExtension* uma_proto,
+    SystemProfileProto* system_profile_proto,
     base::HistogramSnapshotManager* snapshot_manager) {
   // Either the method HasIndependentMetrics() has been overridden and this
   // method has not, or this method being called without regard to Has().

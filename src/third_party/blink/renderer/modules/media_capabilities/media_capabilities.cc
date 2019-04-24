@@ -16,7 +16,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_media_recorder_handler.h"
-#include "third_party/blink/public/platform/web_transmission_encoding_info_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -24,6 +23,7 @@
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_decoding_info.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_decoding_info_callbacks.h"
+#include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_encoding_info_callbacks.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_capabilities_info.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_configuration.h"
 #include "third_party/blink/renderer/modules/media_capabilities/media_decoding_configuration.h"
@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
-#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -378,37 +377,23 @@ bool IsAudioConfigurationSupported(const WebAudioConfiguration& audio_config,
   if (!media::ParseAudioCodecString(audio_config.mime_type.Ascii(),
                                     audio_config.codec.Ascii(),
                                     &is_audio_codec_ambiguous, &audio_codec)) {
-    *console_warning = StringView("Failed to parse audio contentType: ") +
-                       String{audio_config.mime_type} +
-                       StringView("; codecs=") + String{audio_config.codec};
+    console_warning->append(("Failed to parse audio contentType: " +
+                             audio_config.mime_type.Ascii() +
+                             "; codecs=" + audio_config.codec.Ascii())
+                                .c_str());
 
     return false;
   }
 
   if (is_audio_codec_ambiguous) {
-    *console_warning = StringView("Invalid (ambiguous) audio codec string: ") +
-                       String{audio_config.codec};
+    console_warning->append(("Invalid (ambiguous) audio codec string: " +
+                             audio_config.codec.Ascii())
+                                .c_str());
 
     return false;
   }
 
   return media::IsSupportedAudioType({audio_codec});
-}
-
-void OnMediaCapabilitiesEncodingInfo(
-    ScriptPromiseResolver* resolver,
-    std::unique_ptr<WebMediaCapabilitiesInfo> result) {
-  if (!resolver->GetExecutionContext() ||
-      resolver->GetExecutionContext()->IsContextDestroyed()) {
-    return;
-  }
-
-  Persistent<MediaCapabilitiesInfo> info(MediaCapabilitiesInfo::Create());
-  info->setSupported(result->supported);
-  info->setSmooth(result->smooth);
-  info->setPowerEfficient(result->power_efficient);
-
-  resolver->Resolve(std::move(info));
 }
 
 }  // anonymous namespace
@@ -418,7 +403,7 @@ MediaCapabilities::MediaCapabilities() = default;
 ScriptPromise MediaCapabilities::decodingInfo(
     ScriptState* script_state,
     const MediaDecodingConfiguration* configuration) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
   String message;
@@ -490,9 +475,8 @@ ScriptPromise MediaCapabilities::decodingInfo(
     if (!message.IsEmpty()) {
       if (ExecutionContext* execution_context =
               ExecutionContext::From(script_state)) {
-        execution_context->AddConsoleMessage(
-            mojom::ConsoleMessageSource::kOther,
-            mojom::ConsoleMessageLevel::kWarning, message);
+        execution_context->AddWarningMessage(ConsoleLogger::Source::kOther,
+                                             message);
       }
     }
 
@@ -510,7 +494,7 @@ ScriptPromise MediaCapabilities::decodingInfo(
 ScriptPromise MediaCapabilities::encodingInfo(
     ScriptState* script_state,
     const MediaEncodingConfiguration* configuration) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
   if (!IsValidMediaConfiguration(configuration)) {
@@ -537,39 +521,29 @@ ScriptPromise MediaCapabilities::encodingInfo(
     return promise;
   }
 
+  // TODO(crbug.com/817382): Add "transmission" type support.
   if (configuration->type() == "transmission") {
-    if (auto* handler =
-            Platform::Current()->TransmissionEncodingInfoHandler()) {
-      handler->EncodingInfo(ToWebMediaConfiguration(configuration),
-                            WTF::Bind(&OnMediaCapabilitiesEncodingInfo,
-                                      WrapPersistent(resolver)));
-      return promise;
-    }
-    resolver->Reject(DOMException::Create(
-        DOMExceptionCode::kInvalidStateError,
-        "Platform error: could not get EncodingInfoHandler."));
+    resolver->Reject(
+        DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                             "\"transmission\" type is not implemented yet."));
     return promise;
   }
 
-  if (configuration->type() == "record") {
-    if (auto handler = Platform::Current()->CreateMediaRecorderHandler(
-            ExecutionContext::From(script_state)
-                ->GetTaskRunner(TaskType::kInternalMediaRealTime))) {
-      handler->EncodingInfo(ToWebMediaConfiguration(configuration),
-                            WTF::Bind(&OnMediaCapabilitiesEncodingInfo,
-                                      WrapPersistent(resolver)));
-      return promise;
-    }
+  std::unique_ptr<WebMediaRecorderHandler> handler =
+      Platform::Current()->CreateMediaRecorderHandler(
+          ExecutionContext::From(script_state)
+              ->GetTaskRunner(TaskType::kInternalMediaRealTime));
+  if (!handler) {
     resolver->Reject(DOMException::Create(
         DOMExceptionCode::kInvalidStateError,
         "Platform error: could not create MediaRecorderHandler."));
     return promise;
   }
 
-  resolver->Reject(V8ThrowException::CreateTypeError(
-      script_state->GetIsolate(),
-      "Valid configuration |type| should be either 'transmission' or "
-      "'record'."));
+  handler->EncodingInfo(
+      ToWebMediaConfiguration(configuration),
+      std::make_unique<MediaCapabilitiesEncodingInfoCallbacks>(resolver));
+
   return promise;
 }
 

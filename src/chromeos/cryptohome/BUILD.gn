@@ -11,9 +11,8 @@ component("cryptohome") {
   defines = [ "IS_CHROMEOS_CRYPTOHOME_IMPL" ]
   deps = [
     "//base",
-    "//chromeos/dbus:common",
-    "//chromeos/dbus/cryptohome",
-    "//chromeos/dbus/cryptohome:cryptohome_proto",
+    "//chromeos/dbus",
+    "//chromeos/dbus:cryptohome_proto",
     "//chromeos/login/auth:challenge_response_key",
     "//components/account_id",
     "//components/device_event_log",
@@ -37,8 +36,7 @@ source_set("test_support") {
   testonly = true
   public_deps = [
     ":cryptohome",
-    "//chromeos/dbus/cryptohome",
-    "//chromeos/dbus/cryptohome:cryptohome_proto",
+    "//chromeos/dbus:cryptohome_proto",
   ]
   deps = [
     "//base",

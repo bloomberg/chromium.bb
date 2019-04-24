@@ -64,7 +64,7 @@ static sk_sp<SkShader> make_radial() {
         { 0, 0 },
         { SkIntToScalar(100), SkIntToScalar(100) }
     };
-    SkTileMode tm = SkTileMode::kClamp;
+    SkShader::TileMode tm = SkShader::kClamp_TileMode;
     const SkColor colors[] = { SK_ColorRED, SK_ColorGREEN, };
     const SkScalar pos[] = { SK_Scalar1/4, SK_Scalar1*3/4 };
     SkMatrix scale;

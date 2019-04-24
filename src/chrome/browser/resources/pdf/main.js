@@ -73,16 +73,14 @@ function main() {
   // Set up an event listener to catch scripting messages which are sent prior
   // to the PDFViewer being created.
   window.addEventListener('message', handleScriptingMessage, false);
-  HTMLImports.whenReady(() => {
-    let chain = createBrowserApi();
+  let chain = createBrowserApi();
 
-    // Content settings may not be present in test environments.
-    if (chrome.contentSettings) {
-      chain = chain.then(configureJavaScriptContentSetting);
-    }
+  // Content settings may not be present in test environments.
+  if (chrome.contentSettings) {
+    chain = chain.then(configureJavaScriptContentSetting);
+  }
 
-    chain = chain.then(initViewer);
-  });
+  chain.then(initViewer);
 }
 
 main();

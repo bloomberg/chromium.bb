@@ -12,18 +12,15 @@
 namespace v8 {
 namespace internal {
 
-class V8_EXPORT_PRIVATE IrregexpInterpreter {
+class IrregexpInterpreter {
  public:
-  enum Result { RETRY = -2, EXCEPTION = -1, FAILURE = 0, SUCCESS = 1 };
-  STATIC_ASSERT(EXCEPTION == static_cast<int>(RegExpImpl::RE_EXCEPTION));
-  STATIC_ASSERT(FAILURE == static_cast<int>(RegExpImpl::RE_FAILURE));
-  STATIC_ASSERT(SUCCESS == static_cast<int>(RegExpImpl::RE_SUCCESS));
-
-  // The caller is responsible for initializing registers before each call.
-  static Result Match(Isolate* isolate, Handle<ByteArray> code_array,
-                      Handle<String> subject_string, int* registers,
-                      int start_position);
+  static RegExpImpl::IrregexpResult Match(Isolate* isolate,
+                                          Handle<ByteArray> code,
+                                          Handle<String> subject,
+                                          int* captures,
+                                          int start_position);
 };
+
 
 }  // namespace internal
 }  // namespace v8

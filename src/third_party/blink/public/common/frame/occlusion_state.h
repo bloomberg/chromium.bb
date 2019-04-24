@@ -11,14 +11,14 @@ namespace blink {
 
 // Indicates whether a child frame is occluded or visually altered by content
 // or styles in the parent frame.
-enum class FrameOcclusionState {
+enum FrameOcclusionState {
   // No occlusion determination was made.
-  kUnknown = 0,
+  kUnknownOcclusionState = 0,
   // The frame *may* be occluded or visually altered.
   kPossiblyOccluded = 1,
   // The frame is definitely not occluded or visually altered.
   kGuaranteedNotOccluded = 2,
-  kMaxValue = kGuaranteedNotOccluded,
+  kMaxOcclusionState = kGuaranteedNotOccluded
 };
 
 }  // namespace blink

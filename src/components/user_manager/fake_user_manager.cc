@@ -286,7 +286,7 @@ const std::string& FakeUserManager::GetApplicationLocale() const {
 }
 
 PrefService* FakeUserManager::GetLocalState() const {
-  return local_state_;
+  return nullptr;
 }
 
 bool FakeUserManager::IsEnterpriseManaged() const {

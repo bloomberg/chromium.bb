@@ -141,10 +141,9 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DeferredProxyTest, reporter, ctxInfo) {
                                 sk_sp<GrTexture> tex;
                                 if (SkBackingFit::kApprox == fit) {
                                     tex = resourceProvider->createApproxTexture(
-                                            desc, GrResourceProvider::Flags::kNoPendingIO);
+                                            desc, GrResourceProvider::Flags::kNone);
                                 } else {
-                                    tex = resourceProvider->createTexture(
-                                        desc, budgeted, GrResourceProvider::Flags::kNoPendingIO);
+                                    tex = resourceProvider->createTexture(desc, budgeted);
                                 }
 
                                 sk_sp<GrTextureProxy> proxy =
@@ -177,10 +176,9 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(DeferredProxyTest, reporter, ctxInfo) {
                                 sk_sp<GrTexture> tex;
                                 if (SkBackingFit::kApprox == fit) {
                                     tex = resourceProvider->createApproxTexture(
-                                            desc, GrResourceProvider::Flags::kNoPendingIO);
+                                            desc, GrResourceProvider::Flags::kNone);
                                 } else {
-                                    tex = resourceProvider->createTexture(
-                                        desc, budgeted, GrResourceProvider::Flags::kNoPendingIO);
+                                    tex = resourceProvider->createTexture(desc, budgeted);
                                 }
 
                                 sk_sp<GrTextureProxy> proxy(

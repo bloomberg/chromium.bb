@@ -32,7 +32,6 @@ void CryptAuthV2Enroller::Enroll(
 
 void CryptAuthV2Enroller::OnAttemptFinished(
     const CryptAuthEnrollmentResult& enrollment_result) {
-  DCHECK(callback_);
   std::move(callback_).Run(enrollment_result);
 }
 

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 
 <div id="contenteditable-textbox" role="textbox" contenteditable="true"
     aria-expanded="true" aria-haspopup="true" aria-autocomplete="list"
@@ -100,7 +101,7 @@ function testNext(t) {
     t.step(() => { testEventExpectations(t, nextIds[0], nextIds[1]) });
 }
 
-async_test(function(t) {
+async_test_after_layout_and_paint(function(t) {
     testNext(t);
 }, "Changing active descendant triggers MarkDirty");
 </script>

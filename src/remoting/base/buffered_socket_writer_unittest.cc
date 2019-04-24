@@ -104,7 +104,7 @@ class BufferedSocketWriterTest : public testing::Test {
                                                &socket_data_provider_));
     socket_data_provider_.set_connect_data(
         net::MockConnect(net::SYNCHRONOUS, net::OK));
-    EXPECT_EQ(net::OK, socket_->Connect(net::CompletionOnceCallback()));
+    EXPECT_EQ(net::OK, socket_->Connect(net::CompletionCallback()));
 
     writer_.reset(new BufferedSocketWriter());
     test_buffer_ = base::MakeRefCounted<net::IOBufferWithSize>(kTestBufferSize);

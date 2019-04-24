@@ -466,7 +466,6 @@ void EasyUnlockServiceRegular::OnFeatureStatesChanged(
 
   feature_state_ = it->second;
   LoadRemoteDevices();
-  UpdateAppState();
 }
 
 void EasyUnlockServiceRegular::ShowChromebookAddedNotification() {

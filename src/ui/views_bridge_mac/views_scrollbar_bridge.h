@@ -8,10 +8,10 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
-#include "ui/views_bridge_mac/views_bridge_mac_export.h"
+#include "ui/views/views_export.h"
 
 // The delegate set to ViewsScrollbarBridge.
-class VIEWS_BRIDGE_MAC_EXPORT ViewsScrollbarBridgeDelegate {
+class ViewsScrollbarBridgeDelegate {
  public:
   // Invoked by ViewsScrollbarBridge when the system informs the process that
   // the preferred scroller style has changed
@@ -20,7 +20,6 @@ class VIEWS_BRIDGE_MAC_EXPORT ViewsScrollbarBridgeDelegate {
 
 // A bridge to NSScroller managed by NativeCocoaScrollbar. Serves as a helper
 // class to bridge NSScroller notifications and functions to CocoaScrollbar.
-VIEWS_BRIDGE_MAC_EXPORT
 @interface ViewsScrollbarBridge : NSObject {
  @private
   ViewsScrollbarBridgeDelegate* delegate_;  // Weak. Owns this.

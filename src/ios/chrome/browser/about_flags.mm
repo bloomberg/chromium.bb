@@ -21,7 +21,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/ios/browser/autofill_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
@@ -39,7 +38,6 @@
 #include "components/payments/core/features.h"
 #include "components/search_provider_logos/switches.h"
 #include "components/security_state/core/features.h"
-#include "components/send_tab_to_self/features.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
@@ -51,11 +49,12 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/crash_report/crash_report_flags.h"
+#include "ios/chrome/browser/download/features.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/find_in_page/features.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
-#include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/reading_list/features.h"
+#include "ios/chrome/browser/search_engines/feature_flags.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
@@ -67,7 +66,7 @@
 #include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/web/common/features.h"
+#include "ios/web/public/features.h"
 #include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_view_creation_util.h"
 
@@ -234,6 +233,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          feature_engagement::kIPHDemoMode,
          feature_engagement::kIPHDemoModeChoiceVariations,
          "IPH_DemoMode")},
+    {"preview-usdz", flag_descriptions::kUsdzPreviewName,
+     flag_descriptions::kUsdzPreviewDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(download::kUsdzPreview)},
     {"use-ddljson-api", flag_descriptions::kUseDdljsonApiName,
      flag_descriptions::kUseDdljsonApiDescription, flags_ui::kOsIos,
      MULTI_VALUE_TYPE(kUseDdljsonApiChoices)},
@@ -248,6 +250,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"slim-navigation-manager", flag_descriptions::kSlimNavigationManagerName,
      flag_descriptions::kSlimNavigationManagerDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kSlimNavigationManager)},
+    {"memex-tab-switcher", flag_descriptions::kMemexTabSwitcherName,
+     flag_descriptions::kMemexTabSwitcherDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kMemexTabSwitcher)},
     {"wk-http-system-cookie-store",
      flag_descriptions::kWKHTTPSystemCookieStoreName,
      flag_descriptions::kWKHTTPSystemCookieStoreName, flags_ui::kOsIos,
@@ -305,6 +310,19 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"unified-consent", flag_descriptions::kUnifiedConsentName,
      flag_descriptions::kUnifiedConsentDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(unified_consent::kUnifiedConsent)},
+    {"autofill-dynamic-forms", flag_descriptions::kAutofillDynamicFormsName,
+     flag_descriptions::kAutofillDynamicFormsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillDynamicForms)},
+    {"autofill-no-local-save-on-upload-success",
+     flag_descriptions::kAutofillNoLocalSaveOnUploadSuccessName,
+     flag_descriptions::kAutofillNoLocalSaveOnUploadSuccessDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillNoLocalSaveOnUploadSuccess)},
+    {"autofill-prefilled-fields",
+     flag_descriptions::kAutofillPrefilledFieldsName,
+     flag_descriptions::kAutofillPrefilledFieldsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillPrefilledFields)},
     {"autofill-show-all-profiles-on-prefilled-forms",
      flag_descriptions::kAutofillShowAllSuggestionsOnPrefilledFormsName,
      flag_descriptions::kAutofillShowAllSuggestionsOnPrefilledFormsDescription,
@@ -348,6 +366,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillEnforceMinRequiredFieldsForUpload)},
+    {"browser-container-fullscreen",
+     flag_descriptions::kBrowserContainerFullscreenName,
+     flag_descriptions::kBrowserContainerFullscreenDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kBrowserContainerFullscreen)},
     {"autofill-cache-query-responses",
      flag_descriptions::kAutofillCacheQueryResponsesName,
      flag_descriptions::kAutofillCacheQueryResponsesDescription,
@@ -364,6 +387,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebPageTextAccessibilityName,
      flag_descriptions::kWebPageTextAccessibilityDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::kWebPageTextAccessibility)},
+    {"web-frame-messaging", flag_descriptions::kWebFrameMessagingName,
+     flag_descriptions::kWebFrameMessagingDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kWebFrameMessaging)},
     {"new-password-form-parsing",
      flag_descriptions::kNewPasswordFormParsingName,
      flag_descriptions::kNewPasswordFormParsingDescription, flags_ui::kOsIos,
@@ -376,6 +402,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncSupportSecondaryAccountDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(switches::kSyncSupportSecondaryAccount)},
+    {"out-of-web-fullscreen", flag_descriptions::kOutOfWebFullscreenName,
+     flag_descriptions::kOutOfWebFullscreenDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kOutOfWebFullscreen)},
     {"autofill-manual-fallback-phase-two",
      flag_descriptions::kAutofillManualFallbackPhaseTwoName,
      flag_descriptions::kAutofillManualFallbackPhaseTwoDescription,
@@ -389,6 +418,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxPopupShortcutIconsInZeroStateDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxPopupShortcutIconsInZeroState)},
+    {"custom-search-engines", flag_descriptions::kCustomSearchEnginesName,
+     flag_descriptions::kCustomSearchEnginesDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kCustomSearchEngines)},
     {"use-multilogin-endpoint", flag_descriptions::kUseMultiloginEndpointName,
      flag_descriptions::kUseMultiloginEndpointDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUseMultiloginEndpoint)},
@@ -416,6 +448,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBrowserContainerContainsNTPName,
      flag_descriptions::kBrowserContainerContainsNTPDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kBrowserContainerContainsNTP)},
+    {"external-files-loaded-in-web-state",
+     flag_descriptions::kExternalFilesLoadedInWebStateName,
+     flag_descriptions::kExternalFilesLoadedInWebStateDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(experimental_flags::kExternalFilesLoadedInWebState)},
     {"search-icon-toggle", flag_descriptions::kSearchIconToggleName,
      flag_descriptions::kSearchIconToggleDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kIconForSearchButtonFeature,
@@ -527,8 +564,8 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"web-ui-scheme-handling", flag_descriptions::kWebUISchemeHandlingName,
      flag_descriptions::kWebUISchemeHandlingDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kWebUISchemeHandling)},
-    {"send-uma-cellular", flag_descriptions::kSendUmaOverAnyNetwork,
-     flag_descriptions::kSendUmaOverAnyNetworkDescription, flags_ui::kOsIos,
+    {"send-uma-cellular", flag_descriptions::kSendUmaOverCellularName,
+     flag_descriptions::kSendUmaOverCellularDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUmaCellular)},
     {"enable-sync-uss-passwords",
      flag_descriptions::kEnableSyncUSSPasswordsName,
@@ -543,68 +580,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStorePendingItemInContextName,
      flag_descriptions::kStorePendingItemInContextDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kStorePendingItemInContext)},
-    {"autofill-no-local-save-on-upload-success",
-     flag_descriptions::kAutofillNoLocalSaveOnUploadSuccessName,
-     flag_descriptions::kAutofillNoLocalSaveOnUploadSuccessDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillNoLocalSaveOnUploadSuccess)},
-    {"display-search-engine-favicon",
-     flag_descriptions::kDisplaySearchEngineFaviconName,
-     flag_descriptions::kDisplaySearchEngineFaviconDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kDisplaySearchEngineFavicon)},
-    {"autofill-no-local-save-on-unmask-success",
-     flag_descriptions::kAutofillNoLocalSaveOnUnmaskSuccessName,
-     flag_descriptions::kAutofillNoLocalSaveOnUnmaskSuccessDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess)},
-    {"password-generation-suggestion",
-     flag_descriptions::kPasswordGenerationName,
-     flag_descriptions::kPasswordGenerationDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(features::kPasswordGeneration)},
-    {"new-omnibox-popup-layout", flag_descriptions::kNewOmniboxPopupLayoutName,
-     flag_descriptions::kNewOmniboxPopupLayoutDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kNewOmniboxPopupLayout)},
-    {"fill-on-account-select-http",
-     flag_descriptions::kFillOnAccountSelectHttpName,
-     flag_descriptions::kFillOnAccountSelectHttpDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(password_manager::features::kFillOnAccountSelectHttp)},
-    {"enable-send-tab-to-self", flag_descriptions::kSendTabToSelfName,
-     flag_descriptions::kSendTabToSelfDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(switches::kSyncSendTabToSelf)},
-    {"enable-send-tab-to-self-show-sending-ui",
-     flag_descriptions::kSendTabToSelfShowSendingUIName,
-     flag_descriptions::kSendTabToSelfShowSendingUIDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfShowSendingUI)},
-    {"translate-manual-trigger", flag_descriptions::kTranslateManualTriggerName,
-     flag_descriptions::kTranslateManualTriggerDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(translate::kTranslateMobileManualTrigger)},
-    {"omnibox-use-default-search-engine-favicon",
-     flag_descriptions::kOmniboxUseDefaultSearchEngineFaviconName,
-     flag_descriptions::kOmniboxUseDefaultSearchEngineFaviconDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kOmniboxUseDefaultSearchEngineFavicon)},
-    {"enable-autofill-import-dynamic-forms",
-     flag_descriptions::kEnableAutofillImportDynamicFormsName,
-     flag_descriptions::kEnableAutofillImportDynamicFormsDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillImportDynamicForms)},
-    {"enable-autofill-import-non-focusable-credit-card-forms",
-     flag_descriptions::kEnableAutofillImportNonFocusableCreditCardFormsName,
-     flag_descriptions::
-         kEnableAutofillImportNonFocusableCreditCardFormsDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillImportNonFocusableCreditCardForms)},
-    {"enable-autofill-do-not-upload-save-unsupported-cards",
-     flag_descriptions::kEnableAutofillDoNotUploadSaveUnsupportedCardsName,
-     flag_descriptions::
-         kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillDoNotUploadSaveUnsupportedCards)},
 };
 
 // Add all switches from experimental flags to |command_line|.

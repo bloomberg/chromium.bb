@@ -37,14 +37,13 @@ void CXFA_Measurement::SetString(WideStringView wsMeasure) {
     return;
   }
 
-  if (wsMeasure[0] == L'=')
-    wsMeasure = wsMeasure.Right(wsMeasure.GetLength() - 1);
-
   int32_t iUsedLen = 0;
-  float fValue = FXSYS_wcstof(wsMeasure.unterminated_c_str(),
-                              wsMeasure.GetLength(), &iUsedLen);
-  wsMeasure = wsMeasure.Right(wsMeasure.GetLength() - iUsedLen);
-  Set(fValue, GetUnitFromString(wsMeasure));
+  int32_t iOffset = (wsMeasure[0] == L'=') ? 1 : 0;
+  float fValue = FXSYS_wcstof(wsMeasure.unterminated_c_str() + iOffset,
+                              wsMeasure.GetLength() - iOffset, &iUsedLen);
+  XFA_Unit eUnit = GetUnitFromString(
+      wsMeasure.Right(wsMeasure.GetLength() - (iOffset + iUsedLen)));
+  Set(fValue, eUnit);
 }
 
 WideString CXFA_Measurement::ToString() const {

@@ -27,6 +27,10 @@ class CORE_EXPORT CanvasFontCache final
   USING_PRE_FINALIZER(CanvasFontCache, Dispose);
 
  public:
+  static CanvasFontCache* Create(Document& document) {
+    return MakeGarbageCollected<CanvasFontCache>(document);
+  }
+
   explicit CanvasFontCache(Document&);
 
   MutableCSSPropertyValueSet* ParseFont(const String&);

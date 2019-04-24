@@ -1,3 +1,0 @@
-AXWebArea
-++AXLevelIndicator AXValue='50' AXDescription='funding'
-++AXLevelIndicator AXValue='10' AXDescription='funding'

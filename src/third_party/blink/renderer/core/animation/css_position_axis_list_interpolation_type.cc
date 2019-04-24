@@ -15,11 +15,12 @@ namespace blink {
 InterpolationValue
 CSSPositionAxisListInterpolationType::ConvertPositionAxisCSSValue(
     const CSSValue& value) {
-  if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
+  if (value.IsValuePair()) {
+    const CSSValuePair& pair = ToCSSValuePair(value);
     InterpolationValue result =
-        LengthInterpolationFunctions::MaybeConvertCSSValue(pair->Second());
-    CSSValueID side = To<CSSIdentifierValue>(pair->First()).GetValueID();
-    if (side == CSSValueID::kRight || side == CSSValueID::kBottom)
+        LengthInterpolationFunctions::MaybeConvertCSSValue(pair.Second());
+    CSSValueID side = ToCSSIdentifierValue(pair.First()).GetValueID();
+    if (side == CSSValueRight || side == CSSValueBottom)
       LengthInterpolationFunctions::SubtractFromOneHundredPercent(result);
     return result;
   }
@@ -27,18 +28,18 @@ CSSPositionAxisListInterpolationType::ConvertPositionAxisCSSValue(
   if (value.IsPrimitiveValue())
     return LengthInterpolationFunctions::MaybeConvertCSSValue(value);
 
-  const auto* ident = DynamicTo<CSSIdentifierValue>(value);
-  if (!ident)
+  if (!value.IsIdentifierValue())
     return nullptr;
 
-  switch (ident->GetValueID()) {
-    case CSSValueID::kLeft:
-    case CSSValueID::kTop:
+  const CSSIdentifierValue& ident = ToCSSIdentifierValue(value);
+  switch (ident.GetValueID()) {
+    case CSSValueLeft:
+    case CSSValueTop:
       return LengthInterpolationFunctions::CreateInterpolablePercent(0);
-    case CSSValueID::kRight:
-    case CSSValueID::kBottom:
+    case CSSValueRight:
+    case CSSValueBottom:
       return LengthInterpolationFunctions::CreateInterpolablePercent(100);
-    case CSSValueID::kCenter:
+    case CSSValueCenter:
       return LengthInterpolationFunctions::CreateInterpolablePercent(50);
     default:
       NOTREACHED();
@@ -55,7 +56,7 @@ InterpolationValue CSSPositionAxisListInterpolationType::MaybeConvertValue(
         1, [&value](size_t) { return ConvertPositionAxisCSSValue(value); });
   }
 
-  const auto& list = To<CSSValueList>(value);
+  const CSSValueList& list = ToCSSValueList(value);
   return ListInterpolationFunctions::CreateList(
       list.length(), [&list](wtf_size_t index) {
         return ConvertPositionAxisCSSValue(list.Item(index));

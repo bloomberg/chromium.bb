@@ -184,24 +184,19 @@ enum AppListPageSwitcherSource {
   kMouseWheelScroll = 4,
   kMousePadScroll = 5,
   kDragAppToBorder = 6,
-  kMoveAppWithKeyboard = 7,
-  kMaxAppListPageSwitcherSource = 8,
+  kMaxAppListPageSwitcherSource = 7,
 };
 
 // The different ways to move an app in app list's apps grid. These values are
 // written to logs. New enum values can be added, but existing enums must never
 // be renumbered or deleted and reused.
 enum AppListAppMovingType {
-  kMoveByDragIntoFolder = 0,
-  kMoveByDragOutOfFolder = 1,
+  kMoveIntoFolder = 0,
+  kMoveOutOfFolder = 1,
   kMoveIntoAnotherFolder = 2,
-  kReorderByDragInFolder = 3,
-  kReorderByDragInTopLevel = 4,
-  kReorderByKeyboardInFolder = 5,
-  kReorderByKeyboardInTopLevel = 6,
-  kMoveByKeyboardIntoFolder = 7,
-  kMoveByKeyboardOutOfFolder = 8,
-  kMaxAppListAppMovingType = 9,
+  kReorderInFolder = 3,
+  kReorderInTopLevel = 4,
+  kMaxAppListAppMovingType = 5,
 };
 
 // Different places a search result can be launched from. These values do not
@@ -226,9 +221,6 @@ void RecordZeroStateSearchResultUserActionHistogram(
 
 void RecordZeroStateSearchResultRemovalHistogram(
     ZeroStateSearchResutRemovalConfirmation removal_decision);
-
-APP_LIST_EXPORT void RecordSearchAbandonWithQueryLengthHistogram(
-    int query_length);
 
 APP_LIST_EXPORT void RecordSearchResultOpenSource(
     const SearchResult* result,

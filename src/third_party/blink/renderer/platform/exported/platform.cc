@@ -66,7 +66,6 @@
 #include "third_party/blink/renderer/platform/scheduler/common/simple_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/webrtc/api/async_resolver_factory.h"
 #include "third_party/webrtc/api/rtp_parameters.h"
@@ -77,8 +76,6 @@ namespace blink {
 namespace {
 
 class DefaultConnector {
-  USING_FAST_MALLOC(DefaultConnector);
-
  public:
   DefaultConnector() {
     service_manager::mojom::ConnectorRequest request;
@@ -190,9 +187,12 @@ void Platform::InitializeCommon(Platform* platform,
 
   ProcessHeap::Init();
   MemoryPressureListenerRegistry::Initialize();
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      BlinkGCMemoryDumpProvider::Instance(), "BlinkGC",
-      base::ThreadTaskRunnerHandle::Get());
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::trace_event::MemoryDumpProvider::Options options;
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        BlinkGCMemoryDumpProvider::Instance(), "BlinkGC",
+        base::ThreadTaskRunnerHandle::Get(), options);
+  }
 
   ThreadState::AttachMainThread();
 

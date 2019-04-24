@@ -33,7 +33,7 @@ class CORE_EXPORT DOMWindowPerformance final
  private:
   WindowPerformance* performance();
 
-  Member<WindowPerformance> performance_;
+  TraceWrapperMember<WindowPerformance> performance_;
   DISALLOW_COPY_AND_ASSIGN(DOMWindowPerformance);
 };
 

@@ -17,7 +17,10 @@ namespace blink {
 
 class MockImageResourceObserver final : public ImageResourceObserver {
  public:
-  explicit MockImageResourceObserver(ImageResourceContent*);
+  static std::unique_ptr<MockImageResourceObserver> Create(
+      ImageResourceContent* content) {
+    return base::WrapUnique(new MockImageResourceObserver(content));
+  }
   ~MockImageResourceObserver() override;
 
   void RemoveAsObserver();
@@ -38,6 +41,8 @@ class MockImageResourceObserver final : public ImageResourceObserver {
   CanDeferInvalidation Defer() const { return defer_; }
 
  private:
+  explicit MockImageResourceObserver(ImageResourceContent*);
+
   // ImageResourceObserver overrides.
   void ImageNotifyFinished(ImageResourceContent*) override;
   void ImageChanged(ImageResourceContent*, CanDeferInvalidation) override;

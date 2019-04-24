@@ -52,6 +52,10 @@ class DeprecatedStorageInfo final : public ScriptWrappable {
     kPersistent,
   };
 
+  static DeprecatedStorageInfo* Create() {
+    return MakeGarbageCollected<DeprecatedStorageInfo>();
+  }
+
   DeprecatedStorageInfo();
 
   void queryUsageAndQuota(ScriptState*,

@@ -32,8 +32,8 @@ class CaptureTrackingView : public views::View {
 
  private:
   // See description above getters.
-  bool got_press_ = false;
-  bool got_capture_lost_ = false;
+  bool got_press_;
+  bool got_capture_lost_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptureTrackingView);
 };

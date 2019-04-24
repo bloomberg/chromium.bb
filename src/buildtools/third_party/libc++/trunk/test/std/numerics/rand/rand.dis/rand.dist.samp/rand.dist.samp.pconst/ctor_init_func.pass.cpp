@@ -16,6 +16,8 @@
 // piecewise_constant_distribution(initializer_list<result_type> bl,
 //                                 UnaryOperation fw);
 
+#include <iostream>
+
 #include <random>
 #include <cassert>
 

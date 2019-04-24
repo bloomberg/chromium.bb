@@ -14,7 +14,8 @@
 namespace blink {
 
 TEST(StyleElementTest, CreateSheetUsesCache) {
-  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  std::unique_ptr<DummyPageHolder> dummy_page_holder =
+      DummyPageHolder::Create(IntSize(800, 600));
   Document& document = dummy_page_holder->GetDocument();
 
   document.documentElement()->SetInnerHTMLFromString(

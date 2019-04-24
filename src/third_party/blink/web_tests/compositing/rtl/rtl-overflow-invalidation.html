@@ -25,12 +25,18 @@
 </style>
 <script>
     function doTest() {
+        if (window.testRunner) {
+            testRunner.waitUntilDone();
+            testRunner.dumpAsTextWithPixelResults();
+        }
         runAfterLayoutAndPaint(function() {
             // This test passes if this element is repainted correctly, even
             // on a page that is composited and has horizontal overflow.
             var elem = document.getElementById("layer");
             elem.style.backgroundColor = "green";
-        }, true);
+            if (window.testRunner)
+                testRunner.notifyDone();
+        });
     }
     window.addEventListener('load', doTest, false);
 </script>

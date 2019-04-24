@@ -73,8 +73,7 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
         !global_scope_->GetSecurityOrigin()->IsSameSchemeHostPort(
             SecurityOrigin::Create(response_url).get())) {
       error_messages.push_back(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kSecurity,
-          mojom::ConsoleMessageLevel::kError,
+          kSecurityMessageSource, mojom::ConsoleMessageLevel::kError,
           "Refused to cross-origin redirects of the top-level worker script."));
       client_->NotifyFetchFinished(base::nullopt, error_messages);
       return;

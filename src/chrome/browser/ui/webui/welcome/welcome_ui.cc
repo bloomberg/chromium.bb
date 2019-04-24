@@ -4,17 +4,14 @@
 
 #include "chrome/browser/ui/webui/welcome/welcome_ui.h"
 
-#include <map>
-
-#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/dark_mode_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/welcome/nux/bookmark_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/constants.h"
+#include "chrome/browser/ui/webui/welcome/nux/email_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/google_apps_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/ntp_background_handler.h"
 #include "chrome/browser/ui/webui/welcome/nux/set_as_default_handler.h"
@@ -38,19 +35,19 @@
 #endif
 
 namespace {
-
 const bool kIsBranded =
 #if defined(GOOGLE_CHROME_BUILD)
     true;
 #else
     false;
 #endif
+}  // namespace
 
-const char kPreviewBackgroundPath[] = "preview-background.jpg";
-
-bool ShouldHandleRequestCallback(base::WeakPtr<WelcomeUI> weak_ptr,
-                                 const std::string& path) {
-  if (!base::StartsWith(path, kPreviewBackgroundPath,
+bool HandleRequestCallback(
+    base::WeakPtr<WelcomeUI> weak_ptr,
+    const std::string& path,
+    const content::WebUIDataSource::GotDataCallback& callback) {
+  if (!base::StartsWith(path, "preview-background.jpg",
                         base::CompareCase::SENSITIVE)) {
     return false;
   }
@@ -62,22 +59,12 @@ bool ShouldHandleRequestCallback(base::WeakPtr<WelcomeUI> weak_ptr,
     return false;
   }
 
-  return !weak_ptr ? false : true;
-}
+  if (weak_ptr) {
+    weak_ptr->CreateBackgroundFetcher(background_index, callback);
+    return true;
+  }
 
-void HandleRequestCallback(
-    base::WeakPtr<WelcomeUI> weak_ptr,
-    const std::string& path,
-    const content::WebUIDataSource::GotDataCallback& callback) {
-  DCHECK(ShouldHandleRequestCallback(weak_ptr, path));
-
-  std::string index_param = path.substr(path.find_first_of("?") + 1);
-  int background_index = -1;
-  CHECK(base::StringToInt(index_param, &background_index) ||
-        background_index < 0);
-
-  DCHECK(weak_ptr);
-  weak_ptr->CreateBackgroundFetcher(background_index, callback);
+  return false;
 }
 
 void AddOnboardingStrings(content::WebUIDataSource* html_source) {
@@ -89,7 +76,6 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
       {"bookmarkRemoved", IDS_ONBOARDING_WELCOME_BOOKMARK_REMOVED},
       {"bookmarksRemoved", IDS_ONBOARDING_WELCOME_BOOKMARKS_REMOVED},
       {"bookmarkReplaced", IDS_ONBOARDING_WELCOME_BOOKMARK_REPLACED},
-      {"defaultBrowserChanged", IDS_ONBOARDING_DEFAULT_BROWSER_CHANGED},
       {"getStarted", IDS_ONBOARDING_WELCOME_GET_STARTED},
       {"headerText", IDS_WELCOME_HEADER},
       {"next", IDS_ONBOARDING_WELCOME_NEXT},
@@ -100,6 +86,9 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
       {"signInHeader", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_HEADER},
       {"signInSubHeader", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_SUB_HEADER},
       {"signIn", IDS_ONBOARDING_WELCOME_SIGNIN_VIEW_SIGNIN},
+
+      // Email provider module strings.
+      {"emailProviderTitle", IDS_ONBOARDING_WELCOME_NUX_EMAIL_TITLE},
 
       // Google apps module strings.
       {"googleAppsDescription",
@@ -127,25 +116,16 @@ void AddOnboardingStrings(content::WebUIDataSource* html_source) {
       {"landingDescription", IDS_ONBOARDING_WELCOME_LANDING_DESCRIPTION},
       {"landingNewUser", IDS_ONBOARDING_WELCOME_LANDING_NEW_USER},
       {"landingExistingUser", IDS_ONBOARDING_WELCOME_LANDING_EXISTING_USER},
+
+      // Email interstitial strings.
+      {"emailInterstitialTitle",
+       IDS_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_TITLE},
+      {"emailInterstitialContinue",
+       IDS_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_CONTINUE},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
 }
-
-const std::map<std::string, bool>& GetGzipMap() {
-  static std::map<std::string, bool>* gzip_map = nullptr;
-  if (!gzip_map) {
-    gzip_map = new std::map<std::string, bool>();
-    for (size_t i = 0; i < kOnboardingWelcomeResourcesSize; ++i) {
-      (*gzip_map)[kOnboardingWelcomeResources[i].name] =
-          kOnboardingWelcomeResources[i].gzipped;
-    }
-    (*gzip_map)[kPreviewBackgroundPath] = false;
-  }
-  return *gzip_map;
-}
-
-}  // namespace
 
 WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     : content::WebUIController(web_ui), weak_ptr_factory_(this) {
@@ -167,6 +147,9 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
   DarkModeHandler::Initialize(web_ui, html_source);
 
+  bool is_dice =
+      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile);
+
   // There are multiple possible configurations that affects the layout, but
   // first add resources that are shared across all layouts.
   html_source->AddResourcePath("logo.png", IDR_PRODUCT_LOGO_128);
@@ -186,6 +169,11 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     html_source->SetDefaultResource(
         IDR_WELCOME_ONBOARDING_WELCOME_WELCOME_HTML);
 
+    // chrome://welcome/email-interstitial
+    html_source->AddResourcePath(
+        "email-interstitial",
+        IDR_WELCOME_ONBOARDING_WELCOME_EMAIL_INTERSTITIAL_HTML);
+
 #if defined(OS_WIN)
     html_source->AddBoolean(
         "is_win10", base::win::GetVersion() >= base::win::VERSION_WIN10);
@@ -194,6 +182,10 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     // Add the shared bookmark handler for onboarding modules.
     web_ui->AddMessageHandler(
         std::make_unique<nux::BookmarkHandler>(profile->GetPrefs()));
+
+    // Add email provider bookmarking onboarding module.
+    web_ui->AddMessageHandler(std::make_unique<nux::EmailHandler>());
+    nux::EmailHandler::AddSources(html_source);
 
     // Add google apps bookmarking onboarding module.
     web_ui->AddMessageHandler(std::make_unique<nux::GoogleAppsHandler>());
@@ -211,15 +203,13 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
                            nux::GetNuxOnboardingModules(profile)
                                .FindKey("returning-user")
                                ->GetString());
-    html_source->SetRequestFilter(
-        base::BindRepeating(&ShouldHandleRequestCallback,
-                            weak_ptr_factory_.GetWeakPtr()),
-        base::BindRepeating(&HandleRequestCallback,
-                            weak_ptr_factory_.GetWeakPtr()));
-    html_source->UseGzip(base::BindRepeating(&WelcomeUI::IsGzipped));
-    html_source->SetJsonPath("strings.js");
-  } else if (kIsBranded &&
-             AccountConsistencyModeManager::IsDiceEnabledForProfile(profile)) {
+    html_source->AddBoolean("showEmailInterstitial",
+                            nux::GetNuxOnboardingModules(profile)
+                                .FindKey("show-email-interstitial")
+                                ->GetBool());
+    html_source->SetRequestFilter(base::BindRepeating(
+        &HandleRequestCallback, weak_ptr_factory_.GetWeakPtr()));
+  } else if (kIsBranded && is_dice) {
     // Use special layout if the application is branded and DICE is enabled.
     html_source->AddLocalizedString("headerText", IDS_WELCOME_HEADER);
     html_source->AddLocalizedString("acceptText",
@@ -279,10 +269,4 @@ void WelcomeUI::CreateBackgroundFetcher(
 void WelcomeUI::StorePageSeen(Profile* profile) {
   // Store that this profile has been shown the Welcome page.
   profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
-}
-
-bool WelcomeUI::IsGzipped(const std::string& path) {
-  const std::map<std::string, bool>& gzip_map = GetGzipMap();
-  const auto it = gzip_map.find(path);
-  return it == gzip_map.end() || it->second;
 }

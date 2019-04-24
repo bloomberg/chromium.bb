@@ -13,10 +13,11 @@ namespace views {
 
 BaseScrollBarButton::BaseScrollBarButton(ButtonListener* listener)
     : Button(listener),
-      repeater_(base::BindRepeating(&BaseScrollBarButton::RepeaterNotifyClick,
-                                    base::Unretained(this))) {}
+      repeater_(base::Bind(&BaseScrollBarButton::RepeaterNotifyClick,
+                           base::Unretained(this))) {}
 
-BaseScrollBarButton::~BaseScrollBarButton() = default;
+BaseScrollBarButton::~BaseScrollBarButton() {
+}
 
 bool BaseScrollBarButton::OnMousePressed(const ui::MouseEvent& event) {
   Button::NotifyClick(event);

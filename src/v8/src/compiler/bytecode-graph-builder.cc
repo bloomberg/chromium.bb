@@ -886,7 +886,7 @@ void BytecodeGraphBuilder::VisitBytecodes() {
   interpreter::BytecodeArrayIterator iterator(bytecode_array());
   set_bytecode_iterator(&iterator);
   SourcePositionTableIterator source_position_iterator(
-      handle(bytecode_array()->SourcePositionTableIfCollected(), isolate()));
+      handle(bytecode_array()->SourcePositionTable(), isolate()));
 
   if (analyze_environment_liveness() && FLAG_trace_environment_liveness) {
     StdoutStream of;
@@ -1510,18 +1510,18 @@ void BytecodeGraphBuilder::VisitCreateClosure() {
       SharedFunctionInfo::cast(
           bytecode_iterator().GetConstantForIndexOperand(0)),
       isolate());
-  AllocationType allocation =
+  FeedbackSlot slot = bytecode_iterator().GetSlotOperand(1);
+  FeedbackNexus nexus(feedback_vector(), slot);
+  PretenureFlag tenured =
       interpreter::CreateClosureFlags::PretenuredBit::decode(
           bytecode_iterator().GetFlagOperand(2))
-          ? AllocationType::kOld
-          : AllocationType::kYoung;
+          ? TENURED
+          : NOT_TENURED;
   const Operator* op = javascript()->CreateClosure(
-      shared_info,
-      feedback_vector()->GetClosureFeedbackCell(
-          bytecode_iterator().GetIndexOperand(1)),
+      shared_info, nexus.GetFeedbackCell(),
       handle(jsgraph()->isolate()->builtins()->builtin(Builtins::kCompileLazy),
              isolate()),
-      allocation);
+      tenured);
   Node* closure = NewNode(op);
   environment()->BindAccumulator(closure);
 }

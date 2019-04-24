@@ -315,9 +315,6 @@ This option will also try to comply with the above open spec, till Apple's spec 
 Applicable only when @var{streaming} and @var{hls_playlist} options are enabled.
 This is an experimental feature.
 
-@item -master_m3u8_publish_rate @var{master_m3u8_publish_rate}
-Publish master playlist repeatedly every after specified number of segment intervals.
-
 @end table
 
 @anchor{framecrc}
@@ -1629,7 +1626,7 @@ ffmpeg -i file.mpg -c copy \
      out.ts
 @end example
 
-@section mxf, mxf_d10, mxf_opatom
+@section mxf, mxf_d10
 
 MXF muxer.
 
@@ -1641,7 +1638,7 @@ The muxer options are:
 @item store_user_comments @var{bool}
 Set if user comments should be stored if available or never.
 IRT D-10 does not allow user comments. The default is thus to write them for
-mxf and mxf_opatom but not for mxf_d10
+mxf but not for mxf_d10
 @end table
 
 @section null

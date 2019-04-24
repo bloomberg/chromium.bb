@@ -65,8 +65,12 @@ views::View* NetworkTrayView::GetTooltipHandlerForPoint(
   return GetLocalBounds().Contains(point) ? this : nullptr;
 }
 
-base::string16 NetworkTrayView::GetTooltipText(const gfx::Point& p) const {
-  return connection_status_tooltip_;
+bool NetworkTrayView::GetTooltipText(const gfx::Point& p,
+                                     base::string16* tooltip) const {
+  if (connection_status_tooltip_.empty())
+    return false;
+  *tooltip = connection_status_tooltip_;
+  return true;
 }
 
 void NetworkTrayView::NetworkIconChanged() {

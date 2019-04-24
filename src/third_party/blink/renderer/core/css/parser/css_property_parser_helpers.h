@@ -22,14 +22,9 @@ namespace blink {
 class CSSParserContext;
 class CSSPropertyValue;
 class CSSStringValue;
+class CSSURIValue;
 class CSSValuePair;
 class StylePropertyShorthand;
-
-namespace cssvalue {
-
-class CSSURIValue;
-
-}
 
 // When these functions are successful, they will consume all the relevant
 // tokens from the range and also consume any whitespace which follows. When
@@ -94,8 +89,7 @@ CSSCustomIdentValue* ConsumeCustomIdent(CSSParserTokenRange&,
                                         const CSSParserContext&);
 CSSStringValue* ConsumeString(CSSParserTokenRange&);
 StringView ConsumeUrlAsStringView(CSSParserTokenRange&);
-cssvalue::CSSURIValue* ConsumeUrl(CSSParserTokenRange&,
-                                  const CSSParserContext*);
+CSSURIValue* ConsumeUrl(CSSParserTokenRange&, const CSSParserContext*);
 
 CSSValue* ConsumeColor(CSSParserTokenRange&,
                        CSSParserMode,

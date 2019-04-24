@@ -51,11 +51,10 @@ VirtualU2fDevice::VirtualU2fDevice(scoped_refptr<State> state)
 VirtualU2fDevice::~VirtualU2fDevice() = default;
 
 // Cancel operation is not supported on U2F devices.
-void VirtualU2fDevice::Cancel(CancelToken) {}
+void VirtualU2fDevice::Cancel() {}
 
-FidoDevice::CancelToken VirtualU2fDevice::DeviceTransact(
-    std::vector<uint8_t> command,
-    DeviceCallback cb) {
+void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
+                                      DeviceCallback cb) {
   // Note, here we are using the code-under-test in this fake.
   auto parsed_command = apdu::ApduCommand::CreateFromMessage(command);
 
@@ -66,7 +65,7 @@ FidoDevice::CancelToken VirtualU2fDevice::DeviceTransact(
         base::BindOnce(
             std::move(cb),
             ErrorStatus(apdu::ApduResponse::Status::SW_INS_NOT_SUPPORTED)));
-    return 0;
+    return;
   }
 
   if (mutable_state()->simulate_invalid_response) {
@@ -76,7 +75,7 @@ FidoDevice::CancelToken VirtualU2fDevice::DeviceTransact(
                         .GetEncodedResponse();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(cb), std::move(response)));
-    return 0;
+    return;
   }
 
   base::Optional<std::vector<uint8_t>> response;
@@ -102,7 +101,6 @@ FidoDevice::CancelToken VirtualU2fDevice::DeviceTransact(
   // support callback hairpinning.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(cb), std::move(response)));
-  return 0;
 }
 
 base::WeakPtr<FidoDevice> VirtualU2fDevice::GetWeakPtr() {
@@ -178,10 +176,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
   Append(&response, *attestation_cert);
   Append(&response, sig);
 
-  RegistrationData registration_data(
-      std::move(private_key), application_parameter, 1 /* signature counter */);
-  registration_data.is_u2f = true;
-  StoreNewKey(key_handle, std::move(registration_data));
+  StoreNewKey(application_parameter, key_handle, std::move(private_key));
   return apdu::ApduResponse(std::move(response),
                             apdu::ApduResponse::Status::SW_NO_ERROR)
       .GetEncodedResponse();

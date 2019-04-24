@@ -150,8 +150,7 @@ sk_sp<GrTextureProxy> GrAHardwareBufferImageGenerator::makeProxy(GrRecordingCont
 
     sk_sp<GrTextureProxy> texProxy = proxyProvider->createLazyProxy(
             [direct, buffer = AutoAHBRelease(hardwareBuffer), width, height, pixelConfig,
-             isProtectedContent, backendFormat](GrResourceProvider* resourceProvider)
-                    -> GrSurfaceProxy::LazyInstantiationResult {
+             isProtectedContent, backendFormat](GrResourceProvider* resourceProvider) {
                 GrAHardwareBufferUtils::DeleteImageProc deleteImageProc = nullptr;
                 GrAHardwareBufferUtils::DeleteImageCtx deleteImageCtx = nullptr;
 
@@ -164,7 +163,7 @@ sk_sp<GrTextureProxy> GrAHardwareBufferImageGenerator::makeProxy(GrRecordingCont
                                                                    backendFormat,
                                                                    false);
                 if (!backendTex.isValid()) {
-                    return {};
+                    return sk_sp<GrTexture>();
                 }
                 SkASSERT(deleteImageProc && deleteImageCtx);
 
@@ -176,14 +175,14 @@ sk_sp<GrTextureProxy> GrAHardwareBufferImageGenerator::makeProxy(GrRecordingCont
                         backendTex, kBorrow_GrWrapOwnership, GrWrapCacheable::kYes, kRead_GrIOType);
                 if (!tex) {
                     deleteImageProc(deleteImageCtx);
-                    return {};
+                    return sk_sp<GrTexture>();
                 }
 
                 if (deleteImageProc) {
                     tex->setRelease(deleteImageProc, deleteImageCtx);
                 }
 
-                return std::move(tex);
+                return tex;
             },
             backendFormat, desc, fSurfaceOrigin, GrMipMapped::kNo,
             GrInternalSurfaceFlags::kReadOnly, SkBackingFit::kExact, SkBudgeted::kNo);

@@ -38,6 +38,8 @@ class AXObjectCacheImpl;
 
 class AXList final : public AXLayoutObject {
  public:
+  static AXList* Create(LayoutObject*, AXObjectCacheImpl&);
+
   AXList(LayoutObject*, AXObjectCacheImpl&);
   ~AXList() override;
 

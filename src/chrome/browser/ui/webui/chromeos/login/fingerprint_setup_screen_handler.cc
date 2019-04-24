@@ -21,6 +21,8 @@
 
 namespace {
 
+const char kJsScreenPath[] = "login.FingerprintSetupScreen";
+
 // The max number of fingerprints that can be stored.
 constexpr int kMaxAllowedFingerprints = 3;
 
@@ -50,7 +52,7 @@ namespace chromeos {
 FingerprintSetupScreenHandler::FingerprintSetupScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.FingerprintSetupScreen.userActed");
+  set_call_js_prefix(kJsScreenPath);
 
   service_manager::Connector* connector =
       content::ServiceManagerConnection::GetForProcess()->GetConnector();

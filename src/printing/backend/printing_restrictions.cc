@@ -33,7 +33,7 @@ base::Optional<ColorModeRestriction> GetColorModeForName(
 base::Optional<ColorModeRestriction> GetAllowedColorModesForName(
     const std::string& mode_name) {
   if (mode_name == "any")
-    return ColorModeRestriction::kUnset;
+    return ColorModeRestriction::kNone;
 
   return GetColorModeForName(mode_name);
 }
@@ -55,7 +55,7 @@ base::Optional<DuplexModeRestriction> GetDuplexModeForName(
 base::Optional<DuplexModeRestriction> GetAllowedDuplexModesForName(
     const std::string& mode_name) {
   if (mode_name == "any")
-    return DuplexModeRestriction::kUnset;
+    return DuplexModeRestriction::kNone;
 
   if (mode_name == "simplex")
     return DuplexModeRestriction::kSimplex;
@@ -68,11 +68,11 @@ base::Optional<DuplexModeRestriction> GetAllowedDuplexModesForName(
 
 base::Optional<PinModeRestriction> GetPinModeForName(
     const std::string& mode_name) {
-  if (mode_name == "pin")
-    return PinModeRestriction::kPin;
+  if (mode_name == "secure")
+    return PinModeRestriction::kSecure;
 
-  if (mode_name == "no_pin")
-    return PinModeRestriction::kNoPin;
+  if (mode_name == "unsecure")
+    return PinModeRestriction::kUnsecure;
 
   return base::nullopt;
 }
@@ -80,7 +80,7 @@ base::Optional<PinModeRestriction> GetPinModeForName(
 base::Optional<PinModeRestriction> GetAllowedPinModesForName(
     const std::string& mode_name) {
   if (mode_name == "any")
-    return PinModeRestriction::kUnset;
+    return PinModeRestriction::kNone;
 
   return GetPinModeForName(mode_name);
 }

@@ -6,11 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_FRAME_SCHEDULER_IMPL_H_
 
 #include <array>
-#include <bitset>
 #include <memory>
 #include <utility>
 
-#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -104,30 +102,23 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   PageScheduler* GetPageScheduler() const override;
   void DidStartProvisionalLoad(bool is_main_frame) override;
   void DidCommitProvisionalLoad(bool is_web_history_inert_commit,
-                                NavigationType navigation_type) override;
+                                bool is_reload,
+                                bool is_main_frame) override;
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
       const WTF::String& name,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
   void OnFirstMeaningfulPaint() override;
+  std::unique_ptr<ActiveConnectionHandle> OnActiveConnectionCreated() override;
   void AsValueInto(base::trace_event::TracedValue* state) const;
   bool IsExemptFromBudgetBasedThrottling() const override;
   std::unique_ptr<blink::mojom::blink::PauseSubresourceLoadingHandle>
   GetPauseSubresourceLoadingHandle() override;
 
-  void OnStartedUsingFeature(SchedulingPolicy::Feature feature,
-                             const SchedulingPolicy& policy) override;
-  void OnStoppedUsingFeature(SchedulingPolicy::Feature feature,
-                             const SchedulingPolicy& policy) override;
-
-  base::WeakPtr<FrameScheduler> GetWeakPtr() override;
-
   scoped_refptr<base::SingleThreadTaskRunner> ControlTaskRunner();
 
   void UpdatePolicy();
 
-  bool opted_out_from_aggressive_throttling() const {
-    return opted_out_from_aggressive_throttling_;
-  }
+  bool has_active_connection() const { return has_active_connection_; }
 
   void OnTraceLogEnabled() { tracing_controller_.OnTraceLogEnabled(); }
 
@@ -163,20 +154,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   static void InitializeTaskTypeQueueTraitsMap(
       FrameTaskTypeToQueueTraitsArray&);
 
-  // Returns the list of active features which currently opt out this frame
-  // from back-forward cache.
-  WTF::HashSet<SchedulingPolicy::Feature>
-  GetActiveFeaturesOptingOutFromBackForwardCache() override;
-
-  // Notifies the delegate about the change in the set of active features.
-  // The scheduler calls this function when needed after each task finishes,
-  // grouping multiple OnStartedUsingFeature/OnStoppedUsingFeature into
-  // one call to the delegate (which is generally expected to upload them to
-  // the browser process).
-  // No calls will be issued to the delegate if the set of features didn't
-  // change since the previous call.
-  void ReportFeaturesToDelegate();
-
  protected:
   FrameSchedulerImpl(MainThreadSchedulerImpl* main_thread_scheduler,
                      PageSchedulerImpl* parent_page_scheduler,
@@ -203,6 +180,17 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   friend class frame_scheduler_impl_unittest::FrameSchedulerImplTest;
   friend class page_scheduler_impl_unittest::PageSchedulerImplTest;
   friend class ResourceLoadingTaskRunnerHandleImpl;
+
+  class ActiveConnectionHandleImpl : public ActiveConnectionHandle {
+   public:
+    ActiveConnectionHandleImpl(FrameSchedulerImpl* frame_scheduler);
+    ~ActiveConnectionHandleImpl() override;
+
+   private:
+    base::WeakPtr<FrameOrWorkerScheduler> frame_scheduler_;
+
+    DISALLOW_COPY_AND_ASSIGN(ActiveConnectionHandleImpl);
+  };
 
   // A class that adds and removes itself from the passed in weak pointer. While
   // one exists, resource loading is paused.
@@ -237,14 +225,11 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   void UpdateTaskQueueThrottling(MainThreadTaskQueue* task_queue,
                                  bool should_throttle);
 
+  void DidOpenActiveConnection();
+  void DidCloseActiveConnection();
+
   void AddPauseSubresourceLoadingHandle();
   void RemovePauseSubresourceLoadingHandle();
-
-  void OnAddedAggressiveThrottlingOptOut();
-  void OnRemovedAggressiveThrottlingOptOut();
-
-  void OnAddedBackForwardCacheOptOut(SchedulingPolicy::Feature feature);
-  void OnRemovedBackForwardCacheOptOut(SchedulingPolicy::Feature feature);
 
   std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
   CreateResourceLoadingTaskRunnerHandleImpl();
@@ -258,25 +243,12 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   static base::Optional<MainThreadTaskQueue::QueueTraits>
       CreateQueueTraitsForTaskType(TaskType);
 
-  // Reset the state which should not persist across navigations.
-  void ResetForNavigation();
-
-  // Same as GetActiveFeaturesOptingOutFromBackForwardCache, but returns
-  // a mask instead of a set.
-  uint64_t GetActiveFeaturesOptingOutFromBackForwardCacheMask() const;
-
-  base::WeakPtr<FrameOrWorkerScheduler> GetDocumentBoundWeakPtr() override;
-
-  void NotifyDelegateAboutFeaturesAfterCurrentTask();
-
   // Create QueueTraits for the default (non-finch) task queues.
   static MainThreadTaskQueue::QueueTraits ThrottleableTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits DeferrableTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits PausableTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits UnpausableTaskQueueTraits();
   static MainThreadTaskQueue::QueueTraits ForegroundOnlyTaskQueueTraits();
-  static MainThreadTaskQueue::QueueTraits
-  DoesNotUseVirtualTimeTaskQueueTraits();
 
   const FrameScheduler::FrameType frame_type_;
 
@@ -310,21 +282,10 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   StateTracer<TracingCategoryName::kInfo> url_tracer_;
   TraceableState<bool, TracingCategoryName::kInfo> task_queues_throttled_;
   // TODO(kraynov): https://crbug.com/827113
-  // Trace the count of aggressive throttling opt outs.
-  int aggressive_throttling_opt_out_count;
-  TraceableState<bool, TracingCategoryName::kInfo>
-      opted_out_from_aggressive_throttling_;
+  // Trace active connection count.
+  int active_connection_count_;
   size_t subresource_loading_pause_count_;
-  base::flat_map<SchedulingPolicy::Feature, int>
-      back_forward_cache_opt_out_counts_;
-  std::bitset<static_cast<size_t>(SchedulingPolicy::Feature::kCount)>
-      back_forward_cache_opt_outs_;
-  TraceableState<bool, TracingCategoryName::kInfo>
-      opted_out_from_back_forward_cache_;
-  // The last set of features passed to
-  // Delegate::UpdateActiveSchedulerTrackedFeatures.
-  uint64_t last_uploaded_active_features_ = 0;
-  bool feature_report_scheduled_ = false;
+  TraceableState<bool, TracingCategoryName::kInfo> has_active_connection_;
 
   // These are the states of the Page.
   // They should be accessed via GetPageScheduler()->SetPageState().
@@ -334,10 +295,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
       page_visibility_for_tracing_;
   TraceableState<bool, TracingCategoryName::kInfo>
       page_keep_active_for_tracing_;
-
-  // TODO(altimin): Remove after we have have 1:1 relationship between frames
-  // and documents.
-  base::WeakPtrFactory<FrameSchedulerImpl> document_bound_weak_factory_;
 
   base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_;
 

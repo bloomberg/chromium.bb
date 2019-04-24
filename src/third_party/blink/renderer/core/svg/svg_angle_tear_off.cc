@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/svg/svg_angle_tear_off.h"
 
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -131,8 +130,7 @@ void SVGAngleTearOff::setValueAsString(const String& value,
 }
 
 SVGAngleTearOff* SVGAngleTearOff::CreateDetached() {
-  return MakeGarbageCollected<SVGAngleTearOff>(MakeGarbageCollected<SVGAngle>(),
-                                               nullptr, kPropertyIsNotAnimVal);
+  return Create(SVGAngle::Create(), nullptr, kPropertyIsNotAnimVal);
 }
 
 }  // namespace blink

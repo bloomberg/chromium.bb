@@ -19,7 +19,7 @@ std::unique_ptr<base::Value> ParseTracedValue(
 }
 
 TEST(TracedValueTest, FlatDictionary) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetIntegerWithCopiedName("int", 2014);
   value->SetDoubleWithCopiedName("double", 0.0);
   value->SetBooleanWithCopiedName("bool", true);
@@ -40,7 +40,7 @@ TEST(TracedValueTest, FlatDictionary) {
 }
 
 TEST(TracedValueTest, Hierarchy) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetIntegerWithCopiedName("i0", 2014);
   value->BeginDictionaryWithCopiedName("dict1");
   value->SetIntegerWithCopiedName("i1", 2014);
@@ -100,7 +100,7 @@ TEST(TracedValueTest, Hierarchy) {
 }
 
 TEST(TracedValueTest, Escape) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetStringWithCopiedName("s0", "value0\\");
   value->SetStringWithCopiedName("s1", "value\n1");
   value->SetStringWithCopiedName("s2", "\"value2\"");
@@ -128,7 +128,7 @@ TEST(TracedValueTest, Escape) {
 }
 
 TEST(TracedValueTest, NonCopiedNames) {
-  auto value = std::make_unique<TracedValue>();
+  std::unique_ptr<TracedValue> value = TracedValue::Create();
   const char* int_str = "int";
   const char* double_str = "double";
   const char* bool_str = "bool";

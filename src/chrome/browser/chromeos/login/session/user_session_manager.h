@@ -28,7 +28,7 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/arc/net/always_on_vpn_manager.h"
@@ -61,7 +61,6 @@ class UserSessionManagerTestApi;
 class EasyUnlockKeyManager;
 class InputEventsBlocker;
 class LoginDisplayHost;
-class StubAuthenticatorBuilder;
 
 class UserSessionManagerDelegate {
  public:
@@ -480,8 +479,10 @@ class UserSessionManager
   void CreateTokenUtilIfMissing();
 
   // Test API methods.
-  void InjectAuthenticatorBuilder(
-      std::unique_ptr<StubAuthenticatorBuilder> builer);
+
+  // Injects |user_context| that will be used to create StubAuthenticator
+  // instance when CreateAuthenticator() is called.
+  void InjectStubUserContext(const UserContext& user_context);
 
   // Controls whether browser instance should be launched after sign in
   // (used in tests).
@@ -525,7 +526,8 @@ class UserSessionManager
   scoped_refptr<Authenticator> authenticator_;
   StartSessionType start_session_type_;
 
-  std::unique_ptr<StubAuthenticatorBuilder> injected_authenticator_builder_;
+  // Injected user context for stub authenticator.
+  std::unique_ptr<UserContext> injected_user_context_;
 
   // True if the authentication context's cookie jar contains authentication
   // cookies from the authentication extension login flow.

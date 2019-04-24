@@ -49,7 +49,7 @@ public:
      * @return a LocaleDisplayNames instance
      * @stable ICU 4.4
      */
-    inline static LocaleDisplayNames* U_EXPORT2 createInstance(const Locale& locale);
+    static LocaleDisplayNames* U_EXPORT2 createInstance(const Locale& locale);
 
     /**
      * Returns an instance of LocaleDisplayNames that returns names

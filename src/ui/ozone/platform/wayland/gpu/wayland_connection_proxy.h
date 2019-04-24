@@ -5,17 +5,13 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_GPU_WAYLAND_CONNECTION_PROXY_H_
 #define UI_OZONE_PLATFORM_WAYLAND_GPU_WAYLAND_CONNECTION_PROXY_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gl/gl_surface.h"
-#include "ui/ozone/platform/wayland/common/wayland_util.h"
-#include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/wayland_connection.h"
+#include "ui/ozone/platform/wayland/wayland_util.h"
 #include "ui/ozone/public/interfaces/wayland/wayland_connection.mojom.h"
 
 #if defined(WAYLAND_GBM)
@@ -30,7 +26,6 @@ class Rect;
 namespace ui {
 
 class WaylandConnection;
-class WaylandSurfaceFactory;
 class WaylandWindow;
 
 // Provides a proxy connection to a WaylandConnection object on
@@ -42,22 +37,12 @@ class WaylandWindow;
 // sequence.
 class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
  public:
-  WaylandConnectionProxy(WaylandConnection* connection,
-                         WaylandSurfaceFactory* factory);
+  explicit WaylandConnectionProxy(WaylandConnection* connection);
   ~WaylandConnectionProxy() override;
 
   // WaylandConnectionProxy overrides:
   void SetWaylandConnection(ozone::mojom::WaylandConnectionPtr wc_ptr) override;
   void ResetGbmDevice() override;
-  // These two calls get the surface, which backs the |widget| and notifies it
-  // about the submission and the presentation. After the surface receives the
-  // OnSubmission call, it can schedule a new buffer for swap.
-  void OnSubmission(gfx::AcceleratedWidget widget,
-                    uint32_t buffer_id,
-                    gfx::SwapResult swap_result) override;
-  void OnPresentation(gfx::AcceleratedWidget widget,
-                      uint32_t buffer_id,
-                      const gfx::PresentationFeedback& feedback) override;
 
   // Methods, which must be used when GPU is hosted on a different process
   // aka gpu process.
@@ -74,21 +59,16 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
                             uint32_t buffer_id);
 
   // Asks Wayland to destroy a wl_buffer.
-  void DestroyZwpLinuxDmabuf(gfx::AcceleratedWidget widget, uint32_t buffer_id);
+  void DestroyZwpLinuxDmabuf(uint32_t buffer_id);
 
   // Asks Wayland to find a wl_buffer with the |buffer_id| and schedule a
   // buffer swap for a WaylandWindow, which backs the following |widget|.
-  // Once the buffer is submitted and presented, the OnSubmission and
-  // OnPresentation are called. Note, it's not guaranteed the OnPresentation
-  // will follow the OnSubmission immediately, but the OnPresentation must never
-  // be called before the OnSubmission is called for that particular buffer.
-  // This logic must be checked by the client, though the host ensures this
-  // logic as well. This call must not be done twice for the same |widget| until
-  // the OnSubmission is called (which actually means the client can continue
-  // sending buffer swap requests).
+  // The |callback| is called once a frame callback from the Wayland server
+  // is received.
   void ScheduleBufferSwap(gfx::AcceleratedWidget widget,
                           uint32_t buffer_id,
-                          const gfx::Rect& damage_region);
+                          const gfx::Rect& damage_region,
+                          wl::BufferSwapCallback callback);
 
 #if defined(WAYLAND_GBM)
   // Returns a gbm_device based on a DRM render node.
@@ -119,7 +99,7 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   // hosted in the browser process).
   //
   // Return a WaylandWindow based on the |widget|.
-  WaylandWindow* GetWindow(gfx::AcceleratedWidget widget) const;
+  WaylandWindow* GetWindow(gfx::AcceleratedWidget widget);
   // Schedule flush in the Wayland message loop.
   void ScheduleFlush();
 
@@ -128,13 +108,13 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   // Returns a pointer to native display. When used in single process mode,
   // a wl_display pointer is returned. For the the mode, when there are GPU
   // and browser processes, EGL_DEFAULT_DISPLAY is returned.
-  intptr_t Display() const;
+  intptr_t Display();
 
   // Adds a WaylandConnectionClient binding.
   void AddBindingWaylandConnectionClient(
       ozone::mojom::WaylandConnectionClientRequest request);
 
-  WaylandConnection* connection() const { return connection_; }
+  WaylandConnection* connection() { return connection_; }
 
  private:
   void CreateZwpLinuxDmabufInternal(base::File file,
@@ -145,18 +125,11 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
                                     uint32_t current_format,
                                     uint32_t planes_count,
                                     uint32_t buffer_id);
-  void DestroyZwpLinuxDmabufInternal(gfx::AcceleratedWidget widget,
-                                     uint32_t buffer_id);
-
-  void BindHostInterface();
+  void DestroyZwpLinuxDmabufInternal(uint32_t buffer_id);
 
   // Non-owned pointer to a WaylandConnection. It is only used in a single
   // process mode, when a shared dmabuf approach is not used.
-  WaylandConnection* const connection_;
-
-  // Non-owned. Only used to get registered surfaces and notify them about
-  // submission and presentation of buffers.
-  WaylandSurfaceFactory* const factory_;
+  WaylandConnection* connection_ = nullptr;
 
 #if defined(WAYLAND_GBM)
   // A DRM render node based gbm device.
@@ -169,9 +142,7 @@ class WaylandConnectionProxy : public ozone::mojom::WaylandConnectionClient {
   // process side. It's used for a multi-process mode.
   ozone::mojom::WaylandConnectionPtr wc_ptr_;
   ozone::mojom::WaylandConnectionPtrInfo wc_ptr_info_;
-
-  mojo::AssociatedBinding<ozone::mojom::WaylandConnectionClient>
-      associated_binding_;
+  bool bound_ = false;
 
   // A task runner, which is initialized in a multi-process mode. It is used to
   // ensure all the methods of this class are run on GpuMainThread. This is

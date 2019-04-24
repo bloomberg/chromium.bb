@@ -52,6 +52,7 @@ SpoofImpl::SpoofImpl() {
 }
 
 void SpoofImpl::construct(UErrorCode& status) {
+    fMagic = USPOOF_MAGIC;
     fChecks = USPOOF_ALL_CHECKS;
     fSpoofData = NULL;
     fAllowedCharsSet = NULL;
@@ -73,11 +74,12 @@ void SpoofImpl::construct(UErrorCode& status) {
 
 // Copy Constructor, used by the user level clone() function.
 SpoofImpl::SpoofImpl(const SpoofImpl &src, UErrorCode &status)  :
-        fChecks(USPOOF_ALL_CHECKS), fSpoofData(NULL), fAllowedCharsSet(NULL) , 
+        fMagic(0), fChecks(USPOOF_ALL_CHECKS), fSpoofData(NULL), fAllowedCharsSet(NULL) , 
         fAllowedLocales(NULL) {
     if (U_FAILURE(status)) {
         return;
     }
+    fMagic = src.fMagic;
     fChecks = src.fChecks;
     if (src.fSpoofData != NULL) {
         fSpoofData = src.fSpoofData->addReference();
@@ -91,6 +93,8 @@ SpoofImpl::SpoofImpl(const SpoofImpl &src, UErrorCode &status)  :
 }
 
 SpoofImpl::~SpoofImpl() {
+    fMagic = 0;                // head off application errors by preventing use of
+                               //    of deleted objects.
     if (fSpoofData != NULL) {
         fSpoofData->removeReference();   // Will delete if refCount goes to zero.
     }
@@ -100,7 +104,7 @@ SpoofImpl::~SpoofImpl() {
 
 //  Cast this instance as a USpoofChecker for the C API.
 USpoofChecker *SpoofImpl::asUSpoofChecker() {
-    return exportForC();
+    return reinterpret_cast<USpoofChecker*>(this);
 }
 
 //
@@ -108,8 +112,16 @@ USpoofChecker *SpoofImpl::asUSpoofChecker() {
 //    received from the C API.
 //
 const SpoofImpl *SpoofImpl::validateThis(const USpoofChecker *sc, UErrorCode &status) {
-    auto* This = validate(sc, status);
     if (U_FAILURE(status)) {
+        return NULL;
+    }
+    if (sc == NULL) {
+        status = U_ILLEGAL_ARGUMENT_ERROR;
+        return NULL;
+    }
+    SpoofImpl *This = (SpoofImpl *)sc;
+    if (This->fMagic != USPOOF_MAGIC) {
+        status = U_INVALID_FORMAT_ERROR;
         return NULL;
     }
     if (This->fSpoofData != NULL && !This->fSpoofData->validateDataVersion(status)) {
@@ -442,12 +454,12 @@ UChar32 SpoofImpl::ScanHex(const UChar *s, int32_t start, int32_t limit, UErrorC
 //
 //-----------------------------------------
 
-CheckResult::CheckResult() {
+CheckResult::CheckResult() : fMagic(USPOOF_CHECK_MAGIC) {
     clear();
 }
 
 USpoofCheckResult* CheckResult::asUSpoofCheckResult() {
-    return exportForC();
+    return reinterpret_cast<USpoofCheckResult*>(this);
 }
 
 //
@@ -455,11 +467,22 @@ USpoofCheckResult* CheckResult::asUSpoofCheckResult() {
 //    received from the C API.
 //
 const CheckResult* CheckResult::validateThis(const USpoofCheckResult *ptr, UErrorCode &status) {
-    return validate(ptr, status);
+    if (U_FAILURE(status)) { return NULL; }
+    if (ptr == NULL) {
+        status = U_ILLEGAL_ARGUMENT_ERROR;
+        return NULL;
+    }
+    CheckResult *This = (CheckResult*) ptr;
+    if (This->fMagic != USPOOF_CHECK_MAGIC) {
+        status = U_INVALID_FORMAT_ERROR;
+        return NULL;
+    }
+    return This;
 }
 
 CheckResult* CheckResult::validateThis(USpoofCheckResult *ptr, UErrorCode &status) {
-    return validate(ptr, status);
+    return const_cast<CheckResult *>
+        (CheckResult::validateThis(const_cast<const USpoofCheckResult*>(ptr), status));
 }
 
 void CheckResult::clear() {
@@ -729,7 +752,9 @@ void *SpoofData::reserveSpace(int32_t numBytes,  UErrorCode &status) {
         return NULL;
     }
     if (!fDataOwned) {
-        UPRV_UNREACHABLE;
+        U_ASSERT(FALSE);
+        status = U_INTERNAL_PROGRAM_ERROR;
+        return NULL;
     }
 
     numBytes = (numBytes + 15) & ~15;   // Round up to a multiple of 16

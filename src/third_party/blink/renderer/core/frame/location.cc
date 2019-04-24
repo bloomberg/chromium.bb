@@ -96,7 +96,7 @@ String Location::origin() const {
 }
 
 DOMStringList* Location::ancestorOrigins() const {
-  auto* origins = MakeGarbageCollected<DOMStringList>();
+  DOMStringList* origins = DOMStringList::Create();
   if (!IsAttached())
     return origins;
   for (Frame* frame = dom_window_->GetFrame()->Tree().Parent(); frame;
@@ -248,7 +248,8 @@ void Location::reload() {
   // local.
   To<LocalDOMWindow>(dom_window_.Get())
       ->GetFrame()
-      ->Reload(WebFrameLoadType::kReload);
+      ->Reload(WebFrameLoadType::kReload,
+               ClientRedirectPolicy::kClientRedirect);
 }
 
 void Location::SetLocation(const String& url,
@@ -300,7 +301,7 @@ void Location::SetLocation(const String& url,
     String script_source = DecodeURLEscapeSequences(
         completed_url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
     if (!current_document->GetContentSecurityPolicy()->AllowInline(
-            ContentSecurityPolicy::InlineType::kNavigation,
+            ContentSecurityPolicy::InlineType::kJavaScriptURL,
             nullptr /* element */, script_source, String() /* nonce */,
             current_document->Url(), OrdinalNumber())) {
       return;

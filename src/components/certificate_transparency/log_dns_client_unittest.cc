@@ -1001,7 +1001,7 @@ TEST_P(LogDnsClientTest, SecureDnsMode_Secure) {
   rules.emplace_back(
       kLeafIndexQnames[0], net::dns_protocol::kTypeTXT,
       net::SecureDnsMode::SECURE,
-      net::MockDnsClientRule::CreateSecureResult(net::BuildTestDnsTextResponse(
+      net::MockDnsClientRule::CreateSecureResult(net::BuildTestDnsResponse(
           kLeafIndexQnames[0],
           std::vector<std::vector<std::string>>({{"123456"}}))),
       false /* delay */);
@@ -1014,58 +1014,7 @@ TEST_P(LogDnsClientTest, SecureDnsMode_Secure) {
     rules.emplace_back(
         base::StringPrintf("%zu.123456.999999.tree.ct.test.", nodes_begin),
         net::dns_protocol::kTypeTXT, net::SecureDnsMode::SECURE,
-        net::MockDnsClientRule::CreateSecureResult(
-            net::BuildTestDnsTextResponse(
-                base::StringPrintf("%zu.123456.999999.tree.ct.test.",
-                                   nodes_begin),
-                {{std::accumulate(audit_proof.begin() + nodes_begin,
-                                  audit_proof.begin() + nodes_end,
-                                  std::string())}})),
-        false /* delay */
-    );
-  }
-
-  std::unique_ptr<LogDnsClient> log_client =
-      CreateRuleBasedLogDnsClient(std::move(rules));
-
-  std::unique_ptr<LogDnsClient::AuditProofQuery> query;
-  net::TestCompletionCallback callback1;
-  ASSERT_THAT(log_client->QueryAuditProof("ct.test", kLeafHashes[0],
-                                          false /* lookup_securely */, 999999,
-                                          &query, callback1.callback()),
-              IsError(net::ERR_IO_PENDING));
-  EXPECT_THAT(callback1.WaitForResult(), IsError(net::ERR_NAME_NOT_RESOLVED));
-
-  net::TestCompletionCallback callback2;
-  ASSERT_THAT(log_client->QueryAuditProof("ct.test", kLeafHashes[0],
-                                          true /* lookup_securely */, 999999,
-                                          &query, callback2.callback()),
-              IsError(net::ERR_IO_PENDING));
-  EXPECT_THAT(callback2.WaitForResult(), IsOk());
-}
-
-TEST_P(LogDnsClientTest, SecureDnsMode_Insecure) {
-  const std::vector<std::string> audit_proof = GetSampleAuditProof(20);
-
-  net::MockDnsClientRuleList rules;
-  // Make leaf index queries for kLeafIndexQnames[0] successful only when
-  // lookup_securely is false.
-  rules.emplace_back(
-      kLeafIndexQnames[0], net::dns_protocol::kTypeTXT, net::SecureDnsMode::OFF,
-      net::MockDnsClientRule::Result(net::BuildTestDnsTextResponse(
-          kLeafIndexQnames[0],
-          std::vector<std::vector<std::string>>({{"123456"}}))),
-      false /* delay */);
-
-  // Add successful audit proof queries for lookup_securely false.
-  for (size_t nodes_begin = 0; nodes_begin < audit_proof.size();
-       nodes_begin += kMaxProofNodesPerDnsResponse) {
-    const size_t nodes_end = std::min(
-        nodes_begin + kMaxProofNodesPerDnsResponse, audit_proof.size());
-    rules.emplace_back(
-        base::StringPrintf("%zu.123456.999999.tree.ct.test.", nodes_begin),
-        net::dns_protocol::kTypeTXT, net::SecureDnsMode::OFF,
-        net::MockDnsClientRule::Result(net::BuildTestDnsTextResponse(
+        net::MockDnsClientRule::CreateSecureResult(net::BuildTestDnsResponse(
             base::StringPrintf("%zu.123456.999999.tree.ct.test.", nodes_begin),
             {{std::accumulate(audit_proof.begin() + nodes_begin,
                               audit_proof.begin() + nodes_end,
@@ -1078,19 +1027,66 @@ TEST_P(LogDnsClientTest, SecureDnsMode_Insecure) {
       CreateRuleBasedLogDnsClient(std::move(rules));
 
   std::unique_ptr<LogDnsClient::AuditProofQuery> query;
-  net::TestCompletionCallback callback1;
+  net::TestCompletionCallback callback;
   ASSERT_THAT(log_client->QueryAuditProof("ct.test", kLeafHashes[0],
                                           false /* lookup_securely */, 999999,
-                                          &query, callback1.callback()),
+                                          &query, callback.callback()),
               IsError(net::ERR_IO_PENDING));
-  EXPECT_THAT(callback1.WaitForResult(), IsOk());
+  EXPECT_THAT(callback.WaitForResult(), IsError(net::ERR_NAME_NOT_RESOLVED));
 
-  net::TestCompletionCallback callback2;
   ASSERT_THAT(log_client->QueryAuditProof("ct.test", kLeafHashes[0],
                                           true /* lookup_securely */, 999999,
-                                          &query, callback2.callback()),
+                                          &query, callback.callback()),
               IsError(net::ERR_IO_PENDING));
-  EXPECT_THAT(callback2.WaitForResult(), IsError(net::ERR_NAME_NOT_RESOLVED));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+}
+
+TEST_P(LogDnsClientTest, SecureDnsMode_Insecure) {
+  const std::vector<std::string> audit_proof = GetSampleAuditProof(20);
+
+  net::MockDnsClientRuleList rules;
+  // Make leaf index queries for kLeafIndexQnames[0] successful only when
+  // lookup_securely is false.
+  rules.emplace_back(kLeafIndexQnames[0], net::dns_protocol::kTypeTXT,
+                     net::SecureDnsMode::OFF,
+                     net::MockDnsClientRule::Result(net::BuildTestDnsResponse(
+                         kLeafIndexQnames[0],
+                         std::vector<std::vector<std::string>>({{"123456"}}))),
+                     false /* delay */);
+
+  // Add successful audit proof queries for lookup_securely false.
+  for (size_t nodes_begin = 0; nodes_begin < audit_proof.size();
+       nodes_begin += kMaxProofNodesPerDnsResponse) {
+    const size_t nodes_end = std::min(
+        nodes_begin + kMaxProofNodesPerDnsResponse, audit_proof.size());
+    rules.emplace_back(
+        base::StringPrintf("%zu.123456.999999.tree.ct.test.", nodes_begin),
+        net::dns_protocol::kTypeTXT, net::SecureDnsMode::OFF,
+        net::MockDnsClientRule::Result(net::BuildTestDnsResponse(
+            base::StringPrintf("%zu.123456.999999.tree.ct.test.", nodes_begin),
+            {{std::accumulate(audit_proof.begin() + nodes_begin,
+                              audit_proof.begin() + nodes_end,
+                              std::string())}})),
+        false /* delay */
+    );
+  }
+
+  std::unique_ptr<LogDnsClient> log_client =
+      CreateRuleBasedLogDnsClient(std::move(rules));
+
+  std::unique_ptr<LogDnsClient::AuditProofQuery> query;
+  net::TestCompletionCallback callback;
+  ASSERT_THAT(log_client->QueryAuditProof("ct.test", kLeafHashes[0],
+                                          false /* lookup_securely */, 999999,
+                                          &query, callback.callback()),
+              IsError(net::ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  ASSERT_THAT(log_client->QueryAuditProof("ct.test", kLeafHashes[0],
+                                          true /* lookup_securely */, 999999,
+                                          &query, callback.callback()),
+              IsError(net::ERR_IO_PENDING));
+  EXPECT_THAT(callback.WaitForResult(), IsError(net::ERR_NAME_NOT_RESOLVED));
 }
 
 INSTANTIATE_TEST_SUITE_P(ReadMode,

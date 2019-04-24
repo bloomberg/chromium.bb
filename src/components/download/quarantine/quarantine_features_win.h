@@ -9,6 +9,8 @@
 
 namespace download {
 
+extern const base::Feature kAugmentedZoneIdentifier;
+
 extern const base::Feature kInvokeAttachmentServices;
 
 }  // namespace download

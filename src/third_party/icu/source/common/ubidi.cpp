@@ -2047,7 +2047,8 @@ processPropertySeq(UBiDi *pBiDi, LevState *pLevState, uint8_t _prop,
             break;
 
         default:                        /* we should never get here */
-            UPRV_UNREACHABLE;
+            U_ASSERT(FALSE);
+            break;
         }
     }
     if((addLevel) || (start < start0)) {
@@ -2250,7 +2251,8 @@ resolveImplicitLevels(UBiDi *pBiDi,
                 start2=i;
                 break;
             default:            /* we should never get here */
-                UPRV_UNREACHABLE;
+                U_ASSERT(FALSE);
+                break;
             }
         }
     }
@@ -2724,7 +2726,8 @@ ubidi_setPara(UBiDi *pBiDi, const UChar *text, int32_t length,
             break;
         default:
             /* we should never get here */
-            UPRV_UNREACHABLE;
+            U_ASSERT(FALSE);
+            break;
         }
         /*
          * If there are no external levels specified and there

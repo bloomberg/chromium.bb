@@ -11,11 +11,11 @@ import android.view.ViewTreeObserver.OnPreDrawListener;
 import org.junit.Assert;
 
 import org.chromium.base.SysUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -58,18 +58,21 @@ public class Utils {
         final AtomicBoolean accelerated = new AtomicBoolean();
         final CallbackHelper listenerCalled = new CallbackHelper();
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            final View view = activity.getWindow().getDecorView();
-            view.getViewTreeObserver().addOnPreDrawListener(new OnPreDrawListener() {
-                @Override
-                public boolean onPreDraw() {
-                    view.getViewTreeObserver().removeOnPreDrawListener(this);
-                    accelerated.set(view.isHardwareAccelerated());
-                    listenerCalled.notifyCalled();
-                    return true;
-                }
-            });
-            view.invalidate();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                final View view = activity.getWindow().getDecorView();
+                view.getViewTreeObserver().addOnPreDrawListener(new OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        view.getViewTreeObserver().removeOnPreDrawListener(this);
+                        accelerated.set(view.isHardwareAccelerated());
+                        listenerCalled.notifyCalled();
+                        return true;
+                    }
+                });
+                view.invalidate();
+            }
         });
 
         listenerCalled.waitForCallback(0);

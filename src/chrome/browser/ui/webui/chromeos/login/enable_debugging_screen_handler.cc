@@ -11,19 +11,16 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
-#include "chrome/browser/chromeos/login/screens/enable_debugging_screen_view.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-#include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/dbus/power_manager_client.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -31,17 +28,24 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace {
+
+const char kJsScreenPath[] = "login.EnableDebuggingScreen";
+
+}  // namespace
+
 namespace chromeos {
 
 EnableDebuggingScreenHandler::EnableDebuggingScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container),
       weak_ptr_factory_(this) {
+  set_call_js_prefix(kJsScreenPath);
 }
 
 EnableDebuggingScreenHandler::~EnableDebuggingScreenHandler() {
-  if (screen_)
-    screen_->OnViewDestroyed(this);
+  if (delegate_)
+    delegate_->OnViewDestroyed(this);
 }
 
 void EnableDebuggingScreenHandler::ShowWithParams() {
@@ -52,7 +56,8 @@ void EnableDebuggingScreenHandler::ShowWithParams() {
   DVLOG(1) << "Showing enable debugging screen.";
 
   // Wait for cryptohomed before checking debugd. See http://crbug.com/440506.
-  chromeos::CryptohomeClient* client = chromeos::CryptohomeClient::Get();
+  chromeos::CryptohomeClient* client =
+      chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
   client->WaitForServiceToBeAvailable(base::Bind(
       &EnableDebuggingScreenHandler::OnCryptohomeDaemonAvailabilityChecked,
       weak_ptr_factory_.GetWeakPtr()));
@@ -71,8 +76,8 @@ void EnableDebuggingScreenHandler::Hide() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void EnableDebuggingScreenHandler::SetDelegate(EnableDebuggingScreen* screen) {
-  screen_ = screen;
+void EnableDebuggingScreenHandler::SetDelegate(Delegate* delegate) {
+  delegate_ = delegate;
   if (page_is_ready())
     Initialize();
 }
@@ -122,7 +127,7 @@ void EnableDebuggingScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 void EnableDebuggingScreenHandler::Initialize() {
-  if (!page_is_ready() || !screen_)
+  if (!page_is_ready() || !delegate_)
     return;
 
   if (show_on_init_) {
@@ -145,13 +150,13 @@ void EnableDebuggingScreenHandler::RegisterMessages() {
 }
 
 void EnableDebuggingScreenHandler::HandleOnCancel() {
-  if (screen_)
-    screen_->OnExit(false);
+  if (delegate_)
+    delegate_->OnExit(false);
 }
 
 void EnableDebuggingScreenHandler::HandleOnDone() {
-  if (screen_)
-    screen_->OnExit(true);
+  if (delegate_)
+    delegate_->OnExit(true);
 }
 
 void EnableDebuggingScreenHandler::HandleOnRemoveRootFSProtection() {
@@ -278,10 +283,12 @@ void EnableDebuggingScreenHandler::HandleOnLearnMore() {
       l10n_util::GetStringUTF8(IDS_ENABLE_DEBUGGING_HELP);
   const GURL data_url = GURL("data:text/html;charset=utf-8," + help_content);
 
-  LoginWebDialog* dialog =
-      new LoginWebDialog(Profile::FromWebUI(web_ui()), NULL,
-                         LoginDisplayHost::default_host()->GetNativeWindow(),
-                         base::string16(), data_url);
+  LoginWebDialog* dialog = new LoginWebDialog(
+      Profile::FromWebUI(web_ui()),
+      NULL,
+      GetNativeWindow(),
+      base::string16(),
+      data_url);
   dialog->Show();
 }
 

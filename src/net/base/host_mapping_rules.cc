@@ -4,8 +4,6 @@
 
 #include "net/base/host_mapping_rules.h"
 
-#include <string>
-
 #include "base/logging.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_split.h"
@@ -69,10 +67,10 @@ bool HostMappingRules::RewriteHost(HostPortPair* host_port) const {
   return false;
 }
 
-bool HostMappingRules::AddRuleFromString(base::StringPiece rule_string) {
-  std::vector<base::StringPiece> parts = base::SplitStringPiece(
-      base::TrimWhitespaceASCII(rule_string, base::TRIM_ALL), " ",
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+bool HostMappingRules::AddRuleFromString(const std::string& rule_string) {
+  std::vector<std::string> parts =
+      base::SplitString(base::TrimWhitespaceASCII(rule_string, base::TRIM_ALL),
+                        " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // Test for EXCLUSION rule.
   if (parts.size() == 2 && base::LowerCaseEqualsASCII(parts[0], "exclude")) {
@@ -99,15 +97,14 @@ bool HostMappingRules::AddRuleFromString(base::StringPiece rule_string) {
   return false;
 }
 
-void HostMappingRules::SetRulesFromString(base::StringPiece rules_string) {
+void HostMappingRules::SetRulesFromString(const std::string& rules_string) {
   exclusion_rules_.clear();
   map_rules_.clear();
 
-  std::vector<base::StringPiece> rules = base::SplitStringPiece(
-      rules_string, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  for (base::StringPiece rule : rules) {
-    bool ok = AddRuleFromString(rule);
-    LOG_IF(ERROR, !ok) << "Failed parsing rule: " << rule;
+  base::StringTokenizer rules(rules_string, ",");
+  while (rules.GetNext()) {
+    bool ok = AddRuleFromString(rules.token());
+    LOG_IF(ERROR, !ok) << "Failed parsing rule: " << rules.token();
   }
 }
 

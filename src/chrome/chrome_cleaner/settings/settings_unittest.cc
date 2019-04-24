@@ -4,13 +4,9 @@
 
 #include "chrome/chrome_cleaner/settings/settings.h"
 
-#include <algorithm>
-#include <vector>
-
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/chrome_cleaner/constants/chrome_cleaner_switches.h"
-#include "chrome/chrome_cleaner/settings/engine_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_cleaner {
@@ -26,13 +22,8 @@ constexpr char kNonNumericValue[] = "foo";
 class SettingsTest : public testing::Test {
  protected:
   Settings* ReinitializeSettings(const base::CommandLine& command_line) {
-    return ReinitializeSettings(command_line, GetTargetBinary());
-  }
-
-  Settings* ReinitializeSettings(const base::CommandLine& command_line,
-                                 TargetBinary target_binary) {
     Settings* settings = Settings::GetInstance();
-    settings->Initialize(command_line, target_binary);
+    settings->Initialize(command_line, GetTargetBinary());
     return settings;
   }
 
@@ -48,12 +39,9 @@ class SettingsTest : public testing::Test {
 };
 
 TEST_F(SettingsTest, EngineDefaultValue) {
-  ASSERT_NE(GetDefaultEngine(), Engine::UNKNOWN);
-  ASSERT_NE(GetDefaultEngine(), Engine::DEPRECATED_URZA);
-
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   Settings* settings = ReinitializeSettings(command_line);
-  EXPECT_EQ(GetDefaultEngine(), settings->engine());
+  EXPECT_EQ(Engine::URZA, settings->engine());
 }
 
 TEST_F(SettingsTest, ValidEngines) {
@@ -62,12 +50,10 @@ TEST_F(SettingsTest, ValidEngines) {
     command_line.AppendSwitchASCII(chrome_cleaner::kEngineSwitch,
                                    base::NumberToString(index));
     Settings* settings = ReinitializeSettings(command_line);
-    if (index != Engine::UNKNOWN && index != Engine::DEPRECATED_URZA) {
+    if (index != Engine::UNKNOWN)
       EXPECT_EQ(static_cast<Engine::Name>(index), settings->engine());
-    } else {
-      // Fall back to default.
-      EXPECT_EQ(GetDefaultEngine(), settings->engine());
-    }
+    else
+      EXPECT_EQ(Engine::URZA, settings->engine());  // Fallback to default.
   }
 }
 
@@ -76,7 +62,7 @@ TEST_F(SettingsTest, EngineInvalidNumericValue) {
   command_line.AppendSwitchASCII(chrome_cleaner::kEngineSwitch,
                                  base::NumberToString(kInvalidEngineValue));
   Settings* settings = ReinitializeSettings(command_line);
-  EXPECT_EQ(GetDefaultEngine(), settings->engine());
+  EXPECT_EQ(Engine::URZA, settings->engine());
 }
 
 TEST_F(SettingsTest, EngineNonNumericValue) {
@@ -84,7 +70,7 @@ TEST_F(SettingsTest, EngineNonNumericValue) {
   command_line.AppendSwitchASCII(chrome_cleaner::kEngineSwitch,
                                  kNonNumericValue);
   Settings* settings = ReinitializeSettings(command_line);
-  EXPECT_EQ(GetDefaultEngine(), settings->engine());
+  EXPECT_EQ(Engine::URZA, settings->engine());
 }
 
 TEST_F(SettingsTest, CleanerRunId_Generated) {
@@ -207,25 +193,6 @@ TEST_F(SettingsTest, NoLocationsToScanSpecified) {
   EXPECT_TRUE(settings->scan_switches_correct());
 }
 
-TEST_F(SettingsTest, NoProgramFilesScanningOnReporter) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  Settings* cleaner_settings =
-      ReinitializeSettings(command_line, TargetBinary::kCleaner);
-  std::vector<UwS::TraceLocation> cleaner_locations =
-      cleaner_settings->locations_to_scan();
-  EXPECT_NE(std::find(cleaner_locations.begin(), cleaner_locations.end(),
-                      UwS::FOUND_IN_PROGRAMFILES),
-            cleaner_locations.end());
-
-  Settings* reporter_settings =
-      ReinitializeSettings(command_line, TargetBinary::kReporter);
-  std::vector<UwS::TraceLocation> reporter_locations =
-      reporter_settings->locations_to_scan();
-  EXPECT_EQ(std::find(reporter_locations.begin(), reporter_locations.end(),
-                      UwS::FOUND_IN_PROGRAMFILES),
-            reporter_locations.end());
-}
-
 TEST_F(SettingsTest, LimitsToSpecifiedLocations) {
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(kScanLocationsSwitch, "1,2,3");
@@ -261,49 +228,6 @@ TEST_F(SettingsTest, OnlyInvalidLocationsSpecified) {
     // All valid scan locations should be specified.
     EXPECT_LT(1u, settings->locations_to_scan().size());
     EXPECT_FALSE(settings->scan_switches_correct());
-  }
-}
-
-TEST_F(SettingsTest, CorrectOpenFileSizeLimit) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitchASCII(kFileSizeLimitSwitch, "1024");
-  Settings* settings =
-      ReinitializeSettings(command_line, TargetBinary::kReporter);
-  EXPECT_EQ(1024, settings->open_file_size_limit());
-}
-
-TEST_F(SettingsTest, OpenFileSizeLimitInUnsupportedBinary) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitchASCII(kFileSizeLimitSwitch, "1024");
-
-  for (TargetBinary target : {TargetBinary::kCleaner, TargetBinary::kOther}) {
-    Settings* settings = ReinitializeSettings(command_line, target);
-    EXPECT_EQ(0, settings->open_file_size_limit())
-        << "target binary: " << static_cast<int>(target);
-  }
-}
-
-TEST_F(SettingsTest, IncorrectOpenFileSizeLimit) {
-  const struct TestCase {
-    bool file_size_switch_present;
-    std::string file_size_switch_value;
-  } test_cases[] = {
-      {false, ""},            // no switch present
-      {true, ""},             // switch is present, but the value is empty
-      {true, "0"},            // zero file size limit
-      {true, "-100"},         // negative file size limit should be ignored
-      {true, "abracadabra"},  // invalid file size limit, should be ignored.
-  };
-
-  for (const TestCase& test_case : test_cases) {
-    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    if (test_case.file_size_switch_present) {
-      command_line.AppendSwitchASCII(kFileSizeLimitSwitch,
-                                     test_case.file_size_switch_value);
-    }
-    Settings* settings =
-        ReinitializeSettings(command_line, TargetBinary::kReporter);
-    EXPECT_EQ(0, settings->open_file_size_limit());
   }
 }
 

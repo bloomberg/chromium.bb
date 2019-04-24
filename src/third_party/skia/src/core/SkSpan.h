@@ -36,7 +36,6 @@ public:
     constexpr bool empty() const { return fSize == 0; }
     constexpr size_t size_bytes() const { return fSize * sizeof(T); }
     constexpr SkSpan<const T> toConst() const { return SkSpan<const T>{fPtr, fSize}; }
-    constexpr SkSpan<T> first(size_t prefixLen) { return SkSpan<T>{fPtr, prefixLen}; }
 
 private:
     T* fPtr;

@@ -4,7 +4,6 @@
 
 #include "ui/ozone/platform/cast/ozone_platform_cast.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/command_line.h"

@@ -183,7 +183,7 @@ de{
         MF{"St. Martin"}
         MG{"Madagaskar"}
         MH{"Marshallinseln"}
-        MK{"Nordmazedonien"}
+        MK{"Mazedonien (EJR)"}
         ML{"Mali"}
         MM{"Myanmar"}
         MN{"Mongolei"}
@@ -305,8 +305,7 @@ de{
         CG{"Kongo (Republik)"}
         CI{"Elfenbeinküste"}
         CZ{"Tschechische Republik"}
-        SZ{"Eswatini"}
         TL{"Osttimor"}
     }
-    Version{"2.1.48.42"}
+    Version{"2.1.44.91"}
 }

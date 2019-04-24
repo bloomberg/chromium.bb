@@ -62,7 +62,12 @@ void DragDropClientMac::StartDragAndDrop(
   NSImage* image = gfx::NSImageFromImageSkiaWithColorSpace(
       provider_mac.GetDragImage(), base::mac::GetSRGBColorSpace());
 
-  DCHECK(!NSEqualSizes([image size], NSZeroSize));
+  // TODO(crbug/876201): This shouldn't happen. When a repro for this
+  // is identified and the bug is fixed, change the early return to
+  // a DCHECK.
+  if (!image || NSEqualSizes([image size], NSZeroSize))
+    return;
+
   NSDraggingItem* drag_item = provider_mac.GetDraggingItem();
 
   // Subtract the image's height from the y location so that the mouse will be
@@ -114,8 +119,10 @@ void DragDropClientMac::EndDrag() {
   is_drag_source_ = false;
 
   // Allow a test to invoke EndDrag() without spinning the nested run loop.
-  if (!quit_closure_.is_null())
-    std::move(quit_closure_).Run();
+  if (!quit_closure_.is_null()) {
+    quit_closure_.Run();
+    quit_closure_.Reset();
+  }
 }
 
 void DragDropClientMac::DragExit() {

@@ -35,12 +35,15 @@ const base::Feature kNuxOnboardingForceEnabled = {
 // chrome/browser/resources/welcome/onboarding_welcome/welcome_app.js
 const base::FeatureParam<std::string> kNuxOnboardingForceEnabledNewUserModules =
     {&kNuxOnboardingForceEnabled, "new-user-modules",
-     "nux-google-apps,nux-ntp-background,nux-set-as-default,"
+     "nux-google-apps,nux-email,nux-ntp-background,nux-set-as-default,"
      "signin-view"};
 const base::FeatureParam<std::string>
     kNuxOnboardingForceEnabledReturningUserModules = {
         &kNuxOnboardingForceEnabled, "returning-user-modules",
         "nux-set-as-default"};
+// TODO(hcarmona): remove this flag and all code behind it.
+const base::FeatureParam<bool> kNuxOnboardingForceEnabledShowEmailInterstitial =
+    {&kNuxOnboardingForceEnabled, "show-email-interstitial", true};
 
 // Our current running experiment of testing the nux-ntp-background module
 // depends on the Local NTP feature/experiment being enabled. To avoid polluting
@@ -128,14 +131,19 @@ base::DictionaryValue GetNuxOnboardingModules(Profile* profile) {
                       kNuxOnboardingForceEnabledNewUserModules.Get());
     modules.SetString("returning-user",
                       kNuxOnboardingForceEnabledReturningUserModules.Get());
+    modules.SetBoolean("show-email-interstitial",
+                       kNuxOnboardingForceEnabledShowEmailInterstitial.Get());
   } else if (CanExperimentWithVariations(profile)) {
     modules.SetString("new-user", kNuxOnboardingNewUserModules.Get());
     modules.SetString("returning-user",
                       kNuxOnboardingReturningUserModules.Get());
+    modules.SetBoolean("show-email-interstitial",
+                       kNuxOnboardingShowEmailInterstitial.Get());
   } else {
     // Default behavior w/o checking feature flag.
     modules.SetString("new-user", kDefaultNewUserModules);
     modules.SetString("returning-user", kDefaultReturningUserModules);
+    modules.SetBoolean("show-email-interstitial", false);
   }
 
   return modules;

@@ -1118,7 +1118,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
       ++num_suggestions;
     }
 
-    matches_.push_back(std::move(*i));
+    matches_.push_back(*i);
   }
 }
 
@@ -1366,12 +1366,17 @@ int SearchProvider::GetVerbatimRelevance(bool* relevance_from_server) const {
 
 bool SearchProvider::ShouldCurbDefaultSuggestions() const {
   // Only curb if the global experimental keyword feature is enabled, we're
-  // in keyword mode and we believe the user selected the mode explicitly.
-  if (providers_.has_keyword_provider())
-    return InExplicitExperimentalKeywordMode(input_,
-                                             providers_.keyword_provider());
-  else
-    return false;
+  // in keyword mode and the user selected the mode explicitly. For now, we
+  // consider entering keyword mode with spaces to be unintentional and all
+  // other methods as intentional. In this experimental mode, we don't want
+  // non-keyword suggestions if we're not confident that the user entered
+  // keyword mode explicitly.
+  return OmniboxFieldTrial::IsExperimentalKeywordModeEnabled() &&
+         !keyword_input_.text().empty() && keyword_input_.prefer_keyword() &&
+         keyword_input_.keyword_mode_entry_method() !=
+             OmniboxEventProto::SPACE_AT_END &&
+         keyword_input_.keyword_mode_entry_method() !=
+             OmniboxEventProto::SPACE_IN_MIDDLE;
 }
 
 int SearchProvider::CalculateRelevanceForVerbatim() const {
@@ -1521,7 +1526,8 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   match.contents = navigation.match_contents();
   match.contents_class = navigation.match_contents_class();
   match.description = navigation.description();
-  match.description_class = navigation.description_class();
+  AutocompleteMatch::ClassifyMatchInString(input, match.description,
+      ACMatchClassification::NONE, &match.description_class);
 
   match.RecordAdditionalInfo(
       kRelevanceFromServerKey,

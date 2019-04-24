@@ -7,6 +7,7 @@ import sys
 import time
 
 from gpu_tests import gpu_integration_test
+from gpu_tests import context_lost_expectations
 from gpu_tests import path_util
 
 from telemetry.core import exceptions
@@ -62,7 +63,7 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     super(ContextLostIntegrationTest, cls).AddCommandlineArgs(parser)
     parser.add_option('--is-asan',
         help='Indicates whether currently running an ASAN build',
-        action='store_true', default=False)
+        action='store_true')
 
   @staticmethod
   def _AddDefaultArgs(browser_args):
@@ -109,7 +110,8 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   @classmethod
   def _CreateExpectations(cls):
-    raise NotImplementedError
+    return context_lost_expectations.ContextLostExpectations(
+      is_asan=cls._is_asan)
 
   @classmethod
   def SetUpProcess(cls):
@@ -360,21 +362,6 @@ class ContextLostIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     # Attempting to create a WebGL 2.0 context when ES 3.0 is
     # blacklisted should not cause the GPU process to crash.
     self._CheckCrashCount(tab, 0)
-
-  @classmethod
-  def GetPlatformTags(cls, browser):
-    tags = super(ContextLostIntegrationTest, cls).GetPlatformTags(browser)
-    tags.extend(
-        [['no-asan', 'asan'][cls._is_asan]])
-    return tags
-
-  @classmethod
-  def ExpectationsFiles(cls):
-    return [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                     'test_expectations',
-                     'context_lost_expectations.txt')]
-
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

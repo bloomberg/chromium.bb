@@ -41,7 +41,7 @@ TEST_F(QueueingTimeEstimatorTestPerfTest, DISABLED_ManyTasks) {
     time += base::TimeDelta::FromSeconds(1);
     timer_.Reset();
     do {
-      estimator.OnExecutionStarted(time);
+      estimator.OnExecutionStarted(time, nullptr);
       time += task_lengths[i];
       estimator.OnExecutionStopped(time);
       timer_.NextLap();

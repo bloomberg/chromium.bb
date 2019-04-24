@@ -19,7 +19,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.task.PostTask;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 
@@ -87,8 +86,7 @@ public class AppMenuTest {
 
         showAppMenuAndAssertMenuShown();
         mAppMenu = mActivityTestRule.getActivity().getAppMenuHandler().getAppMenu();
-        PostTask.runOrPostTask(
-                UiThreadTaskTraits.DEFAULT, () -> mAppMenu.getListView().setSelection(0));
+        ThreadUtils.runOnUiThread(() -> mAppMenu.getListView().setSelection(0));
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, () -> getCurrentFocusedRow()));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
@@ -163,12 +161,9 @@ public class AppMenuTest {
      * Test that hitting ENTER on the top item actually triggers the top item.
      * Catches regressions for https://crbug.com/191239 for shrunken menus.
      */
-    /*
+    @Test
     @SmallTest
     @Feature({"Browser", "Main"})
-    */
-    @Test
-    @DisabledTest(message = "crbug.com/945861")
     public void testKeyboardMenuEnterOnTopItemLandscape() {
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -217,8 +212,7 @@ public class AppMenuTest {
     }
 
     private void showAppMenuAndAssertMenuShown() {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                (Runnable) () -> mAppMenuHandler.showAppMenu(null, false, false));
+        ThreadUtils.runOnUiThread((Runnable) () -> mAppMenuHandler.showAppMenu(null, false, false));
         CriteriaHelper.pollInstrumentationThread(new Criteria("AppMenu did not show") {
             @Override
             public boolean isSatisfied() {
@@ -262,7 +256,7 @@ public class AppMenuTest {
 
     private void pressKey(final int keycode) {
         final View view = mAppMenu.getListView();
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
+        ThreadUtils.runOnUiThread(() -> {
             view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, keycode));
             view.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, keycode));
         });

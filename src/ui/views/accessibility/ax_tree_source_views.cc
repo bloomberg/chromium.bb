@@ -19,9 +19,8 @@
 namespace views {
 
 AXTreeSourceViews::AXTreeSourceViews(AXAuraObjWrapper* root,
-                                     const ui::AXTreeID& tree_id,
-                                     views::AXAuraObjCache* cache)
-    : root_(root), tree_id_(tree_id), cache_(cache) {
+                                     const ui::AXTreeID& tree_id)
+    : root_(root), tree_id_(tree_id) {
   DCHECK(root_);
   DCHECK_NE(tree_id_, ui::AXTreeIDUnknown());
 }
@@ -41,7 +40,7 @@ void AXTreeSourceViews::HandleAccessibleAction(const ui::AXActionData& action) {
     id = action.anchor_node_id;
   }
 
-  AXAuraObjWrapper* obj = GetFromId(id);
+  AXAuraObjWrapper* obj = AXAuraObjCache::GetInstance()->Get(id);
   if (obj)
     obj->HandleAccessibleAction(action);
 }
@@ -50,7 +49,7 @@ bool AXTreeSourceViews::GetTreeData(ui::AXTreeData* tree_data) const {
   tree_data->tree_id = tree_id_;
   tree_data->loaded = true;
   tree_data->loading_progress = 1.0;
-  AXAuraObjWrapper* focus = cache_->GetFocus();
+  AXAuraObjWrapper* focus = AXAuraObjCache::GetInstance()->GetFocus();
   if (focus)
     tree_data->focus_id = focus->GetUniqueId();
   return true;
@@ -65,14 +64,12 @@ AXAuraObjWrapper* AXTreeSourceViews::GetFromId(int32_t id) const {
   // Root might not be in the cache.
   if (id == root->GetUniqueId())
     return root;
-  AXAuraObjWrapper* wrapper = cache_->Get(id);
+  AXAuraObjWrapper* wrapper = AXAuraObjCache::GetInstance()->Get(id);
 
   // We must do a lookup in AXVirtualView as well if the main cache doesn't hold
   // this node.
-  if (!wrapper && AXVirtualView::GetFromId(id)) {
-    AXVirtualView* virtual_view = AXVirtualView::GetFromId(id);
-    return virtual_view->GetOrCreateWrapper(cache_);
-  }
+  if (!wrapper && AXVirtualView::GetFromId(id))
+    return AXVirtualView::GetFromId(id)->GetWrapper();
 
   return wrapper;
 }

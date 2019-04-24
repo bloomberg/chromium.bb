@@ -12,11 +12,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
-import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /** Unit tests for MinAndroidSdkLevelSkipCheck. */
@@ -48,26 +47,16 @@ public class MinAndroidSdkLevelSkipCheckTest {
         @Test public void unannotatedMethod() {}
     }
 
-    private static final MinAndroidSdkLevelSkipCheck sSkipCheck = new MinAndroidSdkLevelSkipCheck();
-
-    private static class InnerTestRunner extends BlockJUnit4ClassRunner {
-        public InnerTestRunner(Class<?> klass) throws InitializationError {
-            super(klass);
-        }
-
-        @Override
-        protected boolean isIgnored(FrameworkMethod method) {
-            return super.isIgnored(method) || sSkipCheck.shouldSkip(method);
-        }
-    }
+    private MinAndroidSdkLevelSkipCheck mSkipCheck = new MinAndroidSdkLevelSkipCheck();
 
     @Rule
-    public TestRunnerTestRule mTestRunnerTestRule = new TestRunnerTestRule(InnerTestRunner.class);
+    public TestRunnerTestRule mTestRunnerTestRule =
+            new TestRunnerTestRule(BaseJUnit4ClassRunner.class);
 
     private void expectShouldSkip(Class<?> testClass, String methodName, boolean shouldSkip)
             throws Exception {
         Assert.assertThat(
-                sSkipCheck.shouldSkip(new FrameworkMethod(testClass.getMethod(methodName))),
+                mSkipCheck.shouldSkip(new FrameworkMethod(testClass.getMethod(methodName))),
                 equalTo(shouldSkip));
         TestRunnerTestRule.TestLog runListener = mTestRunnerTestRule.runTest(testClass);
         Assert.assertThat(Description.createTestDescription(testClass, methodName),

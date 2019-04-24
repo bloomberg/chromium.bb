@@ -9,18 +9,18 @@
 #include <memory>
 #include <set>
 
-#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 
 class Profile;
 
 namespace chromeos {
 
 // Represents an engine in component extension IME.
-struct COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ComponentExtensionEngine {
+struct UI_BASE_IME_EXPORT ComponentExtensionEngine {
   ComponentExtensionEngine();
   ComponentExtensionEngine(const ComponentExtensionEngine& other);
   ~ComponentExtensionEngine();
@@ -35,7 +35,7 @@ struct COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ComponentExtensionEngine {
 };
 
 // Represents a component extension IME.
-struct COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ComponentExtensionIME {
+struct UI_BASE_IME_EXPORT ComponentExtensionIME {
   ComponentExtensionIME();
   ComponentExtensionIME(const ComponentExtensionIME& other);
   ~ComponentExtensionIME();
@@ -48,8 +48,7 @@ struct COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ComponentExtensionIME {
 };
 
 // Provides an interface to list/load/unload for component extension IME.
-class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
-    ComponentExtensionIMEManagerDelegate {
+class UI_BASE_IME_EXPORT ComponentExtensionIMEManagerDelegate {
  public:
   ComponentExtensionIMEManagerDelegate();
   virtual ~ComponentExtensionIMEManagerDelegate();
@@ -71,7 +70,7 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS)
 };
 
 // This class manages component extension input method.
-class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) ComponentExtensionIMEManager {
+class UI_BASE_IME_EXPORT ComponentExtensionIMEManager {
  public:
   ComponentExtensionIMEManager();
   virtual ~ComponentExtensionIMEManager();

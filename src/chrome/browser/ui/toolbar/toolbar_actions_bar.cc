@@ -29,7 +29,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_observer.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -114,9 +113,6 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       weak_ptr_factory_(this) {
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
-
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
-    DCHECK(!in_overflow_mode());
 
   tab_strip_observer_.Add(browser_->tab_strip_model());
 }
@@ -328,8 +324,7 @@ void ToolbarActionsBar::CreateActions() {
     base::AutoReset<bool> layout_resetter(&suppress_layout_, true);
 
     // Get the toolbar actions.
-    toolbar_actions_ =
-        model_->CreateActions(browser_, GetMainBar(), in_overflow_mode());
+    toolbar_actions_ = model_->CreateActions(browser_, this);
     if (!toolbar_actions_.empty())
       ReorderActions();
 
@@ -535,6 +530,12 @@ void ToolbarActionsBar::HideActivePopup() {
   DCHECK(!popup_owner_);
 }
 
+ToolbarActionViewController* ToolbarActionsBar::GetMainControllerForAction(
+    ToolbarActionViewController* action) {
+  return in_overflow_mode() ? main_bar_->GetActionForId(action->GetId())
+                            : action;
+}
+
 void ToolbarActionsBar::AddObserver(ToolbarActionsBarObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -606,10 +607,6 @@ void ToolbarActionsBar::MaybeShowExtensionBubble() {
           g_extension_bubble_appearance_wait_time_in_seconds));
 }
 
-ToolbarActionsBar* ToolbarActionsBar::GetMainBar() {
-  return main_bar_ ? main_bar_ : this;
-}
-
 // static
 void ToolbarActionsBar::set_extension_bubble_appearance_wait_time_for_testing(
     int time_in_seconds) {
@@ -628,10 +625,8 @@ void ToolbarActionsBar::OnToolbarActionAdded(
       << "Asked to add a toolbar action view for an action that already "
          "exists";
 
-  toolbar_actions_.insert(
-      toolbar_actions_.begin() + index,
-      model_->CreateActionForId(browser_, GetMainBar(), in_overflow_mode(),
-                                action_id));
+  toolbar_actions_.insert(toolbar_actions_.begin() + index,
+                          model_->CreateActionForId(browser_, this, action_id));
   delegate_->AddViewForAction(toolbar_actions_[index].get(), index);
 
   // We may need to resize (e.g. to show the new icon). We don't need to check
@@ -762,8 +757,8 @@ void ToolbarActionsBar::OnToolbarHighlightModeChanged(bool is_highlighting) {
       }
 
       if (!found) {
-        toolbar_actions_.push_back(model_->CreateActionForId(
-            browser_, GetMainBar(), in_overflow_mode(), model_action_id));
+        toolbar_actions_.push_back(
+            model_->CreateActionForId(browser_, this, model_action_id));
         delegate_->AddViewForAction(toolbar_actions_.back().get(),
                                     toolbar_actions_.size() - 1);
       }

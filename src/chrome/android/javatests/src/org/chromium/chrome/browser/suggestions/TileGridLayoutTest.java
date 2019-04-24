@@ -35,7 +35,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
@@ -57,7 +56,6 @@ import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.ui.modelutil.ListObservable;
 
@@ -205,7 +203,7 @@ public class TileGridLayoutTest {
     private void setOrientation(final int requestedOrientation, final Activity activity) {
         if (orientationMatchesRequest(activity, requestedOrientation)) return;
 
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> activity.setRequestedOrientation(requestedOrientation));
 
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -263,7 +261,7 @@ public class TileGridLayoutTest {
         FrameLayout contentView = new FrameLayout(activity);
         UiConfig uiConfig = new UiConfig(contentView);
 
-        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+        return ThreadUtils.runOnUiThreadBlockingNoException(() -> {
             activity.setContentView(contentView);
 
             SiteSectionViewHolder viewHolder = SiteSection.createViewHolder(
@@ -297,7 +295,7 @@ public class TileGridLayoutTest {
         SuggestionsUiDelegate uiDelegate = new SuggestionsUiDelegateImpl(
                 mSuggestionsDeps.getFactory().createSuggestionSource(null),
                 mSuggestionsDeps.getFactory().createEventReporter(), null, profile, null,
-                ChromeApplication.getReferencePool(), activity.getSnackbarManager());
+                activity.getChromeApplication().getReferencePool(), activity.getSnackbarManager());
 
         FakeOfflinePageBridge offlinePageBridge = new FakeOfflinePageBridge();
         List<OfflinePageItem> offlinePageItems = new ArrayList<>();

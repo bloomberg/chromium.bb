@@ -41,10 +41,9 @@ GpuServiceFactory::GpuServiceFactory(
 
 GpuServiceFactory::~GpuServiceFactory() {}
 
-void GpuServiceFactory::RunService(
+bool GpuServiceFactory::HandleServiceRequest(
     const std::string& service_name,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
-  auto request = service_manager::mojom::ServiceRequest(std::move(receiver));
+    service_manager::mojom::ServiceRequest request) {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   if (service_name == media::mojom::kMediaServiceName) {
     media::CdmProxyFactoryCB cdm_proxy_factory_cb;
@@ -81,7 +80,7 @@ void GpuServiceFactory::RunService(
                              std::move(factory).Run());
                        },
                        std::move(factory)));
-    return;
+    return true;
   }
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 
@@ -89,8 +88,10 @@ void GpuServiceFactory::RunService(
     service_manager::Service::RunAsyncUntilTermination(
         std::make_unique<shape_detection::ShapeDetectionService>(
             std::move(request)));
-    return;
+    return true;
   }
+
+  return true;
 }
 
 }  // namespace content

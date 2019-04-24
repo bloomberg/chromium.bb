@@ -10,6 +10,7 @@
 #import "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/ios/browser/autofill_switches.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
@@ -22,8 +23,8 @@
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
-#import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/web/public/url_scheme_util.h"
@@ -67,8 +68,9 @@
 // The observer to determine when the keyboard dissapears and when it stays.
 @property(nonatomic, strong) KeyboardObserverHelper* keyboardObserver;
 
-// The object that provides suggestions while filling forms.
-@property(nonatomic, weak) id<FormInputSuggestionsProvider> provider;
+// The objects that can provide a custom input accessory view while filling
+// forms.
+@property(nonatomic, copy) NSArray<id<FormInputSuggestionsProvider>>* providers;
 
 // The password fetcher used to know if passwords are available and update the
 // consumer accordingly.
@@ -144,11 +146,9 @@
             [injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
         [_JSSuggestionManager
             setWebFramesManager:web::WebFramesManager::FromWebState(webState)];
-        FormSuggestionTabHelper* tabHelper =
-            FormSuggestionTabHelper::FromWebState(webState);
-        if (tabHelper) {
-          _provider = tabHelper->GetAccessoryViewProvider();
-        }
+
+        _providers = @[ FormSuggestionTabHelper::FromWebState(webState)
+                            ->GetAccessoryViewProvider() ];
         _formActivityObserverBridge =
             std::make_unique<autofill::FormActivityObserverBridge>(_webState,
                                                                    self);
@@ -279,8 +279,10 @@
     return;
   }
 
-  // Return early and reset if frame is missing or can't call JS.
-  if (!frame || !frame->CanCallJavaScriptFunction()) {
+  // Return early and reset if messaging is enabled but frame is missing or
+  // can't call JS.
+  if (autofill::switches::IsAutofillIFrameMessagingEnabled() &&
+      (!frame || !frame->CanCallJavaScriptFunction())) {
     [self reset];
     return;
   }
@@ -292,7 +294,8 @@
   if (frame) {
     frameID = base::SysUTF8ToNSString(frame->GetFrameId());
   }
-  DCHECK(frameID.length);
+  DCHECK(frameID.length ||
+         !autofill::switches::IsAutofillIFrameMessagingEnabled());
 
   [self.formInputAccessoryHandler setLastFocusFormActivityWebFrameID:frameID];
   [self synchronizeNavigationControls];
@@ -440,7 +443,7 @@
 }
 
 // Updates the accessory mediator with the passed web state, its JS suggestion
-// manager and the registered provider. If NULL is passed it will instead clear
+// manager and the registered providers. If NULL is passed it will instead clear
 // those properties in the mediator.
 - (void)updateWithNewWebState:(web::WebState*)webState {
   [self detachFromWebState];
@@ -457,16 +460,13 @@
         [injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
     [self.JSSuggestionManager
         setWebFramesManager:web::WebFramesManager::FromWebState(webState)];
-    FormSuggestionTabHelper* tabHelper =
-        FormSuggestionTabHelper::FromWebState(webState);
-    if (tabHelper) {
-      self.provider = tabHelper->GetAccessoryViewProvider();
-    }
+    self.providers = @[ FormSuggestionTabHelper::FromWebState(webState)
+                            ->GetAccessoryViewProvider() ];
     _formInputAccessoryHandler.JSSuggestionManager = self.JSSuggestionManager;
   } else {
     self.webState = NULL;
     self.JSSuggestionManager = nil;
-    self.provider = nil;
+    self.providers = @[];
   }
 }
 
@@ -490,19 +490,65 @@
   DCHECK_EQ(webState, self.webState);
   DCHECK(_hasLastSeenParams);
 
-  __weak id<FormInputSuggestionsProvider> provider = self.provider;
+  // TODO(crbug.com/845472): refactor this overly complex code. There is
+  // always at max one provider in _providers.
+
+  // Build a block for each provider that will invoke its completion with YES
+  // if the provider can provide an accessory view for the specified form/field
+  // and NO otherwise.
+  NSMutableArray* findProviderBlocks = [[NSMutableArray alloc] init];
+  for (id<FormInputSuggestionsProvider> provider in _providers) {
+    passwords::PipelineBlock findProviderBlock =
+        [self queryViewBlockForProvider:provider params:params];
+    [findProviderBlocks addObject:findProviderBlock];
+  }
+
+  // Run all the blocks in |findProviderBlocks| until one invokes its
+  // completion with YES. The first one to do so will be passed to
+  // |onProviderFound|.
+  passwords::RunSearchPipeline(findProviderBlocks, ^(NSUInteger providerIndex){
+                                   // No need to do anything if no suggestions
+                                   // are found. The provider will
+                                   // update with an empty suggestions array.
+                               });
+}
+
+// Returns a pipeline block used to search for a provider with the current form
+// params.
+- (passwords::PipelineBlock)
+queryViewBlockForProvider:(id<FormInputSuggestionsProvider>)provider
+                   params:(autofill::FormActivityParams)params {
   __weak __typeof(self) weakSelf = self;
-  [provider
-      retrieveSuggestionsForForm:params
-                        webState:self.webState
-        accessoryViewUpdateBlock:^(NSArray<FormSuggestion*>* suggestions,
-                                   id<FormInputSuggestionsProvider> provider) {
-          // No suggestions found, return.
-          if (!suggestions) {
-            return;
-          }
-          [weakSelf updateWithProvider:provider suggestions:suggestions];
-        }];
+  return ^(void (^completion)(BOOL success)) {
+    FormInputAccessoryMediator* strongSelf = weakSelf;
+    if (!strongSelf) {
+      return;
+    }
+    FormSuggestionsReadyCompletion formSuggestionsReadyCompletion =
+        [strongSelf accessoryViewReadyBlockWithCompletion:completion];
+    [provider retrieveSuggestionsForForm:params
+                                webState:strongSelf.webState
+                accessoryViewUpdateBlock:formSuggestionsReadyCompletion];
+  };
+}
+
+// Returns a block setting up the provider and the view returned. It calls the
+// passed completion with NO if the view found is invalid. With YES otherwise.
+- (FormSuggestionsReadyCompletion)accessoryViewReadyBlockWithCompletion:
+    (void (^)(BOOL success))completion {
+  __weak __typeof(self) weakSelf = self;
+  return ^(NSArray<FormSuggestion*>* suggestions,
+           id<FormInputSuggestionsProvider> provider) {
+    // View is nil, tell the pipeline to continue searching.
+    if (!suggestions) {
+      completion(NO);
+      return;
+    }
+    // Once the view is retrieved, tell the pipeline to stop and
+    // update the UI.
+    completion(YES);
+    [weakSelf updateWithProvider:provider suggestions:suggestions];
+  };
 }
 
 // Post the passed |suggestionView| to the consumer. In case suggestions are
@@ -547,7 +593,7 @@
 
 - (void)passwordFetcher:(PasswordFetcher*)passwordFetcher
       didFetchPasswords:
-          (std::vector<std::unique_ptr<autofill::PasswordForm>>)passwords {
+          (std::vector<std::unique_ptr<autofill::PasswordForm>>&)passwords {
   self.consumer.passwordButtonHidden = passwords.empty();
 }
 
@@ -582,8 +628,8 @@
   _formInputAccessoryHandler.JSSuggestionManager = _JSSuggestionManager;
 }
 
-- (void)injectProvider:(id<FormInputSuggestionsProvider>)provider {
-  self.provider = provider;
+- (void)injectProviders:(NSArray<id<FormInputSuggestionsProvider>>*)providers {
+  self.providers = providers;
 }
 
 @end

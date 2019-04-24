@@ -16,6 +16,8 @@ class BluetoothCharacteristicProperties final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static BluetoothCharacteristicProperties* Create(uint32_t properties);
+
   explicit BluetoothCharacteristicProperties(uint32_t properties);
 
   // IDL exposed interface:

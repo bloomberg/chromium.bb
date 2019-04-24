@@ -17,7 +17,8 @@ let NuxOnboardingModules;
  * @const {!Set<string>}
  */
 const MODULES_WHITELIST = new Set([
-  'nux-google-apps', 'nux-ntp-background', 'nux-set-as-default', 'signin-view'
+  'nux-email', 'nux-google-apps', 'nux-ntp-background', 'nux-set-as-default',
+  'signin-view'
 ]);
 
 /**
@@ -25,8 +26,9 @@ const MODULES_WHITELIST = new Set([
  * added.
  * @const {!Set<string>}
  */
-const MODULES_NEEDING_INDICATOR =
-    new Set(['nux-google-apps', 'nux-ntp-background', 'nux-set-as-default']);
+const MODULES_NEEDING_INDICATOR = new Set([
+  'nux-email', 'nux-google-apps', 'nux-ntp-background', 'nux-set-as-default'
+]);
 
 Polymer({
   is: 'welcome-app',
@@ -35,6 +37,9 @@ Polymer({
 
   /** @private {?welcome.Routes} */
   currentRoute_: null,
+
+  /** @private {?PromiseResolver} */
+  defaultCheckPromise_: null,
 
   /** @private {NuxOnboardingModules} */
   modules_: {
@@ -51,13 +56,28 @@ Polymer({
     },
   },
 
-  listeners: {
-    'default-browser-change': 'onDefaultBrowserChange_',
-  },
+  /** @override */
+  ready: function() {
+    this.defaultCheckPromise_ = new PromiseResolver();
 
-  /** @private */
-  onDefaultBrowserChange_: function() {
-    this.$$('cr-toast').show();
+    /** @param {!nux.DefaultBrowserInfo} status */
+    const defaultCheckCallback = status => {
+      if (status.isDefault || !status.canBeDefault) {
+        this.defaultCheckPromise_.resolve(false);
+      } else if (!status.isDisabledByPolicy && !status.isUnknownError) {
+        this.defaultCheckPromise_.resolve(true);
+      } else {  // Unknown error.
+        this.defaultCheckPromise_.resolve(false);
+      }
+
+      cr.removeWebUIListener(defaultCheckCallback);
+    };
+
+    cr.addWebUIListener('browser-default-state-changed', defaultCheckCallback);
+
+    // TODO(scottchen): convert the request to cr.sendWithPromise
+    // (see https://crbug.com/874520#c6).
+    nux.NuxSetAsDefaultProxyImpl.getInstance().requestDefaultBrowserState();
   },
 
   /**
@@ -105,37 +125,25 @@ Polymer({
     let modules = this.modules_[route];
     assert(modules);  // Modules should be defined if on a valid route.
 
-    /** @type {!Promise} */
-    const defaultBrowserPromise =
-        nux.NuxSetAsDefaultProxyImpl.getInstance()
-            .requestDefaultBrowserState()
-            .then((status) => {
-              if (status.isDefault || !status.canBeDefault) {
-                return false;
-              } else if (!status.isDisabledByPolicy && !status.isUnknownError) {
-                return true;
-              } else {  // Unknown error.
-                return false;
-              }
-            });
-
     // Wait until the default-browser state and bookmark visibility are known
     // before anything initializes.
     return Promise
         .all([
-          defaultBrowserPromise,
+          this.defaultCheckPromise_.promise,
           nux.BookmarkBarManager.getInstance().initialized,
         ])
-        .then(([canSetDefault]) => {
+        .then(args => {
+          const canSetDefault = args[0];
+
           modules = modules.filter(module => {
             if (module == 'nux-set-as-default') {
               return canSetDefault;
             }
 
-            if (!MODULES_WHITELIST.has(module)) {
-              // Makes sure the module specified by the feature configuration is
-              // whitelisted.
-              return false;
+            if (module == 'nux-email') {
+              // Show email module in en-US only until email recommendations
+              // for other locales is figured out.
+              return navigator.language == 'en-US';
             }
 
             return true;
@@ -147,6 +155,10 @@ Polymer({
 
           let indicatorActiveCount = 0;
           modules.forEach((elementTagName, index) => {
+            // Makes sure the module specified by the feature configuration is
+            // whitelisted.
+            assert(MODULES_WHITELIST.has(elementTagName));
+
             const element = document.createElement(elementTagName);
             element.id = 'step-' + (index + 1);
             element.setAttribute('slot', 'view');

@@ -7,68 +7,11 @@
 
 #include "SkSGRenderEffect.h"
 
-#include "SkCanvas.h"
 #include "SkDropShadowImageFilter.h"
 #include "SkMakeUnique.h"
-#include "SkShader.h"
+#include "SkSGColor.h"
 
 namespace sksg {
-
-sk_sp<ShaderEffect> ShaderEffect::Make(sk_sp<RenderNode> child, sk_sp<Shader> shader) {
-    return child ? sk_sp<ShaderEffect>(new ShaderEffect(std::move(child), std::move(shader)))
-                 : nullptr;
-}
-
-ShaderEffect::ShaderEffect(sk_sp<RenderNode> child, sk_sp<Shader> shader)
-    : INHERITED(std::move(child))
-    , fShader(std::move(shader)) {
-    if (fShader) {
-        this->observeInval(fShader);
-    }
-}
-
-ShaderEffect::~ShaderEffect() {
-    if (fShader) {
-        this->unobserveInval(fShader);
-    }
-}
-
-void ShaderEffect::setShader(sk_sp<Shader> sh) {
-    if (fShader) {
-        this->unobserveInval(fShader);
-    }
-
-    fShader = std::move(sh);
-
-    if (fShader) {
-        this->observeInval(fShader);
-    }
-}
-SkRect ShaderEffect::onRevalidate(InvalidationController* ic, const SkMatrix& ctm) {
-    if (fShader) {
-        fShader->revalidate(ic, ctm);
-    }
-
-    return this->INHERITED::onRevalidate(ic, ctm);
-}
-
-void ShaderEffect::onRender(SkCanvas* canvas, const RenderContext* ctx) const {
-    const auto local_ctx = ScopedRenderContext(canvas, ctx)
-            .modulateShader(fShader ? fShader->getShader() : nullptr, canvas->getTotalMatrix());
-
-    this->INHERITED::onRender(canvas, local_ctx);
-}
-
-Shader::Shader() : INHERITED(kBubbleDamage_Trait) {}
-
-Shader::~Shader() = default;
-
-SkRect Shader::onRevalidate(InvalidationController*, const SkMatrix&) {
-    SkASSERT(this->hasInval());
-
-    fShader = this->onRevalidateShader();
-    return SkRect::MakeEmpty();
-}
 
 sk_sp<RenderNode> ImageFilterEffect::Make(sk_sp<RenderNode> child, sk_sp<ImageFilter> filter) {
     return filter ? sk_sp<RenderNode>(new ImageFilterEffect(std::move(child), std::move(filter)))
@@ -91,12 +34,9 @@ SkRect ImageFilterEffect::onRevalidate(InvalidationController* ic, const SkMatri
     fImageFilter->revalidate(ic, ctm);
 
     const auto& filter = fImageFilter->getFilter();
-    SkASSERT(!filter || filter->canComputeFastBounds());
+    SkASSERT(filter->canComputeFastBounds());
 
-    const auto content_bounds = this->INHERITED::onRevalidate(ic, ctm);
-
-    return filter ? filter->computeFastBounds(content_bounds)
-                  : content_bounds;
+    return filter->computeFastBounds(this->INHERITED::onRevalidate(ic, ctm));
 }
 
 const RenderNode* ImageFilterEffect::onNodeAt(const SkPoint& p) const {
@@ -110,7 +50,6 @@ void ImageFilterEffect::onRender(SkCanvas* canvas, const RenderContext* ctx) con
     // Note: we're using the source content bounds for saveLayer, not our local/filtered bounds.
     const auto filter_ctx =
         ScopedRenderContext(canvas, ctx).setFilterIsolation(this->getChild()->bounds(),
-                                                            canvas->getTotalMatrix(),
                                                             fImageFilter->getFilter());
     this->INHERITED::onRender(canvas, filter_ctx);
 }
@@ -164,19 +103,6 @@ sk_sp<SkImageFilter> DropShadowImageFilter::onRevalidateFilter() {
     return SkDropShadowImageFilter::Make(fOffset.x(), fOffset.y(),
                                          fSigma.x(), fSigma.y(),
                                          fColor, mode, this->refInput(0));
-}
-
-sk_sp<BlurImageFilter> BlurImageFilter::Make(sk_sp<ImageFilter> input) {
-    return sk_sp<BlurImageFilter>(new BlurImageFilter(std::move(input)));
-}
-
-BlurImageFilter::BlurImageFilter(sk_sp<ImageFilter> input)
-    : INHERITED(std::move(input)) {}
-
-BlurImageFilter::~BlurImageFilter() = default;
-
-sk_sp<SkImageFilter> BlurImageFilter::onRevalidateFilter() {
-    return SkBlurImageFilter::Make(fSigma.x(), fSigma.y(), this->refInput(0), nullptr, fTileMode);
 }
 
 sk_sp<BlendModeEffect> BlendModeEffect::Make(sk_sp<RenderNode> child, SkBlendMode mode) {

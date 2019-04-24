@@ -21,22 +21,16 @@ UploadDomAction::~UploadDomAction() {}
 
 void UploadDomAction::InternalProcessAction(ActionDelegate* delegate,
                                             ProcessActionCallback callback) {
-  Selector selector = Selector(proto_.upload_dom().tree_root());
-  if (selector.empty()) {
-    DVLOG(1) << __func__ << ": empty selector";
-    UpdateProcessedAction(INVALID_SELECTOR);
-    return;
-  }
-  delegate->ShortWaitForElement(
-      selector,
+  DCHECK_GT(proto_.upload_dom().tree_root().selectors_size(), 0);
+  delegate->ShortWaitForElementExist(
+      Selector(proto_.upload_dom().tree_root()),
       base::BindOnce(&UploadDomAction::OnWaitForElement,
                      weak_ptr_factory_.GetWeakPtr(), base::Unretained(delegate),
-                     std::move(callback), selector));
+                     std::move(callback)));
 }
 
 void UploadDomAction::OnWaitForElement(ActionDelegate* delegate,
                                        ProcessActionCallback callback,
-                                       const Selector& selector,
                                        bool element_found) {
   if (!element_found) {
     UpdateProcessedAction(ELEMENT_RESOLUTION_FAILED);
@@ -45,16 +39,16 @@ void UploadDomAction::OnWaitForElement(ActionDelegate* delegate,
   }
 
   delegate->GetOuterHtml(
-      selector,
+      Selector(proto_.upload_dom().tree_root()),
       base::BindOnce(&UploadDomAction::OnGetOuterHtml,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void UploadDomAction::OnGetOuterHtml(ProcessActionCallback callback,
-                                     const ClientStatus& status,
+                                     bool successful,
                                      const std::string& outer_html) {
-  if (!status.ok()) {
-    UpdateProcessedAction(status);
+  if (!successful) {
+    UpdateProcessedAction(OTHER_ACTION_STATUS);
     std::move(callback).Run(std::move(processed_action_proto_));
     return;
   }

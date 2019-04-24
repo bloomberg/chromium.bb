@@ -13,12 +13,11 @@ import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.RotateDrawable;
 import android.graphics.drawable.ScaleDrawable;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.graphics.drawable.Animatable2Compat;
 import android.support.v7.graphics.drawable.DrawableWrapper;
-
-import org.chromium.base.task.PostTask;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -152,11 +151,13 @@ public class AutoAnimatorDrawable extends DrawableWrapper {
     }
 
     private static final class AutoRestarterCompat extends Animatable2Compat.AnimationCallback {
+        private final Handler mHandler = new Handler(Looper.getMainLooper());
+
         // Animatable2Compat.AnimationCallback implementation.
         @Override
         public void onAnimationEnd(Drawable drawable) {
             if (!(drawable instanceof Animatable)) return;
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+            mHandler.post(() -> {
                 if (drawable.isVisible()) ((Animatable) drawable).start();
             });
         }

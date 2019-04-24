@@ -16,6 +16,7 @@
 #include "url/origin.h"
 
 namespace content {
+
 namespace background_fetch {
 
 namespace {
@@ -103,4 +104,5 @@ std::string CleanupTask::HistogramName() const {
 }
 
 }  // namespace background_fetch
+
 }  // namespace content

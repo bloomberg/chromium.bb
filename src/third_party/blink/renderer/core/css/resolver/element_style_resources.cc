@@ -51,22 +51,21 @@
 
 namespace blink {
 
-using namespace cssvalue;
-
 ElementStyleResources::ElementStyleResources(Element& element,
                                              float device_scale_factor)
     : element_(&element), device_scale_factor_(device_scale_factor) {}
 
 StyleImage* ElementStyleResources::GetStyleImage(CSSPropertyID property,
                                                  const CSSValue& value) {
-  if (auto* img_value = DynamicTo<CSSImageValue>(value))
-    return CachedOrPendingFromValue(property, *img_value);
+  if (value.IsImageValue())
+    return CachedOrPendingFromValue(property, ToCSSImageValue(value));
 
-  if (auto* img_generator_value = DynamicTo<CSSImageGeneratorValue>(value))
-    return GeneratedOrPendingFromValue(property, *img_generator_value);
+  if (value.IsImageGeneratorValue())
+    return GeneratedOrPendingFromValue(property,
+                                       ToCSSImageGeneratorValue(value));
 
-  if (auto* img_set_value = DynamicTo<CSSImageSetValue>(value))
-    return SetOrPendingFromValue(property, *img_set_value);
+  if (value.IsImageSetValue())
+    return SetOrPendingFromValue(property, ToCSSImageSetValue(value));
 
   return nullptr;
 }
@@ -76,9 +75,9 @@ StyleImage* ElementStyleResources::GeneratedOrPendingFromValue(
     const CSSImageGeneratorValue& value) {
   if (value.IsPending()) {
     pending_image_properties_.insert(property);
-    return MakeGarbageCollected<StylePendingImage>(value);
+    return StylePendingImage::Create(value);
   }
-  return MakeGarbageCollected<StyleGeneratedImage>(value);
+  return StyleGeneratedImage::Create(value);
 }
 
 StyleImage* ElementStyleResources::SetOrPendingFromValue(
@@ -86,7 +85,7 @@ StyleImage* ElementStyleResources::SetOrPendingFromValue(
     const CSSImageSetValue& value) {
   if (value.IsCachePending(device_scale_factor_)) {
     pending_image_properties_.insert(property);
-    return MakeGarbageCollected<StylePendingImage>(value);
+    return StylePendingImage::Create(value);
   }
   return value.CachedImage(device_scale_factor_);
 }
@@ -96,7 +95,7 @@ StyleImage* ElementStyleResources::CachedOrPendingFromValue(
     const CSSImageValue& value) {
   if (value.IsCachePending()) {
     pending_image_properties_.insert(property);
-    return MakeGarbageCollected<StylePendingImage>(value);
+    return StylePendingImage::Create(value);
   }
   value.RestoreCachedResourceIfNeeded(element_->GetDocument());
   return value.CachedImage();
@@ -124,12 +123,12 @@ void ElementStyleResources::LoadPendingSVGResources(
     return;
   FilterOperations::FilterOperationVector& filter_operations =
       computed_style->MutableFilter().Operations();
-  for (const auto& filter_operation : filter_operations) {
-    auto* reference_operation =
-        DynamicTo<ReferenceFilterOperation>(filter_operation.Get());
-    if (!reference_operation)
+  for (auto& filter_operation : filter_operations) {
+    if (filter_operation->GetType() != FilterOperation::REFERENCE)
       continue;
-    if (SVGResource* resource = reference_operation->Resource())
+    ReferenceFilterOperation& reference_operation =
+        ToReferenceFilterOperation(*filter_operation);
+    if (SVGResource* resource = reference_operation.Resource())
       resource->Load(element_->GetDocument());
   }
 }
@@ -155,7 +154,7 @@ StyleImage* ElementStyleResources::LoadPendingImage(
   }
 
   if (CSSPaintValue* paint_value = pending_image->CssPaintValue()) {
-    auto* image = MakeGarbageCollected<StyleGeneratedImage>(*paint_value);
+    StyleGeneratedImage* image = StyleGeneratedImage::Create(*paint_value);
     style->AddPaintImage(image);
     return image;
   }
@@ -163,7 +162,7 @@ StyleImage* ElementStyleResources::LoadPendingImage(
   if (CSSImageGeneratorValue* image_generator_value =
           pending_image->CssImageGeneratorValue()) {
     image_generator_value->LoadSubimages(element_->GetDocument());
-    return MakeGarbageCollected<StyleGeneratedImage>(*image_generator_value);
+    return StyleGeneratedImage::Create(*image_generator_value);
   }
 
   if (CSSImageSetValue* image_set_value = pending_image->CssImageSetValue()) {
@@ -188,8 +187,8 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
   // <div></div>
   //
   // We call styleImage() for both a.png and b.png adding the
-  // CSSPropertyID::kBackgroundImage property to the pending_image_properties_
-  // set, then we null out the background image because of the "none".
+  // CSSPropertyBackgroundImage property to the pending_image_properties_ set,
+  // then we null out the background image because of the "none".
   //
   // If we eagerly loaded the images we'd fetch a.png, even though it's not
   // used. If we didn't null check below we'd crash since the none actually
@@ -197,7 +196,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
 
   for (CSSPropertyID property : pending_image_properties_) {
     switch (property) {
-      case CSSPropertyID::kBackgroundImage: {
+      case CSSPropertyBackgroundImage: {
         for (FillLayer* background_layer = &style->AccessBackgroundLayers();
              background_layer; background_layer = background_layer->Next()) {
           StyleImage* background_image = background_layer->GetImage();
@@ -216,7 +215,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
               }
             }
             StyleImage* new_image =
-                LoadPendingImage(style, To<StylePendingImage>(background_image),
+                LoadPendingImage(style, ToStylePendingImage(background_image),
                                  image_request_optimization);
             if (new_image && new_image->IsLazyloadPossiblyDeferred())
               LazyLoadImageObserver::StartMonitoring(element_);
@@ -225,65 +224,64 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
         }
         break;
       }
-      case CSSPropertyID::kContent: {
+      case CSSPropertyContent: {
         for (ContentData* content_data =
                  const_cast<ContentData*>(style->GetContentData());
              content_data; content_data = content_data->Next()) {
           if (content_data->IsImage()) {
-            StyleImage* image = To<ImageContentData>(content_data)->GetImage();
+            StyleImage* image = ToImageContentData(content_data)->GetImage();
             if (image->IsPendingImage()) {
-              To<ImageContentData>(content_data)
+              ToImageContentData(content_data)
                   ->SetImage(
-                      LoadPendingImage(style, To<StylePendingImage>(image),
+                      LoadPendingImage(style, ToStylePendingImage(image),
                                        FetchParameters::kAllowPlaceholder));
             }
           }
         }
         break;
       }
-      case CSSPropertyID::kCursor: {
+      case CSSPropertyCursor: {
         if (CursorList* cursor_list = style->Cursors()) {
           for (wtf_size_t i = 0; i < cursor_list->size(); ++i) {
             CursorData& current_cursor = cursor_list->at(i);
             if (StyleImage* image = current_cursor.GetImage()) {
               if (image->IsPendingImage()) {
                 // cursor images shouldn't be replaced with placeholders
-                current_cursor.SetImage(
-                    LoadPendingImage(style, To<StylePendingImage>(image),
-                                     FetchParameters::kNone));
+                current_cursor.SetImage(LoadPendingImage(
+                    style, ToStylePendingImage(image), FetchParameters::kNone));
               }
             }
           }
         }
         break;
       }
-      case CSSPropertyID::kListStyleImage: {
+      case CSSPropertyListStyleImage: {
         if (style->ListStyleImage() &&
             style->ListStyleImage()->IsPendingImage()) {
           // List style images shouldn't be replaced with placeholders
           style->SetListStyleImage(LoadPendingImage(
-              style, To<StylePendingImage>(style->ListStyleImage()),
+              style, ToStylePendingImage(style->ListStyleImage()),
               FetchParameters::kNone));
         }
         break;
       }
-      case CSSPropertyID::kBorderImageSource: {
+      case CSSPropertyBorderImageSource: {
         if (style->BorderImageSource() &&
             style->BorderImageSource()->IsPendingImage()) {
           // Border images shouldn't be replaced with placeholders
           style->SetBorderImageSource(LoadPendingImage(
-              style, To<StylePendingImage>(style->BorderImageSource()),
+              style, ToStylePendingImage(style->BorderImageSource()),
               FetchParameters::kNone));
         }
         break;
       }
-      case CSSPropertyID::kWebkitBoxReflect: {
+      case CSSPropertyWebkitBoxReflect: {
         if (StyleReflection* reflection = style->BoxReflect()) {
           const NinePieceImage& mask_image = reflection->Mask();
           if (mask_image.GetImage() &&
               mask_image.GetImage()->IsPendingImage()) {
             StyleImage* loaded_image = LoadPendingImage(
-                style, To<StylePendingImage>(mask_image.GetImage()),
+                style, ToStylePendingImage(mask_image.GetImage()),
                 FetchParameters::kAllowPlaceholder);
             reflection->SetMask(NinePieceImage(
                 loaded_image, mask_image.ImageSlices(), mask_image.Fill(),
@@ -293,32 +291,32 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
         }
         break;
       }
-      case CSSPropertyID::kWebkitMaskBoxImageSource: {
+      case CSSPropertyWebkitMaskBoxImageSource: {
         if (style->MaskBoxImageSource() &&
             style->MaskBoxImageSource()->IsPendingImage()) {
           style->SetMaskBoxImageSource(LoadPendingImage(
-              style, To<StylePendingImage>(style->MaskBoxImageSource()),
+              style, ToStylePendingImage(style->MaskBoxImageSource()),
               FetchParameters::kAllowPlaceholder));
         }
         break;
       }
-      case CSSPropertyID::kWebkitMaskImage: {
+      case CSSPropertyWebkitMaskImage: {
         for (FillLayer* mask_layer = &style->AccessMaskLayers(); mask_layer;
              mask_layer = mask_layer->Next()) {
           if (mask_layer->GetImage() &&
               mask_layer->GetImage()->IsPendingImage()) {
             mask_layer->SetImage(LoadPendingImage(
-                style, To<StylePendingImage>(mask_layer->GetImage()),
+                style, ToStylePendingImage(mask_layer->GetImage()),
                 FetchParameters::kAllowPlaceholder));
           }
         }
         break;
       }
-      case CSSPropertyID::kShapeOutside:
+      case CSSPropertyShapeOutside:
         if (style->ShapeOutside() && style->ShapeOutside()->GetImage() &&
             style->ShapeOutside()->GetImage()->IsPendingImage()) {
           style->ShapeOutside()->SetImage(LoadPendingImage(
-              style, To<StylePendingImage>(style->ShapeOutside()->GetImage()),
+              style, ToStylePendingImage(style->ShapeOutside()->GetImage()),
               FetchParameters::kAllowPlaceholder,
               kCrossOriginAttributeAnonymous));
         }

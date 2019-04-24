@@ -28,7 +28,6 @@
 #include "third_party/blink/renderer/platform/wtf/pod_interval_tree.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/pod_tree_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -153,8 +152,6 @@ TEST(PODIntervalTreeTest, TestQueryingOfComplexUserData) {
 namespace {
 
 class EndpointType1 {
-  STACK_ALLOCATED();
-
  public:
   explicit EndpointType1(int value) : value_(value) {}
 

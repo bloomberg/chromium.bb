@@ -12,7 +12,6 @@
 #include "cc/paint/display_item_list.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
-#include "cc/trees/mutator_host.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
@@ -55,7 +54,7 @@ void InsertAncestorElementIdsForAnimation(
     CompositorElementIdSet& composited_element_ids) {
   for (const auto* n = &node; n; n = SafeUnalias(n->Parent())) {
     const CompositorElementId& element_id = n->GetCompositorElementId();
-    if (element_id && n->RequiresCompositingForAnimation() &&
+    if (element_id &&
         IsAnimationNamespace(NamespaceFromCompositorElementId(element_id))) {
       if (composited_element_ids.count(element_id)) {
         // Once we reach a node already counted we can stop traversing the
@@ -81,13 +80,11 @@ PaintArtifactCompositor::PaintArtifactCompositor(
                                  const cc::ElementId&)> scroll_callback)
     : scroll_callback_(std::move(scroll_callback)),
       tracks_raster_invalidations_(false),
-      needs_update_(true),
-      property_tree_manager_(*this) {
+      needs_update_(true) {
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     return;
   root_layer_ = cc::Layer::Create();
-  property_tree_manager_.SetRootLayer(root_layer_.get());
 }
 
 PaintArtifactCompositor::~PaintArtifactCompositor() {
@@ -125,11 +122,11 @@ void PaintArtifactCompositor::WillBeRemovedFromFrame() {
 std::unique_ptr<JSONObject> PaintArtifactCompositor::LayersAsJSON(
     LayerTreeFlags flags) const {
   ContentLayerClientImpl::LayerAsJSONContext context(flags);
-  auto layers_json = std::make_unique<JSONArray>();
+  std::unique_ptr<JSONArray> layers_json = JSONArray::Create();
   for (const auto& client : content_layer_clients_) {
     layers_json->PushObject(client->LayerAsJSON(context));
   }
-  auto json = std::make_unique<JSONObject>();
+  std::unique_ptr<JSONObject> json = JSONObject::Create();
   json->SetArray("layers", std::move(layers_json));
   if (context.transforms_json)
     json->SetArray("transforms", std::move(context.transforms_json));
@@ -286,9 +283,6 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   auto cc_layer = content_layer_client->UpdateCcPictureLayer(
       paint_artifact, paint_chunks, cc_combined_bounds,
       pending_layer.property_tree_state);
-  if (cc_combined_bounds.IsEmpty())
-    cc_layer->SetIsDrawable(false);
-
   new_content_layer_clients.push_back(std::move(content_layer_client));
   if (extra_data_for_testing_enabled_)
     extra_data_for_testing_->content_layers.push_back(cc_layer);
@@ -328,7 +322,7 @@ void PaintArtifactCompositor::UpdateTouchActionRects(
       layout_rect.MoveBy(
           LayoutPoint(FloatPoint(-layer_offset.x(), -layer_offset.y())));
       touch_action_rects_in_layer_space.emplace_back(
-          HitTestRect(layout_rect, touch_action_rect.allowed_touch_action));
+          HitTestRect(layout_rect, touch_action_rect.whitelisted_touch_action));
     }
   }
   layer->SetTouchActionRegion(
@@ -338,10 +332,9 @@ void PaintArtifactCompositor::UpdateTouchActionRects(
 bool PaintArtifactCompositor::PropertyTreeStateChanged(
     const PropertyTreeState& state) const {
   const auto& root = PropertyTreeState::Root();
-  auto change = PaintPropertyChangeType::kChangedOnlyNonRerasterValues;
-  return state.Transform().Changed(change, root.Transform()) ||
-         state.Clip().Changed(change, root, &state.Transform()) ||
-         state.Effect().Changed(change, root, &state.Transform());
+  return state.Transform().Changed(root.Transform()) ||
+         state.Clip().Changed(root, &state.Transform()) ||
+         state.Effect().Changed(root, &state.Transform());
 }
 
 PaintArtifactCompositor::PendingLayer::PendingLayer(
@@ -840,21 +833,17 @@ void PaintArtifactCompositor::Update(
 
   LayerListBuilder layer_list_builder;
 
-  property_tree_manager_.Initialize(host->property_trees(),
-                                    &layer_list_builder);
+  PropertyTreeManager property_tree_manager(
+      *this, *host->property_trees(), root_layer_.get(), &layer_list_builder);
   Vector<PendingLayer, 0> pending_layers;
   CollectPendingLayers(*paint_artifact, settings, pending_layers);
 
-  UpdateCompositorViewportProperties(viewport_properties,
-                                     property_tree_manager_, host);
+  UpdateCompositorViewportProperties(viewport_properties, property_tree_manager,
+                                     host);
 
   Vector<std::unique_ptr<ContentLayerClientImpl>> new_content_layer_clients;
   new_content_layer_clients.ReserveCapacity(pending_layers.size());
   Vector<scoped_refptr<cc::Layer>> new_scroll_hit_test_layers;
-
-  // Maps from cc effect id to blink effects. Containing only the effects having
-  // composited layers.
-  Vector<const EffectPaintPropertyNode*> blink_effects;
 
   for (auto& entry : synthesized_clip_cache_)
     entry.in_use = false;
@@ -893,19 +882,16 @@ void PaintArtifactCompositor::Update(
     layer->SetLayerTreeHost(root_layer_->layer_tree_host());
 
     int transform_id =
-        property_tree_manager_.EnsureCompositorTransformNode(transform);
-    int clip_id = property_tree_manager_.EnsureCompositorClipNode(clip);
-    int effect_id =
-        property_tree_manager_.SwitchToEffectNodeWithSynthesizedClip(
-            property_state.Effect(), clip, layer->DrawsContent());
-    blink_effects.resize(effect_id + 1);
-    blink_effects[effect_id] = &property_state.Effect();
+        property_tree_manager.EnsureCompositorTransformNode(transform);
+    int clip_id = property_tree_manager.EnsureCompositorClipNode(clip);
+    int effect_id = property_tree_manager.SwitchToEffectNodeWithSynthesizedClip(
+        property_state.Effect(), clip);
     // The compositor scroll node is not directly stored in the property tree
     // state but can be created via the scroll offset translation node.
     const auto& scroll_translation =
         ScrollTranslationForPendingLayer(*paint_artifact, pending_layer);
     int scroll_id =
-        property_tree_manager_.EnsureCompositorScrollNode(scroll_translation);
+        property_tree_manager.EnsureCompositorScrollNode(scroll_translation);
 
     layer_list_builder.Add(layer);
 
@@ -939,7 +925,7 @@ void PaintArtifactCompositor::Update(
       root_layer_->SetNeedsCommit();
     }
   }
-  property_tree_manager_.Finalize();
+  property_tree_manager.Finalize();
   content_layer_clients_.swap(new_content_layer_clients);
   scroll_hit_test_layers_.swap(new_scroll_hit_test_layers);
 
@@ -960,8 +946,7 @@ void PaintArtifactCompositor::Update(
   host->property_trees()->sequence_number = g_s_property_tree_sequence_number;
 
   auto layers = layer_list_builder.Finalize();
-  UpdateRenderSurfaceForEffects(host->property_trees()->effect_tree, layers,
-                                blink_effects);
+  UpdateRenderSurfaceForEffects(*host, layers);
   root_layer_->SetChildLayerList(std::move(layers));
 
   // Update the host's active registered element ids.
@@ -989,79 +974,6 @@ void PaintArtifactCompositor::Update(
 #endif
 }
 
-cc::PropertyTrees* PaintArtifactCompositor::GetPropertyTreesForDirectUpdate() {
-  // Don't try to retrieve property trees if we need an update. The full update
-  // will update all of the nodes, so a direct update doesn't need to do
-  // anything.
-  if (needs_update_)
-    return nullptr;
-
-  if (!root_layer_)
-    return nullptr;
-
-  auto* host = root_layer_->layer_tree_host();
-  if (!host)
-    return nullptr;
-  return host->property_trees();
-}
-
-bool PaintArtifactCompositor::DirectlyUpdateCompositedOpacityValue(
-    const EffectPaintPropertyNode& effect) {
-  if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
-    return property_tree_manager_.DirectlyUpdateCompositedOpacityValue(
-        property_trees, effect);
-  }
-  return false;
-}
-
-bool PaintArtifactCompositor::DirectlyUpdateScrollOffsetTransform(
-    const TransformPaintPropertyNode& transform) {
-  if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
-    return property_tree_manager_.DirectlyUpdateScrollOffsetTransform(
-        property_trees, transform);
-  }
-  return false;
-}
-
-bool PaintArtifactCompositor::DirectlyUpdateTransform(
-    const TransformPaintPropertyNode& transform) {
-  if (auto* property_trees = GetPropertyTreesForDirectUpdate()) {
-    return property_tree_manager_.DirectlyUpdateTransform(property_trees,
-                                                          transform);
-  }
-  return false;
-}
-
-static bool IsRenderSurfaceCandidate(
-    const cc::EffectNode& effect,
-    const Vector<const EffectPaintPropertyNode*>& blink_effects) {
-  if (effect.has_render_surface)
-    return false;
-  if (effect.blend_mode != SkBlendMode::kSrcOver)
-    return true;
-  if (effect.opacity != 1.f)
-    return true;
-  if (static_cast<size_t>(effect.id) < blink_effects.size() &&
-      blink_effects[effect.id] &&
-      blink_effects[effect.id]->HasActiveOpacityAnimation())
-    return true;
-  if (effect.is_fast_rounded_corner)
-    return true;
-  return false;
-}
-
-static bool MayHaveBackdropFilter(
-    const cc::EffectNode& effect,
-    const Vector<const EffectPaintPropertyNode*>& blink_effects) {
-  if (!effect.backdrop_filters.IsEmpty())
-    return true;
-  if (static_cast<size_t>(effect.id) < blink_effects.size() &&
-      blink_effects[effect.id] &&
-      blink_effects[effect.id]->HasActiveBackdropFilterAnimation())
-    return true;
-  return false;
-}
-
 // Every effect is supposed to have render surface enabled for grouping, but we
 // can omit one if the effect is opacity- or blend-mode-only, render surface is
 // not forced, and the effect has only one compositing child. This is both for
@@ -1070,42 +982,26 @@ static bool MayHaveBackdropFilter(
 // decision until later phase of the pipeline. Remove premature optimization
 // here once the work is ready.
 void PaintArtifactCompositor::UpdateRenderSurfaceForEffects(
-    cc::EffectTree& effect_tree,
-    const cc::LayerList& layers,
-    const Vector<const EffectPaintPropertyNode*>& blink_effects) {
-  // This vector is indexed by effect node id. The value indicates whether we
-  // have seen the effect but not sure if we should create a render surface for
-  // it yet.
-  Vector<bool> pending_render_surfaces;
-  pending_render_surfaces.resize(effect_tree.size());
+    cc::LayerTreeHost& host,
+    const cc::LayerList& layers) {
+  HashSet<int> pending_render_surfaces;
+  auto& effect_tree = host.property_trees()->effect_tree;
   for (const auto& layer : layers) {
-    if (!layer->DrawsContent())
-      continue;
-    bool descendant_may_have_backdrop_filter = false;
-    auto* effect = effect_tree.Node(layer->effect_tree_index());
-    bool may_have_backdrop_filter =
-        MayHaveBackdropFilter(*effect, blink_effects);
-    while (!effect->has_render_surface ||
-           // We need to check ancestor of backdrop filter to find render
-           // surface candidate.
-           may_have_backdrop_filter) {
-      if (IsRenderSurfaceCandidate(*effect, blink_effects)) {
-        // The render surface candidate is seen a second time, which means that
-        // it has more than one compositing child and needs a render surface.
-        if (pending_render_surfaces[effect->id] ||
-            // Or the opacity effect has a backdrop-filter descendant.
-            descendant_may_have_backdrop_filter) {
-          effect->has_render_surface = true;
-          if (!may_have_backdrop_filter)
-            break;
-        } else {
-          // We are not sure if the effect should have render surface for now.
-          pending_render_surfaces[effect->id] = true;
-        }
+    bool found_backdrop_filter = false;
+    for (auto* effect = effect_tree.Node(layer->effect_tree_index());
+         !effect->has_render_surface || !effect->backdrop_filters.IsEmpty();
+         effect = effect_tree.Node(effect->parent_id)) {
+      found_backdrop_filter |= !effect->backdrop_filters.IsEmpty();
+      if ((effect->opacity != 1.f ||
+           effect->blend_mode != SkBlendMode::kSrcOver) &&
+          (!pending_render_surfaces.insert(effect->id).is_new_entry ||
+           found_backdrop_filter)) {
+        // The opacity-only effect is seen a second time, which means that it
+        // has more than one compositing child and needs a render surface. Or
+        // the opacity effect has a backdrop-filter child.
+        effect->has_render_surface = true;
+        break;
       }
-      effect = effect_tree.Node(effect->parent_id);
-      descendant_may_have_backdrop_filter |= may_have_backdrop_filter;
-      may_have_backdrop_filter = MayHaveBackdropFilter(*effect, blink_effects);
     }
   }
 }

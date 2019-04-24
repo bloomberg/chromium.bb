@@ -17,14 +17,14 @@
 
 static void check_isaimage(skiatest::Reporter* reporter, SkShader* shader,
                            int expectedW, int expectedH,
-                           SkTileMode expectedX, SkTileMode expectedY,
+                           SkShader::TileMode expectedX, SkShader::TileMode expectedY,
                            const SkMatrix& expectedM) {
-    SkTileMode tileModes[2];
+    SkShader::TileMode tileModes[2];
     SkMatrix localM;
 
     // wack these so we don't get a false positive
     localM.setScale(9999, -9999);
-    tileModes[0] = tileModes[1] = (SkTileMode)99;
+    tileModes[0] = tileModes[1] = (SkShader::TileMode)99;
 
     SkImage* image = shader->isAImage(&localM, tileModes);
     REPORTER_ASSERT(reporter, image);
@@ -42,10 +42,10 @@ DEF_TEST(Shader_isAImage, reporter) {
     bm.allocN32Pixels(W, H);
     auto img = SkImage::MakeFromBitmap(bm);
     const SkMatrix localM = SkMatrix::MakeScale(2, 3);
-    const SkTileMode tmx = SkTileMode::kRepeat;
-    const SkTileMode tmy = SkTileMode::kMirror;
+    const SkShader::TileMode tmx = SkShader::kRepeat_TileMode;
+    const SkShader::TileMode tmy = SkShader::kMirror_TileMode;
 
-    auto shader0 = bm.makeShader(tmx, tmy, &localM);
+    auto shader0 = SkShader::MakeBitmapShader(bm, tmx, tmy, &localM);
     auto shader1 = SkImage::MakeFromBitmap(bm)->makeShader(tmx, tmy, &localM);
 
     check_isaimage(reporter, shader0.get(), W, H, tmx, tmy, localM);
@@ -60,9 +60,10 @@ DEF_TEST(ComposeShaderSingle, reporter) {
     SkCanvas canvas(srcBitmap);
     SkPaint p;
     p.setShader(
-        SkShaders::Blend(SkBlendMode::kClear,
-        SkShaders::Empty(),
-        SkPerlinNoiseShader::MakeFractalNoise(1.0f, 1.0f, 2, 0.0f)));
+        SkShader::MakeComposeShader(
+        SkShader::MakeEmptyShader(),
+        SkPerlinNoiseShader::MakeFractalNoise(1.0f, 1.0f, 2, 0.0f),
+        SkBlendMode::kClear));
     SkRRect rr;
     SkVector rd[] = {{0, 0}, {0, 0}, {0, 0}, {0, 0}};
     rr.setRectRadii({0, 0, 0, 0}, rd);

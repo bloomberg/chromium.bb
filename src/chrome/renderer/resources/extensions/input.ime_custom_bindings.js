@@ -5,11 +5,15 @@
 // Custom binding for the input ime API. Only injected into the
 // v8 contexts for extensions which have permission for the API.
 
+var binding = apiBridge || require('binding').Binding.create('input.ime');
 var appWindowNatives = requireNative('app_window_natives');
+var registerArgumentMassager = bindingUtil ?
+    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
+    require('event_bindings').registerArgumentMassager;
 
 var keyEventHandled;
-bindingUtil.registerEventArgumentMassager('input.ime.onKeyEvent',
-                                          function(args, dispatch) {
+registerArgumentMassager('input.ime.onKeyEvent',
+                         function(args, dispatch) {
   var keyData = args[1];
   var result = undefined;
   try {
@@ -29,7 +33,7 @@ bindingUtil.registerEventArgumentMassager('input.ime.onKeyEvent',
   }
 });
 
-apiBridge.registerCustomHook(function(api) {
+binding.registerCustomHook(function(api) {
   keyEventHandled = api.compiledApi.keyEventHandled;
 
   // TODO(shuchen): override onKeyEvent.addListener only for compatibility.
@@ -54,3 +58,6 @@ apiBridge.registerCustomHook(function(api) {
     callback(view);
   });
 });
+
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

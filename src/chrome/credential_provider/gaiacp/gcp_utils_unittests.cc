@@ -429,30 +429,34 @@ TEST_F(GcpProcHelperTest, GetCommandLineForEntrypoint) {
 TEST(Enroll, EnrollToGoogleMdmIfNeeded_NotEnabled) {
   // Make sure MDM is not enforced.
   registry_util::RegistryOverrideManager registry_override;
-  InitializeRegistryOverrideForTesting(&registry_override);
+  ASSERT_NO_FATAL_FAILURE(
+      registry_override.OverrideRegistry(HKEY_LOCAL_MACHINE));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L""));
 
   // EnrollToGoogleMdmIfNeeded() should be a noop.
-  base::Value properties(base::Value::Type::DICTIONARY);
-  properties.SetStringKey(kKeyEmail, "foo@gmail.com");
-  properties.SetStringKey(kKeyMdmIdToken, "token");
+  base::DictionaryValue properties;
+  properties.SetString(kKeyEmail, "foo@gmail.com");
+  properties.SetString(kKeyMdmIdToken, "token");
   ASSERT_EQ(S_OK, EnrollToGoogleMdmIfNeeded(properties));
 }
 
 TEST(Enroll, EnrollToGoogleMdmIfNeeded_MissingArgs) {
   // Does not matter whether MDM is enforced or not.
   registry_util::RegistryOverrideManager registry_override;
-  InitializeRegistryOverrideForTesting(&registry_override);
+  ASSERT_NO_FATAL_FAILURE(
+      registry_override.OverrideRegistry(HKEY_LOCAL_MACHINE));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L""));
 
   // EnrollToGoogleMdmIfNeeded() should fail if email and/or id token are
   // not provided.
-  base::Value properties(base::Value::Type::DICTIONARY);
+  base::DictionaryValue properties;
   ASSERT_NE(S_OK, EnrollToGoogleMdmIfNeeded(properties));
 
-  properties.SetStringKey(kKeyEmail, "foo@gmail.com");
+  properties.SetString(kKeyEmail, "foo@gmail.com");
   ASSERT_NE(S_OK, EnrollToGoogleMdmIfNeeded(properties));
 
-  properties.RemoveKey(kKeyEmail);
-  properties.SetStringKey(kKeyMdmIdToken, "token");
+  properties.Remove(kKeyEmail, nullptr);
+  properties.SetString(kKeyMdmIdToken, "token");
   ASSERT_NE(S_OK, EnrollToGoogleMdmIfNeeded(properties));
 }
 

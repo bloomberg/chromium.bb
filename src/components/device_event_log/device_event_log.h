@@ -63,9 +63,6 @@
 #define PRINTER_LOG(level)                         \
   DEVICE_LOG(::device_event_log::LOG_TYPE_PRINTER, \
              ::device_event_log::LOG_LEVEL_##level)
-#define FIDO_LOG(level)                         \
-  DEVICE_LOG(::device_event_log::LOG_TYPE_FIDO, \
-             ::device_event_log::LOG_LEVEL_##level)
 
 // Generally prefer the above macros unless |type| or |level| is not constant.
 
@@ -109,10 +106,8 @@ enum LogType {
   LOG_TYPE_MEMORY = 6,
   // Printer related events.
   LOG_TYPE_PRINTER = 7,
-  // Security key events.
-  LOG_TYPE_FIDO = 8,
   // Used internally, must be the last type (may be changed).
-  LOG_TYPE_UNKNOWN = 9
+  LOG_TYPE_UNKNOWN = 8
 };
 
 // Used to specify the detail level for logging. In GetAsString, used to

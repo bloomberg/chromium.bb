@@ -86,7 +86,7 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
         mSplashScreen = new FrameLayout(context);
         mSplashScreen.setBackgroundColor(backgroundColor);
         mParentView.addView(mSplashScreen);
-        recordTraceEventsShowedSplash();
+        startSplashscreenTraceEvents();
 
         if (webappInfo.isForWebApk()) {
             initializeLayout(webappInfo, backgroundColor, ((WebApkInfo) webappInfo).splashIcon());
@@ -125,7 +125,6 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
         assert mIsSplashVisible;
 
         mIsSplashVisible = false;
-        recordTraceEventsStartedHidingSplash();
         mSplashScreen.animate().alpha(0f).withEndAction(new Runnable() {
             @Override
             public void run() {
@@ -135,7 +134,7 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
                     mWebApkNetworkErrorObserver = null;
                 }
 
-                recordTraceEventsFinishedHidingSplash();
+                finishSplashscreenTraceEvents();
                 mTab = null;
                 mSplashScreen = null;
                 finishedHidingCallback.run();
@@ -226,17 +225,14 @@ public class SameActivityWebappSplashDelegate implements WebappSplashDelegate {
         if (mNativeLoaded) mUmaCache.commitMetrics();
     }
 
-    private void recordTraceEventsShowedSplash() {
+    private void startSplashscreenTraceEvents() {
+        TraceEvent.startAsync("WebappSplashScreen", hashCode());
         SingleShotOnDrawListener.install(mParentView,
                 () -> { TraceEvent.startAsync("WebappSplashScreen.visible", hashCode()); });
     }
 
-    private void recordTraceEventsStartedHidingSplash() {
-        TraceEvent.startAsync("WebappSplashScreen.hidingAnimation", hashCode());
-    }
-
-    private void recordTraceEventsFinishedHidingSplash() {
-        TraceEvent.finishAsync("WebappSplashScreen.hidingAnimation", hashCode());
+    private void finishSplashscreenTraceEvents() {
+        TraceEvent.finishAsync("WebappSplashScreen", hashCode());
         SingleShotOnDrawListener.install(mParentView,
                 () -> { TraceEvent.finishAsync("WebappSplashScreen.visible", hashCode()); });
     }

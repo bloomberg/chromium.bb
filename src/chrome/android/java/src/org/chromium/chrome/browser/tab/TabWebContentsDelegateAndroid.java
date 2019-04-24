@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -49,6 +48,7 @@ import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndr
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -92,7 +92,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         mHandler = new Handler();
         mCloseContentsRunnable = () -> {
             // TODO(jinsukkim): Move |closeTab| to TabModelSelector by making it observe its tabs.
-            TabModelSelector.from(mTab).closeTab(mTab);
+            mTab.getTabModelSelector().closeTab(mTab);
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) observers.next().onCloseContents(mTab);
         };
@@ -258,6 +258,10 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
                     openerRenderFrameId, frameName, targetUrl, newWebContents);
         }
         // The URL can't be taken from the WebContents if it's paused.  Save it for later.
+        // TODO(crbug.com/758186): Remove after debugging.
+        if (mWebContentsUrlMapping.containsKey(newWebContents)) {
+            Log.e(TAG, "Duplicate mWebContentsUrlMapping key");
+        }
         assert !mWebContentsUrlMapping.containsKey(newWebContents);
         mWebContentsUrlMapping.put(newWebContents, targetUrl);
 
@@ -289,10 +293,16 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
                 ? false : mTab.getFullscreenManager().getPersistentFullscreenMode();
     }
 
+    @Override
+    public void openNewTab(String url, String extraHeaders, ResourceRequestBody postData,
+            int disposition, boolean isRendererInitiated) {
+        mTab.openNewTab(url, null, extraHeaders, postData, disposition, true, isRendererInitiated);
+    }
+
     protected TabModel getTabModel() {
         // TODO(dfalcantara): Remove this when DocumentActivity.getTabModelSelector()
         //                    can return a TabModelSelector that activateContents() can use.
-        return TabModelSelector.from(mTab).getModel(mTab.isIncognito());
+        return mTab.getTabModelSelector().getModel(mTab.isIncognito());
     }
 
     @CalledByNative
@@ -306,6 +316,10 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     @CalledByNative
     public boolean addNewContents(WebContents sourceWebContents, WebContents webContents,
             int disposition, Rect initialPosition, boolean userGesture) {
+        // TODO(crbug.com/758186): Remove after debugging.
+        if (!mWebContentsUrlMapping.containsKey(webContents)) {
+            Log.e(TAG, "Missing mWebContentsUrlMapping key");
+        }
         assert mWebContentsUrlMapping.containsKey(webContents);
 
         TabCreator tabCreator = mTab.getActivity().getTabCreator(mTab.isIncognito());
@@ -320,13 +334,13 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         // Creating new Tabs asynchronously requires starting a new Activity to create the Tab,
         // so the Tab returned will always be null.  There's no way to know synchronously
         // whether the Tab is created, so assume it's always successful.
-        boolean createdSuccessfully = tabCreator.createTabWithWebContents(
-                mTab, webContents, TabLaunchType.FROM_LONGPRESS_FOREGROUND, url);
+        boolean createdSuccessfully = tabCreator.createTabWithWebContents(mTab,
+                webContents, mTab.getId(), TabLaunchType.FROM_LONGPRESS_FOREGROUND, url);
         boolean success = tabCreator.createsTabsAsynchronously() || createdSuccessfully;
 
         if (success) {
             if (disposition == WindowOpenDisposition.NEW_FOREGROUND_TAB) {
-                if (TabModelSelector.from(mTab)
+                if (mTab.getTabModelSelector()
                                 .getTabModelFilterProvider()
                                 .getCurrentTabModelFilter()
                                 .getRelatedTabList(mTab.getId())

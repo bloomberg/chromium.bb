@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
@@ -29,7 +28,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
-#include "services/network/cookie_manager.h"
 #include "services/network/host_resolver.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
@@ -91,22 +89,18 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   // network::mojom::NetworkServiceTest:
   void AddRules(std::vector<network::mojom::RulePtr> rules,
                 AddRulesCallback callback) override {
-    auto* host_resolver = test_host_resolver_.host_resolver();
     for (const auto& rule : rules) {
-      switch (rule->resolver_type) {
-        case network::mojom::ResolverType::kResolverTypeFail:
-          host_resolver->AddSimulatedFailure(rule->host_pattern);
-          break;
-        case network::mojom::ResolverType::kResolverTypeIPLiteral:
-          host_resolver->AddIPLiteralRule(rule->host_pattern, rule->replacement,
-                                          std::string());
-          break;
-        case network::mojom::ResolverType::kResolverTypeDirectLookup:
-          host_resolver->AllowDirectLookup(rule->host_pattern);
-          break;
-        default:
-          host_resolver->AddRule(rule->host_pattern, rule->replacement);
-          break;
+      if (rule->resolver_type ==
+          network::mojom::ResolverType::kResolverTypeFail) {
+        test_host_resolver_.host_resolver()->AddSimulatedFailure(
+            rule->host_pattern);
+      } else if (rule->resolver_type ==
+                 network::mojom::ResolverType::kResolverTypeIPLiteral) {
+        test_host_resolver_.host_resolver()->AddIPLiteralRule(
+            rule->host_pattern, rule->replacement, std::string());
+      } else {
+        test_host_resolver_.host_resolver()->AddRule(rule->host_pattern,
+                                                     rule->replacement);
       }
     }
     std::move(callback).Run();
@@ -189,21 +183,9 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
         base::BindRepeating(CrashResolveHost, host));
   }
 
-  void CrashOnGetCookieList() override {
-    network::CookieManager::CrashOnGetCookieList();
-  }
-
   void GetLatestMemoryPressureLevel(
       GetLatestMemoryPressureLevelCallback callback) override {
     std::move(callback).Run(latest_memory_pressure_level_);
-  }
-
-  void GetEnvironmentVariableValue(
-      const std::string& name,
-      GetEnvironmentVariableValueCallback callback) override {
-    std::string value;
-    base::Environment::Create()->GetVar(name, &value);
-    std::move(callback).Run(value);
   }
 
   void BindRequest(network::mojom::NetworkServiceTestRequest request) {

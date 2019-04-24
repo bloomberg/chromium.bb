@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-
 #include <memory>
 
 #include "base/bind.h"
@@ -47,6 +45,7 @@ using chrome_test_util::SettingsMenuButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
 using tab_usage_recorder_test_util::OpenNewIncognitoTabUsingUIAndEvictMainTabs;
 using tab_usage_recorder_test_util::SwitchToNormalMode;
+using web::test::ElementSelector;
 
 namespace {
 
@@ -150,17 +149,12 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
       kSelectedTabHistogramName, TabUsageRecorder::IN_MEMORY, 1, failureBlock);
 
   // Evict the tab.
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
-
+  OpenNewIncognitoTabUsingUIAndEvictMainTabs();
   GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
                  @"Failed to switch to incognito mode");
 
   // Switch back to the normal tabs. Should be on tab one.
-
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
-
+  SwitchToNormalMode();
   [ChromeEarlGrey waitForWebViewContainingText:kURL1FirstWord];
 
   histogramTester.ExpectTotalCount(kSelectedTabHistogramName, 2, failureBlock);
@@ -221,14 +215,11 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   // Evict the tab. Create a dummy tab so that switching back to normal mode
   // does not trigger a reload immediately.
   [ChromeEarlGrey openNewTab];
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
+  OpenNewIncognitoTabUsingUIAndEvictMainTabs();
   [ChromeEarlGrey waitForIncognitoTabCount:1];
 
   // Switch back to the normal tabs. Should be on tab one.
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
-
+  SwitchToNormalMode();
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
   [ChromeEarlGrey waitForWebViewContainingText:kURL1FirstWord];
 
@@ -262,17 +253,12 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
                  @"Fail to state tabs as cold start tabs");
 
   // Open two incognito tabs with urls, clearing normal tabs from memory.
-  NSError* firstTabError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(firstTabError, firstTabError.localizedDescription);
-  NSError* secondTabError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(secondTabError, secondTabError.localizedDescription);
-
+  OpenNewIncognitoTabUsingUIAndEvictMainTabs();
+  OpenNewIncognitoTabUsingUIAndEvictMainTabs();
   [ChromeEarlGrey waitForIncognitoTabCount:2];
 
   // Switch back to the normal tabs.
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
-
+  SwitchToNormalMode();
   [ChromeEarlGrey waitForWebViewContainingText:kURL2FirstWord];
 
   // Select the other one so it also reloads.
@@ -321,16 +307,13 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
                  @"Fail to simulate tab backgrounding.");
 
   // Open incognito and clear normal tabs from memory.
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
+  OpenNewIncognitoTabUsingUIAndEvictMainTabs();
   GREYAssertTrue(chrome_test_util::IsIncognitoMode(),
                  @"Failed to switch to incognito mode");
   histogramTester.ExpectTotalCount(kEvictedTabReloadTime, 0, failureBlock);
 
   // Switch back to the normal tabs.
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
-
+  SwitchToNormalMode();
   [ChromeEarlGrey waitForWebViewContainingText:kURL2FirstWord];
 
   const GURL url1 = web::test::HttpServer::MakeUrl(kTestUrl1);
@@ -361,12 +344,8 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   [ChromeEarlGrey closeAllTabsInCurrentMode];
   GURL URL = web::test::HttpServer::MakeUrl(kTestUrl1);
   NewMainTabWithURL(URL, kURL1FirstWord);
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
-
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
-
+  OpenNewIncognitoTabUsingUIAndEvictMainTabs();
+  SwitchToNormalMode();
   [ChromeEarlGrey waitForWebViewContainingText:kURL1FirstWord];
   [ChromeEarlGrey waitForMainTabCount:1];
 
@@ -398,18 +377,12 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   [ChromeEarlGrey openNewTab];
   [ChromeEarlGrey openNewTab];
   chrome_test_util::LoadUrl(slowURL);
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
+  OpenNewIncognitoTabUsingUIAndEvictMainTabs();
 
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
       std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
 
-  NSError* switchError = SwitchToNormalMode();
-  // TODO(crbug.com/951600): Avoid asserting directly unless the test fails,
-  // due to timing issues.
-  if (switchError != nil) {
-    GREYAssert(false, switchError.localizedDescription);
-  }
+  SwitchToNormalMode();
 
   // Turn off synchronization of GREYAssert to test the pending states.
   [[GREYConfiguration sharedInstance]
@@ -451,17 +424,11 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
   NewMainTabWithURL(slowURL, "Slow");
 
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
+  OpenNewIncognitoTabUsingUIAndEvictMainTabs();
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
       std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
 
-  NSError* switchError = SwitchToNormalMode();
-  // TODO(crbug.com/951600): Avoid asserting directly unless the test fails,
-  // due to timing issues.
-  if (switchError != nil) {
-    GREYAssert(false, switchError.localizedDescription);
-  }
+  SwitchToNormalMode();
 
   // Letting page load start.
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.5));
@@ -502,12 +469,9 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   };
 
   NewMainTabWithURL(slowURL, responses[slowURL]);
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
+  OpenNewIncognitoTabUsingUIAndEvictMainTabs();
 
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
-
+  SwitchToNormalMode();
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsMenuPrivacyButton()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
@@ -535,17 +499,11 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   [ChromeEarlGrey openNewTab];
   chrome_test_util::LoadUrl(slowURL);
 
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
+  OpenNewIncognitoTabUsingUIAndEvictMainTabs();
 
   web::test::SetUpHttpServer(std::make_unique<web::DelayedResponseProvider>(
       std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
-  NSError* switchError = SwitchToNormalMode();
-  // TODO(crbug.com/951600): Avoid asserting directly unless the test fails,
-  // due to timing issues.
-  if (switchError != nil) {
-    GREYAssert(false, switchError.localizedDescription);
-  }
+  SwitchToNormalMode();
 
   // Letting page load start.
   base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.5));
@@ -626,12 +584,8 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
   NSUInteger tabIndex = chrome_test_util::GetMainTabCount() - 1;
   [ChromeEarlGrey openNewTab];
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
-
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
-
+  OpenNewIncognitoTabUsingUIAndEvictMainTabs();
+  SwitchToNormalMode();
   chrome_test_util::SelectTabAtIndexInCurrentMode(tabIndex);
   [ChromeEarlGrey waitForWebViewContainingText:"arrived"];
 
@@ -677,12 +631,8 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   [ChromeEarlGrey waitForWebViewContainingText:"Whee"];
   NSUInteger tabIndex = chrome_test_util::GetMainTabCount() - 1;
   [ChromeEarlGrey openNewTab];
-  NSError* openError = OpenNewIncognitoTabUsingUIAndEvictMainTabs();
-  GREYAssertNil(openError, openError.localizedDescription);
-
-  NSError* switchError = SwitchToNormalMode();
-  GREYAssertNil(switchError, switchError.localizedDescription);
-
+  OpenNewIncognitoTabUsingUIAndEvictMainTabs();
+  SwitchToNormalMode();
   chrome_test_util::SelectTabAtIndexInCurrentMode(tabIndex);
   [ChromeEarlGrey waitForWebViewContainingText:"Whee"];
 
@@ -714,11 +664,11 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
       web::test::HttpServer::MakeUrl("http://destination");
   // Make the link that cover the whole page so that long pressing the web view
   // will trigger the link context menu.
-  responses[initialURL] =
-      base::StringPrintf("<body style='width:auto; height:auto;'><a href='%s' "
-                         "id='link'><div style='width:100%%; "
-                         "height:100%%;'>link</div></a></body>",
-                         destinationURL.spec().c_str());
+  responses[initialURL] = base::StringPrintf(
+      "<body style='width:auto; height:auto;'><a href='%s' "
+      "id='link'><div style='width:100%%; "
+      "height:100%%;'>link</div></a></body>",
+      destinationURL.spec().c_str());
   responses[destinationURL] = "Whee!";
   web::test::SetUpHttpServer(std::make_unique<HtmlResponseProvider>(responses));
   chrome_test_util::HistogramTester histogramTester;
@@ -732,7 +682,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
       web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
   [[EarlGrey selectElementWithMatcher:webViewMatcher]
       performAction:chrome_test_util::LongPressElementForContextMenu(
-                        [ElementSelector selectorWithElementID:"link"],
+                        ElementSelector::ElementSelectorId("link"),
                         true /* menu should appear */)];
 
   [[EarlGrey selectElementWithMatcher:OpenLinkInNewTabButton()]

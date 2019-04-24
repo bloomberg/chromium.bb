@@ -63,7 +63,11 @@ class PLATFORM_EXPORT PaintController {
     kTransient,
   };
 
-  explicit PaintController(Usage = kMultiplePaints);
+  static std::unique_ptr<PaintController> Create(
+      Usage usage = kMultiplePaints) {
+    return base::WrapUnique(new PaintController(usage));
+  }
+
   ~PaintController();
 
   // For pre-PaintAfterPaint only.
@@ -251,6 +255,8 @@ class PLATFORM_EXPORT PaintController {
   friend class PaintControllerTestBase;
   friend class PaintControllerPaintTestBase;
 
+  PaintController(Usage);
+
   // True if all display items associated with the client are validly cached.
   // However, the current algorithm allows the following situations even if
   // ClientCacheIsValid() is true for a client during painting:
@@ -419,14 +425,14 @@ class PLATFORM_EXPORT PaintController {
   // Accumulated counts for UMA metrics. Updated by UpdateUMACounts() and
   // UpdateUMACountsOnFullyCached(), and reported as UMA metrics and reset by
   // ReportUMACounts(). The accumulation is mainly for pre-CompositeAfterPaint
-  // to sum up the data from multiple PaintControllers during a paint in
-  // document life cycle update.
+  // to weigh big and small GraphicsLayers properly when calculating the
+  // percentage UMA data. Also avoid reporting too frequently, to make the
+  // metrics more meaningful.
   static size_t sum_num_items_;
   static size_t sum_num_cached_items_;
   static size_t sum_num_indexed_items_;
   static size_t sum_num_subsequences_;
   static size_t sum_num_cached_subsequences_;
-  static size_t sum_num_paint_chunks_;
 
   class DisplayItemListAsJSON;
 

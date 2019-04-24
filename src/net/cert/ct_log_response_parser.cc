@@ -162,7 +162,7 @@ bool FillConsistencyProof(const base::Value& json_consistency_proof,
     return false;
   }
 
-  const base::DictionaryValue* dict_value = nullptr;
+  const base::DictionaryValue* dict_value = NULL;
   if (!json_consistency_proof.GetAsDictionary(&dict_value) ||
       !dict_value->HasKey("consistency")) {
     DVLOG(1) << "Missing consistency field.";

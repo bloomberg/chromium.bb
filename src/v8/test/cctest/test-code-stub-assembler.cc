@@ -62,7 +62,7 @@ static int sum3(int a0, int a1, int a2) { return a0 + a1 + a2; }
 
 }  // namespace
 
-TEST(CallCFunction) {
+TEST(CallCFunction9) {
   Isolate* isolate(CcTest::InitIsolateOnce());
 
   const int kNumParams = 0;
@@ -75,17 +75,13 @@ TEST(CallCFunction) {
 
     MachineType type_intptr = MachineType::IntPtr();
 
-    Node* const result =
-        m.CallCFunction(fun_constant, type_intptr,
-                        std::make_pair(type_intptr, m.IntPtrConstant(0)),
-                        std::make_pair(type_intptr, m.IntPtrConstant(1)),
-                        std::make_pair(type_intptr, m.IntPtrConstant(2)),
-                        std::make_pair(type_intptr, m.IntPtrConstant(3)),
-                        std::make_pair(type_intptr, m.IntPtrConstant(4)),
-                        std::make_pair(type_intptr, m.IntPtrConstant(5)),
-                        std::make_pair(type_intptr, m.IntPtrConstant(6)),
-                        std::make_pair(type_intptr, m.IntPtrConstant(7)),
-                        std::make_pair(type_intptr, m.IntPtrConstant(8)));
+    Node* const result = m.CallCFunction9(
+        type_intptr, type_intptr, type_intptr, type_intptr, type_intptr,
+        type_intptr, type_intptr, type_intptr, type_intptr, type_intptr,
+        fun_constant, m.IntPtrConstant(0), m.IntPtrConstant(1),
+        m.IntPtrConstant(2), m.IntPtrConstant(3), m.IntPtrConstant(4),
+        m.IntPtrConstant(5), m.IntPtrConstant(6), m.IntPtrConstant(7),
+        m.IntPtrConstant(8));
     m.Return(m.SmiTag(result));
   }
 
@@ -95,7 +91,7 @@ TEST(CallCFunction) {
   CHECK_EQ(36, Handle<Smi>::cast(result)->value());
 }
 
-TEST(CallCFunctionWithCallerSavedRegisters) {
+TEST(CallCFunction3WithCallerSavedRegisters) {
   Isolate* isolate(CcTest::InitIsolateOnce());
 
   const int kNumParams = 0;
@@ -108,11 +104,10 @@ TEST(CallCFunctionWithCallerSavedRegisters) {
 
     MachineType type_intptr = MachineType::IntPtr();
 
-    Node* const result = m.CallCFunctionWithCallerSavedRegisters(
-        fun_constant, type_intptr, kSaveFPRegs,
-        std::make_pair(type_intptr, m.IntPtrConstant(0)),
-        std::make_pair(type_intptr, m.IntPtrConstant(1)),
-        std::make_pair(type_intptr, m.IntPtrConstant(2)));
+    Node* const result = m.CallCFunction3WithCallerSavedRegisters(
+        type_intptr, type_intptr, type_intptr, type_intptr, fun_constant,
+        m.IntPtrConstant(0), m.IntPtrConstant(1), m.IntPtrConstant(2),
+        kSaveFPRegs);
     m.Return(m.SmiTag(result));
   }
 
@@ -260,7 +255,7 @@ TEST(IsValidPositiveSmi) {
   typedef std::numeric_limits<int32_t> int32_limits;
   IsValidPositiveSmiCase(isolate, int32_limits::max());
   IsValidPositiveSmiCase(isolate, int32_limits::min());
-#if V8_TARGET_ARCH_64_BIT
+#ifdef V8_TARGET_ARCH_64_BIT
   IsValidPositiveSmiCase(isolate,
                          static_cast<intptr_t>(int32_limits::max()) + 1);
   IsValidPositiveSmiCase(isolate,
@@ -3364,7 +3359,7 @@ TEST(SmallOrderedHashMapAllocate) {
                        reinterpret_cast<void*>(actual->address()),
                        SmallOrderedHashMap::SizeFor(capacity)));
 #ifdef VERIFY_HEAP
-    actual->SmallOrderedHashMapVerify(isolate);
+    actual->SmallOrderedHashTableVerify(isolate);
 #endif
     capacity = capacity << 1;
   }
@@ -3403,7 +3398,7 @@ TEST(SmallOrderedHashSetAllocate) {
                        reinterpret_cast<void*>(actual->address()),
                        SmallOrderedHashSet::SizeFor(capacity)));
 #ifdef VERIFY_HEAP
-    actual->SmallOrderedHashSetVerify(isolate);
+    actual->SmallOrderedHashTableVerify(isolate);
 #endif
     capacity = capacity << 1;
   }
@@ -3541,34 +3536,6 @@ TEST(TestGotoIfDebugExecutionModeChecksSideEffects) {
   CHECK(result->IsBoolean());
   CHECK_EQ(true, result->BooleanValue(isolate));
 }
-
-#ifdef V8_COMPRESS_POINTERS
-
-TEST(CompressedSlotInterleavedGC) {
-  Isolate* isolate(CcTest::InitIsolateOnce());
-
-  const int kNumParams = 1;
-
-  CodeAssemblerTester asm_tester(isolate, kNumParams);
-  CodeStubAssembler m(asm_tester.state());
-
-  Node* compressed = m.ChangeTaggedToCompressed(m.Parameter(0));
-
-  m.Print(m.ChangeCompressedToTagged(compressed));
-
-  Node* const context = m.Parameter(kNumParams + 2);
-  m.CallRuntime(Runtime::kCollectGarbage, context, m.SmiConstant(0));
-
-  m.Return(m.ChangeCompressedToTagged(compressed));
-
-  FunctionTester ft(asm_tester.GenerateCode(), kNumParams);
-  Handle<Object> result =
-      ft.Call(isolate->factory()->NewNumber(0.5)).ToHandleChecked();
-  CHECK(result->IsHeapNumber());
-  CHECK_EQ(0.5, Handle<HeapNumber>::cast(result)->Number());
-}
-
-#endif  // V8_COMPRESS_POINTERS
 
 }  // namespace compiler
 }  // namespace internal

@@ -7,17 +7,13 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
-bool DOMFeaturePolicy::allowsFeature(ScriptState* script_state,
-                                     const String& feature) const {
-  ExecutionContext* execution_context =
-      script_state ? ExecutionContext::From(script_state) : nullptr;
-  if (GetAvailableFeatures(execution_context).Contains(feature)) {
+bool DOMFeaturePolicy::allowsFeature(const String& feature) const {
+  if (GetDefaultFeatureNameMap().Contains(feature)) {
     auto feature_name = GetDefaultFeatureNameMap().at(feature);
     mojom::PolicyValueType feature_type =
         GetPolicy()->GetFeatureList().at(feature_name).second;
@@ -29,22 +25,18 @@ bool DOMFeaturePolicy::allowsFeature(ScriptState* script_state,
   return false;
 }
 
-bool DOMFeaturePolicy::allowsFeature(ScriptState* script_state,
-                                     const String& feature,
+bool DOMFeaturePolicy::allowsFeature(const String& feature,
                                      const String& url) const {
-  ExecutionContext* execution_context =
-      script_state ? ExecutionContext::From(script_state) : nullptr;
   scoped_refptr<const SecurityOrigin> origin =
       SecurityOrigin::CreateFromString(url);
   if (!origin || origin->IsOpaque()) {
     GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kOther,
-        mojom::ConsoleMessageLevel::kWarning,
+        kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
         "Invalid origin url for feature '" + feature + "': " + url + "."));
     return false;
   }
 
-  if (!GetAvailableFeatures(execution_context).Contains(feature)) {
+  if (!GetDefaultFeatureNameMap().Contains(feature)) {
     AddWarningForUnrecognizedFeature(feature);
     return false;
   }
@@ -57,34 +49,29 @@ bool DOMFeaturePolicy::allowsFeature(ScriptState* script_state,
                                                 origin->ToUrlOrigin(), value);
 }
 
-Vector<String> DOMFeaturePolicy::features(ScriptState* script_state) const {
-  ExecutionContext* execution_context =
-      script_state ? ExecutionContext::From(script_state) : nullptr;
-  return GetAvailableFeatures(execution_context);
+Vector<String> DOMFeaturePolicy::features() const {
+  Vector<String> features;
+  for (const auto& entry : GetDefaultFeatureNameMap())
+    features.push_back(entry.key);
+  return features;
 }
 
-Vector<String> DOMFeaturePolicy::allowedFeatures(
-    ScriptState* script_state) const {
-  ExecutionContext* execution_context =
-      script_state ? ExecutionContext::From(script_state) : nullptr;
+Vector<String> DOMFeaturePolicy::allowedFeatures() const {
   Vector<String> allowed_features;
-  for (const String& feature : GetAvailableFeatures(execution_context)) {
-    auto feature_name = GetDefaultFeatureNameMap().at(feature);
+  for (const auto& entry : GetDefaultFeatureNameMap()) {
+    auto feature_name = entry.value;
     mojom::PolicyValueType feature_type =
         GetPolicy()->GetFeatureList().at(feature_name).second;
     PolicyValue value = PolicyValue::CreateMaxPolicyValue(feature_type);
     if (GetPolicy()->IsFeatureEnabled(feature_name, value))
-      allowed_features.push_back(feature);
+      allowed_features.push_back(entry.key);
   }
   return allowed_features;
 }
 
 Vector<String> DOMFeaturePolicy::getAllowlistForFeature(
-    ScriptState* script_state,
     const String& feature) const {
-  ExecutionContext* execution_context =
-      script_state ? ExecutionContext::From(script_state) : nullptr;
-  if (GetAvailableFeatures(execution_context).Contains(feature)) {
+  if (GetDefaultFeatureNameMap().Contains(feature)) {
     auto feature_name = GetDefaultFeatureNameMap().at(feature);
     auto feature_type = GetPolicy()->GetFeatureList().at(feature_name).second;
 
@@ -112,7 +99,7 @@ Vector<String> DOMFeaturePolicy::getAllowlistForFeature(
 void DOMFeaturePolicy::AddWarningForUnrecognizedFeature(
     const String& feature) const {
   GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-      mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kWarning,
+      kOtherMessageSource, mojom::ConsoleMessageLevel::kWarning,
       "Unrecognized feature: '" + feature + "'."));
 }
 

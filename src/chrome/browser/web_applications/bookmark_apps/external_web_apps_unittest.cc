@@ -60,7 +60,7 @@ static base::FilePath test_dir(const std::string& sub_dir) {
   return dir.AppendASCII(kWebAppDefaultApps).AppendASCII(sub_dir);
 }
 
-using InstallOptionsList = std::vector<web_app::InstallOptions>;
+using AppInfos = std::vector<web_app::PendingAppManager::AppInfo>;
 
 }  // namespace
 
@@ -88,28 +88,27 @@ class ScanDirForExternalWebAppsTest : public testing::Test {
  protected:
   // Helper that makes blocking call to |web_app::ScanForExternalWebApps| and
   // returns read app infos.
-  static InstallOptionsList ScanApps(Profile* profile,
-                                     const base::FilePath& test_dir) {
+  static AppInfos ScanApps(Profile* profile, const base::FilePath& test_dir) {
 #if defined(OS_CHROMEOS)
     base::ScopedPathOverride path_override(
         chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS, test_dir);
 #endif
-    InstallOptionsList result;
+    AppInfos result;
     base::RunLoop run_loop;
     web_app::ScanForExternalWebApps(
-        profile, base::BindOnce(
-                     [](base::RunLoop* run_loop, InstallOptionsList* result,
-                        InstallOptionsList install_options_list) {
-                       *result = install_options_list;
-                       run_loop->Quit();
-                     },
-                     &run_loop, &result));
+        profile,
+        base::BindOnce(
+            [](base::RunLoop* run_loop, AppInfos* result, AppInfos apps) {
+              *result = apps;
+              run_loop->Quit();
+            },
+            &run_loop, &result));
     run_loop.Run();
     return result;
   }
 
-  std::vector<web_app::InstallOptions> ScanTestDirForExternalWebApps(
-      const std::string& dir) {
+  std::vector<web_app::PendingAppManager::AppInfo>
+  ScanTestDirForExternalWebApps(const std::string& dir) {
     return web_app::ScanDirForExternalWebAppsForTesting(test_dir(dir),
                                                         CreateProfile().get());
   }
@@ -149,11 +148,10 @@ class ScanDirForExternalWebAppsTest : public testing::Test {
   }
 
   void VerifySetOfApps(Profile* profile, const std::set<GURL>& expectations) {
-    const auto install_options_list =
-        ScanApps(profile, test_dir(kUserTypesTestDir));
-    ASSERT_EQ(expectations.size(), install_options_list.size());
-    for (const auto& install_options : install_options_list)
-      ASSERT_EQ(1u, expectations.count(install_options.url));
+    const auto app_infos = ScanApps(profile, test_dir(kUserTypesTestDir));
+    ASSERT_EQ(expectations.size(), app_infos.size());
+    for (const auto& app_info : app_infos)
+      ASSERT_EQ(1u, expectations.count(app_info.url));
   }
 #endif
 
@@ -175,40 +173,35 @@ class ScanDirForExternalWebAppsTest : public testing::Test {
 };
 
 TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
-  const auto install_options_list =
-      ScanTestDirForExternalWebApps(kGoodJsonTestDir);
+  const auto app_infos = ScanTestDirForExternalWebApps(kGoodJsonTestDir);
 
   // The good_json directory contains two good JSON files:
   // chrome_platform_status.json and google_io_2016.json.
   // google_io_2016.json is missing a "create_shortcuts" field, so the default
   // value of false should be used.
-  std::vector<web_app::InstallOptions> test_install_options_list;
+  std::vector<web_app::PendingAppManager::AppInfo> test_app_infos;
   {
-    web_app::InstallOptions install_options(
+    web_app::PendingAppManager::AppInfo info(
         GURL("https://www.chromestatus.com/features"),
         web_app::LaunchContainer::kTab,
         web_app::InstallSource::kExternalDefault);
-    install_options.add_to_applications_menu = true;
-    install_options.add_to_desktop = true;
-    install_options.add_to_quick_launch_bar = true;
-    install_options.require_manifest = true;
-    test_install_options_list.push_back(std::move(install_options));
+    info.create_shortcuts = true;
+    info.require_manifest = true;
+    test_app_infos.push_back(std::move(info));
   }
   {
-    web_app::InstallOptions install_options(
+    web_app::PendingAppManager::AppInfo info(
         GURL("https://events.google.com/io2016/?utm_source=web_app_manifest"),
         web_app::LaunchContainer::kWindow,
         web_app::InstallSource::kExternalDefault);
-    install_options.add_to_applications_menu = false;
-    install_options.add_to_desktop = false;
-    install_options.add_to_quick_launch_bar = false;
-    install_options.require_manifest = true;
-    test_install_options_list.push_back(std::move(install_options));
+    info.create_shortcuts = false;
+    info.require_manifest = true;
+    test_app_infos.push_back(std::move(info));
   }
 
-  EXPECT_EQ(test_install_options_list.size(), install_options_list.size());
-  for (const auto install_option : test_install_options_list) {
-    EXPECT_TRUE(base::ContainsValue(install_options_list, install_option));
+  EXPECT_EQ(test_app_infos.size(), app_infos.size());
+  for (const auto app_info : test_app_infos) {
+    EXPECT_TRUE(base::ContainsValue(app_infos, app_info));
   }
 }
 

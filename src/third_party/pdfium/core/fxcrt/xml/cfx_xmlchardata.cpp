@@ -13,8 +13,8 @@ CFX_XMLCharData::CFX_XMLCharData(const WideString& wsCData)
 
 CFX_XMLCharData::~CFX_XMLCharData() = default;
 
-CFX_XMLNode::Type CFX_XMLCharData::GetType() const {
-  return Type::kCharData;
+FX_XMLNODETYPE CFX_XMLCharData::GetType() const {
+  return FX_XMLNODE_CharData;
 }
 
 CFX_XMLNode* CFX_XMLCharData::Clone(CFX_XMLDocument* doc) {

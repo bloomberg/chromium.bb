@@ -54,7 +54,6 @@
 <translation id="1319608975892113573">ምንም ቀዳሚ የጽሑፍ ጥቅስ የለም።</translation>
 <translation id="1321576897702511272">የChromeVox እገዛን ደብቅ</translation>
 <translation id="1325946044405407859">ቡናማ የሚመስል</translation>
-<translation id="1331634987653814322">የብራይል ቅንብሮች</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> ከ<ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">የቁምፊ እና ቃል ማስተጋባት</translation>
 <translation id="1334570596456017464">ግርጌ አደር</translation>
@@ -99,7 +98,6 @@
 <translation id="1616111909442424068">ስንዴ</translation>
 <translation id="1618597272655350600">የተሟላ የአሁኑ ቦታ ሙሉ ማብራሪያ ያስታውቃል</translation>
 <translation id="1627222324347828322">የመናፍስት ነጭ</translation>
-<translation id="1630688379087270943">ሰያፍ አመልክት፦</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{ይበልጣል}one{# የይበልጣል ምልክቶች}other{# የይበልጣል ምልክቶች}}</translation>
 <translation id="1653266918374749391">ቀዳሚ የደረጃ 3 ርዕስ</translation>
 <translation id="1657616855184033958">የክስተት ዥረት ማጣሪያዎችን አሳይ</translation>
@@ -320,7 +318,6 @@
 <translation id="3286390186030710347">ተንሸራታች</translation>
 <translation id="3299925995433437805">ምንም ቀጣይ የተጎበኘ አገናኝ የለም።</translation>
 <translation id="3300348286427369683">የበለጸገ ጽሑፍ ድጋፍ። ChromeVox አሁን የመዝለል ትዕዛዞችን፣ የብሬይል ጠቋሚ ማዞርን፣ ምርጫን እና ተጨማሪ ነገሮችን ጨምሮ የበለጸገ ጽሑፍ መስኮችን ይደግፋል።</translation>
-<translation id="3304756947457041303">የበለጸገ ጽሑፍ አመልካች አብጅ</translation>
 <translation id="3307886118343381874">ወደ የሠንጠረዡ መጨረሻ ሂድ</translation>
 <translation id="3311969765485641742">ማንቂያዎችን ለመከለስ Alt+Shift+A ይጫኑ</translation>
 <translation id="3312997241656799641">ቀጣይ የተጎበኘ አገናኝ</translation>
@@ -407,7 +404,6 @@
 <translation id="3930498801443296724">ጥቅስ</translation>
 <translation id="3936394396199829062">ሰማያዊ ወይን ጠጅ ፈካ ያለ</translation>
 <translation id="3941269780691800708">ከመዳፊቱ ሥር ያለውን ጽሑፍ ይናገሩ።</translation>
-<translation id="394953087167197343">የተሳሳተ ፊደል አመልክት፦</translation>
 <translation id="3962990492275676168">ከአሁኑ አካባቢ ሆነው ማንበብ ይጀምሩ</translation>
 <translation id="3970951409746498040">አሸዋማ ቡኒ</translation>
 <translation id="3989324057180830702">tgl btn</translation>
@@ -454,7 +450,6 @@
 <translation id="42164919740161077">ካዴት ሰማያዊ</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{ዳሽ}one{# ዳሾች}other{# ዳሾች}}</translation>
 <translation id="421884353938374759">color picker</translation>
-<translation id="4221071177874897997">ደማቅ አመልክት፦</translation>
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">ፈካ ያለ አረንጓዴያማ ግራጫ</translation>
 <translation id="4231102694147661229">የገንቢዎች አማራጮችን አንቃ</translation>
@@ -552,7 +547,6 @@
 <translation id="489907760999452556">ውስጣዊ አገናኝ</translation>
 <translation id="4915087353619183190">መማር ሁነታን በማስጀመር ላይ። የqwerty ቁልፍን፣ ሊታደስ የሚችል የብሬይል ቁልፍን ይጫኑ ወይም ተግባሩን ለመረዳት በጣት ይጥረጉ። ለመውጣት control ከw ጋር ወይም escapeን ይጫኑ።</translation>
 <translation id="492295894462528572">መቅድም</translation>
-<translation id="4943781537993885772">የማሳያ ዘይቤ</translation>
 <translation id="495170559598752135">እርምጃዎች</translation>
 <translation id="4953585991029886728">ጽሑፍ ያርትዑ</translation>
 <translation id="4954534434583049121">ቀዳሚ የጽሑፍ ጥቅስ</translation>
@@ -651,7 +645,6 @@
 <translation id="5574412348552378458">የChromeVox መማር ሁነታ</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">ጽሑፍ፣ የኢሜይል ግቤት ያርትዑ</translation>
-<translation id="5586942249556966598">ምንም አትስራ</translation>
 <translation id="5597170376237141345">ቀጣይ አመልካች ሳጥን</translation>
 <translation id="5597933780944041114">ምንም ቀጣይ ርዕስ የለም።</translation>
 <translation id="5598905979683743333"><ph name="NAME" />፣ ሬዲዮ አዝራር አልተመረጠም</translation>
@@ -719,7 +712,6 @@
 <translation id="6006050241733874051">ቅጽ</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{የኋላ እዝባር}one{# የኋላ እዝባሮች}other{# የኋላ እዝባሮች}}</translation>
 <translation id="6017514345406065928">አረንጓዴ</translation>
-<translation id="6021969570711251331">በውስጥ ትቶ መውጣት</translation>
 <translation id="6034000775414344507">ፈካ ያለ ግራጫ</translation>
 <translation id="6037602951055904232">ወደፊት አንፏቅቅ</translation>
 <translation id="6042826534790431634">ለማግበር ፍለጋ+Space ይጫኑ።</translation>
@@ -757,7 +749,6 @@
 <translation id="6348869651006731065">ጠቆር ያለ ግራጫ</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{ነጥብ}one{# ነጥቦች}other{# ነጥቦች}}</translation>
 <translation id="6355910664415701303">ምንም ቀዳሚ የርዕስ ንጥል የለም።</translation>
-<translation id="6360318852623800555">የበለጸገ ጽሑፍ አይነታዎች</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">ቀዳሚ ርዕስ</translation>
 <translation id="6376999910001533545">ጠቆር ያለ ቡናማ ቀይ (ማሩን)</translation>
@@ -771,7 +762,6 @@
 <translation id="6438968337250688271"><ph name="NAME" />፣ ምናሌ</translation>
 <translation id="6444046323172968959">የማንቂያ መገናኛ</translation>
 <translation id="6452403590345320472">ማውጫ</translation>
-<translation id="6454456397828627257">ጎን ለጎን</translation>
 <translation id="6459511626086141404">ልሙጥ የቁልፍ አደራደር</translation>
 <translation id="6468049171101508116">ቀጣይ አዝራር</translation>
 <translation id="646954774886932461">መረጃ ጠቋሚ</translation>
@@ -933,7 +923,6 @@
 <translation id="762020119231868829">ሁሉንም አሁን በመጫወት ላይ ያሉ የሚዲያ ንዑስ ፕሮግራሞችን ለአፍታ ያቆማቸዋል</translation>
 <translation id="7625690649919402823">ቀጣይ ሠንጠረዥ</translation>
 <translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />)፣ ደረጃ <ph name="GRADE" /></translation>
-<translation id="763535765081585392">መስመረግርጌ አመልክት፦</translation>
 <translation id="7639968568612851608">ጠቆር ያለ ግራጫ</translation>
 <translation id="7641134354185483015">ምንም ቀዳሚ የደረጃ 3 ርዕስ የለም።</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />፣ <ph name="NAME" />፣ የጽሑፍ ሳጥን</translation>
@@ -1169,7 +1158,6 @@
 <translation id="8943175951035496220">በቀኝ ምንም ሕዋስ የለም።</translation>
 <translation id="8943282376843390568">ሎሚ ቀለም</translation>
 <translation id="8946628535652548639">ረ<ph name="TABLECELLROWINDEX" />ዓ<ph name="TABLECELLCOLUMNINDEX" /></translation>
-<translation id="8957142051395645063">አስታውቅ</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">እርሳ</translation>
 <translation id="900114243503212879">file</translation>

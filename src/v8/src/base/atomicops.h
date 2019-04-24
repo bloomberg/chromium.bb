@@ -39,22 +39,22 @@
 namespace v8 {
 namespace base {
 
-using Atomic8 = char;
-using Atomic16 = int16_t;
-using Atomic32 = int32_t;
+typedef char Atomic8;
+typedef int16_t Atomic16;
+typedef int32_t Atomic32;
 #if defined(V8_HOST_ARCH_64_BIT)
 // We need to be able to go between Atomic64 and AtomicWord implicitly.  This
 // means Atomic64 and AtomicWord should be the same type on 64-bit.
 #if defined(__ILP32__)
-using Atomic64 = int64_t;
+typedef int64_t Atomic64;
 #else
-using Atomic64 = intptr_t;
+typedef intptr_t Atomic64;
 #endif  // defined(__ILP32__)
 #endif  // defined(V8_HOST_ARCH_64_BIT)
 
 // Use AtomicWord for a machine-sized pointer.  It will use the Atomic32 or
 // Atomic64 routines below, depending on your architecture.
-using AtomicWord = intptr_t;
+typedef intptr_t AtomicWord;
 
 // Atomically execute:
 //      result = *ptr;

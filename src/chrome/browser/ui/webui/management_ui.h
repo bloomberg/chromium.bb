@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_MANAGEMENT_UI_H_
 
 #include "base/macros.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/base/resource/scale_factor.h"
 
@@ -26,8 +25,6 @@ class ManagementUI : public content::WebUIController {
 
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
-
-  static base::string16 GetManagementPageSubtitle(Profile* profile);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ManagementUI);

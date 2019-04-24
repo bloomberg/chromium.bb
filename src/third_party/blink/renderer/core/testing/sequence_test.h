@@ -19,6 +19,8 @@ class SequenceTest final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static SequenceTest* create() { return MakeGarbageCollected<SequenceTest>(); }
+
   SequenceTest();
   ~SequenceTest() override;
 

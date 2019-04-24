@@ -83,7 +83,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
 
   Canvas2DLayerBridge(const IntSize&,
                       AccelerationMode,
-                      const CanvasColorParams&);
+                      const CanvasColorParams&,
+                      bool needs_y_flip = true);
 
   ~Canvas2DLayerBridge() override;
 
@@ -195,6 +196,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   bool hibernation_scheduled_ = false;
   bool dont_use_idle_scheduling_for_testing_ = false;
   bool context_lost_ = false;
+  bool needs_y_flip_;
 
   const AccelerationMode acceleration_mode_;
   const CanvasColorParams color_params_;

@@ -76,7 +76,7 @@ NotShared<DOMArrayBufferView> Crypto::getRandomValues(
 
 SubtleCrypto* Crypto::subtle() {
   if (!subtle_crypto_)
-    subtle_crypto_ = MakeGarbageCollected<SubtleCrypto>();
+    subtle_crypto_ = SubtleCrypto::Create();
   return subtle_crypto_.Get();
 }
 

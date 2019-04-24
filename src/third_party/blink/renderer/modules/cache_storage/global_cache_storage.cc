@@ -43,7 +43,7 @@ class GlobalCacheStorageImpl final
   CacheStorage* Caches(T& fetching_scope, ExceptionState& exception_state) {
     ExecutionContext* context = fetching_scope.GetExecutionContext();
     if (!context->GetSecurityOrigin()->CanAccessCacheStorage()) {
-      if (context->GetSecurityContext().IsSandboxed(WebSandboxFlags::kOrigin)) {
+      if (context->GetSecurityContext().IsSandboxed(kSandboxOrigin)) {
         exception_state.ThrowSecurityError(
             "Cache storage is disabled because the context is sandboxed and "
             "lacks the 'allow-same-origin' flag.");
@@ -68,7 +68,7 @@ class GlobalCacheStorageImpl final
             "provider.");
         return nullptr;
       }
-      caches_ = MakeGarbageCollected<CacheStorage>(
+      caches_ = CacheStorage::Create(
           context, GlobalFetch::ScopedFetcher::From(fetching_scope));
     }
     return caches_;

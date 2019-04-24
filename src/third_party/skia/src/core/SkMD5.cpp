@@ -66,8 +66,7 @@ bool SkMD5::write(const void* buf, size_t inputLength) {
     return true;
 }
 
-SkMD5::Digest SkMD5::finish() {
-    SkMD5::Digest digest;
+void SkMD5::finish(Digest& digest) {
     // Get the number of bits before padding.
     uint8_t bits[8];
     encode(bits, this->byteCount << 3);
@@ -93,7 +92,6 @@ SkMD5::Digest SkMD5::finish() {
     // Clear state.
     memset(this, 0, sizeof(*this));
 #endif
-    return digest;
 }
 
 struct F { uint32_t operator()(uint32_t x, uint32_t y, uint32_t z) {

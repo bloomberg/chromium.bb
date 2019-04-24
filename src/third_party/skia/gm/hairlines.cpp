@@ -149,11 +149,13 @@ protected:
             bug->addArc(circle, kStartAngle, kSweepAngle);
 
             // Now add the chord that should cap the circular arc
-            SkPoint p0 = { kRad * SkScalarCos(SkDegreesToRadians(kStartAngle)),
-                           kRad * SkScalarSin(SkDegreesToRadians(kStartAngle)) };
+            SkScalar cosV, sinV = SkScalarSinCos(SkDegreesToRadians(kStartAngle), &cosV);
 
-            SkPoint p1 = { kRad * SkScalarCos(SkDegreesToRadians(kStartAngle + kSweepAngle)),
-                           kRad * SkScalarSin(SkDegreesToRadians(kStartAngle + kSweepAngle)) };
+            SkPoint p0 = SkPoint::Make(kRad * cosV, kRad * sinV);
+
+            sinV = SkScalarSinCos(SkDegreesToRadians(kStartAngle + kSweepAngle), &cosV);
+
+            SkPoint p1 = SkPoint::Make(kRad * cosV, kRad * sinV);
 
             bug->moveTo(p0);
             bug->lineTo(p1);

@@ -108,7 +108,8 @@ void DataReductionProxySettingsTestBase::CheckOnPrefChange(
   ExpectSetProxyPrefs(expected_enabled, false);
   if (managed) {
     test_context_->pref_service()->SetManagedPref(
-        prefs::kDataSaverEnabled, std::make_unique<base::Value>(enabled));
+        test_context_->GetDataReductionProxyEnabledPrefName(),
+        std::make_unique<base::Value>(enabled));
   } else {
     test_context_->SetDataReductionProxyEnabled(enabled);
   }
@@ -119,6 +120,7 @@ void DataReductionProxySettingsTestBase::CheckOnPrefChange(
 void DataReductionProxySettingsTestBase::InitDataReductionProxy(
     bool enabled_at_startup) {
   settings_->InitDataReductionProxySettings(
+      test_context_->GetDataReductionProxyEnabledPrefName(),
       test_context_->pref_service(), test_context_->io_data(),
       test_context_->CreateDataReductionProxyService(settings_.get()));
   settings_->data_reduction_proxy_service()->SetIOData(

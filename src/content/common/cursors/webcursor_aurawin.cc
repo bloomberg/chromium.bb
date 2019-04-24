@@ -12,17 +12,27 @@
 namespace content {
 
 ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
-  if (info_.type != blink::WebCursorInfo::kTypeCustom)
-    return LoadCursor(nullptr, IDC_ARROW);
+  if (!IsCustom())
+    return LoadCursor(NULL, IDC_ARROW);
 
-  if (platform_cursor_)
-    return platform_cursor_;
+  if (custom_cursor_)
+    return custom_cursor_;
 
-  DCHECK_EQ(kN32_SkColorType, info_.custom_image.colorType());
-  platform_cursor_ = IconUtil::CreateCursorFromSkBitmap(info_.custom_image,
-                                                        cursor.GetHotspot())
-                         .release();
-  return platform_cursor_;
+  gfx::Size custom_size;
+  std::vector<char> custom_data;
+  CreateCustomData(cursor.GetBitmap(), &custom_data, &custom_size);
+
+  custom_cursor_ =
+      IconUtil::CreateCursorFromDIB(
+          custom_size, cursor.GetHotspot(),
+          !custom_data.empty() ? &custom_data[0] : NULL, custom_data.size())
+          .release();
+  return custom_cursor_;
+}
+
+void WebCursor::InitPlatformData() {
+  custom_cursor_ = NULL;
+  device_scale_factor_ = 1.f;
 }
 
 bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {
@@ -30,9 +40,9 @@ bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {
 }
 
 void WebCursor::CleanupPlatformData() {
-  if (platform_cursor_) {
-    DestroyIcon(platform_cursor_);
-    platform_cursor_ = nullptr;
+  if (custom_cursor_) {
+    DestroyIcon(custom_cursor_);
+    custom_cursor_ = NULL;
   }
 }
 

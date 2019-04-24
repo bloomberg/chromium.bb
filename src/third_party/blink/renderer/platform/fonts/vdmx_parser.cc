@@ -131,7 +131,7 @@ bool ParseVDMX(int* y_max,
   // of this second table.
   //
   // Range 6 <= x <= 262146
-  size_t offset_table_offset =
+  unsigned long offset_table_offset =
       buf.Offset() + 4 /* sizeof struct ratio */ * num_ratios;
 
   unsigned desired_ratio = 0xffffffff;

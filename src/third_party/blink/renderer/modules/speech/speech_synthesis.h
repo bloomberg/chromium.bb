@@ -83,15 +83,13 @@ class MODULES_EXPORT SpeechSynthesis final
   void SpeakingErrorOccurred(PlatformSpeechSynthesisUtterance*) override;
   void BoundaryEventOccurred(PlatformSpeechSynthesisUtterance*,
                              SpeechBoundary,
-                             unsigned char_index,
-                             unsigned char_length) override;
+                             unsigned char_index) override;
 
   void StartSpeakingImmediately();
   void HandleSpeakingCompleted(SpeechSynthesisUtterance*, bool error_occurred);
   void FireEvent(const AtomicString& type,
                  SpeechSynthesisUtterance*,
                  uint32_t char_index,
-                 uint32_t char_length,
                  const String& name);
 
   void FireErrorEvent(SpeechSynthesisUtterance*,

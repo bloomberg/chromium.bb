@@ -33,6 +33,11 @@ class PLATFORM_EXPORT UnifiedHeapController final
   DISALLOW_IMPLICIT_CONSTRUCTORS(UnifiedHeapController);
 
  public:
+  // Temporarily expose that logic to allow reuse by
+  // ScriptWrappableMarkingVisitor.
+  static bool IsRootForNonTracingGCInternal(
+      const v8::TracedGlobal<v8::Value>& handle);
+
   explicit UnifiedHeapController(ThreadState*);
 
   // v8::EmbedderHeapTracer implementation.
@@ -47,9 +52,6 @@ class PLATFORM_EXPORT UnifiedHeapController final
   ThreadState* thread_state() const { return thread_state_; }
 
  private:
-  static bool IsRootForNonTracingGCInternal(
-      const v8::TracedGlobal<v8::Value>& handle);
-
   ThreadState* const thread_state_;
 
   // Returns whether the Blink heap has been fully processed.

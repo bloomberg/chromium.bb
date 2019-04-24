@@ -84,8 +84,8 @@ std::array<uint8_t, 4> GetTimestampSignatureCounter() {
 
 }  // namespace
 
-COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<AttestedCredentialData> MakeAttestedCredentialData(
+base::Optional<AuthenticatorData> MakeAuthenticatorData(
+    const std::string& rp_id,
     std::vector<uint8_t> credential_id,
     std::unique_ptr<ECPublicKey> public_key) {
   if (credential_id.empty() || credential_id.size() > 255) {
@@ -94,28 +94,20 @@ base::Optional<AttestedCredentialData> MakeAttestedCredentialData(
     return base::nullopt;
   }
   if (!public_key) {
-    LOG(ERROR) << "no public key";
+    LOG(ERROR) << "public key cannot be null";
     return base::nullopt;
   }
   std::array<uint8_t, 2> encoded_credential_id_length = {
       0, static_cast<uint8_t>(credential_id.size())};
-  return AttestedCredentialData(kAaguid, encoded_credential_id_length,
-                                std::move(credential_id),
-                                std::move(public_key));
-}
-
-AuthenticatorData MakeAuthenticatorData(
-    const std::string& rp_id,
-    base::Optional<AttestedCredentialData> attested_credential_data) {
-  const uint8_t flags =
+  constexpr uint8_t flags =
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserVerification) |
-      (attested_credential_data
-           ? static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation)
-           : 0);
-  return AuthenticatorData(fido_parsing_utils::CreateSHA256Hash(rp_id), flags,
-                           GetTimestampSignatureCounter(),
-                           std::move(attested_credential_data));
+      static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
+  return AuthenticatorData(
+      fido_parsing_utils::CreateSHA256Hash(rp_id), flags,
+      GetTimestampSignatureCounter(),
+      AttestedCredentialData(kAaguid, encoded_credential_id_length,
+                             std::move(credential_id), std::move(public_key)));
 }
 
 base::Optional<std::vector<uint8_t>> GenerateSignature(

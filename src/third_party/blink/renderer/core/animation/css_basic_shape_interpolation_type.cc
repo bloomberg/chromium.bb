@@ -24,7 +24,7 @@ namespace {
 const BasicShape* GetBasicShape(const CSSProperty& property,
                                 const ComputedStyle& style) {
   switch (property.PropertyID()) {
-    case CSSPropertyID::kShapeOutside:
+    case CSSPropertyShapeOutside:
       if (!style.ShapeOutside())
         return nullptr;
       if (style.ShapeOutside()->GetType() != ShapeValue::kShape)
@@ -32,12 +32,12 @@ const BasicShape* GetBasicShape(const CSSProperty& property,
       if (style.ShapeOutside()->CssBox() != CSSBoxType::kMissing)
         return nullptr;
       return style.ShapeOutside()->Shape();
-    case CSSPropertyID::kClipPath:
+    case CSSPropertyClipPath:
       if (!style.ClipPath())
         return nullptr;
       if (style.ClipPath()->GetType() != ClipPathOperation::SHAPE)
         return nullptr;
-      return To<ShapeClipPathOperation>(style.ClipPath())->GetBasicShape();
+      return ToShapeClipPathOperation(style.ClipPath())->GetBasicShape();
     default:
       NOTREACHED();
       return nullptr;
@@ -47,12 +47,18 @@ const BasicShape* GetBasicShape(const CSSProperty& property,
 class UnderlyingCompatibilityChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
+  static std::unique_ptr<UnderlyingCompatibilityChecker> Create(
+      scoped_refptr<NonInterpolableValue> underlying_non_interpolable_value) {
+    return base::WrapUnique(new UnderlyingCompatibilityChecker(
+        std::move(underlying_non_interpolable_value)));
+  }
+
+ private:
   UnderlyingCompatibilityChecker(
       scoped_refptr<NonInterpolableValue> underlying_non_interpolable_value)
       : underlying_non_interpolable_value_(
             std::move(underlying_non_interpolable_value)) {}
 
- private:
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
     return basic_shape_interpolation_functions::ShapesAreCompatible(
@@ -66,11 +72,18 @@ class UnderlyingCompatibilityChecker
 class InheritedShapeChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
+  static std::unique_ptr<InheritedShapeChecker> Create(
+      const CSSProperty& property,
+      scoped_refptr<BasicShape> inherited_shape) {
+    return base::WrapUnique(
+        new InheritedShapeChecker(property, std::move(inherited_shape)));
+  }
+
+ private:
   InheritedShapeChecker(const CSSProperty& property,
                         scoped_refptr<BasicShape> inherited_shape)
       : property_(property), inherited_shape_(std::move(inherited_shape)) {}
 
- private:
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
     return DataEquivalent(inherited_shape_.get(),
@@ -91,7 +104,7 @@ InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertNeutral(
       const_cast<NonInterpolableValue*>(
           underlying.non_interpolable_value.get());
   conversion_checkers.push_back(
-      std::make_unique<UnderlyingCompatibilityChecker>(non_interpolable_value));
+      UnderlyingCompatibilityChecker::Create(non_interpolable_value));
   return InterpolationValue(
       basic_shape_interpolation_functions::CreateNeutralValue(
           *underlying.non_interpolable_value),
@@ -110,7 +123,7 @@ InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertInherit(
     ConversionCheckers& conversion_checkers) const {
   const BasicShape* shape = GetBasicShape(CssProperty(), *state.ParentStyle());
   // const_cast to take a ref.
-  conversion_checkers.push_back(std::make_unique<InheritedShapeChecker>(
+  conversion_checkers.push_back(InheritedShapeChecker::Create(
       CssProperty(), const_cast<BasicShape*>(shape)));
   return basic_shape_interpolation_functions::MaybeConvertBasicShape(
       shape, state.ParentStyle()->EffectiveZoom());
@@ -123,7 +136,7 @@ InterpolationValue CSSBasicShapeInterpolationType::MaybeConvertValue(
   if (!value.IsBaseValueList())
     return basic_shape_interpolation_functions::MaybeConvertCSSValue(value);
 
-  const auto& list = To<CSSValueList>(value);
+  const CSSValueList& list = ToCSSValueList(value);
   if (list.length() != 1)
     return nullptr;
   return basic_shape_interpolation_functions::MaybeConvertCSSValue(
@@ -173,11 +186,11 @@ void CSSBasicShapeInterpolationType::ApplyStandardPropertyValue(
           interpolable_value, *non_interpolable_value,
           state.CssToLengthConversionData());
   switch (CssProperty().PropertyID()) {
-    case CSSPropertyID::kShapeOutside:
+    case CSSPropertyShapeOutside:
       state.Style()->SetShapeOutside(
           ShapeValue::CreateShapeValue(std::move(shape), CSSBoxType::kMissing));
       break;
-    case CSSPropertyID::kClipPath:
+    case CSSPropertyClipPath:
       state.Style()->SetClipPath(
           ShapeClipPathOperation::Create(std::move(shape)));
       break;

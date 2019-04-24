@@ -59,8 +59,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // moment during startup. AwContentBrowserClient owns the result.
   AwBrowserContext* InitBrowserContext();
 
-  void OnNetworkServiceCreated(
-      network::mojom::NetworkService* network_service) override;
   network::mojom::NetworkContextPtr CreateNetworkContext(
       content::BrowserContext* context,
       bool in_memory,
@@ -194,9 +192,9 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                                 bool is_main_frame,
                                 ui::PageTransition transition,
                                 bool* ignore_navigation) override;
-  bool ShouldCreateThreadPool() override;
+  bool ShouldCreateTaskScheduler() override;
   std::unique_ptr<content::LoginDelegate> CreateLoginDelegate(
-      const net::AuthChallengeInfo& auth_info,
+      net::AuthChallengeInfo* auth_info,
       content::WebContents* web_contents,
       const content::GlobalRequestID& request_id,
       bool is_main_frame,
@@ -213,14 +211,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       ui::PageTransition page_transition,
       bool has_user_gesture,
       const std::string& method,
-      const net::HttpRequestHeaders& headers,
-      network::mojom::URLLoaderFactoryRequest* factory_request,
-      network::mojom::URLLoaderFactory*& out_factory) override;
+      const net::HttpRequestHeaders& headers) override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
-  void RegisterNonNetworkSubresourceURLLoaderFactories(
-      int render_process_id,
-      int render_frame_id,
-      NonNetworkURLLoaderFactoryMap* factories) override;
   bool ShouldIsolateErrorPage(bool in_main_frame) override;
   bool ShouldEnableStrictSiteIsolation() override;
   bool WillCreateURLLoaderFactory(
@@ -233,12 +225,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       network::mojom::URLLoaderFactoryRequest* factory_request,
       network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
       bool* bypass_redirect_checks) override;
-  void WillCreateWebSocket(
-      content::RenderFrameHost* frame,
-      network::mojom::WebSocketRequest* request,
-      network::mojom::AuthenticationHandlerPtr* authentication_handler,
-      network::mojom::TrustedHeaderClientPtr* header_client,
-      uint32_t* options) override;
   std::string GetProduct() const override;
   std::string GetUserAgent() const override;
   ContentBrowserClient::WideColorGamutHeuristic GetWideColorGamutHeuristic()
@@ -251,7 +237,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   content::SpeechRecognitionManagerDelegate*
   CreateSpeechRecognitionManagerDelegate() override;
 
-  static void DisableCreatingThreadPool();
+  static void DisableCreatingTaskScheduler();
 
  private:
   safe_browsing::UrlCheckerDelegate* GetSafeBrowsingUrlCheckerDelegate();

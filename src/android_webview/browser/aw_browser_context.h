@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "android_webview/browser/aw_ssl_host_state_delegate.h"
-#include "android_webview/browser/net/aw_proxy_config_monitor.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -23,7 +22,6 @@
 
 class GURL;
 class PrefService;
-class PrefRegistrySimple;
 
 namespace autofill {
 class AutocompleteHistoryManager;
@@ -94,11 +92,6 @@ class AwBrowserContext : public content::BrowserContext,
   static base::FilePath GetCacheDir();
   static base::FilePath GetCookieStorePath();
 
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  // Get the list of authentication schemes to support.
-  static std::vector<std::string> GetAuthSchemes();
-
   // Maps to BrowserMainParts::PreMainMessageLoopRun.
   void PreMainMessageLoopRun(net::NetLog* net_log);
 
@@ -152,12 +145,8 @@ class AwBrowserContext : public content::BrowserContext,
   safe_browsing::TriggerManager* GetSafeBrowsingTriggerManager() const;
   AwSafeBrowsingWhitelistManager* GetSafeBrowsingWhitelistManager() const;
 
-  // Constructs HttpAuthDynamicParams based on |user_pref_service_|.
-  network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams();
-
  private:
   void OnWebRestrictionsAuthorityChanged();
-  void OnAuthPrefsChanged();
 
   // The file path where data for this context is persisted.
   base::FilePath context_storage_path_;

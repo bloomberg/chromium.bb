@@ -15,8 +15,6 @@
 #include <string>
 #include <vector>
 
-#include "rtc_base/system/rtc_export.h"
-
 namespace webrtc {
 
 class VideoDecoder;
@@ -24,7 +22,7 @@ struct SdpVideoFormat;
 
 // A factory that creates VideoDecoders.
 // NOTE: This class is still under development and may change without notice.
-class RTC_EXPORT VideoDecoderFactory {
+class VideoDecoderFactory {
  public:
   // Returns a list of supported video formats in order of preference, to use
   // for signaling etc.

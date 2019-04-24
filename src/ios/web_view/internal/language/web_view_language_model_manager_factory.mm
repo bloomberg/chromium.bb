@@ -17,6 +17,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "ios/web_view/internal/app/application_context.h"
+#include "ios/web_view/internal/pref_names.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -40,8 +41,7 @@ void PrepareLanguageModels(WebViewBrowserState* const web_view_browser_state,
         std::make_unique<language::HeuristicLanguageModel>(
             web_view_browser_state->GetPrefs(),
             ApplicationContext::GetInstance()->GetApplicationLocale(),
-            language::prefs::kAcceptLanguages,
-            language::prefs::kUserLanguageProfile));
+            prefs::kAcceptLanguages, language::prefs::kUserLanguageProfile));
   }
 
   // language::OverrideLanguageModel::GEO is not supported on iOS yet.
@@ -52,7 +52,7 @@ void PrepareLanguageModels(WebViewBrowserState* const web_view_browser_state,
         std::make_unique<language::BaselineLanguageModel>(
             web_view_browser_state->GetPrefs(),
             ApplicationContext::GetInstance()->GetApplicationLocale(),
-            language::prefs::kAcceptLanguages));
+            prefs::kAcceptLanguages));
   }
 
   // Set the primary Language Model to use based on the state of experiments.

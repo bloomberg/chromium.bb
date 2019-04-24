@@ -36,10 +36,7 @@ class CC_EXPORT TileTaskManager {
 
 class CC_EXPORT TileTaskManagerImpl : public TileTaskManager {
  public:
-  TileTaskManagerImpl(const TileTaskManagerImpl&) = delete;
   ~TileTaskManagerImpl() override;
-
-  TileTaskManagerImpl& operator=(const TileTaskManagerImpl&) = delete;
 
   static std::unique_ptr<TileTaskManagerImpl> Create(
       TaskGraphRunner* task_graph_runner);
@@ -54,6 +51,9 @@ class CC_EXPORT TileTaskManagerImpl : public TileTaskManager {
 
   TaskGraphRunner* task_graph_runner_;
   const NamespaceToken namespace_token_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TileTaskManagerImpl);
 };
 
 }  // namespace cc

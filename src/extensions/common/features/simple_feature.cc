@@ -187,6 +187,10 @@ bool IsCommandLineSwitchEnabled(base::CommandLine* command_line,
 }
 
 bool IsAllowlistedForTest(const HashedExtensionId& hashed_id) {
+  // TODO(jackhou): Delete the commandline allowlisting mechanism.
+  // Since it is only used it tests, ideally it should not be set via the
+  // commandline. At the moment the commandline is used as a mechanism to pass
+  // the id to the renderer process.
   const std::string& allowlisted_id = g_allowlist_info.Get().hashed_id;
   return !allowlisted_id.empty() && allowlisted_id == hashed_id.value();
 }
@@ -599,10 +603,8 @@ Feature::Availability SimpleFeature::GetManifestAvailability(
     return CreateAvailability(NOT_FOUND_IN_WHITELIST);
   }
 
-  if (location_ && !MatchesManifestLocation(location) &&
-      !IsAllowlistedForTest(hashed_id)) {
+  if (location_ && !MatchesManifestLocation(location))
     return CreateAvailability(INVALID_LOCATION);
-  }
 
   if (min_manifest_version_ && manifest_version < *min_manifest_version_)
     return CreateAvailability(INVALID_MIN_MANIFEST_VERSION);

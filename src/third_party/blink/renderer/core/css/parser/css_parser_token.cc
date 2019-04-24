@@ -97,17 +97,17 @@ AtRuleDescriptorID CSSParserToken::ParseAsAtRuleDescriptorID() const {
 
 CSSValueID CSSParserToken::Id() const {
   if (type_ != kIdentToken)
-    return CSSValueID::kInvalid;
+    return CSSValueInvalid;
   if (id_ < 0)
-    id_ = static_cast<int>(CssValueKeywordID(Value()));
+    id_ = CssValueKeywordID(Value());
   return static_cast<CSSValueID>(id_);
 }
 
 CSSValueID CSSParserToken::FunctionId() const {
   if (type_ != kFunctionToken)
-    return CSSValueID::kInvalid;
+    return CSSValueInvalid;
   if (id_ < 0)
-    id_ = static_cast<int>(CssValueKeywordID(Value()));
+    id_ = CssValueKeywordID(Value());
   return static_cast<CSSValueID>(id_);
 }
 

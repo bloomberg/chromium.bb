@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_PAINTED_OVERLAY_SCROLLBAR_LAYER_IMPL_H_
 #define CC_LAYERS_PAINTED_OVERLAY_SCROLLBAR_LAYER_IMPL_H_
 
+#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/input/scrollbar.h"
 #include "cc/layers/nine_patch_generator.h"
@@ -23,10 +24,6 @@ class CC_EXPORT PaintedOverlayScrollbarLayerImpl
       int id,
       ScrollbarOrientation orientation,
       bool is_left_side_vertical_scrollbar);
-  PaintedOverlayScrollbarLayerImpl(const PaintedOverlayScrollbarLayerImpl&) =
-      delete;
-  PaintedOverlayScrollbarLayerImpl& operator=(
-      const PaintedOverlayScrollbarLayerImpl&) = delete;
   ~PaintedOverlayScrollbarLayerImpl() override;
 
   // LayerImpl implementation.
@@ -92,6 +89,8 @@ class CC_EXPORT PaintedOverlayScrollbarLayerImpl
   gfx::Rect aperture_;
 
   NinePatchGenerator quad_generator_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintedOverlayScrollbarLayerImpl);
 };
 
 }  // namespace cc

@@ -166,8 +166,8 @@ IIRFilterNode* IIRFilterNode::Create(BaseAudioContext& context,
     message.Append(']');
 
     context.GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kWarning, message.ToString()));
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+        message.ToString()));
   }
 
   return MakeGarbageCollected<IIRFilterNode>(context, feedforward_coef,

@@ -55,7 +55,7 @@ void SharedWorkerReportingProxy::ReportException(
 }
 
 void SharedWorkerReportingProxy::ReportConsoleMessage(
-    mojom::ConsoleMessageSource,
+    MessageSource,
     mojom::ConsoleMessageLevel,
     const String& message,
     SourceLocation*) {

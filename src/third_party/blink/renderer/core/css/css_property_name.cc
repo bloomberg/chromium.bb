@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
-#include "third_party/blink/renderer/platform/wtf/text/atomic_string_hash.h"
 
 namespace blink {
 
@@ -23,9 +22,9 @@ static_assert(sizeof(CSSPropertyName) == sizeof(SameSizeAsCSSPropertyName),
 }  // namespace
 
 bool CSSPropertyName::operator==(const CSSPropertyName& other) const {
-  if (value_ != other.value_)
+  if (property_id_ != other.property_id_)
     return false;
-  if (value_ != static_cast<int>(CSSPropertyID::kVariable))
+  if (property_id_ != CSSPropertyVariable)
     return true;
   return custom_property_name_ == other.custom_property_name_;
 }
@@ -33,13 +32,7 @@ bool CSSPropertyName::operator==(const CSSPropertyName& other) const {
 AtomicString CSSPropertyName::ToAtomicString() const {
   if (IsCustomProperty())
     return custom_property_name_;
-  return CSSProperty::Get(Id()).GetPropertyNameAtomicString();
-}
-
-unsigned CSSPropertyName::GetHash() const {
-  if (IsCustomProperty())
-    return AtomicStringHash::GetHash(custom_property_name_);
-  return value_;
+  return CSSProperty::Get(property_id_).GetPropertyNameAtomicString();
 }
 
 }  // namespace blink

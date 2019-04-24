@@ -39,8 +39,8 @@ String AbstractPropertySetCSSStyleDeclaration::item(unsigned i) const {
   if (i >= PropertySet().PropertyCount())
     return "";
   CSSPropertyValueSet::PropertyReference property = PropertySet().PropertyAt(i);
-  if (property.Id() == CSSPropertyID::kVariable)
-    return To<CSSCustomPropertyDeclaration>(property.Value()).GetName();
+  if (property.Id() == CSSPropertyVariable)
+    return ToCSSCustomPropertyDeclaration(property.Value()).GetName();
   return property.Property().GetPropertyName();
 }
 
@@ -71,9 +71,9 @@ void AbstractPropertySetCSSStyleDeclaration::setCSSText(
 String AbstractPropertySetCSSStyleDeclaration::getPropertyValue(
     const String& property_name) {
   CSSPropertyID property_id = cssPropertyID(property_name);
-  if (!isValidCSSPropertyID(property_id))
+  if (!property_id)
     return String();
-  if (property_id == CSSPropertyID::kVariable)
+  if (property_id == CSSPropertyVariable)
     return PropertySet().GetPropertyValue(AtomicString(property_name));
   return PropertySet().GetPropertyValue(property_id);
 }
@@ -81,11 +81,11 @@ String AbstractPropertySetCSSStyleDeclaration::getPropertyValue(
 String AbstractPropertySetCSSStyleDeclaration::getPropertyPriority(
     const String& property_name) {
   CSSPropertyID property_id = cssPropertyID(property_name);
-  if (!isValidCSSPropertyID(property_id))
+  if (!property_id)
     return String();
 
   bool important = false;
-  if (property_id == CSSPropertyID::kVariable)
+  if (property_id == CSSPropertyVariable)
     important = PropertySet().PropertyIsImportant(AtomicString(property_name));
   else
     important = PropertySet().PropertyIsImportant(property_id);
@@ -97,11 +97,10 @@ String AbstractPropertySetCSSStyleDeclaration::GetPropertyShorthand(
   CSSPropertyID property_id = cssPropertyID(property_name);
 
   // Custom properties don't have shorthands, so we can ignore them here.
-  if (!isValidCSSPropertyID(property_id) ||
-      !CSSProperty::Get(property_id).IsLonghand())
+  if (!property_id || !CSSProperty::Get(property_id).IsLonghand())
     return String();
   CSSPropertyID shorthand_id = PropertySet().GetPropertyShorthand(property_id);
-  if (!isValidCSSPropertyID(shorthand_id))
+  if (!shorthand_id)
     return String();
   return CSSProperty::Get(shorthand_id).GetPropertyNameString();
 }
@@ -111,7 +110,7 @@ bool AbstractPropertySetCSSStyleDeclaration::IsPropertyImplicit(
   CSSPropertyID property_id = cssPropertyID(property_name);
 
   // Custom properties don't have shorthands, so we can ignore them here.
-  if (property_id < firstCSSProperty)
+  if (!property_id || property_id == CSSPropertyVariable)
     return false;
   return PropertySet().IsPropertyImplicit(property_id);
 }
@@ -123,7 +122,7 @@ void AbstractPropertySetCSSStyleDeclaration::setProperty(
     const String& priority,
     ExceptionState& exception_state) {
   CSSPropertyID property_id = unresolvedCSSPropertyID(property_name);
-  if (!isValidCSSPropertyID(property_id))
+  if (!property_id)
     return;
 
   bool important = EqualIgnoringASCIICase(priority, "important");
@@ -139,7 +138,7 @@ String AbstractPropertySetCSSStyleDeclaration::removeProperty(
     const String& property_name,
     ExceptionState& exception_state) {
   CSSPropertyID property_id = cssPropertyID(property_name);
-  if (!isValidCSSPropertyID(property_id))
+  if (!property_id)
     return String();
 
   StyleAttributeMutationScope mutation_scope(this);
@@ -147,7 +146,7 @@ String AbstractPropertySetCSSStyleDeclaration::removeProperty(
 
   String result;
   bool changed = false;
-  if (property_id == CSSPropertyID::kVariable) {
+  if (property_id == CSSPropertyVariable) {
     changed =
         PropertySet().RemoveProperty(AtomicString(property_name), &result);
   } else {
@@ -190,7 +189,7 @@ void AbstractPropertySetCSSStyleDeclaration::SetPropertyInternal(
   WillMutate();
 
   bool did_change = false;
-  if (unresolved_property == CSSPropertyID::kVariable) {
+  if (unresolved_property == CSSPropertyVariable) {
     AtomicString atomic_name(custom_property_name);
 
     bool is_animation_tainted = IsKeyframeStyle();

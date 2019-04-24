@@ -151,7 +151,7 @@ class RegExpBuilder : public ZoneObject {
 #endif
 };
 
-class V8_EXPORT_PRIVATE RegExpParser {
+class RegExpParser {
  public:
   RegExpParser(FlatStringReader* in, Handle<String>* error,
                JSRegExp::Flags flags, Isolate* isolate, Zone* zone);

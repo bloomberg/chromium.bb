@@ -82,7 +82,6 @@ _NON_TELEMETRY_TEST_COMMANDS = {
         '--test-launcher-print-test-stdio=always',
         '--verbose',
     ],
-    'v8': [],  # V8 does not support recipe bisects.
 }
 _NON_TELEMETRY_ANDROID_COMMAND = 'src/build/android/test_runner.py '\
                                  'gtest --release -s %(suite)s --verbose'
@@ -395,9 +394,6 @@ def _GuessCommandNonTelemetry(suite, bisect_bot):
     command[-1] += '/apks/' + apk_name
   else:
     command = list(_NON_TELEMETRY_TEST_COMMANDS[suite])
-
-  if not command:
-    return ''
 
   if command[0].startswith('./out'):
     command[0] = command[0].replace('./', './src/')

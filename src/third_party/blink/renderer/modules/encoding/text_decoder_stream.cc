@@ -9,7 +9,8 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/core/streams/transform_stream_default_controller_interface.h"
+#include "third_party/blink/renderer/core/streams/retain_wrapper_during_construction.h"
+#include "third_party/blink/renderer/core/streams/transform_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/transform_stream_transformer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/encoding/encoding.h"
@@ -17,7 +18,7 @@
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+#include "third_party/blink/renderer/platform/wtf/string_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_codec.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
@@ -39,7 +40,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
   // Implements the type conversion part of the "decode and enqueue a chunk"
   // algorithm.
   void Transform(v8::Local<v8::Value> chunk,
-                 TransformStreamDefaultControllerInterface* controller,
+                 TransformStreamDefaultController* controller,
                  ExceptionState& exception_state) override {
     ArrayBufferOrArrayBufferView bufferSource;
     V8ArrayBufferOrArrayBufferView::ToImpl(
@@ -67,7 +68,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
   }
 
   // Implements the "encode and flush" algorithm.
-  void Flush(TransformStreamDefaultControllerInterface* controller,
+  void Flush(TransformStreamDefaultController* controller,
              ExceptionState& exception_state) override {
     DecodeAndEnqueue(nullptr, 0u, WTF::FlushBehavior::kDataEOF, controller,
                      exception_state);
@@ -84,7 +85,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
   void DecodeAndEnqueue(const char* start,
                         uint32_t length,
                         WTF::FlushBehavior flush,
-                        TransformStreamDefaultControllerInterface* controller,
+                        TransformStreamDefaultController* controller,
                         ExceptionState& exception_state) {
     const UChar kBOM = 0xFEFF;
 
@@ -138,7 +139,7 @@ TextDecoderStream* TextDecoderStream::Create(ScriptState* script_state,
   // The replacement encoding is not valid, but the Encoding API also
   // rejects aliases of the replacement encoding.
   if (!encoding.IsValid() ||
-      WTF::EqualIgnoringASCIICase(encoding.GetName(), "replacement")) {
+      strcasecmp(encoding.GetName(), "replacement") == 0) {
     exception_state.ThrowRangeError("The encoding label provided ('" + label +
                                     "') is invalid.");
     return nullptr;
@@ -175,6 +176,11 @@ TextDecoderStream::TextDecoderStream(ScriptState* script_state,
       encoding_(encoding),
       fatal_(options->fatal()),
       ignore_bom_(options->ignoreBOM()) {
+  if (!RetainWrapperDuringConstruction(this, script_state)) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Cannot queue task to retain wrapper");
+    return;
+  }
   transform_->Init(MakeGarbageCollected<Transformer>(script_state, encoding,
                                                      fatal_, ignore_bom_),
                    script_state, exception_state);

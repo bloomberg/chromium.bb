@@ -7,8 +7,6 @@
 
 #import <Foundation/Foundation.h>
 
-class GURL;
-
 // This represents a user credential to use with manual fill.
 @interface ManualFillCredential : NSObject
 
@@ -26,15 +24,11 @@ class GURL;
 // The host part of the credential, it should have "www." stripped if present.
 @property(nonatomic, readonly) NSString* host;
 
-// URL for the credential.
-@property(nonatomic, readonly) const GURL& URL;
-
 // Default init.
 - (instancetype)initWithUsername:(NSString*)username
                         password:(NSString*)password
                         siteName:(NSString*)siteName
-                            host:(NSString*)host
-                             URL:(const GURL&)URL NS_DESIGNATED_INITIALIZER;
+                            host:(NSString*)host NS_DESIGNATED_INITIALIZER;
 
 // Unavailable. Please use |initWithUsername:password:siteName:host:|.
 - (instancetype)init NS_UNAVAILABLE;

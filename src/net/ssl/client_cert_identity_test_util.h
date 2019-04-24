@@ -42,8 +42,9 @@ class FakeClientCertIdentity : public ClientCertIdentity {
   SSLPrivateKey* ssl_private_key() const { return key_.get(); }
 
   // ClientCertIdentity implementation:
-  void AcquirePrivateKey(base::OnceCallback<void(scoped_refptr<SSLPrivateKey>)>
-                             private_key_callback) override;
+  void AcquirePrivateKey(
+      const base::Callback<void(scoped_refptr<SSLPrivateKey>)>&
+          private_key_callback) override;
 #if defined(OS_MACOSX)
   SecIdentityRef sec_identity_ref() const override;
 #endif

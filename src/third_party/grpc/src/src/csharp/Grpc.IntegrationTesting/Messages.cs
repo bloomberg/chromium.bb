@@ -379,7 +379,7 @@ namespace Grpc.Testing {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            Type = (global::Grpc.Testing.PayloadType) input.ReadEnum();
+            type_ = (global::Grpc.Testing.PayloadType) input.ReadEnum();
             break;
           }
           case 18: {
@@ -844,7 +844,7 @@ namespace Grpc.Testing {
       }
       if (other.payload_ != null) {
         if (payload_ == null) {
-          Payload = new global::Grpc.Testing.Payload();
+          payload_ = new global::Grpc.Testing.Payload();
         }
         Payload.MergeFrom(other.Payload);
       }
@@ -856,19 +856,19 @@ namespace Grpc.Testing {
       }
       if (other.responseCompressed_ != null) {
         if (responseCompressed_ == null) {
-          ResponseCompressed = new global::Grpc.Testing.BoolValue();
+          responseCompressed_ = new global::Grpc.Testing.BoolValue();
         }
         ResponseCompressed.MergeFrom(other.ResponseCompressed);
       }
       if (other.responseStatus_ != null) {
         if (responseStatus_ == null) {
-          ResponseStatus = new global::Grpc.Testing.EchoStatus();
+          responseStatus_ = new global::Grpc.Testing.EchoStatus();
         }
         ResponseStatus.MergeFrom(other.ResponseStatus);
       }
       if (other.expectCompressed_ != null) {
         if (expectCompressed_ == null) {
-          ExpectCompressed = new global::Grpc.Testing.BoolValue();
+          expectCompressed_ = new global::Grpc.Testing.BoolValue();
         }
         ExpectCompressed.MergeFrom(other.ExpectCompressed);
       }
@@ -884,7 +884,7 @@ namespace Grpc.Testing {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            ResponseType = (global::Grpc.Testing.PayloadType) input.ReadEnum();
+            responseType_ = (global::Grpc.Testing.PayloadType) input.ReadEnum();
             break;
           }
           case 16: {
@@ -893,9 +893,9 @@ namespace Grpc.Testing {
           }
           case 26: {
             if (payload_ == null) {
-              Payload = new global::Grpc.Testing.Payload();
+              payload_ = new global::Grpc.Testing.Payload();
             }
-            input.ReadMessage(Payload);
+            input.ReadMessage(payload_);
             break;
           }
           case 32: {
@@ -908,23 +908,23 @@ namespace Grpc.Testing {
           }
           case 50: {
             if (responseCompressed_ == null) {
-              ResponseCompressed = new global::Grpc.Testing.BoolValue();
+              responseCompressed_ = new global::Grpc.Testing.BoolValue();
             }
-            input.ReadMessage(ResponseCompressed);
+            input.ReadMessage(responseCompressed_);
             break;
           }
           case 58: {
             if (responseStatus_ == null) {
-              ResponseStatus = new global::Grpc.Testing.EchoStatus();
+              responseStatus_ = new global::Grpc.Testing.EchoStatus();
             }
-            input.ReadMessage(ResponseStatus);
+            input.ReadMessage(responseStatus_);
             break;
           }
           case 66: {
             if (expectCompressed_ == null) {
-              ExpectCompressed = new global::Grpc.Testing.BoolValue();
+              expectCompressed_ = new global::Grpc.Testing.BoolValue();
             }
-            input.ReadMessage(ExpectCompressed);
+            input.ReadMessage(expectCompressed_);
             break;
           }
         }
@@ -1095,7 +1095,7 @@ namespace Grpc.Testing {
       }
       if (other.payload_ != null) {
         if (payload_ == null) {
-          Payload = new global::Grpc.Testing.Payload();
+          payload_ = new global::Grpc.Testing.Payload();
         }
         Payload.MergeFrom(other.Payload);
       }
@@ -1118,9 +1118,9 @@ namespace Grpc.Testing {
             break;
           case 10: {
             if (payload_ == null) {
-              Payload = new global::Grpc.Testing.Payload();
+              payload_ = new global::Grpc.Testing.Payload();
             }
-            input.ReadMessage(Payload);
+            input.ReadMessage(payload_);
             break;
           }
           case 18: {
@@ -1277,13 +1277,13 @@ namespace Grpc.Testing {
       }
       if (other.payload_ != null) {
         if (payload_ == null) {
-          Payload = new global::Grpc.Testing.Payload();
+          payload_ = new global::Grpc.Testing.Payload();
         }
         Payload.MergeFrom(other.Payload);
       }
       if (other.expectCompressed_ != null) {
         if (expectCompressed_ == null) {
-          ExpectCompressed = new global::Grpc.Testing.BoolValue();
+          expectCompressed_ = new global::Grpc.Testing.BoolValue();
         }
         ExpectCompressed.MergeFrom(other.ExpectCompressed);
       }
@@ -1300,16 +1300,16 @@ namespace Grpc.Testing {
             break;
           case 10: {
             if (payload_ == null) {
-              Payload = new global::Grpc.Testing.Payload();
+              payload_ = new global::Grpc.Testing.Payload();
             }
-            input.ReadMessage(Payload);
+            input.ReadMessage(payload_);
             break;
           }
           case 18: {
             if (expectCompressed_ == null) {
-              ExpectCompressed = new global::Grpc.Testing.BoolValue();
+              expectCompressed_ = new global::Grpc.Testing.BoolValue();
             }
-            input.ReadMessage(ExpectCompressed);
+            input.ReadMessage(expectCompressed_);
             break;
           }
         }
@@ -1624,7 +1624,7 @@ namespace Grpc.Testing {
       }
       if (other.compressed_ != null) {
         if (compressed_ == null) {
-          Compressed = new global::Grpc.Testing.BoolValue();
+          compressed_ = new global::Grpc.Testing.BoolValue();
         }
         Compressed.MergeFrom(other.Compressed);
       }
@@ -1649,9 +1649,9 @@ namespace Grpc.Testing {
           }
           case 26: {
             if (compressed_ == null) {
-              Compressed = new global::Grpc.Testing.BoolValue();
+              compressed_ = new global::Grpc.Testing.BoolValue();
             }
-            input.ReadMessage(Compressed);
+            input.ReadMessage(compressed_);
             break;
           }
         }
@@ -1846,13 +1846,13 @@ namespace Grpc.Testing {
       responseParameters_.Add(other.responseParameters_);
       if (other.payload_ != null) {
         if (payload_ == null) {
-          Payload = new global::Grpc.Testing.Payload();
+          payload_ = new global::Grpc.Testing.Payload();
         }
         Payload.MergeFrom(other.Payload);
       }
       if (other.responseStatus_ != null) {
         if (responseStatus_ == null) {
-          ResponseStatus = new global::Grpc.Testing.EchoStatus();
+          responseStatus_ = new global::Grpc.Testing.EchoStatus();
         }
         ResponseStatus.MergeFrom(other.ResponseStatus);
       }
@@ -1868,7 +1868,7 @@ namespace Grpc.Testing {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            ResponseType = (global::Grpc.Testing.PayloadType) input.ReadEnum();
+            responseType_ = (global::Grpc.Testing.PayloadType) input.ReadEnum();
             break;
           }
           case 18: {
@@ -1877,16 +1877,16 @@ namespace Grpc.Testing {
           }
           case 26: {
             if (payload_ == null) {
-              Payload = new global::Grpc.Testing.Payload();
+              payload_ = new global::Grpc.Testing.Payload();
             }
-            input.ReadMessage(Payload);
+            input.ReadMessage(payload_);
             break;
           }
           case 58: {
             if (responseStatus_ == null) {
-              ResponseStatus = new global::Grpc.Testing.EchoStatus();
+              responseStatus_ = new global::Grpc.Testing.EchoStatus();
             }
-            input.ReadMessage(ResponseStatus);
+            input.ReadMessage(responseStatus_);
             break;
           }
         }
@@ -2008,7 +2008,7 @@ namespace Grpc.Testing {
       }
       if (other.payload_ != null) {
         if (payload_ == null) {
-          Payload = new global::Grpc.Testing.Payload();
+          payload_ = new global::Grpc.Testing.Payload();
         }
         Payload.MergeFrom(other.Payload);
       }
@@ -2025,9 +2025,9 @@ namespace Grpc.Testing {
             break;
           case 10: {
             if (payload_ == null) {
-              Payload = new global::Grpc.Testing.Payload();
+              payload_ = new global::Grpc.Testing.Payload();
             }
-            input.ReadMessage(Payload);
+            input.ReadMessage(payload_);
             break;
           }
         }

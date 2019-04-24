@@ -15,11 +15,10 @@
 #ifndef SOURCE_REDUCE_REDUCTION_PASS_H_
 #define SOURCE_REDUCE_REDUCTION_PASS_H_
 
-#include <limits>
-
-#include "source/opt/ir_context.h"
-#include "source/reduce/reduction_opportunity_finder.h"
 #include "spirv-tools/libspirv.hpp"
+
+#include "reduction_opportunity_finder.h"
+#include "source/opt/ir_context.h"
 
 namespace spvtools {
 namespace reduce {
@@ -34,27 +33,16 @@ namespace reduce {
 class ReductionPass {
  public:
   // Constructs a reduction pass with a given target environment, |target_env|,
-  // and a given finder of reduction opportunities, |finder|.
+  // and a given finder of reduction opportunities, |finder|.  Initially the
+  // pass is uninitialized.
   explicit ReductionPass(const spv_target_env target_env,
                          std::unique_ptr<ReductionOpportunityFinder> finder)
       : target_env_(target_env),
         finder_(std::move(finder)),
-        index_(0),
-        granularity_(std::numeric_limits<uint32_t>::max()) {}
+        is_initialized_(false) {}
 
-  // Applies the reduction pass to the given binary by applying a "chunk" of
-  // reduction opportunities. Returns the new binary if a chunk was applied; in
-  // this case, before the next call the caller must invoke
-  // NotifyInteresting(...) to indicate whether the new binary is interesting.
-  // Returns an empty vector if there are no more chunks left to apply; in this
-  // case, the index will be reset and the granularity lowered for the next
-  // round.
+  // Applies the reduction pass to the given binary.
   std::vector<uint32_t> TryApplyReduction(const std::vector<uint32_t>& binary);
-
-  // Notifies the reduction pass whether the binary returned from
-  // TryApplyReduction is interesting, so that the next call to
-  // TryApplyReduction will avoid applying the same chunk of opportunities.
-  void NotifyInteresting(bool interesting);
 
   // Sets a consumer to which relevant messages will be directed.
   void SetMessageConsumer(MessageConsumer consumer);
@@ -71,6 +59,7 @@ class ReductionPass {
   const spv_target_env target_env_;
   const std::unique_ptr<ReductionOpportunityFinder> finder_;
   MessageConsumer consumer_;
+  bool is_initialized_;
   uint32_t index_;
   uint32_t granularity_;
 };

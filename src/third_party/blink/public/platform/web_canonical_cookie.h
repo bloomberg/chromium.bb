@@ -59,6 +59,8 @@ class BLINK_PLATFORM_EXPORT WebCanonicalCookie {
                                                    const WebString& cookie_line,
                                                    base::Time creation_time);
 
+  static constexpr const network::mojom::CookieSameSite kDefaultSameSiteMode =
+      network::mojom::CookieSameSite::NO_RESTRICTION;
   static constexpr const network::mojom::CookiePriority kDefaultPriority =
       network::mojom::CookiePriority::MEDIUM;
 
@@ -86,8 +88,7 @@ class BLINK_PLATFORM_EXPORT WebCanonicalCookie {
   base::Time last_access_;
   bool is_secure_ = false;
   bool is_http_only_ = false;
-  network::mojom::CookieSameSite same_site_ =
-      network::mojom::CookieSameSite::NO_RESTRICTION;
+  network::mojom::CookieSameSite same_site_ = kDefaultSameSiteMode;
   network::mojom::CookiePriority priority_ = kDefaultPriority;
 };
 

@@ -11,6 +11,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 
 class GrContext;
+class SkCanvas;
 
 namespace cc {
 class ImageDecodeCache;
@@ -55,7 +56,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kAcceleratedCompositedResourceUsage,
     kAcceleratedDirect2DResourceUsage,
     kAcceleratedDirect3DResourceUsage,
-    kCreateSharedImageForTesting,
   };
 
   enum PresentationMode {
@@ -97,7 +97,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
   void OnContextDestroyed() override;
 
   cc::PaintCanvas* Canvas();
-  void InitializePaintCanvas();
   void ReleaseLockedImages();
   void FlushSkia() const;
   const CanvasColorParams& ColorParams() const { return color_params_; }
@@ -176,7 +175,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // decodes/uploads in the cache is invalidated only when the canvas contents
   // change.
   cc::PaintImage MakeImageSnapshot();
-  mutable sk_sp<SkSurface> surface_;  // mutable for lazy init
 
  private:
   class CanvasImageProvider;
@@ -186,10 +184,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
   bool use_hardware_decode_cache() const {
     return IsAccelerated() && context_provider_wrapper_;
   }
-  // Notifies before any drawing will be done on the resource used by this
-  // provider.
-  virtual void WillDraw() {}
-
   cc::ImageDecodeCache* ImageDecodeCacheRGBA8();
   cc::ImageDecodeCache* ImageDecodeCacheF16();
 
@@ -199,6 +193,8 @@ class PLATFORM_EXPORT CanvasResourceProvider
   CanvasColorParams color_params_;
   std::unique_ptr<CanvasImageProvider> canvas_image_provider_;
   std::unique_ptr<cc::SkiaPaintCanvas> canvas_;
+  mutable sk_sp<SkSurface> surface_;  // mutable for lazy init
+  std::unique_ptr<SkCanvas> xform_canvas_;
   SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
 
   const cc::PaintImage::Id snapshot_paint_image_id_;

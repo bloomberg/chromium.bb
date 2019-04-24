@@ -110,7 +110,8 @@ static void writePng(const SkConic& c, const SkConic ch[2], const char* name) {
     canvas.drawPath(path, paint);
     SkString filename("c:\\Users\\caryclark\\Documents\\");
     filename.appendf("%s.png", name);
-    ToolUtils::EncodeImageToFile(filename.c_str(), bitmap, SkEncodedImageFormat::kPNG, 100);
+    sk_tool_utils::EncodeImageToFile(filename.c_str(), bitmap,
+            SkEncodedImageFormat::kPNG, 100);
 }
 
 static void writeDPng(const SkDConic& dC, const char* name) {
@@ -151,7 +152,8 @@ static void writeDPng(const SkDConic& dC, const char* name) {
     canvas.drawPath(path, paint);
     SkString filename("c:\\Users\\caryclark\\Documents\\");
     filename.appendf("%s.png", name);
-    ToolUtils::EncodeImageToFile(filename.c_str(), bitmap, SkEncodedImageFormat::kPNG, 100);
+    sk_tool_utils::EncodeImageToFile(filename.c_str(), bitmap,
+            SkEncodedImageFormat::kPNG, 100);
 }
 #endif
 
@@ -288,7 +290,7 @@ static void writeFrames() {
         }
         SkString filename("c:\\Users\\caryclark\\Documents\\");
         filename.appendf("f%d.png", index);
-        ToolUtils::EncodeImageToFile(filename.c_str(), bitmap, SkEncodedImageFormat::kPNG, 100);
+        sk_tool_utils::EncodeImageToFile(filename.c_str(), bitmap, SkEncodedImageFormat::kPNG, 100);
     }
 }
 #endif

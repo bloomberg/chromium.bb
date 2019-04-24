@@ -28,9 +28,9 @@
 namespace content {
 
 constexpr uint64_t SignedExchangeBrowserTestHelper::kSignatureHeaderDate =
-    1564272000;  // 2019-07-28T00:00:00Z
+    1520834000;  // 2018-03-12T05:53:20Z
 constexpr uint64_t SignedExchangeBrowserTestHelper::kSignatureHeaderExpires =
-    1564876800;  // 2019-08-04T00:00:00Z
+    1520837600;  // 2018-03-12T06:53:20Z
 
 SignedExchangeBrowserTestHelper::SignedExchangeBrowserTestHelper() = default;
 

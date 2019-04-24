@@ -74,7 +74,7 @@ TEST_F(PerformanceObserverTest, ObserveWithBufferedFlag) {
   EXPECT_EQ(0, NumPerformanceEntries());
 
   // add a layoutjank to performance so getEntries() returns it
-  auto* entry = MakeGarbageCollected<PerformanceLayoutJank>(1234);
+  PerformanceLayoutJank* entry = PerformanceLayoutJank::Create(1234);
   base_->AddLayoutJankBuffer(*entry);
 
   // call observe with the buffered flag

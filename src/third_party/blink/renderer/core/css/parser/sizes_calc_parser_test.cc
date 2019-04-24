@@ -28,9 +28,9 @@ static void VerifyCSSCalc(String text,
                           unsigned viewport_height) {
   CSSLengthArray length_array;
   const CSSValue* css_value = CSSParser::ParseSingleValue(
-      CSSPropertyID::kLeft, text,
+      CSSPropertyLeft, text,
       StrictCSSParserContext(SecureContextMode::kInsecureContext));
-  const auto* primitive_value = To<CSSPrimitiveValue>(css_value);
+  const CSSPrimitiveValue* primitive_value = ToCSSPrimitiveValue(css_value);
   if (primitive_value)
     primitive_value->AccumulateLengthArray(length_array);
   else
@@ -122,7 +122,7 @@ TEST(SizesCalcParserTest, Basic) {
   data.media_type = media_type_names::kScreen;
   data.strict_mode = true;
   data.display_mode = kWebDisplayModeBrowser;
-  auto* media_values = MakeGarbageCollected<MediaValuesCached>(data);
+  MediaValues* media_values = MediaValuesCached::Create(data);
 
   for (unsigned i = 0; test_cases[i].input; ++i) {
     SizesCalcParser calc_parser(

@@ -33,6 +33,13 @@ namespace blink {
 
 class SetNodeAttributeCommand final : public SimpleEditCommand {
  public:
+  static SetNodeAttributeCommand* Create(Element* element,
+                                         const QualifiedName& attribute,
+                                         const AtomicString& value) {
+    return MakeGarbageCollected<SetNodeAttributeCommand>(element, attribute,
+                                                         value);
+  }
+
   SetNodeAttributeCommand(Element*,
                           const QualifiedName& attribute,
                           const AtomicString& value);

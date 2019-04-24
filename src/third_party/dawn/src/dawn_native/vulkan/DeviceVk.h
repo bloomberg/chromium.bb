@@ -65,6 +65,7 @@ namespace dawn_native { namespace vulkan {
 
         // Dawn API
         CommandBufferBase* CreateCommandBuffer(CommandEncoderBase* encoder) override;
+        InputStateBase* CreateInputState(InputStateBuilder* builder) override;
 
         Serial GetCompletedCommandSerial() const final override;
         Serial GetLastSubmittedCommandSerial() const final override;
@@ -72,11 +73,10 @@ namespace dawn_native { namespace vulkan {
 
         ResultOrError<std::unique_ptr<StagingBufferBase>> CreateStagingBuffer(size_t size) override;
         MaybeError CopyFromStagingToBuffer(StagingBufferBase* source,
-                                           uint64_t sourceOffset,
+                                           uint32_t sourceOffset,
                                            BufferBase* destination,
-                                           uint64_t destinationOffset,
-                                           uint64_t size) override;
-
+                                           uint32_t destinationOffset,
+                                           uint32_t size) override;
       private:
         ResultOrError<BindGroupBase*> CreateBindGroupImpl(
             const BindGroupDescriptor* descriptor) override;

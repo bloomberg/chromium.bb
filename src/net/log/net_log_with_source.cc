@@ -46,7 +46,7 @@ void NetLogWithSource::AddEntry(NetLogEventType type,
 
   if (!net_log_)
     return;
-  net_log_->AddEntry(type, source_, phase, nullptr);
+  net_log_->AddEntry(type, source_, phase, NULL);
 }
 
 void NetLogWithSource::AddEntry(

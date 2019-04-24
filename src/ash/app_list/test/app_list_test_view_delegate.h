@@ -67,7 +67,6 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void LogResultLaunchHistogram(
       app_list::SearchResultLaunchLocation launch_location,
       int suggestion_index) override {}
-  void LogSearchAbandonHistogram() override {}
   void InvokeSearchResultAction(const std::string& result_id,
                                 int action_index,
                                 int event_flags) override {}
@@ -95,14 +94,11 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                                   const gfx::Point& screen_location) override;
   bool CanProcessEventsOnApplistViews() override;
   void GetNavigableContentsFactory(
-      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
-      override;
+      content::mojom::NavigableContentsFactoryRequest request) override;
   ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
   void OnSearchResultVisibilityChanged(const std::string& id,
                                        bool visibility) override;
   bool IsAssistantAllowedAndEnabled() const override;
-  void OnStateTransitionAnimationCompleted(
-      ash::mojom::AppListViewState state) override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

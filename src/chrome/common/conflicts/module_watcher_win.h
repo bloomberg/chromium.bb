@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/common/conflicts/module_event_sink_win.mojom.h"
 
 class ModuleWatcherTest;
 
@@ -24,19 +25,11 @@ union LDR_DLL_NOTIFICATION_DATA;
 // created.
 class ModuleWatcher {
  public:
-  // The types of module events that can occur.
-  enum class ModuleEventType {
-    // A module was already loaded, but its presence is being observed.
-    kModuleAlreadyLoaded,
-    // A module is in the process of being loaded.
-    kModuleLoaded,
-  };
-
   // Houses information about a module event, and some module metadata.
   struct ModuleEvent {
     ModuleEvent() = default;
     ModuleEvent(const ModuleEvent& other) = default;
-    ModuleEvent(ModuleEventType event_type,
+    ModuleEvent(mojom::ModuleEventType event_type,
                 const base::FilePath& module_path,
                 void* module_load_address,
                 size_t module_size)
@@ -46,7 +39,7 @@ class ModuleWatcher {
           module_size(module_size) {}
 
     // The type of module event.
-    ModuleEventType event_type;
+    mojom::ModuleEventType event_type;
     // The full path to the module on disk.
     base::FilePath module_path;
     // The load address of the module. Careful consideration must be made before

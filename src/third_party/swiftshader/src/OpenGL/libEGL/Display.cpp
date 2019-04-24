@@ -23,9 +23,9 @@
 #include "libEGL/Context.hpp"
 #include "common/Image.hpp"
 #include "common/debug.h"
-#include "Common/RecursiveLock.hpp"
+#include "Common/MutexLock.hpp"
 
-#if defined(__ANDROID__) && !defined(ANDROID_NDK_BUILD)
+#ifdef __ANDROID__
 #include <system/window.h>
 #include <sys/ioctl.h>
 #include <linux/fb.h>
@@ -671,13 +671,11 @@ bool Display::isValidWindow(EGLNativeWindowType window)
 			ERR("%s called with window==NULL %s:%d", __FUNCTION__, __FILE__, __LINE__);
 			return false;
 		}
-	#if !defined(ANDROID_NDK_BUILD)
 		if(static_cast<ANativeWindow*>(window)->common.magic != ANDROID_NATIVE_WINDOW_MAGIC)
 		{
 			ERR("%s called with window==%p bad magic %s:%d", __FUNCTION__, window, __FILE__, __LINE__);
 			return false;
 		}
-	#endif // !defined(ANDROID_NDK_BUILD)
 		return true;
 	#elif defined(USE_X11)
 		if(nativeDisplay)
@@ -784,7 +782,6 @@ sw::Format Display::getDisplayFormat() const
 		default: UNREACHABLE(bpp);   // Unexpected display mode color depth
 		}
 	#elif defined(__ANDROID__)
-	#if !defined(ANDROID_NDK_BUILD)
 		static const char *const framebuffer[] =
 		{
 			"/dev/graphics/fb0",
@@ -844,7 +841,6 @@ sw::Format Display::getDisplayFormat() const
 				}
 			}
 		}
-	#endif // !defined_ANDROID_NDK_BUILD)
 
 		// No framebuffer device found, or we're in user space
 		return sw::FORMAT_X8B8G8R8;

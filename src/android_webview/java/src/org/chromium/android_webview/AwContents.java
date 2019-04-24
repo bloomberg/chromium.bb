@@ -67,6 +67,8 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.content_capture.ContentCaptureConsumer;
+import org.chromium.components.content_capture.ContentCaptureFeatures;
+import org.chromium.components.content_capture.ContentCaptureReceiverManager;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content_public.browser.ChildProcessImportance;
@@ -456,6 +458,8 @@ public class AwContents implements SmartClipProvider {
     // when in this state.
     private boolean mTemporarilyDetached;
 
+    private Handler mHandler;
+
     // True when this AwContents has been destroyed.
     // Do not use directly, call isDestroyed() instead.
     private boolean mIsDestroyed;
@@ -481,7 +485,7 @@ public class AwContents implements SmartClipProvider {
 
     private JavascriptInjector mJavascriptInjector;
 
-    private ContentCaptureConsumer mContentCaptureConsumer;
+    private ContentCaptureReceiverManager mContentCaptureReceiverManager;
 
     private static class WebContentsInternalsHolder implements WebContents.InternalsHolder {
         private final WeakReference<AwContents> mAwContentsRef;
@@ -826,6 +830,7 @@ public class AwContents implements SmartClipProvider {
         @Override
         public void onConfigurationChanged(Configuration configuration) {
             updateDefaultLocale();
+            mSettings.updateAcceptLanguages();
         }
     };
 
@@ -877,8 +882,8 @@ public class AwContents implements SmartClipProvider {
             AwSettings settings, DependencyFactory dependencyFactory) {
         try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped("AwContents.constructor")) {
             mRendererPriority = RendererPriority.HIGH;
-            mSettings = settings;
             updateDefaultLocale();
+            settings.updateAcceptLanguages();
 
             mBrowserContext = browserContext;
 
@@ -888,6 +893,7 @@ public class AwContents implements SmartClipProvider {
             mContainerView = containerView;
             mContainerView.setWillNotDraw(false);
 
+            mHandler = new Handler();
             mContext = context;
             mAutofillProvider = dependencyFactory.createAutofillProvider(context, mContainerView);
             mAppTargetSdkVersion = mContext.getApplicationInfo().targetSdkVersion;
@@ -900,6 +906,7 @@ public class AwContents implements SmartClipProvider {
             mFullScreenTransitionsState = new FullScreenTransitionsState(
                     mContainerView, mInternalAccessAdapter, mAwViewMethods);
             mLayoutSizer = dependencyFactory.createLayoutSizer();
+            mSettings = settings;
             mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
             mWebContentsDelegate = new AwWebContentsDelegateAdapter(
                     this, contentsClient, settings, mContext, mContainerView);
@@ -931,6 +938,10 @@ public class AwContents implements SmartClipProvider {
 
             setOverScrollMode(mContainerView.getOverScrollMode());
             setScrollBarStyle(mInternalAccessAdapter.super_getScrollBarStyle());
+
+            if (ContentCaptureFeatures.isEnabled()) {
+                mContentCaptureReceiverManager = new ContentCaptureReceiverManager();
+            }
 
             setNewAwContents(nativeInit(mBrowserContext));
 
@@ -1112,6 +1123,9 @@ public class AwContents implements SmartClipProvider {
         awViewMethodsImpl.onWindowFocusChanged(mContainerView.hasWindowFocus());
         awViewMethodsImpl.onFocusChanged(mContainerView.hasFocus(), 0, null);
         mContainerView.requestLayout();
+        if (mContentCaptureReceiverManager != null) {
+            mContentCaptureReceiverManager.onContainerViewChanged(mContainerView);
+        }
         if (mAutofillProvider != null) mAutofillProvider.onContainerViewChanged(mContainerView);
     }
 
@@ -1170,13 +1184,9 @@ public class AwContents implements SmartClipProvider {
         return wrapper;
     }
 
-    /**
-     * Set current locales to native. Propagates this information to the Accept-Language header for
-     * subsequent requests. Note that this will affect <b>all</b> AwContents, not just this
-     * instance, as all WebViews share the same NetworkContext/UrlRequestContextGetter.
-     */
+    // Set current locales to native.
     @VisibleForTesting
-    public void updateDefaultLocale() {
+    public static void updateDefaultLocale() {
         String locales = LocaleUtils.getDefaultLocaleListString();
         if (!sCurrentLocales.equals(locales)) {
             sCurrentLocales = locales;
@@ -1186,7 +1196,6 @@ public class AwContents implements SmartClipProvider {
             // it is not guaranteed to be listed at the first of sCurrentLocales. Therefore,
             // both values are passed to native.
             nativeUpdateDefaultLocale(LocaleUtils.getDefaultLocaleString(), sCurrentLocales);
-            mSettings.updateAcceptLanguages();
         }
     }
 
@@ -1219,9 +1228,6 @@ public class AwContents implements SmartClipProvider {
             setNewAwContentsPreO(newAwContentsPtr);
             if (textClassifier != null) setTextClassifier(textClassifier);
         }
-        if (mContentCaptureConsumer != null) {
-            mContentCaptureConsumer.onWebContentsChanged(mWebContents);
-        }
     }
 
     // Helper for setNewAwContents containing everything which applies to pre-O.
@@ -1252,7 +1258,8 @@ public class AwContents implements SmartClipProvider {
         initWebContents(mViewAndroidDelegate, mInternalAccessAdapter, mWebContents,
                 mWindowAndroid.getWindowAndroid(), mWebContentsInternalsHolder);
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
-                mIoThreadClient, mInterceptNavigationDelegate, mAutofillProvider);
+                mIoThreadClient, mInterceptNavigationDelegate, mAutofillProvider,
+                mContentCaptureReceiverManager);
         GestureListenerManager.fromWebContents(mWebContents)
                 .addListener(new AwGestureStateListener());
 
@@ -1413,11 +1420,6 @@ public class AwContents implements SmartClipProvider {
         if (TRACE) Log.i(TAG, "%s destroy", this);
         if (isDestroyed(NO_WARN)) return;
 
-        if (mContentCaptureConsumer != null) {
-            mContentCaptureConsumer.destroy();
-            mContentCaptureConsumer = null;
-        }
-
         // Remove pending messages
         mContentsClient.getCallbackHelper().removeCallbacksAndMessages();
 
@@ -1428,7 +1430,7 @@ public class AwContents implements SmartClipProvider {
         }
         mIsNoOperation = true;
         mIsDestroyed = true;
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> destroyNatives());
+        mHandler.post(() -> destroyNatives());
     }
 
     /**
@@ -1566,7 +1568,8 @@ public class AwContents implements SmartClipProvider {
     }
 
     public void setContentCaptureConsumer(ContentCaptureConsumer consumer) {
-        mContentCaptureConsumer = consumer;
+        if (mContentCaptureReceiverManager != null)
+            mContentCaptureReceiverManager.setContentCaptureConsumer(consumer);
     }
 
     //--------------------------------------------------------------------------------------------
@@ -2593,7 +2596,7 @@ public class AwContents implements SmartClipProvider {
                 // application callback is executed without any native code on the stack. This
                 // so that any exception thrown by the application callback won't have to be
                 // propagated through a native call stack.
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(jsonResult));
+                mHandler.post(() -> callback.onResult(jsonResult));
             };
         }
 
@@ -2836,7 +2839,7 @@ public class AwContents implements SmartClipProvider {
         // To prevent this flip of CVC visibility, post the task to update CVC
         // visibility during attach, detach and window visibility change.
         mIsUpdateVisibilityTaskPending = true;
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, mUpdateVisibilityRunnable);
+        mHandler.post(mUpdateVisibilityRunnable);
     }
 
     private void updateWebContentsVisibility() {
@@ -3172,7 +3175,7 @@ public class AwContents implements SmartClipProvider {
         if (isDestroyedOrNoOperation(NO_WARN)) return;
         // Posting avoids invoking the callback inside invoking_composite_
         // (see synchronous_compositor_impl.cc and crbug/452530).
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onComplete(requestId));
+        mHandler.post(() -> callback.onComplete(requestId));
     }
 
     // Called as a result of nativeUpdateLastHitTestData.
@@ -3222,7 +3225,7 @@ public class AwContents implements SmartClipProvider {
 
     @CalledByNative
     private void updateScrollState(int maxContainerViewScrollOffsetX,
-            int maxContainerViewScrollOffsetY, float contentWidthDip, float contentHeightDip,
+            int maxContainerViewScrollOffsetY, int contentWidthDip, int contentHeightDip,
             float pageScaleFactor, float minPageScaleFactor, float maxPageScaleFactor) {
         mContentWidthDip = contentWidthDip;
         mContentHeightDip = contentHeightDip;
@@ -3687,6 +3690,7 @@ public class AwContents implements SmartClipProvider {
             postUpdateWebContentsVisibility();
 
             updateDefaultLocale();
+            mSettings.updateAcceptLanguages();
 
             if (mComponentCallbacks != null) return;
             mComponentCallbacks = new AwComponentCallbacks();
@@ -3866,7 +3870,8 @@ public class AwContents implements SmartClipProvider {
             AwWebContentsDelegate webViewWebContentsDelegate,
             AwContentsClientBridge contentsClientBridge, AwContentsIoThreadClient ioThreadClient,
             InterceptNavigationDelegate navigationInterceptionDelegate,
-            AutofillProvider autofillProvider);
+            AutofillProvider autofillProvider,
+            ContentCaptureReceiverManager contentCaptureReceiverManager);
     private native WebContents nativeGetWebContents(long nativeAwContents);
     private native void nativeSetCompositorFrameConsumer(
             long nativeAwContents, long nativeCompositorFrameConsumer);

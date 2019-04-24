@@ -206,8 +206,6 @@ void WebSharedWorkerImpl::DidTerminateWorkerThread() {
 
 void WebSharedWorkerImpl::Connect(MessagePortChannel web_channel) {
   DCHECK(IsMainThread());
-  if (asked_to_terminate_)
-    return;
   // The HTML spec requires to queue a connect event using the DOM manipulation
   // task source.
   // https://html.spec.whatwg.org/C/#shared-workers-and-the-sharedworker-interface
@@ -294,11 +292,16 @@ void WebSharedWorkerImpl::OnScriptLoaderFinished() {
                         main_script_loader_->Identifier(),
                         main_script_loader_->SourceText());
 
-  // The browser process is expected to send a SetController IPC before sending
-  // the script response, but there is no guarantee of the ordering as the
-  // messages arrive on different message pipes. Wait for the SetController IPC
-  // to be received before starting the worker; otherwise fetches from the
-  // worker might not go through the appropriate controller.
+  // S13nServiceWorker: The browser process is expected to send a
+  // SetController IPC before sending the script response, but there is no
+  // guarantee of the ordering as the messages arrive on different message
+  // pipes. Wait for the SetController IPC to be received before starting the
+  // worker; otherwise fetches from the worker might not go through the
+  // appropriate controller.
+  //
+  // (For non-S13nServiceWorker, we don't need to do this step as the controller
+  // service worker isn't used directly by the renderer, but to minimize code
+  // differences between the flags just do it anyway.)
   client_->WaitForServiceWorkerControllerInfo(
       shadow_page_->DocumentLoader()->GetServiceWorkerNetworkProvider(),
       WTF::Bind(&WebSharedWorkerImpl::ContinueStartWorkerContext,
@@ -356,9 +359,7 @@ void WebSharedWorkerImpl::ContinueStartWorkerContext() {
         nullptr /* origin_trial_tokens */, devtools_worker_token_,
         std::make_unique<WorkerSettings>(document->GetFrame()->GetSettings()),
         kV8CacheOptionsDefault, nullptr /* worklet_module_response_map */,
-        std::move(pending_interface_provider_), BeginFrameProviderParams(),
-        nullptr /* parent_feature_policy */, base::UnguessableToken(),
-        GlobalScopeCSPApplyMode::kUseResponseCSP);
+        std::move(pending_interface_provider_));
     StartWorkerThread(std::move(creation_params), script_request_url_,
                       String() /* source_code */, *outside_settings_object);
     return;
@@ -423,9 +424,9 @@ void WebSharedWorkerImpl::StartWorkerThread(
   // TODO(nhiroki): Support module workers (https://crbug.com/680046).
   if (features::IsOffMainThreadSharedWorkerScriptFetchEnabled()) {
     // The script has not yet been fetched. Fetch it now.
-    GetWorkerThread()->FetchAndRunClassicScript(script_request_url_,
-                                                outside_settings_object,
-                                                v8_inspector::V8StackTraceId());
+    GetWorkerThread()->ImportClassicScript(script_request_url_,
+                                           outside_settings_object,
+                                           v8_inspector::V8StackTraceId());
     // We continue in WorkerGlobalScope::EvaluateClassicScript() on the worker
     // thread.
   } else {
@@ -437,7 +438,7 @@ void WebSharedWorkerImpl::StartWorkerThread(
 }
 
 WorkerClients* WebSharedWorkerImpl::CreateWorkerClients() {
-  auto* worker_clients = MakeGarbageCollected<WorkerClients>();
+  WorkerClients* worker_clients = WorkerClients::Create();
   CoreInitializer::GetInstance().ProvideLocalFileSystemToWorker(
       *worker_clients);
   CoreInitializer::GetInstance().ProvideIndexedDBClientToWorker(

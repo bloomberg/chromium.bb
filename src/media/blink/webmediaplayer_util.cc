@@ -193,21 +193,22 @@ blink::WebEncryptedMediaInitDataType ConvertToWebInitDataType(
 
 namespace {
 
-void RunSetSinkIdCallback(blink::WebSetSinkIdCompleteCallback callback,
-                          OutputDeviceStatus result) {
+void RunSetSinkIdCallback(
+    std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callbacks,
+    OutputDeviceStatus result) {
   switch (result) {
     case OUTPUT_DEVICE_STATUS_OK:
-      std::move(callback).Run(/*error =*/base::nullopt);
+      web_callbacks->OnSuccess();
       break;
     case OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND:
-      std::move(callback).Run(blink::WebSetSinkIdError::kNotFound);
+      web_callbacks->OnError(blink::WebSetSinkIdError::kNotFound);
       break;
     case OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED:
-      std::move(callback).Run(blink::WebSetSinkIdError::kNotAuthorized);
+      web_callbacks->OnError(blink::WebSetSinkIdError::kNotAuthorized);
       break;
     case OUTPUT_DEVICE_STATUS_ERROR_TIMED_OUT:
     case OUTPUT_DEVICE_STATUS_ERROR_INTERNAL:
-      std::move(callback).Run(blink::WebSetSinkIdError::kAborted);
+      web_callbacks->OnError(blink::WebSetSinkIdError::kAborted);
       break;
   }
 }
@@ -215,9 +216,9 @@ void RunSetSinkIdCallback(blink::WebSetSinkIdCompleteCallback callback,
 }  // namespace
 
 OutputDeviceStatusCB ConvertToOutputDeviceStatusCB(
-    blink::WebSetSinkIdCompleteCallback callback) {
+    std::unique_ptr<blink::WebSetSinkIdCallbacks> callbacks) {
   return media::BindToCurrentLoop(
-      base::BindOnce(RunSetSinkIdCallback, std::move(callback)));
+      base::BindOnce(RunSetSinkIdCallback, std::move(callbacks)));
 }
 
 }  // namespace media

@@ -24,7 +24,7 @@
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/chromecast_switches.h"
-#include "chromecast/browser/application_media_info_manager.h"
+#include "chromecast/browser/application_session_id_manager.h"
 #include "chromecast/browser/browser_buildflags.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_main_parts.h"
@@ -40,8 +40,6 @@
 #include "chromecast/browser/cast_session_id_map.h"
 #include "chromecast/browser/default_navigation_throttle.h"
 #include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
-#include "chromecast/browser/general_audience_browsing_navigation_throttle.h"
-#include "chromecast/browser/general_audience_browsing_service.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/tts/tts_controller.h"
@@ -66,7 +64,6 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_ui_url_loader_factory.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -139,12 +136,6 @@
 #include "chromecast/external_mojo/broker_service/broker_service.h"
 #endif
 
-#if !defined(OS_FUCHSIA)
-#include "components/services/heap_profiling/heap_profiling_service.h"  // nogncheck
-#include "components/services/heap_profiling/public/cpp/settings.h"  // nogncheck
-#include "components/services/heap_profiling/public/mojom/constants.mojom.h"  // nogncheck
-#endif  // !defined(OS_FUCHSIA)
-
 namespace chromecast {
 namespace shell {
 
@@ -153,7 +144,10 @@ namespace {
 static void CreateMediaService(CastContentBrowserClient* browser_client,
                                service_manager::mojom::ServiceRequest request) {
   std::unique_ptr<::media::MediaService> service;
-#if BUILDFLAG(ENABLE_CAST_RENDERER)
+#if defined(OS_ANDROID)
+  service = std::make_unique<::media::MediaService>(
+      std::make_unique<::media::AndroidMojoMediaClient>(), std::move(request));
+#else
   auto mojo_media_client = std::make_unique<media::CastMojoMediaClient>(
       browser_client->GetCmaBackendFactory(),
       base::Bind(&CastContentBrowserClient::CreateCdmFactory,
@@ -163,12 +157,8 @@ static void CreateMediaService(CastContentBrowserClient* browser_client,
       browser_client->media_resource_tracker());
   service = std::make_unique<::media::MediaService>(
       std::move(mojo_media_client), std::move(request));
-#elif defined(OS_ANDROID)
-  service = std::make_unique<::media::MediaService>(
-      std::make_unique<::media::AndroidMojoMediaClient>(), std::move(request));
-#else
-#error "Unsupported configuration."
-#endif  // defined(ENABLE_CAST_RENDERER)
+#endif  // defined(OS_ANDROID)
+
   service_manager::Service::RunAsyncUntilTermination(std::move(service));
 }
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
@@ -179,10 +169,6 @@ void CreateOriginId(
   // TODO(crbug.com/917527): Update this to actually get a pre-provisioned
   // origin ID.
   std::move(callback).Run(base::UnguessableToken::Create());
-}
-
-void AllowEmptyOriginIdCB(base::OnceCallback<void(bool)> callback) {
-  std::move(callback).Run(false);
 }
 
 void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
@@ -198,9 +184,9 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
 
   // The object will be deleted on connection error, or when the frame navigates
   // away.
-  new cdm::MediaDrmStorageImpl(
-      render_frame_host, pref_service, base::BindRepeating(&CreateOriginId),
-      base::BindRepeating(&AllowEmptyOriginIdCB), std::move(request));
+  new cdm::MediaDrmStorageImpl(render_frame_host, pref_service,
+                               base::BindRepeating(&CreateOriginId),
+                               std::move(request));
 }
 #endif  // defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
 
@@ -223,8 +209,6 @@ CastContentBrowserClient::CastContentBrowserClient(
       std::make_unique<CastNetworkContexts>(url_request_context_factory_.get());
   cast_feature_list_creator_->SetExtraEnableFeatures({
     ::media::kInternalMediaSession,
-    network::features::kNetworkService,
-    features::kNetworkServiceInProcess,
 #if defined(OS_ANDROID)
         // TODO(awolter): Remove this once the feature is on by default.
         features::kAudioServiceAudioStreams,
@@ -807,8 +791,8 @@ void CastContentBrowserClient::ExposeInterfacesToMediaService(
       CastNavigationUIData::GetSessionIdForWebContents(
           content::WebContents::FromRenderFrameHost(render_frame_host));
   registry->AddInterface(base::BindRepeating(
-      &media::CreateApplicationMediaInfoManager, render_frame_host,
-      std::move(application_session_id), true));
+      &media::CreateApplicationSessionIdManager, render_frame_host,
+      std::move(application_session_id)));
 }
 
 void CastContentBrowserClient::HandleServiceRequest(
@@ -962,13 +946,6 @@ CastContentBrowserClient::CreateThrottlesForNavigation(
     }
   }
 #endif
-
-  if (chromecast::IsFeatureEnabled(kEnableGeneralAudienceBrowsing)) {
-    throttles.push_back(
-        std::make_unique<GeneralAudienceBrowsingNavigationThrottle>(
-            handle, general_audience_browsing_service_.get()));
-  }
-
   return throttles;
 }
 
@@ -993,14 +970,9 @@ void CastContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
     int render_process_id,
     int render_frame_id,
     NonNetworkURLLoaderFactoryMap* factories) {
-  if (render_frame_id == MSG_ROUTING_NONE) {
-    NOTREACHED() << "Service worker not supported.";
-    return;
-  }
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   content::RenderFrameHost* frame_host =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-
-#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   auto* browser_context = frame_host->GetProcess()->GetBrowserContext();
   auto extension_factory = extensions::CreateExtensionURLLoaderFactory(
       render_process_id, render_frame_id);
@@ -1008,12 +980,6 @@ void CastContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
                      std::make_unique<CastExtensionURLLoaderFactory>(
                          browser_context, std::move(extension_factory)));
 #endif
-
-  factories->emplace(
-      kChromeResourceScheme,
-      content::CreateWebUIURLLoader(
-          frame_host, kChromeResourceScheme,
-          /*allowed_webui_hosts=*/base::flat_set<std::string>()));
 }
 
 void CastContentBrowserClient::OnNetworkServiceCreated(
@@ -1039,36 +1005,8 @@ CastContentBrowserClient::CreateNetworkContext(
                                                       relative_partition_path);
 }
 
-bool CastContentBrowserClient::DoesSiteRequireDedicatedProcess(
-    content::BrowserOrResourceContext browser_or_resource_context,
-    const GURL& effective_site_url) {
-  // Always isolate extensions. This prevents site isolation from messing up
-  // URLs.
-#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
-  return effective_site_url.SchemeIs(extensions::kExtensionScheme);
-#else
-  return false;
-#endif
-}
-
 std::string CastContentBrowserClient::GetUserAgent() const {
   return chromecast::shell::GetUserAgent();
-}
-
-void CastContentBrowserClient::RegisterIOThreadServiceHandlers(
-    content::ServiceManagerConnection* connection) {
-#if !defined(OS_FUCHSIA)
-  connection->AddServiceRequestHandler(
-      heap_profiling::mojom::kServiceName,
-      heap_profiling::HeapProfilingService::GetServiceFactory());
-#endif  // !defined(OS_FUCHSIA)
-}
-
-void CastContentBrowserClient::CreateGeneralAudienceBrowsingService() {
-  DCHECK(!general_audience_browsing_service_);
-  general_audience_browsing_service_ =
-      std::make_unique<GeneralAudienceBrowsingService>(
-          cast_network_contexts_->GetSystemSharedURLLoaderFactory());
 }
 
 }  // namespace shell

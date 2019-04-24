@@ -57,7 +57,7 @@ typedef struct FlicDemuxContext {
     int frame_number;
 } FlicDemuxContext;
 
-static int flic_probe(const AVProbeData *p)
+static int flic_probe(AVProbeData *p)
 {
     int magic_number;
 

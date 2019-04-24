@@ -13,7 +13,8 @@ ExampleComboboxModel::ExampleComboboxModel(const char* const* strings,
                                            int count)
     : strings_(strings), count_(count) {}
 
-ExampleComboboxModel::~ExampleComboboxModel() = default;
+ExampleComboboxModel::~ExampleComboboxModel() {
+}
 
 int ExampleComboboxModel::GetItemCount() const {
   return count_;

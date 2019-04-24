@@ -9,7 +9,6 @@
 
 #include "GrBackendSurface.h"
 #include "GrMtlUtil.h"
-#include "GrRenderTarget.h"
 #include "GrRenderTargetProxy.h"
 #include "GrShaderCaps.h"
 #include "GrSurfaceProxy.h"
@@ -31,7 +30,9 @@ GrMtlCaps::GrMtlCaps(const GrContextOptions& contextOptions, const id<MTLDevice>
 
     // The following are disabled due to the unfinished Metal backend, not because Metal itself
     // doesn't support it.
+    fBlacklistCoverageCounting = true;   // CCPR shaders have some incompatabilities with SkSLC
     fFenceSyncSupport = false;           // Fences are not implemented yet
+    fMipMapSupport = false;              // GrMtlGpu::onRegenerateMipMapLevels() not implemented
     fMultisampleDisableSupport = true;   // MSAA and resolving not implemented yet
     fDiscardRenderTargetSupport = false; // GrMtlGpuCommandBuffer::discard() not implemented
     fCrossContextTextureSupport = false; // GrMtlGpu::prepareTextureForCrossContextUsage() not impl
@@ -303,7 +304,7 @@ void GrMtlCaps::initShaderCaps() {
         } else {
             if (kGray_8_GrPixelConfig == config) {
                 shaderCaps->fConfigTextureSwizzle[i] = GrSwizzle::RRRA();
-            } else if (kRGB_888X_GrPixelConfig == config || kRGB_888_GrPixelConfig == config ) {
+            } else if (kRGB_888X_GrPixelConfig == config) {
                 shaderCaps->fConfigTextureSwizzle[i] = GrSwizzle::RGB1();
             } else {
                 shaderCaps->fConfigTextureSwizzle[i] = GrSwizzle::RGBA();
@@ -359,16 +360,8 @@ void GrMtlCaps::initConfigTable() {
     info = &fConfigTable[kAlpha_8_GrPixelConfig];
     info->fFlags = ConfigInfo::kAllFlags;
 
-    // Alpha_8_as_Red uses R8Unorm
-    info = &fConfigTable[kAlpha_8_as_Red_GrPixelConfig];
-    info->fFlags = ConfigInfo::kAllFlags;
-
     // Gray_8 uses R8Unorm
     info = &fConfigTable[kGray_8_GrPixelConfig];
-    info->fFlags = ConfigInfo::kAllFlags;
-
-    // Gray_8_as_Red uses R8Unorm
-    info = &fConfigTable[kGray_8_as_Red_GrPixelConfig];
     info->fFlags = ConfigInfo::kAllFlags;
 
     // RGB_565 uses B5G6R5Unorm, even though written opposite this format packs how we want
@@ -393,14 +386,6 @@ void GrMtlCaps::initConfigTable() {
 
     // RGB_888X uses RGBA8Unorm and we will swizzle the 1
     info = &fConfigTable[kRGB_888X_GrPixelConfig];
-    info->fFlags = ConfigInfo::kTextureable_Flag;
-
-    // RGB_888 uses RGBA8Unorm and we will swizzle the 1
-    info = &fConfigTable[kRGB_888_GrPixelConfig];
-    info->fFlags = ConfigInfo::kTextureable_Flag;
-
-    // RG_88 uses RG8Unorm
-    info = &fConfigTable[kRG_88_GrPixelConfig];
     info->fFlags = ConfigInfo::kTextureable_Flag;
 
     // BGRA_8888 uses BGRA8Unorm
@@ -428,7 +413,7 @@ void GrMtlCaps::initConfigTable() {
     if (this->isMac()) {
         info->fFlags = ConfigInfo::kAllFlags;
     } else {
-        info->fFlags = ConfigInfo::kTextureable_Flag | ConfigInfo::kRenderable_Flag;
+        info->fFlags = ConfigInfo::kRenderable_Flag;
     }
 
     // Alpha_half uses R16Float
@@ -438,20 +423,10 @@ void GrMtlCaps::initConfigTable() {
     // RGBA_half uses RGBA16Float
     info = &fConfigTable[kRGBA_half_GrPixelConfig];
     info->fFlags = ConfigInfo::kAllFlags;
-
-    info = &fConfigTable[kRGBA_half_Clamped_GrPixelConfig];
-    info->fFlags = ConfigInfo::kAllFlags;
 }
 
 void GrMtlCaps::initStencilFormat(id<MTLDevice> physDev) {
     fPreferredStencilFormat = StencilFormat{ MTLPixelFormatStencil8, 8, 8, true };
-}
-
-bool GrMtlCaps::onSurfaceSupportsWritePixels(const GrSurface* surface) const {
-    if (auto rt = surface->asRenderTarget()) {
-        return rt->numColorSamples() <= 1 && SkToBool(surface->asTexture());
-    }
-    return true;
 }
 
 GrPixelConfig validate_sized_format(GrMTLPixelFormat grFormat, SkColorType ct) {
@@ -514,13 +489,13 @@ GrPixelConfig validate_sized_format(GrMTLPixelFormat grFormat, SkColorType ct) {
                 return kGray_8_as_Red_GrPixelConfig;
             }
             break;
-        case kRGBA_F16Norm_SkColorType:
-            if (MTLPixelFormatRGBA16Float == format) {
-                return kRGBA_half_Clamped_GrPixelConfig;
+        case kRGBA_F16Norm_SkColorType:  // TODO(brianosman): ?
+            if (MTLPixelFormatRG16Float == format) {
+                return kRGBA_half_GrPixelConfig;
             }
             break;
         case kRGBA_F16_SkColorType:
-            if (MTLPixelFormatRGBA16Float == format) {
+            if (MTLPixelFormatRG16Float == format) {
                 return kRGBA_half_GrPixelConfig;
             }
             break;
@@ -564,9 +539,7 @@ static GrPixelConfig get_yuva_config(GrMTLPixelFormat grFormat) {
         case MTLPixelFormatR8Unorm:
             return kAlpha_8_as_Red_GrPixelConfig;
             break;
-        case MTLPixelFormatRG8Unorm:
-            return kRG_88_GrPixelConfig;
-            break;
+        // TODO: Add RG_88 format here
         case MTLPixelFormatRGBA8Unorm:
             return kRGBA_8888_GrPixelConfig;
             break;

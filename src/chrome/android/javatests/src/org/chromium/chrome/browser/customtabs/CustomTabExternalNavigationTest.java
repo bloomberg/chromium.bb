@@ -16,7 +16,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -77,8 +76,7 @@ public class CustomTabExternalNavigationTest {
         Assert.assertTrue(delegateFactory instanceof CustomTabDelegateFactory);
         CustomTabDelegateFactory customTabDelegateFactory =
                 ((CustomTabDelegateFactory) delegateFactory);
-        mUrlHandler = ThreadUtils.runOnUiThreadBlocking(
-                () -> customTabDelegateFactory.createExternalNavigationHandler(tab));
+        mUrlHandler = customTabDelegateFactory.getExternalNavigationHandler();
         Assert.assertTrue(customTabDelegateFactory.getExternalNavigationDelegate()
                                   instanceof CustomTabNavigationDelegate);
         mNavigationDelegate = (CustomTabNavigationDelegate)

@@ -28,10 +28,8 @@
 #endif
 
 #include "perfetto/base/scoped_file.h"
-#include "perfetto/base/thread_task_runner.h"
-#include "perfetto/tracing/core/basic_types.h"
 #include "src/profiling/memory/bookkeeping.h"
-#include "src/profiling/memory/unwound_messages.h"
+#include "src/profiling/memory/queue_messages.h"
 #include "src/profiling/memory/wire_protocol.h"
 
 namespace perfetto {
@@ -136,9 +134,7 @@ class UnwindingWorker : public base::UnixSocket::EventListener {
    public:
     virtual void PostAllocRecord(AllocRecord) = 0;
     virtual void PostFreeRecord(FreeRecord) = 0;
-    virtual void PostSocketDisconnected(DataSourceInstanceID,
-                                        pid_t pid,
-                                        SharedRingBuffer::Stats stats) = 0;
+    virtual void PostSocketDisconnected(DataSourceInstanceID, pid_t pid) = 0;
     virtual ~Delegate();
   };
 
@@ -149,9 +145,8 @@ class UnwindingWorker : public base::UnixSocket::EventListener {
     SharedRingBuffer shmem;
   };
 
-  UnwindingWorker(Delegate* delegate, base::ThreadTaskRunner thread_task_runner)
-      : thread_task_runner_(std::move(thread_task_runner)),
-        delegate_(delegate) {}
+  UnwindingWorker(Delegate* delegate, base::TaskRunner* task_runner)
+      : delegate_(delegate), task_runner_(task_runner) {}
 
   // Public API safe to call from other threads.
   void PostDisconnectSocket(pid_t pid);
@@ -166,20 +161,7 @@ class UnwindingWorker : public base::UnixSocket::EventListener {
   }
   void OnDataAvailable(base::UnixSocket* self) override;
 
- public:
-  // static and public for testing/fuzzing
-  static void HandleBuffer(const SharedRingBuffer::Buffer& buf,
-                           UnwindingMetadata* unwinding_metadata,
-                           DataSourceInstanceID data_source_instance_id,
-                           pid_t peer_pid,
-                           Delegate* delegate);
-
  private:
-  void HandleHandoffSocket(HandoffData data);
-  void HandleDisconnectSocket(pid_t pid);
-
-  void HandleUnwindBatch(pid_t);
-
   struct ClientData {
     DataSourceInstanceID data_source_instance_id;
     std::unique_ptr<base::UnixSocket> sock;
@@ -187,13 +169,13 @@ class UnwindingWorker : public base::UnixSocket::EventListener {
     SharedRingBuffer shmem;
   };
 
-  // Task runner with a dedicated thread. Keep at the start of the data member
-  // declarations, such that it is valid during construction & destruction of
-  // the other members.
-  base::ThreadTaskRunner thread_task_runner_;
+  void HandleBuffer(SharedRingBuffer::Buffer* buf, ClientData* socket_data);
+  void HandleHandoffSocket(HandoffData data);
+  void HandleDisconnectSocket(pid_t pid);
 
   std::map<pid_t, ClientData> client_data_;
   Delegate* delegate_;
+  base::TaskRunner* task_runner_;
 };
 
 }  // namespace profiling

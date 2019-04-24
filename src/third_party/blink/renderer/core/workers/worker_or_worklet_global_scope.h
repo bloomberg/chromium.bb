@@ -42,14 +42,12 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   using SecurityContext::GetSecurityOrigin;
   using SecurityContext::GetContentSecurityPolicy;
 
-  WorkerOrWorkletGlobalScope(
-      v8::Isolate*,
-      const String& name,
-      const base::UnguessableToken& parent_devtools_token,
-      V8CacheOptions,
-      WorkerClients*,
-      scoped_refptr<WebWorkerFetchContext>,
-      WorkerReportingProxy&);
+  WorkerOrWorkletGlobalScope(v8::Isolate*,
+                             const String& name,
+                             V8CacheOptions,
+                             WorkerClients*,
+                             scoped_refptr<WebWorkerFetchContext>,
+                             WorkerReportingProxy&);
   ~WorkerOrWorkletGlobalScope() override;
 
   // EventTarget
@@ -115,9 +113,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
       const FetchClientSettingsObject&);
 
   const String Name() const { return name_; }
-  const base::UnguessableToken& GetParentDevToolsToken() {
-    return parent_devtools_token_;
-  }
 
   WorkerClients* Clients() const { return worker_clients_.Get(); }
 
@@ -134,12 +129,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
  protected:
-  // Sets outside's CSP used for off-main-thread top-level worker script
-  // fetch.
-  void SetOutsideContentSecurityPolicyHeaders(const Vector<CSPHeaderAndType>&);
-
-  // Initializes inside's CSP used for subresource fetch etc.
-  void InitContentSecurityPolicyFromVector(const Vector<CSPHeaderAndType>&);
+  void InitContentSecurityPolicyFromVector(
+      const Vector<CSPHeaderAndType>& headers);
   virtual void BindContentSecurityPolicyToExecutionContext();
 
   void FetchModuleScript(const KURL& module_url_record,
@@ -152,6 +143,8 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   void TasksWerePaused() override;
   void TasksWereUnpaused() override;
 
+  virtual mojom::RequestContextType GetDestinationForMainScript() = 0;
+
  private:
   void InitializeWebFetchContextIfNeeded();
   ResourceFetcher* CreateFetcherInternal(const FetchClientSettingsObject&,
@@ -160,7 +153,6 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   bool web_fetch_context_initialized_ = false;
 
   const String name_;
-  const base::UnguessableToken parent_devtools_token_;
 
   CrossThreadPersistent<WorkerClients> worker_clients_;
 
@@ -190,7 +182,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   // TODO(hiroshige): Pass outsideSettings-CSP via
   // outsideSettings-FetchClientSettingsObject.
-  Vector<CSPHeaderAndType> outside_content_security_policy_headers_;
+  Vector<CSPHeaderAndType> outside_content_security_policy_parsed_headers_;
 
   WorkerReportingProxy& reporting_proxy_;
 
@@ -199,7 +191,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   // LocalDOMWindow::modulator_ workaround equivalent.
   // TODO(kouhei): Remove this.
-  Member<Modulator> modulator_;
+  TraceWrapperMember<Modulator> modulator_;
 };
 
 template <>

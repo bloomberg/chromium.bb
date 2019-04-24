@@ -50,7 +50,7 @@ BluetoothAttributeInstanceMap::GetOrCreateRemoteGATTCharacteristic(
       characteristic_id_to_object_.at(instance_id);
 
   if (!characteristic) {
-    characteristic = MakeGarbageCollected<BluetoothRemoteGATTCharacteristic>(
+    characteristic = BluetoothRemoteGATTCharacteristic::Create(
         context, std::move(remote_gatt_characteristic), service, device_);
     characteristic_id_to_object_.insert(instance_id, characteristic);
   }

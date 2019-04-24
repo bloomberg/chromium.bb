@@ -4,10 +4,24 @@
 
 // Custom binding for the webViewRequest API.
 
+var binding = apiBridge || require('binding').Binding.create('webViewRequest');
+
 var declarativeWebRequestSchema =
     requireNative('schema_registry').GetSchema('declarativeWebRequest');
 
-apiBridge.registerCustomHook(function(api) {
+var utils = bindingUtil ? undefined : require('utils');
+var validate = bindingUtil ? undefined : require('schemaUtils').validate;
+
+function validateType(schemaTypes, typeName, value) {
+  if (bindingUtil) {
+    bindingUtil.validateType(typeName, value);
+  } else {
+    var schema = utils.lookup(schemaTypes, 'id', typeName);
+    validate([value], [schema]);
+  }
+}
+
+binding.registerCustomHook(function(api) {
   var webViewRequest = api.compiledApi;
 
   // Helper function for the constructor of concrete datatypes of the
@@ -24,7 +38,8 @@ apiBridge.registerCustomHook(function(api) {
 
     var qualifiedType = 'declarativeWebRequest.' + typeId;
     instance.instanceType = qualifiedType;
-    bindingUtil.validateType(qualifiedType, instance);
+    validateType(bindingUtil ? undefined : declarativeWebRequestSchema.types,
+                 qualifiedType, instance);
   }
 
   // Setup all data types for the declarative webRequest API from the schema.
@@ -39,3 +54,6 @@ apiBridge.registerCustomHook(function(api) {
     webViewRequest[typeId] = action;
   }
 });
+
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

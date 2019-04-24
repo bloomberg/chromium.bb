@@ -34,8 +34,6 @@ void FakeAssistantManagerServiceImpl::EnableListening(bool enable) {}
 
 void FakeAssistantManagerServiceImpl::EnableHotword(bool enable) {}
 
-void FakeAssistantManagerServiceImpl::SetArcPlayStoreEnabled(bool enabled) {}
-
 AssistantManagerService::State FakeAssistantManagerServiceImpl::GetState()
     const {
   return state_;
@@ -47,9 +45,6 @@ FakeAssistantManagerServiceImpl::GetAssistantSettingsManager() {
 }
 
 void FakeAssistantManagerServiceImpl::StartCachedScreenContextInteraction() {}
-
-void FakeAssistantManagerServiceImpl::StartEditReminderInteraction(
-    const std::string& client_id) {}
 
 void FakeAssistantManagerServiceImpl::StartMetalayerInteraction(
     const gfx::Rect& region) {}

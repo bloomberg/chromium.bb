@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/client_id.h"
@@ -58,17 +57,8 @@ enum class PrefetchRequestStatus {
   // The request was blocked by a URL blacklist configured by the domain
   // administrator.
   kShouldSuspendBlockedByAdministrator = 5,
-  // The request was answered with a 403 Forbidden response including a message
-  // indicating that the request was forbidden specifically by an OPS request
-  // filtering rule.
-  kShouldSuspendForbiddenByOPS = 6,
-  // The server responded with 403 forbidden due to a filter rule though the
-  // last request was successful.
-  kShouldSuspendNewlyForbiddenByOPS = 7,
-  // A request for no URLs (i.e. server-enabled check) completed successfully.
-  kEmptyRequestSuccess = 8,
   // kMaxValue should always be the last type.
-  kMaxValue = kEmptyRequestSuccess
+  kMaxValue = kShouldSuspendBlockedByAdministrator
 };
 
 // Status indicating the page rendering status in the server.
@@ -113,7 +103,7 @@ struct RenderPageInfo {
 // each mirrored entry. Existing elements should never have their assigned
 // values changed. Changes should also be reflected in
 // |PrefetchTaskTestBase::kOrderedPrefetchItemStates|.
-enum class PrefetchItemState : int {
+enum class PrefetchItemState {
   // New request just received from the client.
   NEW_REQUEST = 0,
   // The item has been included in a GeneratePageBundle RPC requesting the
@@ -150,8 +140,6 @@ enum class PrefetchItemState : int {
   kMaxValue = ZOMBIE
 };
 
-base::Optional<PrefetchItemState> ToPrefetchItemState(int value);
-
 // Error codes used to identify the reason why a prefetch entry has finished
 // processing in the pipeline. This values are only meaningful for entries in
 // the "finished" state.
@@ -164,7 +152,7 @@ base::Optional<PrefetchItemState> ToPrefetchItemState(int value);
 // Changes to this enum must be reflected in the respective metrics enum named
 // OflinePrefetchItemErrorCode in enums.xml. Use the exact same integer value
 // for each mirrored entry.
-enum class PrefetchItemErrorCode : int {
+enum class PrefetchItemErrorCode {
   // The entry had gone through the pipeline and successfully completed
   // prefetching. Explicitly setting to 0 as that is the default value for the
   // respective SQLite column.
@@ -197,8 +185,6 @@ enum class PrefetchItemErrorCode : int {
   // The item was terminated because it remained in the pipeline for more than
   // 7 days.
   STUCK = 1150,
-  // The item had some invalid data, probably due to database corruption.
-  INVALID_ITEM = 1175,
   // Exceeded maximum retries for get operation request.
   GET_OPERATION_MAX_ATTEMPTS_REACHED = 1200,
   // Exceeded maximum retries limit for generate page bundle request.
@@ -217,8 +203,6 @@ enum class PrefetchItemErrorCode : int {
   kMaxValue = SUGGESTION_INVALIDATED
 };
 
-base::Optional<PrefetchItemErrorCode> ToPrefetchItemErrorCode(int value);
-
 // Callback invoked upon completion of a prefetch request.
 using PrefetchRequestFinishedCallback =
     base::OnceCallback<void(PrefetchRequestStatus status,
@@ -230,13 +214,6 @@ struct PrefetchURL {
   PrefetchURL(const std::string& id,
               const GURL& url,
               const base::string16& title);
-  PrefetchURL(const std::string& id,
-              const GURL& url,
-              const base::string16& title,
-              const GURL& thumbnail_url,
-              const GURL& favicon_url,
-              const std::string& snippet,
-              const std::string& attribution);
   ~PrefetchURL();
   PrefetchURL(const PrefetchURL& other);
 
@@ -255,15 +232,6 @@ struct PrefetchURL {
   // URL for a thumbnail that represents the page. May be empty if no thumbnail
   // is available.
   GURL thumbnail_url;
-
-  // URL for page's favicon.
-  GURL favicon_url;
-
-  // Article snippet.
-  std::string snippet;
-
-  // Identifies the page's publisher.
-  std::string attribution;
 };
 
 // Result of a completed download.
@@ -295,9 +263,6 @@ struct PrefetchArchiveInfo {
   base::string16 title;
   base::FilePath file_path;
   int64_t file_size = 0;
-  GURL favicon_url;
-  std::string snippet;
-  std::string attribution;
 };
 
 // These operators are implemented for testing only, see test_util.cc.

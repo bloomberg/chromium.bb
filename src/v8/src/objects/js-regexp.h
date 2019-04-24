@@ -56,7 +56,7 @@ class JSRegExp : public JSObject {
     // Update FlagCount when adding new flags.
     kInvalid = 1 << FlagShiftBit::kInvalid,  // Not included in FlagCount.
   };
-  using Flags = base::Flags<Flag>;
+  typedef base::Flags<Flag> Flags;
   static constexpr int FlagCount() { return 6; }
 
   static int FlagShiftBits(Flag flag) {
@@ -122,12 +122,18 @@ class JSRegExp : public JSObject {
   DECL_PRINTER(JSRegExp)
   DECL_VERIFIER(JSRegExp)
 
-  // Layout description.
-  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize,
-                                TORQUE_GENERATED_JSREG_EXP_FIELDS)
-  /* This is already an in-object field. */
-  // TODO(v8:8944): improve handling of in-object fields
-  static constexpr int kLastIndexOffset = kSize;
+// Layout description.
+#define JS_REGEXP_FIELDS(V)                 \
+  V(kDataOffset, kTaggedSize)               \
+  V(kSourceOffset, kTaggedSize)             \
+  V(kFlagsOffset, kTaggedSize)              \
+  /* Total size. */                         \
+  V(kSize, 0)                               \
+  /* This is already an in-object field. */ \
+  V(kLastIndexOffset, 0)
+
+  DEFINE_FIELD_OFFSET_CONSTANTS(JSObject::kHeaderSize, JS_REGEXP_FIELDS)
+#undef JS_REGEXP_FIELDS
 
   // Indices in the data array.
   static const int kTagIndex = 0;
@@ -188,9 +194,16 @@ DEFINE_OPERATORS_FOR_FLAGS(JSRegExp::Flags)
 // After creation the result must be treated as a JSArray in all regards.
 class JSRegExpResult : public JSArray {
  public:
-  // Layout description.
-  DEFINE_FIELD_OFFSET_CONSTANTS(JSArray::kSize,
-                                TORQUE_GENERATED_JSREG_EXP_RESULT_FIELDS)
+// Layout description.
+#define REG_EXP_RESULT_FIELDS(V) \
+  V(kIndexOffset, kTaggedSize)   \
+  V(kInputOffset, kTaggedSize)   \
+  V(kGroupsOffset, kTaggedSize)  \
+  /* Total size. */              \
+  V(kSize, 0)
+
+  DEFINE_FIELD_OFFSET_CONSTANTS(JSArray::kSize, REG_EXP_RESULT_FIELDS)
+#undef REG_EXP_RESULT_FIELDS
 
   // Indices of in-object properties.
   static const int kIndexIndex = 0;

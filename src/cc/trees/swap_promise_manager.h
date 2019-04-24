@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/macros.h"
 #include "cc/cc_export.h"
 #include "cc/trees/swap_promise.h"
 
@@ -18,10 +19,7 @@ class SwapPromiseMonitor;
 class CC_EXPORT SwapPromiseManager {
  public:
   SwapPromiseManager();
-  SwapPromiseManager(const SwapPromiseManager&) = delete;
   ~SwapPromiseManager();
-
-  SwapPromiseManager& operator=(const SwapPromiseManager&) = delete;
 
   // Call this function when you expect there to be a swap buffer.
   // See swap_promise.h for how to use SwapPromise.
@@ -51,6 +49,8 @@ class CC_EXPORT SwapPromiseManager {
  private:
   std::vector<std::unique_ptr<SwapPromise>> swap_promise_list_;
   std::set<SwapPromiseMonitor*> swap_promise_monitors_;
+
+  DISALLOW_COPY_AND_ASSIGN(SwapPromiseManager);
 };
 
 }  // namespace cc

@@ -15,99 +15,89 @@ namespace chromeos {
 namespace device_sync {
 
 // Information about the result of a CryptAuth v2 Enrollment attempt.
-//
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused. If entries are added, kMaxValue should
-// be updated.
 class CryptAuthEnrollmentResult {
  public:
   // Enum class to denote the result of a CryptAuth v2 Enrollment attempt
   enum class ResultCode {
     // Successfully synced but no new keys were requested by CryptAuth, so no
     // EnrollKeysRequest was made.
-    kSuccessNoNewKeysNeeded = 0,
+    kSuccessNoNewKeysNeeded,
     // Successfully synced and enrolled new key(s) with CryptAuth.
-    kSuccessNewKeysEnrolled = 1,
+    kSuccessNewKeysEnrolled,
     // During SyncKeys API call, request could not be completed because the
     // device is offline or has issues sending the HTTP request.
-    kErrorSyncKeysApiCallOffline = 2,
+    kErrorSyncKeysApiCallOffline,
     // During SyncKeys API call, server endpoint could not be found.
-    kErrorSyncKeysApiCallEndpointNotFound = 3,
+    kErrorSyncKeysApiCallEndpointNotFound,
     // During SyncKeys API call, authentication error contacting back-end.
-    kErrorSyncKeysApiCallAuthenticationError = 4,
+    kErrorSyncKeysApiCallAuthenticationError,
     // During SyncKeys API call, network request was invalid.
-    kErrorSyncKeysApiCallBadRequest = 5,
+    kErrorSyncKeysApiCallBadRequest,
     // During SyncKeys API call, the server responded but the response was not
     // formatted correctly.
-    kErrorSyncKeysApiCallResponseMalformed = 6,
+    kErrorSyncKeysApiCallResponseMalformed,
     // During SyncKeys API call, internal server error.
-    kErrorSyncKeysApiCallInternalServerError = 7,
+    kErrorSyncKeysApiCallInternalServerError,
     // During SyncKeys API call, unknown network request error.
-    kErrorSyncKeysApiCallUnknownError = 8,
+    kErrorSyncKeysApiCallUnknownError,
     // During EnrollKeys API call, request could not be completed because the
     // device is offline or has issues sending the HTTP request.
-    kErrorEnrollKeysApiCallOffline = 9,
+    kErrorEnrollKeysApiCallOffline,
     // During EnrollKeys API call, server endpoint could not be found.
-    kErrorEnrollKeysApiCallEndpointNotFound = 10,
+    kErrorEnrollKeysApiCallEndpointNotFound,
     // During EnrollKeys API call, authentication error contacting back-end.
-    kErrorEnrollKeysApiCallAuthenticationError = 11,
+    kErrorEnrollKeysApiCallAuthenticationError,
     // During EnrollKeys API call, network request was invalid.
-    kErrorEnrollKeysApiCallBadRequest = 12,
+    kErrorEnrollKeysApiCallBadRequest,
     // During EnrollKeys API call, the server responded but the response was not
     // formatted correctly.
-    kErrorEnrollKeysApiCallResponseMalformed = 13,
+    kErrorEnrollKeysApiCallResponseMalformed,
     // During EnrollKeys API call, internal server error.
-    kErrorEnrollKeysApiCallInternalServerError = 14,
+    kErrorEnrollKeysApiCallInternalServerError,
     // During EnrollKeys API call, unknown network request error.
-    kErrorEnrollKeysApiCallUnknownError = 15,
+    kErrorEnrollKeysApiCallUnknownError,
     // The CryptAuth server indicated via SyncKeysResponse::server_status that
     // it was overloaded and did not process the SyncKeysRequest.
-    kErrorCryptAuthServerOverloaded = 16,
+    kErrorCryptAuthServerOverloaded,
     // The SyncKeysResponse from CryptAuth is missing a random_session_id.
-    kErrorSyncKeysResponseMissingRandomSessionId = 17,
+    kErrorSyncKeysResponseMissingRandomSessionId,
     // The SyncKeysResponse from CryptAuth is missing a client_directive or the
     // parameters are invalid.
-    kErrorSyncKeysResponseInvalidClientDirective = 18,
+    kErrorSyncKeysResponseInvalidClientDirective,
     // The number of SyncSingleKeyResponses does not agree with the number of
     // SyncSingleKeyRequests.
-    kErrorWrongNumberOfSyncSingleKeyResponses = 19,
+    kErrorWrongNumberOfSyncSingleKeyResponses,
     // The size of a SyncSingleKeyResponse::key_actions list does not agree with
     // the size of the corresponding SyncSingleKeyRequest::key_handles.
-    kErrorWrongNumberOfKeyActions = 20,
+    kErrorWrongNumberOfKeyActions,
     // An integer provided in SyncSingleKeyResponse::key_actions does not
     // correspond to a known KeyAction enum value.
-    kErrorInvalidKeyActionEnumValue = 21,
+    kErrorInvalidKeyActionEnumValue,
     // The SyncSingleKeyResponse::key_actions denote more than one active key.
-    kErrorKeyActionsSpecifyMultipleActiveKeys = 22,
+    kErrorKeyActionsSpecifyMultipleActiveKeys,
     // The SyncSingleKeyResponse::key_actions fail to specify an active key.
-    kErrorKeyActionsDoNotSpecifyAnActiveKey = 23,
+    kErrorKeyActionsDoNotSpecifyAnActiveKey,
     // KeyCreation instructions specify an unsupported KeyType.
-    kErrorKeyCreationKeyTypeNotSupported = 24,
+    kErrorKeyCreationKeyTypeNotSupported,
     // Invalid key-creation instructions for user key pair. It must be P256 and
     // active.
-    kErrorUserKeyPairCreationInstructionsInvalid = 25,
+    kErrorUserKeyPairCreationInstructionsInvalid,
     // Cannot create a symmetric key without the server's Diffie-Hellman key.
-    kErrorSymmetricKeyCreationMissingServerDiffieHellman = 26,
+    kErrorSymmetricKeyCreationMissingServerDiffieHellman,
     // Failed to compute at least one key proof.
-    kErrorKeyProofComputationFailed = 27,
+    kErrorKeyProofComputationFailed,
     // The enroller timed out waiting for response from the SyncKeys API call.
-    kErrorTimeoutWaitingForSyncKeysResponse = 28,
+    kErrorTimeoutWaitingForSyncKeysResponse,
     // The enroller timed out waiting for new keys to be created.
-    kErrorTimeoutWaitingForKeyCreation = 29,
+    kErrorTimeoutWaitingForKeyCreation,
     // The enroller timed out waiting for key proofs to be computed.
-    kErrorTimeoutWaitingForEnrollKeysResponse = 30,
+    kErrorTimeoutWaitingForEnrollKeysResponse,
     // Failed to register local device with GCM. This registration is required
     // in order for CryptAuth to send GCM messages to the local device,
     // requesting it to re-enroll or re-sync.
-    kErrorGcmRegistrationFailed = 31,
+    kErrorGcmRegistrationFailed,
     // Could not retrieve ClientAppMetadata from ClientAppMetadataProvider.
-    kErrorClientAppMetadataFetchFailed = 32,
-    // The enrollment manager timed out waiting for GCM registration.
-    kErrorTimeoutWaitingForGcmRegistration = 33,
-    // The enrollment manager timed out waiting for ClientAppMetadata.
-    kErrorTimeoutWaitingForClientAppMetadata = 34,
-    // Used for UMA logs.
-    kMaxValue = kErrorTimeoutWaitingForClientAppMetadata
+    kErrorClientAppMetadataFetchFailed
   };
 
   CryptAuthEnrollmentResult(

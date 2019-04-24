@@ -6,6 +6,8 @@
  * Custom bindings for the mime handler API.
  */
 
+var binding =
+    apiBridge || require('binding').Binding.create('mimeHandlerPrivate');
 var utils = require('utils');
 
 var NO_STREAM_ERROR =
@@ -57,7 +59,7 @@ function constructStreamInfoDict(streamInfo) {
   };
 }
 
-apiBridge.registerCustomHook(function(bindingsAPI) {
+binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
   utils.handleRequestWithPromiseDoNotUse(
       apiFunctions, 'mimeHandlerPrivate', 'getStreamInfo',
@@ -79,3 +81,6 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     return beforeUnloadControlPtr.setShowBeforeUnloadDialog(showDialog);
   });
 });
+
+if (!apiBridge)
+  exports.$set('binding', binding.generate());

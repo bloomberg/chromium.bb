@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "net/base/completion_callback.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/net_error_details.h"

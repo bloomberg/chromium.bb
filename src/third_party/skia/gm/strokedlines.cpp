@@ -5,14 +5,14 @@
  * found in the LICENSE file.
  */
 
+#include "gm.h"
+#include "sk_tool_utils.h"
 #include "SkDashPathEffect.h"
 #include "SkGradientShader.h"
 #include "SkMaskFilter.h"
 #include "SkPaint.h"
 #include "SkPath.h"
 #include "SkPoint3.h"
-#include "ToolUtils.h"
-#include "gm.h"
 
 constexpr int kNumColumns = 6;
 constexpr int kNumRows = 8;
@@ -25,8 +25,7 @@ static void draw_fins(SkCanvas* canvas, const SkPoint& offset, float angle, cons
     SkScalar cos, sin;
 
     // first fin
-    sin = SkScalarSin(angle + (SK_ScalarPI/4));
-    cos = SkScalarCos(angle + (SK_ScalarPI/4));
+    sin = SkScalarSinCos(angle + (SK_ScalarPI/4), &cos);
     sin *= kRadius / 2.0f;
     cos *= kRadius / 2.0f;
 
@@ -36,8 +35,7 @@ static void draw_fins(SkCanvas* canvas, const SkPoint& offset, float angle, cons
     canvas->drawPath(p, paint);
 
     // second fin
-    sin = SkScalarSin(angle - (SK_ScalarPI/4));
-    cos = SkScalarCos(angle - (SK_ScalarPI/4));
+    sin = SkScalarSinCos(angle - (SK_ScalarPI/4), &cos);
     sin *= kRadius / 2.0f;
     cos *= kRadius / 2.0f;
 
@@ -54,8 +52,7 @@ static void draw_snowflake(SkCanvas* canvas, const SkPaint& paint) {
 
     SkScalar sin, cos, angle = 0.0f;
     for (int i = 0; i < kNumSpokes/2; ++i, angle += SK_ScalarPI/(kNumSpokes/2)) {
-        sin = SkScalarSin(angle);
-        cos = SkScalarCos(angle);
+        sin = SkScalarSinCos(angle, &cos);
         sin *= kRadius;
         cos *= kRadius;
 
@@ -102,7 +99,9 @@ namespace skiagm {
 // Various shaders are applied to ensure the coordinate spaces work out right.
 class StrokedLinesGM : public GM {
 public:
-    StrokedLinesGM() { this->setBGColor(ToolUtils::color_to_565(0xFF1A65D7)); }
+    StrokedLinesGM() {
+        this->setBGColor(sk_tool_utils::color_to_565(0xFF1A65D7));
+    }
 
 protected:
     SkString onShortName() override {
@@ -127,7 +126,8 @@ protected:
             SkPoint pts[] = { {-kRadius-kPad, -kRadius-kPad }, { kRadius+kPad, kRadius+kPad } };
 
             SkPaint p;
-            p.setShader(SkGradientShader::MakeLinear(pts, colors, nullptr, 2, SkTileMode::kClamp));
+            p.setShader(SkGradientShader::MakeLinear(pts, colors, nullptr, 2,
+                                                     SkShader::kClamp_TileMode, 0, nullptr));
 
             fPaints.push_back(p);
         }
@@ -153,7 +153,10 @@ protected:
             m.preScale(3.0f, 3.0f);
 
             SkPaint p;
-            p.setShader(bm.makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat, &m));
+            p.setShader(SkShader::MakeBitmapShader(bm,
+                                                   SkShader::kRepeat_TileMode,
+                                                   SkShader::kRepeat_TileMode,
+                                                   &m));
             fPaints.push_back(p);
         }
         {

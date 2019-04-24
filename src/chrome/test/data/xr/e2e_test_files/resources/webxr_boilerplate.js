@@ -85,7 +85,7 @@ function onRequestSession() {
   switch (sessionTypeToRequest) {
     case sessionTypes.IMMERSIVE:
       console.info('Requesting immersive VR session');
-      navigator.xr.requestSession('immersive-vr').then( (session) => {
+      navigator.xr.requestSession({mode: 'immersive-vr'}).then( (session) => {
         console.info('Immersive VR session request succeeded');
         sessionInfos[sessionTypes.IMMERSIVE].currentSession = session;
         onSessionStarted(session);
@@ -95,14 +95,17 @@ function onRequestSession() {
       break;
     case sessionTypes.AR:
       console.info('Requesting Immersive AR session');
-      navigator.xr.requestSession('immersive-ar').then((session) => {
+      navigator.xr.requestSession({mode: 'immersive-ar'}).then((session) => {
         console.info('Immersive AR session request succeeded');
         sessionInfos[sessionTypes.AR].currentSession = session;
         onSessionStarted(session);
       }, (error) => {
         console.info('Immersive AR session request rejected with: ' + error);
         console.info('Attempting to fall back to legacy AR mode');
-        navigator.xr.requestSession('legacy-inline-ar').then(
+        let sessionOptions = {
+          mode: 'legacy-inline-ar'
+        }
+        navigator.xr.requestSession(sessionOptions).then(
             (session) => {
           session.updateRenderState({
               outputContext: webglCanvas.getContext('xrpresent')
@@ -191,24 +194,11 @@ function onXRFrame(t, frame) {
   hasPresentedFrame = true;
 }
 
-function requestMagicWindowSession() {
+if (navigator.xr) {
+
   // Set up an inline session (magic window) drawing into the full screen canvas
   // on the page
   let ctx = webglCanvas.getContext('xrpresent');
-  navigator.xr.requestSession('inline')
-  .then((session) => {
-    session.updateRenderState({
-      outputContext: ctx
-    });
-    onSessionStarted(session);
-  })
-  .then( () => {
-    initializationSteps['magicWindowStarted'] = true;
-  });
-}
-
-if (navigator.xr) {
-
   // WebXR for VR tests want an inline session to be automatically
   // created on page load to reduce the amount of boilerplate code necessary.
   // However, doing so during AR tests currently fails due to AR sessions
@@ -217,13 +207,15 @@ if (navigator.xr) {
   // inline session creation.
   if (typeof shouldAutoCreateNonImmersiveSession === 'undefined'
       || shouldAutoCreateNonImmersiveSession === true) {
-
-    // Separate if statement to keep the logic around setting initialization
-    // steps cleaner.
-    if (typeof shouldDeferNonImmersiveSessionCreation === 'undefined'
-      || shouldDeferNonImmersiveSessionCreation === false) {
-      requestMagicWindowSession();
-    }
+    navigator.xr.requestSession()
+        .then((session) => {
+          session.updateRenderState({
+            outputContext: ctx
+          });
+          onSessionStarted(session);
+        }).then( () => {
+          initializationSteps['magicWindowStarted'] = true;
+        });
   } else {
     initializationSteps['magicWindowStarted'] = true;
   }

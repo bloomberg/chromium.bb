@@ -19,11 +19,12 @@ namespace chromecast {
 class TaskRunnerImpl;
 
 namespace media {
+struct EncryptionScheme;
 
 class BackendDecryptor : public StreamDecryptor,
                          MediaPipelineBackend::AudioDecryptor::Delegate {
  public:
-  explicit BackendDecryptor(EncryptionScheme scheme);
+  explicit BackendDecryptor(const EncryptionScheme& scheme);
   ~BackendDecryptor() override;
 
   // StreamDecryptor implementation:

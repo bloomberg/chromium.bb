@@ -100,7 +100,7 @@ TEST(OriginAccessEntryTest, AllowSubdomainsTest) {
   }
 }
 
-TEST(OriginAccessEntryTest, AllowRegistrableDomainsTest) {
+TEST(OriginAccessEntryTest, AllowRegisterableDomainsTest) {
   struct TestCase {
     const std::string protocol;
     const std::string host;
@@ -143,17 +143,17 @@ TEST(OriginAccessEntryTest, AllowRegistrableDomainsTest) {
     url::Origin origin_to_test = url::Origin::Create(GURL(test.origin));
     OriginAccessEntry entry1(
         test.protocol, test.host,
-        mojom::CorsOriginAccessMatchMode::kAllowRegistrableDomains,
+        mojom::CorsOriginAccessMatchMode::kAllowRegisterableDomains,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 
     SCOPED_TRACE(testing::Message()
                  << "Host: " << test.host << ", Origin: " << test.origin
-                 << ", Domain: " << entry1.registrable_domain());
+                 << ", Domain: " << entry1.registerable_domain());
     EXPECT_EQ(test.expected, entry1.MatchesOrigin(origin_to_test));
   }
 }
 
-TEST(OriginAccessEntryTest, AllowRegistrableDomainsTestWithDottedSuffix) {
+TEST(OriginAccessEntryTest, AllowRegisterableDomainsTestWithDottedSuffix) {
   struct TestCase {
     const std::string protocol;
     const std::string host;
@@ -197,12 +197,12 @@ TEST(OriginAccessEntryTest, AllowRegistrableDomainsTestWithDottedSuffix) {
     url::Origin origin_to_test = url::Origin::Create(GURL(test.origin));
     OriginAccessEntry entry1(
         test.protocol, test.host,
-        mojom::CorsOriginAccessMatchMode::kAllowRegistrableDomains,
+        mojom::CorsOriginAccessMatchMode::kAllowRegisterableDomains,
         mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
 
     SCOPED_TRACE(testing::Message()
                  << "Host: " << test.host << ", Origin: " << test.origin
-                 << ", Domain: " << entry1.registrable_domain());
+                 << ", Domain: " << entry1.registerable_domain());
     EXPECT_EQ(test.expected, entry1.MatchesOrigin(origin_to_test));
   }
 }

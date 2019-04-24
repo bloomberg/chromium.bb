@@ -6,6 +6,7 @@
 #define CC_BASE_DELAYED_UNIQUE_NOTIFIER_H_
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/base_export.h"
 
@@ -22,13 +23,10 @@ class CC_BASE_EXPORT DelayedUniqueNotifier {
   DelayedUniqueNotifier(base::SequencedTaskRunner* task_runner,
                         base::RepeatingClosure closure,
                         const base::TimeDelta& delay);
-  DelayedUniqueNotifier(const DelayedUniqueNotifier&) = delete;
 
   // Destroying the notifier will ensure that no further notifications will
   // happen from this class.
   virtual ~DelayedUniqueNotifier();
-
-  DelayedUniqueNotifier& operator=(const DelayedUniqueNotifier&) = delete;
 
   // Schedule a notification to be run. If another notification is already
   // pending, then it will happen in (at least) given delay from now. That is,
@@ -68,6 +66,8 @@ class CC_BASE_EXPORT DelayedUniqueNotifier {
   bool notification_pending_;
 
   base::WeakPtrFactory<DelayedUniqueNotifier> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelayedUniqueNotifier);
 };
 
 }  // namespace cc

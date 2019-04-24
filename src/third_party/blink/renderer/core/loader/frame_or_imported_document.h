@@ -18,6 +18,8 @@ class LocalFrame;
 // the differences between Document-ish things behind FrameFetchContext:
 // - An imported Document
 //   (document_loader_ is null, document_ is non-null),
+// - A DocumentLoader that has not yet committed its navigation
+//   (document_loader_ is non-null, document_ is null), or
 // - A DocumentLoader that has committed its navigation
 //   (document_loader_ is non-null, document_ is non-null).
 //
@@ -30,8 +32,8 @@ class CORE_EXPORT FrameOrImportedDocument final
   // Creates a FrameOrImportedDocument associated with a LocalFrame (which is,
   // loader.GetFrame() which cannot be null). This object works until the
   // associated frame is detached.
-  FrameOrImportedDocument(DocumentLoader& loader, Document& committed_document)
-      : document_loader_(loader), document_(committed_document) {}
+  explicit FrameOrImportedDocument(DocumentLoader& loader)
+      : document_loader_(loader) {}
 
   // Creates a FrameOrImportedDocument associated with an imported document.
   // This object works until |document| is shut-down.
@@ -58,14 +60,20 @@ class CORE_EXPORT FrameOrImportedDocument final
 
   // When this object is associated with a frame with a committed document,
   // returns it.
+  // When this object is associated with a frame with no committed document,
+  // returns nullptr
   // When this object is associated with an imported document, returns it.
-  Document& GetDocument() const { return *document_; }
+  Document* GetDocument() const { return document_; }
+
+  // Provide a committed document to |this|. |this| must be a
+  // FrameOrImportedDocument associated with a frame.
+  void UpdateDocument(Document&);
 
   void Trace(Visitor* visitor);
 
  private:
   const Member<DocumentLoader> document_loader_;
-  const Member<Document> document_;
+  Member<Document> document_;
 };
 
 }  // namespace blink

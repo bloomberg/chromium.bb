@@ -656,11 +656,10 @@ class Simulator : public DecoderVisitor, public SimulatorBase {
     USE(size);
   }
 
-  V8_EXPORT_PRIVATE explicit Simulator(
-      Decoder<DispatchingDecoderVisitor>* decoder, Isolate* isolate = nullptr,
-      FILE* stream = stderr);
+  explicit Simulator(Decoder<DispatchingDecoderVisitor>* decoder,
+                     Isolate* isolate = nullptr, FILE* stream = stderr);
   Simulator();
-  V8_EXPORT_PRIVATE ~Simulator();
+  ~Simulator();
 
   // System functions.
 
@@ -745,7 +744,7 @@ class Simulator : public DecoderVisitor, public SimulatorBase {
   // Accessor to the internal simulator stack area.
   uintptr_t StackLimit(uintptr_t c_limit) const;
 
-  V8_EXPORT_PRIVATE void ResetState();
+  void ResetState();
 
   void DoRuntimeCall(Instruction* instr);
 
@@ -753,7 +752,7 @@ class Simulator : public DecoderVisitor, public SimulatorBase {
   static const Instruction* kEndOfSimAddress;
   void DecodeInstruction();
   void Run();
-  V8_EXPORT_PRIVATE void RunFrom(Instruction* start);
+  void RunFrom(Instruction* start);
 
   // Simulation helpers.
   template <typename T>

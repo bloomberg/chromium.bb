@@ -40,14 +40,10 @@ namespace blink {
 //
 class PLATFORM_EXPORT SparseHeapBitmap {
  public:
-  explicit SparseHeapBitmap(Address base) : base_(base), size_(1) {
-    DCHECK(!(reinterpret_cast<uintptr_t>(base_) & kPointerAlignmentMask));
-    static_assert(kPointerAlignmentMask <= kAllocationMask,
-                  "address shift exceeds heap pointer alignment");
-    // For now, only recognize 8 and 4.
-    static_assert(alignof(void*) == 8 || alignof(void*) == 4,
-                  "unsupported pointer alignment");
+  static std::unique_ptr<SparseHeapBitmap> Create(Address base) {
+    return base::WrapUnique(new SparseHeapBitmap(base));
   }
+
   ~SparseHeapBitmap() = default;
 
   // Return the sparse bitmap subtree that at least covers the
@@ -85,6 +81,15 @@ class PLATFORM_EXPORT SparseHeapBitmap {
   size_t IntervalCount() const;
 
  private:
+  explicit SparseHeapBitmap(Address base) : base_(base), size_(1) {
+    DCHECK(!(reinterpret_cast<uintptr_t>(base_) & kPointerAlignmentMask));
+    static_assert(kPointerAlignmentMask <= kAllocationMask,
+                  "address shift exceeds heap pointer alignment");
+    // For now, only recognize 8 and 4.
+    static_assert(alignof(void*) == 8 || alignof(void*) == 4,
+                  "unsupported pointer alignment");
+  }
+
   Address Base() const { return base_; }
   size_t size() const { return size_; }
   Address end() const { return Base() + (size_ - 1); }

@@ -48,11 +48,18 @@
 
   </style>
   <script>
+    if (window.testRunner) {
+      testRunner.waitUntilDone();
+      testRunner.dumpAsTextWithPixelResults();
+    }
+
     function doTest()
     {
       runAfterLayoutAndPaint(function() {
         document.getElementById("stretch").style.left = "-100px";
-      }, true);
+        if (window.testRunner)
+          testRunner.notifyDone();
+      });
     }
 
     window.addEventListener('load', doTest, false);

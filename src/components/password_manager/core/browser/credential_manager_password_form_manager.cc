@@ -48,8 +48,10 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
 CredentialManagerPasswordFormManager::~CredentialManagerPasswordFormManager() {
 }
 
-void CredentialManagerPasswordFormManager::OnFetchCompleted() {
-  PasswordFormManager::OnFetchCompleted();
+void CredentialManagerPasswordFormManager::ProcessMatches(
+    const std::vector<const PasswordForm*>& non_federated,
+    size_t filtered_count) {
+  PasswordFormManager::ProcessMatches(non_federated, filtered_count);
 
   // Mark the form as "preferred", as we've been told by the API that this is
   // indeed the credential set that the user used to sign into the site.
@@ -57,8 +59,8 @@ void CredentialManagerPasswordFormManager::OnFetchCompleted() {
   ProvisionallySave(*saved_form_);
 
   // Notify the delegate. This might result in deleting |this|, while
-  // OnFetchCompleted is being called from FormFetcherImpl, owned by |this|. If
-  // done directly, once OnFetchCompleted returns, the FormFetcherImpl will be
+  // ProcessMatches is being called from FormFetcherImpl, owned by |this|. If
+  // done directly, once ProcessMatches returns, the FormFetcherImpl will be
   // used after free. Therefore the call is posted to a separate task.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

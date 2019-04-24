@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -21,6 +20,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -216,10 +216,9 @@ FetchRespondWithObserver* FetchRespondWithObserver::Create(
 void FetchRespondWithObserver::OnResponseRejected(
     ServiceWorkerResponseError error) {
   DCHECK(GetExecutionContext());
-  GetExecutionContext()->AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                             mojom::ConsoleMessageLevel::kWarning,
-                             GetMessageForResponseError(error, request_url_)));
+  GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+      kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
+      GetMessageForResponseError(error, request_url_)));
 
   // The default value of WebServiceWorkerResponse's status is 0, which maps
   // to a network error.
@@ -367,7 +366,6 @@ void FetchRespondWithObserver::OnResponseFulfilled(
 }
 
 void FetchRespondWithObserver::OnNoResponse() {
-  DCHECK(GetExecutionContext());
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
       ->RespondToFetchEventWithNoResponse(event_id_, event_dispatch_time_,
                                           base::TimeTicks::Now());

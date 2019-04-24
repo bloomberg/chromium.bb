@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/offline_items_collection/core/launch_location.h"
-#include "components/offline_items_collection/core/rename_result.h"
 #include "url/gurl.h"
 
 namespace offline_items_collection {
@@ -35,8 +34,6 @@ class OfflineContentProvider {
   using MultipleItemCallback = base::OnceCallback<void(const OfflineItemList&)>;
   using SingleItemCallback =
       base::OnceCallback<void(const base::Optional<OfflineItem>&)>;
-  using RenameCallback = base::OnceCallback<void(RenameResult)>;
-  using DownloadRenameCallback = base::OnceCallback<RenameCallback>;
 
   // An observer class that should be notified of relevant changes to the
   // underlying data source.
@@ -117,13 +114,6 @@ class OfflineContentProvider {
   // etc.).
   virtual void GetShareInfoForItem(const ContentId& id,
                                    ShareCallback callback) = 0;
-
-  // Called to rename a downloaded OfflineItem represented by |id|, new name is
-  // given by |name|. Implementer should post and replies the results of rename
-  // attempt.
-  virtual void RenameItem(const ContentId& id,
-                          const std::string& name,
-                          RenameCallback callback) = 0;
 
   // Adds an observer that should be notified of OfflineItem list modifications.
   virtual void AddObserver(Observer* observer) = 0;

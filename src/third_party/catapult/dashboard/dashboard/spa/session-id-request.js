@@ -9,18 +9,17 @@ tr.exportTo('cp', () => {
       super(options);
       this.method_ = 'POST';
       this.body_ = new FormData();
-      this.body_.set('page_state', JSON.stringify(options.sessionState));
+      this.body.set('page_state', JSON.stringify(options.sessionState));
     }
 
     get url_() {
-      return SessionIdRequest.URL;
+      return '/short_uri';
     }
 
     postProcess_(json) {
       return json.sid;
     }
   }
-  SessionIdRequest.URL = '/short_uri';
 
   return {SessionIdRequest};
 });

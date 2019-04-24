@@ -10,8 +10,7 @@
         "export_header": "content/common/content_export.h",
         "options": [
             {
-                "domain": "BackgroundService",
-                "async": ["startObserving"]
+                "domain": "BackgroundService"
             },
             {
                 "domain": "Browser",
@@ -50,16 +49,12 @@
                 "async": ["clearBrowserCookies", "clearBrowserCache", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "continueInterceptedRequest", "getResponseBodyForInterception", "takeResponseBodyForInterceptionAsStream"]
             },
             {
-                "domain": "Overlay",
-                "include": ["setInspectMode", "setPausedInDebuggerMessage"]
-            },
-            {
                 "domain": "Page",
                 "include": ["enable", "disable", "reload", "navigate", "stopLoading", "getNavigationHistory", "navigateToHistoryEntry", "resetNavigationHistory", "captureScreenshot",
                     "startScreencast", "stopScreencast", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled",
-                    "printToPDF", "bringToFront", "setDownloadBehavior", "getAppManifest", "crash", "close", "setWebLifecycleState", "captureSnapshot", "getInstallabilityErrors"],
+                    "printToPDF", "bringToFront", "setDownloadBehavior", "getAppManifest", "crash", "close", "setWebLifecycleState", "captureSnapshot"],
                 "include_events": ["colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "screencastVisibilityChanged", "screencastFrame"],
-                "async": ["captureScreenshot", "printToPDF", "navigate", "getAppManifest", "reload", "captureSnapshot", "getInstallabilityErrors"]
+                "async": ["captureScreenshot", "printToPDF", "navigate", "getAppManifest", "reload", "captureSnapshot"]
             },
             {
                 "domain": "Runtime",
@@ -98,7 +93,7 @@
             },
             {
                 "domain": "Fetch",
-                "async": ["enable", "continueRequest", "failRequest", "fulfillRequest", "continueWithAuth", "getResponseBody", "takeResponseBodyAsStream"]
+                "async": ["continueRequest", "failRequest", "fulfillRequest", "continueWithAuth", "getResponseBody", "takeResponseBodyAsStream"]
             }
         ]
     },

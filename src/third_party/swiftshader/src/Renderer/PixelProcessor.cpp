@@ -933,7 +933,7 @@ namespace sw
 	void PixelProcessor::setRoutineCacheSize(int cacheSize)
 	{
 		delete routineCache;
-		routineCache = new RoutineCache<State>(clamp(cacheSize, 1, 65536));
+		routineCache = new RoutineCache<State>(clamp(cacheSize, 1, 65536), precachePixel ? "sw-pixel" : 0);
 	}
 
 	void PixelProcessor::setFogRanges(float start, float end)

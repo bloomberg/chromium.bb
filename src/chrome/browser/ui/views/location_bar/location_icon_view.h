@@ -32,7 +32,7 @@ class LocationIconView : public IconLabelBubbleView {
     virtual content::WebContents* GetWebContents() = 0;
 
     // Determines whether the omnibox (if any) is editing or empty.
-    virtual bool IsEditingOrEmpty() const = 0;
+    virtual bool IsEditingOrEmpty() = 0;
 
     // Called when the location icon is pressed, with the event.
     virtual void OnLocationIconPressed(const ui::MouseEvent& event) {}
@@ -95,10 +95,9 @@ class LocationIconView : public IconLabelBubbleView {
   base::string16 GetText() const;
 
   // Determines whether or not text should be shown (e.g Insecure/Secure).
-  // Always returns false if the text is empty or currently being edited.
   // Returns true if any of the following is true:
   // - the current page is explicitly secure or insecure.
-  // - the current page has a special scheme (chrome://, extension, file://).
+  // - the current page URL is a chrome-extension:// URL.
   bool ShouldShowText() const;
 
   const views::InkDrop* get_ink_drop_for_testing();

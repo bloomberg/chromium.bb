@@ -14,7 +14,7 @@
 #include <memory>
 #include <vector>
 
-#include "api/video/video_frame_type.h"
+#include "common_types.h"  // NOLINT(build/include)
 #include "modules/include/module_fec_types.h"
 
 namespace webrtc {
@@ -74,9 +74,8 @@ class FecController {
                                   int64_t round_trip_time_ms) = 0;
 
   // Informs of encoded output.
-  virtual void UpdateWithEncodedData(
-      size_t encoded_image_length,
-      VideoFrameType encoded_image_frametype) = 0;
+  virtual void UpdateWithEncodedData(size_t encoded_image_length,
+                                     FrameType encoded_image_frametype) = 0;
 
   // Returns whether this FEC Controller needs Loss Vector Mask as input.
   virtual bool UseLossVectorMask() = 0;

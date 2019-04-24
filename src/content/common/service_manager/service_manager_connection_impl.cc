@@ -21,10 +21,12 @@
 #include "content/common/child.mojom.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/service_names.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/constants.mojom.h"
+#include "services/service_manager/public/mojom/service_factory.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -49,6 +51,7 @@ ServiceManagerConnection::Factory* service_manager_connection_factory = nullptr;
 class ServiceManagerConnectionImpl::IOThreadContext
     : public base::RefCountedThreadSafe<IOThreadContext>,
       public service_manager::Service,
+      public service_manager::mojom::ServiceFactory,
       public mojom::Child {
  public:
   IOThreadContext(
@@ -115,14 +118,13 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   void AddServiceRequestHandler(const std::string& name,
                                 const ServiceRequestHandler& handler) {
-    AddServiceRequestHandlerWithCallback(
-        name,
-        base::BindRepeating(&WrapServiceRequestHandlerNoCallback, handler));
+    AddServiceRequestHandlerWithPID(
+        name, base::BindRepeating(&WrapServiceRequestHandlerNoPID, handler));
   }
 
-  void AddServiceRequestHandlerWithCallback(
+  void AddServiceRequestHandlerWithPID(
       const std::string& name,
-      const ServiceRequestHandlerWithCallback& handler) {
+      const ServiceRequestHandlerWithPID& handler) {
     io_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&ServiceManagerConnectionImpl::IOThreadContext::
@@ -172,12 +174,11 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   ~IOThreadContext() override {}
 
-  static void WrapServiceRequestHandlerNoCallback(
+  static void WrapServiceRequestHandlerNoPID(
       const ServiceRequestHandler& handler,
       service_manager::mojom::ServiceRequest request,
-      CreatePackagedServiceInstanceCallback callback) {
+      service_manager::mojom::PIDReceiverPtr pid_receiver) {
     handler.Run(std::move(request));
-    std::move(callback).Run(base::GetCurrentProcId());
   }
 
   void StartOnIOThread() {
@@ -211,6 +212,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
     // unwinds.
     scoped_refptr<IOThreadContext> keepalive(this);
 
+    factory_bindings_.CloseAllBindings();
     service_binding_.reset();
 
     ClearConnectionFiltersOnIOThread();
@@ -235,7 +237,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   void AddServiceRequestHandlerOnIoThread(
       const std::string& name,
-      const ServiceRequestHandlerWithCallback& handler) {
+      const ServiceRequestHandlerWithPID& handler) {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     auto result = request_handlers_.insert(std::make_pair(name, handler));
     DCHECK(result.second) << "ServiceRequestHandler for " << name
@@ -249,8 +251,13 @@ class ServiceManagerConnectionImpl::IOThreadContext
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle interface_pipe) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    if (source_info.identity.name() == mojom::kBrowserServiceName &&
-        interface_name == mojom::Child::Name_) {
+    if (source_info.identity.name() == service_manager::mojom::kServiceName &&
+        interface_name == service_manager::mojom::ServiceFactory::Name_) {
+      factory_bindings_.AddBinding(
+          this, service_manager::mojom::ServiceFactoryRequest(
+                    std::move(interface_pipe)));
+    } else if (source_info.identity.name() == mojom::kBrowserServiceName &&
+               interface_name == mojom::Child::Name_) {
       DCHECK(!child_binding_.is_bound());
       child_binding_.Bind(mojom::ChildRequest(std::move(interface_pipe)));
     } else {
@@ -266,31 +273,31 @@ class ServiceManagerConnectionImpl::IOThreadContext
     }
   }
 
-  void CreatePackagedServiceInstance(
-      const std::string& service_name,
-      mojo::PendingReceiver<service_manager::mojom::Service> receiver,
-      CreatePackagedServiceInstanceCallback callback) override {
-    DCHECK(io_thread_checker_.CalledOnValidThread());
-    service_manager::mojom::ServiceRequest request(std::move(receiver));
-    auto it = request_handlers_.find(service_name);
-    if (it == request_handlers_.end()) {
-      if (default_request_handler_) {
-        callback_task_runner_->PostTask(
-            FROM_HERE, base::BindOnce(default_request_handler_, service_name,
-                                      std::move(request)));
-      } else {
-        LOG(ERROR) << "Can't create service " << service_name
-                   << ". No handler found.";
-      }
-      std::move(callback).Run(base::nullopt);
-    } else {
-      it->second.Run(std::move(request), std::move(callback));
-    }
-  }
-
   void OnDisconnected() override {
     ClearConnectionFiltersOnIOThread();
     callback_task_runner_->PostTask(FROM_HERE, stop_callback_);
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  // service_manager::mojom::ServiceFactory:
+
+  void CreateService(
+      service_manager::mojom::ServiceRequest request,
+      const std::string& name,
+      service_manager::mojom::PIDReceiverPtr pid_receiver) override {
+    DCHECK(io_thread_checker_.CalledOnValidThread());
+    auto it = request_handlers_.find(name);
+    if (it == request_handlers_.end()) {
+      if (default_request_handler_) {
+        callback_task_runner_->PostTask(
+            FROM_HERE,
+            base::BindOnce(default_request_handler_, name, std::move(request)));
+      } else {
+        LOG(ERROR) << "Can't create service " << name << ". No handler found.";
+      }
+    } else {
+      it->second.Run(std::move(request), std::move(pid_receiver));
+    }
   }
 
   // mojom::Child:
@@ -316,6 +323,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
   base::Closure stop_callback_;
 
   std::unique_ptr<service_manager::ServiceBinding> service_binding_;
+  mojo::BindingSet<service_manager::mojom::ServiceFactory> factory_bindings_;
 
   // Not owned.
   MessageLoopObserver* message_loop_observer_ = nullptr;
@@ -326,7 +334,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
       GUARDED_BY(lock_);
   int next_filter_id_ GUARDED_BY(lock_) = kInvalidConnectionFilterId;
 
-  std::map<std::string, ServiceRequestHandlerWithCallback> request_handlers_;
+  std::map<std::string, ServiceRequestHandlerWithPID> request_handlers_;
 
   mojo::Binding<mojom::Child> child_binding_;
 
@@ -440,10 +448,10 @@ void ServiceManagerConnectionImpl::AddServiceRequestHandler(
   context_->AddServiceRequestHandler(name, handler);
 }
 
-void ServiceManagerConnectionImpl::AddServiceRequestHandlerWithCallback(
+void ServiceManagerConnectionImpl::AddServiceRequestHandlerWithPID(
     const std::string& name,
-    const ServiceRequestHandlerWithCallback& handler) {
-  context_->AddServiceRequestHandlerWithCallback(name, handler);
+    const ServiceRequestHandlerWithPID& handler) {
+  context_->AddServiceRequestHandlerWithPID(name, handler);
 }
 
 void ServiceManagerConnectionImpl::SetDefaultServiceRequestHandler(

@@ -24,6 +24,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 using media::VideoFrame;
@@ -636,12 +637,11 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
 void MailboxHoldersReleased(const gpu::SyncToken& sync_token) {}
 }  // namespace
 
-// Test that PaintCanvasVideoRenderer::Paint doesn't crash when GrContext is
-// unable to wrap a video frame texture (eg due to being abandoned). The mock
-// GrContext will fail to wrap the texture even if it is not abandoned, but we
-// leave the abandonContext call in place, in case that behavior changes.
+// Test that PaintCanvasVideoRendererTest::Paint doesn't crash when GrContext is
+// abandoned.
 TEST_F(PaintCanvasVideoRendererTest, ContextLost) {
-  sk_sp<GrContext> gr_context = GrContext::MakeMock(nullptr);
+  sk_sp<const GrGLInterface> null_interface(GrGLCreateNullInterface());
+  sk_sp<GrContext> gr_context = GrContext::MakeGL(std::move(null_interface));
   gr_context->abandonContext();
 
   cc::SkiaPaintCanvas canvas(AllocBitmap(kWidth, kHeight));

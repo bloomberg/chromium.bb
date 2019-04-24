@@ -30,9 +30,8 @@ void BlockFlowPaintInvalidator::InvalidatePaintForOverhangingFloatsInternal(
           floating_object->GetLayoutObject()->IsDescendantOf(&block_flow_)))) {
       LayoutBox* floating_box = floating_object->GetLayoutObject();
       floating_box->SetShouldDoFullPaintInvalidation();
-      auto* floating_block_flow = DynamicTo<LayoutBlockFlow>(floating_box);
-      if (floating_block_flow)
-        BlockFlowPaintInvalidator(*floating_block_flow)
+      if (floating_box->IsLayoutBlockFlow())
+        BlockFlowPaintInvalidator(*ToLayoutBlockFlow(floating_box))
             .InvalidatePaintForOverhangingFloatsInternal(
                 kDontInvalidateDescendants);
     }

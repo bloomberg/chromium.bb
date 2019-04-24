@@ -40,16 +40,16 @@ void MemoryOptimizer::Optimize() {
 }
 
 MemoryOptimizer::AllocationGroup::AllocationGroup(Node* node,
-                                                  AllocationType allocation,
+                                                  PretenureFlag pretenure,
                                                   Zone* zone)
-    : node_ids_(zone), allocation_(allocation), size_(nullptr) {
+    : node_ids_(zone), pretenure_(pretenure), size_(nullptr) {
   node_ids_.insert(node->id());
 }
 
 MemoryOptimizer::AllocationGroup::AllocationGroup(Node* node,
-                                                  AllocationType allocation,
+                                                  PretenureFlag pretenure,
                                                   Node* size, Zone* zone)
-    : node_ids_(zone), allocation_(allocation), size_(size) {
+    : node_ids_(zone), pretenure_(pretenure), size_(size) {
   node_ids_.insert(node->id());
 }
 
@@ -71,14 +71,34 @@ MemoryOptimizer::AllocationState::AllocationState(AllocationGroup* group,
                                                   intptr_t size, Node* top)
     : group_(group), size_(size), top_(top) {}
 
-bool MemoryOptimizer::AllocationState::IsYoungGenerationAllocation() const {
-  return group() && group()->IsYoungGenerationAllocation();
+bool MemoryOptimizer::AllocationState::IsNewSpaceAllocation() const {
+  return group() && group()->IsNewSpaceAllocation();
 }
 
-namespace {
-
-bool CanAllocate(const Node* node) {
+void MemoryOptimizer::VisitNode(Node* node, AllocationState const* state) {
+  DCHECK(!node->IsDead());
+  DCHECK_LT(0, node->op()->EffectInputCount());
   switch (node->opcode()) {
+    case IrOpcode::kAllocate:
+      // Allocate nodes were purged from the graph in effect-control
+      // linearization.
+      UNREACHABLE();
+    case IrOpcode::kAllocateRaw:
+      return VisitAllocateRaw(node, state);
+    case IrOpcode::kCall:
+      return VisitCall(node, state);
+    case IrOpcode::kCallWithCallerSavedRegisters:
+      return VisitCallWithCallerSavedRegisters(node, state);
+    case IrOpcode::kLoadElement:
+      return VisitLoadElement(node, state);
+    case IrOpcode::kLoadField:
+      return VisitLoadField(node, state);
+    case IrOpcode::kStoreElement:
+      return VisitStoreElement(node, state);
+    case IrOpcode::kStoreField:
+      return VisitStoreField(node, state);
+    case IrOpcode::kStore:
+      return VisitStore(node, state);
     case IrOpcode::kBitcastTaggedToWord:
     case IrOpcode::kBitcastWordToTagged:
     case IrOpcode::kComment:
@@ -88,14 +108,10 @@ bool CanAllocate(const Node* node) {
     case IrOpcode::kDeoptimizeUnless:
     case IrOpcode::kIfException:
     case IrOpcode::kLoad:
-    case IrOpcode::kLoadElement:
-    case IrOpcode::kLoadField:
     case IrOpcode::kPoisonedLoad:
     case IrOpcode::kProtectedLoad:
     case IrOpcode::kProtectedStore:
     case IrOpcode::kRetain:
-    case IrOpcode::kStoreElement:
-    case IrOpcode::kStoreField:
     case IrOpcode::kTaggedPoisonOnSpeculation:
     case IrOpcode::kUnalignedLoad:
     case IrOpcode::kUnalignedStore:
@@ -130,83 +146,10 @@ bool CanAllocate(const Node* node) {
     case IrOpcode::kWord64AtomicSub:
     case IrOpcode::kWord64AtomicXor:
     case IrOpcode::kWord64PoisonOnSpeculation:
-      return false;
-
-    case IrOpcode::kCall:
-    case IrOpcode::kCallWithCallerSavedRegisters:
-      return !(CallDescriptorOf(node->op())->flags() &
-               CallDescriptor::kNoAllocate);
-
-    case IrOpcode::kStore:
-      // Store is not safe because it could be part of CSA's bump pointer
-      // allocation(?).
-      return true;
-
+      // These operations cannot trigger GC.
+      return VisitOtherEffect(node, state);
     default:
       break;
-  }
-  return true;
-}
-
-bool CanLoopAllocate(Node* loop_effect_phi, Zone* temp_zone) {
-  Node* const control = NodeProperties::GetControlInput(loop_effect_phi);
-
-  ZoneQueue<Node*> queue(temp_zone);
-  ZoneSet<Node*> visited(temp_zone);
-  visited.insert(loop_effect_phi);
-
-  // Start the effect chain walk from the loop back edges.
-  for (int i = 1; i < control->InputCount(); ++i) {
-    queue.push(loop_effect_phi->InputAt(i));
-  }
-
-  while (!queue.empty()) {
-    Node* const current = queue.front();
-    queue.pop();
-    if (visited.find(current) == visited.end()) {
-      visited.insert(current);
-
-      if (CanAllocate(current)) return true;
-
-      for (int i = 0; i < current->op()->EffectInputCount(); ++i) {
-        queue.push(NodeProperties::GetEffectInput(current, i));
-      }
-    }
-  }
-  return false;
-}
-
-}  // namespace
-
-void MemoryOptimizer::VisitNode(Node* node, AllocationState const* state) {
-  DCHECK(!node->IsDead());
-  DCHECK_LT(0, node->op()->EffectInputCount());
-  switch (node->opcode()) {
-    case IrOpcode::kAllocate:
-      // Allocate nodes were purged from the graph in effect-control
-      // linearization.
-      UNREACHABLE();
-    case IrOpcode::kAllocateRaw:
-      return VisitAllocateRaw(node, state);
-    case IrOpcode::kCall:
-      return VisitCall(node, state);
-    case IrOpcode::kCallWithCallerSavedRegisters:
-      return VisitCallWithCallerSavedRegisters(node, state);
-    case IrOpcode::kLoadElement:
-      return VisitLoadElement(node, state);
-    case IrOpcode::kLoadField:
-      return VisitLoadField(node, state);
-    case IrOpcode::kStoreElement:
-      return VisitStoreElement(node, state);
-    case IrOpcode::kStoreField:
-      return VisitStoreField(node, state);
-    case IrOpcode::kStore:
-      return VisitStore(node, state);
-    default:
-      if (!CanAllocate(node)) {
-        // These operations cannot trigger GC.
-        return VisitOtherEffect(node, state);
-      }
   }
   DCHECK_EQ(0, node->op()->EffectOutputCount());
 }
@@ -223,33 +166,33 @@ void MemoryOptimizer::VisitAllocateRaw(Node* node,
 
   gasm()->Reset(effect, control);
 
-  AllocationType allocation = AllocationTypeOf(node->op());
+  PretenureFlag pretenure = PretenureFlagOf(node->op());
 
   // Propagate tenuring from outer allocations to inner allocations, i.e.
   // when we allocate an object in old space and store a newly allocated
   // child object into the pretenured object, then the newly allocated
   // child object also should get pretenured to old space.
-  if (allocation == AllocationType::kOld) {
+  if (pretenure == TENURED) {
     for (Edge const edge : node->use_edges()) {
       Node* const user = edge.from();
       if (user->opcode() == IrOpcode::kStoreField && edge.index() == 0) {
         Node* const child = user->InputAt(1);
         if (child->opcode() == IrOpcode::kAllocateRaw &&
-            AllocationTypeOf(child->op()) == AllocationType::kYoung) {
+            PretenureFlagOf(child->op()) == NOT_TENURED) {
           NodeProperties::ChangeOp(child, node->op());
           break;
         }
       }
     }
   } else {
-    DCHECK_EQ(AllocationType::kYoung, allocation);
+    DCHECK_EQ(NOT_TENURED, pretenure);
     for (Edge const edge : node->use_edges()) {
       Node* const user = edge.from();
       if (user->opcode() == IrOpcode::kStoreField && edge.index() == 1) {
         Node* const parent = user->InputAt(0);
         if (parent->opcode() == IrOpcode::kAllocateRaw &&
-            AllocationTypeOf(parent->op()) == AllocationType::kOld) {
-          allocation = AllocationType::kOld;
+            PretenureFlagOf(parent->op()) == TENURED) {
+          pretenure = TENURED;
           break;
         }
       }
@@ -258,11 +201,11 @@ void MemoryOptimizer::VisitAllocateRaw(Node* node,
 
   // Determine the top/limit addresses.
   Node* top_address = __ ExternalConstant(
-      allocation == AllocationType::kYoung
+      pretenure == NOT_TENURED
           ? ExternalReference::new_space_allocation_top_address(isolate())
           : ExternalReference::old_space_allocation_top_address(isolate()));
   Node* limit_address = __ ExternalConstant(
-      allocation == AllocationType::kYoung
+      pretenure == NOT_TENURED
           ? ExternalReference::new_space_allocation_limit_address(isolate())
           : ExternalReference::old_space_allocation_limit_address(isolate()));
 
@@ -273,7 +216,7 @@ void MemoryOptimizer::VisitAllocateRaw(Node* node,
     intptr_t const object_size = m.Value();
     if (allocation_folding_ == AllocationFolding::kDoAllocationFolding &&
         state->size() <= kMaxRegularHeapObjectSize - object_size &&
-        state->group()->allocation() == allocation) {
+        state->group()->pretenure() == pretenure) {
       // We can fold this Allocate {node} into the allocation {group}
       // represented by the given {state}. Compute the upper bound for
       // the new {state}.
@@ -331,11 +274,10 @@ void MemoryOptimizer::VisitAllocateRaw(Node* node,
 
       __ Bind(&call_runtime);
       {
-        Node* target = allocation == AllocationType::kYoung
-                           ? __
-                             AllocateInYoungGenerationStubConstant()
-                           : __
-                             AllocateInOldGenerationStubConstant();
+        Node* target =
+            pretenure == NOT_TENURED ? __ AllocateInNewSpaceStubConstant()
+                                     : __
+                                       AllocateInOldSpaceStubConstant();
         if (!allocate_operator_.is_set()) {
           auto descriptor = AllocateDescriptor{};
           auto call_descriptor = Linkage::GetStubCallDescriptor(
@@ -363,7 +305,7 @@ void MemoryOptimizer::VisitAllocateRaw(Node* node,
 
       // Start a new allocation group.
       AllocationGroup* group =
-          new (zone()) AllocationGroup(value, allocation, size, zone());
+          new (zone()) AllocationGroup(value, pretenure, size, zone());
       state = AllocationState::Open(group, object_size, top, zone());
     }
   } else {
@@ -389,11 +331,10 @@ void MemoryOptimizer::VisitAllocateRaw(Node* node,
                        __ IntAdd(top, __ IntPtrConstant(kHeapObjectTag))));
 
     __ Bind(&call_runtime);
-    Node* target = allocation == AllocationType::kYoung
-                       ? __
-                         AllocateInYoungGenerationStubConstant()
-                       : __
-                         AllocateInOldGenerationStubConstant();
+    Node* target =
+        pretenure == NOT_TENURED ? __ AllocateInNewSpaceStubConstant()
+                                 : __
+                                   AllocateInOldSpaceStubConstant();
     if (!allocate_operator_.is_set()) {
       auto descriptor = AllocateDescriptor{};
       auto call_descriptor = Linkage::GetStubCallDescriptor(
@@ -408,7 +349,7 @@ void MemoryOptimizer::VisitAllocateRaw(Node* node,
 
     // Create an unfoldable allocation group.
     AllocationGroup* group =
-        new (zone()) AllocationGroup(value, allocation, zone());
+        new (zone()) AllocationGroup(value, pretenure, zone());
     state = AllocationState::Closed(group, zone());
   }
 
@@ -555,8 +496,7 @@ Node* MemoryOptimizer::ComputeIndex(ElementAccess const& access, Node* index) {
 WriteBarrierKind MemoryOptimizer::ComputeWriteBarrierKind(
     Node* object, AllocationState const* state,
     WriteBarrierKind write_barrier_kind) {
-  if (state->IsYoungGenerationAllocation() &&
-      state->group()->Contains(object)) {
+  if (state->IsNewSpaceAllocation() && state->group()->Contains(object)) {
     write_barrier_kind = kNoWriteBarrier;
   }
   return write_barrier_kind;
@@ -595,19 +535,8 @@ void MemoryOptimizer::EnqueueMerge(Node* node, int index,
   DCHECK_LT(0, input_count);
   Node* const control = node->InputAt(input_count);
   if (control->opcode() == IrOpcode::kLoop) {
-    if (index == 0) {
-      if (CanLoopAllocate(node, zone())) {
-        // If the loop can allocate,  we start with an empty state at the
-        // beginning.
-        EnqueueUses(node, empty_state());
-      } else {
-        // If the loop cannot allocate, we can just propagate the state from
-        // before the loop.
-        EnqueueUses(node, state);
-      }
-    } else {
-      // Do not revisit backedges.
-    }
+    // For loops we always start with an empty state at the beginning.
+    if (index == 0) EnqueueUses(node, empty_state());
   } else {
     DCHECK_EQ(IrOpcode::kMerge, control->opcode());
     // Check if we already know about this pending merge.

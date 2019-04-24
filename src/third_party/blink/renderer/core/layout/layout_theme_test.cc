@@ -6,11 +6,9 @@
 
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -90,8 +88,7 @@ TEST_F(LayoutThemeTest, RootElementColorChange) {
 
   Element* initial = GetDocument().getElementById("initial");
   ASSERT_TRUE(initial);
-  EXPECT_EQ(ColorScheme::kLight,
-            GetDocument().GetStyleEngine().GetColorScheme());
+  EXPECT_EQ(ColorScheme::kLight, GetDocument().GetColorScheme());
 
   ASSERT_TRUE(GetDocument().documentElement());
   const ComputedStyle* document_element_style =
@@ -106,11 +103,8 @@ TEST_F(LayoutThemeTest, RootElementColorChange) {
             initial_style->VisitedDependentColor(GetCSSPropertyColor()));
 
   // Change color scheme to dark.
-  GetDocument().GetSettings()->SetPreferredColorScheme(
-      PreferredColorScheme::kDark);
-  ColorSchemeSet supported_schemes;
-  supported_schemes.Set(ColorScheme::kDark);
-  GetDocument().GetStyleEngine().SetSupportedColorSchemes(supported_schemes);
+  GetDocument().SetColorScheme(ColorScheme::kDark);
+  EXPECT_EQ(ColorScheme::kDark, GetDocument().GetColorScheme());
   UpdateAllLifecyclePhasesForTest();
 
   document_element_style = GetDocument().documentElement()->GetComputedStyle();

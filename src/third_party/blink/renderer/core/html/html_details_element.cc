@@ -71,9 +71,9 @@ void HTMLDetailsElement::DispatchPendingEvent() {
   DispatchEvent(*Event::Create(event_type_names::kToggle));
 }
 
-LayoutObject* HTMLDetailsElement::CreateLayoutObject(const ComputedStyle& style,
-                                                     LegacyLayout legacy) {
-  return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy);
+LayoutObject* HTMLDetailsElement::CreateLayoutObject(
+    const ComputedStyle& style) {
+  return LayoutObjectFactory::CreateBlockFlow(*this, style);
 }
 
 void HTMLDetailsElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
@@ -93,7 +93,7 @@ void HTMLDetailsElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   content->SetIdAttribute(shadow_element_names::DetailsContent());
   content->AppendChild(
       HTMLSlotElement::CreateUserAgentDefaultSlot(GetDocument()));
-  content->SetInlineStyleProperty(CSSPropertyID::kDisplay, CSSValueID::kNone);
+  content->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
   root.AppendChild(content);
 }
 
@@ -126,12 +126,10 @@ void HTMLDetailsElement::ParseAttribute(
     Element* content = EnsureUserAgentShadowRoot().getElementById(
         shadow_element_names::DetailsContent());
     DCHECK(content);
-    if (is_open_) {
-      content->RemoveInlineStyleProperty(CSSPropertyID::kDisplay);
-    } else {
-      content->SetInlineStyleProperty(CSSPropertyID::kDisplay,
-                                      CSSValueID::kNone);
-    }
+    if (is_open_)
+      content->RemoveInlineStyleProperty(CSSPropertyDisplay);
+    else
+      content->SetInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
 
     // Invalidate the LayoutDetailsMarker in order to turn the arrow signifying
     // if the details element is open or closed.

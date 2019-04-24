@@ -32,7 +32,6 @@ int main(int, char**)
     assert(c == u8'a');
 
     static_assert(test_constexpr(), "");
-    return 0;
 }
 #else
 int main(int, char**) {

@@ -19,9 +19,6 @@ mojom("gl") {
     "//url/mojom:url_mojom_gurl",
   ]
   if (is_chromeos) {
-    public_deps += [
-      "//components/arc/common:media",
-      "//components/chromeos_camera/common",
-    ]
+    public_deps += [ "//components/arc/common:media" ]
   }
 }

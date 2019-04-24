@@ -15,7 +15,6 @@ namespace {
 const char kTestPassword[] = "test123";
 const char kTestFileName[] = "foo";
 const char kTestFileNameUppercase[] = "FOO";
-const int kMaxFiles = 128;
 }
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
@@ -38,7 +37,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     mz_zip_get_number_entry(zip_file, &num_entries);
 
     result = mz_zip_goto_first_entry(zip_file);
-    for (int i = 0; result == MZ_OK && i < kMaxFiles; i++) {
+    while (result == MZ_OK) {
       mz_zip_file* file_info = nullptr;
       result = mz_zip_entry_get_info(zip_file, &file_info);
       if (result != MZ_OK) {

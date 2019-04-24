@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_ZOOM_VIEW_H_
 
 #include "base/macros.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 
 // View for the zoom icon in the Omnibox.
@@ -15,7 +16,8 @@ class ZoomView : public PageActionIconView {
   // WebContents. Because the current WebContents changes as the user switches
   // tabs, a LocationBarView::Delegate is supplied to queried for the current
   // WebContents when needed.
-  explicit ZoomView(PageActionIconView::Delegate* delegate);
+  ZoomView(LocationBarView::Delegate* location_bar_delegate,
+           PageActionIconView::Delegate* delegate);
   ~ZoomView() override;
 
   // Updates the image and its tooltip appropriately, hiding or showing the icon
@@ -33,6 +35,9 @@ class ZoomView : public PageActionIconView {
  private:
   bool ShouldBeVisible(bool can_show_bubble) const;
   bool HasAssociatedBubble() const;
+
+  // The delegate used to get whether omnibox input is in progress.
+  LocationBarView::Delegate* location_bar_delegate_;
 
   const gfx::VectorIcon* icon_ = nullptr;
 

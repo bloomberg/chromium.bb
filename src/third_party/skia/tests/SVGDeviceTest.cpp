@@ -184,10 +184,10 @@ DEF_TEST(SVGDevice_whitespace_pos, reporter) {
 #endif
 
 
-void SetImageShader(SkPaint* paint, int imageWidth, int imageHeight, SkTileMode xTile,
-                    SkTileMode yTile) {
+void SetImageShader(SkPaint* paint, int imageWidth, int imageHeight, SkShader::TileMode xTile,
+                    SkShader::TileMode yTile) {
     auto surface = SkSurface::MakeRasterN32Premul(imageWidth, imageHeight);
-    paint->setShader(surface->makeImageSnapshot()->makeShader(xTile, yTile, nullptr));
+    paint->setShader(SkImageShader::Make(surface->makeImageSnapshot(), xTile, yTile, nullptr));
 }
 
 // Attempt to find the three nodes on which we have expectations:
@@ -234,7 +234,8 @@ bool FindImageShaderNodes(skiatest::Reporter* reporter, const SkDOM* dom, const 
 }
 
 void ImageShaderTestSetup(SkDOM* dom, SkPaint* paint, int imageWidth, int imageHeight,
-                          int rectWidth, int rectHeight, SkTileMode xTile, SkTileMode yTile) {
+                          int rectWidth, int rectHeight, SkShader::TileMode xTile,
+                          SkShader::TileMode yTile) {
     SetImageShader(paint, imageWidth, imageHeight, xTile, yTile);
     auto svgCanvas = MakeDOMCanvas(dom);
 
@@ -249,7 +250,7 @@ DEF_TEST(SVGDevice_image_shader_norepeat, reporter) {
     int imageWidth = 3, imageHeight = 3;
     int rectWidth = 10, rectHeight = 10;
     ImageShaderTestSetup(&dom, &paint, imageWidth, imageHeight, rectWidth, rectHeight,
-                         SkTileMode::kClamp, SkTileMode::kClamp);
+                         SkShader::kClamp_TileMode, SkShader::kClamp_TileMode);
 
     const SkDOM::Node* root = dom.finishParsing();
 
@@ -274,7 +275,7 @@ DEF_TEST(SVGDevice_image_shader_tilex, reporter) {
     int imageWidth = 3, imageHeight = 3;
     int rectWidth = 10, rectHeight = 10;
     ImageShaderTestSetup(&dom, &paint, imageWidth, imageHeight, rectWidth, rectHeight,
-                         SkTileMode::kRepeat, SkTileMode::kClamp);
+                         SkShader::kRepeat_TileMode, SkShader::kClamp_TileMode);
 
     const SkDOM::Node* root = dom.finishParsing();
     const SkDOM::Node* innerSvg = dom.getFirstChild(root, "svg");
@@ -304,7 +305,7 @@ DEF_TEST(SVGDevice_image_shader_tiley, reporter) {
     int imageNodeWidth = 3, imageNodeHeight = 3;
     int rectNodeWidth = 10, rectNodeHeight = 10;
     ImageShaderTestSetup(&dom, &paint, imageNodeWidth, imageNodeHeight, rectNodeWidth,
-                         rectNodeHeight, SkTileMode::kClamp, SkTileMode::kRepeat);
+                         rectNodeHeight, SkShader::kClamp_TileMode, SkShader::kRepeat_TileMode);
 
     const SkDOM::Node* root = dom.finishParsing();
     const SkDOM::Node* innerSvg = dom.getFirstChild(root, "svg");
@@ -334,7 +335,7 @@ DEF_TEST(SVGDevice_image_shader_tileboth, reporter) {
     int imageWidth = 3, imageHeight = 3;
     int rectWidth = 10, rectHeight = 10;
     ImageShaderTestSetup(&dom, &paint, imageWidth, imageHeight, rectWidth, rectHeight,
-                         SkTileMode::kRepeat, SkTileMode::kRepeat);
+                         SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode);
 
     const SkDOM::Node* root = dom.finishParsing();
 
@@ -359,7 +360,7 @@ DEF_TEST(SVGDevice_image_shader_tileboth, reporter) {
 DEF_TEST(SVGDevice_ColorFilters, reporter) {
     SkDOM dom;
     SkPaint paint;
-    paint.setColorFilter(SkColorFilters::Blend(SK_ColorRED, SkBlendMode::kSrcIn));
+    paint.setColorFilter(SkColorFilter::MakeModeFilter(SK_ColorRED, SkBlendMode::kSrcIn));
     {
         auto svgCanvas = MakeDOMCanvas(&dom);
         SkRect bounds{0, 0, SkIntToScalar(100), SkIntToScalar(100)};

@@ -22,6 +22,11 @@ class WebLocalFrameImpl;
 class CORE_EXPORT FindTaskController final
     : public GarbageCollectedFinalized<FindTaskController> {
  public:
+  static FindTaskController* Create(WebLocalFrameImpl& owner_frame,
+                                    TextFinder& text_finder) {
+    return MakeGarbageCollected<FindTaskController>(owner_frame, text_finder);
+  }
+
   FindTaskController(WebLocalFrameImpl& owner_frame, TextFinder& text_finder);
 
   // Starts an effort of finding |search_text| in |owner_frame|,

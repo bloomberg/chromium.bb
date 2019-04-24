@@ -81,16 +81,14 @@ DeprecatedStorageQuota* DeprecatedStorageInfo::GetStorageQuota(
     int storage_type) {
   switch (storage_type) {
     case kTemporary:
-      if (!temporary_storage_) {
-        temporary_storage_ = MakeGarbageCollected<DeprecatedStorageQuota>(
-            DeprecatedStorageQuota::kTemporary);
-      }
+      if (!temporary_storage_)
+        temporary_storage_ =
+            DeprecatedStorageQuota::Create(DeprecatedStorageQuota::kTemporary);
       return temporary_storage_.Get();
     case kPersistent:
-      if (!persistent_storage_) {
-        persistent_storage_ = MakeGarbageCollected<DeprecatedStorageQuota>(
-            DeprecatedStorageQuota::kPersistent);
-      }
+      if (!persistent_storage_)
+        persistent_storage_ =
+            DeprecatedStorageQuota::Create(DeprecatedStorageQuota::kPersistent);
       return persistent_storage_.Get();
   }
   return nullptr;

@@ -27,30 +27,30 @@ String CSSIdentifierValue::CustomCSSText() const {
 
 CSSIdentifierValue::CSSIdentifierValue(CSSValueID value_id)
     : CSSValue(kIdentifierClass), value_id_(value_id) {
-  // TODO(sashab): Add a DCHECK_NE(valueID, CSSValueID::kInvalid) once no code
-  // paths cause this to happen.
+  // TODO(sashab): Add a DCHECK_NE(valueID, CSSValueInvalid) once no code paths
+  // cause this to happen.
 }
 
 CSSIdentifierValue::CSSIdentifierValue(const Length& length)
     : CSSValue(kIdentifierClass) {
   switch (length.GetType()) {
     case Length::kAuto:
-      value_id_ = CSSValueID::kAuto;
+      value_id_ = CSSValueAuto;
       break;
     case Length::kMinContent:
-      value_id_ = CSSValueID::kMinContent;
+      value_id_ = CSSValueMinContent;
       break;
     case Length::kMaxContent:
-      value_id_ = CSSValueID::kMaxContent;
+      value_id_ = CSSValueMaxContent;
       break;
     case Length::kFillAvailable:
-      value_id_ = CSSValueID::kWebkitFillAvailable;
+      value_id_ = CSSValueWebkitFillAvailable;
       break;
     case Length::kFitContent:
-      value_id_ = CSSValueID::kFitContent;
+      value_id_ = CSSValueFitContent;
       break;
     case Length::kExtendToZoom:
-      value_id_ = CSSValueID::kInternalExtendToZoom;
+      value_id_ = CSSValueInternalExtendToZoom;
       break;
     case Length::kPercent:
     case Length::kFixed:

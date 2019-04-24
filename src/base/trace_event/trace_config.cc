@@ -147,7 +147,8 @@ void TraceConfig::ProcessFilterConfig::Merge(
 void TraceConfig::ProcessFilterConfig::InitializeFromConfigDict(
     const base::DictionaryValue& dict) {
   included_process_ids_.clear();
-  const Value* value = dict.FindListKey(kIncludedProcessesParam);
+  const Value* value =
+      dict.FindKeyOfType(kIncludedProcessesParam, Value::Type::LIST);
   if (!value)
     return;
   for (auto& pid_value : value->GetList()) {
@@ -334,6 +335,8 @@ void TraceConfig::Merge(const TraceConfig& config) {
                 << "set of options.";
   }
   DCHECK_EQ(trace_buffer_size_in_events_, config.trace_buffer_size_in_events_)
+      << "Cannot change trace buffer size";
+  DCHECK_EQ(trace_buffer_size_in_kb_, config.trace_buffer_size_in_kb_)
       << "Cannot change trace buffer size";
 
   category_filter_.Merge(config.category_filter_);

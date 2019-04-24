@@ -88,8 +88,7 @@ void PffftValidateWrapper(size_t fft_size, bool complex_fft) {
 
   // Forward transform.
   pffft_transform(pffft_status, in, out, scratch, PFFFT_FORWARD);
-  pffft_wrapper.ForwardTransform(*in_wrapper, out_wrapper.get(),
-                                 /*ordered=*/false);
+  pffft_wrapper.ForwardTransform(*in_wrapper, out_wrapper.get());
   ExpectArrayViewsEquality(out_view, out_wrapper_view);
 
   // Copy the FFT results into the input buffers to compute the backward FFT.
@@ -99,8 +98,7 @@ void PffftValidateWrapper(size_t fft_size, bool complex_fft) {
 
   // Backward transform.
   pffft_transform(pffft_status, in, out, scratch, PFFFT_BACKWARD);
-  pffft_wrapper.BackwardTransform(*in_wrapper, out_wrapper.get(),
-                                  /*ordered=*/false);
+  pffft_wrapper.BackwardTransform(*in_wrapper, out_wrapper.get());
   ExpectArrayViewsEquality(out_view, out_wrapper_view);
 
   pffft_destroy_setup(pffft_status);
@@ -124,42 +122,17 @@ TEST(PffftTest, CreateWrapperWithValidSize) {
 }
 
 #if !defined(NDEBUG) && GTEST_HAS_DEATH_TEST && !defined(WEBRTC_ANDROID)
-
-class PffftInvalidSizeTest : public ::testing::Test,
-                             public ::testing::WithParamInterface<size_t> {};
-
-TEST_P(PffftInvalidSizeTest, DoNotCreateRealWrapper) {
-  size_t fft_size = GetParam();
-  ASSERT_FALSE(Pffft::IsValidFftSize(fft_size, Pffft::FftType::kReal));
-  EXPECT_DEATH(CreatePffftWrapper(fft_size, Pffft::FftType::kReal), "");
+TEST(PffftTest, DoNotCreateWrapperWithInvalidSize) {
+  for (size_t fft_size = 0; fft_size < kMaxValidSizeCheck; ++fft_size) {
+    SCOPED_TRACE(fft_size);
+    if (!Pffft::IsValidFftSize(fft_size, Pffft::FftType::kReal)) {
+      EXPECT_DEATH(CreatePffftWrapper(fft_size, Pffft::FftType::kReal), "");
+    }
+    if (!Pffft::IsValidFftSize(fft_size, Pffft::FftType::kComplex)) {
+      EXPECT_DEATH(CreatePffftWrapper(fft_size, Pffft::FftType::kComplex), "");
+    }
+  }
 }
-
-TEST_P(PffftInvalidSizeTest, DoNotCreateComplexWrapper) {
-  size_t fft_size = GetParam();
-  ASSERT_FALSE(Pffft::IsValidFftSize(fft_size, Pffft::FftType::kComplex));
-  EXPECT_DEATH(CreatePffftWrapper(fft_size, Pffft::FftType::kComplex), "");
-}
-
-INSTANTIATE_TEST_SUITE_P(PffftTest,
-                         PffftInvalidSizeTest,
-                         ::testing::Values(17,
-                                           33,
-                                           65,
-                                           97,
-                                           129,
-                                           161,
-                                           193,
-                                           257,
-                                           289,
-                                           385,
-                                           481,
-                                           513,
-                                           577,
-                                           641,
-                                           801,
-                                           865,
-                                           1025));
-
 #endif
 
 // TODO(https://crbug.com/webrtc/9577): Enable once SIMD is always enabled.

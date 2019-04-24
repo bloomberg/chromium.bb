@@ -74,8 +74,7 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
   virtual void RemovePendingCallbacks() {}
 
   // Overridden by subclasses to handle sync vs async error-handling.
-  using ErrorCallback = base::OnceCallback<void(base::File::Error)>;
-  virtual void ReportError(ErrorCallback, base::File::Error error) = 0;
+  virtual void ReportError(ErrorCallbackBase*, base::File::Error error) = 0;
 
   const String& name() const { return name_; }
   mojom::blink::FileSystemType GetType() const { return type_; }
@@ -108,48 +107,48 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
   // Actual FileSystem API implementations. All the validity checks on virtual
   // paths are done at this level.
   void GetMetadata(const EntryBase*,
-                   MetadataCallbacks::SuccessCallback,
-                   MetadataCallbacks::ErrorCallback,
+                   MetadataCallbacks::OnDidReadMetadataCallback*,
+                   ErrorCallbackBase*,
                    SynchronousType = kAsynchronous);
   void Move(const EntryBase* source,
             EntryBase* parent,
             const String& name,
-            EntryCallbacks::SuccessCallback success_callback,
-            EntryCallbacks::ErrorCallback error_callback,
+            EntryCallbacks::OnDidGetEntryCallback*,
+            ErrorCallbackBase*,
             SynchronousType = kAsynchronous);
   void Copy(const EntryBase* source,
             EntryBase* parent,
             const String& name,
-            EntryCallbacks::SuccessCallback,
-            EntryCallbacks::ErrorCallback,
+            EntryCallbacks::OnDidGetEntryCallback*,
+            ErrorCallbackBase*,
             SynchronousType = kAsynchronous);
   void Remove(const EntryBase*,
-              VoidCallbacks::SuccessCallback,
-              VoidCallbacks::ErrorCallback,
+              VoidCallbacks::OnDidSucceedCallback*,
+              ErrorCallbackBase*,
               SynchronousType = kAsynchronous);
   void RemoveRecursively(const EntryBase*,
-                         VoidCallbacks::SuccessCallback,
-                         VoidCallbacks::ErrorCallback,
+                         VoidCallbacks::OnDidSucceedCallback*,
+                         ErrorCallbackBase*,
                          SynchronousType = kAsynchronous);
   void GetParent(const EntryBase*,
-                 EntryCallbacks::SuccessCallback,
-                 EntryCallbacks::ErrorCallback);
+                 EntryCallbacks::OnDidGetEntryCallback*,
+                 ErrorCallbackBase*);
   void GetFile(const EntryBase*,
                const String& path,
                const FileSystemFlags*,
-               EntryCallbacks::SuccessCallback,
-               EntryCallbacks::ErrorCallback,
+               EntryCallbacks::OnDidGetEntryCallback*,
+               ErrorCallbackBase*,
                SynchronousType = kAsynchronous);
   void GetDirectory(const EntryBase*,
                     const String& path,
                     const FileSystemFlags*,
-                    EntryCallbacks::SuccessCallback,
-                    EntryCallbacks::ErrorCallback,
+                    EntryCallbacks::OnDidGetEntryCallback*,
+                    ErrorCallbackBase*,
                     SynchronousType = kAsynchronous);
   void ReadDirectory(DirectoryReaderBase*,
                      const String& path,
-                     const EntriesCallbacks::SuccessCallback&,
-                     EntriesCallbacks::ErrorCallback,
+                     EntriesCallbacks::OnDidGetEntriesCallback*,
+                     ErrorCallbackBase*,
                      SynchronousType = kAsynchronous);
 
   void Trace(blink::Visitor*) override;

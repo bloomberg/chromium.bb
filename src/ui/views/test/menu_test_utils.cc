@@ -17,9 +17,13 @@ namespace test {
 
 // TestMenuDelegate -----------------------------------------------------------
 
-TestMenuDelegate::TestMenuDelegate() = default;
+TestMenuDelegate::TestMenuDelegate()
+    : execute_command_id_(0),
+      on_menu_closed_called_count_(0),
+      on_menu_closed_menu_(nullptr),
+      on_perform_drop_called_(false) {}
 
-TestMenuDelegate::~TestMenuDelegate() = default;
+TestMenuDelegate::~TestMenuDelegate() {}
 
 bool TestMenuDelegate::ShowContextMenu(MenuItemView* source,
                                        int id,
@@ -63,7 +67,7 @@ void TestMenuDelegate::WillHideMenu(MenuItemView* menu) {
 MenuControllerTestApi::MenuControllerTestApi()
     : controller_(MenuController::GetActiveInstance()->AsWeakPtr()) {}
 
-MenuControllerTestApi::~MenuControllerTestApi() = default;
+MenuControllerTestApi::~MenuControllerTestApi() {}
 
 void MenuControllerTestApi::ClearState() {
   if (!controller_)

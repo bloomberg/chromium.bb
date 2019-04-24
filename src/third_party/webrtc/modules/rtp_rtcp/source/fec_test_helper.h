@@ -13,6 +13,7 @@
 
 #include <memory>
 
+#include "modules/include/module_common_types.h"
 #include "modules/rtp_rtcp/source/forward_error_correction.h"
 #include "rtc_base/random.h"
 
@@ -21,7 +22,7 @@ namespace test {
 namespace fec {
 
 struct AugmentedPacket : public ForwardErrorCorrection::Packet {
-  RTPHeader header;
+  WebRtcRTPHeader header;
 };
 
 // TODO(brandtr): Consider merging MediaPacketGenerator and

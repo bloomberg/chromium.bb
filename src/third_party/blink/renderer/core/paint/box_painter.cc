@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
@@ -56,8 +57,8 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
   LayoutRect paint_rect;
   const DisplayItemClient* background_client = nullptr;
   base::Optional<ScopedBoxContentsPaintState> contents_paint_state;
-  if (BoxDecorationData::IsPaintingScrollingBackground(paint_info,
-                                                       layout_box_)) {
+  if (BoxModelObjectPainter::IsPaintingScrollingBackground(&layout_box_,
+                                                           paint_info)) {
     // For the case where we are painting the background into the scrolling
     // contents layer of a composited scroller we need to include the entire
     // overflow rect.
@@ -99,10 +100,10 @@ bool BoxPainter::BackgroundIsKnownToBeOpaque(const PaintInfo& paint_info) {
   if (layout_box_.FirstFragment().NextFragment())
     return false;
 
-  LayoutRect bounds =
-      BoxDecorationData::IsPaintingScrollingBackground(paint_info, layout_box_)
-          ? layout_box_.LayoutOverflowRect()
-          : layout_box_.SelfVisualOverflowRect();
+  LayoutRect bounds = BoxModelObjectPainter::IsPaintingScrollingBackground(
+                          &layout_box_, paint_info)
+                          ? layout_box_.LayoutOverflowRect()
+                          : layout_box_.SelfVisualOverflowRect();
   return layout_box_.BackgroundIsKnownToBeOpaqueInRect(bounds);
 }
 
@@ -110,6 +111,9 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     const PaintInfo& paint_info,
     const LayoutRect& paint_rect,
     const DisplayItemClient& background_client) {
+  bool painting_scrolling_background =
+      BoxModelObjectPainter::IsPaintingScrollingBackground(&layout_box_,
+                                                           paint_info);
   const ComputedStyle& style = layout_box_.StyleRef();
 
   base::Optional<DisplayItemCacheSkipper> cache_skipper;
@@ -125,10 +129,6 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
     cache_skipper.emplace(paint_info.context);
   }
 
-  BoxDecorationData box_decoration_data(paint_info, layout_box_);
-  if (!box_decoration_data.ShouldPaint())
-    return;
-
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, background_client,
           DisplayItem::kBoxDecorationBackground))
@@ -136,6 +136,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
 
   DrawingRecorder recorder(paint_info.context, background_client,
                            DisplayItem::kBoxDecorationBackground);
+  BoxDecorationData box_decoration_data(layout_box_);
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
@@ -143,26 +144,27 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
       BackgroundIsKnownToBeOpaque(paint_info))
     recorder.SetKnownToBeOpaque();
 
+  const auto skip_background = layout_box_.BackgroundTransfersToView() ||
+                               (paint_info.SkipRootBackground() &&
+                                paint_info.PaintContainer() == &layout_box_);
+
   bool needs_end_layer = false;
-  // FIXME: Should eventually give the theme control over whether the box
-  // shadow should paint, since controls could have custom shadows of their
-  // own.
-  if (box_decoration_data.ShouldPaintShadow()) {
-    BoxPainterBase::PaintNormalBoxShadow(
-        paint_info, paint_rect, style, true, true,
-        !box_decoration_data.ShouldPaintBackground());
-  }
+  if (!painting_scrolling_background) {
+    // FIXME: Should eventually give the theme control over whether the box
+    // shadow should paint, since controls could have custom shadows of their
+    // own.
+    BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect, style, true,
+                                         true, skip_background);
 
-  if (BleedAvoidanceIsClipping(
-          box_decoration_data.GetBackgroundBleedAvoidance())) {
-    state_saver.Save();
-    FloatRoundedRect border = style.GetRoundedBorderFor(paint_rect);
-    paint_info.context.ClipRoundedRect(border);
+    if (BleedAvoidanceIsClipping(box_decoration_data.bleed_avoidance)) {
+      state_saver.Save();
+      FloatRoundedRect border = style.GetRoundedBorderFor(paint_rect);
+      paint_info.context.ClipRoundedRect(border);
 
-    if (box_decoration_data.GetBackgroundBleedAvoidance() ==
-        kBackgroundBleedClipLayer) {
-      paint_info.context.BeginLayer();
-      needs_end_layer = true;
+      if (box_decoration_data.bleed_avoidance == kBackgroundBleedClipLayer) {
+        paint_info.context.BeginLayer();
+        needs_end_layer = true;
+      }
     }
   }
 
@@ -172,40 +174,36 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   IntRect snapped_paint_rect(PixelSnappedIntRect(paint_rect));
   ThemePainter& theme_painter = LayoutTheme::GetTheme().Painter();
   bool theme_painted =
-      box_decoration_data.HasAppearance() &&
+      box_decoration_data.has_appearance &&
       !theme_painter.Paint(layout_box_, paint_info, snapped_paint_rect);
-  if (!theme_painted) {
-    if (box_decoration_data.ShouldPaintBackground()) {
-      PaintBackground(paint_info, paint_rect,
-                      box_decoration_data.BackgroundColor(),
-                      box_decoration_data.GetBackgroundBleedAvoidance());
-    }
-    if (box_decoration_data.HasAppearance()) {
+  if (!theme_painted && !skip_background) {
+    PaintBackground(paint_info, paint_rect,
+                    box_decoration_data.background_color,
+                    box_decoration_data.bleed_avoidance);
+
+    if (box_decoration_data.has_appearance) {
       theme_painter.PaintDecorations(layout_box_.GetNode(),
                                      layout_box_.GetDocument(), style,
                                      paint_info, snapped_paint_rect);
     }
   }
 
-  if (box_decoration_data.ShouldPaintShadow()) {
+  if (!painting_scrolling_background) {
     BoxPainterBase::PaintInsetBoxShadowWithBorderRect(paint_info, paint_rect,
                                                       style);
-  }
 
-  // The theme will tell us whether or not we should also paint the CSS
-  // border.
-  if (box_decoration_data.ShouldPaintBorder()) {
-    if (!theme_painted) {
-      theme_painted =
-          box_decoration_data.HasAppearance() &&
-          !theme_painter.PaintBorderOnly(layout_box_.GetNode(), style,
-                                         paint_info, snapped_paint_rect);
-    }
-    if (!theme_painted) {
+    // The theme will tell us whether or not we should also paint the CSS
+    // border.
+    if (box_decoration_data.has_border_decoration &&
+        (!box_decoration_data.has_appearance ||
+         (!theme_painted &&
+          LayoutTheme::GetTheme().Painter().PaintBorderOnly(
+              layout_box_.GetNode(), style, paint_info, snapped_paint_rect))) &&
+        !(layout_box_.IsTable() &&
+          ToLayoutTable(&layout_box_)->ShouldCollapseBorders())) {
       BoxPainterBase::PaintBorder(
           layout_box_, layout_box_.GetDocument(), layout_box_.GeneratingNode(),
-          paint_info, paint_rect, style,
-          box_decoration_data.GetBackgroundBleedAvoidance());
+          paint_info, paint_rect, style, box_decoration_data.bleed_avoidance);
     }
   }
 
@@ -272,7 +270,7 @@ void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,
   if (layout_box_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  auto touch_action = layout_box_.EffectiveAllowedTouchAction();
+  auto touch_action = layout_box_.EffectiveWhitelistedTouchAction();
   if (touch_action == TouchAction::kTouchActionAuto)
     return;
 

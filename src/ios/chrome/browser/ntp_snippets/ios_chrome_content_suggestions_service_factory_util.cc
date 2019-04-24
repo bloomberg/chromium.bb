@@ -22,6 +22,7 @@
 #include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/ntp_snippets/breaking_news/breaking_news_listener.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/category_rankers/click_based_category_ranker.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
@@ -42,7 +43,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
-#include "ios/chrome/browser/leveldb_proto/proto_database_provider_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -132,7 +132,8 @@ std::unique_ptr<KeyedService> CreateChromeContentSuggestionsService(
           chrome_browser_state);
   std::unique_ptr<ntp_snippets::CategoryRanker> category_ranker =
       ntp_snippets::BuildSelectedCategoryRanker(
-          prefs, base::DefaultClock::GetInstance());
+          prefs, base::DefaultClock::GetInstance(),
+          /*is_chrome_home_enabled=*/false);
   return std::make_unique<ContentSuggestionsService>(
       State::ENABLED, identity_manager, history_service, large_icon_service,
       prefs, std::move(category_ranker), std::move(user_classifier),
@@ -167,10 +168,6 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       base::BindRepeating(&ParseJson), GetFetchEndpoint(), api_key,
       service->user_classifier());
 
-  leveldb_proto::ProtoDatabaseProvider* db_provider =
-      leveldb_proto::ProtoDatabaseProviderFactory::GetForBrowserState(
-          chrome_browser_state);
-
   // This pref is also used for logging. If it is changed, change it in the
   // other places.
   std::string pref_name = prefs::kArticlesForYouEnabled;
@@ -180,10 +177,11 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       std::move(suggestions_fetcher),
       std::make_unique<ImageFetcherImpl>(
           CreateIOSImageDecoder(), browser_state->GetSharedURLLoaderFactory()),
-      std::make_unique<RemoteSuggestionsDatabase>(db_provider, database_dir),
+      std::make_unique<RemoteSuggestionsDatabase>(database_dir),
       std::make_unique<RemoteSuggestionsStatusServiceImpl>(
           identity_manager->HasPrimaryAccount(), prefs, pref_name),
-      /*prefetched_pages_tracker=*/nullptr, service->debug_logger(),
+      /*prefetched_pages_tracker=*/nullptr,
+      /*breaking_news_raw_data_provider*/ nullptr, service->debug_logger(),
       std::make_unique<base::OneShotTimer>());
 
   service->remote_suggestions_scheduler()->SetProvider(provider.get());

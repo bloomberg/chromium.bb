@@ -21,13 +21,10 @@ namespace chrome_cleaner {
 //        present on the command line.
 //  - with_cleanup_mode_logs: whether switch --with-cleanup-mode-logs is
 //        present on the command line.
-//  - with_test_logging_url: whether switch --test_logging_url is present on the
-//        command line.
 //  - uploading_blocked: whether switch --no-report-upload is present on the
 //        command line.
-class CleanerSettingsTest
-    : public testing::TestWithParam<
-          std::tuple<ExecutionMode, bool, bool, bool, bool>> {
+class CleanerSettingsTest : public testing::TestWithParam<
+                                std::tuple<ExecutionMode, bool, bool, bool>> {
  protected:
   Settings* ReinitializeSettings(const base::CommandLine& command_line) {
     Settings* settings = Settings::GetInstance();
@@ -39,13 +36,12 @@ class CleanerSettingsTest
   ExecutionMode execution_mode_;
   bool with_scanning_mode_logs_;
   bool with_cleanup_mode_logs_;
-  bool with_test_logging_url_;
   bool uploading_blocked_;
 };
 
 TEST_P(CleanerSettingsTest, CleanerLogsPermissions) {
   std::tie(execution_mode_, with_scanning_mode_logs_, with_cleanup_mode_logs_,
-           with_test_logging_url_, uploading_blocked_) = GetParam();
+           uploading_blocked_) = GetParam();
 
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   if (execution_mode_ != ExecutionMode::kNone) {
@@ -57,26 +53,19 @@ TEST_P(CleanerSettingsTest, CleanerLogsPermissions) {
     command_line.AppendSwitch(kWithScanningModeLogsSwitch);
   if (with_cleanup_mode_logs_)
     command_line.AppendSwitch(kWithCleanupModeLogsSwitch);
-  if (with_test_logging_url_)
-    command_line.AppendSwitch(kTestLoggingURLSwitch);
   if (uploading_blocked_)
     command_line.AppendSwitch(kNoReportUploadSwitch);
 
   Settings* settings = ReinitializeSettings(command_line);
 
-  const bool expect_logs_collection_enabled =
+  bool expect_logs_upload_enabled =
       (execution_mode_ == ExecutionMode::kScanning &&
        with_scanning_mode_logs_) ||
       (execution_mode_ == ExecutionMode::kCleanup && with_cleanup_mode_logs_);
-  EXPECT_EQ(expect_logs_collection_enabled,
-            settings->logs_collection_enabled());
+  EXPECT_EQ(expect_logs_upload_enabled, settings->logs_collection_enabled());
 
-  bool logs_upload_allowed =
-      expect_logs_collection_enabled && !uploading_blocked_;
-#if !defined(CHROME_CLEANER_OFFICIAL_BUILD)
-  if (!with_test_logging_url_)
-    logs_upload_allowed = false;
-#endif
+  const bool logs_upload_allowed =
+      expect_logs_upload_enabled && !uploading_blocked_;
   EXPECT_EQ(logs_upload_allowed, settings->logs_upload_allowed());
 }
 
@@ -89,7 +78,6 @@ INSTANTIATE_TEST_SUITE_P(
                                              ExecutionMode::kCleanup),
         /*with_scanning_mode_logs=*/::testing::Bool(),
         /*with_cleanup_mode_logs=*/::testing::Bool(),
-        /*with_test_logging_url=*/::testing::Bool(),
         /*uploading_blocked=*/::testing::Bool()),
     GetParamNameForTest());
 

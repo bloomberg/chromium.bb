@@ -5,8 +5,9 @@
 // https://html.spec.whatwg.org/C/#documentandelementeventhandlers
 
 [
-    LegacyTreatAsPartialInterface
-] interface mixin DocumentAndElementEventHandlers {
+    LegacyTreatAsPartialInterface,
+    NoInterfaceObject // Always used on target of 'implements'
+]  interface DocumentAndElementEventHandlers {
   attribute EventHandler oncopy;
   attribute EventHandler oncut;
   attribute EventHandler onpaste;

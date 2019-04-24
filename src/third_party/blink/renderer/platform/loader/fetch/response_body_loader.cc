@@ -97,7 +97,7 @@ class ResponseBodyLoader::DelegatingBytesConsumer final
       return {};
     }
     auto handle = bytes_consumer_->DrainAsDataPipe();
-    if (handle && bytes_consumer_->GetPublicState() == PublicState::kClosed) {
+    if (handle) {
       HandleResult(Result::kDone);
     }
     return handle;
@@ -379,6 +379,7 @@ void ResponseBodyLoader::Start() {
 }
 
 void ResponseBodyLoader::Abort() {
+  DCHECK(!suspended_);
   if (aborted_)
     return;
 

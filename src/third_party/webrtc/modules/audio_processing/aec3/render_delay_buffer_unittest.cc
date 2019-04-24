@@ -70,8 +70,8 @@ TEST(RenderDelayBuffer, AvailableBlock) {
   delay_buffer->PrepareCaptureProcessing();
 }
 
-// Verifies the AlignFromDelay method.
-TEST(RenderDelayBuffer, AlignFromDelay) {
+// Verifies the SetDelay method.
+TEST(RenderDelayBuffer, SetDelay) {
   EchoCanceller3Config config;
   std::unique_ptr<RenderDelayBuffer> delay_buffer(
       RenderDelayBuffer::Create(config, 1));
@@ -80,7 +80,7 @@ TEST(RenderDelayBuffer, AlignFromDelay) {
   size_t initial_internal_delay = 0;
   for (size_t delay = initial_internal_delay;
        delay < initial_internal_delay + 20; ++delay) {
-    ASSERT_TRUE(delay_buffer->AlignFromDelay(delay));
+    ASSERT_TRUE(delay_buffer->SetDelay(delay));
     EXPECT_EQ(delay, delay_buffer->Delay());
   }
 }
@@ -93,7 +93,7 @@ TEST(RenderDelayBuffer, AlignFromDelay) {
 TEST(RenderDelayBuffer, DISABLED_WrongDelay) {
   std::unique_ptr<RenderDelayBuffer> delay_buffer(
       RenderDelayBuffer::Create(EchoCanceller3Config(), 3));
-  EXPECT_DEATH(delay_buffer->AlignFromDelay(21), "");
+  EXPECT_DEATH(delay_buffer->SetDelay(21), "");
 }
 
 // Verifies the check for the number of bands in the inserted blocks.

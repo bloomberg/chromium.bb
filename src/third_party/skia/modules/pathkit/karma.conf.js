@@ -14,7 +14,6 @@ module.exports = function(config) {
       { pattern: 'tests/*.json', included:false, served:true},
       'tests/testReporter.js',
       'npm-wasm/bin/test/pathkit.js',
-      'tests/pathkitinit.js',
       'tests/*.spec.js'
     ],
 
@@ -40,8 +39,8 @@ module.exports = function(config) {
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: true,
 
-    browserDisconnectTimeout: 20000,
-    browserNoActivityTimeout: 20000,
+    browserDisconnectTimeout: 15000,
+    browserNoActivityTimeout: 15000,
 
     // start these browsers
     browsers: ['Chrome'],
@@ -77,7 +76,6 @@ module.exports = function(config) {
       { pattern: 'tests/*.json', included:false, served:true},
       'tests/testReporter.js',
       'npm-asmjs/bin/test/pathkit.js',
-      'tests/pathkitinit.js',
       'tests/*.spec.js'
     ];
 

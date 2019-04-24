@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -38,14 +37,12 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
                                       const NGConstraintSpace&) const;
 
   NGBoxStrut Borders() const {
-    const auto& physical_fragment =
-        To<NGPhysicalBoxFragment>(physical_fragment_);
+    const auto& physical_fragment = ToNGPhysicalBoxFragment(physical_fragment_);
     return physical_fragment.Borders().ConvertToLogical(GetWritingMode(),
                                                         direction_);
   }
   NGBoxStrut Padding() const {
-    const auto& physical_fragment =
-        To<NGPhysicalBoxFragment>(physical_fragment_);
+    const auto& physical_fragment = ToNGPhysicalBoxFragment(physical_fragment_);
     return physical_fragment.Padding().ConvertToLogical(GetWritingMode(),
                                                         direction_);
   }
@@ -54,12 +51,11 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
   TextDirection direction_;
 };
 
-template <>
-struct DowncastTraits<NGBoxFragment> {
-  static bool AllowFrom(const NGFragment& fragment) {
-    return fragment.Type() == NGPhysicalFragment::kFragmentBox;
-  }
-};
+DEFINE_TYPE_CASTS(NGBoxFragment,
+                  NGFragment,
+                  fragment,
+                  fragment->Type() == NGPhysicalFragment::kFragmentBox,
+                  fragment.Type() == NGPhysicalFragment::kFragmentBox);
 
 }  // namespace blink
 

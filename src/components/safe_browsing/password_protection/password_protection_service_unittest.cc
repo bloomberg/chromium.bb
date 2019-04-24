@@ -31,6 +31,8 @@ using testing::_;
 using testing::AnyNumber;
 using testing::ElementsAre;
 using testing::Return;
+using PasswordReuseEvent =
+    safe_browsing::LoginReputationClientRequest::PasswordReuseEvent;
 
 namespace {
 

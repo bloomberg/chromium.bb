@@ -92,55 +92,55 @@ class CORE_EXPORT InspectorNetworkAgent final
                        ResourceRequestBlockedReason,
                        ResourceType);
   void DidChangeResourcePriority(DocumentLoader*,
-                                 uint64_t identifier,
+                                 unsigned long identifier,
                                  ResourceLoadPriority);
   void PrepareRequest(DocumentLoader*,
                       ResourceRequest&,
                       const FetchInitiatorInfo&,
                       ResourceType);
-  void WillSendRequest(uint64_t identifier,
+  void WillSendRequest(unsigned long identifier,
                        DocumentLoader*,
                        const KURL& fetch_context_url,
                        const ResourceRequest&,
                        const ResourceResponse& redirect_response,
                        const FetchInitiatorInfo&,
                        ResourceType);
-  void WillSendNavigationRequest(uint64_t identifier,
+  void WillSendNavigationRequest(unsigned long identifier,
                                  DocumentLoader*,
                                  const KURL&,
                                  const AtomicString& http_method,
                                  EncodedFormData* http_body);
-  void MarkResourceAsCached(DocumentLoader*, uint64_t identifier);
-  void DidReceiveResourceResponse(uint64_t identifier,
+  void MarkResourceAsCached(DocumentLoader*, unsigned long identifier);
+  void DidReceiveResourceResponse(unsigned long identifier,
                                   DocumentLoader*,
                                   const ResourceResponse&,
-                                  const Resource*);
-  void DidReceiveData(uint64_t identifier,
+                                  Resource*);
+  void DidReceiveData(unsigned long identifier,
                       DocumentLoader*,
                       const char* data,
                       uint64_t data_length);
-  void DidReceiveBlob(uint64_t identifier,
+  void DidReceiveBlob(unsigned long identifier,
                       DocumentLoader*,
                       scoped_refptr<BlobDataHandle>);
   void DidReceiveEncodedDataLength(DocumentLoader*,
-                                   uint64_t identifier,
+                                   unsigned long identifier,
                                    size_t encoded_data_length);
-  void DidFinishLoading(uint64_t identifier,
+  void DidFinishLoading(unsigned long identifier,
                         DocumentLoader*,
                         TimeTicks monotonic_finish_time,
                         int64_t encoded_data_length,
                         int64_t decoded_body_length,
                         bool should_report_corb_blocking);
-  void DidReceiveCorsRedirectResponse(uint64_t identifier,
+  void DidReceiveCorsRedirectResponse(unsigned long identifier,
                                       DocumentLoader*,
                                       const ResourceResponse&,
                                       Resource*);
-  void DidFailLoading(uint64_t identifier,
+  void DidFailLoading(unsigned long identifier,
                       DocumentLoader*,
                       const ResourceError&);
   void DidCommitLoad(LocalFrame*, DocumentLoader*);
-  void ScriptImported(uint64_t identifier, const String& source_string);
-  void DidReceiveScriptResponse(uint64_t identifier);
+  void ScriptImported(unsigned long identifier, const String& source_string);
+  void DidReceiveScriptResponse(unsigned long identifier);
   void ShouldForceCorsPreflight(bool* result);
   void ShouldBlockRequest(const KURL&, bool* result);
   void ShouldBypassServiceWorker(bool* result);
@@ -155,7 +155,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   void DidFinishXHR(XMLHttpRequest*);
 
   void WillSendEventSourceRequest();
-  void WillDispatchEventSourceEvent(uint64_t identifier,
+  void WillDispatchEventSourceEvent(unsigned long identifier,
                                     const AtomicString& event_name,
                                     const AtomicString& event_id,
                                     const String& data);
@@ -169,30 +169,30 @@ class CORE_EXPORT InspectorNetworkAgent final
   void FrameClearedScheduledNavigation(LocalFrame*);
 
   void DidCreateWebSocket(ExecutionContext*,
-                          uint64_t identifier,
+                          unsigned long identifier,
                           const KURL& request_url,
                           const String&);
   void WillSendWebSocketHandshakeRequest(
       ExecutionContext*,
-      uint64_t identifier,
+      unsigned long identifier,
       network::mojom::blink::WebSocketHandshakeRequest*);
   void DidReceiveWebSocketHandshakeResponse(
       ExecutionContext*,
-      uint64_t identifier,
+      unsigned long identifier,
       network::mojom::blink::WebSocketHandshakeRequest*,
       network::mojom::blink::WebSocketHandshakeResponse*);
-  void DidCloseWebSocket(ExecutionContext*, uint64_t identifier);
-  void DidReceiveWebSocketMessage(uint64_t identifier,
+  void DidCloseWebSocket(ExecutionContext*, unsigned long identifier);
+  void DidReceiveWebSocketMessage(unsigned long identifier,
                                   int op_code,
                                   bool masked,
                                   const char* payload,
                                   size_t payload_length);
-  void DidSendWebSocketMessage(uint64_t identifier,
+  void DidSendWebSocketMessage(unsigned long identifier,
                                int op_code,
                                bool masked,
                                const char* payload,
                                size_t payload_length);
-  void DidReceiveWebSocketMessageError(uint64_t identifier, const String&);
+  void DidReceiveWebSocketMessageError(unsigned long identifier, const String&);
 
   // Called from frontend
   protocol::Response enable(Maybe<int> total_buffer_size,
@@ -246,7 +246,7 @@ class CORE_EXPORT InspectorNetworkAgent final
 
  private:
   void Enable();
-  void WillSendRequestInternal(uint64_t identifier,
+  void WillSendRequestInternal(unsigned long identifier,
                                DocumentLoader*,
                                const KURL& fetch_context_url,
                                const ResourceRequest&,
@@ -261,7 +261,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   static std::unique_ptr<protocol::Network::Initiator> BuildInitiatorObject(
       Document*,
       const FetchInitiatorInfo&);
-  static bool IsNavigation(DocumentLoader*, uint64_t identifier);
+  static bool IsNavigation(DocumentLoader*, unsigned long identifier);
 
   // This is null while inspecting workers.
   Member<InspectedFrames> inspected_frames_;

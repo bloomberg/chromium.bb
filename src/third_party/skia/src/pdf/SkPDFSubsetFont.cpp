@@ -41,9 +41,10 @@ static sk_sp<SkData> to_data(HBBlob blob) {
                                 blob.release());
 }
 
-static sk_sp<SkData> subset_harfbuzz(sk_sp<SkData> fontData,
-                                     const SkPDFGlyphUse& glyphUsage,
-                                     int ttcIndex) {
+sk_sp<SkData> SkPDFSubsetFont(sk_sp<SkData> fontData,
+                              const SkPDFGlyphUse& glyphUsage,
+                              const char*,
+                              int ttcIndex) {
 #if defined(SK_USING_THIRD_PARTY_ICU)
     if (!SkLoadICU()) {
         return nullptr;
@@ -72,19 +73,15 @@ static sk_sp<SkData> subset_harfbuzz(sk_sp<SkData> fontData,
     return to_data(std::move(result));
 }
 
-#endif  // defined(SK_PDF_USE_HARFBUZZ_SUBSET)
-
-////////////////////////////////////////////////////////////////////////////////
-
-#if defined(SK_PDF_USE_SFNTLY)
+#elif defined(SK_PDF_USE_SFNTLY)
 
 #include "sample/chromium/font_subsetter.h"
 #include <vector>
 
-static sk_sp<SkData> subset_sfntly(sk_sp<SkData> fontData,
-                                   const SkPDFGlyphUse& glyphUsage,
-                                   const char* fontName,
-                                   int ttcIndex) {
+sk_sp<SkData> SkPDFSubsetFont(sk_sp<SkData> fontData,
+                              const SkPDFGlyphUse& glyphUsage,
+                              const char* fontName,
+                              int ttcIndex) {
 #if defined(SK_USING_THIRD_PARTY_ICU)
     if (!SkLoadICU()) {
         return nullptr;
@@ -108,7 +105,7 @@ static sk_sp<SkData> subset_sfntly(sk_sp<SkData> fontData,
                                                    subset.data(),
                                                    subset.size(),
                                                    &subsetFont);
-#else  // defined(SK_BUILD_FOR_GOOGLE3)
+#else
     (void)fontName;
     int subsetFontSize = SfntlyWrapper::SubsetFont(ttcIndex,
                                                    fontData->bytes(),
@@ -116,7 +113,7 @@ static sk_sp<SkData> subset_sfntly(sk_sp<SkData> fontData,
                                                    subset.data(),
                                                    subset.size(),
                                                    &subsetFont);
-#endif  // defined(SK_BUILD_FOR_GOOGLE3)
+#endif
     SkASSERT(subsetFontSize > 0 || subsetFont == nullptr);
     if (subsetFontSize < 1 || subsetFont == nullptr) {
         return nullptr;
@@ -126,50 +123,9 @@ static sk_sp<SkData> subset_sfntly(sk_sp<SkData> fontData,
                                 nullptr);
 }
 
-#endif  // defined(SK_PDF_USE_SFNTLY)
-
-////////////////////////////////////////////////////////////////////////////////
-
-#if defined(SK_PDF_USE_SFNTLY) && defined(SK_PDF_USE_HARFBUZZ_SUBSET)
-
-sk_sp<SkData> SkPDFSubsetFont(sk_sp<SkData> fontData,
-                              const SkPDFGlyphUse& glyphUsage,
-                              SkPDF::Metadata::Subsetter subsetter,
-                              const char* fontName,
-                              int ttcIndex) {
-    switch (subsetter) {
-        case SkPDF::Metadata::kHarfbuzz_Subsetter:
-            return subset_harfbuzz(std::move(fontData), glyphUsage, ttcIndex);
-        case SkPDF::Metadata::kSfntly_Subsetter:
-            return subset_sfntly(std::move(fontData), glyphUsage, fontName, ttcIndex);
-    }
-    return nullptr;
-}
-
-#elif defined(SK_PDF_USE_SFNTLY)
-
-sk_sp<SkData> SkPDFSubsetFont(sk_sp<SkData> fontData,
-                              const SkPDFGlyphUse& glyphUsage,
-                              SkPDF::Metadata::Subsetter,
-                              const char* fontName,
-                              int ttcIndex) {
-    return subset_sfntly(std::move(fontData), glyphUsage, fontName, ttcIndex);
-}
-
-#elif defined(SK_PDF_USE_HARFBUZZ_SUBSET)
-
-sk_sp<SkData> SkPDFSubsetFont(sk_sp<SkData> fontData,
-                              const SkPDFGlyphUse& glyphUsage,
-                              SkPDF::Metadata::Subsetter,
-                              const char*,
-                              int ttcIndex) {
-    return subset_harfbuzz(std::move(fontData), glyphUsage, ttcIndex);
-}
-
 #else
 
-sk_sp<SkData> SkPDFSubsetFont(sk_sp<SkData>, const SkPDFGlyphUse&, SkPDF::Metadata::Subsetter,
-                              const char*, int) {
+sk_sp<SkData> SkPDFSubsetFont(sk_sp<SkData>, const SkPDFGlyphUse&, const char*, int) {
     return nullptr;
 }
 #endif  // defined(SK_PDF_USE_SFNTLY)

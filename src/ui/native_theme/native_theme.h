@@ -296,7 +296,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
     // Dialogs
     kColorId_DialogBackground,
     kColorId_BubbleBackground,
-    kColorId_BubbleFooterBackground,
     // FocusableBorder
     kColorId_FocusedBorderColor,
     kColorId_UnfocusedBorderColor,

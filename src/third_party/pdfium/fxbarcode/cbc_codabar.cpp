@@ -32,7 +32,7 @@ CBC_Codabar::CBC_Codabar()
 CBC_Codabar::~CBC_Codabar() {}
 
 bool CBC_Codabar::Encode(WideStringView contents) {
-  if (contents.IsEmpty() || contents.GetLength() > kMaxInputLengthBytes)
+  if (contents.IsEmpty())
     return false;
 
   BCFORMAT format = BCFORMAT_CODABAR;

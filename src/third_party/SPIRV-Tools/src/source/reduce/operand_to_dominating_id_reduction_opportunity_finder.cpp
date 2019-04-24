@@ -12,21 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "source/reduce/operand_to_dominating_id_reduction_opportunity_finder.h"
-
+#include "operand_to_dominating_id_reduction_opportunity_finder.h"
+#include "change_operand_reduction_opportunity.h"
 #include "source/opt/instruction.h"
-#include "source/reduce/change_operand_reduction_opportunity.h"
 
 namespace spvtools {
 namespace reduce {
 
-using opt::Function;
-using opt::IRContext;
-using opt::Instruction;
+using namespace opt;
 
 std::vector<std::unique_ptr<ReductionOpportunity>>
 OperandToDominatingIdReductionOpportunityFinder::GetAvailableOpportunities(
-    IRContext* context) const {
+    opt::IRContext* context) const {
   std::vector<std::unique_ptr<ReductionOpportunity>> result;
 
   // Go through every instruction in every block, considering it as a potential
@@ -61,9 +58,9 @@ OperandToDominatingIdReductionOpportunityFinder::GetAvailableOpportunities(
 void OperandToDominatingIdReductionOpportunityFinder::
     GetOpportunitiesForDominatingInst(
         std::vector<std::unique_ptr<ReductionOpportunity>>* opportunities,
-        Instruction* candidate_dominator,
-        Function::iterator candidate_dominator_block, Function* function,
-        IRContext* context) const {
+        opt::Instruction* candidate_dominator,
+        opt::Function::iterator candidate_dominator_block,
+        opt::Function* function, opt::IRContext* context) const {
   assert(candidate_dominator->HasResultId());
   assert(candidate_dominator->type_id());
   auto dominator_analysis = context->GetDominatorAnalysis(function);

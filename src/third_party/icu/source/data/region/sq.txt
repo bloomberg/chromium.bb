@@ -183,7 +183,7 @@ sq{
         MF{"Sen-Marten"}
         MG{"Madagaskar"}
         MH{"Ishujt Marshall"}
-        MK{"Maqedonia e Veriut"}
+        MK{"Maqedoni (IRJM)"}
         ML{"Mali"}
         MM{"Mianmar (Burmë)"}
         MN{"Mongoli"}
@@ -253,7 +253,7 @@ sq{
         SV{"Salvador"}
         SX{"Sint-Marten"}
         SY{"Siri"}
-        SZ{"Esvatini"}
+        SZ{"Suazilend"}
         TA{"Tristan-da-Kuna"}
         TC{"Ishujt Turks dhe Kaikos"}
         TD{"Çad"}
@@ -287,8 +287,6 @@ sq{
         VU{"Vanuatu"}
         WF{"Uollis e Futuna"}
         WS{"Samoa"}
-        XA{"Pseudo-thekse"}
-        XB{"Pseudo-bidi"}
         XK{"Kosovë"}
         YE{"Jemen"}
         YT{"Majotë"}
@@ -307,8 +305,7 @@ sq{
         CG{"Kongo (Republika)"}
         CI{"Bregu i Fildishtë"}
         CZ{"Republika Çeke"}
-        SZ{"Suazilend"}
         TL{"Timori Lindor"}
     }
-    Version{"2.1.48.42"}
+    Version{"2.1.43.50"}
 }

@@ -46,18 +46,17 @@ class MockObserver : public TaskQueueSelector::Observer {
 
 class TaskQueueSelectorForTest : public TaskQueueSelector {
  public:
-  using TaskQueueSelector::ChooseWithPriority;
+  using TaskQueueSelector::ChooseOldestWithPriority;
   using TaskQueueSelector::delayed_work_queue_sets;
   using TaskQueueSelector::immediate_work_queue_sets;
   using TaskQueueSelector::kMaxHighPriorityStarvationScore;
   using TaskQueueSelector::kMaxLowPriorityStarvationScore;
   using TaskQueueSelector::kMaxNormalPriorityStarvationScore;
   using TaskQueueSelector::SetImmediateStarvationCountForTest;
-  using TaskQueueSelector::SetOperationOldest;
   using TaskQueueSelector::SmallPriorityQueue;
 
   TaskQueueSelectorForTest(scoped_refptr<AssociatedThreadId> associated_thread)
-      : TaskQueueSelector(associated_thread, SequenceManager::Settings()) {}
+      : TaskQueueSelector(associated_thread) {}
 };
 
 class TaskQueueSelectorTest : public testing::Test {
@@ -646,41 +645,35 @@ TEST_F(TaskQueueSelectorTest, AllEnabledWorkQueuesAreEmpty_ControlPriority) {
   EXPECT_FALSE(selector_.AllEnabledWorkQueuesAreEmpty());
 }
 
-TEST_F(TaskQueueSelectorTest, ChooseWithPriority_Empty) {
+TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_Empty) {
   bool chose_delayed_over_immediate = false;
-  EXPECT_EQ(
-      nullptr,
-      selector_
-          .ChooseWithPriority<TaskQueueSelectorForTest::SetOperationOldest>(
-              TaskQueue::kNormalPriority, &chose_delayed_over_immediate));
+  EXPECT_EQ(nullptr,
+            selector_.ChooseOldestWithPriority(TaskQueue::kNormalPriority,
+                                               &chose_delayed_over_immediate));
   EXPECT_FALSE(chose_delayed_over_immediate);
 }
 
-TEST_F(TaskQueueSelectorTest, ChooseWithPriority_OnlyDelayed) {
+TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyDelayed) {
   task_queues_[0]->delayed_work_queue()->Push(
       Task(PostedTask(test_closure_, FROM_HERE), TimeTicks(), EnqueueOrder(),
            EnqueueOrder::FromIntForTesting(2)));
 
   bool chose_delayed_over_immediate = false;
-  EXPECT_EQ(
-      task_queues_[0]->delayed_work_queue(),
-      selector_
-          .ChooseWithPriority<TaskQueueSelectorForTest::SetOperationOldest>(
-              TaskQueue::kNormalPriority, &chose_delayed_over_immediate));
+  EXPECT_EQ(task_queues_[0]->delayed_work_queue(),
+            selector_.ChooseOldestWithPriority(TaskQueue::kNormalPriority,
+                                               &chose_delayed_over_immediate));
   EXPECT_FALSE(chose_delayed_over_immediate);
 }
 
-TEST_F(TaskQueueSelectorTest, ChooseWithPriority_OnlyImmediate) {
+TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyImmediate) {
   task_queues_[0]->immediate_work_queue()->Push(
       Task(PostedTask(test_closure_, FROM_HERE), TimeTicks(), EnqueueOrder(),
            EnqueueOrder::FromIntForTesting(2)));
 
   bool chose_delayed_over_immediate = false;
-  EXPECT_EQ(
-      task_queues_[0]->immediate_work_queue(),
-      selector_
-          .ChooseWithPriority<TaskQueueSelectorForTest::SetOperationOldest>(
-              TaskQueue::kNormalPriority, &chose_delayed_over_immediate));
+  EXPECT_EQ(task_queues_[0]->immediate_work_queue(),
+            selector_.ChooseOldestWithPriority(TaskQueue::kNormalPriority,
+                                               &chose_delayed_over_immediate));
   EXPECT_FALSE(chose_delayed_over_immediate);
 }
 
@@ -752,7 +745,7 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
   task_queue2->UnregisterTaskQueue();
 }
 
-struct ChooseWithPriorityTestParam {
+struct ChooseOldestWithPriorityTestParam {
   int delayed_task_enqueue_order;
   int immediate_task_enqueue_order;
   int immediate_starvation_count;
@@ -760,18 +753,19 @@ struct ChooseWithPriorityTestParam {
   bool expected_did_starve_immediate_queue;
 };
 
-static const ChooseWithPriorityTestParam kChooseWithPriorityTestCases[] = {
-    {1, 2, 0, "delayed", true},    {1, 2, 1, "delayed", true},
-    {1, 2, 2, "delayed", true},    {1, 2, 3, "immediate", false},
-    {1, 2, 4, "immediate", false}, {2, 1, 4, "immediate", false},
-    {2, 1, 4, "immediate", false},
+static const ChooseOldestWithPriorityTestParam
+    kChooseOldestWithPriorityTestCases[] = {
+        {1, 2, 0, "delayed", true},    {1, 2, 1, "delayed", true},
+        {1, 2, 2, "delayed", true},    {1, 2, 3, "immediate", false},
+        {1, 2, 4, "immediate", false}, {2, 1, 4, "immediate", false},
+        {2, 1, 4, "immediate", false},
 };
 
-class ChooseWithPriorityTest
+class ChooseOldestWithPriorityTest
     : public TaskQueueSelectorTest,
-      public testing::WithParamInterface<ChooseWithPriorityTestParam> {};
+      public testing::WithParamInterface<ChooseOldestWithPriorityTestParam> {};
 
-TEST_P(ChooseWithPriorityTest, RoundRobinTest) {
+TEST_P(ChooseOldestWithPriorityTest, RoundRobinTest) {
   task_queues_[0]->immediate_work_queue()->Push(Task(
       PostedTask(test_closure_, FROM_HERE), TimeTicks(),
       EnqueueOrder::FromIntForTesting(GetParam().immediate_task_enqueue_order),
@@ -787,19 +781,17 @@ TEST_P(ChooseWithPriorityTest, RoundRobinTest) {
       GetParam().immediate_starvation_count);
 
   bool chose_delayed_over_immediate = false;
-  WorkQueue* chosen_work_queue =
-      selector_
-          .ChooseWithPriority<TaskQueueSelectorForTest::SetOperationOldest>(
-              TaskQueue::kNormalPriority, &chose_delayed_over_immediate);
+  WorkQueue* chosen_work_queue = selector_.ChooseOldestWithPriority(
+      TaskQueue::kNormalPriority, &chose_delayed_over_immediate);
   EXPECT_EQ(chosen_work_queue->task_queue(), task_queues_[0].get());
   EXPECT_STREQ(chosen_work_queue->name(), GetParam().expected_work_queue_name);
   EXPECT_EQ(chose_delayed_over_immediate,
             GetParam().expected_did_starve_immediate_queue);
 }
 
-INSTANTIATE_TEST_SUITE_P(ChooseWithPriorityTest,
-                         ChooseWithPriorityTest,
-                         testing::ValuesIn(kChooseWithPriorityTestCases));
+INSTANTIATE_TEST_SUITE_P(ChooseOldestWithPriorityTest,
+                         ChooseOldestWithPriorityTest,
+                         testing::ValuesIn(kChooseOldestWithPriorityTestCases));
 
 class SmallPriorityQueueTest : public testing::Test {
  public:

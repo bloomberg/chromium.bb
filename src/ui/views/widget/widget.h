@@ -20,7 +20,6 @@
 #include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_observer.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/native_widget_delegate.h"
@@ -43,6 +42,7 @@ class DefaultThemeProvider;
 class GestureRecognizer;
 class InputMethod;
 class Layer;
+class NativeTheme;
 class OSExchangeData;
 class ThemeProvider;
 }  // namespace ui
@@ -396,7 +396,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual bool GetAccelerator(int cmd_id, ui::Accelerator* accelerator) const;
 
   // Forwarded from the RootView so that the widget can do any cleanup.
-  void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details);
+  void ViewHierarchyChanged(const View::ViewHierarchyChangedDetails& details);
 
   // Called right before changing the widget's parent NativeView to do any
   // cleanup.
@@ -632,10 +632,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // redrawn.
   virtual void SchedulePaintInRect(const gfx::Rect& rect);
 
-  // Schedule a layout to occur. This is called by RootView, client code should
-  // not need to call this.
-  void ScheduleLayout();
-
   // Sets the currently visible cursor. If |cursor| is NULL, the cursor used
   // before the current is restored.
   void SetCursor(gfx::NativeCursor cursor);
@@ -713,7 +709,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   }
   const ClientView* client_view() const {
     // non_client_view_ may be NULL, especially during creation.
-    return non_client_view_ ? non_client_view_->client_view() : nullptr;
+    return non_client_view_ ? non_client_view_->client_view() : NULL;
   }
 
   ui::Compositor* GetCompositor() {
@@ -857,7 +853,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
       gfx::NativeView child,
       ui::Layer* child_layer,
       const gfx::Point& location) override;
-  void LayoutRootViewIfNecessary() override;
 
   // Overridden from ui::EventSource:
   ui::EventSink* GetEventSink() override;
@@ -888,8 +883,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   virtual void OnDragComplete();
 
  private:
-  friend class ButtonTest;
   friend class ComboboxTest;
+  friend class ButtonTest;
   friend class TextfieldTest;
   friend class ViewAuraTest;
   friend void DisableActivationChangeHandlingForTests();
@@ -920,7 +915,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   static bool g_disable_activation_change_handling_;
 
-  internal::NativeWidgetPrivate* native_widget_ = nullptr;
+  internal::NativeWidgetPrivate* native_widget_;
 
   base::ObserverList<WidgetObserver> observers_;
 
@@ -928,7 +923,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Non-owned pointer to the Widget's delegate. If a NULL delegate is supplied
   // to Init() a default WidgetDelegate is created.
-  WidgetDelegate* widget_delegate_ = nullptr;
+  WidgetDelegate* widget_delegate_;
 
   // The root of the View hierarchy attached to this window.
   // WARNING: see warning in tooltip_manager_ for ordering dependencies with
@@ -939,7 +934,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // window controls, sizing borders etc). To use an implementation other than
   // the default, this class must be sub-classed and this value set to the
   // desired implementation before calling |InitWindow()|.
-  NonClientView* non_client_view_ = nullptr;
+  NonClientView* non_client_view_;
 
   // The focus manager keeping track of focus for this Widget and any of its
   // children.  NULL for non top-level widgets.
@@ -952,21 +947,21 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Valid for the lifetime of RunShellDrag(), indicates the view the drag
   // started from.
-  View* dragged_view_ = nullptr;
+  View* dragged_view_;
 
   // See class documentation for Widget above for a note about ownership.
-  InitParams::Ownership ownership_ = InitParams::NATIVE_WIDGET_OWNS_WIDGET;
+  InitParams::Ownership ownership_;
 
   // See set_is_secondary_widget().
-  bool is_secondary_widget_ = true;
+  bool is_secondary_widget_;
 
   // The current frame type in use by this window. Defaults to
   // FRAME_TYPE_DEFAULT.
-  FrameType frame_type_ = FRAME_TYPE_DEFAULT;
+  FrameType frame_type_;
 
   // True when the window should be rendered as active, regardless of whether
   // or not it actually is.
-  bool always_render_as_active_ = false;
+  bool always_render_as_active_;
 
   // Set to true if the widget is in the process of closing.
   bool widget_closed_ = false;
@@ -978,7 +973,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // The saved "show" state for this window. See note in SetInitialBounds
   // that explains why we save this.
-  ui::WindowShowState saved_show_state_ = ui::SHOW_STATE_DEFAULT;
+  ui::WindowShowState saved_show_state_;
 
   // The restored bounds used for the initial show. This is only used if
   // |saved_show_state_| is maximized.
@@ -987,47 +982,46 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Focus is automatically set to the view provided by the delegate
   // when the widget is shown. Set this value to false to override
   // initial focus for the widget.
-  bool focus_on_creation_ = true;
+  bool focus_on_creation_;
 
   // See |is_top_level()| accessor.
-  bool is_top_level_ = false;
+  bool is_top_level_;
 
   // Tracks whether native widget has been initialized.
-  bool native_widget_initialized_ = false;
+  bool native_widget_initialized_;
 
   // Whether native widget has been destroyed.
-  bool native_widget_destroyed_ = false;
+  bool native_widget_destroyed_;
 
   // TODO(beng): Remove NativeWidgetGtk's dependence on these:
   // If true, the mouse is currently down.
-  bool is_mouse_button_pressed_ = false;
+  bool is_mouse_button_pressed_;
 
   // True if capture losses should be ignored.
-  bool ignore_capture_loss_ = false;
+  bool ignore_capture_loss_;
 
   // TODO(beng): Remove NativeWidgetGtk's dependence on these:
   // The following are used to detect duplicate mouse move events and not
   // deliver them. Displaying a window may result in the system generating
   // duplicate move events even though the mouse hasn't moved.
-  bool last_mouse_event_was_move_ = false;
+  bool last_mouse_event_was_move_;
   gfx::Point last_mouse_event_position_;
 
   // True if event capture should be released on a mouse up event. Default is
   // true.
-  bool auto_release_capture_ = true;
+  bool auto_release_capture_;
 
   // See description in GetViewsWithLayers().
   View::Views views_with_layers_;
 
   // Does |views_with_layers_| need updating?
-  bool views_with_layers_dirty_ = false;
+  bool views_with_layers_dirty_;
 
   // True when window movement via mouse interaction with the frame should be
   // disabled.
-  bool movement_disabled_ = false;
+  bool movement_disabled_;
 
-  ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> observer_manager_{
-      this};
+  ScopedObserver<ui::NativeTheme, ui::NativeThemeObserver> observer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(Widget);
 };

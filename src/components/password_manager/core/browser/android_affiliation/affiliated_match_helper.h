@@ -45,11 +45,12 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
  public:
   // Callback to returns the list of affiliated signon_realms (as per defined in
   // autofill::PasswordForm) to the caller.
-  using AffiliatedRealmsCallback =
-      base::OnceCallback<void(const std::vector<std::string>&)>;
+  typedef base::Callback<void(const std::vector<std::string>&)>
+      AffiliatedRealmsCallback;
 
-  using PasswordFormsCallback = base::OnceCallback<void(
-      std::vector<std::unique_ptr<autofill::PasswordForm>>)>;
+  typedef base::Callback<void(
+      std::vector<std::unique_ptr<autofill::PasswordForm>>)>
+      PasswordFormsCallback;
 
   // The |password_store| must outlive |this|. Both arguments must be non-NULL,
   // except in tests which do not Initialize() the object.
@@ -66,7 +67,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // |result_callback| will be invoked in both cases, on the same thread.
   virtual void GetAffiliatedAndroidRealms(
       const PasswordStore::FormDigest& observed_form,
-      AffiliatedRealmsCallback result_callback);
+      const AffiliatedRealmsCallback& result_callback);
 
   // Retrieves realms of web sites affiliated with the Android application that
   // |android_form| belongs to and invokes |result_callback| on the same thread;
@@ -77,7 +78,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // happen as affiliation information for those applications are prefetched.
   virtual void GetAffiliatedWebRealms(
       const PasswordStore::FormDigest& android_form,
-      AffiliatedRealmsCallback result_callback);
+      const AffiliatedRealmsCallback& result_callback);
 
   // Retrieves affiliation and branding information about the Android
   // credentials in |forms|, sets |affiliated_web_realm|, |app_display_name| and
@@ -87,7 +88,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // corresponding form.
   virtual void InjectAffiliationAndBrandingInformation(
       std::vector<std::unique_ptr<autofill::PasswordForm>> forms,
-      PasswordFormsCallback result_callback);
+      const PasswordFormsCallback& result_callback);
 
   // Returns whether or not |form| represents an Android credential.
   static bool IsValidAndroidCredential(const PasswordStore::FormDigest& form);
@@ -114,16 +115,17 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // be completed.
   void CompleteGetAffiliatedAndroidRealms(
       const FacetURI& original_facet_uri,
-      AffiliatedRealmsCallback result_callback,
+      const AffiliatedRealmsCallback& result_callback,
       const AffiliatedFacets& results,
       bool success);
 
   // Called back by AffiliationService to supply the list of facets affiliated
   // with the Android application that GetAffiliatedWebRealms() was called with,
   // so that the call can be completed.
-  void CompleteGetAffiliatedWebRealms(AffiliatedRealmsCallback result_callback,
-                                      const AffiliatedFacets& results,
-                                      bool success);
+  void CompleteGetAffiliatedWebRealms(
+      const AffiliatedRealmsCallback& result_callback,
+      const AffiliatedFacets& results,
+      bool success);
 
   // Called back by AffiliationService to supply the list of facets affiliated
   // with the Android credential in |form|. Injects affiliation and branding
@@ -132,7 +134,7 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   // Invokes |barrier_closure|.
   void CompleteInjectAffiliationAndBrandingInformation(
       autofill::PasswordForm* form,
-      base::OnceClosure barrier_closure,
+      base::Closure barrier_closure,
       const AffiliatedFacets& results,
       bool success);
 

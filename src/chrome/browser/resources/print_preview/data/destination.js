@@ -178,27 +178,14 @@ print_preview.ColorMode = {
   COLOR: 2
 };
 
-// <if expr="chromeos">
 /**
- * Enumeration of color mode restrictions used by Chromium.
- * This has to coincide with |printing::ColorModeRestriction| as defined in
- * printing/backend/printing_restrictions.h
- * @enum {number}
- */
-print_preview.ColorModeRestriction = {
-  UNSET: 0x0,
-  MONOCHROME: 0x1,
-  COLOR: 0x2,
-};
-
-/**
- * Enumeration of duplex mode restrictions used by Chromium.
+ * Enumeration of duplex modes used by Chromium.
  * This has to coincide with |printing::DuplexModeRestriction| as defined in
  * printing/backend/printing_restrictions.h
  * @enum {number}
  */
 print_preview.DuplexModeRestriction = {
-  UNSET: 0x0,
+  NONE: 0x0,
   SIMPLEX: 0x1,
   LONG_EDGE: 0x2,
   SHORT_EDGE: 0x4,
@@ -206,30 +193,15 @@ print_preview.DuplexModeRestriction = {
 };
 
 /**
- * Enumeration of PIN printing mode restrictions used by Chromium.
- * This has to coincide with |printing::PinModeRestriction| as defined in
- * printing/backend/printing_restrictions.h
- * @enum {number}
- */
-print_preview.PinModeRestriction = {
-  UNSET: 0,
-  PIN: 1,
-  NO_PIN: 2
-};
-
-/**
  * Policies affecting a destination.
  * @typedef {{
- *   allowedColorModes: ?print_preview.ColorModeRestriction,
+ *   allowedColorModes: ?print_preview.ColorMode,
  *   allowedDuplexModes: ?print_preview.DuplexModeRestriction,
- *   allowedPinMode: ?print_preview.PinModeRestriction,
- *   defaultColorMode: ?print_preview.ColorModeRestriction,
+ *   defaultColorMode: ?print_preview.ColorMode,
  *   defaultDuplexMode: ?print_preview.DuplexModeRestriction,
- *   defaultPinMode: ?print_preview.PinModeRestriction,
  * }}
  */
 print_preview.Policies;
-// </if>
 
 /**
  * @typedef {{id: string,
@@ -599,7 +571,6 @@ cr.define('print_preview', function() {
       }
     }
 
-    // <if expr="chromeos">
     /**
      * @return {?print_preview.Policies} Print policies affecting the
      *     destination.
@@ -615,7 +586,6 @@ cr.define('print_preview', function() {
     set policies(policies) {
       this.policies_ = policies;
     }
-    // </if>
 
     /**
      * @return {!print_preview.DestinationConnectionStatus} Connection status
@@ -799,9 +769,8 @@ cr.define('print_preview', function() {
           null;
     }
 
-    // <if expr="chromeos">
     /**
-     * @return {?print_preview.ColorModeRestriction} Color mode set by policy.
+     * @return {?print_preview.ColorMode} Color mode set by policy.
      */
     get colorPolicy() {
       return this.policies && this.policies.allowedColorModes ?
@@ -818,16 +787,6 @@ cr.define('print_preview', function() {
           this.policies.allowedDuplexModes :
           null;
     }
-
-    /**
-     * @return {?print_preview.PinModeRestriction} Pin mode allowed by policy.
-     */
-    get pinPolicy() {
-      return this.policies && this.policies.allowedPinModes ?
-          this.policies.allowedPinModes :
-          null;
-    }
-    // </if>
 
     /**
      * @return {boolean} Whether the printer supports both black and white and
@@ -849,10 +808,9 @@ cr.define('print_preview', function() {
       return hasColor && hasMonochrome;
     }
 
-    // <if expr="chromeos">
     /**
-     * @return {?print_preview.ColorModeRestriction} Value of default color
-     *     setting given by policy.
+     * @return {?print_preview.ColorMode} Value of default color setting given
+     *     by policy.
      */
     get defaultColorPolicy() {
       return this.policies && this.policies.defaultColorMode;
@@ -865,15 +823,6 @@ cr.define('print_preview', function() {
     get defaultDuplexPolicy() {
       return this.policies && this.policies.defaultDuplexMode;
     }
-
-    /**
-     * @return {?print_preview.PinModeRestriction} Value of default pin setting
-     *     given by policy.
-     */
-    get defaultPinPolicy() {
-      return this.policies && this.policies.defaultPinMode;
-    }
-    // </if>
 
     /**
      * @param {boolean} isColor Whether to use a color printing mode.

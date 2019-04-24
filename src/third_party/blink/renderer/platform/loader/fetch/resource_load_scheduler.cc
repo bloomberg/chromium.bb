@@ -4,10 +4,7 @@
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
 
-#include <algorithm>
 #include <memory>
-#include <string>
-
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
@@ -352,13 +349,11 @@ constexpr ResourceLoadScheduler::ClientId
 ResourceLoadScheduler::ResourceLoadScheduler(
     ThrottlingPolicy initial_throttling_policy,
     const ResourceFetcherProperties& resource_fetcher_properties,
-    FrameScheduler* frame_scheduler,
-    ConsoleLogger& console_logger)
+    FrameScheduler* frame_scheduler)
     : resource_fetcher_properties_(resource_fetcher_properties),
       policy_(initial_throttling_policy),
       outstanding_limit_for_throttled_frame_scheduler_(
-          GetOutstandingThrottledLimit(*resource_fetcher_properties_)),
-      console_logger_(console_logger) {
+          GetOutstandingThrottledLimit(*resource_fetcher_properties_)) {
   traffic_monitor_ = std::make_unique<ResourceLoadScheduler::TrafficMonitor>(
       resource_fetcher_properties);
 
@@ -383,7 +378,6 @@ ResourceLoadScheduler::~ResourceLoadScheduler() = default;
 void ResourceLoadScheduler::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_request_map_);
   visitor->Trace(resource_fetcher_properties_);
-  visitor->Trace(console_logger_);
 }
 
 void ResourceLoadScheduler::LoosenThrottlingPolicy() {
@@ -745,12 +739,21 @@ void ResourceLoadScheduler::ShowConsoleMessageIfNeeded() {
     // last 1 minutes, or there is no pending requests in the inactive queue.
     return;
   }
-  console_logger_->AddConsoleMessage(
-      mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kInfo,
+  ConsoleLogger* logger = nullptr;
+  for (const auto& client : pending_requests_[target_option]) {
+    auto client_it = pending_request_map_.find(client.client_id);
+    if (pending_request_map_.end() == client_it)
+      continue;
+    logger = client_it->value->client->GetConsoleLogger();
+  }
+  DCHECK(logger);
+
+  logger->AddInfoMessage(
+      ConsoleLogger::Source::kOther,
       "Some resource load requests were throttled while the tab was in "
       "background, and no request was sent from the queue in the last 1 "
       "minute. This means previously requested in-flight requests haven't "
-      "received any response from servers. See "
+      "received any response from servers. See"
       "https://www.chromestatus.com/feature/5527160148197376 for more details");
   is_console_info_shown_ = true;
 }

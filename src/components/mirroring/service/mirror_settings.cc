@@ -21,16 +21,17 @@ namespace {
 constexpr base::TimeDelta kAnimatedPlayoutDelay =
     base::TimeDelta::FromMilliseconds(400);
 
-// Minimum end-to-end latency.
+// Minimum end-to-end latency. This allows cast streaming to adaptively lower
+// latency in interactive streaming scenarios.
+// TODO(miu): This was 120 before stable launch, but we got user feedback that
+// this was causing audio drop-outs. So, we need to fix the Cast Streaming
+// implementation before lowering this setting.
 constexpr base::TimeDelta kMinPlayoutDelay =
     base::TimeDelta::FromMilliseconds(400);
 
-// Maximum end-to-end latency.  Currently, this is kMinPlayoutDelay, effectively
-// disabling adaptive latency control, because of audio playout regressions
-// (b/32876644).
-// TODO(https://crbug.com/openscreen/44): Re-enable in port to Open Screen.
+// Maximum end-to-end latency.
 constexpr base::TimeDelta kMaxPlayoutDelay =
-    base::TimeDelta::FromMilliseconds(400);
+    base::TimeDelta::FromMilliseconds(800);
 
 constexpr int kAudioTimebase = 48000;
 constexpr int kVidoTimebase = 90000;

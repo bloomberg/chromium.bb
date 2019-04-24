@@ -15,10 +15,7 @@ class SwitchAccessPanelTest;
 class SwitchAccessPanel : public AccessibilityPanel {
  public:
   explicit SwitchAccessPanel(content::BrowserContext* browser_context);
-  void Show(const gfx::Rect& element_bounds,
-            int width,
-            int height,
-            bool back_button_only);
+  void Show(const gfx::Rect& element_bounds, int width, int height);
   void Hide();
   ~SwitchAccessPanel() override = default;
 

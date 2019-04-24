@@ -6,7 +6,6 @@
 #define CHROMECAST_BASE_CAST_SYS_INFO_ANDROID_H_
 
 #include <jni.h>
-#include <vector>
 
 #include "base/macros.h"
 #include "chromecast/public/cast_sys_info.h"
@@ -35,7 +34,7 @@ class CastSysInfoAndroid : public CastSysInfo {
   std::string GetBoardName() override;
   std::string GetBoardRevision() override;
   std::string GetFactoryCountry() override;
-  std::vector<std::string> GetFactoryLocaleList() override;
+  std::string GetFactoryLocale(std::string* second_locale) override;
   std::string GetWifiInterface() override;
   std::string GetApInterface() override;
 

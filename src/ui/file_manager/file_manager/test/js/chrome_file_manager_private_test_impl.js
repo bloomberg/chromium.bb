@@ -80,7 +80,7 @@ chrome.fileManagerPrivate = {
     }
     setTimeout(callback, 0, results);
   },
-  getCrostiniSharedPaths: (observeFirstForSession, vmName, callback) => {
+  getCrostiniSharedPaths: (observeFirstForSession, callback) => {
     // Returns Entry[], firstForSession.
     setTimeout(callback, 0, [], observeFirstForSession);
   },
@@ -128,6 +128,9 @@ chrome.fileManagerPrivate = {
   grantAccess: (entryUrls, callback) => {
     setTimeout(callback, 0);
   },
+  isUMAEnabled: (callback) => {
+    setTimeout(callback, 0, false);
+  },
   // Simulate startup of vm and container by taking 1s.
   mountCrostiniDelay_: 1000,
   mountCrostini: (callback) => {
@@ -172,10 +175,10 @@ chrome.fileManagerPrivate = {
     // highlightedBaseName: string }
     setTimeout(callback, 0, []);
   },
-  sharePathsWithCrostini: (vmName, entries, persist, callback) => {
+  sharePathsWithCrostini: (entries, persist, callback) => {
     setTimeout(callback, 0);
   },
-  unsharePathWithCrostini: (vmName, entry, callback) => {
+  unsharePathWithCrostini: (entry, callback) => {
     setTimeout(callback, 0);
   },
   nextCopyId_: 0,

@@ -157,6 +157,7 @@ void AssociatedResourceFetcherImpl::Start(
     blink::mojom::RequestContextType request_context,
     network::mojom::FetchRequestMode fetch_request_mode,
     network::mojom::FetchCredentialsMode fetch_credentials_mode,
+    network::mojom::RequestContextFrameType frame_type,
     const Callback& callback) {
   DCHECK(!loader_);
   DCHECK(!client_);
@@ -165,6 +166,7 @@ void AssociatedResourceFetcherImpl::Start(
     DCHECK_NE("GET", request_.HttpMethod().Utf8()) << "GETs can't have bodies.";
 
   request_.SetRequestContext(request_context);
+  request_.SetFrameType(frame_type);
   request_.SetSiteForCookies(frame->GetDocument().SiteForCookies());
   request_.SetFetchRequestMode(fetch_request_mode);
   request_.SetFetchCredentialsMode(fetch_credentials_mode);

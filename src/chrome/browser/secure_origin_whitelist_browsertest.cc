@@ -17,7 +17,6 @@
 #include "components/security_state/core/features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
-#include "services/network/public/cpp/network_switches.h"
 
 namespace {
 // SecureOriginWhitelistBrowsertests differ in the setup of the browser. Since
@@ -59,7 +58,7 @@ class SecureOriginWhitelistBrowsertest
       return;
 
     command_line->AppendSwitchASCII(
-        network::switches::kUnsafelyTreatInsecureOriginAsSecure, BaseURL());
+        switches::kUnsafelyTreatInsecureOriginAsSecure, BaseURL());
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -186,18 +185,21 @@ IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, SecurityIndicators) {
   auto* helper = SecurityStateTabHelper::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
   ASSERT_TRUE(helper);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
 
   if (GetParam() == TestVariant::kPolicyOldAndNew) {
     // When both policies are set, the new policy overrides the old policy.
-    EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
+    EXPECT_EQ(security_state::DANGEROUS, security_info.security_level);
     ui_test_utils::NavigateToURL(
         browser(),
         embedded_test_server()->GetURL(
             "otherexample.com", "/secure_origin_whitelist_browsertest.html"));
-    EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
+    helper->GetSecurityInfo(&security_info);
+    EXPECT_EQ(security_state::NONE, security_info.security_level);
   } else {
     EXPECT_EQ(ExpectSecureContext() ? security_state::NONE
                                     : security_state::DANGEROUS,
-              helper->GetSecurityLevel());
+              security_info.security_level);
   }
 }

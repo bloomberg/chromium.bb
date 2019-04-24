@@ -626,7 +626,7 @@ void CPDF_Document::DeletePage(int iPage) {
 }
 
 CPDF_Font* CPDF_Document::AddStandardFont(const char* font,
-                                          const CPDF_FontEncoding* pEncoding) {
+                                          CPDF_FontEncoding* pEncoding) {
   ByteString name(font);
   if (CFX_FontMapper::GetStandardFontName(&name) < 0)
     return nullptr;

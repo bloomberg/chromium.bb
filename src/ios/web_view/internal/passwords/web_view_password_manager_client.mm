@@ -91,13 +91,6 @@ void WebViewPasswordManagerClient::HideManualFallbackForSaving() {
   NOTIMPLEMENTED();
 }
 
-void WebViewPasswordManagerClient::FocusedInputChanged(
-    const url::Origin& last_committed_origin,
-    bool is_fillable,
-    bool is_password_field) {
-  NOTIMPLEMENTED();
-}
-
 void WebViewPasswordManagerClient::AutomaticPasswordSave(
     std::unique_ptr<PasswordFormManagerForUI> saved_form_manager) {
   NOTIMPLEMENTED();
@@ -184,9 +177,4 @@ password_manager::PasswordManager*
 WebViewPasswordManagerClient::GetPasswordManager() {
   return delegate_.passwordManager;
 }
-
-bool WebViewPasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
-  return false;
-}
-
 }  // namespace ios_web_view

@@ -276,7 +276,7 @@ TEST_F(P2PSocketTcpTest, PacketIdIsPropagated) {
 
   const int32_t kRtcPacketId = 1234;
 
-  int64_t now = rtc::TimeMillis();
+  base::TimeTicks now = base::TimeTicks::Now();
 
   EXPECT_CALL(*fake_client_.get(),
               SendComplete(MatchSendPacketMetrics(kRtcPacketId, now)))

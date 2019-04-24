@@ -20,6 +20,14 @@ namespace {
 uint64_t g_current_sequence_number = 0;
 }
 
+UndoStep* UndoStep::Create(Document* document,
+                           const SelectionForUndoStep& starting_selection,
+                           const SelectionForUndoStep& ending_selection,
+                           InputEvent::InputType input_type) {
+  return MakeGarbageCollected<UndoStep>(document, starting_selection,
+                                        ending_selection, input_type);
+}
+
 UndoStep::UndoStep(Document* document,
                    const SelectionForUndoStep& starting_selection,
                    const SelectionForUndoStep& ending_selection,
@@ -44,7 +52,7 @@ void UndoStep::Unapply() {
   // operations, like RemoveNodeCommand, don't require a layout because the high
   // level operations that use them perform one if one is necessary (like for
   // the creation of VisiblePositions).
-  document_->UpdateStyleAndLayout();
+  document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   {
     wtf_size_t size = commands_.size();
@@ -86,7 +94,7 @@ void UndoStep::Reapply() {
   // operations, like RemoveNodeCommand, don't require a layout because the high
   // level operations that use them perform one if one is necessary (like for
   // the creation of VisiblePositions).
-  document_->UpdateStyleAndLayout();
+  document_->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   {
     for (const auto& command : commands_)

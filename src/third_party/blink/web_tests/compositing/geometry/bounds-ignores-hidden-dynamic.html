@@ -29,18 +29,21 @@
       visibility: hidden;
   }
 </style>
-<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
-    if (window.testRunner)
+    if (window.testRunner) {
         testRunner.dumpAsTextWithPixelResults();
+        testRunner.waitUntilDone();
+    }
 
     function doTest()
     {
-        runAfterLayoutAndPaint(function() {
+        window.setTimeout(function() {
             document.body.classList.add('changed');
-            if (window.testRunner && window.internals)
+            if (window.testRunner && window.internals) {
                 testRunner.setCustomTextOutput(internals.layerTreeAsText(document));
-        }, true);
+                testRunner.notifyDone();
+            }
+        }, 0);
     }
     window.addEventListener('load', doTest, false);
 </script>

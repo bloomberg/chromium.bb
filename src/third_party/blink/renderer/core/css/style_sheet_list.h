@@ -23,6 +23,7 @@
 
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -36,6 +37,12 @@ class CORE_EXPORT StyleSheetList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static StyleSheetList* Create();
+
+  static StyleSheetList* Create(TreeScope* tree_scope) {
+    return MakeGarbageCollected<StyleSheetList>(tree_scope);
+  }
+
   explicit StyleSheetList(TreeScope*);
   StyleSheetList() {}
 
@@ -53,7 +60,7 @@ class CORE_EXPORT StyleSheetList final : public ScriptWrappable {
   void Trace(blink::Visitor*) override;
 
  private:
-  const HeapVector<Member<StyleSheet>>& StyleSheets() const;
+  const HeapVector<TraceWrapperMember<StyleSheet>>& StyleSheets() const;
 
   Member<TreeScope> tree_scope_;
   HeapVector<Member<CSSStyleSheet>> style_sheet_vector_;

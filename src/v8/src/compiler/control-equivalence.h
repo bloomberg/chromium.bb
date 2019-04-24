@@ -56,7 +56,7 @@ class V8_EXPORT_PRIVATE ControlEquivalence final
 
  private:
   static const size_t kInvalidClass = static_cast<size_t>(-1);
-  enum DFSDirection { kInputDirection, kUseDirection };
+  typedef enum { kInputDirection, kUseDirection } DFSDirection;
 
   struct Bracket {
     DFSDirection direction;  // Direction in which this bracket was added.
@@ -67,7 +67,7 @@ class V8_EXPORT_PRIVATE ControlEquivalence final
   };
 
   // The set of brackets for each node during the DFS walk.
-  using BracketList = ZoneLinkedList<Bracket>;
+  typedef ZoneLinkedList<Bracket> BracketList;
 
   struct DFSStackEntry {
     DFSDirection direction;            // Direction currently used in DFS walk.
@@ -78,7 +78,7 @@ class V8_EXPORT_PRIVATE ControlEquivalence final
   };
 
   // The stack is used during the undirected DFS walk.
-  using DFSStack = ZoneStack<DFSStackEntry>;
+  typedef ZoneStack<DFSStackEntry> DFSStack;
 
   struct NodeData : ZoneObject {
     explicit NodeData(Zone* zone)
@@ -94,7 +94,7 @@ class V8_EXPORT_PRIVATE ControlEquivalence final
   };
 
   // The per-node data computed during the DFS walk.
-  using Data = ZoneVector<NodeData*>;
+  typedef ZoneVector<NodeData*> Data;
 
   // Called at pre-visit during DFS walk.
   void VisitPre(Node* node);

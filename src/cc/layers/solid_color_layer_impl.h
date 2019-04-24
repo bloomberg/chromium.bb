@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
@@ -19,9 +20,6 @@ class CC_EXPORT SolidColorLayerImpl : public LayerImpl {
                                                      int id) {
     return base::WrapUnique(new SolidColorLayerImpl(tree_impl, id));
   }
-
-  SolidColorLayerImpl(const SolidColorLayerImpl&) = delete;
-  SolidColorLayerImpl& operator=(const SolidColorLayerImpl&) = delete;
 
   static void AppendSolidQuads(viz::RenderPass* render_pass,
                                const Occlusion& occlusion_in_layer_space,
@@ -44,6 +42,8 @@ class CC_EXPORT SolidColorLayerImpl : public LayerImpl {
 
  private:
   const char* LayerTypeAsString() const override;
+
+  DISALLOW_COPY_AND_ASSIGN(SolidColorLayerImpl);
 };
 
 }  // namespace cc

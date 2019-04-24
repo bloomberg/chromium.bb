@@ -54,8 +54,6 @@ class AssistantManagerService : public mojom::Assistant {
   // Turn on / off hotword listening.
   virtual void EnableHotword(bool enable) = 0;
 
-  virtual void SetArcPlayStoreEnabled(bool enabled) = 0;
-
   // Returns a pointer of AssistantSettingsManager.
   virtual AssistantSettingsManager* GetAssistantSettingsManager() = 0;
 };

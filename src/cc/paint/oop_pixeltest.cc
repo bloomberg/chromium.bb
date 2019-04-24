@@ -82,8 +82,6 @@ class OopPixelTest : public testing::Test,
             /*enable_oop_rasterization=*/false, /*support_locking=*/true);
     gpu::ContextResult result = gles2_context_provider_->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
-    CHECK_EQ(gles2_context_provider_->ContextCapabilities().max_texture_size,
-             raster_context_provider_->ContextCapabilities().max_texture_size);
   }
 
   // gpu::raster::GrShaderCache::Client implementation.
@@ -300,8 +298,7 @@ class OopPixelTest : public testing::Test,
           SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
     }
     SkImageInfo image_info = SkImageInfo::MakeN32Premul(
-        options.resource_size.width(), options.resource_size.height(),
-        options.color_space.ToSkColorSpace());
+        options.resource_size.width(), options.resource_size.height());
     auto surface = SkSurface::MakeRenderTarget(
         gles2_context_provider_->GrContext(), SkBudgeted::kYes, image_info);
     SkCanvas* canvas = surface->getCanvas();
@@ -313,9 +310,10 @@ class OopPixelTest : public testing::Test,
     gfx::AxisTransform2d raster_transform(options.post_scale,
                                           options.post_translate);
     raster_source->PlaybackToCanvas(
-        canvas, options.content_size, options.full_raster_rect,
-        options.playback_rect, raster_transform, settings);
-    surface->flush();
+        canvas, options.color_space, options.content_size,
+        options.full_raster_rect, options.playback_rect, raster_transform,
+        settings);
+    surface->prepareForExternalIO();
     EXPECT_EQ(gles2_context_provider_->ContextGL()->GetError(),
               static_cast<unsigned>(GL_NO_ERROR));
 
@@ -566,8 +564,9 @@ TEST_P(OopImagePixelTest, DrawImageShaderScaled) {
   auto builder = PaintImageBuilder::WithDefault().set_image(image, 0).set_id(
       PaintImage::GetNextId());
   auto paint_image = builder.TakePaintImage();
-  auto paint_image_shader = PaintShader::MakeImage(
-      paint_image, SkTileMode::kRepeat, SkTileMode::kRepeat, nullptr);
+  auto paint_image_shader =
+      PaintShader::MakeImage(paint_image, SkShader::kRepeat_TileMode,
+                             SkShader::kRepeat_TileMode, nullptr);
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
@@ -611,8 +610,8 @@ TEST_P(OopImagePixelTest, DrawRecordShaderWithImageScaled) {
   flags.setFilterQuality(FilterQuality());
   paint_record->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
   auto paint_record_shader = PaintShader::MakePaintRecord(
-      paint_record, gfx::RectToSkRect(rect), SkTileMode::kRepeat,
-      SkTileMode::kRepeat, nullptr);
+      paint_record, gfx::RectToSkRect(rect), SkShader::kRepeat_TileMode,
+      SkShader::kRepeat_TileMode, nullptr);
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
@@ -655,8 +654,9 @@ TEST_F(OopImagePixelTest, DrawRecordShaderTranslatedTileRect) {
 
   SkRect tile_rect = SkRect::MakeXYWH(x_offset, y_offset, 2, 3);
   sk_sp<PaintShader> paint_record_shader = PaintShader::MakePaintRecord(
-      shader_buffer, tile_rect, SkTileMode::kRepeat, SkTileMode::kRepeat,
-      nullptr, PaintShader::ScalingBehavior::kRasterAtScale);
+      shader_buffer, tile_rect, SkShader::kRepeat_TileMode,
+      SkShader::kRepeat_TileMode, nullptr,
+      PaintShader::ScalingBehavior::kRasterAtScale);
 
   gfx::Size output_size(10, 10);
 
@@ -1467,8 +1467,8 @@ class OopRecordShaderPixelTest : public OopPixelTest,
     paint_record->push<DrawTextBlobOp>(
         BuildTextBlob(SkTypeface::MakeDefault(), UseLcdText()), 0u, 0u, flags);
     auto paint_record_shader = PaintShader::MakePaintRecord(
-        paint_record, SkRect::MakeWH(25, 25), SkTileMode::kRepeat,
-        SkTileMode::kRepeat, nullptr);
+        paint_record, SkRect::MakeWH(25, 25), SkShader::kRepeat_TileMode,
+        SkShader::kRepeat_TileMode, nullptr);
 
     auto display_item_list = base::MakeRefCounted<DisplayItemList>();
     display_item_list->StartPaint();
@@ -1656,40 +1656,6 @@ class OopPathPixelTest : public OopPixelTest,
 
 TEST_P(OopPathPixelTest, Basic) {
   RunTest();
-}
-
-TEST_F(OopPixelTest, RecordShaderExceedsMaxTextureSize) {
-  const int max_texture_size =
-      raster_context_provider_->ContextCapabilities().max_texture_size;
-  const SkRect rect = SkRect::MakeWH(max_texture_size + 10, 10);
-
-  auto shader_record = sk_make_sp<PaintRecord>();
-  shader_record->push<DrawColorOp>(SK_ColorWHITE, SkBlendMode::kSrc);
-  PaintFlags flags;
-  flags.setStyle(PaintFlags::kFill_Style);
-  flags.setColor(SK_ColorGREEN);
-  shader_record->push<DrawRectOp>(rect, flags);
-  auto shader = PaintShader::MakePaintRecord(
-      shader_record, rect, SkTileMode::kRepeat, SkTileMode::kRepeat, nullptr);
-
-  RasterOptions options;
-  options.resource_size = gfx::Size(100, 100);
-  options.content_size = gfx::Size(rect.width(), rect.height());
-  options.full_raster_rect = gfx::Rect(options.content_size);
-  options.playback_rect = options.full_raster_rect;
-  options.color_space = gfx::ColorSpace::CreateSRGB();
-
-  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
-  display_item_list->StartPaint();
-  display_item_list->push<DrawColorOp>(SK_ColorWHITE, SkBlendMode::kSrc);
-  flags.setShader(shader);
-  display_item_list->push<DrawRectOp>(rect, flags);
-  display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
-  display_item_list->Finalize();
-
-  auto expected = RasterExpectedBitmap(display_item_list, options);
-  auto actual = Raster(display_item_list, options);
-  ExpectEquals(actual, expected);
 }
 
 INSTANTIATE_TEST_SUITE_P(P, OopImagePixelTest, ::testing::Bool());

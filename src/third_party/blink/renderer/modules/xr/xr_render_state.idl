@@ -6,7 +6,7 @@
 [
     SecureContext,
     Exposed=Window,
-    RuntimeEnabled=WebXR
+    OriginTrialEnabled=WebXR
 ] interface XRRenderState {
   readonly attribute double depthNear;
   readonly attribute double depthFar;

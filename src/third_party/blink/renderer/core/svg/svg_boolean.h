@@ -33,7 +33,6 @@
 
 #include "third_party/blink/renderer/core/svg/properties/svg_property_helper.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
-#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -47,9 +46,9 @@ class SVGBoolean final : public SVGPropertyHelper<SVGBoolean> {
     return MakeGarbageCollected<SVGBoolean>(value);
   }
 
-  SVGBoolean(bool value = false) : value_(value) {}
+  SVGBoolean(bool value) : value_(value) {}
 
-  SVGBoolean* Clone() const { return MakeGarbageCollected<SVGBoolean>(value_); }
+  SVGBoolean* Clone() const { return Create(value_); }
 
   String ValueAsString() const override;
   SVGParsingError SetValueAsString(const String&);

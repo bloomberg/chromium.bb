@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="1006017844123154345">Otevřít online</translation>
+<translation id="1023450834687746199">Vymazali jste data aplikace <ph name="APP_NAME" />.</translation>
 <translation id="1036727731225946849">Přidávání aplikace <ph name="WEBAPK_NAME" />...</translation>
 <translation id="1041308826830691739">Z webů</translation>
 <translation id="1049743911850919806">Anonymní režim</translation>
@@ -82,6 +83,7 @@
 <translation id="1553358976309200471">Aktualizovat Chrome</translation>
 <translation id="1569387923882100876">Připojené zařízení</translation>
 <translation id="1571304935088121812">Kopírovat uživatelské jméno</translation>
+<translation id="1576370611341449972">Stahování se provádí pouze přes Wi-Fi</translation>
 <translation id="1612196535745283361">K vyhledání zařízení potřebuje Chrome přístup k informacím o poloze. Přístup k poloze je v tomto zařízení <ph name="BEGIN_LINK" />vypnut<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Bránit této stránce ve vytváření dalších dialogových oken</translation>
@@ -117,9 +119,9 @@
 <translation id="1883903952484604915">Moje soubory</translation>
 <translation id="1887786770086287077">Přístup k poloze je v tomto zařízení vypnut. Zapnete jej v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
 <translation id="1891331835972267886">Aplikace <ph name="APP_NAME" /> se otevře v Chromu. Pokračováním vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozorněním ve věci ochrany soukromí<ph name="END_LINK2" />.</translation>
+<translation id="189172778771606813">Zavřít vysouvací panel navigace</translation>
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1919950603503897840">Vyberte kontakty</translation>
-<translation id="1922076542920281912">Chcete-li Chromu povolit přístup k vaší poloze, zapněte ji také v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="19288952978244135">Znovu spusťte Chrome.</translation>
 <translation id="1933845786846280168">Vybraná karta</translation>
@@ -145,11 +147,9 @@
 <translation id="2018707881002649255">Kontakty, které vyberete níže, se budou sdílet s webem <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="2021896219286479412">Ovládání webu na celé obrazovce</translation>
 <translation id="2038563949887743358">Zapnout funkci Verze webu pro PC</translation>
-<translation id="2041019821020695769">Chcete-li Chromu umožnit zasílat vám oznámení, zapněte oznámení také v <ph name="BEGIN_LINK" />Natavení Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">Aplikace <ph name="APP_NAME" /> má také data v Chromu</translation>
 <translation id="2045104531052923016">Ostatní aplikace: <ph name="GIGABYTES" /> GB</translation>
 <translation id="2049574241039454490"><ph name="FILE_SIZE_OF_TOTAL" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
-<translation id="2049961518639794558">Změna přípony souboru může vést k neočekávanému chování a může být pro zařízení škodlivá.</translation>
 <translation id="2056878612599315956">Web je pozastaven</translation>
 <translation id="2063713494490388661">Vyhledání klepnutím</translation>
 <translation id="2079545284768500474">Vrátit zpět</translation>
@@ -216,7 +216,6 @@
 <translation id="2536728043171574184">Prohlížíte offline kopii stránky</translation>
 <translation id="2546283357679194313">Soubory cookie a data webových stránek</translation>
 <translation id="2567385386134582609">OBRÁZEK</translation>
-<translation id="257088987046510401">Motivy</translation>
 <translation id="2570922361219980984">Přístup k poloze je vypnut také v tomto zařízení. Zapnete jej v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
 <translation id="257931822824936280">Rozbaleno – kliknutím sbalíte</translation>
 <translation id="2581165646603367611">Tímto vymažete soubory cookie, mezipaměť a další data webů, která Chrome považuje za nedůležitá.</translation>
@@ -242,15 +241,17 @@
 <translation id="271033894570825754">Nové</translation>
 <translation id="2728754400939377704">Seřadit podle webu</translation>
 <translation id="2744248271121720757">Klepnutím na slovo můžete okamžitě vyhledávat nebo zobrazit související akce</translation>
+<translation id="2760323196215778921">Toto oprávnění je potřeba zapnout také pro Chrome. Podrobnosti najdete v <ph name="BEGIN_LINK" />nastavení zařízení Android<ph name="END_LINK" />.</translation>
 <translation id="2762000892062317888">právě teď</translation>
 <translation id="2777555524387840389">Zbývá: <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">nezdařilo se</translation>
 <translation id="2781151931089541271">Zbývá: 1 s</translation>
+<translation id="2784212955220061919">Ve zjednodušeném režimu načítá Chrome stránky rychleji a používá až o 60 procent méně dat. Navštívené stránky se optimalizují pomocí cloudové technologie společnosti Google.</translation>
+<translation id="2785336755839207516">Odinstalovali jste aplikaci <ph name="APP_NAME" />.</translation>
 <translation id="2803478378562657435">Zobrazování uložených hesel a možností hesel</translation>
 <translation id="2810645512293415242">Stránka byla zjednodušena s cílem ušetřit data a zrychlit načtení.</translation>
 <translation id="281504910091592009">Zobrazit a spravovat uložená hesla v <ph name="BEGIN_LINK" />účtu Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Chcete-li mít záložky ve všech zařízeních, přihlaste se a zapněte synchronizaci</translation>
-<translation id="2822354292072154809">Opravdu chcete resetovat všechna oprávnění webů pro objekt <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2836148919159985482">Režim celé obrazovky ukončíte klepnutím na tlačítko Zpět.</translation>
 <translation id="2842985007712546952">Nadřazená složka</translation>
 <translation id="2845873210977809562">Tabulka otevřených karet je zavřená</translation>
@@ -265,9 +266,10 @@
 <translation id="290376772003165898">Není stránka v jazyce <ph name="LANGUAGE" />?</translation>
 <translation id="2910701580606108292">Před povolením spuštění chráněného obsahu na webu se zeptat</translation>
 <translation id="2913331724188855103">Povolit webům ukládat a číst data souborů cookie (doporučeno)</translation>
-<translation id="2923908459366352541">Název je neplatný</translation>
 <translation id="2932150158123903946">Úložiště aplikace Google <ph name="APP_NAME" /></translation>
+<translation id="2941880727166628951">Odeslat do mých zařízení</translation>
 <translation id="2956410042958133412">Tento účet spravují uživatelé <ph name="PARENT_NAME_1" /> a <ph name="PARENT_NAME_2" />.</translation>
+<translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="2962095958535813455">Přepnuto na anonymní karty</translation>
 <translation id="2968755619301702150">Prohlížeč certifikátů</translation>
 <translation id="2979025552038692506">Vybraná anonymní karta</translation>
@@ -361,20 +363,20 @@
 <translation id="3712575778697986964">Resetovat Spořič dat?</translation>
 <translation id="3714981814255182093">Otevřít lištu Najít</translation>
 <translation id="3716182511346448902">Tato stránka využívá příliš mnoho paměti, proto ji Chrome pozastavil.</translation>
-<translation id="3730075448226062617">Chcete-li Chromu umožnit přístup k mikrofonu, zapněte mikrofon také v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Přidáno do záložek (<ph name="PRODUCT_NAME" />)</translation>
 <translation id="3744111309925758534">Ostatní aplikace: <ph name="MEGABYTES" /> MB</translation>
 <translation id="3744111561329211289">Synchronizace na pozadí</translation>
 <translation id="3745176700485982507">Na této stránce najdete odkazy na své oblíbené weby</translation>
 <translation id="3771001275138982843">Aktualizaci nelze stáhnout</translation>
 <translation id="3773755127849930740">Chcete-li povolit párování, <ph name="BEGIN_LINK" />zapněte Bluetooth<ph name="END_LINK" />.</translation>
-<translation id="3775705724665058594">Odeslat na vaše zařízení</translation>
 <translation id="3778956594442850293">Přidáno na domovskou obrazovku</translation>
 <translation id="3781011235031427080">Je otevřen list podobných na poloviční výšku</translation>
 <translation id="3789841737615482174">Instalovat</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Spravovat</translation>
+<translation id="3814315701645566481">Chcete vymazat data pro adresu <ph name="URL" />?</translation>
 <translation id="3819178904835489326">Počet smazaných stažených souborů: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
+<translation id="3819562311292413223">Stahovat články pro vás</translation>
 <translation id="3822502789641063741">Vymazat úložiště webů?</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3859306556332390985">Přetočit dopředu</translation>
@@ -484,7 +486,6 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="4634124774493850572">Použít heslo</translation>
 <translation id="4645575059429386691">Spravováno vaším rodičem</translation>
 <translation id="4648718555153979859">Zde jsou seskupeny vaše karty</translation>
-<translation id="4650364565596261010">Výchozí nastavení systému</translation>
 <translation id="4660011489602794167">Zobrazit klávesnici</translation>
 <translation id="4663756553811254707">Smazané záložky: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Na plochu byl přidán web <ph name="NAME" /></translation>
@@ -524,7 +525,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="488187801263602086">Přejmenovat soubor</translation>
 <translation id="4882831918239250449">Nastavte, jak se má vaše historie procházení používat k personalizaci Vyhledávání, reklam a dalších služeb</translation>
 <translation id="4883379392681899581">Opustit soukromý režim</translation>
-<translation id="4883854917563148705">Spravovaná nastavení nelze resetovat</translation>
 <translation id="4885273946141277891">Nepodporovaný počet instancí Chromu.</translation>
 <translation id="4910889077668685004">Platební aplikace</translation>
 <translation id="4913161338056004800">Obnovit statistiky</translation>
@@ -536,8 +536,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="4958708863221495346">Stránka <ph name="URL_OF_THE_CURRENT_TAB" /> sdílí vaši obrazovku</translation>
 <translation id="4961107849584082341">Nechte si tuto stránku přeložit do libovolného jazyka</translation>
 <translation id="4961700429721424617">Odhlašujete se z účtu, který je spravován doménou <ph name="MANAGED_DOMAIN" />. Touto akcí svá data prohlížeče Chrome smažete z tohoto zařízení, ve vašem účtu Google však zůstanou.</translation>
-<translation id="4962975101802056554">Zrušit všechna oprávnění pro zařízení</translation>
-<translation id="4970824347203572753">Ve vaší lokalitě není k dispozici</translation>
 <translation id="497421865427891073">Vpřed</translation>
 <translation id="4988210275050210843">Stahování souboru (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Stránky</translation>
@@ -565,6 +563,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5152843274749979095">Nejsou nainstalovány žádné podporované aplikace</translation>
 <translation id="5161254044473106830">Je požadován název</translation>
 <translation id="5162754098604580781">{FILE_COUNT,plural, =1{Stažení 1 souboru se nezdařilo.}few{Stažení # souborů se nezdařilo.}many{Stažení # souboru se nezdařilo.}other{Stažení # souborů se nezdařilo.}}</translation>
+<translation id="5168917394043976756">Otevřít vysouvací panel navigace</translation>
 <translation id="5184329579814168207">Otevřít v Chromu</translation>
 <translation id="5199929503336119739">Pracovní profil</translation>
 <translation id="5210286577605176222">Přejít na předchozí kartu</translation>
@@ -606,7 +605,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5487521232677179737">Vymazat data</translation>
 <translation id="5494752089476963479">Blokovat reklamy na webech, které zobrazují obtěžující nebo zavádějící reklamy</translation>
 <translation id="5497272504048921382">Tabulka otevřených karet</translation>
-<translation id="5500777121964041360">Ve vaší lokalitě nemusí být k dispozici</translation>
 <translation id="550684401320795253">Aktualizace Chromu...</translation>
 <translation id="5512137114520586844">Tento účet je spravován uživatelem <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Zakázáno administrátorem tohoto zařízení</translation>
@@ -675,7 +673,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5937580074298050696">Uspořeno: <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Resetovat</translation>
 <translation id="5942872142862698679">K vyhledávání se používá Google</translation>
-<translation id="5944669582486359588">Ve zjednodušeném režimu načítá Chrome stránky rychleji a používá až o 60 procent méně dat. Navštívené stránky se optimalizují pomocí cloudové technologie společnosti Google.</translation>
 <translation id="5952764234151283551">Odesílá do Googlu adresu URL stránky, na kterou se pokoušíte přejít</translation>
 <translation id="5956665950594638604">Otevřít centrum nápovědy Chrome na nové kartě</translation>
 <translation id="5958275228015807058">Najděte stažené soubory a stránky</translation>
@@ -706,7 +703,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="618993374665929060">Je otevřen list podobných na plnou výšku</translation>
 <translation id="6192333916571137726">Stáhnout soubor</translation>
 <translation id="6192792657125177640">Výjimky</translation>
-<translation id="6194112207524046168">Chcete-li Chromu umožnit přístup k fotoaparátu, zapněte fotoaparát také v <ph name="BEGIN_LINK" />Nastavení Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Blokovat soubory cookie třetích stran</translation>
 <translation id="6206551242102657620">Připojení je zabezpečené. Informace o webu</translation>
 <translation id="6210748933810148297">Nejste <ph name="EMAIL" />?</translation>
@@ -835,6 +831,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7031882061095297553">Synchronizace s účty</translation>
 <translation id="7032663816368481562">Když v adresním řádku klepnete na Další podobné návrhy <ph name="ICON" />, zobrazí se rychlé odkazy na související stránky. Adresy URL navštívených stránek se odesílají do Googlu.</translation>
 <translation id="7034608350006174882">Karty a adresy pomocí služby Google Pay</translation>
+<translation id="7037082443972906537">Název není k dispozici</translation>
 <translation id="7053983685419859001">Blokovat</translation>
 <translation id="7055152154916055070">Bylo zablokováno přesměrování:</translation>
 <translation id="7062545763355031412">Přijmout a přepnout účet</translation>
@@ -860,7 +857,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7250468141469952378">Vybráno: <ph name="ITEM_COUNT" /></translation>
 <translation id="7253272406652746122">Přidejte účet Google ze stránky Účty v aplikaci Nastavení svého zařízení.</translation>
 <translation id="7274013316676448362">Blokovaný web</translation>
-<translation id="7290209999329137901">Přejmenování není k dispozici</translation>
 <translation id="7291387454912369099">Platba aktivovaná Asistentem</translation>
 <translation id="729975465115245577">V zařízení není žádná aplikace, pomocí které by soubor s hesly bylo možné uložit.</translation>
 <translation id="7302081693174882195">Podrobnosti: Seřazeno podle množství uspořených dat</translation>
@@ -891,7 +887,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7475688122056506577">SD karta nebyla nalezena. Některé vaše soubory mohou chybět.</translation>
 <translation id="7479104141328977413">Správa karet</translation>
 <translation id="7481312909269577407">Vpřed</translation>
-<translation id="7482697587265222445">Karta byla odeslána do vašich zařízení</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualizováno <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494879913343971937">Zobrazovat hesla</translation>
 <translation id="7494974237137038751">uspořená data</translation>
@@ -932,7 +927,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7765158879357617694">Přesunout</translation>
 <translation id="7769602470925380267">Přijmout a odhlásit se</translation>
 <translation id="7772032839648071052">Potvrďte heslovou frázi</translation>
-<translation id="7772375229873196092">Zavřít aplikaci <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}few{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}many{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> další}other{<ph name="PAYMENT_METHOD_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> dalších}}</translation>
 <translation id="7781829728241885113">Včera</translation>
 <translation id="7791543448312431591">Přidat</translation>
@@ -940,7 +934,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7810647596859435254">Otevřít v aplikaci…</translation>
 <translation id="7821588508402923572">Zde se budou zobrazovat vaše úspory dat</translation>
 <translation id="7837721118676387834">Povolit automatické přehrávání ztlumených videí na konkrétním webu.</translation>
-<translation id="7838340937077326045">Opravdu příponu souboru chcete změnit?</translation>
 <translation id="7846076177841592234">Zrušit výběr</translation>
 <translation id="784934925303690534">Časové období</translation>
 <translation id="7851858861565204677">Jiná zařízení</translation>
@@ -972,6 +965,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8037750541064988519">Zbývá: <ph name="DAYS" /> d</translation>
 <translation id="804335162455518893">SD karta nenalezena</translation>
 <translation id="805047784848435650">Na základě vaší historie prohlížení</translation>
+<translation id="8051303708327298699">Tato oprávnění je potřeba zapnout také pro Chrome. Podrobnosti najdete v <ph name="BEGIN_LINK" />nastavení zařízení Android<ph name="END_LINK" />.</translation>
 <translation id="8051695050440594747">K dispozici: <ph name="MEGABYTES" /> MB</translation>
 <translation id="8058746566562539958">Otevřít na nové kartě v Chromu</translation>
 <translation id="8063895661287329888">Přidání záložky se nezdařilo.</translation>
@@ -995,7 +989,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8200772114523450471">Pokračovat</translation>
 <translation id="8209050860603202033">Otevřít obrázek</translation>
 <translation id="8220488350232498290">Staženo: <ph name="GIGABYTES" /> GB</translation>
-<translation id="8224471946457685718">Stahovat články pro vás přes Wi-Fi</translation>
 <translation id="8232956427053453090">Zachovat data</translation>
 <translation id="8249310407154411074">Přesunout na začátek</translation>
 <translation id="8250920743982581267">Dokumenty</translation>
@@ -1048,6 +1041,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8583805026567836021">Mazání dat účtu</translation>
 <translation id="860043288473659153">Jméno držitele karty</translation>
 <translation id="8609465669617005112">Posunout nahoru</translation>
+<translation id="8611192991944347781">Spravovat data</translation>
 <translation id="8616006591992756292">Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="8617240290563765734">Otevřít navrhovanou adresu URL uvedenou ve staženém obsahu?</translation>
 <translation id="8636825310635137004">Chcete-li získat přístup ke kartám ze svých ostatních zařízení, zapněte synchronizaci.</translation>

@@ -93,7 +93,6 @@ const char* V8NameConverter::NameOfAddress(byte* pc) const {
       return v8_buffer_.start();
     }
 
-    wasm::WasmCodeRefScope wasm_code_ref_scope;
     wasm::WasmCode* wasm_code =
         isolate_ ? isolate_->wasm_engine()->code_manager()->LookupCode(
                        reinterpret_cast<Address>(pc))
@@ -276,7 +275,7 @@ static int DecodeIt(Isolate* isolate, ExternalReferenceEncoder* ref_encoder,
   disasm::Disassembler d(converter,
                          disasm::Disassembler::kContinueOnUnimplementedOpcode);
   RelocIterator* it = nullptr;
-  CodeCommentsIterator cit(code.code_comments(), code.code_comments_size());
+  CodeCommentsIterator cit(code.code_comments());
   // Relocation exists if we either have no isolate (wasm code),
   // or we have an isolate and it is not an off-heap instruction stream.
   if (!isolate ||

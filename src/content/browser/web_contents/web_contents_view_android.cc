@@ -386,13 +386,8 @@ void WebContentsViewAndroid::StartDragging(
     return;
   }
 
-  if (selection_popup_controller_) {
+  if (selection_popup_controller_)
     selection_popup_controller_->HidePopupsAndPreserveSelection();
-    // Hide the handles temporarily.
-    auto* rwhva = GetRenderWidgetHostViewAndroid();
-    if (rwhva)
-      rwhva->SetTextHandlesTemporarilyHidden(true);
-  }
 }
 
 void WebContentsViewAndroid::UpdateDragCursor(blink::WebDragOperation op) {
@@ -488,14 +483,6 @@ void WebContentsViewAndroid::OnPerformDrop(DropData* drop_data,
 
 void WebContentsViewAndroid::OnSystemDragEnded() {
   web_contents_->GetRenderViewHost()->GetWidget()->DragSourceSystemDragEnded();
-
-  // Restore the selection popups and the text handles if necessary.
-  if (selection_popup_controller_) {
-    selection_popup_controller_->RestoreSelectionPopupsIfNecessary();
-    auto* rwhva = GetRenderWidgetHostViewAndroid();
-    if (rwhva)
-      rwhva->SetTextHandlesTemporarilyHidden(false);
-  }
 }
 
 void WebContentsViewAndroid::OnDragEnded() {

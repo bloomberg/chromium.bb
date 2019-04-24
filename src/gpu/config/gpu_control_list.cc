@@ -300,8 +300,7 @@ bool GpuControlList::More::Contains(const GPUInfo& gpu_info) const {
       return false;
     }
   }
-  if (direct_rendering_version.IsSpecified() &&
-      !direct_rendering_version.Contains(gpu_info.direct_rendering_version)) {
+  if (!direct_rendering && gpu_info.direct_rendering) {
     return false;
   }
   if (in_process_gpu && !gpu_info.in_process_gpu) {

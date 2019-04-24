@@ -7,8 +7,8 @@
 
 #include "GrOvalEffect.h"
 
-#include "generated/GrCircleEffect.h"
-#include "generated/GrEllipseEffect.h"
+#include "GrCircleEffect.h"
+#include "GrEllipseEffect.h"
 #include "SkRect.h"
 
 std::unique_ptr<GrFragmentProcessor> GrOvalEffect::Make(GrClipEdgeType edgeType, const SkRect& oval,

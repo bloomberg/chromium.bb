@@ -17,12 +17,7 @@ import subprocess
 import sys
 import tempfile
 import time
-
-try:
-  import urllib2 as urllib
-except ImportError:  # For Py3 compatibility
-  import urllib.request as urllib
-
+import urllib2
 import zipfile
 
 
@@ -58,7 +53,7 @@ def download_gsutil(version, target_dir):
     local_md5 = md5_calc.hexdigest()
 
     metadata_url = '%s%s' % (API_URL, filename)
-    metadata = json.load(urllib.urlopen(metadata_url))
+    metadata = json.load(urllib2.urlopen(metadata_url))
     remote_md5 = base64.b64decode(metadata['md5Hash'])
 
     if local_md5 == remote_md5:
@@ -67,7 +62,7 @@ def download_gsutil(version, target_dir):
 
   # Do the download.
   url = '%s%s' % (GSUTIL_URL, filename)
-  u = urllib.urlopen(url)
+  u = urllib2.urlopen(url)
   with open(target_filename, 'wb') as f:
     while True:
       buf = u.read(4096)

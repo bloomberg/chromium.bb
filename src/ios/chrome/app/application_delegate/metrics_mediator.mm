@@ -13,7 +13,6 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/ukm/ios/features.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -160,17 +159,14 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 - (void)updateMetricsStateBasedOnPrefsUserTriggered:(BOOL)isUserTriggered {
   BOOL optIn = [self areMetricsEnabled];
   BOOL allowUploading = [self isUploadingEnabled];
-  if (!base::FeatureList::IsEnabled(kUmaCellular)) {
-    BOOL wifiOnly = GetApplicationContext()->GetLocalState()->GetBoolean(
-        prefs::kMetricsReportingWifiOnly);
-    optIn = optIn && wifiOnly;
-  }
+  BOOL wifiOnly = GetApplicationContext()->GetLocalState()->GetBoolean(
+      prefs::kMetricsReportingWifiOnly);
 
   if (isUserTriggered)
     [self updateMetricsPrefsOnPermissionChange:optIn];
   [self setMetricsEnabled:optIn withUploading:allowUploading];
   [self setBreakpadEnabled:optIn withUploading:allowUploading];
-  [self setWatchWWANEnabled:optIn];
+  [self setWatchWWANEnabled:(optIn && wifiOnly)];
   [self setAppGroupMetricsEnabled:optIn];
 }
 
@@ -190,9 +186,6 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 
 - (BOOL)isUploadingEnabled {
   BOOL optIn = [self areMetricsEnabled];
-  if (base::FeatureList::IsEnabled(kUmaCellular)) {
-    return optIn;
-  }
   BOOL wifiOnly = GetApplicationContext()->GetLocalState()->GetBoolean(
       prefs::kMetricsReportingWifiOnly);
   BOOL allowUploading = optIn;
@@ -383,13 +376,10 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 }
 
 - (BOOL)isMetricsReportingEnabledWifiOnly {
-  BOOL optIn = GetApplicationContext()->GetLocalState()->GetBoolean(
-      metrics::prefs::kMetricsReportingEnabled);
-  if (base::FeatureList::IsEnabled(kUmaCellular)) {
-    return optIn;
-  }
-  return optIn && GetApplicationContext()->GetLocalState()->GetBoolean(
-                      prefs::kMetricsReportingWifiOnly);
+  return GetApplicationContext()->GetLocalState()->GetBoolean(
+             metrics::prefs::kMetricsReportingEnabled) &&
+         GetApplicationContext()->GetLocalState()->GetBoolean(
+             prefs::kMetricsReportingWifiOnly);
 }
 
 @end

@@ -20,8 +20,7 @@
 class VIEWS_EXPORT AXRootObjWrapper : public views::AXAuraObjWrapper,
                                       display::DisplayObserver {
  public:
-  AXRootObjWrapper(views::AXAuraObjCache::Delegate* delegate,
-                   views::AXAuraObjCache* cache);
+  explicit AXRootObjWrapper(views::AXAuraObjCache::Delegate* delegate);
   ~AXRootObjWrapper() override;
 
   // Convenience method to check for existence of a child.

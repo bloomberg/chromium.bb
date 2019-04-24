@@ -354,8 +354,6 @@ TEST(ContiguousContainerTest, AppendByMovingDoesNotDestruct) {
   // GMock mock objects (e.g. MockDestructible) aren't guaranteed to be safe
   // to memcpy (which is required for appendByMoving).
   class DestructionNotifier {
-    USING_FAST_MALLOC(DestructionNotifier);
-
    public:
     DestructionNotifier(bool* flag = nullptr) : flag_(flag) {}
     ~DestructionNotifier() {

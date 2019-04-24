@@ -22,7 +22,8 @@ import zipfile
 # Any new non-system import must be added to:
 #     //build/config/android/internal_rules.gni
 
-from util import md5_check
+# Some clients do not add //build/android/gyp to PYTHONPATH.
+import md5_check  # pylint: disable=relative-import
 
 sys.path.append(os.path.join(os.path.dirname(__file__),
                              os.pardir, os.pardir, os.pardir))
@@ -35,7 +36,7 @@ DIR_SOURCE_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
                                  os.pardir, os.pardir, os.pardir, os.pardir)))
 
 HERMETIC_TIMESTAMP = (2001, 1, 1, 0, 0, 0)
-_HERMETIC_FILE_ATTR = (0o644 << 16)
+_HERMETIC_FILE_ATTR = (0644 << 16L)
 
 
 @contextlib.contextmanager
@@ -262,7 +263,7 @@ def _IsSymlink(zip_file, name):
 
   # The two high-order bytes of ZipInfo.external_attr represent
   # UNIX permissions and file type bits.
-  return stat.S_ISLNK(zi.external_attr >> 16)
+  return stat.S_ISLNK(zi.external_attr >> 16L)
 
 
 def ExtractAll(zip_path, path=None, no_clobber=True, pattern=None,
@@ -325,19 +326,19 @@ def AddToZipHermetic(zip_file, zip_path, src_path=None, data=None,
 
   if src_path and os.path.islink(src_path):
     zipinfo.filename = zip_path
-    zipinfo.external_attr |= stat.S_IFLNK << 16  # mark as a symlink
+    zipinfo.external_attr |= stat.S_IFLNK << 16L # mark as a symlink
     zip_file.writestr(zipinfo, os.readlink(src_path))
     return
 
   # zipfile.write() does
-  #     external_attr = (os.stat(src_path)[0] & 0xFFFF) << 16
+  #     external_attr = (os.stat(src_path)[0] & 0xFFFF) << 16L
   # but we want to use _HERMETIC_FILE_ATTR, so manually set
   # the few attr bits we care about.
   if src_path:
     st = os.stat(src_path)
     for mode in (stat.S_IXUSR, stat.S_IXGRP, stat.S_IXOTH):
       if st.st_mode & mode:
-        zipinfo.external_attr |= mode << 16
+        zipinfo.external_attr |= mode << 16L
 
   if src_path:
     with open(src_path, 'rb') as f:
@@ -481,7 +482,7 @@ def GetSortedTransitiveDependencies(top, deps_func):
       deps_map[node] = deps
 
   discover(top)
-  return list(deps_map)
+  return deps_map.keys()
 
 
 def _ComputePythonDependencies():
@@ -572,6 +573,9 @@ def ExpandFileArgs(args):
     if not match:
       continue
 
+    if match.end() != len(arg):
+      raise Exception('Unexpected characters after FileArg: ' + arg)
+
     lookup_path = match.group(1).split(':')
     file_path = lookup_path[0]
     if not file_path in file_jsons:
@@ -585,10 +589,9 @@ def ExpandFileArgs(args):
     # This should match ParseGnList. The output is either a GN-formatted list
     # or a literal (with no quotes).
     if isinstance(expansion, list):
-      new_args[i] = (arg[:match.start()] + gn_helpers.ToGNString(expansion) +
-                     arg[match.end():])
+      new_args[i] = arg[:match.start()] + gn_helpers.ToGNString(expansion)
     else:
-      new_args[i] = arg[:match.start()] + str(expansion) + arg[match.end():]
+      new_args[i] = arg[:match.start()] + str(expansion)
 
   return new_args
 

@@ -15,7 +15,7 @@
 
 class SkPath;
 
-class SK_API SkTextUtils {
+class SkTextUtils {
 public:
     enum Align {
         kLeft_Align,

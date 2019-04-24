@@ -26,6 +26,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
@@ -49,7 +50,6 @@ import org.chromium.components.sync.protocol.AutofillWalletSpecifics;
 import org.chromium.components.sync.protocol.EntitySpecifics;
 import org.chromium.components.sync.protocol.SyncEntity;
 import org.chromium.components.sync.protocol.WalletMaskedCreditCard;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -118,7 +118,7 @@ public class SyncCustomizationFragmentTest {
 
     @After
     public void tearDown() throws Exception {
-        TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
+        ThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
     }
 
     /**
@@ -188,7 +188,7 @@ public class SyncCustomizationFragmentTest {
         mSyncTestRule.setUpTestAccountAndSignIn();
         mSyncTestRule.stopSync();
         startSyncCustomizationFragment();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertFalse(mSyncTestRule.getProfileSyncService().isSyncRequested());
             Assert.assertFalse(mSyncTestRule.getProfileSyncService().isEngineInitialized());
         });
@@ -390,7 +390,6 @@ public class SyncCustomizationFragmentTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
-    @DisabledTest
     public void testSyncSwitchClearsServerAutofillCreditCards() {
         mSyncTestRule.setUpTestAccountAndSignIn();
 
@@ -522,7 +521,7 @@ public class SyncCustomizationFragmentTest {
 
         final PassphraseTypeDialogFragment typeFragment = getPassphraseTypeDialogFragment();
         mSyncTestRule.stopSync();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> { typeFragment.onItemClick(null, null, 0, Passphrase.Type.CUSTOM); });
         // No crash means we passed.
     }
@@ -538,7 +537,7 @@ public class SyncCustomizationFragmentTest {
         SyncTestUtil.waitForSyncActive();
         final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         mSyncTestRule.stopSync();
-        TestThreadUtils.runOnUiThreadBlockingNoException(
+        ThreadUtils.runOnUiThreadBlockingNoException(
                 () -> fragment.onPassphraseEntered("passphrase"));
         // No crash means we passed.
     }
@@ -569,7 +568,7 @@ public class SyncCustomizationFragmentTest {
         // and triggering syncStateChanged().
         // PassphraseDialogFragment should be dismissed.
         pss.setPassphraseRequiredForDecryption(false);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             pss.syncStateChanged();
             fragment.getFragmentManager().executePendingTransactions();
             Assert.assertNull("PassphraseDialogFragment should be dismissed.",
@@ -586,7 +585,7 @@ public class SyncCustomizationFragmentTest {
         mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> fragment.onPassphraseTypeSelected(Passphrase.Type.CUSTOM));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         PassphraseCreationDialogFragment pcdf = getPassphraseCreationDialogFragment();
@@ -645,7 +644,7 @@ public class SyncCustomizationFragmentTest {
     }
 
     private FakeProfileSyncService overrideProfileSyncService() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+        return ThreadUtils.runOnUiThreadBlockingNoException(() -> {
             // PSS has to be constructed on the UI thread.
             FakeProfileSyncService fakeProfileSyncService = new FakeProfileSyncService();
             ProfileSyncService.overrideForTests(fakeProfileSyncService);
@@ -750,7 +749,7 @@ public class SyncCustomizationFragmentTest {
     private void assertDataTypesAre(final Set<Integer> enabledDataTypes) {
         final Set<Integer> disabledDataTypes = new HashSet<>(UI_DATATYPES.keySet());
         disabledDataTypes.removeAll(enabledDataTypes);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             Set<Integer> actualDataTypes =
                     mSyncTestRule.getProfileSyncService().getPreferredDataTypes();
             Assert.assertTrue(actualDataTypes.containsAll(enabledDataTypes));
@@ -759,12 +758,12 @@ public class SyncCustomizationFragmentTest {
     }
 
     private void setPaymentsIntegrationEnabled(final boolean enabled) {
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> PersonalDataManager.setPaymentsIntegrationEnabled(enabled));
     }
 
     private void assertPaymentsIntegrationEnabled(final boolean enabled) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(enabled, PersonalDataManager.isPaymentsIntegrationEnabled());
         });
     }
@@ -798,7 +797,7 @@ public class SyncCustomizationFragmentTest {
     }
 
     private boolean hasServerAutofillCreditCards() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
+        return ThreadUtils.runOnUiThreadBlockingNoException(() -> {
             List<CreditCard> cards = PersonalDataManager.getInstance().getCreditCardsForSettings();
             for (int i = 0; i < cards.size(); i++) {
                 if (!cards.get(i).getIsLocal()) return true;
@@ -809,7 +808,7 @@ public class SyncCustomizationFragmentTest {
 
     // UI interaction convenience methods.
     private void togglePreference(final TwoStatePreference pref) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             boolean newValue = !pref.isChecked();
             pref.getOnPreferenceChangeListener().onPreferenceChange(pref, newValue);
             pref.setChecked(newValue);
@@ -818,23 +817,23 @@ public class SyncCustomizationFragmentTest {
     }
 
     private void clickPreference(final Preference pref) {
-        TestThreadUtils.runOnUiThreadBlockingNoException(
+        ThreadUtils.runOnUiThreadBlockingNoException(
                 () -> pref.getOnPreferenceClickListener().onPreferenceClick(pref));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private void clickButton(final Button button) {
-        TestThreadUtils.runOnUiThreadBlocking((Runnable) button::performClick);
+        ThreadUtils.runOnUiThreadBlocking((Runnable) button::performClick);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private void setText(final TextView textView, final String text) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> textView.setText(text));
+        ThreadUtils.runOnUiThreadBlocking(() -> textView.setText(text));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private void clearError(final TextView textView) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> textView.setError(null));
+        ThreadUtils.runOnUiThreadBlocking(() -> textView.setError(null));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 }

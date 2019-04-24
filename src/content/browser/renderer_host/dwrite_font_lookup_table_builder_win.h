@@ -12,8 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "base/cancelable_callback.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/singleton.h"
@@ -42,7 +40,6 @@ namespace content {
 class CONTENT_EXPORT DWriteFontLookupTableBuilder {
  public:
   static DWriteFontLookupTableBuilder* GetInstance();
-
   // Retrieve the prepared memory region if it is available.
   // EnsureFontUniqueNameTable() must be checked before.
   base::ReadOnlySharedMemoryRegion DuplicateMemoryRegion();
@@ -52,21 +49,14 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   // constructed. Call only after ScheduleBuildFontUniqueNameTable().
   bool EnsureFontUniqueNameTable();
 
-  // Returns whether the indexing has completed and the shared memory region is
-  // immediately ready without any sync operations.
-  bool FontUniqueNameTableReady();
-
-  // Posts a task to load from cache or build (if cache not available) the
-  // unique name table index, should only be called once at browser startup,
-  // after that, use EnsureFontUniqueNameTable() and
-  // DuplicatedMemoryRegion() to retrieve the lookup structure buffer.
-  void SchedulePrepareFontUniqueNameTable();
+  // Posts a task to build the font unique name table index, should only be
+  // called once at browser startup, after that, use EnsureFontUniqueNameTable()
+  // and DuplicatedMemoryRegion() to retrieve the lookup structure buffer.
+  void ScheduleBuildFontUniqueNameTable();
 
   enum class SlowDownMode { kDelayEachTask, kHangOneTask, kNoSlowdown };
-
   // Slow down each family indexing step for testing the internal timeout.
   void SetSlowDownIndexingForTesting(SlowDownMode slowdown_mode);
-
   // Needed to trigger rebuilding the lookup table, when testing using
   // slowed-down indexing. Otherwise, the test methods would use the already
   // cached lookup table.
@@ -74,22 +64,6 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   // Signals hang_event_for_testing_ which is used in testing hanging one of the
   // font name retrieval tasks.
   void ResumeFromHangForTesting();
-
-  // Computes a hash to determine whether cache contents needed to be updated,
-  // consisting of font names and their file paths read from the registry (not
-  // from disk), The DWrite.dll's product version and the Chrome version, as a
-  // safety mechanism to refresh the cache for every release. Exposed as a
-  // public method to be able to run the hash function in a test.
-  std::string ComputePersistenceHash();
-
-  // Configures the cache directory in which to store the serialized font table
-  // lookup structure. Use only in testing. Normally the directory name is
-  // retrieved from ContentBrowserClient.
-  void SetCacheDirectoryForTesting(base::FilePath cache_directory);
-
-  // Configures whether the cache should be used. Needed for testing to test
-  // repeated rebuilding of the font table lookup structure.
-  void SetCachingEnabledForTesting(bool caching_enabled);
 
  private:
   friend class base::NoDestructor<DWriteFontLookupTableBuilder>;
@@ -100,6 +74,7 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
     ~FontFileWithUniqueNames();
     FontFileWithUniqueNames(
         DWriteFontLookupTableBuilder::FontFileWithUniqueNames&& other);
+
     FontFileWithUniqueNames(const FontFileWithUniqueNames&) = delete;
     FontFileWithUniqueNames& operator=(const FontFileWithUniqueNames&) = delete;
 
@@ -109,36 +84,14 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
 
   using FamilyResult = std::vector<FontFileWithUniqueNames>;
 
-  // Try to find a serialized lookup table from the cache directory specified at
-  // construction and load it into memory.
-  bool LoadFromFile();
-
-  // Serialize the current lookup table into a file in the cache directory
-  // specified at construction time.
-  bool PersistToFile();
-
-  // Load from cache or construct the font unique name lookup table. If the
-  // cache is up to date, do not schedule a run to scan all Windows-enumerated
-  // fonts.
-  void PrepareFontUniqueNameTable();
-
-  // Helper function to perform DWrite operations to retrieve path names, full
-  // font name and PostScript name for a font specified by collection + family
-  // index.
+  void BuildFontUniqueNameTable();
   static FamilyResult ExtractPathAndNamesFromFamily(
       Microsoft::WRL::ComPtr<IDWriteFontCollection> collection,
       uint32_t family_index,
       base::TimeTicks start_time,
       SlowDownMode slow_down_mode,
       base::WaitableEvent* hang_event_for_testing);
-
-  // Callback from scheduled tasks to add the retrieved font names to the
-  // protobuf.
   void AppendFamilyResultAndFinalizeIfNeeded(const FamilyResult& family_result);
-
-  // Sort the results that were collected into the protobuf structure and signal
-  // that font unique name lookup table construction is complete. Serializes the
-  // constructed protobuf to disk.
   void FinalizeFontTable();
 
   void OnTimeout();
@@ -146,8 +99,6 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   bool IsFontUniqueNameTableValid();
 
   void InitializeDirectWrite();
-
-  base::FilePath TableCacheFilePath();
 
   DWriteFontLookupTableBuilder();
   ~DWriteFontLookupTableBuilder();
@@ -163,14 +114,9 @@ class CONTENT_EXPORT DWriteFontLookupTableBuilder {
   Microsoft::WRL::ComPtr<IDWriteFactory2> factory2_;
   SlowDownMode slow_down_mode_for_testing_ = SlowDownMode::kNoSlowdown;
   uint32_t outstanding_family_results_ = 0;
-  base::TimeTicks start_time_table_ready_;
-  base::TimeTicks start_time_table_build_;
-  base::FilePath cache_directory_;
-  std::string persistence_hash_;
+  base::TimeTicks start_time_;
 
-  bool caching_enabled_ = true;
   base::Optional<base::WaitableEvent> hang_event_for_testing_;
-  base::CancelableOnceCallback<void()> timeout_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DWriteFontLookupTableBuilder);
 };

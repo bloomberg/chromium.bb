@@ -131,8 +131,7 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
     if (login_state == LoginState::EXISTING) {
       matches.push_back(&pending_);
     }
-    fetcher_.SetNonFederated(matches);
-    fetcher_.NotifyFetchCompleted();
+    fetcher_.SetNonFederated(matches, 0u);
 
     form_manager_.ProvisionallySave(pending_);
   }

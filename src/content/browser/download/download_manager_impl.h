@@ -76,8 +76,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   void SetDelegate(DownloadManagerDelegate* delegate) override;
   DownloadManagerDelegate* GetDelegate() const override;
   void Shutdown() override;
-  void GetAllDownloads(
-      download::SimpleDownloadManager::DownloadVector* result) override;
+  void GetAllDownloads(DownloadVector* result) override;
   void StartDownload(std::unique_ptr<download::DownloadCreateInfo> info,
                      std::unique_ptr<download::InputStream> stream,
                      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
@@ -89,7 +88,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       const base::Callback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end) override;
-  bool DownloadUrl(
+  void DownloadUrl(
       std::unique_ptr<download::DownloadUrlParameters> parameters) override;
   void DownloadUrl(std::unique_ptr<download::DownloadUrlParameters> params,
                    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
@@ -332,6 +331,9 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // True if the download manager has been initialized and requires a shutdown.
   bool shutdown_needed_;
+
+  // True if the download manager has been initialized and loaded all the data.
+  bool initialized_;
 
   // Whether the history db and/or in progress cache are initialized.
   bool history_db_initialized_;

@@ -35,6 +35,9 @@ class PageSignalObserver {
   virtual void OnPageAlmostIdle(
       content::WebContents* web_contents,
       const PageNavigationIdentity& page_navigation_id) {}
+  virtual void OnRendererIsBloated(
+      content::WebContents* web_contents,
+      const PageNavigationIdentity& page_navigation_id) {}
   virtual void OnExpectedTaskQueueingDurationSet(
       content::WebContents* web_contents,
       const PageNavigationIdentity& page_navigation_id,
@@ -68,6 +71,8 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
 
   // mojom::PageSignalReceiver implementation.
   void NotifyPageAlmostIdle(
+      const PageNavigationIdentity& page_navigation_id) override;
+  void NotifyRendererIsBloated(
       const PageNavigationIdentity& page_navigation_id) override;
   void SetExpectedTaskQueueingDuration(
       const PageNavigationIdentity& page_navigation_id,

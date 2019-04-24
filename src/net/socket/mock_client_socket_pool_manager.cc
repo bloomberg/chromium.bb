@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/values.h"
-#include "net/socket/client_socket_pool.h"
+#include "net/socket/transport_client_socket_pool.h"
 
 namespace net {
 
@@ -16,7 +16,7 @@ MockClientSocketPoolManager::~MockClientSocketPoolManager() = default;
 
 void MockClientSocketPoolManager::SetSocketPool(
     const ProxyServer& proxy_server,
-    std::unique_ptr<ClientSocketPool> pool) {
+    std::unique_ptr<TransportClientSocketPool> pool) {
   socket_pools_[proxy_server] = std::move(pool);
 }
 
@@ -28,9 +28,10 @@ void MockClientSocketPoolManager::CloseIdleSockets() {
   NOTIMPLEMENTED();
 }
 
-ClientSocketPool* MockClientSocketPoolManager::GetSocketPool(
+TransportClientSocketPool* MockClientSocketPoolManager::GetSocketPool(
     const ProxyServer& proxy_server) {
-  ClientSocketPoolMap::const_iterator it = socket_pools_.find(proxy_server);
+  TransportClientSocketPoolMap::const_iterator it =
+      socket_pools_.find(proxy_server);
   if (it != socket_pools_.end())
     return it->second.get();
   return nullptr;

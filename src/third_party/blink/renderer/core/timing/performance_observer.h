@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -21,7 +22,7 @@ class PerformanceObserver;
 class PerformanceObserverInit;
 class V8PerformanceObserverCallback;
 
-using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
+using PerformanceEntryVector = HeapVector<TraceWrapperMember<PerformanceEntry>>;
 
 class CORE_EXPORT PerformanceObserver final
     : public ScriptWrappable,
@@ -70,7 +71,7 @@ class CORE_EXPORT PerformanceObserver final
   bool ShouldBeSuspended() const;
 
   Member<ExecutionContext> execution_context_;
-  Member<V8PerformanceObserverCallback> callback_;
+  TraceWrapperMember<V8PerformanceObserverCallback> callback_;
   WeakMember<Performance> performance_;
   PerformanceEntryVector performance_entries_;
   PerformanceEntryTypeMask filter_options_;

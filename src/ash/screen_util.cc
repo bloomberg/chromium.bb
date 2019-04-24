@@ -8,10 +8,10 @@
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
-#include "ash/wm/desks/desks_util.h"
-#include "ash/wm/work_area_insets.h"
 #include "base/logging.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -41,12 +41,17 @@ gfx::Rect GetDisplayBoundsInParent(aura::Window* window) {
 
 gfx::Rect GetFullscreenWindowBoundsInParent(aura::Window* window) {
   gfx::Rect result = GetDisplayBoundsInParent(window);
-  const WorkAreaInsets* const work_area_insets =
-      WorkAreaInsets::ForWindow(window->GetRootWindow());
-  result.Inset(0,
-               work_area_insets->accessibility_panel_height() +
-                   work_area_insets->docked_magnifier_height(),
-               0, 0);
+
+  Shelf* shelf = Shelf::ForWindow(window);
+  ShelfLayoutManager* shelf_layout_manager =
+      shelf ? shelf->shelf_layout_manager() : nullptr;
+  if (shelf_layout_manager) {
+    result.Inset(0,
+                 shelf_layout_manager->accessibility_panel_height() +
+                     shelf_layout_manager->docked_magnifier_height(),
+                 0, 0);
+  }
+
   return result;
 }
 
@@ -58,22 +63,22 @@ gfx::Rect GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
 }
 
 gfx::Rect GetDisplayWorkAreaBoundsInParentForLockScreen(aura::Window* window) {
-  gfx::Rect bounds = WorkAreaInsets::ForWindow(window)->user_work_area_bounds();
+  gfx::Rect bounds = Shelf::ForWindow(window)->GetUserWorkAreaBounds();
   ::wm::ConvertRectFromScreen(window->parent(), &bounds);
   return bounds;
 }
 
-gfx::Rect GetDisplayWorkAreaBoundsInParentForActiveDeskContainer(
+gfx::Rect GetDisplayWorkAreaBoundsInParentForDefaultContainer(
     aura::Window* window) {
   aura::Window* root_window = window->GetRootWindow();
   return GetDisplayWorkAreaBoundsInParent(
-      desks_util::GetActiveDeskContainerForRoot(root_window));
+      root_window->GetChildById(kShellWindowId_DefaultContainer));
 }
 
-gfx::Rect GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+gfx::Rect GetDisplayWorkAreaBoundsInScreenForDefaultContainer(
     aura::Window* window) {
   gfx::Rect bounds =
-      GetDisplayWorkAreaBoundsInParentForActiveDeskContainer(window);
+      GetDisplayWorkAreaBoundsInParentForDefaultContainer(window);
   ::wm::ConvertRectToScreen(window->GetRootWindow(), &bounds);
   return bounds;
 }

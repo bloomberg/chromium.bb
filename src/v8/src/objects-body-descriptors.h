@@ -47,10 +47,6 @@ class BodyDescriptorBase {
                                               ObjectVisitor* v);
 
   template <typename ObjectVisitor>
-  static inline void IterateEphemeron(HeapObject obj, int index, int key_offset,
-                                      int value_offset, ObjectVisitor* v);
-
-  template <typename ObjectVisitor>
   static inline void IterateMaybeWeakPointers(HeapObject obj, int start_offset,
                                               int end_offset, ObjectVisitor* v);
 
@@ -124,6 +120,7 @@ class FlexibleBodyDescriptor final : public BodyDescriptorBase {
 
   static inline int SizeOf(Map map, HeapObject object);
 };
+
 
 typedef FlexibleBodyDescriptor<HeapObject::kHeaderSize> StructBodyDescriptor;
 

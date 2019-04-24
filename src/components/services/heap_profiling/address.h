@@ -10,7 +10,7 @@
 #include <functional>
 #include <iosfwd>
 
-#include "base/hash/hash.h"
+#include "base/hash.h"
 
 namespace heap_profiling {
 

@@ -31,6 +31,7 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_client_info.h"
 #include "content/browser/service_worker/service_worker_client_utils.h"
+#include "content/browser/service_worker/service_worker_context_request_handler.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_ping_controller.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
@@ -162,7 +163,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                  const GURL& source_url) {}
     virtual void OnReportConsoleMessage(
         ServiceWorkerVersion* version,
-        blink::mojom::ConsoleMessageSource source,
+        int source_identifier,
         blink::mojom::ConsoleMessageLevel message_level,
         const base::string16& message,
         int line_number,
@@ -258,6 +259,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // soon after the service worker becomes idle if a waiting worker exists.
   void TriggerIdleTerminationAsap();
 
+  // S13nServiceWorker:
   // Called when the renderer notifies the browser that the worker is now idle.
   // Returns true if the worker will be terminated and the worker should not
   // handle any events dispatched directly from clients (e.g. FetchEvents for
@@ -269,6 +271,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Schedules an update to be run 'soon'.
   void ScheduleUpdate();
+
+  // If an update is scheduled but not yet started, this resets the timer
+  // delaying the start time by a 'small' amount.
+  void DeferScheduledUpdate();
 
   // Starts an update now.
   void StartUpdate();
@@ -343,8 +349,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
     return service_worker_ptr_.get();
   }
 
-  // Returns the 'controller' interface ptr of this worker. It is expected that
-  // the worker is already starting or running, or is going to be started soon.
+  // S13nServiceWorker:
+  // Returns the 'controller' interface ptr of this worker. It is expected
+  // that the worker is already starting or running, or is going to be started
+  // soon.
   // TODO(kinuko): Relying on the callsites to start the worker when it's
   // not running is a bit sketchy, maybe this should queue a task to check
   // if the pending request is pending too long? https://crbug.com/797222
@@ -374,6 +382,16 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
 
   base::WeakPtr<ServiceWorkerContextCore> context() const { return context_; }
+
+  // Called when the browser process starts/finishes reading a fetch event
+  // response via Mojo data pipe from the service worker.
+  // Non-S13nServiceWorker: We try to not stop the service worker while there is
+  // an ongoing response.
+  // S13nServiceWorker: Renderer's idle timer recognizes stream responses, so we
+  // rely on it instead of keeping track of stream responses in the browser
+  // process.
+  void OnStreamResponseStarted();
+  void OnStreamResponseFinished();
 
   // Adds and removes Observers.
   void AddObserver(Observer* observer);
@@ -601,6 +619,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_storage_unittest::ServiceWorkerStorageDiskTest,
       ScriptResponseTime);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, EarlyResponse);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, CancelRequest);
 
   // Contains timeout info for InflightRequest.
   struct InflightRequestTimeoutInfo {
@@ -665,7 +685,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                          int line_number,
                          int column_number,
                          const GURL& source_url) override;
-  void OnReportConsoleMessage(blink::mojom::ConsoleMessageSource source,
+  void OnReportConsoleMessage(int source_identifier,
                               blink::mojom::ConsoleMessageLevel message_level,
                               const base::string16& message,
                               int line_number,
@@ -720,10 +740,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // ping.
   void StopWorkerIfIdle();
 
-  // Returns true if the service worker is known to have work to do because the
-  // browser process initiated a request to the service worker which isn't done
-  // yet.
+  // Non-S13nServiceWorker: returns true if the service worker has work to do:
+  // it has inflight requests, in-progress streaming URLRequestJobs, or pending
+  // start callbacks.
   //
+  // S13nServiceWorker: returns true if the service worker has work to do:
+  // because the browser process initiated a request to the service worker which
+  // isn't done yet.
   // Note that this method may return false even when the service worker still
   // has work to do; clients may dispatch events to the service worker directly.
   // You can ensure no inflight requests exist when HasWorkInBrowser() returns
@@ -783,9 +806,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void CleanUpExternalRequest(const std::string& request_uuid,
                               blink::ServiceWorkerStatusCode status);
 
-  // Called if no inflight events exist on the browser process. Triggers
-  // OnNoWork() if the renderer-side idle timeout has been fired or the worker
-  // has been stopped.
+  // Called if no inflight events exist on the browser process.
+  // Non-S13nServiceWorker: Triggers OnNoWork().
+  // S13nServiceWorker: Triggers OnNoWork() if the renderer-side idle timeout
+  // has been fired or the worker has been stopped.
   void OnNoWorkInBrowser();
 
   bool IsStartWorkerAllowed() const;
@@ -845,7 +869,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Connected to ServiceWorkerContextClient while the worker is running.
   blink::mojom::ServiceWorkerPtr service_worker_ptr_;
 
-  // Connection to the controller service worker.
+  // S13nServiceWorker: connected to the controller service worker.
   // |controller_request_| is non-null only when the |controller_ptr_| is
   // requested before the worker is started, it is passed to the worker (and
   // becomes null) once it's started.
@@ -866,13 +890,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // an inflight response.
   int inflight_stream_response_count_ = 0;
 
+  // S13nServiceWorker:
   // Set to true if the worker has no inflight events and the idle timer has
   // been triggered. Set back to false if another event starts since the worker
   // is no longer idle.
   bool worker_is_idle_on_renderer_ = true;
 
-  // Set to true when the worker needs to be terminated as soon as possible
-  // (e.g. activation).
+  // S13nServiceWorker: Set to true when the worker needs to be terminated as
+  // soon as possible (e.g. activation).
   bool needs_to_be_terminated_asap_ = false;
 
   // Keeps track of the provider hosting this running service worker for this
@@ -893,6 +918,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Starts running in StartWorker and continues until the worker is stopped.
   base::RepeatingTimer timeout_timer_;
+  // Holds the time the worker last started being considered idle.
+  base::TimeTicks idle_time_;
   // Holds the time that the outstanding StartWorker() request started.
   base::TimeTicks start_time_;
   // Holds the time the worker entered STOPPING status. This is also used as a

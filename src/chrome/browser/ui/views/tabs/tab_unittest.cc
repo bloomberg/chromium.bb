@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/tabs/tab_style_views.h"
+#include "chrome/browser/ui/views/tabs/tab_style.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/theme_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
@@ -47,6 +47,9 @@ class FakeTabController : public TabController {
     return selection_model_;
   }
   bool SupportsMultipleSelection() override { return false; }
+  NewTabButtonPosition GetNewTabButtonPosition() const override {
+    return LEADING;
+  }
   bool ShouldHideCloseButtonForTab(Tab* tab) const override { return false; }
   bool MaySetClip() override { return false; }
   void SelectTab(Tab* tab, const ui::Event& event) override {}
@@ -458,8 +461,8 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
           width = min_width = TabStyle::GetPinnedWidth();
         } else {
           width = TabStyle::GetStandardWidth();
-          min_width = is_active_tab ? TabStyleViews::GetMinimumActiveWidth()
-                                    : TabStyleViews::GetMinimumInactiveWidth();
+          min_width = is_active_tab ? TabStyle::GetMinimumActiveWidth()
+                                    : TabStyle::GetMinimumInactiveWidth();
         }
         const int height = GetLayoutConstant(TAB_HEIGHT);
         for (; width >= min_width; --width) {
@@ -518,7 +521,9 @@ TEST_F(TabTest, TooltipProvidedByTab) {
       EXPECT_FALSE(child.GetTooltipHandlerForPoint(midpoint));
       const gfx::Point mouse_hover_point =
           midpoint + child.GetMirroredPosition().OffsetFromOrigin();
-      EXPECT_EQ(expected_tooltip, tab.GetTooltipText(mouse_hover_point));
+      base::string16 tooltip;
+      EXPECT_TRUE(tab.GetTooltipText(mouse_hover_point, &tooltip));
+      EXPECT_EQ(expected_tooltip, tooltip);
     }
   }
 }

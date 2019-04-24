@@ -97,7 +97,8 @@ TEST_F(FPDFAttachmentEmbedderTest, AddAttachments) {
   EXPECT_FALSE(FPDFDoc_AddAttachment(document(), nullptr));
 
   // Add an attachment to the beginning of the embedded file list.
-  ScopedFPDFWideString file_name = GetFPDFWideString(L"0.txt");
+  std::unique_ptr<unsigned short, pdfium::FreeDeleter> file_name =
+      GetFPDFWideString(L"0.txt");
   FPDF_ATTACHMENT attachment =
       FPDFDoc_AddAttachment(document(), file_name.get());
 
@@ -159,7 +160,8 @@ TEST_F(FPDFAttachmentEmbedderTest, AddAttachmentsWithParams) {
   EXPECT_EQ(2, FPDFDoc_GetAttachmentCount(document()));
 
   // Add an attachment to the embedded file list.
-  ScopedFPDFWideString file_name = GetFPDFWideString(L"5.txt");
+  std::unique_ptr<unsigned short, pdfium::FreeDeleter> file_name =
+      GetFPDFWideString(L"5.txt");
   FPDF_ATTACHMENT attachment =
       FPDFDoc_AddAttachment(document(), file_name.get());
   constexpr char kContents[] = "Hello World!";
@@ -168,13 +170,15 @@ TEST_F(FPDFAttachmentEmbedderTest, AddAttachmentsWithParams) {
 
   // Set the date to be an arbitrary value.
   constexpr wchar_t kDateW[] = L"D:20170720161527-04'00'";
-  ScopedFPDFWideString ws_date = GetFPDFWideString(kDateW);
+  std::unique_ptr<unsigned short, pdfium::FreeDeleter> ws_date =
+      GetFPDFWideString(kDateW);
   EXPECT_TRUE(
       FPDFAttachment_SetStringValue(attachment, kDateKey, ws_date.get()));
 
   // Set the checksum to be an arbitrary value.
   constexpr wchar_t kCheckSumW[] = L"<ABCDEF01234567899876543210FEDCBA>";
-  ScopedFPDFWideString ws_checksum = GetFPDFWideString(kCheckSumW);
+  std::unique_ptr<unsigned short, pdfium::FreeDeleter> ws_checksum =
+      GetFPDFWideString(kCheckSumW);
   EXPECT_TRUE(FPDFAttachment_SetStringValue(attachment, kChecksumKey,
                                             ws_checksum.get()));
 

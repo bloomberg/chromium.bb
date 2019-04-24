@@ -228,10 +228,11 @@ CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitSessionStorage(
 }
 
 CookieTreeNode::DetailedInfo& CookieTreeNode::DetailedInfo::InitAppCache(
-    const content::StorageUsageInfo* usage_info) {
+    const GURL& origin,
+    const blink::mojom::AppCacheInfo* appcache_info) {
   Init(TYPE_APPCACHE);
-  this->usage_info = usage_info;
-  origin = usage_info->origin;
+  this->appcache_info = appcache_info;
+  this->origin = url::Origin::Create(origin);
   return *this;
 }
 
@@ -378,31 +379,32 @@ class CookieTreeAppCacheNode : public CookieTreeNode {
   // |appcache_info| should remain valid at least as long as the
   // CookieTreeAppCacheNode is valid.
   explicit CookieTreeAppCacheNode(
-      std::list<content::StorageUsageInfo>::iterator usage_info)
-      : CookieTreeNode(base::UTF8ToUTF16(usage_info->origin.Serialize())),
-        usage_info_(usage_info) {}
+      const url::Origin& origin,
+      std::list<blink::mojom::AppCacheInfo>::iterator appcache_info)
+      : CookieTreeNode(base::UTF8ToUTF16(appcache_info->manifest_url.spec())),
+        origin_(origin),
+        appcache_info_(appcache_info) {}
   ~CookieTreeAppCacheNode() override {}
 
   void DeleteStoredObjects() override {
     LocalDataContainer* container = GetLocalDataContainerForNode(this);
 
     if (container) {
-      container->appcache_helper_->DeleteAppCaches(usage_info_->origin);
-      container->appcache_info_list_.erase(usage_info_);
+      DCHECK(container->appcache_helper_.get());
+      container->appcache_helper_->DeleteAppCacheGroup(
+          appcache_info_->manifest_url);
+      container->appcache_info_[origin_].erase(appcache_info_);
     }
   }
   DetailedInfo GetDetailedInfo() const override {
-    return DetailedInfo().InitAppCache(&*usage_info_);
+    return DetailedInfo().InitAppCache(origin_.GetURL(), &*appcache_info_);
   }
 
-  int64_t InclusiveSize() const override {
-    return usage_info_->total_size_bytes;
-  }
+  int64_t InclusiveSize() const override { return appcache_info_->size; }
 
  private:
-  // |usage_info_| is expected to remain valid as long as this node is valid.
-  std::list<content::StorageUsageInfo>::iterator usage_info_;
-
+  url::Origin origin_;
+  std::list<blink::mojom::AppCacheInfo>::iterator appcache_info_;
   DISALLOW_COPY_AND_ASSIGN(CookieTreeAppCacheNode);
 };
 
@@ -1583,20 +1585,24 @@ void CookiesTreeModel::PopulateAppCacheInfoWithFilter(
     const base::string16& filter) {
   CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
 
-  if (container->appcache_info_list_.empty())
+  if (container->appcache_info_.empty())
     return;
 
   notifier->StartBatchUpdate();
-  for (auto it = container->appcache_info_list_.begin();
-       it != container->appcache_info_list_.end(); ++it) {
-    const GURL url = it->origin.GetURL();
-    if (filter.empty() || (CookieTreeHostNode::TitleForUrl(url).find(filter) !=
-                           base::string16::npos)) {
-      CookieTreeHostNode* host_node = root->GetOrCreateHostNode(url);
+  for (auto& origin : container->appcache_info_) {
+    base::string16 host_node_name = base::UTF8ToUTF16(origin.first.host());
+    if (filter.empty() ||
+        (host_node_name.find(filter) != base::string16::npos)) {
+      CookieTreeHostNode* host_node =
+          root->GetOrCreateHostNode(origin.first.GetURL());
       CookieTreeAppCachesNode* appcaches_node =
           host_node->GetOrCreateAppCachesNode();
-      appcaches_node->AddAppCacheNode(
-          std::make_unique<CookieTreeAppCacheNode>(it));
+
+      for (auto info = origin.second.begin(); info != origin.second.end();
+           ++info) {
+        appcaches_node->AddAppCacheNode(
+            std::make_unique<CookieTreeAppCacheNode>(origin.first, info));
+      }
     }
   }
 }
@@ -1961,7 +1967,7 @@ std::unique_ptr<CookiesTreeModel> CookiesTreeModel::CreateForProfile(
       new BrowsingDataDatabaseHelper(profile),
       new BrowsingDataLocalStorageHelper(profile),
       /*session_storage_helper=*/nullptr,
-      new BrowsingDataAppCacheHelper(storage_partition->GetAppCacheService()),
+      new BrowsingDataAppCacheHelper(profile),
       new BrowsingDataIndexedDBHelper(storage_partition->GetIndexedDBContext()),
       BrowsingDataFileSystemHelper::Create(file_system_context),
       BrowsingDataQuotaHelper::Create(profile),

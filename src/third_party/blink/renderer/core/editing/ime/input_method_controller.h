@@ -57,6 +57,8 @@ class CORE_EXPORT InputMethodController final
     kKeepSelection,
   };
 
+  static InputMethodController* Create(LocalFrame&);
+
   explicit InputMethodController(LocalFrame&);
   virtual ~InputMethodController();
   void Trace(Visitor*) override;

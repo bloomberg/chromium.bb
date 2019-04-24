@@ -18,17 +18,13 @@ cast_source_set("metrics") {
     "//base",
     "//base:i18n",
     "//chromecast/base",
-    "//chromecast/base:cast_sys_info",
-    "//chromecast/base:cast_version",
+    "//chromecast/common",
     "//components/metrics",
     "//components/metrics:gpu",
     "//components/metrics:net",
-    "//components/metrics:ui",
     "//components/prefs",
     "//content/public/browser",
     "//content/public/common",
-    "//services/network/public/cpp",
-    "//third_party/metrics_proto",
   ]
 
   if (is_linux) {
@@ -37,9 +33,6 @@ cast_source_set("metrics") {
       "external_metrics.h",
     ]
 
-    deps += [
-      "//chromecast/base/metrics",
-      "//components/metrics:serialization",
-    ]
+    deps += [ "//components/metrics:serialization" ]
   }
 }

@@ -20,9 +20,10 @@
 #include "api/video/video_bitrate_allocation.h"
 #include "api/video/video_bitrate_allocator.h"
 #include "api/video/video_bitrate_allocator_factory.h"
+#include "api/video_codecs/create_vp8_temporal_layers.h"
 #include "api/video_codecs/video_encoder.h"
 #include "api/video_codecs/vp8_temporal_layers.h"
-#include "api/video_codecs/vp8_temporal_layers_factory.h"
+#include "common_types.h"  // NOLINT(build/include)
 #include "modules/video_coding/codecs/vp9/include/vp9_globals.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/ref_counted_object.h"
@@ -85,7 +86,7 @@ class VideoCodecInitializerTest : public ::testing::Test {
 
   bool InitializeCodec() {
     codec_out_ = VideoCodec();
-    frame_buffer_controller_.reset();
+    temporal_layers_.clear();
     if (!VideoCodecInitializer::SetupCodec(config_, streams_, &codec_out_)) {
       return false;
     }
@@ -97,8 +98,11 @@ class VideoCodecInitializerTest : public ::testing::Test {
 
     // Make sure temporal layers instances have been created.
     if (codec_out_.codecType == VideoCodecType::kVideoCodecVP8) {
-      Vp8TemporalLayersFactory factory;
-      frame_buffer_controller_ = factory.Create(codec_out_);
+      for (int i = 0; i < codec_out_.numberOfSimulcastStreams; ++i) {
+        temporal_layers_.emplace_back(
+            CreateVp8TemporalLayers(Vp8TemporalLayersType::kFixedPattern,
+                                    codec_out_.VP8()->numberOfTemporalLayers));
+      }
     }
     return true;
   }
@@ -135,7 +139,7 @@ class VideoCodecInitializerTest : public ::testing::Test {
   // Output.
   VideoCodec codec_out_;
   std::unique_ptr<VideoBitrateAllocator> bitrate_allocator_;
-  std::unique_ptr<Vp8FrameBufferController> frame_buffer_controller_;
+  std::vector<std::unique_ptr<Vp8TemporalLayers>> temporal_layers_;
 };
 
 TEST_F(VideoCodecInitializerTest, SingleStreamVp8Screenshare) {

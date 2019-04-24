@@ -53,14 +53,14 @@ public:
      * @return  the from date in dateInterval.
      * @stable ICU 4.0
      */
-    inline UDate getFromDate() const;
+    UDate getFromDate() const;
 
     /** 
      * Get the to date.
      * @return  the to date in dateInterval.
      * @stable ICU 4.0
      */
-    inline UDate getToDate() const;
+    UDate getToDate() const;
 
 
     /**
@@ -114,7 +114,7 @@ public:
      * @return TRUE if the two DateIntervals are not the same
      * @stable ICU 4.0
      */
-    inline UBool operator!=(const DateInterval& other) const;
+    UBool operator!=(const DateInterval& other) const;
 
 
     /**

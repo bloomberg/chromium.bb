@@ -43,7 +43,7 @@ public:
     int getRenderTargetSampleCount(int requestedCount, GrPixelConfig config) const override;
     int maxRenderTargetSampleCount(GrPixelConfig config) const override;
 
-    bool surfaceSupportsReadPixels(const GrSurface*) const override;
+    bool surfaceSupportsReadPixels(const GrSurface*) const override { return true; }
 
     bool isConfigTexturableLinearly(GrPixelConfig config) const {
         return SkToBool(ConfigInfo::kTextureable_Flag & fConfigTable[config].fLinearFlags);
@@ -89,11 +89,6 @@ public:
     // Returns true if we should always make dedicated allocations for VkImages.
     bool shouldAlwaysUseDedicatedImageMemory() const {
         return fShouldAlwaysUseDedicatedImageMemory;
-    }
-
-    // Always use a transfer buffer instead of vkCmdUpdateBuffer to upload data to a VkBuffer.
-    bool avoidUpdateBuffers() const {
-        return fAvoidUpdateBuffers;
     }
 
     /**
@@ -142,19 +137,17 @@ public:
      * target.
      */
     bool canCopyImage(GrPixelConfig dstConfig, int dstSampleCnt, GrSurfaceOrigin dstOrigin,
-                      bool dstHasYcbcr, GrPixelConfig srcConfig, int srcSamplecnt,
-                      GrSurfaceOrigin srcOrigin, bool srcHasYcbcr) const;
+                      GrPixelConfig srcConfig, int srcSamplecnt, GrSurfaceOrigin srcOrigin) const;
 
     bool canCopyAsBlit(GrPixelConfig dstConfig, int dstSampleCnt, bool dstIsLinear,
-                       bool dstHasYcbcr, GrPixelConfig srcConfig, int srcSampleCnt,
-                       bool srcIsLinear, bool srcHasYcbcr) const;
+                       GrPixelConfig srcConfig, int srcSampleCnt, bool srcIsLinear) const;
 
     bool canCopyAsResolve(GrPixelConfig dstConfig, int dstSampleCnt, GrSurfaceOrigin dstOrigin,
-                          bool dstHasYcbcr, GrPixelConfig srcConfig, int srcSamplecnt,
-                          GrSurfaceOrigin srcOrigin, bool srcHasYcbcr) const;
+                          GrPixelConfig srcConfig, int srcSamplecnt,
+                          GrSurfaceOrigin srcOrigin) const;
 
-    bool canCopyAsDraw(GrPixelConfig dstConfig, bool dstIsRenderable, bool dstHasYcbcr,
-                       GrPixelConfig srcConfig, bool srcIsTextureable, bool srcHasYcbcr) const;
+    bool canCopyAsDraw(GrPixelConfig dstConfig, bool dstIsRenderable,
+                       GrPixelConfig srcConfig, bool srcIsTextureable) const;
 
     bool initDescForDstCopy(const GrRenderTargetProxy* src, GrSurfaceDesc* desc, GrSurfaceOrigin*,
                             bool* rectsMustMatch, bool* disallowSubrect) const override;
@@ -199,7 +192,6 @@ private:
     bool onSurfaceSupportsWritePixels(const GrSurface*) const override;
     bool onCanCopySurface(const GrSurfaceProxy* dst, const GrSurfaceProxy* src,
                           const SkIRect& srcRect, const SkIPoint& dstPoint) const override;
-    size_t onTransferFromOffsetAlignment(GrColorType bufferColorType) const override;
 
     struct ConfigInfo {
         ConfigInfo() : fOptimalFlags(0), fLinearFlags(0) {}
@@ -232,8 +224,6 @@ private:
     bool fMustSleepOnTearDown = false;
     bool fNewCBOnPipelineChange = false;
     bool fShouldAlwaysUseDedicatedImageMemory = false;
-
-    bool fAvoidUpdateBuffers = false;
 
     bool fSupportsSwapchain = false;
 

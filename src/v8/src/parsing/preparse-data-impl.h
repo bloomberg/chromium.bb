@@ -152,7 +152,7 @@ class BaseConsumedPreparseData : public ConsumedPreparseData {
 
   ProducedPreparseData* GetDataForSkippableFunction(
       Zone* zone, int start_position, int* end_position, int* num_parameters,
-      int* function_length, int* num_inner_functions, bool* uses_super_property,
+      int* num_inner_functions, bool* uses_super_property,
       LanguageMode* language_mode) final;
 
   void RestoreScopeAllocationData(DeclarationScope* scope) final;
@@ -191,8 +191,7 @@ class OnHeapConsumedPreparseData final
 // A serialized PreparseData in zone memory (as apposed to being on-heap).
 class ZonePreparseData : public ZoneObject {
  public:
-  V8_EXPORT_PRIVATE ZonePreparseData(Zone* zone, Vector<uint8_t>* byte_data,
-                                     int child_length);
+  ZonePreparseData(Zone* zone, Vector<uint8_t>* byte_data, int child_length);
 
   Handle<PreparseData> Serialize(Isolate* isolate);
 

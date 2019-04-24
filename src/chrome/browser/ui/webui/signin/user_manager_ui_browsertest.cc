@@ -86,9 +86,7 @@ IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageLoads) {
   EXPECT_EQ(num_pods, static_cast<int>(profile_manager->GetNumberOfProfiles()));
 }
 
-// https://crbug.com/945795
-IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest,
-                       DISABLED_PageRedirectsToAboutChrome) {
+IN_PROC_BROWSER_TEST_F(UserManagerUIBrowserTest, PageRedirectsToAboutChrome) {
   std::string user_manager_url = chrome::kChromeUIMdUserManagerUrl;
   user_manager_url += profiles::kUserManagerSelectProfileAboutChrome;
 

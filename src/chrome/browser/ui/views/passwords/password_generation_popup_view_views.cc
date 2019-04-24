@@ -44,25 +44,22 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
   // of it. |generating_state| means that the generated password is offered.
   void Init(const base::string16& password,
             const base::string16& suggestion,
-            PasswordGenerationPopupController::GenerationUIState state) {
+            PasswordGenerationPopupController::GenerationState state) {
     views::GridLayout* layout =
         SetLayoutManager(std::make_unique<views::GridLayout>(this));
     BuildColumnSet(layout);
     layout->StartRow(views::GridLayout::kFixedSize, 0);
 
-    layout->AddView(
-        autofill::CreateLabelWithColorReadabilityDisabled(
-            suggestion, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-            state == PasswordGenerationPopupController::kOfferGeneration
-                ? views::style::STYLE_PRIMARY
-                : STYLE_SECONDARY)
-            .release());
+    layout->AddView(autofill::CreateLabelWithColorReadabilityDisabled(
+        suggestion, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+        state == PasswordGenerationPopupController::kOfferGeneration
+            ? views::style::STYLE_PRIMARY
+            : STYLE_SECONDARY));
 
     DCHECK(!password_label_);
     password_label_ = autofill::CreateLabelWithColorReadabilityDisabled(
-                          password, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                          STYLE_SECONDARY_MONOSPACED)
-                          .release();
+        password, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+        STYLE_SECONDARY_MONOSPACED);
     layout->AddView(password_label_);
   }
 

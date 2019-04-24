@@ -117,10 +117,8 @@ void AecState::Update(
   filter_analyzer_.Update(adaptive_filter_impulse_response, render_buffer);
 
   // Estimate the direct path delay of the filter.
-  if (config_.filter.use_linear_filter) {
-    delay_state_.Update(filter_analyzer_, external_delay,
-                        strong_not_saturated_render_blocks_);
-  }
+  delay_state_.Update(filter_analyzer_, external_delay,
+                      strong_not_saturated_render_blocks_);
 
   const std::vector<float>& aligned_render_block =
       render_buffer.Block(-delay_state_.DirectPathFilterDelay())[0];

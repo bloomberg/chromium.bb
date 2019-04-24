@@ -64,7 +64,6 @@ jumbo_component("mus") {
     "//ui/accessibility",
     "//ui/accessibility/mojom",
     "//ui/aura",
-    "//ui/base/ime/init",
     "//ui/base/mojo:lib",
     "//ui/compositor",
     "//ui/display",

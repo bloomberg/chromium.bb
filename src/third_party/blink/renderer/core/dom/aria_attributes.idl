@@ -5,8 +5,9 @@
 // ARIA reflection
 // https://w3c.github.io/aria/#idl-interface
 [
+    NoInterfaceObject,
     RuntimeEnabled=AccessibilityObjectModel
-] interface mixin AriaAttributes {
+] interface AriaAttributes {
     [CEReactions, Reflect=aria_activedescendant] attribute DOMString? ariaActiveDescendant;
     [CEReactions, Reflect=aria_atomic] attribute DOMString? ariaAtomic;
     [CEReactions, Reflect=aria_autocomplete] attribute DOMString? ariaAutoComplete;
@@ -53,4 +54,4 @@
     [CEReactions, Reflect=aria_valuetext] attribute DOMString? ariaValueText;
 };
 
-Element includes AriaAttributes;
+Element implements AriaAttributes;

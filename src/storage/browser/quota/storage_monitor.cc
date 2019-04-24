@@ -37,7 +37,7 @@ void StorageObserverList::RemoveObserver(StorageObserver* observer) {
   observer_state_map_.erase(observer);
 }
 
-size_t StorageObserverList::ObserverCount() const {
+int StorageObserverList::ObserverCount() const {
   return observer_state_map_.size();
 }
 

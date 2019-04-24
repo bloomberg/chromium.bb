@@ -23,9 +23,8 @@ class SSLCertRequestInfo;
 
 class NET_EXPORT ClientCertStoreNSS : public ClientCertStore {
  public:
-  typedef base::RepeatingCallback<crypto::CryptoModuleBlockingPasswordDelegate*(
-      const HostPortPair& /* server */)>
-      PasswordDelegateFactory;
+  typedef base::Callback<crypto::CryptoModuleBlockingPasswordDelegate*(
+      const HostPortPair& /* server */)> PasswordDelegateFactory;
 
   using CertFilter = base::RepeatingCallback<bool(CERTCertificate*)>;
 
@@ -35,7 +34,7 @@ class NET_EXPORT ClientCertStoreNSS : public ClientCertStore {
 
   // ClientCertStore:
   void GetClientCerts(const SSLCertRequestInfo& cert_request_info,
-                      ClientCertListCallback callback) override;
+                      const ClientCertListCallback& callback) override;
 
   // Examines the certificates in |identities| to find all certificates that
   // match the client certificate request in |request|, removing any that don't.

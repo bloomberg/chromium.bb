@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -99,6 +100,9 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   static Document* CreateDocument(const String& mime_type,
                                   const DocumentInit&,
                                   bool force_xhtml);
+  static LocalDOMWindow* Create(LocalFrame& frame) {
+    return MakeGarbageCollected<LocalDOMWindow>(frame);
+  }
 
   static LocalDOMWindow* From(const ScriptState*);
 
@@ -341,7 +345,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // Return the viewport size including scrollbars.
   IntSize GetViewportSize() const;
 
-  Member<Document> document_;
+  TraceWrapperMember<Document> document_;
   Member<DOMVisualViewport> visualViewport_;
   TaskRunnerTimer<LocalDOMWindow> unused_preloads_timer_;
 
@@ -356,14 +360,14 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   mutable Member<BarProp> scrollbars_;
   mutable Member<BarProp> statusbar_;
   mutable Member<BarProp> toolbar_;
-  mutable Member<Navigator> navigator_;
+  mutable TraceWrapperMember<Navigator> navigator_;
   mutable Member<StyleMedia> media_;
-  mutable Member<CustomElementRegistry> custom_elements_;
+  mutable TraceWrapperMember<CustomElementRegistry> custom_elements_;
   // We store reference to Modulator here to have it TraceWrapper-ed.
   // This is wrong, as Modulator is per-context, where as LocalDOMWindow is
   // shared among context. However, this *works* as Modulator is currently only
   // enabled in the main world,
-  Member<Modulator> modulator_;
+  TraceWrapperMember<Modulator> modulator_;
   Member<External> external_;
 
   String status_;

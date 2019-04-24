@@ -19,7 +19,7 @@
 namespace spvtools {
 namespace reduce {
 
-using opt::IRContext;
+using namespace opt;
 
 std::string MergeBlocksReductionOpportunityFinder::GetName() const {
   return "MergeBlocksReductionOpportunityFinder";
@@ -27,14 +27,14 @@ std::string MergeBlocksReductionOpportunityFinder::GetName() const {
 
 std::vector<std::unique_ptr<ReductionOpportunity>>
 MergeBlocksReductionOpportunityFinder::GetAvailableOpportunities(
-    IRContext* context) const {
+    opt::IRContext* context) const {
   std::vector<std::unique_ptr<ReductionOpportunity>> result;
 
   // Consider every block in every function.
   for (auto& function : *context->module()) {
     for (auto& block : function) {
       // See whether it is possible to merge this block with its successor.
-      if (opt::blockmergeutil::CanMergeWithSuccessor(context, &block)) {
+      if (blockmergeutil::CanMergeWithSuccessor(context, &block)) {
         // It is, so record an opportunity to do this.
         result.push_back(spvtools::MakeUnique<MergeBlocksReductionOpportunity>(
             context, &function, &block));

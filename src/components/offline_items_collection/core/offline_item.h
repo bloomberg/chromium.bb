@@ -122,9 +122,6 @@ struct OfflineItem {
   // Whether the origin should be displayed.
   bool promote_origin;
 
-  // Whether or not this item can be renamed.
-  bool can_rename;
-
   // TODO(dtrainor): Build out custom per-item icon support.
 
   // Content Metadata.

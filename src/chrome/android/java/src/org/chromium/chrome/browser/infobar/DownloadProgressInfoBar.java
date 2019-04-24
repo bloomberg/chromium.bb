@@ -54,7 +54,7 @@ public class DownloadProgressInfoBar extends InfoBar {
 
     private DownloadProgressInfoBar(
             Client client, DownloadInfoBarController.DownloadProgressInfoBarData info) {
-        super(info.icon, 0, null, null);
+        super(info.icon, null, null);
         mInfo = info;
         mClient = client;
     }

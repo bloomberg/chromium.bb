@@ -21,6 +21,10 @@
       }
     </style>
     <script>
+        if (window.testRunner) {
+            testRunner.dumpAsTextWithPixelResults();
+        }
+
         function initWebGL(canvasName, vshader, fshader, attribs, clearColor, clearDepth)
         {
             var canvas = document.getElementById(canvasName);

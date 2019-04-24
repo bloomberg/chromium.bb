@@ -121,24 +121,24 @@ base::TaskTraits TaskQueuePriority2Traits(
 
 class WebrtcTaskQueueFactory final : public webrtc::TaskQueueFactory {
  public:
-  WebrtcTaskQueueFactory() = default;
+  explicit WebrtcTaskQueueFactory(const base::TaskTraits& traits)
+      : traits_(traits) {}
 
   std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>
   CreateTaskQueue(absl::string_view /*name*/,
                   Priority priority) const override {
     return std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>(
-        new WebrtcTaskQueue(TaskQueuePriority2Traits(priority)));
+        new WebrtcTaskQueue(base::TaskTraits::Override(
+            TaskQueuePriority2Traits(priority), traits_)));
   }
+
+ private:
+  base::TaskTraits traits_;
 };
 
 }  // namespace
 
-std::unique_ptr<webrtc::TaskQueueFactory> CreateWebRtcTaskQueueFactory() {
-  return std::make_unique<WebrtcTaskQueueFactory>();
-}
-
-std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>
-CreateWebRtcTaskQueue(webrtc::TaskQueueFactory::Priority priority) {
-  return std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>(
-      new WebrtcTaskQueue(TaskQueuePriority2Traits(priority)));
+std::unique_ptr<webrtc::TaskQueueFactory> CreateWebRtcTaskQueueFactory(
+    const base::TaskTraits& traits) {
+  return std::make_unique<WebrtcTaskQueueFactory>(traits);
 }

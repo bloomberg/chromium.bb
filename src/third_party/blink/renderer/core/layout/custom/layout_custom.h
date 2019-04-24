@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/layout/custom/css_layout_definition.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -75,12 +74,7 @@ class LayoutCustom final : public LayoutBlockFlow {
   scoped_refptr<SerializedScriptValue> fragment_result_data_;
 };
 
-template <>
-struct DowncastTraits<LayoutCustom> {
-  static bool AllowFrom(const LayoutObject& object) {
-    return object.IsLayoutCustom();
-  }
-};
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutCustom, IsLayoutCustom());
 
 }  // namespace blink
 

@@ -19,11 +19,12 @@ const char kDumpBrowserContextDependencyGraphFlag[] =
 #endif  // NDEBUG
 
 void BrowserContextDependencyManager::RegisterProfilePrefsForServices(
+    content::BrowserContext* context,
     user_prefs::PrefRegistrySyncable* pref_registry) {
   TRACE_EVENT0(
      "browser",
      "BrowserContextDependencyManager::RegisterProfilePrefsForServices");
-  RegisterPrefsForServices(pref_registry);
+  RegisterPrefsForServices(context, pref_registry);
 }
 
 void BrowserContextDependencyManager::CreateBrowserContextServices(

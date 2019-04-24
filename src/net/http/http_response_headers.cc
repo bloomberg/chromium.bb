@@ -71,11 +71,15 @@ const char* const kCookieResponseHeaders[] = {
   "clear-site-data",
 };
 
-// By default, do not cache Strict-Transport-Security.
-// This avoids erroneously re-processing it on page loads from cache ---
-// it is defined to be valid only on live and error-free HTTPS connections.
+// By default, do not cache Strict-Transport-Security or Public-Key-Pins.
+// This avoids erroneously re-processing them on page loads from cache ---
+// they are defined to be valid only on live and error-free HTTPS
+// connections.
+// TODO(https://crbug.com/893055): remove Public-Key-Pins from non-cachable
+// headers?
 const char* const kSecurityStateHeaders[] = {
   "strict-transport-security",
+  "public-key-pins"
 };
 
 // These response headers are not copied from a 304/206 response to the cached
@@ -885,8 +889,7 @@ void HttpResponseHeaders::GetMimeTypeAndCharset(std::string* mime_type,
 
   size_t iter = 0;
   while (EnumerateHeader(&iter, name, &value))
-    HttpUtil::ParseContentType(value, mime_type, charset, &had_charset,
-                               nullptr);
+    HttpUtil::ParseContentType(value, mime_type, charset, &had_charset, NULL);
 }
 
 bool HttpResponseHeaders::GetMimeType(std::string* mime_type) const {
@@ -1279,9 +1282,9 @@ bool HttpResponseHeaders::HasStrongValidators() const {
 
 bool HttpResponseHeaders::HasValidators() const {
   std::string etag_header;
-  EnumerateHeader(nullptr, "etag", &etag_header);
+  EnumerateHeader(NULL, "etag", &etag_header);
   std::string last_modified_header;
-  EnumerateHeader(nullptr, "Last-Modified", &last_modified_header);
+  EnumerateHeader(NULL, "Last-Modified", &last_modified_header);
   return HttpUtil::HasValidators(GetHttpVersion(), etag_header,
                                  last_modified_header);
 }

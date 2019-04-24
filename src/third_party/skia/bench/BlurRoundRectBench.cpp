@@ -50,7 +50,8 @@ public:
             SkPaint* paint = looperBuilder.addLayerOnTop(info);
             paint->setMaskFilter(SkMaskFilter::MakeBlur(kNormal_SkBlurStyle,
                                                         SkBlurMask::ConvertRadiusToSigma(0.5)));
-            paint->setColorFilter(SkColorFilters::Blend(SK_ColorLTGRAY, SkBlendMode::kSrcIn));
+            paint->setColorFilter(SkColorFilter::MakeModeFilter(SK_ColorLTGRAY,
+                                                                SkBlendMode::kSrcIn));
             paint->setColor(SK_ColorGRAY);
         }
         {

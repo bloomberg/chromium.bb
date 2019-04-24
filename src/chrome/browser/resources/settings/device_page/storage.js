@@ -203,7 +203,7 @@ Polymer({
    * @private
    */
   handleDownloadsSizeChanged_: function(size) {
-    this.$.downloadsSize.subLabel = size;
+    this.$.downloadsSize.textContent = size;
   },
 
   /**
@@ -225,7 +225,7 @@ Polymer({
    * @private
    */
   handleBrowsingDataSizeChanged_: function(size) {
-    this.$.browsingDataSize.subLabel = size;
+    this.$.browsingDataSize.textContent = size;
   },
 
   /**
@@ -235,7 +235,7 @@ Polymer({
    */
   handleAndroidSizeChanged_: function(size) {
     if (this.androidEnabled_) {
-      this.$$('#androidSize').subLabel = size;
+      this.$$('#androidSize').textContent = size;
     }
   },
 
@@ -246,7 +246,7 @@ Polymer({
    */
   handleCrostiniSizeChanged_: function(size) {
     if (this.showCrostiniStorage_) {
-      this.$$('#crostiniSize').subLabel = size;
+      this.$$('#crostiniSize').textContent = size;
     }
   },
 
@@ -256,7 +256,7 @@ Polymer({
    */
   handleOtherUsersSizeChanged_: function(size) {
     if (!this.isGuest_) {
-      this.$$('#otherUsersSize').subLabel = size;
+      this.$$('#otherUsersSize').textContent = size;
     }
   },
 

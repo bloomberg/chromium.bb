@@ -684,12 +684,6 @@ void AutofillMetrics::LogCreditCardInfoBarMetric(
                                   metric, NUM_INFO_BAR_METRICS);
   }
 
-  if (options.from_dynamic_change_form) {
-    base::UmaHistogramEnumeration(
-        "Autofill.CreditCardInfoBar" + destination + ".FromDynamicChangeForm",
-        metric, NUM_INFO_BAR_METRICS);
-  }
-
   if (options.has_non_focusable_field) {
     base::UmaHistogramEnumeration(
         "Autofill.CreditCardInfoBar" + destination + ".FromNonFocusableForm",
@@ -750,11 +744,6 @@ void AutofillMetrics::LogSaveCardPromptMetric(
   if (options.has_non_focusable_field) {
     base::UmaHistogramEnumeration(
         metric_with_destination_and_show + ".FromNonFocusableForm", metric,
-        NUM_SAVE_CARD_PROMPT_METRICS);
-  }
-  if (options.from_dynamic_change_form) {
-    base::UmaHistogramEnumeration(
-        metric_with_destination_and_show + ".FromDynamicChangeForm", metric,
         NUM_SAVE_CARD_PROMPT_METRICS);
   }
   base::UmaHistogramEnumeration(
@@ -1461,11 +1450,6 @@ void AutofillMetrics::LogAutofillSuggestionAcceptedIndex(int index) {
 }
 
 // static
-void AutofillMetrics::LogAutofillFormCleared() {
-  base::RecordAction(base::UserMetricsAction("Autofill_ClearedForm"));
-}
-
-// static
 void AutofillMetrics::LogNumberOfEditedAutofilledFields(
     size_t num_edited_autofilled_fields,
     bool observed_submission) {
@@ -1887,11 +1871,6 @@ void AutofillMetrics::LogWalletSyncTransportCardsOptIn(bool is_opted_in) {
       "Autofill.HadUserOptedIn_To_WalletSyncTransportServerCards", is_opted_in);
 }
 
-void AutofillMetrics::LogCardUploadEnabledMetric(
-    CardUploadEnabledMetric metric) {
-  UMA_HISTOGRAM_ENUMERATION("Autofill.CardUploadEnabled", metric);
-}
-
 // static
 const char* AutofillMetrics::GetMetricsSyncStateSuffix(
     AutofillSyncSigninState sync_state) {
@@ -1902,10 +1881,8 @@ const char* AutofillMetrics::GetMetricsSyncStateSuffix(
       return ".SignedIn";
     case AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled:
       return ".SignedInAndWalletSyncTransportEnabled";
-    case AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled:
-      return ".SignedInAndSyncFeatureEnabled";
-    case AutofillSyncSigninState::kSyncPaused:
-      return ".SyncPaused";
+    case AutofillSyncSigninState::kSignedInAndSyncFeature:
+      return ".SignedInAndSyncFeature";
     case AutofillSyncSigninState::kNumSyncStates:
       return ".Unknown";
   }

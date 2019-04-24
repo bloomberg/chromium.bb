@@ -14,6 +14,8 @@
 #include "build/build_config.h"
 #include "content/public/common/content_features.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
+#include "content/renderer/media/stream/media_stream_audio_processor_options.h"
+#include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_logging.h"
@@ -21,25 +23,29 @@
 #include "media/base/channel_layout.h"
 #include "media/base/sample_rates.h"
 #include "media/webrtc/webrtc_switches.h"
-#include "third_party/blink/public/platform/modules/mediastream/media_stream_audio_processor_options.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
 #include "third_party/webrtc/media/base/media_channel.h"
 
 namespace content {
 
-using EchoCancellationType =
-    blink::AudioProcessingProperties::EchoCancellationType;
+using EchoCancellationType = AudioProcessingProperties::EchoCancellationType;
 
 namespace {
 // Used as an identifier for ProcessedLocalAudioSource::From().
 void* const kProcessedLocalAudioSourceIdentifier =
     const_cast<void**>(&kProcessedLocalAudioSourceIdentifier);
 
-void LogAudioProcesingProperties(
-    const blink::AudioProcessingProperties& properties) {
+bool ApmInAudioServiceEnabled() {
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  return base::FeatureList::IsEnabled(features::kWebRtcApmInAudioService);
+#else
+  return false;
+#endif
+}
+
+void LogAudioProcesingProperties(const AudioProcessingProperties& properties) {
   auto aec_to_string =
-      [](blink::AudioProcessingProperties::EchoCancellationType type) {
-        using AEC = blink::AudioProcessingProperties::EchoCancellationType;
+      [](AudioProcessingProperties::EchoCancellationType type) {
+        using AEC = AudioProcessingProperties::EchoCancellationType;
         switch (type) {
           case AEC::kEchoCancellationDisabled:
             return "disabled";
@@ -79,24 +85,14 @@ void LogAudioProcesingProperties(
 }
 }  // namespace
 
-bool IsApmInAudioServiceEnabled() {
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  return base::FeatureList::IsEnabled(features::kWebRtcApmInAudioService);
-#else
-  return false;
-#endif
-}
-
 ProcessedLocalAudioSource::ProcessedLocalAudioSource(
     int consumer_render_frame_id,
     const blink::MediaStreamDevice& device,
     bool disable_local_echo,
-    const blink::AudioProcessingProperties& audio_processing_properties,
+    const AudioProcessingProperties& audio_processing_properties,
     const ConstraintsCallback& started_callback,
-    PeerConnectionDependencyFactory* factory,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : blink::MediaStreamAudioSource(std::move(task_runner),
-                                    true /* is_local_source */,
+    PeerConnectionDependencyFactory* factory)
+    : blink::MediaStreamAudioSource(true /* is_local_source */,
                                     disable_local_echo),
       consumer_render_frame_id_(consumer_render_frame_id),
       pc_factory_(factory),
@@ -260,7 +256,7 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
   DCHECK(params.IsValid());
   media::AudioSourceParameters source_params(device().session_id);
   const bool use_remote_apm =
-      IsApmInAudioServiceEnabled() &&
+      ApmInAudioServiceEnabled() &&
       MediaStreamAudioProcessor::WouldModifyAudio(audio_processing_properties_);
   if (use_remote_apm) {
     audio_processor_proxy_ =

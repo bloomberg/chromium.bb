@@ -68,12 +68,6 @@ const base::Feature kOneClickUnelide{"OmniboxOneClickUnelide",
 const base::Feature kSimplifyHttpsIndicator{"SimplifyHttpsIndicator",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used to enable local entity suggestions. Similar to rich entities but
-// but location specific. E.g., typing 'starbucks near' could display the local
-// entity suggestion 'starbucks near disneyland \n starbucks * Anaheim, CA'.
-const base::Feature kOmniboxLocalEntitySuggestions{
-    "OmniboxLocalEntitySuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature used to enable entity suggestion images and enhanced presentation
 // showing more context and descriptive text about the entity.
 const base::Feature kOmniboxRichEntitySuggestions{
@@ -120,12 +114,11 @@ const base::Feature kExperimentalKeywordMode{"OmniboxExperimentalKeywordMode",
 const base::Feature kOmniboxPedalSuggestions{"OmniboxPedalSuggestions",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used for UI that improves transparency of and control over omnibox
-// suggestions. This includes UI cues (like a clock icon for Search History
-// suggestions), as well as user controls to delete personalized suggestions.
-// This will be eventually enabled by default.
-const base::Feature kOmniboxSuggestionTransparencyOptions{
-    "OmniboxSuggestionTransparencyOptions", base::FEATURE_DISABLED_BY_DEFAULT};
+// Feature used to show a context menu for suggestions when the user
+// right-clicks a suggestion in the omnibox dropdown. It's currently disabled
+// by default during development, but will eventually be enabled by default.
+const base::Feature kOmniboxContextMenuForSuggestions{
+    "OmniboxContextMenuForSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature to enable clipboard provider to suggest copied text.
 const base::Feature kEnableClipboardProviderTextSuggestions{
@@ -178,13 +171,8 @@ const base::Feature kQueryInOmnibox{"QueryInOmnibox",
 // Feature used for showing the URL suggestion favicons as a UI experiment,
 // currently only used on desktop platforms.
 const base::Feature kUIExperimentShowSuggestionFavicons{
-  "OmniboxUIExperimentShowSuggestionFavicons",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+    "OmniboxUIExperimentShowSuggestionFavicons",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to always swap the title and URL.
 const base::Feature kUIExperimentSwapTitleAndUrl{
@@ -284,10 +272,5 @@ const base::Feature kOmniboxPopupShortcutIconsInZeroState{
 // weather answers.
 const base::Feature kOmniboxMaterialDesignWeatherIcons{
     "OmniboxMaterialDesignWeatherIcons", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Allow suggestions to be shown to the user on the New Tab Page upon focusing
-// URL bar (the omnibox).
-const base::Feature kZeroSuggestionsOnNTP{"OmniboxZeroSuggestionsOnNTP",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace omnibox

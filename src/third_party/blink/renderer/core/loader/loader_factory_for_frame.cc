@@ -55,11 +55,12 @@ std::unique_ptr<WebURLLoader> LoaderFactoryForFrame::CreateURLLoader(
   // disabled).
   // TODO(mek): Move the RequestContext check to the worker side's relevant
   // callsite when we make Shared Worker loading off-main-thread.
-  if (request.Url().ProtocolIs("blob") && BlobUtils::MojoBlobURLsEnabled() &&
-      !url_loader_factory &&
+  Document* document = frame_or_imported_document_->GetDocument();
+  if (document && request.Url().ProtocolIs("blob") &&
+      BlobUtils::MojoBlobURLsEnabled() && !url_loader_factory &&
       request.GetRequestContext() != mojom::RequestContextType::SHARED_WORKER) {
-    frame_or_imported_document_->GetDocument().GetPublicURLManager().Resolve(
-        request.Url(), MakeRequest(&url_loader_factory));
+    document->GetPublicURLManager().Resolve(request.Url(),
+                                            MakeRequest(&url_loader_factory));
   }
   LocalFrame& frame = frame_or_imported_document_->GetFrame();
   FrameScheduler* frame_scheduler = frame.GetFrameScheduler();

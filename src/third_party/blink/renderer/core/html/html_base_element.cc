@@ -34,7 +34,7 @@ namespace blink {
 
 using namespace html_names;
 
-HTMLBaseElement::HTMLBaseElement(Document& document)
+inline HTMLBaseElement::HTMLBaseElement(Document& document)
     : HTMLElement(kBaseTag, document) {}
 
 DEFINE_NODE_FACTORY(HTMLBaseElement)

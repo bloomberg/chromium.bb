@@ -90,7 +90,6 @@ void ShowAppList(content::BrowserContext* browser_context,
 
 int main(int argc, const char** argv) {
   ui::ViewsContentClient views_content_client(argc, argv);
-  views_content_client.set_on_pre_main_message_loop_run_callback(
-      base::BindOnce(&ShowAppList));
+  views_content_client.set_task(base::Bind(&ShowAppList));
   return views_content_client.RunMain();
 }

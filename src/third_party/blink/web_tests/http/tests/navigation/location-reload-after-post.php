@@ -5,7 +5,7 @@
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
-    testRunner.dumpFrameLoadCallbacks();
+    testRunner.dumpResourceLoadCallbacks();
     testRunner.waitUntilDone();
 }
 

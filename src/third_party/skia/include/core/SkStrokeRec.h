@@ -14,7 +14,7 @@
 class SkPath;
 
 SK_BEGIN_REQUIRE_DENSE
-class SK_API SkStrokeRec {
+class SkStrokeRec {
 public:
     enum InitStyle {
         kHairline_InitStyle,

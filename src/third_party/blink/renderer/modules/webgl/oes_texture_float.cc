@@ -37,8 +37,9 @@ OESTextureFloat::OESTextureFloat(WebGLRenderingContextBase* context)
     context->ExtensionsUtil()->EnsureExtensionEnabled(
         "GL_CHROMIUM_color_buffer_float_rgb");
 
-    // https://github.com/KhronosGroup/WebGL/pull/2830
-    // Spec requires EXT_float_blend needs to be turned on implicitly here
+    // As a workaround before EXT_float_blend spec is finalized and exposed,
+    // turn it on if possible
+    // TODO(shrekshao): remove when EXT_float_blend is exposed
     context->ExtensionsUtil()->EnsureExtensionEnabled("GL_EXT_float_blend");
   }
 }

@@ -35,6 +35,13 @@ void IdentityManagerObserverBridge::OnPrimaryAccountCleared(
   }
 }
 
+void IdentityManagerObserverBridge::OnPrimaryAccountSigninFailed(
+    const GoogleServiceAuthError& error) {
+  if ([delegate_ respondsToSelector:@selector(onPrimaryAccountSigninFailed:)]) {
+    [delegate_ onPrimaryAccountSigninFailed:error];
+  }
+}
+
 void IdentityManagerObserverBridge::OnRefreshTokenUpdatedForAccount(
     const CoreAccountInfo& account_info) {
   if ([delegate_

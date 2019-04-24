@@ -217,12 +217,19 @@ void RenderWidgetHostNSViewBridgeLocal::OnDisplayMetricsChanged(
 }
 
 void RenderWidgetHostNSViewBridgeLocal::DisplayCursor(const WebCursor& cursor) {
-  WebCursor non_const_cursor(cursor);
+  WebCursor non_const_cursor = cursor;
   [cocoa_view_ updateCursor:non_const_cursor.GetNativeCursor()];
 }
 
 void RenderWidgetHostNSViewBridgeLocal::SetCursorLocked(bool locked) {
-  [cocoa_view_ setCursorLocked:locked];
+  if (locked) {
+    CGAssociateMouseAndMouseCursorPosition(NO);
+    [NSCursor hide];
+  } else {
+    // Unlock position of mouse cursor and unhide it.
+    CGAssociateMouseAndMouseCursorPosition(YES);
+    [NSCursor unhide];
+  }
 }
 
 void RenderWidgetHostNSViewBridgeLocal::ShowDictionaryOverlayForSelection() {

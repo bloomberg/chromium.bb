@@ -165,7 +165,7 @@ void UiElementContainerView::OnResponseChanged(
 
   // If we don't have any pre-existing content, there is nothing to animate off
   // stage so we we can proceed to add the new response.
-  if (content_view()->children().empty()) {
+  if (!content_view()->has_children()) {
     OnResponseAdded(std::move(pending_response_));
     return;
   }
@@ -257,8 +257,9 @@ void UiElementContainerView::OnCardElementAdded(
     // The first card requires a top margin of |GetFirstCardMarginTopDip()|, but
     // we need to account for child spacing because the first card is not
     // necessarily the first UI element.
-    const int top_margin_dip =
-        GetFirstCardMarginTopDip() - (children().empty() ? 0 : kSpacingDip);
+    const int top_margin_dip = child_count() == 0
+                                   ? GetFirstCardMarginTopDip()
+                                   : GetFirstCardMarginTopDip() - kSpacingDip;
 
     // We effectively create a top margin by applying an empty border.
     card_element_view->SetBorder(

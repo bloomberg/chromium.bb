@@ -20,28 +20,46 @@
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_pool.h"
-#include "net/socket/connect_job.h"
+#include "net/socket/client_socket_pool_base.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/socket/transport_client_socket_pool.h"
 
 namespace base {
 class DictionaryValue;
-namespace trace_event {
-class ProcessMemoryDump;
 }
-}  // namespace base
 
 namespace net {
 
-struct CommonConnectJobParams;
+class ClientSocketFactory;
+class HostResolver;
+class NetLog;
+class NetworkQualityEstimator;
+class ProxyDelegate;
+class SSLConfigService;
+class WebSocketEndpointLockManager;
 class WebSocketTransportConnectJob;
 
 class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
-    : public ClientSocketPool {
+    : public TransportClientSocketPool {
  public:
   WebSocketTransportClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
-      const CommonConnectJobParams* common_connect_job_params);
+      base::TimeDelta unused_idle_socket_timeout,
+      ClientSocketFactory* client_socket_factory,
+      HostResolver* host_resolver,
+      ProxyDelegate* proxy_delegate,
+      CertVerifier* cert_verifier,
+      ChannelIDService* channel_id_service,
+      TransportSecurityState* transport_security_state,
+      CTVerifier* cert_transparency_verifier,
+      CTPolicyEnforcer* ct_policy_enforcer,
+      SSLClientSessionCache* ssl_client_session_cache,
+      SSLClientSessionCache* ssl_client_session_cache_privacy_mode,
+      SSLConfigService* ssl_config_service,
+      NetworkQualityEstimator* network_quality_estimator,
+      WebSocketEndpointLockManager* websocket_endpoint_lock_manager,
+      NetLog* net_log);
 
   ~WebSocketTransportClientSocketPool() override;
 
@@ -55,8 +73,8 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
       WebSocketEndpointLockManager* websocket_endpoint_lock_manager);
 
   // ClientSocketPool implementation.
-  int RequestSocket(const GroupId& group_id,
-                    scoped_refptr<SocketParams> params,
+  int RequestSocket(const std::string& group_name,
+                    const void* resolve_info,
                     RequestPriority priority,
                     const SocketTag& socket_tag,
                     RespectLimits respect_limits,
@@ -64,36 +82,31 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
                     CompletionOnceCallback callback,
                     const ProxyAuthCallback& proxy_auth_callback,
                     const NetLogWithSource& net_log) override;
-  void RequestSockets(const GroupId& group_id,
-                      scoped_refptr<SocketParams> params,
+  void RequestSockets(const std::string& group_name,
+                      const void* params,
                       int num_sockets,
                       const NetLogWithSource& net_log) override;
-  void SetPriority(const GroupId& group_id,
+  void SetPriority(const std::string& group_name,
                    ClientSocketHandle* handle,
                    RequestPriority priority) override;
-  void CancelRequest(const GroupId& group_id,
+  void CancelRequest(const std::string& group_name,
                      ClientSocketHandle* handle) override;
-  void ReleaseSocket(const GroupId& group_id,
+  void ReleaseSocket(const std::string& group_name,
                      std::unique_ptr<StreamSocket> socket,
-                     int64_t generation) override;
+                     int id) override;
   void FlushWithError(int error) override;
   void CloseIdleSockets() override;
-  void CloseIdleSocketsInGroup(const GroupId& group_id) override;
+  void CloseIdleSocketsInGroup(const std::string& group_name) override;
   int IdleSocketCount() const override;
-  size_t IdleSocketCountInGroup(const GroupId& group_id) const override;
-  LoadState GetLoadState(const GroupId& group_id,
+  size_t IdleSocketCountInGroup(const std::string& group_name) const override;
+  LoadState GetLoadState(const std::string& group_name,
                          const ClientSocketHandle* handle) const override;
   std::unique_ptr<base::DictionaryValue> GetInfoAsValue(
       const std::string& name,
       const std::string& type) const override;
-  void DumpMemoryStats(
-      base::trace_event::ProcessMemoryDump* pmd,
-      const std::string& parent_dump_absolute_name) const override;
 
   // HigherLayeredPool implementation.
   bool IsStalled() const override;
-  void AddHigherLayeredPool(HigherLayeredPool* higher_pool) override;
-  void RemoveHigherLayeredPool(HigherLayeredPool* higher_pool) override;
 
  private:
   class ConnectJobDelegate : public ConnectJob::Delegate {
@@ -136,8 +149,7 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   // Store the arguments from a call to RequestSocket() that has stalled so we
   // can replay it when there are available socket slots.
   struct StalledRequest {
-    StalledRequest(const GroupId& group_id,
-                   const scoped_refptr<SocketParams>& params,
+    StalledRequest(const scoped_refptr<SocketParams>& params,
                    RequestPriority priority,
                    ClientSocketHandle* handle,
                    CompletionOnceCallback callback,
@@ -146,7 +158,6 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
     StalledRequest(StalledRequest&& other);
     ~StalledRequest();
 
-    const GroupId group_id;
     const scoped_refptr<SocketParams> params;
     const RequestPriority priority;
     ClientSocketHandle* const handle;
@@ -189,11 +200,18 @@ class NET_EXPORT_PRIVATE WebSocketTransportClientSocketPool
   void ActivateStalledRequest();
   bool DeleteStalledRequest(ClientSocketHandle* handle);
 
-  const CommonConnectJobParams* const common_connect_job_params_;
   std::set<const ClientSocketHandle*> pending_callbacks_;
   PendingConnectsMap pending_connects_;
   StalledRequestQueue stalled_request_queue_;
   StalledRequestMap stalled_request_map_;
+  NetLog* const pool_net_log_;
+  ClientSocketFactory* const client_socket_factory_;
+  HostResolver* const host_resolver_;
+  ProxyDelegate* const proxy_delegate_;
+  const SSLClientSocketContext ssl_client_socket_context_;
+  const SSLClientSocketContext ssl_client_socket_context_privacy_mode_;
+  NetworkQualityEstimator* const network_quality_estimator_;
+  WebSocketEndpointLockManager* websocket_endpoint_lock_manager_;
   const int max_sockets_;
   int handed_out_socket_count_;
   bool flushing_;

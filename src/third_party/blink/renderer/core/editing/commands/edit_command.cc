@@ -90,9 +90,8 @@ bool EditCommand::IsRenderedCharacter(const Position& position) {
 
 void EditCommand::SetParent(CompositeEditCommand* parent) {
   DCHECK((parent && !parent_) || (!parent && parent_));
-  auto* composite_edit_command = DynamicTo<CompositeEditCommand>(this);
-  DCHECK(!parent || !composite_edit_command ||
-         !composite_edit_command->GetUndoStep());
+  DCHECK(!parent || !IsCompositeEditCommand() ||
+         !ToCompositeEditCommand(this)->GetUndoStep());
   parent_ = parent;
 }
 

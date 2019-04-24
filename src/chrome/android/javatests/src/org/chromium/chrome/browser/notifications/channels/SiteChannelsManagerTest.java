@@ -24,6 +24,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -34,7 +35,6 @@ import org.chromium.chrome.browser.notifications.NotificationSettingsBridge;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
 import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -194,8 +194,7 @@ public class SiteChannelsManagerTest {
     public void testBlockingPermissionInIncognitoCreatesNoChannels() throws Exception {
         PermissionInfo info = new PermissionInfo(
                 PermissionInfo.Type.NOTIFICATION, "https://example-incognito.com", null, true);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> info.setContentSetting(ContentSettingValues.BLOCK));
+        ThreadUtils.runOnUiThreadBlocking(() -> info.setContentSetting(ContentSettingValues.BLOCK));
         assertThat(Arrays.asList(mSiteChannelsManager.getSiteChannels()), hasSize(0));
     }
 

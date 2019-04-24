@@ -119,7 +119,8 @@ void VideoPipelineImpl::OnUpdateConfig(
   }
 }
 
-EncryptionScheme VideoPipelineImpl::GetEncryptionScheme(StreamId id) const {
+const EncryptionScheme& VideoPipelineImpl::GetEncryptionScheme(
+    StreamId id) const {
   DCHECK_LT(id, encryption_schemes_.size());
   return encryption_schemes_[static_cast<int>(id)];
 }

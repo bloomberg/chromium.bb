@@ -35,7 +35,7 @@ class BaseChromiumRunnerCommon {
      */
     @MainDex
     static class MultiDexContextWrapper extends ContextWrapper {
-        private final Context mAppContext;
+        private Context mAppContext;
 
         MultiDexContextWrapper(Context instrContext, Context appContext) {
             super(instrContext);
@@ -49,8 +49,7 @@ class BaseChromiumRunnerCommon {
 
         @Override
         public SharedPreferences getSharedPreferences(String name, int mode) {
-            // Prefix so as to not conflict with main app's multidex prefs file.
-            return mAppContext.getSharedPreferences("test-" + name, mode);
+            return mAppContext.getSharedPreferences(name, mode);
         }
 
         @Override

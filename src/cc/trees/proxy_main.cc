@@ -292,6 +292,7 @@ void ProxyMain::BeginMainFrame(
     current_pipeline_stage_ = NO_PIPELINE_STAGE;
     layer_tree_host_->DidBeginMainFrame();
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoUpdates", TRACE_EVENT_SCOPE_THREAD);
+    layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
     std::vector<std::unique_ptr<SwapPromise>> swap_promises =
         layer_tree_host_->GetSwapPromiseManager()->TakeSwapPromises();
     ImplThreadTaskRunner()->PostTask(
@@ -305,7 +306,6 @@ void ProxyMain::BeginMainFrame(
     // detected to be a no-op.  From the perspective of an embedder, this commit
     // went through, and input should no longer be throttled, etc.
     layer_tree_host_->CommitComplete();
-    layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
     return;
   }
 
@@ -328,6 +328,7 @@ void ProxyMain::BeginMainFrame(
   // coordinated by the Scheduler.
   {
     TRACE_EVENT0("cc", "ProxyMain::BeginMainFrame::commit");
+    layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
 
     DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
 
@@ -344,7 +345,6 @@ void ProxyMain::BeginMainFrame(
   }
 
   layer_tree_host_->CommitComplete();
-  layer_tree_host_->RecordEndOfFrameMetrics(begin_main_frame_start_time);
 }
 
 void ProxyMain::DidPresentCompositorFrame(
@@ -441,6 +441,13 @@ void ProxyMain::SetNextCommitWaitsForActivation() {
 
 bool ProxyMain::RequestedAnimatePending() {
   return max_requested_pipeline_stage_ >= ANIMATE_PIPELINE_STAGE;
+}
+
+void ProxyMain::NotifyInputThrottledUntilCommit() {
+  DCHECK(IsMainThread());
+  ImplThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ProxyImpl::SetInputThrottledUntilCommitOnImpl,
+                                base::Unretained(proxy_impl_.get()), true));
 }
 
 void ProxyMain::SetDeferMainFrameUpdate(bool defer_main_frame_update) {

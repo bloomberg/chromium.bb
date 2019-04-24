@@ -42,7 +42,6 @@ goog.scope(function() {
     };
 
     tcuTestCase.isQuickMode = () => tcuTestCase.getQueryVal('quick') === '1';
-    tcuTestCase.isQuietMode = () => tcuTestCase.getQueryVal('quiet') === '1';
 
     /**
      * Reads the filter parameter from the URL to filter tests.
@@ -132,9 +131,6 @@ goog.scope(function() {
     */
     tcuTestCase.Runner.prototype.terminate = function() {
         finishTest();
-        if (!tcuTestCase.isQuietMode()) {
-            console.log('finishTest() after (in ms):', performance.now());
-        }
     };
 
     tcuTestCase.runner = new tcuTestCase.Runner();

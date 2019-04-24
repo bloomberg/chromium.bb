@@ -8,7 +8,6 @@
 #include <stdio.h>
 
 #include <algorithm>
-#include <atomic>
 #include <set>
 #include <string>
 #include <vector>
@@ -133,11 +132,10 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
       dbname_(dbname),
       table_cache_(new TableCache(dbname_, options_, TableCacheSize(options_))),
       db_lock_(nullptr),
-      shutting_down_(false),
+      shutting_down_(nullptr),
       background_work_finished_signal_(&mutex_),
       mem_(nullptr),
       imm_(nullptr),
-      has_imm_(false),
       logfile_(nullptr),
       logfile_number_(0),
       log_(nullptr),
@@ -146,12 +144,14 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
       background_compaction_scheduled_(false),
       manual_compaction_(nullptr),
       versions_(new VersionSet(dbname_, &options_, table_cache_,
-                               &internal_comparator_)) {}
+                               &internal_comparator_)) {
+  has_imm_.Release_Store(nullptr);
+}
 
 DBImpl::~DBImpl() {
-  // Wait for background work to finish.
+  // Wait for background work to finish
   mutex_.Lock();
-  shutting_down_.store(true, std::memory_order_release);
+  shutting_down_.Release_Store(this);  // Any non-null value is ok
   while (background_compaction_scheduled_) {
     background_work_finished_signal_.Wait();
   }
@@ -547,7 +547,7 @@ void DBImpl::CompactMemTable() {
   Status s = WriteLevel0Table(imm_, &edit, base);
   base->Unref();
 
-  if (s.ok() && shutting_down_.load(std::memory_order_acquire)) {
+  if (s.ok() && shutting_down_.Acquire_Load()) {
     s = Status::IOError("Deleting DB during memtable compaction");
   }
 
@@ -562,7 +562,7 @@ void DBImpl::CompactMemTable() {
     // Commit to the new state
     imm_->Unref();
     imm_ = nullptr;
-    has_imm_.store(false, std::memory_order_release);
+    has_imm_.Release_Store(nullptr);
     DeleteObsoleteFiles();
   } else {
     RecordBackgroundError(s);
@@ -610,8 +610,7 @@ void DBImpl::TEST_CompactRange(int level, const Slice* begin,
   }
 
   MutexLock l(&mutex_);
-  while (!manual.done && !shutting_down_.load(std::memory_order_acquire) &&
-         bg_error_.ok()) {
+  while (!manual.done && !shutting_down_.Acquire_Load() && bg_error_.ok()) {
     if (manual_compaction_ == nullptr) {  // Idle
       manual_compaction_ = &manual;
       MaybeScheduleCompaction();
@@ -653,7 +652,7 @@ void DBImpl::MaybeScheduleCompaction() {
   mutex_.AssertHeld();
   if (background_compaction_scheduled_) {
     // Already scheduled
-  } else if (shutting_down_.load(std::memory_order_acquire)) {
+  } else if (shutting_down_.Acquire_Load()) {
     // DB is being deleted; no more background compactions
   } else if (!bg_error_.ok()) {
     // Already got an error; no more changes
@@ -674,7 +673,7 @@ void DBImpl::BGWork(void* db) {
 void DBImpl::BackgroundCall() {
   MutexLock l(&mutex_);
   assert(background_compaction_scheduled_);
-  if (shutting_down_.load(std::memory_order_acquire)) {
+  if (shutting_down_.Acquire_Load()) {
     // No more background work when shutting down.
   } else if (!bg_error_.ok()) {
     // No more background work after a background error.
@@ -753,7 +752,7 @@ void DBImpl::BackgroundCompaction() {
 
   if (status.ok()) {
     // Done
-  } else if (shutting_down_.load(std::memory_order_acquire)) {
+  } else if (shutting_down_.Acquire_Load()) {
     // Ignore compaction errors found during shutting down
   } else {
     Log(options_.info_log,
@@ -920,9 +919,9 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
   std::string current_user_key;
   bool has_current_user_key = false;
   SequenceNumber last_sequence_for_key = kMaxSequenceNumber;
-  for (; input->Valid() && !shutting_down_.load(std::memory_order_acquire); ) {
+  for (; input->Valid() && !shutting_down_.Acquire_Load(); ) {
     // Prioritize immutable compaction work
-    if (has_imm_.load(std::memory_order_relaxed)) {
+    if (has_imm_.NoBarrier_Load() != nullptr) {
       const uint64_t imm_start = env_->NowMicros();
       mutex_.Lock();
       if (imm_ != nullptr) {
@@ -1015,7 +1014,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
     input->Next();
   }
 
-  if (status.ok() && shutting_down_.load(std::memory_order_acquire)) {
+  if (status.ok() && shutting_down_.Acquire_Load()) {
     status = Status::IOError("Deleting DB during compaction");
   }
   if (status.ok() && compact->builder != nullptr) {
@@ -1379,7 +1378,7 @@ Status DBImpl::MakeRoomForWrite(bool force) {
       logfile_number_ = new_log_number;
       log_ = new log::Writer(lfile);
       imm_ = mem_;
-      has_imm_.store(true, std::memory_order_release);
+      has_imm_.Release_Store(imm_);
       mem_ = new MemTable(internal_comparator_);
       mem_->Ref();
       force = false;   // Do not force another compaction if have room

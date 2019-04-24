@@ -7,7 +7,6 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <wayland-server.h>
-#include <memory>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -88,8 +87,7 @@ bool TestWaylandServerThread::Start(uint32_t shell_version) {
   if (!base::Thread::StartWithOptions(options))
     return false;
 
-  setenv("WAYLAND_SOCKET", base::NumberToString(client_fd.release()).c_str(),
-         1);
+  setenv("WAYLAND_SOCKET", base::UintToString(client_fd.release()).c_str(), 1);
 
   return true;
 }

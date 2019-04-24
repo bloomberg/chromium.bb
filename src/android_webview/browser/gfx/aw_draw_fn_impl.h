@@ -5,16 +5,16 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_GFX_AW_DRAW_FN_IMPL_H_
 #define ANDROID_WEBVIEW_BROWSER_GFX_AW_DRAW_FN_IMPL_H_
 
-#include <memory>
+#include <deque>
 
 #include "android_webview/browser/gfx/compositor_frame_consumer.h"
 #include "android_webview/browser/gfx/render_thread_manager.h"
 #include "android_webview/public/browser/draw_fn.h"
 #include "base/android/jni_weak_ref.h"
-#include "base/containers/queue.h"
-#include "base/macros.h"
+#include "gpu/vulkan/init/vulkan_factory.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/gpu/vk/GrVkTypes.h"
+#include "third_party/vulkan/include/vulkan/vulkan.h"
 
 class GrVkSecondaryCBDrawContext;
 
@@ -24,7 +24,7 @@ class GLImageAHardwareBuffer;
 
 namespace android_webview {
 class GLNonOwnedCompatibilityContext;
-class AwVulkanContextProvider;
+class VulkanState;
 
 class AwDrawFnImpl {
  public:
@@ -48,22 +48,10 @@ class AwDrawFnImpl {
   void PostDrawVk(AwDrawFn_PostDrawVkParams* params);
 
  private:
-  // With direct mode, we will render frames with Vulkan API directly.
-  void DrawVkDirect(AwDrawFn_DrawVkParams* params);
-  void PostDrawVkDirect(AwDrawFn_PostDrawVkParams* params);
-
-  // With interop mode, we will render frames on AHBs with GL api, and then draw
-  // AHBs with Vulkan API on the final target.
-  void DrawVkInterop(AwDrawFn_DrawVkParams* params);
-  void PostDrawVkInterop(AwDrawFn_PostDrawVkParams* params);
-
-  template <typename T>
-  void DrawInternal(T* params, SkColorSpace* color_space);
-
   // Struct which represents one in-flight draw for the Vk interop path.
-  struct InFlightInteropDraw {
-    explicit InFlightInteropDraw(AwVulkanContextProvider* vk_context_provider);
-    ~InFlightInteropDraw();
+  struct InFlightDraw {
+    explicit InFlightDraw(VulkanState* vk_state);
+    ~InFlightDraw();
     sk_sp<GrVkSecondaryCBDrawContext> draw_context;
     VkFence post_draw_fence = VK_NULL_HANDLE;
     VkSemaphore post_draw_semaphore = VK_NULL_HANDLE;
@@ -75,33 +63,27 @@ class AwDrawFnImpl {
     GrVkImageInfo image_info;
 
     // Used to clean up Vulkan objects.
-    AwVulkanContextProvider* vk_context_provider;
+    VulkanState* vk_state;
   };
 
   CompositorFrameConsumer* GetCompositorFrameConsumer() {
     return &render_thread_manager_;
   }
 
-  const bool is_interop_mode_;
+  std::unique_ptr<InFlightDraw> TakeInFlightDrawForReUse();
 
   int functor_handle_;
-
   RenderThreadManager render_thread_manager_;
 
-  // Vulkan context provider for Vk rendering.
-  scoped_refptr<AwVulkanContextProvider> vulkan_context_provider_;
-
-  // The draw context for the current frame. It is for direct mode only.
-  sk_sp<GrVkSecondaryCBDrawContext> draw_context_;
+  // State used for Vk rendering.
+  scoped_refptr<VulkanState> vk_state_;
 
   // GL context used to draw via GL in Vk interop path.
   scoped_refptr<GLNonOwnedCompatibilityContext> gl_context_;
 
   // Queue of draw contexts pending cleanup.
-  base::queue<std::unique_ptr<InFlightInteropDraw>> in_flight_interop_draws_;
-  std::unique_ptr<InFlightInteropDraw> pending_draw_;
-
-  DISALLOW_COPY_AND_ASSIGN(AwDrawFnImpl);
+  std::deque<std::unique_ptr<InFlightDraw>> in_flight_draws_;
+  std::unique_ptr<InFlightDraw> pending_draw_;
 };
 
 }  // namespace android_webview

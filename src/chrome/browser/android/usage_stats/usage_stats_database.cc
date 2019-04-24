@@ -39,7 +39,7 @@ UsageStatsDatabase::UsageStatsDatabase(Profile* profile)
       token_mapping_db_initialized_(false),
       weak_ptr_factory_(this) {
   ProtoDatabaseProvider* db_provider =
-      ProtoDatabaseProviderFactory::GetForKey(profile->GetProfileKey());
+      ProtoDatabaseProviderFactory::GetForBrowserContext(profile);
 
   base::FilePath usage_stats_dir = profile->GetPath().Append(kNamespace);
 
@@ -114,13 +114,17 @@ std::string CreateWebsiteEventKey(int64_t seconds_since_unix_epoch,
 void UsageStatsDatabase::InitializeDBs() {
   // Asynchronously initialize databases.
   website_event_db_->Init(
+      base::StrCat({kNamespace, kKeySeparator, kEventsDbName}),
       base::BindOnce(&UsageStatsDatabase::OnWebsiteEventInitDone,
                      weak_ptr_factory_.GetWeakPtr(), true));
 
-  suspension_db_->Init(base::BindOnce(&UsageStatsDatabase::OnSuspensionInitDone,
-                                      weak_ptr_factory_.GetWeakPtr(), true));
+  suspension_db_->Init(
+      base::StrCat({kNamespace, kKeySeparator, kSuspensionsDbName}),
+      base::BindOnce(&UsageStatsDatabase::OnSuspensionInitDone,
+                     weak_ptr_factory_.GetWeakPtr(), true));
 
   token_mapping_db_->Init(
+      base::StrCat({kNamespace, kKeySeparator, kTokensDbName}),
       base::BindOnce(&UsageStatsDatabase::OnTokenMappingInitDone,
                      weak_ptr_factory_.GetWeakPtr(), true));
 }
@@ -371,6 +375,7 @@ void UsageStatsDatabase::OnWebsiteEventInitDone(
     if (retry) {
       // Retry unsuccessful initialization.
       website_event_db_->Init(
+          base::StrCat({kNamespace, kKeySeparator, kEventsDbName}),
           base::BindOnce(&UsageStatsDatabase::OnWebsiteEventInitDone,
                          weak_ptr_factory_.GetWeakPtr(), false));
     }
@@ -393,6 +398,7 @@ void UsageStatsDatabase::OnSuspensionInitDone(
     if (retry) {
       // Retry unsuccessful initialization.
       suspension_db_->Init(
+          base::StrCat({kNamespace, kKeySeparator, kSuspensionsDbName}),
           base::BindOnce(&UsageStatsDatabase::OnSuspensionInitDone,
                          weak_ptr_factory_.GetWeakPtr(), false));
     }
@@ -416,6 +422,7 @@ void UsageStatsDatabase::OnTokenMappingInitDone(
     if (retry) {
       // Retry unsuccessful initialization.
       token_mapping_db_->Init(
+          base::StrCat({kNamespace, kKeySeparator, kTokensDbName}),
           base::BindOnce(&UsageStatsDatabase::OnTokenMappingInitDone,
                          weak_ptr_factory_.GetWeakPtr(), false));
     }

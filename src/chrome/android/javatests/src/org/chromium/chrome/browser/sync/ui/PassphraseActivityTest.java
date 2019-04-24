@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -29,7 +30,6 @@ import org.chromium.chrome.browser.test.ChromeBrowserTestRule;
 import org.chromium.chrome.browser.test.ClearAppDataTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests for PassphraseActivity.
@@ -50,7 +50,7 @@ public class PassphraseActivityTest {
     @After
     public void tearDown() throws Exception {
         // Clear ProfileSyncService in case it was mocked.
-        TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
+        ThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
     }
 
     /**
@@ -73,16 +73,19 @@ public class PassphraseActivityTest {
         // Create the activity.
         final PassphraseActivity activity = launchPassphraseActivity();
         Assert.assertNotNull(activity);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // Fake backgrounding the activity.
-            Bundle bundle = new Bundle();
-            InstrumentationRegistry.getInstrumentation().callActivityOnPause(activity);
-            InstrumentationRegistry.getInstrumentation().callActivityOnSaveInstanceState(
-                    activity, bundle);
-            // Fake sync's backend finishing its initialization.
-            FakeProfileSyncService pss = (FakeProfileSyncService) ProfileSyncService.get();
-            pss.setEngineInitialized(true);
-            pss.syncStateChanged();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // Fake backgrounding the activity.
+                Bundle bundle = new Bundle();
+                InstrumentationRegistry.getInstrumentation().callActivityOnPause(activity);
+                InstrumentationRegistry.getInstrumentation().callActivityOnSaveInstanceState(
+                        activity, bundle);
+                // Fake sync's backend finishing its initialization.
+                FakeProfileSyncService pss = (FakeProfileSyncService) ProfileSyncService.get();
+                pss.setEngineInitialized(true);
+                pss.syncStateChanged();
+            }
         });
         // Nothing crashed; success!
     }
@@ -103,9 +106,12 @@ public class PassphraseActivityTest {
     }
 
     private void overrideProfileSyncService() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            // PSS has to be constructed on the UI thread.
-            ProfileSyncService.overrideForTests(new FakeProfileSyncService());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                // PSS has to be constructed on the UI thread.
+                ProfileSyncService.overrideForTests(new FakeProfileSyncService());
+            }
         });
     }
 }

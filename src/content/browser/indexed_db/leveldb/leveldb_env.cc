@@ -15,15 +15,11 @@
 #include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
 
 namespace content {
+namespace {
 
-LevelDBEnv::LevelDBEnv() : ChromiumEnv("LevelDBEnv.IDB") {}
-
-LevelDBEnv* LevelDBEnv::Get() {
-  static base::NoDestructor<LevelDBEnv> g_leveldb_env;
-  return g_leveldb_env.get();
-}
-
-namespace indexed_db {
+// Static member initialization.
+base::LazyInstance<content::LevelDBEnv>::Leaky g_leveldb_env =
+    LAZY_INSTANCE_INITIALIZER;
 
 leveldb_env::Options GetLevelDBOptions(leveldb::Env* env,
                                        const leveldb::Comparator* comparator,
@@ -46,19 +42,21 @@ leveldb_env::Options GetLevelDBOptions(leveldb::Env* env,
   return options;
 }
 
-std::tuple<std::unique_ptr<leveldb::DB>, leveldb::Status>
-DefaultLevelDBFactory::OpenDB(const leveldb_env::Options& options,
-                              const std::string& name) {
-  std::unique_ptr<leveldb::DB> db;
-  leveldb::Status s = leveldb_env::OpenDB(options, name, &db);
-  return {std::move(db), s};
+}  // namespace
+
+LevelDBEnv::LevelDBEnv() : ChromiumEnv("LevelDBEnv.IDB") {}
+
+LevelDBEnv* LevelDBEnv::Get() {
+  return g_leveldb_env.Pointer();
 }
 
+namespace indexed_db {
+
 std::tuple<scoped_refptr<LevelDBState>, leveldb::Status, bool /* disk_full*/>
-DefaultLevelDBFactory::OpenLevelDBState(
+DefaultLevelDBFactory::OpenLevelDB(
     const base::FilePath& file_name,
     const LevelDBComparator* idb_comparator,
-    const leveldb::Comparator* ldb_comparator) {
+    const leveldb::Comparator* ldb_comparator) const {
   // Please see docs/open_and_verify_leveldb_database.code2flow, and the
   // generated pdf (from https://code2flow.com).
   // The intended strategy here is to have this function match that flowchart,
@@ -79,7 +77,7 @@ DefaultLevelDBFactory::OpenLevelDBState(
         GetLevelDBOptions(in_memory_env.get(), ldb_comparator,
                           /* default of 4MB */ 4 * kBytesInOneMegabyte,
                           /*paranoid_checks=*/false);
-    std::tie(db, status) = OpenDB(in_memory_options, std::string());
+    status = leveldb_env::OpenDB(in_memory_options, std::string(), &db);
     if (!status.ok()) {
       LOG(ERROR) << "Failed to open in-memory LevelDB database: "
                  << status.ToString();
@@ -100,7 +98,7 @@ DefaultLevelDBFactory::OpenLevelDBState(
                         /*paranoid_checks=*/true);
 
   // ChromiumEnv assumes UTF8, converts back to FilePath before using.
-  std::tie(db, status) = OpenDB(options, file_name.AsUTF8Unsafe());
+  status = leveldb_env::OpenDB(options, file_name.AsUTF8Unsafe(), &db);
   if (!status.ok()) {
     ReportLevelDBError("WebCore.IndexedDB.LevelDBOpenErrors", status);
 
@@ -130,7 +128,7 @@ DefaultLevelDBFactory::OpenLevelDBState(
 }
 
 leveldb::Status DefaultLevelDBFactory::DestroyLevelDB(
-    scoped_refptr<LevelDBState> level_db_state) {
+    scoped_refptr<LevelDBState> level_db_state) const {
   DCHECK(level_db_state);
   DCHECK(!level_db_state->in_memory_env() &&
          !level_db_state->database_path().empty())
@@ -147,7 +145,7 @@ leveldb::Status DefaultLevelDBFactory::DestroyLevelDB(
 }
 
 leveldb::Status DefaultLevelDBFactory::DestroyLevelDB(
-    const base::FilePath& path) {
+    const base::FilePath& path) const {
   leveldb_env::Options options;
   options.env = LevelDBEnv::Get();
   return leveldb::DestroyDB(path.AsUTF8Unsafe(), options);

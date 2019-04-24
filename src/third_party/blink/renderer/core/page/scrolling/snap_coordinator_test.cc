@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -19,23 +18,15 @@
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
-#include "third_party/blink/renderer/core/testing/use_mock_scrollbar_settings.h"
 
 namespace blink {
 
 using html_names::kStyleAttr;
 
-class SnapCoordinatorTest : public testing::Test,
-                            public UseMockScrollbarSettings {
+class SnapCoordinatorTest : public testing::Test {
  protected:
-  SnapCoordinatorTest() : UseMockScrollbarSettings() {}
   void SetUp() override {
-    page_holder_ = std::make_unique<DummyPageHolder>();
-
-    page_holder_->GetPage().GetSettings().SetAcceleratedCompositingEnabled(
-        true);
-    GetDocument().View()->SetParentVisible(true);
-    GetDocument().View()->SetSelfVisible(true);
+    page_holder_ = DummyPageHolder::Create();
 
     SetHTML(R"HTML(
       <style>
@@ -60,7 +51,7 @@ class SnapCoordinatorTest : public testing::Test,
         </div>
       </body>
     )HTML");
-    UpdateAllLifecyclePhasesForTest();
+    GetDocument().UpdateStyleAndLayout();
   }
 
   void TearDown() override { page_holder_ = nullptr; }
@@ -113,13 +104,7 @@ class SnapCoordinatorTest : public testing::Test,
         </div>
       </div>
       )HTML");
-    UpdateAllLifecyclePhasesForTest();
-  }
-
-  void UpdateAllLifecyclePhasesForTest() {
-    GetDocument().View()->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
-    GetDocument().View()->RunPostLifecycleSteps();
+    GetDocument().UpdateStyleAndLayout();
   }
 
   std::unique_ptr<DummyPageHolder> page_holder_;
@@ -128,7 +113,7 @@ class SnapCoordinatorTest : public testing::Test,
 TEST_F(SnapCoordinatorTest, SimpleSnapElement) {
   Element& snap_element = *GetDocument().getElementById("snap-element");
   snap_element.setAttribute(kStyleAttr, "scroll-snap-align: start;");
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
 
   EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
 }
@@ -136,23 +121,7 @@ TEST_F(SnapCoordinatorTest, SimpleSnapElement) {
 TEST_F(SnapCoordinatorTest, NestedSnapElement) {
   Element& snap_element = *GetDocument().getElementById("nested-snap-element");
   snap_element.setAttribute(kStyleAttr, "scroll-snap-align: start;");
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
-}
-
-TEST_F(SnapCoordinatorTest, ModifySnapElement) {
-  Element& snap_element = *GetDocument().getElementById("snap-element");
-  snap_element.setAttribute(kStyleAttr, "scroll-snap-align: start;");
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
-
-  snap_element.setAttribute(kStyleAttr, "scroll-snap-align: end;");
-
-  // Set scrollable area will set paint invalidation while scroll, will crash
-  // if snap-element not set needs update.
-  SnapContainer().GetLayoutBox()->SetShouldDoFullPaintInvalidation();
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
 
   EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
 }
@@ -164,7 +133,7 @@ TEST_F(SnapCoordinatorTest, NestedSnapElementCaptured) {
   Element* intermediate = GetDocument().getElementById("intermediate");
   intermediate->setAttribute(kStyleAttr, "overflow: scroll;");
 
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
 
   // Intermediate scroller captures nested snap elements first so ancestor
   // does not get them.
@@ -176,7 +145,7 @@ TEST_F(SnapCoordinatorTest, PositionFixedSnapElement) {
   Element& snap_element =
       *GetDocument().getElementById("snap-element-fixed-position");
   snap_element.setAttribute(kStyleAttr, "scroll-snap-align: start;");
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
 
   // Position fixed elements are contained in document and not its immediate
   // ancestor scroller. They cannot be a valid snap destination so they should
@@ -191,12 +160,12 @@ TEST_F(SnapCoordinatorTest, PositionFixedSnapElement) {
 TEST_F(SnapCoordinatorTest, UpdateStyleForSnapElement) {
   Element& snap_element = *GetDocument().getElementById("snap-element");
   snap_element.setAttribute(kStyleAttr, "scroll-snap-align: start;");
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
 
   EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
 
   snap_element.remove();
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
 
   EXPECT_EQ(0U, SizeOfSnapAreas(SnapContainer()));
 
@@ -207,7 +176,7 @@ TEST_F(SnapCoordinatorTest, UpdateStyleForSnapElement) {
         <div style='width:2000px; height:2000px;'></div>
     </div>
   )HTML");
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
 
   EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
 }
@@ -233,7 +202,7 @@ TEST_F(SnapCoordinatorTest, LayoutViewCapturesWhenBodyElementViewportDefining) {
     </body>
   )HTML");
 
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
 
   // Sanity check that body is the viewport defining element
   EXPECT_EQ(GetDocument().body(), GetDocument().ViewportDefiningElement());
@@ -271,7 +240,7 @@ TEST_F(SnapCoordinatorTest,
     </html>
   )HTML");
 
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
 
   // Sanity check that document element is the viewport defining element
   EXPECT_EQ(GetDocument().documentElement(),
@@ -316,7 +285,7 @@ TEST_F(SnapCoordinatorTest,
     </html>
   )HTML");
 
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
 
   // Sanity check that document element is the viewport defining element
   EXPECT_EQ(GetDocument().documentElement(),
@@ -353,7 +322,7 @@ TEST_F(SnapCoordinatorTest, SnapDataCalculation) {
       scroller_element->GetLayoutBox()->GetScrollableArea();
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(kStyleAttr, "scroll-snap-align: start;");
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
 
   base::Optional<cc::SnapContainerData> data =
@@ -387,7 +356,7 @@ TEST_F(SnapCoordinatorTest, ScrolledSnapDataCalculation) {
   EXPECT_EQ(FloatPoint(20, 20), scrollable_area->ScrollPosition());
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(kStyleAttr, "scroll-snap-align: start;");
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
 
   base::Optional<cc::SnapContainerData> data =
@@ -436,7 +405,7 @@ TEST_F(SnapCoordinatorTest, ScrolledSnapDataCalculationOnViewport) {
     <div id="area"></div>
     </div>
     )HTML");
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
 
   Element* body = GetDocument().body();
   EXPECT_EQ(body, GetDocument().ViewportDefiningElement());
@@ -445,7 +414,7 @@ TEST_F(SnapCoordinatorTest, ScrolledSnapDataCalculationOnViewport) {
   EXPECT_EQ(FloatPoint(20, 20), scrollable_area->ScrollPosition());
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(kStyleAttr, "scroll-snap-align: start;");
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   base::Optional<cc::SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*GetDocument().GetLayoutView());
@@ -480,7 +449,7 @@ TEST_F(SnapCoordinatorTest, SnapDataCalculationWithBoxModel) {
   Element* scroller_element = GetDocument().getElementById("scroller");
   scroller_element->setAttribute(
       kStyleAttr, "margin: 3px; border: 10px solid; padding: 4px;");
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   base::Optional<cc::SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
@@ -522,7 +491,7 @@ TEST_F(SnapCoordinatorTest, NegativeMarginSnapDataCalculation) {
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(kStyleAttr,
                              "scroll-snap-align: start; scroll-margin: -8px;");
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
   Element* scroller_element = GetDocument().getElementById("scroller");
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   base::Optional<cc::SnapContainerData> data =
@@ -570,7 +539,7 @@ TEST_F(SnapCoordinatorTest, AsymmetricalSnapDataCalculation) {
         scroll-padding-bottom: 14px;
         scroll-padding-left: 16px;
       )HTML");
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   base::Optional<cc::SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
@@ -604,7 +573,7 @@ TEST_F(SnapCoordinatorTest, ScaledSnapDataCalculation) {
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(kStyleAttr,
                              "scroll-snap-align: end; transform: scale(4, 4);");
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
   Element* scroller_element = GetDocument().getElementById("scroller");
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   base::Optional<cc::SnapContainerData> data =
@@ -642,7 +611,7 @@ TEST_F(SnapCoordinatorTest, VerticalRlSnapDataCalculation) {
                              "scroll-snap-align: start; left: -200px;");
   Element* scroller_element = GetDocument().getElementById("scroller");
   scroller_element->setAttribute(kStyleAttr, "writing-mode: vertical-rl;");
-  UpdateAllLifecyclePhasesForTest();
+  GetDocument().UpdateStyleAndLayout();
   SnapCoordinator* snap_coordinator = GetDocument().GetSnapCoordinator();
   base::Optional<cc::SnapContainerData> data =
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());

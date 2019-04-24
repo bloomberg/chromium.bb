@@ -5,7 +5,9 @@
 // This module implements chrome-specific <webview> API.
 // See web_view_api_methods.js for details.
 
-var ChromeWebView = getInternalApi('chromeWebViewInternal');
+var ChromeWebView = getInternalApi ?
+    getInternalApi('chromeWebViewInternal') :
+    require('chromeWebViewInternal').ChromeWebView;
 var ChromeWebViewSchema =
     requireNative('schema_registry').GetSchema('chromeWebViewInternal');
 var CreateEvent = require('guestViewEvents').CreateEvent;
@@ -30,6 +32,15 @@ var ContextMenusEvent = CreateEvent('chromeWebViewInternal.onClicked');
 var ContextMenusHandlerEvent =
     CreateEvent('chromeWebViewInternal.onContextMenuShow');
 
+var jsEvent;
+function createCustomEvent(name, schema, options, webviewId) {
+  if (bindingUtil)
+    return bindingUtil.createCustomEvent(name, undefined, false, false);
+  if (!jsEvent)
+    jsEvent = require('event_bindings').Event;
+  return new jsEvent(name, schema, options, webviewId);
+}
+
 function GetUniqueSubEventName(eventName) {
   return eventName + '/' + idGeneratorNatives.GetNextId();
 }
@@ -40,8 +51,8 @@ function createContextMenusOnClickedEvent(webViewInstanceId,
                                           opt_argSchemas,
                                           opt_eventOptions) {
   var subEventName = GetUniqueSubEventName(opt_eventName);
-  var newEvent =
-      bindingUtil.createCustomEvent(subEventName, false, false);
+  var newEvent = createCustomEvent(subEventName, opt_argSchemas,
+                                   opt_eventOptions, webViewInstanceId);
 
   var view = GuestViewInternalNatives.GetViewFromID(webViewInstanceId);
   if (view) {
@@ -62,8 +73,8 @@ function createContextMenusOnContextMenuEvent(webViewInstanceId,
                                               opt_argSchemas,
                                               opt_eventOptions) {
   var subEventName = GetUniqueSubEventName(opt_eventName);
-  var newEvent =
-      bindingUtil.createCustomEvent(subEventName, false, false);
+  var newEvent = createCustomEvent(subEventName, opt_argSchemas,
+                                   opt_eventOptions, webViewInstanceId);
 
   var view = GuestViewInternalNatives.GetViewFromID(webViewInstanceId);
   if (view) {

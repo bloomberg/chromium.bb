@@ -25,8 +25,7 @@ namespace {
 static int GetAshmemRegionProtectionMask(int fd) {
   int prot = ashmem_get_prot_region(fd);
   if (prot < 0) {
-    // TODO(crbug.com/838365): convert to DLOG when bug fixed.
-    PLOG(ERROR) << "ashmem_get_prot_region failed";
+    DPLOG(ERROR) << "ashmem_get_prot_region failed";
     return -1;
   }
   return prot;
@@ -190,10 +189,9 @@ bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
   bool expected_read_only = mode == Mode::kReadOnly;
 
   if (is_read_only != expected_read_only) {
-    // TODO(crbug.com/838365): convert to DLOG when bug fixed.
-    LOG(ERROR) << "Ashmem region has a wrong protection mask: it is"
-               << (is_read_only ? " " : " not ") << "read-only but it should"
-               << (expected_read_only ? " " : " not ") << "be";
+    DLOG(ERROR) << "Ashmem region has a wrong protection mask: it is"
+                << (is_read_only ? " " : " not ") << "read-only but it should"
+                << (expected_read_only ? " " : " not ") << "be";
     return false;
   }
 

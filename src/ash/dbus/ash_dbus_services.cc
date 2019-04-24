@@ -7,13 +7,23 @@
 #include "ash/dbus/display_service_provider.h"
 #include "ash/dbus/liveness_service_provider.h"
 #include "ash/dbus/url_handler_service_provider.h"
+#include "ash/shell.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace ash {
 
-AshDBusServices::AshDBusServices(dbus::Bus* system_bus) {
+AshDBusServices::AshDBusServices() {
+  // DBusThreadManager is initialized in Chrome or in AshService::InitForMash().
+  CHECK(chromeos::DBusThreadManager::IsInitialized());
+
+  dbus::Bus* system_bus =
+      chromeos::DBusThreadManager::Get()->IsUsingFakes()
+          ? nullptr
+          : chromeos::DBusThreadManager::Get()->GetSystemBus();
   display_service_ = chromeos::CrosDBusService::Create(
       system_bus, chromeos::kDisplayServiceName,
       dbus::ObjectPath(chromeos::kDisplayServicePath),
@@ -29,6 +39,12 @@ AshDBusServices::AshDBusServices(dbus::Bus* system_bus) {
       dbus::ObjectPath(chromeos::kUrlHandlerServicePath),
       chromeos::CrosDBusService::CreateServiceProviderList(
           std::make_unique<UrlHandlerServiceProvider>()));
+}
+
+void AshDBusServices::EmitAshInitialized() {
+  chromeos::DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->EmitAshInitialized();
 }
 
 AshDBusServices::~AshDBusServices() {

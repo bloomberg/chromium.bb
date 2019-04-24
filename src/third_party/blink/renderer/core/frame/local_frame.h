@@ -69,6 +69,7 @@ class AdTracker;
 class AssociatedInterfaceProvider;
 class Color;
 class ContentCaptureManager;
+class ContentSecurityPolicy;
 class Document;
 class Editor;
 class Element;
@@ -161,7 +162,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // context to the current document.
   void DidAttachDocument();
 
-  void Reload(WebFrameLoadType);
+  Frame* FindFrameForNavigation(const AtomicString& name,
+                                LocalFrame& active_frame,
+                                const KURL& destination_url);
+  void Reload(WebFrameLoadType, ClientRedirectPolicy);
 
   // Note: these two functions are not virtual but intentionally shadow the
   // corresponding method in the Frame base class to return the
@@ -281,6 +285,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   PositionForPoint(const LayoutPoint& frame_point);
   Document* DocumentAtPoint(const LayoutPoint&);
 
+  bool ShouldReuseDefaultView(const KURL&, const ContentSecurityPolicy*) const;
   void RemoveSpellingMarkersUnderWords(const Vector<String>& words);
 
   bool ShouldThrottleRendering() const;
@@ -421,7 +426,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Overlays a color on top of this LocalFrameView if it is associated with
   // a subframe. Should not have multiple consumers.
   void SetSubframeColorOverlay(SkColor color);
-  void UpdateFrameColorOverlayPrePaint();
+  void PaintFrameColorOverlay();
 
   // For CompositeAfterPaint.
   void PaintFrameColorOverlay(GraphicsContext&);
@@ -454,6 +459,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void EnableNavigation() { --navigation_disable_count_; }
   void DisableNavigation() { ++navigation_disable_count_; }
 
+  bool CanNavigateWithoutFramebusting(const Frame&, String& error_reason);
+
   void SetIsAdSubframeIfNecessary();
 
   void PropagateInertToChildFrames();
@@ -471,7 +478,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   ukm::UkmRecorder* GetUkmRecorder() override;
   ukm::SourceId GetUkmSourceId() override;
   void UpdateTaskTime(base::TimeDelta time) override;
-  void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
 
   // Activates the user activation states of this frame and all its ancestors.
   void NotifyUserActivation();
@@ -479,8 +485,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Returns the transient user activation state of this frame
   bool HasTransientUserActivation();
 
-  // Consumes and returns the transient user activation state this frame, after
-  // updating all other frames in the frame tree.
+  // Consumes and returns the transient user activation state of this frame,
+  // after updating all ancestor/descendant frames.
   bool ConsumeTransientUserActivation(UserActivationUpdateSource update_source);
 
   void SetFrameColorOverlay(SkColor color);
@@ -548,7 +554,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   mutable mojom::blink::ReportingServiceProxyPtr reporting_service_;
 
   IntRect remote_viewport_intersection_;
-  FrameOcclusionState occlusion_state_ = FrameOcclusionState::kUnknown;
+  FrameOcclusionState occlusion_state_ = kUnknownOcclusionState;
   std::unique_ptr<FrameResourceCoordinator> frame_resource_coordinator_;
 
   // Per-frame URLLoader factory.

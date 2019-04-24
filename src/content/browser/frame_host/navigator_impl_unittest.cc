@@ -39,7 +39,9 @@
 
 namespace content {
 
-class NavigatorTest : public RenderViewHostImplTestHarness {
+// TODO(clamy): Rename the tests NavigatorTests.
+class NavigatorTestWithBrowserSideNavigation
+    : public RenderViewHostImplTestHarness {
  public:
   using SiteInstanceDescriptor = RenderFrameHostManager::SiteInstanceDescriptor;
   using SiteInstanceRelation = RenderFrameHostManager::SiteInstanceRelation;
@@ -72,7 +74,8 @@ class NavigatorTest : public RenderViewHostImplTestHarness {
 
 // Tests a complete browser-initiated navigation starting with a non-live
 // renderer.
-TEST_F(NavigatorTest, SimpleBrowserInitiatedNavigationFromNonLiveRenderer) {
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       SimpleBrowserInitiatedNavigationFromNonLiveRenderer) {
   const GURL kUrl("http://chromium.org/");
 
   EXPECT_FALSE(main_test_rfh()->IsRenderFrameLive());
@@ -116,7 +119,8 @@ TEST_F(NavigatorTest, SimpleBrowserInitiatedNavigationFromNonLiveRenderer) {
 }
 
 // PlzNavigate: Test a complete renderer-initiated same-site navigation.
-TEST_F(NavigatorTest, SimpleRendererInitiatedSameSiteNavigation) {
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       SimpleRendererInitiatedSameSiteNavigation) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.chromium.org/Home");
 
@@ -163,7 +167,8 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedSameSiteNavigation) {
 // PlzNavigate: Test a complete renderer-initiated navigation that should be
 // cross-site but does not result in a SiteInstance swap because its
 // renderer-initiated.
-TEST_F(NavigatorTest, SimpleRendererInitiatedCrossSiteNavigation) {
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       SimpleRendererInitiatedCrossSiteNavigation) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com");
 
@@ -218,7 +223,8 @@ TEST_F(NavigatorTest, SimpleRendererInitiatedCrossSiteNavigation) {
 }
 
 // PlzNavigate: Test that a beforeUnload denial cancels the navigation.
-TEST_F(NavigatorTest, BeforeUnloadDenialCancelNavigation) {
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       BeforeUnloadDenialCancelNavigation) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
 
@@ -245,7 +251,7 @@ TEST_F(NavigatorTest, BeforeUnloadDenialCancelNavigation) {
 }
 
 // Test that a proper NavigationRequest is created at navigation start.
-TEST_F(NavigatorTest, BeginNavigation) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, BeginNavigation) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://www.chromium.org/");
   const GURL kUrl3("http://www.gmail.com/");
@@ -340,7 +346,7 @@ TEST_F(NavigatorTest, BeginNavigation) {
 
 // PlzNavigate: Test that committing an HTTP 204 or HTTP 205 response cancels
 // the navigation.
-TEST_F(NavigatorTest, NoContent) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, NoContent) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com/");
 
@@ -404,7 +410,7 @@ TEST_F(NavigatorTest, NoContent) {
 
 // Test that a new RenderFrameHost is created when doing a cross site
 // navigation.
-TEST_F(NavigatorTest, CrossSiteNavigation) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, CrossSiteNavigation) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com/");
 
@@ -439,7 +445,7 @@ TEST_F(NavigatorTest, CrossSiteNavigation) {
 
 // Test that redirects are followed and the speculative RenderFrameHost logic
 // behaves as expected.
-TEST_F(NavigatorTest, RedirectCrossSite) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, RedirectCrossSite) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com/");
 
@@ -482,7 +488,8 @@ TEST_F(NavigatorTest, RedirectCrossSite) {
 // Test that a navigation is canceled if another browser-initiated request has
 // been issued in the meantime. Also confirms that the speculative
 // RenderFrameHost is correctly updated in the process.
-TEST_F(NavigatorTest, BrowserInitiatedNavigationCancel) {
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       BrowserInitiatedNavigationCancel) {
   const GURL kUrl0("http://www.wikipedia.org/");
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl1_site = SiteInstance::GetSiteForURL(browser_context(), kUrl1);
@@ -549,7 +556,8 @@ TEST_F(NavigatorTest, BrowserInitiatedNavigationCancel) {
 
 // Test that a browser-initiated navigation is canceled if a renderer-initiated
 // user-initiated request has been issued in the meantime.
-TEST_F(NavigatorTest, RendererUserInitiatedNavigationCancel) {
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       RendererUserInitiatedNavigationCancel) {
   const GURL kUrl0("http://www.wikipedia.org/");
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com/");
@@ -610,7 +618,7 @@ TEST_F(NavigatorTest, RendererUserInitiatedNavigationCancel) {
 // PlzNavigate: Test that a renderer-initiated user-initiated navigation is
 // canceled if a renderer-initiated non-user-initiated request is issued in the
 // meantime.
-TEST_F(NavigatorTest,
+TEST_F(NavigatorTestWithBrowserSideNavigation,
        RendererNonUserInitiatedNavigationCancelsRendererUserInitiated) {
   const GURL kUrl0("http://www.wikipedia.org/");
   const GURL kUrl1("http://www.chromium.org/");
@@ -665,7 +673,7 @@ TEST_F(NavigatorTest,
 
 // PlzNavigate: Test that a browser-initiated navigation is NOT canceled if a
 // renderer-initiated non-user-initiated request is issued in the meantime.
-TEST_F(NavigatorTest,
+TEST_F(NavigatorTestWithBrowserSideNavigation,
        RendererNonUserInitiatedNavigationDoesntCancelBrowserInitiated) {
   const GURL kUrl0("http://www.wikipedia.org/");
   const GURL kUrl1("http://www.chromium.org/");
@@ -708,7 +716,7 @@ TEST_F(NavigatorTest,
 
 // PlzNavigate: Test that a renderer-initiated non-user-initiated navigation is
 // canceled if a another similar request is issued in the meantime.
-TEST_F(NavigatorTest,
+TEST_F(NavigatorTestWithBrowserSideNavigation,
        RendererNonUserInitiatedNavigationCancelSimilarNavigation) {
   const GURL kUrl0("http://www.wikipedia.org/");
   const GURL kUrl1("http://www.chromium.org/");
@@ -776,39 +784,39 @@ TEST_F(NavigatorTest,
 // PlzNavigate: Test that a reload navigation is properly signaled to the
 // RenderFrame when the navigation can commit. A speculative RenderFrameHost
 // should not be created at any step.
-TEST_F(NavigatorTest, Reload) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, Reload) {
   const GURL kUrl("http://www.google.com/");
   contents()->NavigateAndCommit(kUrl);
 
   FrameTreeNode* node = main_test_rfh()->frame_tree_node();
   controller().Reload(ReloadType::NORMAL, false);
-  auto reload1 = NavigationSimulator::CreateFromPending(contents());
+  int entry_id = controller().GetPendingEntry()->GetUniqueID();
   // A NavigationRequest should have been generated.
   NavigationRequest* main_request = node->navigation_request();
   ASSERT_TRUE(main_request != nullptr);
   EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD,
             main_request->common_params().navigation_type);
-  reload1->ReadyToCommit();
+  main_test_rfh()->PrepareForCommit();
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 
-  reload1->Commit();
+  main_test_rfh()->SendNavigate(entry_id, false, kUrl);
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 
   // Now do a shift+reload.
   controller().Reload(ReloadType::BYPASSING_CACHE, false);
-  auto reload2 = NavigationSimulator::CreateFromPending(contents());
   // A NavigationRequest should have been generated.
   main_request = node->navigation_request();
   ASSERT_TRUE(main_request != nullptr);
   EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE,
             main_request->common_params().navigation_type);
-  reload2->ReadyToCommit();
+  main_test_rfh()->PrepareForCommit();
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 }
 
 // PlzNavigate: Confirm that a speculative RenderFrameHost is used when
 // navigating from one site to another.
-TEST_F(NavigatorTest, SpeculativeRendererWorksBaseCase) {
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       SpeculativeRendererWorksBaseCase) {
   // Navigate to an initial site.
   const GURL kUrlInit("http://wikipedia.org/");
   contents()->NavigateAndCommit(kUrlInit);
@@ -838,7 +846,8 @@ TEST_F(NavigatorTest, SpeculativeRendererWorksBaseCase) {
 
 // PlzNavigate: Confirm that a speculative RenderFrameHost is thrown away when
 // the final URL's site differs from the initial one due to redirects.
-TEST_F(NavigatorTest, SpeculativeRendererDiscardedAfterRedirectToAnotherSite) {
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       SpeculativeRendererDiscardedAfterRedirectToAnotherSite) {
   // Navigate to an initial site.
   const GURL kUrlInit("http://wikipedia.org/");
   contents()->NavigateAndCommit(kUrlInit);
@@ -904,7 +913,7 @@ TEST_F(NavigatorTest, SpeculativeRendererDiscardedAfterRedirectToAnotherSite) {
 }
 
 // PlzNavigate: Verify that data urls are properly handled.
-TEST_F(NavigatorTest, DataUrls) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, DataUrls) {
   const GURL kUrl1("http://wikipedia.org/");
   const GURL kUrl2("data:text/html,test");
 
@@ -949,7 +958,8 @@ TEST_F(NavigatorTest, DataUrls) {
 // 4) Cross-site URL, related.
 // 5) Same-site URL, unrelated (with and without candidate SiteInstances).
 // 6) Cross-site URL, unrelated (with candidate SiteInstance).
-TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       SiteInstanceDescriptionConversion) {
   // Navigate to set a current SiteInstance on the RenderFrameHost.
   GURL kUrl1("http://a.com");
   contents()->NavigateAndCommit(kUrl1);
@@ -1083,7 +1093,7 @@ TEST_F(NavigatorTest, SiteInstanceDescriptionConversion) {
 // within the same document by setting was_within_same_document = true in
 // FrameHostMsg_DidCommitProvisionalLoad_Params. Such case should be detected on
 // the browser side and the renderer process should be killed.
-TEST_F(NavigatorTest, CrossSiteClaimWithinPage) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, CrossSiteClaimWithinPage) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com/");
 
@@ -1100,7 +1110,8 @@ TEST_F(NavigatorTest, CrossSiteClaimWithinPage) {
 
 // Tests that an ongoing NavigationRequest is deleted when a same-site
 // user-initiated navigation commits.
-TEST_F(NavigatorTest, NavigationRequestDeletedWhenUserInitiatedCommits) {
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       NavigationRequestDeletedWhenUserInitiatedCommits) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.chromium.org/foo");
   const GURL kUrl3("http://www.google.com/");
@@ -1134,7 +1145,8 @@ TEST_F(NavigatorTest, NavigationRequestDeletedWhenUserInitiatedCommits) {
 
 // Tests that an ongoing NavigationRequest is deleted when a cross-site
 // navigation commits.
-TEST_F(NavigatorTest, NavigationRequestDeletedWhenCrossSiteCommits) {
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       NavigationRequestDeletedWhenCrossSiteCommits) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.google.com/");
   const GURL kUrl3("http://www.google.com/foo");
@@ -1174,7 +1186,8 @@ TEST_F(NavigatorTest, NavigationRequestDeletedWhenCrossSiteCommits) {
 
 // Feature Policy: Test that the feature policy is reset when navigating pages
 // within a site.
-TEST_F(NavigatorTest, FeaturePolicySameSiteNavigation) {
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       FeaturePolicySameSiteNavigation) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.chromium.org/Home");
 
@@ -1197,7 +1210,8 @@ TEST_F(NavigatorTest, FeaturePolicySameSiteNavigation) {
 
 // Feature Policy: Test that the feature policy is not reset when navigating
 // within a page.
-TEST_F(NavigatorTest, FeaturePolicyFragmentNavigation) {
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       FeaturePolicyFragmentNavigation) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.chromium.org/#Home");
 
@@ -1219,16 +1233,19 @@ TEST_F(NavigatorTest, FeaturePolicyFragmentNavigation) {
 
 // Feature Policy: Test that the feature policy is set correctly when inserting
 // a new child frame.
-TEST_F(NavigatorTest, FeaturePolicyNewChild) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, FeaturePolicyNewChild) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.chromium.org/Home");
 
   contents()->NavigateAndCommit(kUrl1);
 
-  // Simulate the navigation triggered by inserting a child frame into a page.
   TestRenderFrameHost* subframe_rfh =
       contents()->GetMainFrame()->AppendChild("child");
-  NavigationSimulator::NavigateAndCommitFromDocument(kUrl2, subframe_rfh);
+  // Simulate the navigation triggered by inserting a child frame into a page.
+  FrameHostMsg_DidCommitProvisionalLoad_Params params;
+  InitNavigateParams(&params, 1, false, kUrl2,
+                     ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  subframe_rfh->SendNavigateWithParams(&params, false);
 
   blink::FeaturePolicy* subframe_feature_policy =
       subframe_rfh->feature_policy();
@@ -1236,7 +1253,7 @@ TEST_F(NavigatorTest, FeaturePolicyNewChild) {
   ASSERT_FALSE(subframe_feature_policy->GetOriginForTest().opaque());
 }
 
-TEST_F(NavigatorTest, TwoNavigationsRacingCommit) {
+TEST_F(NavigatorTestWithBrowserSideNavigation, TwoNavigationsRacingCommit) {
   const GURL kUrl1("http://www.chromium.org/");
   const GURL kUrl2("http://www.chromium.org/Home");
 

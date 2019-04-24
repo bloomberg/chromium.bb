@@ -16,7 +16,8 @@ class BrowserState;
 // Returns WKHTTPCookieStore for the given BrowserState. If BrowserState is
 // OffTheRecord then the resulting WKHTTPCookieStore will be a part of
 // ephemeral WKWebsiteDataStore.
-WKHTTPCookieStore* WKCookieStoreForBrowserState(BrowserState* browser_state);
+WKHTTPCookieStore* WKCookieStoreForBrowserState(BrowserState* browser_state)
+    API_AVAILABLE(ios(11.0));
 
 }  // namespace web
 

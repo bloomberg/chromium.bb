@@ -702,6 +702,13 @@ void SyncEngine::OnConnectionChanged(network::mojom::ConnectionType type) {
   }
 }
 
+void SyncEngine::OnPrimaryAccountSigninFailed(
+    const GoogleServiceAuthError& error) {
+  Reset();
+  UpdateServiceState(REMOTE_SERVICE_AUTHENTICATION_REQUIRED,
+                     "Failed to sign in.");
+}
+
 void SyncEngine::OnPrimaryAccountSet(
     const CoreAccountInfo& primary_account_info) {
   Initialize();

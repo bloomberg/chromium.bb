@@ -41,10 +41,6 @@ void TestPrefetchDownloader::OnDownloadSucceeded(
 
 void TestPrefetchDownloader::OnDownloadFailed(const std::string& download_id) {}
 
-int TestPrefetchDownloader::GetMaxConcurrentDownloads() {
-  return max_concurrent_downloads_;
-}
-
 void TestPrefetchDownloader::Reset() {
   requested_downloads_.clear();
 }

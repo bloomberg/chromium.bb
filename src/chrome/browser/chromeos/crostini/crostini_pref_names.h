@@ -27,8 +27,6 @@ extern const char kCrostiniLastLaunchVersion[];
 extern const char kCrostiniLastLaunchTimeWindowStart[];
 extern const char kCrostiniLastDiskSize[];
 
-extern const char kGuestOSPathsSharedToVms[];
-
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 }  // namespace prefs

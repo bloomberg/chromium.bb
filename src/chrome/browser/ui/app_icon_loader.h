@@ -38,16 +38,16 @@ class AppIconLoader {
  protected:
   AppIconLoader();
   AppIconLoader(Profile* profile,
-                int icon_size_in_dip,
+                int icon_size,
                 AppIconLoaderDelegate* delegate);
 
   Profile* profile() { return profile_; }
-  int icon_size_in_dip() const { return icon_size_in_dip_; }
+  int icon_size() const { return icon_size_; }
   AppIconLoaderDelegate* delegate() { return delegate_; }
 
  private:
   Profile* const profile_ = nullptr;
-  const int icon_size_in_dip_ = 0;
+  const int icon_size_ = 0;
 
   // The delegate object which receives the icon images. No ownership.
   AppIconLoaderDelegate* const delegate_ = nullptr;

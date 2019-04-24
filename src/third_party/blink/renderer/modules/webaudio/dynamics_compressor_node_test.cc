@@ -12,7 +12,7 @@
 namespace blink {
 
 TEST(DynamicsCompressorNodeTest, ProcessorLifetime) {
-  auto page = std::make_unique<DummyPageHolder>();
+  std::unique_ptr<DummyPageHolder> page = DummyPageHolder::Create();
   OfflineAudioContext* context = OfflineAudioContext::Create(
       &page->GetDocument(), 2, 1, 48000, ASSERT_NO_EXCEPTION);
   DynamicsCompressorNode* node =

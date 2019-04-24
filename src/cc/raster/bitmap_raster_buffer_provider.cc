@@ -9,6 +9,7 @@
 
 #include <algorithm>
 
+#include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
@@ -53,8 +54,6 @@ class BitmapRasterBufferImpl : public RasterBuffer {
         resource_has_previous_content_(
             resource_content_id && resource_content_id == previous_content_id) {
   }
-  BitmapRasterBufferImpl(const BitmapRasterBufferImpl&) = delete;
-  BitmapRasterBufferImpl& operator=(const BitmapRasterBufferImpl&) = delete;
 
   // Overridden from RasterBuffer:
   void Playback(const RasterSource* raster_source,
@@ -84,6 +83,8 @@ class BitmapRasterBufferImpl : public RasterBuffer {
   const gfx::ColorSpace color_space_;
   void* const pixels_;
   bool resource_has_previous_content_;
+
+  DISALLOW_COPY_AND_ASSIGN(BitmapRasterBufferImpl);
 };
 
 }  // namespace

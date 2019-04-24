@@ -70,8 +70,8 @@ import java.util.Map;
  * &#064;Restriction(RESTRICTION_TYPE_PHONE) // Tab switcher button only exists on phones.
  * public class ExampleUiCaptureTest {
  *     &#064;Rule
- *     public ChromeTabbedActivityTestRule mActivityTestRule =
- *             new ChromeTabbedActivityTestRule();
+ *     public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
+ *             new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
  *
  *     &#064;Rule
  *     public ScreenShooter mScreenShooter = new ScreenShooter();

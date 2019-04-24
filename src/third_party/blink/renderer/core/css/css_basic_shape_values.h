@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -44,6 +43,10 @@ namespace cssvalue {
 
 class CSSBasicShapeCircleValue final : public CSSValue {
  public:
+  static CSSBasicShapeCircleValue* Create() {
+    return MakeGarbageCollected<CSSBasicShapeCircleValue>();
+  }
+
   CSSBasicShapeCircleValue() : CSSValue(kBasicShapeCircleClass) {}
 
   String CustomCSSText() const;
@@ -68,6 +71,10 @@ class CSSBasicShapeCircleValue final : public CSSValue {
 
 class CSSBasicShapeEllipseValue final : public CSSValue {
  public:
+  static CSSBasicShapeEllipseValue* Create() {
+    return MakeGarbageCollected<CSSBasicShapeEllipseValue>();
+  }
+
   CSSBasicShapeEllipseValue() : CSSValue(kBasicShapeEllipseClass) {}
 
   String CustomCSSText() const;
@@ -95,6 +102,10 @@ class CSSBasicShapeEllipseValue final : public CSSValue {
 
 class CSSBasicShapePolygonValue final : public CSSValue {
  public:
+  static CSSBasicShapePolygonValue* Create() {
+    return MakeGarbageCollected<CSSBasicShapePolygonValue>();
+  }
+
   CSSBasicShapePolygonValue()
       : CSSValue(kBasicShapePolygonClass), wind_rule_(RULE_NONZERO) {}
 
@@ -125,6 +136,10 @@ class CSSBasicShapePolygonValue final : public CSSValue {
 
 class CSSBasicShapeInsetValue final : public CSSValue {
  public:
+  static CSSBasicShapeInsetValue* Create() {
+    return MakeGarbageCollected<CSSBasicShapeInsetValue>();
+  }
+
   CSSBasicShapeInsetValue() : CSSValue(kBasicShapeInsetClass) {}
 
   CSSPrimitiveValue* Top() const { return top_.Get(); }
@@ -194,35 +209,15 @@ class CSSBasicShapeInsetValue final : public CSSValue {
   Member<CSSValuePair> bottom_left_radius_;
 };
 
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapeCircleValue,
+                            IsBasicShapeCircleValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapeEllipseValue,
+                            IsBasicShapeEllipseValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapePolygonValue,
+                            IsBasicShapePolygonValue());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapeInsetValue, IsBasicShapeInsetValue());
+
 }  // namespace cssvalue
-
-template <>
-struct DowncastTraits<cssvalue::CSSBasicShapeCircleValue> {
-  static bool AllowFrom(const CSSValue& value) {
-    return value.IsBasicShapeCircleValue();
-  }
-};
-
-template <>
-struct DowncastTraits<cssvalue::CSSBasicShapeEllipseValue> {
-  static bool AllowFrom(const CSSValue& value) {
-    return value.IsBasicShapeEllipseValue();
-  }
-};
-
-template <>
-struct DowncastTraits<cssvalue::CSSBasicShapePolygonValue> {
-  static bool AllowFrom(const CSSValue& value) {
-    return value.IsBasicShapePolygonValue();
-  }
-};
-
-template <>
-struct DowncastTraits<cssvalue::CSSBasicShapeInsetValue> {
-  static bool AllowFrom(const CSSValue& value) {
-    return value.IsBasicShapeInsetValue();
-  }
-};
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_BASIC_SHAPE_VALUES_H_

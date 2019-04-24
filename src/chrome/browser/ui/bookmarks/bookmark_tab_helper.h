@@ -51,6 +51,7 @@ class BookmarkTabHelper
 
   bool is_starred() const { return is_starred_; }
 
+  // Returns true if the bookmark bar should be shown detached.
   bool ShouldShowBookmarkBar() const;
 
   void AddObserver(BookmarkTabHelperObserver* observer);

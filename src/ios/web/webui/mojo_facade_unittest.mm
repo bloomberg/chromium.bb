@@ -7,24 +7,21 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_test.h"
+#import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #include "ios/web/public/web_state/web_state_interface_provider.h"
 #include "ios/web/test/mojo_test.mojom.h"
 #include "ios/web/web_state/web_state_impl.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #import "testing/gtest_mac.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-using base::test::ios::kWaitForJSCompletionTimeout;
-using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace web {
 
@@ -49,31 +46,6 @@ id GetObject(const std::string& json) {
                                            error:nil];
 }
 
-class FakeWebState : public TestWebState {
- public:
-  void SetWatchId(int watch_id) { watch_id_ = watch_id; }
-
-  void SetFacade(MojoFacade* facade) { facade_ = facade; }
-
-  void ExecuteJavaScript(const base::string16& javascript) override {
-    TestWebState::ExecuteJavaScript(javascript);
-    // Cancel the watch immediately to ensure there are no additional
-    // notifications.
-    // NOTE: This must be done as a side effect of executing the JavaScript.
-    NSDictionary* cancel_watch = @{
-      @"name" : @"MojoWatcher.cancel",
-      @"args" : @{
-        @"watchId" : @(watch_id_),
-      },
-    };
-    EXPECT_TRUE(facade_->HandleMojoMessage(GetJson(cancel_watch)).empty());
-  }
-
- private:
-  int watch_id_;
-  MojoFacade* facade_;  // weak
-};
-
 }  // namespace
 
 // A test fixture to test MojoFacade class.
@@ -83,12 +55,14 @@ class MojoFacadeTest : public WebTest {
     interface_provider_ = std::make_unique<WebStateInterfaceProvider>();
     interface_provider_->registry()->AddInterface(base::Bind(
         &MojoFacadeTest::BindTestUIHandlerMojoRequest, base::Unretained(this)));
-    facade_ =
-        std::make_unique<MojoFacade>(interface_provider_.get(), &web_state_);
-    web_state_.SetFacade(facade_.get());
+    evaluator_ =
+        [OCMockObject mockForProtocol:@protocol(CRWJSInjectionEvaluator)];
+    facade_ = std::make_unique<MojoFacade>(
+        interface_provider_.get(),
+        static_cast<id<CRWJSInjectionEvaluator>>(evaluator_));
   }
 
-  FakeWebState* web_state() { return &web_state_; }
+  OCMockObject* evaluator() { return evaluator_; }
   MojoFacade* facade() { return facade_.get(); }
 
   void CreateMessagePipe(uint32_t* handle0, uint32_t* handle1) {
@@ -123,7 +97,7 @@ class MojoFacadeTest : public WebTest {
   void BindTestUIHandlerMojoRequest(TestUIHandlerMojoRequest request) {}
 
   std::unique_ptr<WebStateInterfaceProvider> interface_provider_;
-  FakeWebState web_state_;
+  OCMockObject* evaluator_;
   std::unique_ptr<MojoFacade> facade_;
 };
 
@@ -177,7 +151,27 @@ TEST_F(MojoFacadeTest, Watch) {
   int watch_id = 0;
   EXPECT_TRUE(base::StringToInt(watch_id_as_string, &watch_id));
 
-  web_state()->SetWatchId(watch_id);
+  // Start waiting for the watch callback.
+  __block bool callback_received = false;
+  NSString* expected_script =
+      [NSString stringWithFormat:
+                    @"Mojo.internal.watchCallbacksHolder.callCallback(%d, %d)",
+                    callback_id, MOJO_RESULT_OK];
+  [[[evaluator() expect] andDo:^(NSInvocation*) {
+    callback_received = true;
+
+    // Cancel the watch immediately to ensure there are no additional
+    // notifications.
+    NSDictionary* cancel_watch = @{
+      @"name" : @"MojoWatcher.cancel",
+      @"args" : @{
+        @"watchId" : @(watch_id),
+      },
+    };
+    std::string result_as_string =
+        facade()->HandleMojoMessage(GetJson(cancel_watch));
+    EXPECT_TRUE(result_as_string.empty());
+  }] executeJavaScript:expected_script completionHandler:nil];
 
   // Write to the other end of the pipe.
   NSDictionary* write = @{
@@ -191,18 +185,11 @@ TEST_F(MojoFacadeTest, Watch) {
   EXPECT_TRUE(base::StringToInt(result_as_string, &result));
   EXPECT_EQ(MOJO_RESULT_OK, static_cast<MojoResult>(result));
 
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
-    base::RunLoop().RunUntilIdle();
-    return !web_state()->GetLastExecutedJavascript().empty();
-  }));
-
-  NSString* expected_script =
-      [NSString stringWithFormat:
-                    @"Mojo.internal.watchCallbacksHolder.callCallback(%d, %d)",
-                    callback_id, MOJO_RESULT_OK];
-
-  EXPECT_EQ(base::SysNSStringToUTF16(expected_script),
-            web_state()->GetLastExecutedJavascript());
+  base::test::ios::WaitUntilCondition(
+      ^{
+        return callback_received;
+      },
+      true, base::TimeDelta());
 
   CloseHandle(handle0);
   CloseHandle(handle1);

@@ -12,12 +12,18 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
 
+namespace {
+
+constexpr char kJsScreenPath[] = "login.DemoSetupScreen";
+
+}  // namespace
+
 namespace chromeos {
 
 DemoSetupScreenHandler::DemoSetupScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container) {
-  set_user_acted_method_path("login.DemoSetupScreen.userActed");
+  set_call_js_prefix(kJsScreenPath);
 }
 
 DemoSetupScreenHandler::~DemoSetupScreenHandler() {

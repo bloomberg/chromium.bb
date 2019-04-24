@@ -17,8 +17,6 @@
 #include "GrSurfaceContextPriv.h"
 #include "SkMakeUnique.h"
 #include "ccpr/GrCCPathCache.h"
-#include "ccpr/GrGSCoverageProcessor.h"
-#include "ccpr/GrVSCoverageProcessor.h"
 
 using FillBatchID = GrCCFiller::BatchID;
 using StrokeBatchID = GrCCStroker::BatchID;
@@ -33,8 +31,7 @@ namespace {
 class AtlasOp : public GrDrawOp {
 public:
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
-    GrProcessorSet::Analysis finalize(
-            const GrCaps&, const GrAppliedClip*, GrFSAAType, GrClampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrFSAAType) override {
         return GrProcessorSet::EmptySetAnalysis();
     }
     CombineResult onCombineIfPossible(GrOp* other, const GrCaps&) override {
@@ -102,7 +99,7 @@ private:
 };
 
 // Renders coverage counts to a CCPR atlas using the resources' pre-filled GrCCPathParser.
-template<typename ProcessorType> class RenderAtlasOp : public AtlasOp {
+class RenderAtlasOp : public AtlasOp {
 public:
     DEFINE_OP_CLASS_ID
 
@@ -120,9 +117,8 @@ public:
     const char* name() const override { return "RenderAtlasOp (CCPR)"; }
 
     void onExecute(GrOpFlushState* flushState, const SkRect& chainBounds) override {
-        ProcessorType proc;
-        fResources->filler().drawFills(flushState, &proc, fFillBatchID, fDrawBounds);
-        fResources->stroker().drawStrokes(flushState, &proc, fStrokeBatchID, fDrawBounds);
+        fResources->filler().drawFills(flushState, fFillBatchID, fDrawBounds);
+        fResources->stroker().drawStrokes(flushState, fStrokeBatchID, fDrawBounds);
     }
 
 private:
@@ -498,16 +494,9 @@ bool GrCCPerFlushResources::finalize(GrOnFlushResourceProvider* onFlushRP,
         }
 
         if (auto rtc = atlas->makeRenderTargetContext(onFlushRP, std::move(backingTexture))) {
-            std::unique_ptr<GrDrawOp> op;
-            if (onFlushRP->caps()->shaderCaps()->geometryShaderSupport()) {
-                op = RenderAtlasOp<GrGSCoverageProcessor>::Make(
-                        rtc->surfPriv().getContext(), sk_ref_sp(this), atlas->getFillBatchID(),
-                        atlas->getStrokeBatchID(), atlas->drawBounds());
-            } else {
-                op = RenderAtlasOp<GrVSCoverageProcessor>::Make(
-                        rtc->surfPriv().getContext(), sk_ref_sp(this), atlas->getFillBatchID(),
-                        atlas->getStrokeBatchID(), atlas->drawBounds());
-            }
+            auto op = RenderAtlasOp::Make(rtc->surfPriv().getContext(), sk_ref_sp(this),
+                                          atlas->getFillBatchID(), atlas->getStrokeBatchID(),
+                                          atlas->drawBounds());
             rtc->addDrawOp(GrNoClip(), std::move(op));
             out->push_back(std::move(rtc));
         }

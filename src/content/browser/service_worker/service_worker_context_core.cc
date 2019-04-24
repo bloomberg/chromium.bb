@@ -213,36 +213,64 @@ ServiceWorkerContextCore::ProviderHostIterator::~ProviderHostIterator() {}
 ServiceWorkerProviderHost*
 ServiceWorkerContextCore::ProviderHostIterator::GetProviderHost() {
   DCHECK(!IsAtEnd());
-  return provider_host_iterator_->second.get();
+  return provider_host_iterator_->GetCurrentValue();
 }
 
 void ServiceWorkerContextCore::ProviderHostIterator::Advance() {
   DCHECK(!IsAtEnd());
-  provider_host_iterator_++;
-  ForwardUntilMatchingProviderHost();
+  DCHECK(!provider_host_iterator_->IsAtEnd());
+  DCHECK(!process_iterator_->IsAtEnd());
+
+  // Advance the inner iterator. If an element is reached, we're done.
+  provider_host_iterator_->Advance();
+  if (ForwardUntilMatchingProviderHost())
+    return;
+
+  // Advance the outer iterator until an element is reached, or end is hit.
+  while (true) {
+    process_iterator_->Advance();
+    if (process_iterator_->IsAtEnd())
+      return;
+    ProviderMap* provider_map = process_iterator_->GetCurrentValue();
+    provider_host_iterator_.reset(new ProviderMap::iterator(provider_map));
+    if (ForwardUntilMatchingProviderHost())
+      return;
+  }
 }
 
 bool ServiceWorkerContextCore::ProviderHostIterator::IsAtEnd() {
-  return provider_host_iterator_ == map_->end();
+  return process_iterator_->IsAtEnd() &&
+         (!provider_host_iterator_ || provider_host_iterator_->IsAtEnd());
 }
 
 ServiceWorkerContextCore::ProviderHostIterator::ProviderHostIterator(
-    ProviderByIdMap* map,
+    ProcessToProviderMap* map,
     ProviderHostPredicate predicate)
-    : map_(map),
-      predicate_(std::move(predicate)),
-      provider_host_iterator_(map_->begin()) {
-  ForwardUntilMatchingProviderHost();
+    : map_(map), predicate_(std::move(predicate)) {
+  DCHECK(map);
+  Initialize();
 }
 
-void ServiceWorkerContextCore::ProviderHostIterator::
-    ForwardUntilMatchingProviderHost() {
-  while (!IsAtEnd()) {
-    if (predicate_.is_null() || predicate_.Run(GetProviderHost()))
+void ServiceWorkerContextCore::ProviderHostIterator::Initialize() {
+  process_iterator_.reset(new ProcessToProviderMap::iterator(map_));
+  // Advance to the first element.
+  while (!process_iterator_->IsAtEnd()) {
+    ProviderMap* provider_map = process_iterator_->GetCurrentValue();
+    provider_host_iterator_.reset(new ProviderMap::iterator(provider_map));
+    if (ForwardUntilMatchingProviderHost())
       return;
-    provider_host_iterator_++;
+    process_iterator_->Advance();
   }
-  return;
+}
+
+bool ServiceWorkerContextCore::ProviderHostIterator::
+    ForwardUntilMatchingProviderHost() {
+  while (!provider_host_iterator_->IsAtEnd()) {
+    if (predicate_.is_null() || predicate_.Run(GetProviderHost()))
+      return true;
+    provider_host_iterator_->Advance();
+  }
+  return false;
 }
 
 ServiceWorkerContextCore::ServiceWorkerContextCore(
@@ -255,7 +283,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
         observer_list,
     ServiceWorkerContextWrapper* wrapper)
     : wrapper_(wrapper),
-      providers_(std::make_unique<ProviderByIdMap>()),
+      providers_(std::make_unique<ProcessToProviderMap>()),
       provider_by_uuid_(std::make_unique<ProviderByClientUUIDMap>()),
       loader_factory_getter_(url_loader_factory_getter),
       force_update_on_page_load_(false),
@@ -301,22 +329,52 @@ ServiceWorkerContextCore::~ServiceWorkerContextCore() {
 void ServiceWorkerContextCore::AddProviderHost(
     std::unique_ptr<ServiceWorkerProviderHost> host) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  int process_id = host->process_id();
   int provider_id = host->provider_id();
-  providers_->emplace(provider_id, std::move(host));
+  // Precreated hosts are stored in the same map regardless of process.
+  if (ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id))
+    process_id = ChildProcessHost::kInvalidUniqueID;
+  ProviderMap* map = GetProviderMapForProcess(process_id);
+  if (!map) {
+    providers_->AddWithID(std::make_unique<ProviderMap>(), process_id);
+    map = GetProviderMapForProcess(process_id);
+  }
+  map->AddWithID(std::move(host), provider_id);
 }
 
 ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHost(
+    int process_id,
     int provider_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  auto found = providers_->find(provider_id);
-  if (found == providers_->end())
+  // Precreated hosts are stored in the same map regardless of process.
+  if (ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id))
+    process_id = ChildProcessHost::kInvalidUniqueID;
+  ProviderMap* map = GetProviderMapForProcess(process_id);
+  if (!map)
     return nullptr;
-  return found->second.get();
+  return map->Lookup(provider_id);
 }
 
-void ServiceWorkerContextCore::RemoveProviderHost(int provider_id) {
+void ServiceWorkerContextCore::RemoveProviderHost(
+    int process_id, int provider_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  providers_->erase(provider_id);
+  // Precreated hosts are stored in the same map regardless of process.
+  if (ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id))
+    process_id = ChildProcessHost::kInvalidUniqueID;
+  ProviderMap* map = GetProviderMapForProcess(process_id);
+  DCHECK(map);
+  map->Remove(provider_id);
+}
+
+void ServiceWorkerContextCore::RemoveAllProviderHostsForProcess(
+    int process_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (providers_->Lookup(process_id))
+    providers_->Remove(process_id);
+  // This function is used to prevent <process_id, provider_id> collisions when
+  // a render process host is reused with the same process id. Don't bother
+  // removing the providers in this process with browser-assigned ids, which
+  // live in a different map, since they have unique ids.
 }
 
 std::unique_ptr<ServiceWorkerContextCore::ProviderHostIterator>
@@ -483,6 +541,12 @@ int ServiceWorkerContextCore::GetNextEmbeddedWorkerId() {
   return next_embedded_worker_id_++;
 }
 
+ServiceWorkerContextCore::ProviderMap*
+ServiceWorkerContextCore::GetProviderMapForProcess(int process_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return providers_->Lookup(process_id);
+}
+
 void ServiceWorkerContextCore::RegistrationComplete(
     const GURL& scope,
     ServiceWorkerContextCore::RegistrationCallback callback,
@@ -591,14 +655,6 @@ void ServiceWorkerContextCore::AddLiveVersion(ServiceWorkerVersion* version) {
 }
 
 void ServiceWorkerContextCore::RemoveLiveVersion(int64_t id) {
-  if (live_versions_[id]->running_status() != EmbeddedWorkerStatus::STOPPED) {
-    // Notify all observers that this live version is stopped, as it will
-    // be removed from |live_versions_|.
-    observer_list_->Notify(
-        FROM_HERE, &ServiceWorkerContextCoreObserver::OnRunningStateChanged, id,
-        EmbeddedWorkerStatus::STOPPED);
-  }
-
   live_versions_.erase(id);
 }
 
@@ -779,7 +835,7 @@ void ServiceWorkerContextCore::OnErrorReported(
 
 void ServiceWorkerContextCore::OnReportConsoleMessage(
     ServiceWorkerVersion* version,
-    blink::mojom::ConsoleMessageSource source,
+    int source_identifier,
     blink::mojom::ConsoleMessageLevel message_level,
     const base::string16& message,
     int line_number,
@@ -799,7 +855,8 @@ void ServiceWorkerContextCore::OnReportConsoleMessage(
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnReportConsoleMessage,
       version->version_id(),
-      ConsoleMessage(source, message_level, message, line_number, source_url));
+      ConsoleMessage(source_identifier, message_level, message, line_number,
+                     source_url));
 }
 
 void ServiceWorkerContextCore::OnControlleeAdded(

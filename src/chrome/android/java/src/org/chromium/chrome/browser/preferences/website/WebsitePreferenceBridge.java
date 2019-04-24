@@ -190,10 +190,8 @@ public abstract class WebsitePreferenceBridge {
      */
     @CalledByNative
     private static void insertChosenObjectInfoIntoList(ArrayList<ChosenObjectInfo> list,
-            int contentSettingsType, String origin, String embedder, String name, String object,
-            boolean isManaged) {
-        list.add(new ChosenObjectInfo(
-                contentSettingsType, origin, embedder, name, object, isManaged));
+            int contentSettingsType, String origin, String embedder, String name, String object) {
+        list.add(new ChosenObjectInfo(contentSettingsType, origin, embedder, name, object));
     }
 
     /**

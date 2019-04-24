@@ -16,6 +16,7 @@
 #define TEST_REDUCE_REDUCE_TEST_UTIL_H_
 
 #include "gtest/gtest.h"
+
 #include "source/opt/ir_context.h"
 #include "source/reduce/reduction_opportunity.h"
 #include "spirv-tools/libspirv.h"
@@ -57,17 +58,6 @@ const uint32_t kReduceDisassembleOption =
 // Don't print reducer info during testing.
 void NopDiagnostic(spv_message_level_t /*level*/, const char* /*source*/,
                    const spv_position_t& /*position*/, const char* /*message*/);
-
-// Prints reducer messages (for debugging).
-void CLIMessageConsumer(spv_message_level_t level, const char*,
-                        const spv_position_t& position, const char* message);
-
-// Dumps the SPIRV-V module in |context| to file |filename|. Useful for
-// interactive debugging.
-void DumpShader(opt::IRContext* context, const char* filename);
-
-// Dumps |binary| to file |filename|. Useful for interactive debugging.
-void DumpShader(const std::vector<uint32_t>& binary, const char* filename);
 
 }  // namespace reduce
 }  // namespace spvtools

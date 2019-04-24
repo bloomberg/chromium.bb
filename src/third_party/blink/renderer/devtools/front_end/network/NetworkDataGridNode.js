@@ -953,32 +953,26 @@ Network.NetworkRequestNode = class extends Network.NetworkNode {
    * @param {!Element} cell
    */
   _renderSizeCell(cell) {
-    const resourceSize = Number.bytesToString(this._request.resourceSize);
-
     if (this._request.cachedInMemory()) {
-      cell.createTextChild(ls`(memory cache)`);
-      cell.title = ls`Served from memory cache, resource size: ${resourceSize}`;
+      this._setTextAndTitle(cell, Common.UIString('(from memory cache)'));
       cell.classList.add('network-dim-cell');
     } else if (this._request.fetchedViaServiceWorker) {
-      cell.createTextChild(ls`(ServiceWorker)`);
-      cell.title = ls`Served from ServiceWorker, resource size: ${resourceSize}`;
+      this._setTextAndTitle(cell, Common.UIString('(from ServiceWorker)'));
       cell.classList.add('network-dim-cell');
     } else if (
         this._request.redirectSource() && this._request.redirectSource().signedExchangeInfo() &&
         !this._request.redirectSource().signedExchangeInfo().errors) {
-      cell.createTextChild(ls`(signed-exchange)`);
-      cell.title = ls`Served from Signed HTTP Exchange, resource size: ${resourceSize}`;
+      this._setTextAndTitle(cell, Common.UIString('(from signed-exchange)'));
       cell.classList.add('network-dim-cell');
     } else if (this._request.cached()) {
-      cell.createTextChild(ls`(disk cache)`);
-      cell.title = ls`Served from disk cache, resource size: ${resourceSize}`;
+      this._setTextAndTitle(cell, Common.UIString('(from disk cache)'));
       cell.classList.add('network-dim-cell');
     } else {
+      const resourceSize = Number.bytesToString(this._request.resourceSize);
       const transferSize = Number.bytesToString(this._request.transferSize);
-      cell.createTextChild(transferSize);
-      cell.title = `${transferSize} transferred over network, resource size: ${resourceSize}`;
+      this._setTextAndTitle(cell, transferSize);
+      this._appendSubtitle(cell, resourceSize);
     }
-    this._appendSubtitle(cell, resourceSize);
   }
 
   /**

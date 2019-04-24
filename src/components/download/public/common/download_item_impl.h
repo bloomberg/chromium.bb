@@ -222,8 +222,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   void Remove() override;
   void OpenDownload() override;
   void ShowDownloadInShell() override;
-  void Rename(const base::FilePath& name,
-              RenameDownloadCallback callback) override;
   uint32_t GetId() const override;
   const std::string& GetGuid() const override;
   DownloadState GetState() const override;
@@ -364,8 +362,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   DownloadSource download_source() const { return download_source_; }
 
   uint64_t ukm_download_id() const { return ukm_download_id_; }
-
-  void SetAutoResumeCountForTesting(int32_t auto_resume_count);
 
  private:
   // Fine grained states of a download.
@@ -636,12 +632,6 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // last_reason_ to be set, but doesn't require the download to be in
   // INTERRUPTED state.
   ResumeMode GetResumeMode() const;
-
-  DownloadItem::DownloadRenameResult RenameDownloadedFile(
-      const std::string& name);
-  void RenameDownloadedFileDone(RenameDownloadCallback callback,
-                                const base::FilePath& new_path,
-                                DownloadRenameResult result);
 
   static DownloadState InternalToExternalState(
       DownloadInternalState internal_state);

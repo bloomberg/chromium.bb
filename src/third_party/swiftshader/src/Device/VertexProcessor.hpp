@@ -92,7 +92,7 @@ namespace sw
 		void setInstanceID(int instanceID);
 
 	protected:
-		const State update(VkPrimitiveTopology topology);
+		const State update(DrawType drawType);
 		Routine *routine(const State &state);
 
 		void setRoutineCacheSize(int cacheSize);

@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
+#include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -49,6 +50,7 @@ class DiscoverScreenView;
 class FingerprintSetupScreenView;
 class GaiaView;
 class HIDDetectionView;
+class KioskAppMenuHandler;
 class KioskAutolaunchScreenView;
 class KioskEnableScreenView;
 class LoginScreenContext;
@@ -65,6 +67,7 @@ class SigninScreenHandlerDelegate;
 class SyncConsentScreenView;
 class TermsOfServiceScreenView;
 class UserBoardView;
+class UserImageView;
 class UpdateView;
 class UpdateRequiredView;
 class SupervisionTransitionScreenView;
@@ -75,7 +78,8 @@ class WrongHWIDScreenView;
 // - welcome screen (setup language/keyboard/network).
 // - eula screen (CrOS (+ OEM) EULA content/TPM password/crash reporting).
 // - update screen.
-class OobeUI : public ui::MojoWebUIController {
+class OobeUI : public ui::MojoWebUIController,
+               public ShutdownPolicyHandler::Delegate {
  public:
   // List of known types of OobeUI. Type added as path in chrome://oobe url, for
   // example chrome://oobe/user-adding.
@@ -94,7 +98,7 @@ class OobeUI : public ui::MojoWebUIController {
     virtual void OnCurrentScreenChanged(OobeScreen current_screen,
                                         OobeScreen new_screen) = 0;
 
-    virtual void OnDestroyingOobeUI() = 0;
+    virtual void OnScreenInitialized(OobeScreen screen) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -121,6 +125,7 @@ class OobeUI : public ui::MojoWebUIController {
   ArcTermsOfServiceScreenView* GetArcTermsOfServiceScreenView();
   RecommendAppsScreenView* GetRecommendAppsScreenView();
   AppDownloadingScreenView* GetAppDownloadingScreenView();
+  UserImageView* GetUserImageView();
   ErrorScreen* GetErrorScreen();
   WrongHWIDScreenView* GetWrongHWIDScreenView();
   AutoEnrollmentCheckScreenView* GetAutoEnrollmentCheckScreenView();
@@ -139,6 +144,9 @@ class OobeUI : public ui::MojoWebUIController {
   NetworkScreenView* GetNetworkScreenView();
   MarketingOptInScreenView* GetMarketingOptInScreenView();
 
+  // ShutdownPolicyHandler::Delegate
+  void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;
+
   // Collects localized strings from the owned handlers.
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);
 
@@ -148,7 +156,14 @@ class OobeUI : public ui::MojoWebUIController {
   // Called when the screen has changed.
   void CurrentScreenChanged(OobeScreen screen);
 
+  // Called when the screen was initialized.
+  void ScreenInitialized(OobeScreen screen);
+
   bool IsScreenInitialized(OobeScreen screen);
+
+  // Invoked after the async assets load. The screen handler that has the same
+  // async assets load id will be initialized.
+  void OnScreenAssetsLoaded(const std::string& async_assets_load_id);
 
   bool IsJSReady(const base::Closure& display_is_ready_callback);
 
@@ -237,6 +252,9 @@ class OobeUI : public ui::MojoWebUIController {
   std::vector<BaseWebUIHandler*> webui_only_handlers_;  // Non-owning pointers.
   std::vector<BaseScreenHandler*> screen_handlers_;     // Non-owning pointers.
 
+  KioskAppMenuHandler* kiosk_app_menu_handler_ =
+      nullptr;  // Non-owning pointers.
+
   std::unique_ptr<ErrorScreen> error_screen_;
 
   // Id of the current oobe/login screen.
@@ -254,6 +272,9 @@ class OobeUI : public ui::MojoWebUIController {
 
   // List of registered observers.
   base::ObserverList<Observer>::Unchecked observer_list_;
+
+  // Observer of CrosSettings watching the kRebootOnShutdown policy.
+  std::unique_ptr<ShutdownPolicyHandler> shutdown_policy_handler_;
 
   std::unique_ptr<OobeDisplayChooser> oobe_display_chooser_;
 

@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
@@ -83,8 +82,7 @@ class NET_EXPORT_PRIVATE HttpAuthController
   // and thus the server would presumably reject a request on HTTP/2 anyway.
   bool NeedsHTTP11() const;
 
-  // Swaps the authentication challenge info into |other|.
-  void TakeAuthInfo(base::Optional<AuthChallengeInfo>* other);
+  scoped_refptr<AuthChallengeInfo> auth_info();
 
   bool IsAuthSchemeDisabled(HttpAuth::Scheme scheme) const;
   void DisableAuthScheme(HttpAuth::Scheme scheme);
@@ -172,7 +170,7 @@ class NET_EXPORT_PRIVATE HttpAuthController
   std::string auth_token_;
 
   // Contains information about the auth challenge.
-  base::Optional<AuthChallengeInfo> auth_info_;
+  scoped_refptr<AuthChallengeInfo> auth_info_;
 
   // True if we've used the username:password embedded in the URL.  This
   // makes sure we use the embedded identity only once for the transaction,

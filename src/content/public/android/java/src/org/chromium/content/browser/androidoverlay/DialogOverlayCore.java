@@ -8,7 +8,6 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.IBinder;
-import android.os.Looper;
 import android.view.Gravity;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -16,7 +15,6 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
 import org.chromium.gfx.mojom.Rect;
 import org.chromium.media.mojom.AndroidOverlayConfig;
 
@@ -63,9 +61,6 @@ class DialogOverlayCore {
     // If true, then we'll be a panel rather than media overlay.  This is for testing.
     private boolean mAsPanel;
 
-    // Looper that we're initialized on, for thread checking.
-    private Looper mLooper;
-
     /**
      * Construction may be called from a random thread, for simplicity.  Call initialize from the
      * proper thread before doing anything else.
@@ -81,7 +76,6 @@ class DialogOverlayCore {
      */
     public void initialize(
             Context context, AndroidOverlayConfig config, Host host, boolean asPanel) {
-        mLooper = Looper.myLooper();
         mHost = host;
         mAsPanel = asPanel;
 
@@ -98,8 +92,6 @@ class DialogOverlayCore {
      * the client releasing the AndroidOverlay.  This may be called more than once.
      */
     public void release() {
-        assertProperThread();
-
         // If we've not released the dialog yet, then do so.
         dismissDialogQuietly();
 
@@ -152,8 +144,6 @@ class DialogOverlayCore {
 
         @Override
         public void surfaceCreated(SurfaceHolder holder) {
-            assertProperThread();
-
             // Make sure that we haven't torn down the dialog yet.
             if (mDialog == null) return;
 
@@ -162,8 +152,6 @@ class DialogOverlayCore {
 
         @Override
         public void surfaceDestroyed(SurfaceHolder holder) {
-            assertProperThread();
-
             if (mDialog == null || mHost == null) return;
 
             // Notify the host that we've been destroyed, and wait for it to clean up or time out.
@@ -178,8 +166,6 @@ class DialogOverlayCore {
     }
 
     public void onWindowToken(IBinder token) {
-        assertProperThread();
-
         if (mDialog == null || mHost == null) return;
 
         if (token == null || (mLayoutParams.token != null && token != mLayoutParams.token)) {
@@ -282,17 +268,5 @@ class DialogOverlayCore {
 
         mDialog = null;
         mDialogCallbacks = null;
-    }
-
-    // Throw an exception if we're on the wrong thread, regardless of build.
-    private void assertProperThread() {
-        if (mLooper == Looper.myLooper()) return;
-
-        // Special-case the browser UI thread, just to be more helpful.
-        if (ThreadUtils.runningOnUiThread()) {
-            throw new RuntimeException("DialogOverlayCore is on the UI thread");
-        } else {
-            throw new RuntimeException("DialogOverlayCore is on the wrong thread");
-        }
     }
 }

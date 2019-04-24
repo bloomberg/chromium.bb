@@ -20,10 +20,16 @@
 
 class PrefService;
 
+namespace metrics {
+class TranslateEventProto;
+}  // namespace metrics
+
 namespace translate {
 class TranslateAcceptLanguages;
 class TranslatePrefs;
 class TranslateManager;
+
+struct LanguageDetectionDetails;
 }  // namespace translate
 
 namespace web {
@@ -57,6 +63,10 @@ class ChromeIOSTranslateClient
   std::unique_ptr<translate::TranslatePrefs> GetTranslatePrefs() override;
   translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages() override;
   int GetInfobarIconID() const override;
+  // Record language detection event.
+  void RecordLanguageDetectionEvent(
+      const translate::LanguageDetectionDetails& details) const override;
+  void RecordTranslateEvent(const metrics::TranslateEventProto&) override;
   std::unique_ptr<infobars::InfoBar> CreateInfoBar(
       std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
       const override;

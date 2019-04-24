@@ -16,9 +16,9 @@ const char Separator::kViewClassName[] = "Separator";
 // static
 const int Separator::kThickness = 1;
 
-Separator::Separator() = default;
+Separator::Separator() {}
 
-Separator::~Separator() = default;
+Separator::~Separator() {}
 
 void Separator::SetColor(SkColor color) {
   overridden_color_ = color;

@@ -365,8 +365,7 @@ void DamageTracker::AccumulateDamageFromLayer(LayerImpl* layer) {
   // This method is called when we want to consider how a layer contributes to
   // its target RenderSurface, even if that layer owns the target RenderSurface
   // itself. To consider how a layer's target surface contributes to the
-  // ancestor surface, AccumulateDamageFromRenderSurface() must be called
-  // instead.
+  // ancestor surface, ExtendDamageForRenderSurface() must be called instead.
   bool layer_is_new = false;
   LayerRectMapData& data = RectDataForLayer(layer->id(), &layer_is_new);
   gfx::Rect old_rect_in_target_space = data.rect_;

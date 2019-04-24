@@ -32,7 +32,7 @@ namespace compiler {
 // meaningful to the operator itself.
 class V8_EXPORT_PRIVATE Operator : public NON_EXPORTED_BASE(ZoneObject) {
  public:
-  using Opcode = uint16_t;
+  typedef uint16_t Opcode;
 
   // Properties inform the operator-independent optimizer about legal
   // transformations for nodes that have this operator.
@@ -57,7 +57,7 @@ class V8_EXPORT_PRIVATE Operator : public NON_EXPORTED_BASE(ZoneObject) {
   V(Commutative)                  \
   V(Associative) V(Idempotent) V(NoRead) V(NoWrite) V(NoThrow) V(NoDeopt)
 
-  using Properties = base::Flags<Property, uint8_t>;
+  typedef base::Flags<Property, uint8_t> Properties;
   enum class PrintVerbosity { kVerbose, kSilent };
 
   // Constructor.
@@ -148,8 +148,8 @@ class V8_EXPORT_PRIVATE Operator : public NON_EXPORTED_BASE(ZoneObject) {
 
 DEFINE_OPERATORS_FOR_FLAGS(Operator::Properties)
 
-V8_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
-                                           const Operator& op);
+std::ostream& operator<<(std::ostream& os, const Operator& op);
+
 
 // Default equality function for below Operator1<*> class.
 template <typename T>

@@ -4,12 +4,10 @@
 
 #include "media/capture/video/chromeos/cros_image_capture_impl.h"
 
-#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/task/post_task.h"
-#include "media/base/bind_to_current_loop.h"
 
 namespace media {
 
@@ -24,20 +22,16 @@ void CrosImageCaptureImpl::BindRequest(
 }
 
 void CrosImageCaptureImpl::GetSupportedEffects(
-    const std::string& device_id,
     GetSupportedEffectsCallback callback) {
   reprocess_manager_->GetSupportedEffects(
-      device_id, media::BindToCurrentLoop(base::BindOnce(
-                     &CrosImageCaptureImpl::OnGetSupportedEffects,
-                     base::Unretained(this), std::move(callback))));
+      base::BindOnce(&CrosImageCaptureImpl::OnGetSupportedEffects,
+                     base::Unretained(this), std::move(callback)));
 }
 
 void CrosImageCaptureImpl::SetReprocessOption(
-    const std::string& device_id,
     cros::mojom::Effect effect,
     SetReprocessOptionCallback callback) {
-  reprocess_manager_->SetReprocessOption(
-      device_id, effect, media::BindToCurrentLoop(std::move(callback)));
+  reprocess_manager_->SetReprocessOption(effect, std::move(callback));
 }
 
 void CrosImageCaptureImpl::OnGetSupportedEffects(

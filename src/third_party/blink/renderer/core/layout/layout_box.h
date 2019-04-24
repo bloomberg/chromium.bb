@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/overflow_model.h"
 #include "third_party/blink/renderer/platform/graphics/scroll_types.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 
 namespace blink {
 
@@ -39,7 +40,6 @@ class EventHandler;
 class LayoutBlockFlow;
 class LayoutMultiColumnSpannerPlaceholder;
 class NGBoxFragmentBuilder;
-class NGConstraintSpace;
 class ShapeOutsideInfo;
 struct BoxLayoutExtraInput;
 class NGBreakToken;
@@ -910,12 +910,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   const NGLayoutResult* GetCachedLayoutResult() const {
     return cached_layout_result_.get();
   }
-  // Returns the last layout result for this block flow with the given
-  // constraint space and break token, or null if it is not up-to-date or
-  // otherwise unavailable.
-  scoped_refptr<const NGLayoutResult> CachedLayoutResult(
-      const NGConstraintSpace&,
-      const NGBreakToken*);
 
   void SetSpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder&);
   void ClearSpannerPlaceholder();
@@ -1106,10 +1100,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool CanBeScrolledAndHasScrollableArea() const;
   virtual bool CanBeProgramaticallyScrolled() const;
-  virtual void Autoscroll(const LayoutPoint&);
+  virtual void Autoscroll(const IntPoint&);
   bool CanAutoscroll() const;
-  LayoutSize CalculateAutoscrollDirection(
-      const FloatPoint& point_in_root_frame) const;
+  IntSize CalculateAutoscrollDirection(
+      const IntPoint& point_in_root_frame) const;
   static LayoutBox* FindAutoscrollable(LayoutObject*);
   virtual void StopAutoscroll() {}
   virtual void MayUpdateHoverWhenContentUnderMouseChanged(EventHandler&);
@@ -1209,7 +1203,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
      // inline-block.
 
   bool ShrinkToAvoidFloats() const;
-  virtual bool CreatesNewFormattingContext() const { return true; }
+  virtual bool AvoidsFloats() const;
   bool ShouldBeConsideredAsReplaced() const;
 
   void UpdateFragmentationInfoForChild(LayoutBox&);

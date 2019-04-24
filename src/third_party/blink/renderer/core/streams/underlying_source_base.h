@@ -18,7 +18,7 @@
 
 namespace blink {
 
-class ReadableStreamDefaultControllerInterface;
+class ReadableStreamDefaultControllerWrapper;
 
 class CORE_EXPORT UnderlyingSourceBase
     : public ScriptWrappable,
@@ -54,12 +54,12 @@ class CORE_EXPORT UnderlyingSourceBase
   explicit UnderlyingSourceBase(ScriptState* script_state)
       : ContextLifecycleObserver(ExecutionContext::From(script_state)) {}
 
-  ReadableStreamDefaultControllerInterface* Controller() const {
+  ReadableStreamDefaultControllerWrapper* Controller() const {
     return controller_;
   }
 
  private:
-  Member<ReadableStreamDefaultControllerInterface> controller_;
+  Member<ReadableStreamDefaultControllerWrapper> controller_;
   bool is_stream_locked_ = false;
 };
 

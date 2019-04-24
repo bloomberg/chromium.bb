@@ -41,16 +41,6 @@ bool PictureInPictureController::IsElementInPictureInPicture(
   return controller && controller->IsPictureInPictureElement(element);
 }
 
-// static
-bool PictureInPictureController::IsShadowHostInPictureInPicture(
-    const Element& host) {
-  DCHECK(IsShadowHost(host));
-  Document& document = host.GetDocument();
-  PictureInPictureController* controller =
-      Supplement<Document>::From<PictureInPictureController>(document);
-  return controller && controller->IsPictureInPictureShadowHost(host);
-}
-
 void PictureInPictureController::Trace(blink::Visitor* visitor) {
   Supplement<Document>::Trace(visitor);
 }

@@ -5,10 +5,10 @@
 #ifndef FUCHSIA_RUNNERS_CAST_CAST_CHANNEL_BINDINGS_H_
 #define FUCHSIA_RUNNERS_CAST_CAST_CHANNEL_BINDINGS_H_
 
+#include <deque>
 #include <string>
 
 #include "base/callback.h"
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
@@ -28,7 +28,7 @@ class CastChannelBindings {
   //                     remain valid for the entire lifetime of |this|.
   // |channel_consumer|: A FIDL service which receives opened Cast Channels.
   // Both |frame| and |connector| must outlive |this|.
-  CastChannelBindings(fuchsia::web::Frame* frame,
+  CastChannelBindings(chromium::web::Frame* frame,
                       NamedMessagePortConnector* connector,
                       chromium::cast::CastChannelPtr channel_consumer,
                       base::OnceClosure on_error_closure);
@@ -36,31 +36,31 @@ class CastChannelBindings {
 
  private:
   // Receives a port used for receiving new Cast Channel ports.
-  void OnMasterPortReceived(fuchsia::web::MessagePortPtr port);
+  void OnMasterPortReceived(chromium::web::MessagePortPtr port);
 
   // Receives a message containing a newly opened Cast Channel from
   // |master_port_|.
-  void OnCastChannelMessageReceived(fuchsia::web::WebMessage message);
+  void OnCastChannelMessageReceived(chromium::web::WebMessage message);
 
   // Indicates that |channel_consumer_| is ready to take another port.
   void OnConsumerReadyForPort();
 
   // Sends or enqueues a Cast Channel for sending to |channel_consumer_|.
-  void SendChannelToConsumer(fuchsia::web::MessagePortPtr channel);
+  void SendChannelToConsumer(chromium::web::MessagePortPtr channel);
 
   // Handles error conditions on |master_port_|.
   void OnMasterPortError();
 
-  fuchsia::web::Frame* const frame_;
+  chromium::web::Frame* const frame_;
   NamedMessagePortConnector* const connector_;
 
   // A queue of channels waiting to be sent the Cast Channel FIDL service.
-  base::circular_deque<fuchsia::web::MessagePortPtr> connected_channel_queue_;
+  std::deque<chromium::web::MessagePortPtr> connected_channel_queue_;
 
   // A long-lived port, used to receive new Cast Channel ports when they are
   // opened. Should be automatically  populated by the
   // NamedMessagePortConnector whenever |frame| loads a new page.
-  fuchsia::web::MessagePortPtr master_port_;
+  chromium::web::MessagePortPtr master_port_;
 
   fuchsia::mem::Buffer bindings_script_;
 

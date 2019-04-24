@@ -80,7 +80,7 @@ class AnimationDocumentTimelineTest : public PageTestBase {
     document.Release();
     element.Release();
     timeline.Release();
-    ThreadState::Current()->CollectAllGarbageForTesting();
+    ThreadState::Current()->CollectAllGarbage();
   }
 
   void UpdateClockAndService(double time) {

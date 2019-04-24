@@ -93,6 +93,8 @@ Polymer({
         SYNCED_TABS_HISTOGRAM_NAME, histogramValue, SyncedTabsHistogram.LIMIT);
 
     this.$.collapse.toggle();
+    this.$['dropdown-indicator'].icon =
+        this.$.collapse.opened ? 'cr:expand-less' : 'cr:expand-more';
 
     this.fire('update-focus-grid');
   },

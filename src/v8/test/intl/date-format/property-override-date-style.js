@@ -36,6 +36,10 @@ var expectedProperties = [
   'timeZone',
   'hourCycle',
   'hour12',
+  'weekday',
+  'year',
+  'month',
+  'day',
   'dateStyle',
 ];
 

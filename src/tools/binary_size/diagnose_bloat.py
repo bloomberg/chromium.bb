@@ -498,34 +498,6 @@ class _DiffArchiveManager(object):
     logging.info('See detailed diff results here: %s',
                  os.path.relpath(diff_path))
 
-  def GenerateHtmlReport(self, before_id, after_id):
-    """Generate HTML report given two build archives."""
-    before = self.build_archives[before_id]
-    after = self.build_archives[after_id]
-    diff_path = self._DiffDir(before, after)
-    if not self._CanDiff(before, after):
-      logging.info(
-          'Skipping HTML report for %s due to missing build archives.',
-          diff_path)
-      return
-
-    supersize_path = os.path.join(_BINARY_SIZE_DIR, 'supersize')
-
-    report_path = os.path.join(diff_path, 'diff.ndjson')
-
-    supersize_cmd = [supersize_path, 'html_report', '--diff-with',
-      before.archived_size_path,
-      after.archived_size_path,
-      report_path]
-
-    logging.info('Creating HTML report')
-
-    _RunCmd(supersize_cmd)
-
-    logging.info('View using a local server via: %s start_server %s',
-      os.path.relpath(supersize_path),
-      os.path.relpath(report_path))
-
   def Summarize(self):
     path = os.path.join(self.archive_dir, 'last_diff_summary.txt')
     if self._summary_stats:
@@ -536,17 +508,15 @@ class _DiffArchiveManager(object):
         for s, before, after in stats:
           _WriteToFile(f, '{:>+10} {} {} for range: {}..{}',
                                s.value, s.units, s.name, before, after)
-
     # Print cached file if all builds were cached.
-    num_archives = len(self.build_archives)
-    if os.path.exists(path) and num_archives > 1:
+    if os.path.exists(path):
       _PrintFile(path)
-    if num_archives <= 2:
+    if self.build_archives and len(self.build_archives) <= 2:
       if not all(a.Exists() for a in self.build_archives):
         return
       supersize_path = os.path.join(_BINARY_SIZE_DIR, 'supersize')
       size2 = ''
-      if num_archives == 2:
+      if len(self.build_archives) == 2:
         size2 = os.path.relpath(self.build_archives[-1].archived_size_path)
       logging.info('Enter supersize console via: %s console %s %s',
           os.path.relpath(supersize_path),
@@ -983,9 +953,9 @@ def main():
                            help='Allow downstream targets to be built.')
   build_group.add_argument('--target',
                            help='GN target to build. Linux default: chrome. '
-                           'Android default: monochrome_public_minimal_apks or '
-                           'monochrome_minimal_apks (depending on '
-                           '--enable-chrome-android-internal).')
+                                'Android default: monochrome_public_apk or '
+                                'monochrome_apk (depending on '
+                                '--enable-chrome-android-internal).')
   if len(sys.argv) == 1:
     parser.print_help()
     return 1
@@ -1028,7 +998,6 @@ def main():
                                     subrepo, args.include_slow_options,
                                     args.unstripped)
     consecutive_failures = 0
-    i = 0
     for i, archive in enumerate(diff_mngr.build_archives):
       if archive.Exists():
         step = 'download' if build.IsCloud() else 'build'
@@ -1058,7 +1027,6 @@ def main():
       if i != 0:
         diff_mngr.MaybeDiff(i - 1, i)
 
-    diff_mngr.GenerateHtmlReport(0, i)
     diff_mngr.Summarize()
 
 

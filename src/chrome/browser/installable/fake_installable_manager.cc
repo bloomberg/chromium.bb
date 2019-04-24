@@ -5,7 +5,6 @@
 #include "chrome/browser/installable/fake_installable_manager.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -19,14 +18,9 @@ FakeInstallableManager::FakeInstallableManager(
 FakeInstallableManager::~FakeInstallableManager() {}
 
 void FakeInstallableManager::GetData(const InstallableParams& params,
-                                     InstallableCallback callback) {
+                                     const InstallableCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeInstallableManager::RunCallback,
-                                base::Unretained(this), std::move(callback)));
-}
-
-void FakeInstallableManager::RunCallback(InstallableCallback callback) {
-  std::move(callback).Run(*data_);
+      FROM_HERE, base::BindRepeating(callback, *data_));
 }
 
 // static
@@ -48,23 +42,19 @@ FakeInstallableManager::CreateForWebContentsWithManifest(
   FakeInstallableManager* installable_manager =
       FakeInstallableManager::CreateForWebContents(web_contents);
 
-  installable_manager->manifest_url_ = manifest_url;
   installable_manager->manifest_ = std::move(manifest);
 
   const bool valid_manifest = true;
   const bool has_worker = true;
-  std::vector<InstallableStatusCode> errors;
 
   // Not used:
+  const GURL icon_url;
   const std::unique_ptr<SkBitmap> icon;
 
-  if (installable_code != NO_ERROR_DETECTED)
-    errors.push_back(installable_code);
-
   auto installable_data = std::make_unique<InstallableData>(
-      std::move(errors), installable_manager->manifest_url_,
-      installable_manager->manifest_.get(), GURL::EmptyGURL(), icon.get(),
-      false, GURL::EmptyGURL(), icon.get(), valid_manifest, has_worker);
+      installable_code, manifest_url, installable_manager->manifest_.get(),
+      icon_url, icon.get(), false, icon_url, icon.get(), valid_manifest,
+      has_worker);
 
   installable_manager->data_ = std::move(installable_data);
 

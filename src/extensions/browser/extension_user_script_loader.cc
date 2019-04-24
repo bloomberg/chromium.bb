@@ -16,7 +16,6 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/one_shot_event.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/version.h"
@@ -34,6 +33,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/default_locale_handler.h"
 #include "extensions/common/message_bundle.h"
+#include "extensions/common/one_shot_event.h"
 #include "ui/base/resource/resource_bundle.h"
 
 using content::BrowserContext;
@@ -217,8 +217,8 @@ ExtensionUserScriptLoader::ExtensionUserScriptLoader(
     ExtensionSystem::Get(browser_context)
         ->ready()
         .Post(FROM_HERE,
-              base::BindOnce(&ExtensionUserScriptLoader::OnExtensionSystemReady,
-                             weak_factory_.GetWeakPtr()));
+              base::Bind(&ExtensionUserScriptLoader::OnExtensionSystemReady,
+                         weak_factory_.GetWeakPtr()));
   } else {
     SetReady(true);
   }

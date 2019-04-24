@@ -7,15 +7,6 @@
  * 'crostini-shared-paths' is the settings shared paths subpage for Crostini.
  */
 
-(function() {
-
-/**
- * The default crostini VM is named 'termina'.
- * https://cs.chromium.org/chromium/src/chrome/browser/chromeos/crostini/crostini_util.h?q=kCrostiniDefaultVmName&dr=CSs
- * @type {string}
- */
-const DEFAULT_CROSTINI_VM = 'termina';
-
 Polymer({
   is: 'settings-crostini-shared-paths',
 
@@ -35,27 +26,22 @@ Polymer({
     sharedPaths_: Array,
   },
 
-  observers: [
-    'onCrostiniSharedPathsChanged_(prefs.guest_os.paths_shared_to_vms.value)'
-  ],
+  observers:
+      ['onCrostiniSharedPathsChanged_(prefs.crostini.shared_paths.value)'],
 
   /**
-   * @param {!Object<!Array<string>>} paths
+   * @param {!Array<string>} paths
    * @private
    */
   onCrostiniSharedPathsChanged_: function(paths) {
-    const vmPaths = [];
-    for (const path in paths) {
-      const vms = paths[path];
-      if (vms.includes(DEFAULT_CROSTINI_VM)) {
-        vmPaths.push(path);
-      }
-    }
     settings.CrostiniBrowserProxyImpl.getInstance()
-        .getCrostiniSharedPathsDisplayText(vmPaths)
+        .getCrostiniSharedPathsDisplayText(paths)
         .then(text => {
-          this.sharedPaths_ = vmPaths.map(
-              (path, i) => ({path: path, pathDisplayText: text[i]}));
+          const sharedPaths = [];
+          for (let i = 0; i < paths.length; i++) {
+            sharedPaths.push({path: paths[i], pathDisplayText: text[i]});
+          }
+          this.sharedPaths_ = sharedPaths;
         });
   },
 
@@ -65,7 +51,6 @@ Polymer({
    */
   onRemoveSharedPathTap_: function(event) {
     settings.CrostiniBrowserProxyImpl.getInstance().removeCrostiniSharedPath(
-        DEFAULT_CROSTINI_VM, event.model.item.path);
+        event.model.item.path);
   },
 });
-})();

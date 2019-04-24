@@ -29,7 +29,7 @@ namespace {
 // have been called.
 class LoginHandlerViews : public LoginHandler {
  public:
-  LoginHandlerViews(const net::AuthChallengeInfo& auth_info,
+  LoginHandlerViews(net::AuthChallengeInfo* auth_info,
                     content::WebContents* web_contents,
                     LoginAuthRequiredCallback auth_required_callback)
       : LoginHandler(auth_info,
@@ -178,7 +178,7 @@ class LoginHandlerViews : public LoginHandler {
 }  // namespace
 
 std::unique_ptr<LoginHandler> CreateLoginHandlerViews(
-    const net::AuthChallengeInfo& auth_info,
+    net::AuthChallengeInfo* auth_info,
     content::WebContents* web_contents,
     LoginAuthRequiredCallback auth_required_callback) {
   return std::make_unique<LoginHandlerViews>(auth_info, web_contents,

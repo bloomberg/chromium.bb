@@ -18,7 +18,9 @@ var allTests = [
     assertEq('Automation Tests', title);
 
     var state = RemoveUntestedStates(rootNode.state);
-    assertEq({focusable: true}, state);
+    assertEq(
+        {focusable: true, focused: true},
+        state);
     assertEq(undefined, rootNode.restriction);
 
     var children = rootNode.children;

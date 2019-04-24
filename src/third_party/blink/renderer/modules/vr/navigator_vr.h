@@ -33,12 +33,6 @@ class MODULES_EXPORT NavigatorVR final
  public:
   static const char kSupplementName[];
 
-  // Returns whether WebVR has beeen used in the document.
-  // If no supplement has been created, it returns false without creating one.
-  // This allows it to be used in cases where creating objects is not allowed,
-  // such as within NavigatorGamepad::DidAddEventListener().
-  static bool HasWebVrBeenUsed(Document&);
-
   static NavigatorVR* From(Document&);
   static NavigatorVR& From(Navigator&);
 
@@ -73,7 +67,8 @@ class MODULES_EXPORT NavigatorVR final
   void DidRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
   void DidRemoveAllEventListeners(LocalDOMWindow*) override;
 
-  bool HasWebVrBeenUsed() const { return did_use_webvr_; }
+  void SetDidUseGamepad();
+  void MaybeLogDidUseGamepad();
 
   int64_t GetSourceId() const;
 
@@ -92,12 +87,12 @@ class MODULES_EXPORT NavigatorVR final
   bool listening_for_activate_ = false;
   bool focused_ = false;
 
-  bool did_use_webvr_ = false;
-
   // Metrics data - indicates whether we've already measured this data so we
   // don't do it every frame.
   bool did_log_getVRDisplays_ = false;
   bool did_log_NavigatorXR_ = false;
+  bool did_log_did_use_gamepad_ = false;
+  bool did_use_gamepad_ = false;
   const int64_t ukm_source_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigatorVR);

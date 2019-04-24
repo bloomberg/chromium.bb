@@ -33,22 +33,15 @@ SkBitmap ScaleImage(const SkBitmap& source, const float scale) {
   return dest;
 }
 
-// Runs the given callback with the image data for a scaled and re-encoded
-// version of the given bitmap.
-void ScaleAndEncodeImage(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                         ImageProcessor::GetJpgImageDataCallback callback,
-                         const SkBitmap& image,
-                         const int max_pixels,
-                         const int jpg_quality) {
+// Returns the bytes for a scaled and re-encoded version of the given bitmap.
+std::vector<uint8_t> ScaleAndEncodeImage(const SkBitmap& image,
+                                         const int max_pixels,
+                                         const int jpg_quality) {
   const int num_pixels = image.width() * image.height();
   ReportSourcePixelCount(num_pixels);
 
-  if (num_pixels == 0) {
-    task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), std::vector<uint8_t>(), 0, 0));
-    return;
-  }
+  if (num_pixels == 0)
+    return {};
 
   const SkBitmap scaled_image =
       num_pixels <= max_pixels
@@ -56,18 +49,11 @@ void ScaleAndEncodeImage(scoped_refptr<base::SequencedTaskRunner> task_runner,
           : ScaleImage(image, std::sqrt(1.0 * max_pixels / num_pixels));
 
   std::vector<uint8_t> encoded;
-  if (!gfx::JPEGCodec::Encode(scaled_image, jpg_quality, &encoded)) {
-    ReportEncodedJpegSize(0u);
-    task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), std::vector<uint8_t>(), 0, 0));
-    return;
-  }
-
+  if (!gfx::JPEGCodec::Encode(scaled_image, jpg_quality, &encoded))
+    encoded.clear();
   ReportEncodedJpegSize(encoded.size());
-  task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), std::move(encoded),
-                                scaled_image.width(), scaled_image.height()));
+
+  return encoded;
 }
 
 }  // namespace
@@ -91,13 +77,11 @@ mojom::ImageProcessorPtr ImageProcessor::GetPtr() {
 }
 
 void ImageProcessor::GetJpgImageData(GetJpgImageDataCallback callback) {
-  DCHECK(base::SequencedTaskRunnerHandle::IsSet());
-
-  background_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&ScaleAndEncodeImage,
-                                base::SequencedTaskRunnerHandle::Get(),
-                                std::move(callback), get_pixels_.Run(),
-                                kMaxPixels, kJpgQuality));
+  PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ScaleAndEncodeImage, get_pixels_.Run(), kMaxPixels,
+                     kJpgQuality),
+      std::move(callback));
 }
 
 }  // namespace image_annotation

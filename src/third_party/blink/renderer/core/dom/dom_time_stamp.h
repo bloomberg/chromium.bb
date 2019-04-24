@@ -31,11 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_TIME_STAMP_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOM_TIME_STAMP_H_
 
-#include <stdint.h>
-
 namespace blink {
 
-typedef uint64_t DOMTimeStamp;
+typedef unsigned long long DOMTimeStamp;
 
 inline DOMTimeStamp ConvertSecondsToDOMTimeStamp(double seconds) {
   return static_cast<DOMTimeStamp>(seconds * 1000.0);

@@ -1329,20 +1329,18 @@ bool DisplayManager::ShouldSetMirrorModeOn(const DisplayIdList& new_id_list) {
     return true;
   }
 
-  if (should_restore_mirror_mode_from_display_prefs_ ||
-      num_connected_displays_ <= 1) {
-    // The ChromeOS just boots up, the display prefs have just been loaded, or
-    // we only have one display. Restore mirror mode based on the external
-    // displays' mirror info stored in the preferences. Mirror mode should be on
-    // if one of the external displays was in mirror mode before.
-    should_restore_mirror_mode_from_display_prefs_ = false;
-
+  if (num_connected_displays_ <= 1) {
+    // The ChromeOS just boots up or it only has one display. Restore mirror
+    // mode based on the external displays' mirror info stored in the
+    // preferences. Mirror mode should be on if one of the external displays was
+    // in mirror mode before.
     for (int64_t id : new_id_list) {
       if (external_display_mirror_info_.count(
               GetDisplayIdWithoutOutputIndex(id))) {
         return true;
       }
     }
+    return false;
   }
   // Mirror mode should remain unchanged as long as there are more than one
   // connected displays.
@@ -2097,7 +2095,13 @@ Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
   new_display.set_rotation(display_info.GetActiveRotation());
   new_display.set_touch_support(display_info.touch_support());
   new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());
+#if defined(OS_CHROMEOS)
+  // TODO(mcasas): remove this check, http://crbug.com/771345.
+  if (base::FeatureList::IsEnabled(features::kUseMonitorColorSpace))
+    new_display.set_color_space(display_info.color_space());
+#else
   new_display.set_color_space(display_info.color_space());
+#endif
 
   if (internal_display_has_accelerometer_ && Display::IsInternalDisplayId(id)) {
     new_display.set_accelerometer_support(
@@ -2222,13 +2226,6 @@ const Display& DisplayManager::GetSecondaryDisplay() const {
 
 void DisplayManager::UpdateInfoForRestoringMirrorMode() {
   if (num_connected_displays_ <= 1)
-    return;
-
-  // The display prefs have just been loaded and we're waiting for the
-  // reconfiguration of the displays to apply the newly loaded prefs. We should
-  // not overwrite the newly-loaded external display mirror configs.
-  // https://crbug.com/936884.
-  if (should_restore_mirror_mode_from_display_prefs_)
     return;
 
   // External displays mirrored because of forced tablet mode mirroring should

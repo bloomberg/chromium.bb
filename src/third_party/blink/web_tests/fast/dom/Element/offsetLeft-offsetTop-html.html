@@ -30,13 +30,13 @@
 <body style="padding: 9px; margin: 10px" onload="test()">
     <pre id="console"></pre>
 
-    <iframe name="control" srcdoc='
+    <iframe name="control" src='data:text/html,
         <html id="target"></html>
     '>
     </iframe>
 
     <br>
-    <iframe name="static" srcdoc='
+    <iframe name="static" src='data:text/html,
         <html id="target" style="padding: 10px; margin: 10px; border: 10px solid blue;">
         </html>
     '>
@@ -44,7 +44,7 @@
 
     <br>
 
-    <iframe name="absolute" srcdoc='
+    <iframe name="absolute" src='data:text/html,
         <html id="target" style="position: absolute; left: 20px; top: 10px; width: 40px; height: 40px; padding: 10px; margin: 0px; border: 10px solid blue">
         </html>
     '>

@@ -7,14 +7,12 @@
 
 #include <string>
 
+#include "base/callback.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
-
-class PrefService;
-class Profile;
-
-namespace base {
-class Value;
-}  // namespace base
+#include "components/prefs/pref_service.h"
+#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 
@@ -63,8 +61,7 @@ base::Value CreateDisclosureData(const SettingZippyList& disclosure_list);
 
 // Helper method to create get more screen data.
 base::Value CreateGetMoreData(bool email_optin_needed,
-                              const assistant::EmailOptInUi& email_optin_ui,
-                              PrefService* prefs);
+                              const assistant::EmailOptInUi& email_optin_ui);
 
 // Get string constants for settings ui.
 base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
@@ -75,8 +72,6 @@ void RecordActivityControlConsent(Profile* profile,
                                   bool opted_in);
 
 bool IsHotwordDspAvailable();
-
-bool IsVoiceMatchEnabled(const PrefService* prefs);
 
 }  // namespace chromeos
 

@@ -10,16 +10,15 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/task_runner_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jingle/glue/thread_wrapper.h"
-#include "net/base/network_change_notifier.h"
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/rsa_key_pair.h"
@@ -52,7 +51,6 @@
 
 namespace remoting {
 
-using base::test::ScopedTaskEnvironment;
 using protocol::ChannelConfig;
 
 namespace {
@@ -108,8 +106,7 @@ class ProtocolPerfTest
       public HostStatusObserver {
  public:
   ProtocolPerfTest()
-      : task_environment_(ScopedTaskEnvironment::MainThreadType::IO),
-        host_thread_("host"),
+      : host_thread_("host"),
         capture_thread_("capture"),
         encode_thread_("encode"),
         decode_thread_("decode") {
@@ -119,7 +116,7 @@ class ProtocolPerfTest
     encode_thread_.Start();
     decode_thread_.Start();
 
-    network_change_notifier_.reset(net::NetworkChangeNotifier::Create());
+    base::TaskScheduler::CreateAndStartWithDefaultParams("ProtocolPerfTest");
 
     desktop_environment_factory_.reset(
         new FakeDesktopEnvironmentFactory(capture_thread_.task_runner()));
@@ -198,7 +195,7 @@ class ProtocolPerfTest
   }
 
   void OnClientConnected(const std::string& jid) override {
-    task_environment_.GetMainThreadTaskRunner()->PostTask(
+    message_loop_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&ProtocolPerfTest::OnHostConnectedMainThread,
                                   base::Unretained(this)));
   }
@@ -325,7 +322,7 @@ class ProtocolPerfTest
     host_->status_monitor()->AddStatusObserver(this);
     host_->Start(kHostOwner);
 
-    task_environment_.GetMainThreadTaskRunner()->PostTask(
+    message_loop_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&ProtocolPerfTest::StartClientAfterHost,
                                   base::Unretained(this)));
   }
@@ -380,7 +377,7 @@ class ProtocolPerfTest
   void MeasureTotalLatency(bool use_webrtc);
   void MeasureScrollPerformance(bool use_webrtc);
 
-  ScopedTaskEnvironment task_environment_;
+  base::MessageLoopForIO message_loop_;
 
   scoped_refptr<FakeNetworkDispatcher> fake_network_dispatcher_;
 
@@ -420,8 +417,6 @@ class ProtocolPerfTest
   std::unique_ptr<VideoPacket> last_video_packet_;
   std::unique_ptr<webrtc::DesktopFrame> last_video_frame_;
   std::vector<protocol::FrameStats> frame_stats_;
-
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProtocolPerfTest);

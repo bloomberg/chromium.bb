@@ -39,9 +39,6 @@ class Deserializer {
     if (!AlignMemory(size, 16))
       return false;
 
-    if (size > memory_size_ - bytes_read_)
-      return false;
-
     if (!strike_client->readStrikeData(memory_, size))
       return false;
 
@@ -167,10 +164,6 @@ bool ServiceFontManager::Deserialize(
   // All locked handles
   uint32_t num_locked_handles;
   if (!deserializer.Read<uint32_t>(&num_locked_handles))
-    return false;
-
-  // Loosely avoid extremely large (but fake) numbers of locked handles.
-  if (memory_size / sizeof(SkDiscardableHandleId) < num_locked_handles)
     return false;
 
   locked_handles->resize(num_locked_handles);

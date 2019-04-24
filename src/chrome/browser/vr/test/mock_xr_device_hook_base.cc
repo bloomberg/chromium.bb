@@ -56,7 +56,7 @@ MockXRDeviceHookBase::MockXRDeviceHookBase()
       content::ServiceManagerConnection::GetForProcess();
   connection->GetConnector()->BindInterface(
       device::mojom::kVrIsolatedServiceName,
-      mojo::MakeRequest(&service_test_hook_));
+      mojo::MakeRequest(&test_hook_registration_));
 
   device_test::mojom::XRTestHookPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
@@ -65,7 +65,7 @@ MockXRDeviceHookBase::MockXRDeviceHookBase()
   // For now, always have the HMD connected.
   tracked_classes_[0] =
       device_test::mojom::TrackedDeviceClass::kTrackedDeviceHmd;
-  service_test_hook_->SetTestHook(std::move(client));
+  test_hook_registration_->SetTestHook(std::move(client));
 }
 
 MockXRDeviceHookBase::~MockXRDeviceHookBase() {
@@ -73,11 +73,11 @@ MockXRDeviceHookBase::~MockXRDeviceHookBase() {
 }
 
 void MockXRDeviceHookBase::StopHooking() {
-  // We don't call service_test_hook_->SetTestHook(nullptr), since that
+  // We don't call test_hook_registration_->SetTestHook(nullptr), since that
   // will potentially deadlock with reentrant or crossing synchronous mojo
   // calls.
   binding_.Close();
-  service_test_hook_ = nullptr;
+  test_hook_registration_ = nullptr;
 }
 
 void MockXRDeviceHookBase::OnFrameSubmitted(
@@ -164,11 +164,6 @@ unsigned int MockXRDeviceHookBase::ConnectController(
   // NOTREACHED should make it unnecessary to return here (as it does elsewhere
   // in the code), but compilation fails if this is not present.
   return device::kMaxTrackedDevices;
-}
-
-void MockXRDeviceHookBase::TerminateDeviceServiceProcessForTesting() {
-  mojo::ScopedAllowSyncCallForTesting scoped_allow_sync;
-  service_test_hook_->TerminateDeviceServiceProcessForTesting();
 }
 
 void MockXRDeviceHookBase::UpdateController(

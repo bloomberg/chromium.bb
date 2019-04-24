@@ -35,16 +35,6 @@ class SyncKeysRequest;
 class SyncKeysResponse;
 class EnrollKeysRequest;
 class EnrollKeysResponse;
-class SyncMetadataRequest;
-class SyncMetadataResponse;
-class ShareGroupPrivateKeyRequest;
-class ShareGroupPrivateKeyResponse;
-class BatchNotifyGroupDevicesRequest;
-class BatchNotifyGroupDevicesResponse;
-class BatchGetFeatureStatusesRequest;
-class BatchGetFeatureStatusesResponse;
-class BatchSetFeatureStatusesRequest;
-class BatchSetFeatureStatusesResponse;
 }  // namespace cryptauthv2
 
 namespace chromeos {
@@ -56,16 +46,14 @@ namespace device_sync {
 // Implmentations shall only processes a single request, so create a new
 // instance for each request you make. DO NOT REUSE.
 // For documentation on each API call, see
-// chromeos/services/device_sync/proto/cryptauth_api.proto,
-// chromeos/services/device_sync/proto/cryptauth_enrollment.proto, and
-// chromeos/services/device_sync/proto/cryptauth_devicesync.proto.
+// chromeos/services/device_sync/proto/cryptauth_api.proto
 class CryptAuthClient {
  public:
   typedef base::Callback<void(NetworkRequestError)> ErrorCallback;
 
   virtual ~CryptAuthClient() {}
 
-  // DeviceSync v1: GetMyDevices
+  // GetMyDevices
   typedef base::Callback<void(const cryptauth::GetMyDevicesResponse&)>
       GetMyDevicesCallback;
   virtual void GetMyDevices(const cryptauth::GetMyDevicesRequest& request,
@@ -74,7 +62,7 @@ class CryptAuthClient {
                             const net::PartialNetworkTrafficAnnotationTag&
                                 partial_traffic_annotation) = 0;
 
-  // DeviceSync v1: FindEligibleUnlockDevices
+  // FindEligibleUnlockDevices
   typedef base::Callback<void(
       const cryptauth::FindEligibleUnlockDevicesResponse&)>
       FindEligibleUnlockDevicesCallback;
@@ -83,7 +71,7 @@ class CryptAuthClient {
       const FindEligibleUnlockDevicesCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
-  // DeviceSync v1: FindEligibleForPromotion
+  // FindEligibleForPromotion
   typedef base::Callback<void(
       const cryptauth::FindEligibleForPromotionResponse&)>
       FindEligibleForPromotionCallback;
@@ -92,7 +80,7 @@ class CryptAuthClient {
       const FindEligibleForPromotionCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
-  // DeviceSync v1: SendDeviceSyncTickle
+  // SendDeviceSyncTickle
   typedef base::Callback<void(const cryptauth::SendDeviceSyncTickleResponse&)>
       SendDeviceSyncTickleCallback;
   virtual void SendDeviceSyncTickle(
@@ -102,7 +90,7 @@ class CryptAuthClient {
       const net::PartialNetworkTrafficAnnotationTag&
           partial_traffic_annotation) = 0;
 
-  // DeviceSync v1: ToggleEasyUnlock
+  // ToggleEasyUnlock
   typedef base::Callback<void(const cryptauth::ToggleEasyUnlockResponse&)>
       ToggleEasyUnlockCallback;
   virtual void ToggleEasyUnlock(
@@ -110,14 +98,14 @@ class CryptAuthClient {
       const ToggleEasyUnlockCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
-  // Enrollment v1: SetupEnrollment
+  // SetupEnrollment
   typedef base::Callback<void(const cryptauth::SetupEnrollmentResponse&)>
       SetupEnrollmentCallback;
   virtual void SetupEnrollment(const cryptauth::SetupEnrollmentRequest& request,
                                const SetupEnrollmentCallback& callback,
                                const ErrorCallback& error_callback) = 0;
 
-  // Enrollment v1: FinishEnrollment
+  // FinishEnrollment
   typedef base::Callback<void(const cryptauth::FinishEnrollmentResponse&)>
       FinishEnrollmentCallback;
   virtual void FinishEnrollment(
@@ -125,61 +113,19 @@ class CryptAuthClient {
       const FinishEnrollmentCallback& callback,
       const ErrorCallback& error_callback) = 0;
 
-  // Enrollment v2: SyncKeys
+  // SyncKeys (CryptAuth v2 Enrollment)
   typedef base::Callback<void(const cryptauthv2::SyncKeysResponse&)>
       SyncKeysCallback;
   virtual void SyncKeys(const cryptauthv2::SyncKeysRequest& request,
                         const SyncKeysCallback& callback,
                         const ErrorCallback& error_callback) = 0;
 
-  // Enrollment v2: EnrollKeys
+  // EnrollKeys (CryptAuth v2 Enrollment)
   typedef base::Callback<void(const cryptauthv2::EnrollKeysResponse&)>
       EnrollKeysCallback;
   virtual void EnrollKeys(const cryptauthv2::EnrollKeysRequest& request,
                           const EnrollKeysCallback& callback,
                           const ErrorCallback& error_callback) = 0;
-
-  // DeviceSync v2: SyncMetadata
-  typedef base::Callback<void(const cryptauthv2::SyncMetadataResponse&)>
-      SyncMetadataCallback;
-  virtual void SyncMetadata(const cryptauthv2::SyncMetadataRequest& request,
-                            const SyncMetadataCallback& callback,
-                            const ErrorCallback& error_callback) = 0;
-
-  // DeviceSync v2: ShareGroupPrivateKey
-  typedef base::Callback<void(const cryptauthv2::ShareGroupPrivateKeyResponse&)>
-      ShareGroupPrivateKeyCallback;
-  virtual void ShareGroupPrivateKey(
-      const cryptauthv2::ShareGroupPrivateKeyRequest& request,
-      const ShareGroupPrivateKeyCallback& callback,
-      const ErrorCallback& error_callback) = 0;
-
-  // DeviceSync v2: BatchNotifyGroupDevices
-  typedef base::Callback<void(
-      const cryptauthv2::BatchNotifyGroupDevicesResponse&)>
-      BatchNotifyGroupDevicesCallback;
-  virtual void BatchNotifyGroupDevices(
-      const cryptauthv2::BatchNotifyGroupDevicesRequest& request,
-      const BatchNotifyGroupDevicesCallback& callback,
-      const ErrorCallback& error_callback) = 0;
-
-  // DeviceSync v2: BatchGetFeatureStatuses
-  typedef base::Callback<void(
-      const cryptauthv2::BatchGetFeatureStatusesResponse&)>
-      BatchGetFeatureStatusesCallback;
-  virtual void BatchGetFeatureStatuses(
-      const cryptauthv2::BatchGetFeatureStatusesRequest& request,
-      const BatchGetFeatureStatusesCallback& callback,
-      const ErrorCallback& error_callback) = 0;
-
-  // DeviceSync v2: BatchSetFeatureStatuses
-  typedef base::Callback<void(
-      const cryptauthv2::BatchSetFeatureStatusesResponse&)>
-      BatchSetFeatureStatusesCallback;
-  virtual void BatchSetFeatureStatuses(
-      const cryptauthv2::BatchSetFeatureStatusesRequest& request,
-      const BatchSetFeatureStatusesCallback& callback,
-      const ErrorCallback& error_callback) = 0;
 
   // Returns the access token used to make the request. If no request has been
   // made yet, this function will return an empty string.

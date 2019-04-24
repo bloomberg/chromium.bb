@@ -30,36 +30,12 @@ class ExternalVkImageGlRepresentation
     return static_cast<ExternalVkImageBacking*>(backing());
   }
 
-  gpu::VulkanImplementation* vk_implementation() {
-    return backing_impl()
-        ->context_state()
-        ->vk_context_provider()
-        ->GetVulkanImplementation();
-  }
-
-  VkDevice vk_device() {
-    return backing_impl()
-        ->context_state()
-        ->vk_context_provider()
-        ->GetDeviceQueue()
-        ->GetVulkanDevice();
-  }
-
-  VkQueue vk_queue() {
-    return backing_impl()
-        ->context_state()
-        ->vk_context_provider()
-        ->GetDeviceQueue()
-        ->GetVulkanQueue();
-  }
-
   gl::GLApi* api() { return gl::g_current_gl_context; }
 
-  GLuint ImportVkSemaphoreIntoGL(SemaphoreHandle handle);
-  void DestroyEndAccessSemaphore();
+  GLuint ImportVkSemaphoreIntoGL(VkSemaphore semaphore);
 
-  gles2::Texture* texture_ = nullptr;
-  GLuint texture_service_id_ = 0;
+  gles2::Texture* texture_;
+  GLuint texture_service_id_;
   GLenum current_access_mode_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalVkImageGlRepresentation);

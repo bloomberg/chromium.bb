@@ -74,6 +74,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   ~SimpleBackendImpl() override;
 
+  net::CacheType cache_type() const { return cache_type_; }
   SimpleIndex* index() { return index_.get(); }
 
   void SetWorkerPoolForTesting(scoped_refptr<base::TaskRunner> task_runner);
@@ -103,6 +104,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                    CompletionOnceCallback callback) override;
 
   // Backend:
+  net::CacheType GetCacheType() const override;
   int32_t GetEntryCount() const override;
   net::Error OpenEntry(const std::string& key,
                        net::RequestPriority request_priority,
@@ -281,6 +283,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   SimpleFileTracker* const file_tracker_;
 
   const base::FilePath path_;
+  const net::CacheType cache_type_;
   std::unique_ptr<SimpleIndex> index_;
 
   // This is only used for initial open (including potential format upgrade)

@@ -32,8 +32,7 @@
   return [self initWithUsername:username
                        password:password
                        siteName:siteName.length ? siteName : credentialHost
-                           host:credentialHost
-                            URL:passwordForm.origin];
+                           host:credentialHost];
 }
 
 @end

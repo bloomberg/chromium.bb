@@ -5,7 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_DOWNLOAD_FEATURES_H_
 #define IOS_CHROME_BROWSER_DOWNLOAD_FEATURES_H_
 
+#include "base/feature_list.h"
+
 namespace download {
+
+extern const base::Feature kUsdzPreview;
 
 // Returns whether USDZ AR Quick Look is enabled.
 bool IsUsdzPreviewEnabled();

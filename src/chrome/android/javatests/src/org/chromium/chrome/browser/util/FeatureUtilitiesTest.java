@@ -20,14 +20,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -126,12 +125,15 @@ public class FeatureUtilitiesTest {
     private static boolean isRecognitionIntentPresent(
             final IntentTestMockContext context, final boolean useCachedResult) {
         // Context can only be queried on a UI Thread.
-        return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return FeatureUtilities.isRecognitionIntentPresent(context, useCachedResult);
-            }
-        });
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+            new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return FeatureUtilities.isRecognitionIntentPresent(
+                            context,
+                            useCachedResult);
+                }
+            });
     }
 
     private void setUpAccountManager(String accountType) {
@@ -210,12 +212,13 @@ public class FeatureUtilitiesTest {
         setUpAccountManager(AccountManagerFacade.GOOGLE_ACCOUNT_TYPE);
         addTestAccount();
 
-        ContextUtils.initApplicationContextForTests(mAccountTestingContext);
-        boolean hasAccounts = FeatureUtilities.hasGoogleAccounts();
+        boolean hasAccounts = FeatureUtilities.hasGoogleAccounts(
+                mAccountTestingContext);
 
         Assert.assertTrue(hasAccounts);
 
-        boolean hasAuthenticator = FeatureUtilities.hasGoogleAccountAuthenticator();
+        boolean hasAuthenticator = FeatureUtilities.hasGoogleAccountAuthenticator(
+                mAccountTestingContext);
 
         Assert.assertTrue(hasAuthenticator);
     }
@@ -233,12 +236,13 @@ public class FeatureUtilitiesTest {
         // account authenticator.
         setUpAccountManager("Not A Google Account");
 
-        ContextUtils.initApplicationContextForTests(mAccountTestingContext);
-        boolean hasAccounts = FeatureUtilities.hasGoogleAccounts();
+        boolean hasAccounts = FeatureUtilities.hasGoogleAccounts(
+                mAccountTestingContext);
 
         Assert.assertFalse(hasAccounts);
 
-        boolean hasAuthenticator = FeatureUtilities.hasGoogleAccountAuthenticator();
+        boolean hasAuthenticator = FeatureUtilities.hasGoogleAccountAuthenticator(
+                mAccountTestingContext);
 
         Assert.assertFalse(hasAuthenticator);
     }

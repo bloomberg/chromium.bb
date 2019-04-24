@@ -25,7 +25,7 @@
 
 namespace storage {
 class BlobDataHandle;
-}  // namespace storage
+}
 
 namespace content {
 
@@ -33,7 +33,9 @@ struct BackgroundFetchResponse;
 struct BackgroundFetchResult;
 class ChromeBlobStorageContext;
 
-// Class to encapsulate the components of a fetch request.
+// Simple class to encapsulate the components of a fetch request.
+// TODO(peter): This can likely change to have a single owner, and thus become
+// an std::unique_ptr<>, when persistent storage has been implemented.
 class CONTENT_EXPORT BackgroundFetchRequestInfo
     : public base::RefCountedDeleteOnSequence<BackgroundFetchRequestInfo> {
  public:

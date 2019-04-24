@@ -460,12 +460,7 @@ DateFormat::createInstanceForSkeleton(
         status = U_ILLEGAL_ARGUMENT_ERROR;
         return NULL;
     }
-    Locale localeWithCalendar = locale;
-    localeWithCalendar.setKeywordValue("calendar", calendar->getType(), status);
-    if (U_FAILURE(status)) {
-        return NULL;
-    }
-    DateFormat *result = createInstanceForSkeleton(skeleton, localeWithCalendar, status);
+    DateFormat *result = createInstanceForSkeleton(skeleton, locale, status);
     if (U_FAILURE(status)) {
         return NULL;
     }

@@ -32,7 +32,7 @@ namespace blink {
 
 using namespace html_names;
 
-HTMLFrameElement::HTMLFrameElement(Document& document)
+inline HTMLFrameElement::HTMLFrameElement(Document& document)
     : HTMLFrameElementBase(kFrameTag, document),
       frame_border_(true),
       frame_border_set_(false) {}
@@ -51,8 +51,7 @@ bool HTMLFrameElement::LayoutObjectIsNeeded(const ComputedStyle&) const {
   return ContentFrame();
 }
 
-LayoutObject* HTMLFrameElement::CreateLayoutObject(const ComputedStyle&,
-                                                   LegacyLayout) {
+LayoutObject* HTMLFrameElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutFrame(this);
 }
 

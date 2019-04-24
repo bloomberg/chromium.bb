@@ -186,7 +186,7 @@ suite('cr-dialog', function() {
     assertEquals(0, clickedCounter);
 
     // Enter keys on the close icon in the top-right corner should be ignored.
-    pressEnter(dialog.$.close);
+    pressEnter(dialog.getCloseButton());
     assertEquals(0, clickedCounter);
   });
 
@@ -285,14 +285,10 @@ suite('cr-dialog', function() {
     assertFalse(dialog.open);
     const bodyContainer = dialog.$$('.body-container');
     assertTrue(!!bodyContainer);
-    const topShadow = dialog.$$('#cr-container-shadow-top');
-    assertTrue(!!topShadow);
-    const bottomShadow = dialog.$$('#cr-container-shadow-bottom');
-    assertTrue(!!bottomShadow);
 
     return PolymerTest.flushTasks().then(() => {
-      assertFalse(topShadow.classList.contains('has-shadow'));
-      assertFalse(bottomShadow.classList.contains('has-shadow'));
+      assertFalse(bodyContainer.classList.contains('top-scrollable'));
+      assertFalse(bodyContainer.classList.contains('bottom-scrollable'));
     });
   });
 
@@ -308,10 +304,6 @@ suite('cr-dialog', function() {
     const dialog = document.body.querySelector('cr-dialog');
     const bodyContainer = dialog.$$('.body-container');
     assertTrue(!!bodyContainer);
-    const topShadow = dialog.$$('#cr-container-shadow-top');
-    assertTrue(!!topShadow);
-    const bottomShadow = dialog.$$('#cr-container-shadow-bottom');
-    assertTrue(!!bottomShadow);
 
     dialog.showModal();  // Attach the dialog for the first time here.
 
@@ -328,25 +320,24 @@ suite('cr-dialog', function() {
       observerCount++;
       switch (observerCount) {
         case 1:  // Triggered when scrolled to bottom.
-          assertFalse(bottomShadow.classList.contains('has-shadow'));
-          assertTrue(topShadow.classList.contains('has-shadow'));
+          assertFalse(bodyContainer.classList.contains('bottom-scrollable'));
+          assertTrue(bodyContainer.classList.contains('top-scrollable'));
           bodyContainer.scrollTop = 0;
           break;
         case 2:  // Triggered when scrolled back to top.
-          assertTrue(bottomShadow.classList.contains('has-shadow'));
-          assertFalse(topShadow.classList.contains('has-shadow'));
+          assertTrue(bodyContainer.classList.contains('bottom-scrollable'));
+          assertFalse(bodyContainer.classList.contains('top-scrollable'));
           bodyContainer.scrollTop = 2;
           break;
         case 3:  // Triggered when finally scrolling to middle.
-          assertTrue(bottomShadow.classList.contains('has-shadow'));
-          assertTrue(topShadow.classList.contains('has-shadow'));
+          assertTrue(bodyContainer.classList.contains('bottom-scrollable'));
+          assertTrue(bodyContainer.classList.contains('top-scrollable'));
           observer.disconnect();
           done();
           break;
       }
     });
-    observer.observe(topShadow, {attributes: true});
-    observer.observe(bottomShadow, {attributes: true});
+    observer.observe(bodyContainer, {attributes: true});
 
     // Height is normally set via CSS, but mixin doesn't work with innerHTML.
     bodyContainer.style.height = '60px';  // Element has "min-height: 60px".
@@ -381,7 +372,9 @@ suite('cr-dialog', function() {
     const dialog = document.body.querySelector('cr-dialog');
     dialog.showModal();
 
-    assertTrue(dialog.$.close.hidden);
+    // The paper-icon-button-light is the hidden element which is the
+    // parentElement of the button.
+    assertTrue(dialog.getCloseButton().parentElement.hidden);
 
     // Hitting escape fires a 'cancel' event. Cancelling that event prevents the
     // dialog from closing.
@@ -406,9 +399,13 @@ suite('cr-dialog', function() {
     dialog.showModal();
     assertTrue(dialog.open);
 
-    assertFalse(dialog.$.close.hidden);
-    assertEquals('flex', window.getComputedStyle(dialog.$.close).display);
-    dialog.$.close.click();
+    // The paper-icon-button-light is the hidden element which is the
+    // parentElement of the button.
+    assertFalse(dialog.getCloseButton().parentElement.hidden);
+    assertEquals(
+        'block',
+        window.getComputedStyle(dialog.getCloseButton().parentElement).display);
+    dialog.getCloseButton().click();
     assertFalse(dialog.open);
   });
 
@@ -421,8 +418,12 @@ suite('cr-dialog', function() {
     const dialog = document.body.querySelector('cr-dialog');
     dialog.showModal();
 
-    assertTrue(dialog.$.close.hidden);
-    assertEquals('none', window.getComputedStyle(dialog.$.close).display);
+    // The paper-icon-button-light is the hidden element which is the
+    // parentElement of the button.
+    assertTrue(dialog.getCloseButton().parentElement.hidden);
+    assertEquals(
+        'none',
+        window.getComputedStyle(dialog.getCloseButton().parentElement).display);
   });
 
   test('keydown should be consumed when the property is true', function() {

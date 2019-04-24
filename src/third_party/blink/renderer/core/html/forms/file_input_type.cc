@@ -70,7 +70,7 @@ Vector<String> CollectAcceptTypes(const HTMLInputElement& input) {
 inline FileInputType::FileInputType(HTMLInputElement& element)
     : InputType(element),
       KeyboardClickableInputTypeView(element),
-      file_list_(MakeGarbageCollected<FileList>()) {}
+      file_list_(FileList::Create()) {}
 
 InputType* FileInputType::Create(HTMLInputElement& element) {
   return MakeGarbageCollected<FileInputType>(element);
@@ -124,7 +124,7 @@ void FileInputType::RestoreFormControlState(const FormControlState& state) {
   HeapVector<Member<File>> file_vector =
       CreateFilesFrom<File*, HeapVector<Member<File>>>(
           state, &File::CreateFromControlState);
-  auto* file_list = MakeGarbageCollected<FileList>();
+  FileList* file_list = FileList::Create();
   for (const auto& file : file_vector)
     file_list->Append(file);
   SetFilesAndDispatchEvents(file_list);
@@ -164,9 +164,8 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
   if (!LocalFrame::HasTransientUserActivation(document.GetFrame())) {
     String message =
         "File chooser dialog can only be shown with a user activation.";
-    document.AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning, message));
+    document.AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning, message));
     return;
   }
 
@@ -197,8 +196,7 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
   event.SetDefaultHandled();
 }
 
-LayoutObject* FileInputType::CreateLayoutObject(const ComputedStyle&,
-                                                LegacyLayout) const {
+LayoutObject* FileInputType::CreateLayoutObject(const ComputedStyle&) const {
   return new LayoutFileUploadControl(&GetElement());
 }
 
@@ -252,7 +250,7 @@ void FileInputType::SetValue(const String&,
 
 FileList* FileInputType::CreateFileList(const FileChooserFileInfoList& files,
                                         const base::FilePath& base_dir) {
-  auto* file_list(MakeGarbageCollected<FileList>());
+  FileList* file_list(FileList::Create());
   wtf_size_t size = files.size();
 
   // If a directory is being selected, the UI allows a directory to be chosen

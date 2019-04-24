@@ -396,6 +396,8 @@ bool MockRenderProcessHost::IsKeepAliveRefCountDisabled() {
   return false;
 }
 
+void MockRenderProcessHost::PurgeAndSuspend() {}
+
 void MockRenderProcessHost::Resume() {}
 
 mojom::Renderer* MockRenderProcessHost::GetRendererInterface() {

@@ -285,6 +285,7 @@ Polymer({
    * 1) Host doesn't get focused when the browser moves the focus backward.
    * 2) focus now escaped the shadow-dom of this element, so that it'll
    *    correctly obey non-zero tabindex ordering of the containing document.
+   * TODO(scottchen): check if we still need this after switching to Polymer 2.
    * @private
    */
   onInputKeydown_: function(e) {

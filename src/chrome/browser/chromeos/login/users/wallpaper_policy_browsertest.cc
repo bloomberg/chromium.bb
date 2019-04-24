@@ -32,6 +32,7 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -41,11 +42,10 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/constants/dbus_paths.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
-#include "chromeos/tpm/stub_install_attributes.h"
+#include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -136,7 +136,8 @@ class WallpaperPolicyTest : public LoginManagerTest,
  protected:
   WallpaperPolicyTest()
       : LoginManagerTest(true, true),
-        owner_key_util_(new ownership::MockOwnerKeyUtil()) {
+        owner_key_util_(new ownership::MockOwnerKeyUtil()),
+        fake_session_manager_client_(new FakeSessionManagerClient) {
     testUsers_.push_back(
         AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kEnterpriseUser1,
                                        FakeGaiaMixin::kEnterpriseUser1GaiaId));
@@ -176,9 +177,9 @@ class WallpaperPolicyTest : public LoginManagerTest,
         ->SetOwnerKeyUtilForTesting(owner_key_util_);
     owner_key_util_->SetPublicKeyFromPrivateKey(
         *device_policy_.GetSigningKey());
-    SessionManagerClient::InitializeFakeInMemory();
-    FakeSessionManagerClient::Get()->set_device_policy(
-        device_policy_.GetBlob());
+    fake_session_manager_client_->set_device_policy(device_policy_.GetBlob());
+    DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
+        std::unique_ptr<SessionManagerClient>(fake_session_manager_client_));
 
     LoginManagerTest::SetUpInProcessBrowserTestFixture();
     ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
@@ -186,7 +187,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
     // Set some fake state keys to make sure they are not empty.
     std::vector<std::string> state_keys;
     state_keys.push_back("1");
-    FakeSessionManagerClient::Get()->set_server_backed_state_keys(state_keys);
+    fake_session_manager_client_->set_server_backed_state_keys(state_keys);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -294,7 +295,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
       builder->payload().Clear();
     }
     builder->Build();
-    FakeSessionManagerClient::Get()->set_user_policy(
+    fake_session_manager_client_->set_user_policy(
         cryptohome::CreateAccountIdentifierFromAccountId(account_id),
         builder->GetBlob());
     const user_manager::User* user =
@@ -319,10 +320,8 @@ class WallpaperPolicyTest : public LoginManagerTest,
       device_policy_.payload().Clear();
     }
     device_policy_.Build();
-    FakeSessionManagerClient::Get()->set_device_policy(
-        device_policy_.GetBlob());
-    FakeSessionManagerClient::Get()->OnPropertyChangeComplete(
-        true /* success */);
+    fake_session_manager_client_->set_device_policy(device_policy_.GetBlob());
+    fake_session_manager_client_->OnPropertyChangeComplete(true /* success */);
   }
 
   ScopedStubInstallAttributes test_install_attributes_{
@@ -334,6 +333,7 @@ class WallpaperPolicyTest : public LoginManagerTest,
   std::unique_ptr<policy::UserPolicyBuilder> user_policy_builders_[2];
   policy::DevicePolicyBuilder device_policy_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
+  FakeSessionManagerClient* fake_session_manager_client_;
   std::vector<AccountId> testUsers_;
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 

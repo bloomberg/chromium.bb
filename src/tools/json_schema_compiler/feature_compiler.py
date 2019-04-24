@@ -8,7 +8,6 @@ from datetime import datetime
 from functools import partial
 import os
 import re
-import sys
 
 from code import Code
 import json_parse
@@ -65,10 +64,11 @@ CC_FILE_END = """
 }  // namespace extensions
 """
 
-# Returns true if the list 'l' only contains strings that are a hex-encoded SHA1
-# hashes.
-def ListContainsOnlySha1Hashes(l):
-  return len(list(filter(lambda s: not re.match("^[A-F0-9]{40}$", s), l))) == 0
+# Returns true if the list 'l' does not contain any strings that look like
+# extension ids.
+def ListDoesNotContainPlainExtensionIds(l):
+  # For now, let's just say anything 32 characters in length is an id.
+  return len(filter(lambda s: len(s) == 32, l)) == 0
 
 # A "grammar" for what is and isn't allowed in the features.json files. This
 # grammar has to list all possible keys and the requirements for each. The
@@ -78,7 +78,7 @@ def ListContainsOnlySha1Hashes(l):
 #     allowed_type_2: optional_properties,
 #   }
 # |allowed_types| are the types of values that can be used for a given key. The
-# possible values are list, str, bool, and int.
+# possible values are list, unicode, bool, and int.
 # |optional_properties| provide more restrictions on the given type. The options
 # are:
 #   'subtype': Only applicable for lists. If provided, this enforces that each
@@ -96,8 +96,6 @@ def ListContainsOnlySha1Hashes(l):
 #                assign the list of Feature::BLESSED_EXTENSION_CONTEXT,
 #                Feature::BLESSED_WEB_PAGE_CONTEXT et al for contexts. If not
 #                specified, defaults to false.
-#   'allow_empty': Only applicable for lists. Whether an empty list is a valid
-#                  value. If omitted, empty lists are prohibited.
 #   'validators': A list of (function, str) pairs with a function to run on the
 #                 value for a feature. Validators allow for more flexible or
 #                 one-off style validation than just what's in the grammar (such
@@ -115,20 +113,20 @@ def ListContainsOnlySha1Hashes(l):
 FEATURE_GRAMMAR = (
   {
     'alias': {
-      str: {},
+      unicode: {},
       'shared': True
     },
     'blacklist': {
       list: {
-        'subtype': str,
+        'subtype': unicode,
         'validators': [
-          (ListContainsOnlySha1Hashes,
+          (ListDoesNotContainPlainExtensionIds,
            'list should only have hex-encoded SHA1 hashes of extension ids')
         ]
       }
     },
     'channel': {
-      str: {
+      unicode: {
         'enum_map': {
           'trunk': 'version_info::Channel::UNKNOWN',
           'canary': 'version_info::Channel::CANARY',
@@ -139,7 +137,7 @@ FEATURE_GRAMMAR = (
       }
     },
     'command_line_switch': {
-      str: {}
+      unicode: {}
     },
     'component_extensions_auto_granted': {
       bool: {}
@@ -163,12 +161,7 @@ FEATURE_GRAMMAR = (
       bool: {'values': [True]}
     },
     'dependencies': {
-      list: {
-        # We allow an empty list of dependencies for child features that want
-        # to override their parents' dependency set.
-        'allow_empty': True,
-        'subtype': str
-      }
+      list: {'subtype': unicode}
     },
     'extension_types': {
       list: {
@@ -184,7 +177,7 @@ FEATURE_GRAMMAR = (
       },
     },
     'location': {
-      str: {
+      unicode: {
         'enum_map': {
           'component': 'SimpleFeature::COMPONENT_LOCATION',
           'external_component': 'SimpleFeature::EXTERNAL_COMPONENT_LOCATION',
@@ -196,7 +189,7 @@ FEATURE_GRAMMAR = (
       bool: {'values': [True]}
     },
     'matches': {
-      list: {'subtype': str}
+      list: {'subtype': unicode}
     },
     'max_manifest_version': {
       int: {'values': [1, 2]}
@@ -227,14 +220,14 @@ FEATURE_GRAMMAR = (
       }
     },
     'source': {
-      str: {},
+      unicode: {},
       'shared': True
     },
     'whitelist': {
       list: {
-        'subtype': str,
+        'subtype': unicode,
         'validators': [
-          (ListContainsOnlySha1Hashes,
+          (ListDoesNotContainPlainExtensionIds,
            'list should only have hex-encoded SHA1 hashes of extension ids')
         ]
       }
@@ -355,6 +348,11 @@ IGNORED_KEYS = ['default_parent']
 # can be disabled for testing.
 ENABLE_ASSERTIONS = True
 
+# JSON parsing returns all strings of characters as unicode types. For testing,
+# we can enable converting all string types to unicode to avoid writing u''
+# everywhere.
+STRINGS_TO_UNICODE = False
+
 def GetCodeForFeatureValues(feature_values):
   """ Gets the Code object for setting feature values for this object. """
   c = Code()
@@ -384,14 +382,15 @@ class Feature(object):
     self.shared_values = {}
 
   def _GetType(self, value):
-    """Returns the type of the given value.
+    """Returns the type of the given value. This can be different than type() if
+    STRINGS_TO_UNICODE is enabled.
     """
-    # For Py3 compatibility we use str in the grammar and treat unicode as str
-    # in Py2.
-    if sys.version_info.major == 2 and type(value) is unicode:
-      return str
-
-    return type(value)
+    t = type(value)
+    if not STRINGS_TO_UNICODE:
+      return t
+    if t is str:
+      return unicode
+    return t
 
   def AddError(self, error):
     """Adds an error to the feature. If ENABLE_ASSERTIONS is active, this will
@@ -439,7 +438,7 @@ class Feature(object):
     if enum_map:
       return enum_map[value]
 
-    if t is str:
+    if t in [str, unicode]:
       return '"%s"' % str(value)
     if t is int:
       return str(value)
@@ -461,7 +460,6 @@ class Feature(object):
 
     is_all = False
     if v == 'all' and list in grammar and 'allow_all' in grammar[list]:
-      assert grammar[list]['allow_all'], '`allow_all` only supports `True`.'
       v = []
       is_all = True
 
@@ -474,14 +472,6 @@ class Feature(object):
       self._AddKeyError(key, 'Illegal value: "%s"' % v)
       return
 
-    if value_type is list and not is_all and len(v) == 0:
-      if 'allow_empty' in grammar[list]:
-        assert grammar[list]['allow_empty'], \
-               '`allow_empty` only supports `True`.'
-      else:
-        self._AddKeyError(key, 'List must specify at least one element.')
-        return
-
     expected = grammar[value_type]
     expected_values = None
     enum_map = None
@@ -489,7 +479,7 @@ class Feature(object):
       expected_values = expected['values']
     elif 'enum_map' in expected:
       enum_map = expected['enum_map']
-      expected_values = list(enum_map)
+      expected_values = enum_map.keys()
 
     if is_all:
       v = copy.deepcopy(expected_values)
@@ -547,7 +537,7 @@ class Feature(object):
     for key in parsed_json.keys():
       if key not in FEATURE_GRAMMAR:
         self._AddKeyError(key, 'Unrecognized key')
-    for key, key_grammar in FEATURE_GRAMMAR.items():
+    for key, key_grammar in FEATURE_GRAMMAR.iteritems():
       self._ParseKey(key, parsed_json, shared_values, key_grammar)
 
   def Validate(self, feature_type, shared_values):

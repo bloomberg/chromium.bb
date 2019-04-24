@@ -4,8 +4,6 @@
 
 #include "ui/views/controls/native/native_view_host_aura.h"
 
-#include <memory>
-
 #include "base/logging.h"
 #include "base/optional.h"
 #include "build/build_config.h"
@@ -30,8 +28,8 @@ namespace views {
 
 class NativeViewHostAura::ClippingWindowDelegate : public aura::WindowDelegate {
  public:
-  ClippingWindowDelegate() = default;
-  ~ClippingWindowDelegate() override = default;
+  ClippingWindowDelegate() : native_view_(NULL) {}
+  ~ClippingWindowDelegate() override {}
 
   void set_native_view(aura::Window* native_view) {
     native_view_ = native_view;
@@ -71,7 +69,7 @@ class NativeViewHostAura::ClippingWindowDelegate : public aura::WindowDelegate {
   void GetHitTestMask(SkPath* mask) const override {}
 
  private:
-  aura::Window* native_view_ = nullptr;
+  aura::Window* native_view_;
 };
 
 NativeViewHostAura::NativeViewHostAura(NativeViewHost* host) : host_(host) {}
@@ -119,7 +117,7 @@ void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
   if (clipping_window_)
     pause_occlusion.emplace(clipping_window_->env());
 
-  clipping_window_delegate_->set_native_view(nullptr);
+  clipping_window_delegate_->set_native_view(NULL);
   RemoveClippingWindow();
   if (!destroyed) {
     host_->native_view()->RemoveObserver(this);
@@ -131,7 +129,7 @@ void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
       host_->native_view()->SetTransform(original_transform_);
     host_->native_view()->Hide();
     if (host_->native_view()->parent())
-      Widget::ReparentNativeView(host_->native_view(), nullptr);
+      Widget::ReparentNativeView(host_->native_view(), NULL);
   }
 }
 
@@ -144,7 +142,7 @@ void NativeViewHostAura::AddedToWidget() {
     host_->native_view()->Show();
   else
     host_->native_view()->Hide();
-  host_->InvalidateLayout();
+  host_->Layout();
 }
 
 void NativeViewHostAura::RemovedFromWidget() {
@@ -184,8 +182,8 @@ void NativeViewHostAura::SetHitTestTopInset(int top_inset) {
 }
 
 void NativeViewHostAura::InstallClip(int x, int y, int w, int h) {
-  clip_rect_ = std::make_unique<gfx::Rect>(
-      host_->ConvertRectToWidget(gfx::Rect(x, y, w, h)));
+  clip_rect_.reset(
+      new gfx::Rect(host_->ConvertRectToWidget(gfx::Rect(x, y, w, h))));
 }
 
 int NativeViewHostAura::GetHitTestTopInset() const {
@@ -250,7 +248,7 @@ gfx::NativeView NativeViewHostAura::GetNativeViewContainer() const {
 }
 
 gfx::NativeViewAccessible NativeViewHostAura::GetNativeViewAccessible() {
-  return nullptr;
+  return NULL;
 }
 
 gfx::NativeCursor NativeViewHostAura::GetCursor(int x, int y) {
@@ -284,7 +282,7 @@ void NativeViewHostAura::OnWindowBoundsChanged(
 
 void NativeViewHostAura::OnWindowDestroying(aura::Window* window) {
   DCHECK(window == host_->native_view());
-  clipping_window_delegate_->set_native_view(nullptr);
+  clipping_window_delegate_->set_native_view(NULL);
 }
 
 void NativeViewHostAura::OnWindowDestroyed(aura::Window* window) {

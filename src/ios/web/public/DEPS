@@ -1,7 +1,6 @@
 include_rules = [
   # web interfaces cannot depend on private web code.
   "-ios/web",
-  "+ios/web/common",
   "+ios/web/public",
   "+services/network/public/mojom",
 ]

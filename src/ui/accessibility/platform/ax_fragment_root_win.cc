@@ -4,8 +4,6 @@
 
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 
-#include <unordered_map>
-
 #include "base/no_destructor.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/base/win/atl_module.h"

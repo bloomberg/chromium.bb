@@ -4,7 +4,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-//      https://www.apache.org/licenses/LICENSE-2.0
+//      http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,8 +14,8 @@
 //
 // Produce stack trace.  I'm guessing (hoping!) the code is much like
 // for x86.  For apple machines, at least, it seems to be; see
-//    https://developer.apple.com/documentation/mac/runtimehtml/RTArch-59.html
-//    https://www.linux-foundation.org/spec/ELF/ppc64/PPC-elf64abi-1.9.html#STACK
+//    http://developer.apple.com/documentation/mac/runtimehtml/RTArch-59.html
+//    http://www.linux-foundation.org/spec/ELF/ppc64/PPC-elf64abi-1.9.html#STACK
 // Linux has similar code: http://patchwork.ozlabs.org/linuxppc/patch?id=8882
 
 #ifndef ABSL_DEBUGGING_INTERNAL_STACKTRACE_POWERPC_INL_H_

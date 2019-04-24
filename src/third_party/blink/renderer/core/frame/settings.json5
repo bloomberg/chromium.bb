@@ -888,24 +888,28 @@
     // Dark mode
     //
     {
-      name: "darkMode",
+      // TODO(crbug.com/938511): Rename this to "darkMode" (not "darkModeMode").
+      name: "highContrastMode",
       initial: "DarkMode::kOff",
       type: "DarkMode",
       invalidate: "Paint",
     },
     {
-      name: "darkModeGrayscale",
+      // TODO(crbug.com/938511): Rename this to "darkModeGrayscale".
+      name: "highContrastGrayscale",
       initial: false,
       invalidate: "Paint",
     },
     {
-      name: "darkModeContrast",
+      // TODO(crbug.com/938511): Rename this to "darkModeContrast".
+      name: "highContrastContrast",
       initial: 0,
       type: "double",
       invalidate: "Paint",
     },
     {
-      name: "darkModeImagePolicy",
+      // TODO(crbug.com/938511): Rename this to "darkModeImagePolicy".
+      name: "highContrastImagePolicy",
       initial: "DarkModeImagePolicy::kFilterAll",
       type: "DarkModeImagePolicy",
       invalidate: "Paint",
@@ -1006,9 +1010,9 @@
     // evaluating the prefers-color-scheme media query.
     {
       name: "preferredColorScheme",
-      initial: "PreferredColorScheme::kNoPreference",
-      invalidate: "ColorScheme",
-      type: "PreferredColorScheme",
+      initial: "WebColorScheme::kNoPreference",
+      invalidate: "MediaQuery",
+      type: "WebColorScheme",
     },
 
     // Preferred motion-reduction setting from the OS/application passed to the
@@ -1017,10 +1021,6 @@
       name: "prefersReducedMotion",
       initial: false,
       invalidate: "MediaQuery",
-    },
-    {
-      name: "DontSendKeyEventsToJavascript",
-      initial: false,
     },
   ],
 }

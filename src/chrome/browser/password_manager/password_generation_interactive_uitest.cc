@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_interactive_test_base.h"
@@ -20,7 +21,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/password_manager/core/browser/new_password_form_manager.h"
-#include "components/password_manager/core/browser/password_generation_frame_helper.h"
+#include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/browser/render_view_host.h"
@@ -36,41 +37,24 @@ namespace {
 
 class TestPopupObserver : public PasswordGenerationPopupObserver {
  public:
-  enum class GenerationPopup {
-    kShown,
-    kHidden,
-  };
-
   TestPopupObserver() = default;
   ~TestPopupObserver() = default;
 
   void OnPopupShown(
-      PasswordGenerationPopupController::GenerationUIState state) override {
-    popup_showing_ = GenerationPopup::kShown;
+      PasswordGenerationPopupController::GenerationState state) override {
+    popup_showing_ = true;
     state_ = state;
     MaybeQuitRunLoop();
   }
 
   void OnPopupHidden() override {
-    popup_showing_ = GenerationPopup::kHidden;
+    popup_showing_ = false;
     MaybeQuitRunLoop();
   }
 
-  bool popup_showing() const {
-    return popup_showing_ == GenerationPopup::kShown;
-  }
-  PasswordGenerationPopupController::GenerationUIState state() const {
+  bool popup_showing() const { return popup_showing_; }
+  PasswordGenerationPopupController::GenerationState state() const {
     return state_;
-  }
-
-  // Waits until the popup is in specified status.
-  void WaitForStatus(GenerationPopup status) {
-    if (status == popup_showing_)
-      return;
-    base::RunLoop run_loop;
-    run_loop_ = &run_loop;
-    run_loop_->Run();
-    EXPECT_EQ(popup_showing_, status);
   }
 
   // Waits until the popup is either shown or hidden.
@@ -90,8 +74,8 @@ class TestPopupObserver : public PasswordGenerationPopupObserver {
 
   // The loop to be stopped after the popup state change.
   base::RunLoop* run_loop_ = nullptr;
-  GenerationPopup popup_showing_ = GenerationPopup::kHidden;
-  PasswordGenerationPopupController::GenerationUIState state_ =
+  bool popup_showing_ = false;
+  PasswordGenerationPopupController::GenerationState state_ =
       PasswordGenerationPopupController::kOfferGeneration;
 
   DISALLOW_COPY_AND_ASSIGN(TestPopupObserver);
@@ -108,6 +92,14 @@ enum ReturnCodes {  // Possible results of the JavaScript code.
 class PasswordGenerationInteractiveTest
     : public PasswordManagerInteractiveTestBase {
  public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PasswordManagerBrowserTestBase::SetUpCommandLine(command_line);
+
+    // Make sure the feature is enabled.
+    scoped_feature_list_.InitAndEnableFeature(
+        autofill::features::kAutomaticPasswordGeneration);
+  }
+
   void SetUpOnMainThread() override {
     PasswordManagerBrowserTestBase::SetUpOnMainThread();
     // Disable Autofill requesting access to AddressBook data. This will cause
@@ -171,11 +163,6 @@ class PasswordGenerationInteractiveTest
         WebContents(), "document.getElementById('password_field').focus()"));
   }
 
-  void FocusUsernameField() {
-    ASSERT_TRUE(content::ExecuteScript(
-        WebContents(), "document.getElementById('username_field').focus();"));
-  }
-
   void SendKeyToPopup(ui::KeyboardCode key) {
     content::NativeWebKeyboardEvent event(
         blink::WebKeyboardEvent::kRawKeyDown,
@@ -198,14 +185,11 @@ class PasswordGenerationInteractiveTest
                PasswordGenerationPopupController::kEditGeneratedPassword;
   }
 
-  void WaitForStatus(TestPopupObserver::GenerationPopup status) {
-    observer_.WaitForStatus(status);
-  }
-
   void WaitForPopupStatusChange() { observer_.WaitForStatusChange(); }
 
  private:
   TestPopupObserver observer_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
@@ -275,7 +259,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   // The same flow happens when user generates a password from the context menu.
   password_manager_util::UserTriggeredManualGenerationFromContextMenu(
       ChromePasswordManagerClient::FromWebContents(WebContents()));
-  WaitForStatus(TestPopupObserver::GenerationPopup::kShown);
+  WaitForPopupStatusChange();
   EXPECT_TRUE(GenerationPopupShowing());
   SendKeyToPopup(ui::VKEY_DOWN);
   SendKeyToPopup(ui::VKEY_RETURN);
@@ -289,23 +273,13 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
 
   // Delete the password. The generation prompt should not be visible.
   SimulateUserDeletingFieldContent("password_field");
-  WaitForStatus(TestPopupObserver::GenerationPopup::kHidden);
+  WaitForPopupStatusChange();
   EXPECT_FALSE(EditingPopupShowing());
   EXPECT_FALSE(GenerationPopupShowing());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
                        PopupShownAndDismissed) {
-  FocusPasswordField();
-  EXPECT_TRUE(GenerationPopupShowing());
-
-  FocusUsernameField();
-
-  // Popup is dismissed.
-  WaitForStatus(TestPopupObserver::GenerationPopup::kHidden);
-}
-IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
-                       PopupShownAndDismissedByKeyPress) {
   FocusPasswordField();
   EXPECT_TRUE(GenerationPopupShowing());
 
@@ -357,7 +331,8 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   SendKeyToPopup(ui::VKEY_RETURN);
 
   // Change username.
-  FocusUsernameField();
+  std::string focus("document.getElementById('username_field').focus();");
+  ASSERT_TRUE(content::ExecuteScript(WebContents(), focus));
   content::SimulateKeyPress(WebContents(), ui::DomKey::FromCharacter('U'),
                             ui::DomCode::US_U, ui::VKEY_U, false, false, false,
                             false);

@@ -48,6 +48,8 @@ class TreeScope;
 
 class TreeOrderedMap : public GarbageCollected<TreeOrderedMap> {
  public:
+  static TreeOrderedMap* Create();
+
   TreeOrderedMap();
 
   void Add(const AtomicString&, Element&);

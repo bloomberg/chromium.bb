@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 namespace chromeos {
@@ -30,6 +31,14 @@ struct LanguageSwitchResult;
 class WelcomeScreen : public BaseScreen,
                       public input_method::InputMethodManager::Observer {
  public:
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Called when enable debugging screen is requested.
+    virtual void OnEnableDebuggingScreenRequested() = 0;
+  };
+
   class Observer {
    public:
     virtual ~Observer() {}
@@ -38,7 +47,10 @@ class WelcomeScreen : public BaseScreen,
     virtual void OnLanguageListReloaded() = 0;
   };
 
-  WelcomeScreen(WelcomeView* view, const base::RepeatingClosure& exit_callback);
+  WelcomeScreen(BaseScreenDelegate* base_screen_delegate,
+                Delegate* delegate,
+                WelcomeView* view,
+                const base::RepeatingClosure& exit_callback);
   ~WelcomeScreen() override;
 
   static WelcomeScreen* Get(ScreenManager* manager);
@@ -85,6 +97,9 @@ class WelcomeScreen : public BaseScreen,
                           Profile* profile,
                           bool show_message) override;
 
+  // Subscribe to timezone changes.
+  void InitializeTimezoneObserver();
+
   // Called when continue button is pressed.
   void OnContinueButtonPressed();
 
@@ -113,7 +128,10 @@ class WelcomeScreen : public BaseScreen,
   void NotifyLocaleChange();
   void OnLocaleChangeResult(ash::mojom::LocaleNotificationResult result);
 
+  std::unique_ptr<CrosSettings::ObserverSubscription> timezone_subscription_;
+
   WelcomeView* view_ = nullptr;
+  Delegate* delegate_ = nullptr;
   base::RepeatingClosure exit_callback_;
 
   std::string input_method_;

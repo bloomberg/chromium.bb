@@ -45,6 +45,11 @@ class CSSViewportRule final : public CSSRule {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static CSSViewportRule* Create(StyleRuleViewport* viewport_rule,
+                                 CSSStyleSheet* sheet) {
+    return MakeGarbageCollected<CSSViewportRule>(viewport_rule, sheet);
+  }
+
   CSSViewportRule(StyleRuleViewport*, CSSStyleSheet*);
   ~CSSViewportRule() override;
 

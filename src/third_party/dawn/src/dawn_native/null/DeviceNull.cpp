@@ -28,7 +28,6 @@ namespace dawn_native { namespace null {
       public:
         Adapter(InstanceBase* instance) : AdapterBase(instance, BackendType::Null) {
             mPCIInfo.name = "Null backend";
-            mDeviceType = DeviceType::CPU;
         }
         virtual ~Adapter() = default;
 
@@ -83,6 +82,9 @@ namespace dawn_native { namespace null {
         const ComputePipelineDescriptor* descriptor) {
         return new ComputePipeline(this, descriptor);
     }
+    InputStateBase* Device::CreateInputState(InputStateBuilder* builder) {
+        return new InputState(builder);
+    }
     ResultOrError<PipelineLayoutBase*> Device::CreatePipelineLayoutImpl(
         const PipelineLayoutDescriptor* descriptor) {
         return new PipelineLayout(this, descriptor);
@@ -111,7 +113,7 @@ namespace dawn_native { namespace null {
         return new SwapChain(this, descriptor);
     }
     ResultOrError<TextureBase*> Device::CreateTextureImpl(const TextureDescriptor* descriptor) {
-        return new Texture(this, descriptor, TextureBase::TextureState::OwnedInternal);
+        return new Texture(this, descriptor);
     }
     ResultOrError<TextureViewBase*> Device::CreateTextureViewImpl(
         TextureBase* texture,
@@ -126,10 +128,10 @@ namespace dawn_native { namespace null {
     }
 
     MaybeError Device::CopyFromStagingToBuffer(StagingBufferBase* source,
-                                               uint64_t sourceOffset,
+                                               uint32_t sourceOffset,
                                                BufferBase* destination,
-                                               uint64_t destinationOffset,
-                                               uint64_t size) {
+                                               uint32_t destinationOffset,
+                                               uint32_t size) {
         return DAWN_UNIMPLEMENTED_ERROR("Device unable to copy from staging buffer.");
     }
 
@@ -272,18 +274,18 @@ namespace dawn_native { namespace null {
     void NativeSwapChainImpl::Init(WSIContext* context) {
     }
 
-    DawnSwapChainError NativeSwapChainImpl::Configure(DawnTextureFormat format,
-                                                      DawnTextureUsageBit,
+    dawnSwapChainError NativeSwapChainImpl::Configure(dawnTextureFormat format,
+                                                      dawnTextureUsageBit,
                                                       uint32_t width,
                                                       uint32_t height) {
         return DAWN_SWAP_CHAIN_NO_ERROR;
     }
 
-    DawnSwapChainError NativeSwapChainImpl::GetNextTexture(DawnSwapChainNextTexture* nextTexture) {
+    dawnSwapChainError NativeSwapChainImpl::GetNextTexture(dawnSwapChainNextTexture* nextTexture) {
         return DAWN_SWAP_CHAIN_NO_ERROR;
     }
 
-    DawnSwapChainError NativeSwapChainImpl::Present() {
+    dawnSwapChainError NativeSwapChainImpl::Present() {
         return DAWN_SWAP_CHAIN_NO_ERROR;
     }
 

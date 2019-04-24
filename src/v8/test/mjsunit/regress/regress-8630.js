@@ -7,7 +7,7 @@
 // Parameters can't have parentheses (both patterns and identifiers)
 assertThrows("( ({x: 1}) ) => {};", SyntaxError);
 assertThrows("( (x) ) => {}", SyntaxError);
-assertThrows("( ({x: 1}) = y ) => {}", ReferenceError);
+assertThrows("( ({x: 1}) = y ) => {}", SyntaxError);
 assertThrows("( (x) = y ) => {}", SyntaxError);
 
 // Declarations can't have parentheses (both patterns and identifiers)
@@ -20,9 +20,8 @@ assertThrows("var [(x)] = [];", SyntaxError);
 assertThrows("var [({x: 1}) = y] = [];", SyntaxError);
 assertThrows("var [(x) = y] = [];", SyntaxError);
 
-// Patterns can't have parentheses in assignments either
-assertThrows("[({x: 1}) = y] = [];", ReferenceError);
-assertThrows("({a,b}) = {a:2,b:3}", ReferenceError);
+// Patterns in can't have parentheses in assignments either
+assertThrows("[({x: 1}) = y] = [];", SyntaxError);
 
 // Parentheses are fine around identifiers in assignments though, even inside a
 // pattern

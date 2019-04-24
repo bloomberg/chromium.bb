@@ -6,13 +6,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_DUMMY_MODULATOR_H_
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/renderer/bindings/core/v8/module_record.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_module.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
-class ModuleRecordResolver;
+class ScriptModuleResolver;
 
 // DummyModulator provides empty Modulator interface implementation w/
 // NOTREACHED().
@@ -29,7 +29,7 @@ class DummyModulator : public Modulator {
   ~DummyModulator() override;
   void Trace(blink::Visitor*) override;
 
-  ModuleRecordResolver* GetModuleRecordResolver() override;
+  ScriptModuleResolver* GetScriptModuleResolver() override;
   base::SingleThreadTaskRunner* TaskRunner() override;
   ScriptState* GetScriptState() override;
   V8CacheOptions GetV8CacheOptions() const override;
@@ -64,14 +64,14 @@ class DummyModulator : public Modulator {
   void RegisterImportMap(const ImportMap*) override;
   bool IsAcquiringImportMaps() const override;
   void ClearIsAcquiringImportMaps() override;
-  ModuleImportMeta HostGetImportMetaProperties(ModuleRecord) const override;
-  ScriptValue InstantiateModule(ModuleRecord) override;
-  Vector<ModuleRequest> ModuleRequestsFromModuleRecord(ModuleRecord) override;
+  ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const override;
+  ScriptValue InstantiateModule(ScriptModule) override;
+  Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;
   ScriptValue ExecuteModule(ModuleScript*, CaptureEvalErrorFlag) override;
   ModuleScriptFetcher* CreateModuleScriptFetcher(
       ModuleScriptCustomFetchType) override;
 
-  Member<ModuleRecordResolver> resolver_;
+  Member<ScriptModuleResolver> resolver_;
 };
 
 }  // namespace blink

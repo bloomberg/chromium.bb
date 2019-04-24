@@ -23,7 +23,7 @@ SVGResource* ReferenceClipPathOperation::Resource() const {
 bool ReferenceClipPathOperation::operator==(const ClipPathOperation& o) const {
   if (!IsSameType(o))
     return false;
-  const ReferenceClipPathOperation& other = To<ReferenceClipPathOperation>(o);
+  const ReferenceClipPathOperation& other = ToReferenceClipPathOperation(o);
   return resource_ == other.resource_ && url_ == other.url_;
 }
 

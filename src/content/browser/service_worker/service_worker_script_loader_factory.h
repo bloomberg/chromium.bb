@@ -22,6 +22,7 @@ class ServiceWorkerCacheWriter;
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
 
+// S13nServiceWorker:
 // Created per one running service worker for loading its scripts. This is kept
 // alive while the WebServiceWorkerNetworkProvider in the renderer process is
 // alive.
@@ -36,21 +37,14 @@ class ServiceWorkerProviderHost;
 class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
-  // |loader_factory_for_new_scripts| is used to load scripts. Typically
+  // |loader_factory| is used to load scripts. Typically
   // a new script will be loaded from the NetworkService. However,
-  // |loader_factory_for_new_scripts| may internally contain non-NetworkService
+  // |loader_factory| may internally contain non-NetworkService
   // factories used for non-http(s) URLs, e.g., a chrome-extension:// URL.
-  //
-  // |loader_factory_for_new_scripts| is null if this factory is created for an
-  // installed service worker, which is expected to load its scripts via
-  // ServiceWorkerInstalledScriptsManager, and only uses this factory for
-  // loading non-installed scripts, in which case this factory returns network
-  // error.
   ServiceWorkerScriptLoaderFactory(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      scoped_refptr<network::SharedURLLoaderFactory>
-          loader_factory_for_new_scripts);
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
   ~ServiceWorkerScriptLoaderFactory() override;
 
   // network::mojom::URLLoaderFactory:
@@ -63,8 +57,6 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
   void Clone(network::mojom::URLLoaderFactoryRequest request) override;
-
-  void Update(scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
  private:
   bool CheckIfScriptRequestIsValid(
@@ -95,9 +87,7 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
-  // Can be null if this factory is for an installed service worker.
-  scoped_refptr<network::SharedURLLoaderFactory>
-      loader_factory_for_new_scripts_;
+  scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
 

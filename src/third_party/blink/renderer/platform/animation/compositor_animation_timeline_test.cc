@@ -17,7 +17,8 @@ class CompositorAnimationTimelineTest : public CompositorTest {};
 
 TEST_F(CompositorAnimationTimelineTest,
        CompositorTimelineDeletionDetachesFromAnimationHost) {
-  auto timeline = std::make_unique<CompositorAnimationTimeline>();
+  std::unique_ptr<CompositorAnimationTimeline> timeline =
+      CompositorAnimationTimeline::Create();
 
   scoped_refptr<cc::AnimationTimeline> cc_timeline =
       timeline->GetAnimationTimeline();

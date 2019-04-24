@@ -20,6 +20,8 @@ STATIC_ASSERT_ENUM(net::CookieSameSite::LAX_MODE,
                    network::mojom::CookieSameSite::LAX_MODE);
 STATIC_ASSERT_ENUM(net::CookieSameSite::STRICT_MODE,
                    network::mojom::CookieSameSite::STRICT_MODE);
+STATIC_ASSERT_ENUM(net::CookieSameSite::DEFAULT_MODE,
+                   blink::WebCanonicalCookie::kDefaultSameSiteMode);
 
 STATIC_ASSERT_ENUM(net::CookiePriority::COOKIE_PRIORITY_LOW,
                    network::mojom::CookiePriority::LOW);
@@ -141,6 +143,8 @@ base::Optional<WebCanonicalCookie> WebCanonicalCookie::Create(
                             same_site, priority);
 }
 
+constexpr const network::mojom::CookieSameSite
+    WebCanonicalCookie::kDefaultSameSiteMode;
 constexpr const network::mojom::CookiePriority
     WebCanonicalCookie::kDefaultPriority;
 

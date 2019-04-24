@@ -98,8 +98,7 @@ class CORE_EXPORT SVGLayoutSupport {
   static FloatRect LocalVisualRect(const LayoutObject&);
   static LayoutRect VisualRectInAncestorSpace(
       const LayoutObject&,
-      const LayoutBoxModelObject& ancestor,
-      VisualRectFlags = kDefaultVisualRectFlags);
+      const LayoutBoxModelObject& ancestor);
   static LayoutRect TransformVisualRect(const LayoutObject&,
                                         const AffineTransform&,
                                         const FloatRect&);

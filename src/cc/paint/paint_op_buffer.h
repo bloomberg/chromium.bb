@@ -920,12 +920,10 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   }
 
   PaintOpBuffer();
-  PaintOpBuffer(const PaintOpBuffer&) = delete;
   PaintOpBuffer(PaintOpBuffer&& other);
   ~PaintOpBuffer() override;
 
-  PaintOpBuffer& operator=(const PaintOpBuffer&) = delete;
-  PaintOpBuffer& operator=(PaintOpBuffer&& other);
+  void operator=(PaintOpBuffer&& other);
 
   void Reset();
 
@@ -1024,13 +1022,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
         return static_cast<const T*>(*it);
     }
     return nullptr;
-  }
-
-  size_t GetOpOffsetForTracing(const PaintOp* op) const {
-    DCHECK_GE(reinterpret_cast<const char*>(op), data_.get());
-    size_t result = reinterpret_cast<const char*>(op) - data_.get();
-    DCHECK_LT(result, used_);
-    return result;
   }
 
   class CC_PAINT_EXPORT Iterator {
@@ -1239,6 +1230,8 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
   bool has_non_aa_paint_ : 1;
   bool has_discardable_images_ : 1;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintOpBuffer);
 };
 
 }  // namespace cc

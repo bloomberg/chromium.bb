@@ -13,7 +13,7 @@
 namespace blink {
 
 class PerformanceEntry;
-using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
+using PerformanceEntryVector = HeapVector<TraceWrapperMember<PerformanceEntry>>;
 
 class PerformanceObserverEntryList : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();

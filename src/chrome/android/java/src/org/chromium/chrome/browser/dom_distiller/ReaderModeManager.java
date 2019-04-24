@@ -199,17 +199,6 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
     }
 
     @Override
-    public void onActivityAttachmentChanged(Tab tab, boolean isAttached) {
-        if (isAttached) return;
-
-        // Reset the delegate on tab detached from activity so that the native counterpart doesn't
-        // hold onto the activity implicitly through tab model selector.
-        // TODO(mdjones): Reader mode might not be triggered on this page unless we send a new
-        // delegate.
-        DistillablePageUtils.setDelegate(tab.getWebContents(), null);
-    }
-
-    @Override
     public void onDestroyed(Tab tab) {
         if (tab == null) return;
 

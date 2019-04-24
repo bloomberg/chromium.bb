@@ -18,6 +18,9 @@ class ScriptPromiseResolver;
 class MODULES_EXPORT ApplyConstraintsRequest final
     : public GarbageCollectedFinalized<ApplyConstraintsRequest> {
  public:
+  static ApplyConstraintsRequest* Create(const WebMediaStreamTrack&,
+                                         const WebMediaConstraints&,
+                                         ScriptPromiseResolver*);
   static ApplyConstraintsRequest* CreateForTesting(const WebMediaStreamTrack&,
                                                    const WebMediaConstraints&);
 

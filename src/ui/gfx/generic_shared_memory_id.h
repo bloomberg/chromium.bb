@@ -8,9 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <functional>
-
-#include "base/hash/hash.h"
+#include "base/hash.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "ui/gfx/gfx_export.h"
 

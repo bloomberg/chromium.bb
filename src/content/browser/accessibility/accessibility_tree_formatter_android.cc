@@ -91,12 +91,12 @@ AccessibilityTreeFormatter::Create() {
 }
 
 // static
-std::vector<AccessibilityTreeFormatter::TestPass>
+std::vector<AccessibilityTreeFormatter::FormatterFactory>
 AccessibilityTreeFormatter::GetTestPasses() {
   // Note: Android doesn't do a "blink" pass; the blink tree is different on
   // Android because we exclude inline text boxes, for performance.
   return {
-      {"android", &AccessibilityTreeFormatter::Create},
+      &AccessibilityTreeFormatter::Create,
   };
 }
 

@@ -14,7 +14,6 @@
 #include <stdint.h>
 
 #include "api/units/time_delta.h"
-#include "api/units/timestamp.h"
 #include "rtc_base/critical_section.h"
 #include "rtc_base/thread_annotations.h"
 #include "rtc_base/time_utils.h"
@@ -27,10 +26,7 @@ namespace rtc {
 // TODO(deadbeef): Unify with webrtc::SimulatedClock.
 class FakeClock : public ClockInterface {
  public:
-  FakeClock() = default;
-  FakeClock(const FakeClock&) = delete;
-  FakeClock& operator=(const FakeClock&) = delete;
-  ~FakeClock() override = default;
+  ~FakeClock() override {}
 
   // ClockInterface implementation.
   int64_t TimeNanos() const override;
@@ -38,41 +34,37 @@ class FakeClock : public ClockInterface {
   // Methods that can be used by the test to control the time.
 
   // Should only be used to set a time in the future.
-  void SetTime(webrtc::Timestamp new_time);
+  void SetTimeNanos(int64_t nanos);
+  void SetTimeMicros(int64_t micros) {
+    SetTimeNanos(kNumNanosecsPerMicrosec * micros);
+  }
 
   void AdvanceTime(webrtc::TimeDelta delta);
+  void AdvanceTimeMicros(int64_t micros) {
+    AdvanceTime(webrtc::TimeDelta::us(micros));
+  }
 
  private:
   CriticalSection lock_;
-  int64_t time_ns_ RTC_GUARDED_BY(lock_) = 0;
-};
-
-class ThreadProcessingFakeClock : public ClockInterface {
- public:
-  int64_t TimeNanos() const override { return clock_.TimeNanos(); }
-  void SetTime(webrtc::Timestamp time);
-  void AdvanceTime(webrtc::TimeDelta delta);
-
- private:
-  FakeClock clock_;
+  int64_t time_ RTC_GUARDED_BY(lock_) = 0;
 };
 
 // Helper class that sets itself as the global clock in its constructor and
 // unsets it in its destructor.
-class ScopedBaseFakeClock : public FakeClock {
+class ScopedFakeClock : public FakeClock {
  public:
-  ScopedBaseFakeClock();
-  ~ScopedBaseFakeClock() override;
+  ScopedFakeClock();
+  ~ScopedFakeClock() override;
 
  private:
   ClockInterface* prev_clock_;
 };
 
-// TODO(srte): Rename this to reflect that it also does thread processing.
-class ScopedFakeClock : public ThreadProcessingFakeClock {
+// Helper class to "undo" the fake clock temporarily.
+class ScopedRealClock {
  public:
-  ScopedFakeClock();
-  ~ScopedFakeClock() override;
+  ScopedRealClock();
+  ~ScopedRealClock();
 
  private:
   ClockInterface* prev_clock_;

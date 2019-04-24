@@ -48,7 +48,7 @@ class CookieStoreIOSPersistent : public CookieStoreIOS {
                                  SetCookiesCallback callback) override;
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
                                std::string source_scheme,
-                               const net::CookieOptions& options,
+                               bool modify_http_only,
                                SetCookiesCallback callback) override;
   void GetCookieListWithOptionsAsync(const GURL& url,
                                      const net::CookieOptions& options,

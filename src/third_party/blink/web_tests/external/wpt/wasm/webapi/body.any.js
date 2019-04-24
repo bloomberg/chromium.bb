@@ -1,4 +1,5 @@
 // META: global=window,worker
+// META: script=/wasm/jsapi/wasm-constants.js
 // META: script=/wasm/jsapi/wasm-module-builder.js
 
 for (const method of ["compileStreaming", "instantiateStreaming"]) {

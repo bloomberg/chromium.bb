@@ -73,7 +73,7 @@ class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement {
 
   bool is_default_value_mode_;
   String default_value_;
-  Member<DOMTokenList> tokens_;
+  TraceWrapperMember<DOMTokenList> tokens_;
 };
 
 }  // namespace blink

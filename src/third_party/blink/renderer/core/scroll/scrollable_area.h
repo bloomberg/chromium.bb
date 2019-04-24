@@ -88,17 +88,12 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual ScrollResult UserScroll(ScrollGranularity, const ScrollOffset&);
 
-  using ScrollCallback = base::OnceClosure;
   virtual void SetScrollOffset(const ScrollOffset&,
                                ScrollType,
-                               ScrollBehavior,
-                               ScrollCallback on_finish);
-  void SetScrollOffset(const ScrollOffset&,
-                       ScrollType,
-                       ScrollBehavior = kScrollBehaviorInstant);
-  void ScrollBy(const ScrollOffset&,
-                ScrollType,
-                ScrollBehavior = kScrollBehaviorInstant);
+                               ScrollBehavior = kScrollBehaviorInstant);
+  virtual void ScrollBy(const ScrollOffset&,
+                        ScrollType,
+                        ScrollBehavior = kScrollBehaviorInstant);
   void SetScrollOffsetSingleAxis(ScrollbarOrientation,
                                  float,
                                  ScrollType,
@@ -451,10 +446,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,
                            PopupOverlayScrollbarShouldNotFadeOut);
 
-  void ProgrammaticScrollHelper(const ScrollOffset&,
-                                ScrollBehavior,
-                                bool,
-                                ScrollCallback on_finish);
+  void ProgrammaticScrollHelper(const ScrollOffset&, ScrollBehavior, bool);
   void UserScrollHelper(const ScrollOffset&, ScrollBehavior);
 
   void FadeOverlayScrollbarsTimerFired(TimerBase*);

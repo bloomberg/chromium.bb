@@ -33,6 +33,7 @@
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/child_frame_compositing_helper.h"
+#include "content/renderer/cursor_utils.h"
 #include "content/renderer/drop_data_builder.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/sad_plugin.h"
@@ -683,7 +684,7 @@ blink::WebInputEventResult BrowserPlugin::HandleInputEvent(
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_HandleInputEvent(browser_plugin_instance_id_,
                                                 &event));
-  cursor_info = cursor_.info().GetWebCursorInfo();
+  GetWebCursorInfo(cursor_, &cursor_info);
 
   // Although we forward this event to the guest, we don't report it as consumed
   // since other targets of this event in Blink never get that chance either.

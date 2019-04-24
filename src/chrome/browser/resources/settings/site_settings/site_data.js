@@ -165,7 +165,8 @@ Polymer({
         /** @type {!IronListElement} */ (this.$$('iron-list'));
     ironList.focusItem(index);
     const siteToSelect = this.sites[index].site.replace(/[.]/g, '\\.');
-    const button = this.$$(`#siteItem_${siteToSelect}`).$$('.subpage-arrow');
+    const button =
+        this.$$(`#siteItem_${siteToSelect}`).$$('.subpage-arrow button');
     cr.ui.focusWithoutInk(assert(button));
   },
 

@@ -14,19 +14,20 @@ namespace content {
 // A collection of information about a message that has been added to the
 // console.
 struct ConsoleMessage {
-  ConsoleMessage(blink::mojom::ConsoleMessageSource source,
+  ConsoleMessage(int source_identifier,
                  blink::mojom::ConsoleMessageLevel message_level,
                  const base::string16& message,
                  int line_number,
                  const GURL& source_url)
-      : source(source),
+      : source_identifier(source_identifier),
         message_level(message_level),
         message(message),
         line_number(line_number),
         source_url(source_url) {}
 
-  // The type of source this came from.
-  const blink::mojom::ConsoleMessageSource source;
+  // The type of source this came from. In practice, this maps to
+  // blink::MessageSource.
+  const int source_identifier;
   // The severity of the console message.
   const blink::mojom::ConsoleMessageLevel message_level;
   // The message that was logged to the console.

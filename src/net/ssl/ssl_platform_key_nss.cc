@@ -54,8 +54,7 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
                     crypto::ScopedSECKEYPrivateKey key)
       : type_(type),
         password_delegate_(std::move(password_delegate)),
-        key_(std::move(key)),
-        supports_pss_(PK11_DoesMechanism(key_->pkcs11Slot, CKM_RSA_PKCS_PSS)) {}
+        key_(std::move(key)) {}
   ~SSLPlatformKeyNSS() override = default;
 
   std::string GetProviderName() override {
@@ -67,7 +66,8 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
   }
 
   std::vector<uint16_t> GetAlgorithmPreferences() override {
-    return SSLPrivateKey::DefaultAlgorithmPreferences(type_, supports_pss_);
+    return SSLPrivateKey::DefaultAlgorithmPreferences(type_,
+                                                      true /* supports PSS */);
   }
 
   Error Sign(uint16_t algorithm,
@@ -182,7 +182,6 @@ class SSLPlatformKeyNSS : public ThreadedSSLPrivateKey::Delegate {
   scoped_refptr<crypto::CryptoModuleBlockingPasswordDelegate>
       password_delegate_;
   crypto::ScopedSECKEYPrivateKey key_;
-  bool supports_pss_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLPlatformKeyNSS);
 };

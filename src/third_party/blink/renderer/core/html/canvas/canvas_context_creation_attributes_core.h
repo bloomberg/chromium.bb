@@ -26,11 +26,10 @@ class CORE_EXPORT CanvasContextCreationAttributesCore {
   String color_space = "srgb";
   bool depth = true;
   bool fail_if_major_performance_caveat = false;
-  bool desynchronized = false;
+  bool low_latency = false;
   String pixel_format = "uint8";
   bool premultiplied_alpha = true;
   bool preserve_drawing_buffer = false;
-  String power_preference = "default";
   bool stencil = false;
   bool xr_compatible = false;
 };

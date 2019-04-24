@@ -126,7 +126,7 @@ void MouseEventManager::Clear() {
   captures_dragging_ = false;
   is_mouse_position_unknown_ = true;
   last_known_mouse_position_ = FloatPoint();
-  last_known_mouse_screen_position_ = FloatPoint();
+  last_known_mouse_global_position_ = FloatPoint();
   mouse_pressed_ = false;
   click_count_ = 0;
   click_element_ = nullptr;
@@ -136,7 +136,6 @@ void MouseEventManager::Clear() {
   mouse_down_ = WebMouseEvent();
   svg_pan_ = false;
   drag_start_pos_ = LayoutPoint();
-  hover_state_dirty_ = false;
   fake_mouse_move_event_timer_.Stop();
   ResetDragSource();
   ClearDragDataTransfer();
@@ -370,13 +369,6 @@ void MouseEventManager::FakeMouseMoveEventTimerFired(TimerBase* timer) {
   RecomputeMouseHoverState();
 }
 
-void MouseEventManager::RecomputeMouseHoverStateIfNeeded() {
-  if (HoverStateDirty()) {
-    RecomputeMouseHoverState();
-    hover_state_dirty_ = false;
-  }
-}
-
 void MouseEventManager::RecomputeMouseHoverState() {
   if (is_mouse_position_unknown_)
     return;
@@ -402,7 +394,7 @@ void MouseEventManager::RecomputeMouseHoverState() {
   }
   WebMouseEvent fake_mouse_move_event(WebInputEvent::kMouseMove,
                                       last_known_mouse_position_,
-                                      last_known_mouse_screen_position_, button,
+                                      last_known_mouse_global_position_, button,
                                       0, modifiers, CurrentTimeTicks());
   Vector<WebMouseEvent> coalesced_events, predicted_events;
   frame_->GetEventHandler().HandleMouseMoveEvent(
@@ -412,22 +404,6 @@ void MouseEventManager::RecomputeMouseHoverState() {
 
 void MouseEventManager::CancelFakeMouseMoveEvent() {
   fake_mouse_move_event_timer_.Stop();
-}
-
-void MouseEventManager::MarkHoverStateDirty() {
-  DCHECK(
-      RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled() ||
-      RuntimeEnabledFeatures::UpdateHoverFromLayoutChangeAtBeginFrameEnabled());
-  DCHECK(frame_->IsLocalRoot());
-  hover_state_dirty_ = true;
-}
-
-bool MouseEventManager::HoverStateDirty() {
-  DCHECK(
-      RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled() ||
-      RuntimeEnabledFeatures::UpdateHoverFromLayoutChangeAtBeginFrameEnabled());
-  DCHECK(frame_->IsLocalRoot());
-  return hover_state_dirty_;
 }
 
 void MouseEventManager::SetElementUnderMouse(
@@ -511,7 +487,7 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
   }
 
   // The layout needs to be up to date to determine if an element is focusable.
-  frame_->GetDocument()->UpdateStyleAndLayout();
+  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   Element* element = element_under_mouse_;
   for (; element; element = element->ParentOrShadowHostElement()) {
@@ -625,18 +601,18 @@ bool MouseEventManager::IsMousePositionUnknown() {
   return is_mouse_position_unknown_;
 }
 
-FloatPoint MouseEventManager::LastKnownMousePositionInViewport() {
-  return last_known_mouse_position_;
+IntPoint MouseEventManager::LastKnownMousePosition() {
+  return FlooredIntPoint(last_known_mouse_position_);
 }
 
-FloatPoint MouseEventManager::LastKnownMouseScreenPosition() {
-  return last_known_mouse_screen_position_;
+FloatPoint MouseEventManager::LastKnownMousePositionGlobal() {
+  return last_known_mouse_global_position_;
 }
 
 void MouseEventManager::SetLastKnownMousePosition(const WebMouseEvent& event) {
   is_mouse_position_unknown_ = event.GetType() == WebInputEvent::kMouseLeave;
   last_known_mouse_position_ = event.PositionInWidget();
-  last_known_mouse_screen_position_ = event.PositionInScreen();
+  last_known_mouse_global_position_ = event.PositionInScreen();
 }
 
 void MouseEventManager::SetLastMousePositionAsUnknown() {
@@ -645,8 +621,7 @@ void MouseEventManager::SetLastMousePositionAsUnknown() {
 
 void MouseEventManager::MayUpdateHoverWhenContentUnderMouseChanged(
     MouseEventManager::UpdateHoverReason update_hover_reason) {
-  if (RuntimeEnabledFeatures::
-          UpdateHoverFromLayoutChangeAtBeginFrameEnabled() &&
+  if (RuntimeEnabledFeatures::NoHoverAfterLayoutChangeEnabled() &&
       update_hover_reason ==
           MouseEventManager::UpdateHoverReason::kLayoutOrStyleChanged) {
     return;
@@ -654,7 +629,7 @@ void MouseEventManager::MayUpdateHoverWhenContentUnderMouseChanged(
 
   if (update_hover_reason ==
           MouseEventManager::UpdateHoverReason::kScrollOffsetChanged &&
-      (RuntimeEnabledFeatures::UpdateHoverFromScrollAtBeginFrameEnabled() ||
+      (RuntimeEnabledFeatures::NoHoverDuringScrollEnabled() ||
        mouse_pressed_)) {
     return;
   }
@@ -699,7 +674,7 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
   ResetDragSource();
   CancelFakeMouseMoveEvent();
 
-  frame_->GetDocument()->UpdateStyleAndLayout();
+  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   bool single_click = event.Event().click_count <= 1;
 
@@ -1019,7 +994,7 @@ bool MouseEventManager::TryStartDrag(
   // TODO(editing-dev): The use of
   // updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.  See
   // http://crbug.com/590369 for more details.
-  frame_->GetDocument()->UpdateStyleAndLayout();
+  frame_->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (IsInPasswordField(
           frame_->Selection().ComputeVisibleSelectionInDOMTree().Start()))
     return false;

@@ -268,9 +268,6 @@ UI.TabbedViewLocation.prototype = {
    */
   tabbedPane() {},
 
-  /**
-   * @return {!UI.ToolbarMenuButton}
-   */
   enableMoreTabsButton() {}
 };
 
@@ -665,13 +662,10 @@ UI.ViewManager._TabbedLocation = class extends UI.ViewManager._Location {
 
   /**
    * @override
-   * @return {!UI.ToolbarMenuButton}
    */
   enableMoreTabsButton() {
-    const moreTabsButton = new UI.ToolbarMenuButton(this._appendTabsToMenu.bind(this));
-    this._tabbedPane.leftToolbar().appendToolbarItem(moreTabsButton);
+    this._tabbedPane.leftToolbar().appendToolbarItem(new UI.ToolbarMenuButton(this._appendTabsToMenu.bind(this)));
     this._tabbedPane.disableOverflowMenu();
-    return moreTabsButton;
   }
 
   /**

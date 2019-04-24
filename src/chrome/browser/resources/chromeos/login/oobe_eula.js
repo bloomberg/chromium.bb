@@ -47,10 +47,7 @@ Polymer({
 
     /**
      * Reference to OOBE screen object.
-     * @type {!{
-     *     loadEulaToWebview_: function(Element),
-     *     onUsageStatsClicked_: function(boolean),
-     * }}
+     * @type {!OobeTypes.Screen}
      */
     screen: {
       type: Object,
@@ -117,10 +114,8 @@ Polymer({
 
   /**
    * This is 'on-tap' event handler for 'Accept' button.
-   *
-   * @private
    */
-  eulaAccepted_: function() {
+  eulaAccepted_: function(event) {
     chrome.send('login.EulaScreen.userActed', ['accept-button']);
   },
 

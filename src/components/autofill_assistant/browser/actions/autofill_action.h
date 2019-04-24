@@ -21,8 +21,6 @@ class CreditCard;
 }  // namespace autofill
 
 namespace autofill_assistant {
-class ClientStatus;
-
 // An action to autofill a form using a local address or credit card.
 class AutofillAction : public Action {
  public:
@@ -37,7 +35,6 @@ class AutofillAction : public Action {
                              ProcessActionCallback callback) override;
 
   void EndAction(ProcessedActionStatusProto status);
-  void EndAction(const ClientStatus& status);
 
   // Fill the form using data in client memory. Return whether filling succeeded
   // or not through OnAddressFormFilled or OnCardFormFilled.
@@ -50,11 +47,10 @@ class AutofillAction : public Action {
                      const base::string16& cvc);
 
   // Called when the credit card form has been filled.
-  void OnCardFormFilled(const ClientStatus& status);
+  void OnCardFormFilled(bool successful);
 
   // Called when the address form has been filled.
-  void OnAddressFormFilled(ActionDelegate* delegate,
-                           const ClientStatus& status);
+  void OnAddressFormFilled(ActionDelegate* delegate, bool successful);
 
   // Check whether all required fields have a non-empty value. If it is the
   // case, finish the action successfully. If it's not and |allow_fallback|
@@ -90,7 +86,7 @@ class AutofillAction : public Action {
   // after failed validation.
   void OnSetFallbackFieldValue(ActionDelegate* delegate,
                                int required_fields_index,
-                               const ClientStatus& status);
+                               bool successful);
 
   // Usage of the autofilled address. Ignored if autofilling a card.
   std::string name_;

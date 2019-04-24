@@ -88,7 +88,7 @@ class ModellerImpl : public Modeller,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const base::TickClock* tick_clock);
 
-  // Current average log ambient light.
+  // Current average ambient light.
   base::Optional<double> AverageAmbientForTesting(base::TimeTicks now);
 
   // Current number of training data points stored, which will be used for next
@@ -191,7 +191,7 @@ class ModellerImpl : public Modeller,
   // Once user remains idle for |training_delay_|, we start training the model.
   // If this value is 0, we will not need to wait for user to remain inactive.
   // This can be overridden by experiment flag "training_delay_in_seconds".
-  base::TimeDelta training_delay_ = base::TimeDelta::FromSeconds(0);
+  base::TimeDelta training_delay_ = base::TimeDelta::FromSeconds(60);
 
   ScopedObserver<AlsReader, AlsReader::Observer> als_reader_observer_;
 
@@ -246,8 +246,8 @@ class ModellerImpl : public Modeller,
   // generates a new curve.
   base::Optional<MonotoneCubicSpline> current_curve_;
 
-  // Recent log ambient values.
-  std::unique_ptr<AmbientLightSampleBuffer> log_als_values_;
+  // Recent ambient values.
+  std::unique_ptr<AmbientLightSampleBuffer> ambient_light_values_;
 
   std::vector<TrainingDataPoint> data_cache_;
 

@@ -6,9 +6,6 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/download/download_stats.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
-#include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/chromium_strings.h"
@@ -20,7 +17,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
-#include "content/public/browser/web_contents.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -42,7 +38,6 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
                                   public views::DialogDelegateView {
  public:
   DownloadDangerPromptViews(download::DownloadItem* item,
-                            Profile* profile,
                             bool show_context,
                             const OnDone& done);
   ~DownloadDangerPromptViews() override;
@@ -69,7 +64,6 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
   void RunDone(Action action);
 
   download::DownloadItem* download_;
-  Profile* profile_;
   // If show_context_ is true, this is a download confirmation dialog by
   // download API, otherwise it is download recovery dialog from a regular
   // download.
@@ -79,13 +73,9 @@ class DownloadDangerPromptViews : public DownloadDangerPrompt,
 
 DownloadDangerPromptViews::DownloadDangerPromptViews(
     download::DownloadItem* item,
-    Profile* profile,
     bool show_context,
     const OnDone& done)
-    : download_(item),
-      profile_(profile),
-      show_context_(show_context),
-      done_(done) {
+    : download_(item), show_context_(show_context), done_(done) {
   download_->AddObserver(this);
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
@@ -230,40 +220,19 @@ base::string16 DownloadDangerPromptViews::GetMessageBody() const {
       case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL:  // Fall through
       case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
       case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
-        if (safe_browsing::AdvancedProtectionStatusManager::
-                RequestsAdvancedProtectionVerdicts(profile_)) {
-          return l10n_util::GetStringFUTF16(
-              IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT_IN_ADVANCED_PROTECTION,
-              download_->GetFileNameToReportUser().LossyDisplayName());
-        } else {
-          return l10n_util::GetStringFUTF16(
-              IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
-              download_->GetFileNameToReportUser().LossyDisplayName());
-        }
+        return l10n_util::GetStringFUTF16(
+            IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
+            download_->GetFileNameToReportUser().LossyDisplayName());
       }
       case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
-        if (safe_browsing::AdvancedProtectionStatusManager::
-                RequestsAdvancedProtectionVerdicts(profile_)) {
-          return l10n_util::GetStringFUTF16(
-              IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT_IN_ADVANCED_PROTECTION,
-              download_->GetFileNameToReportUser().LossyDisplayName());
-        } else {
-          return l10n_util::GetStringFUTF16(
-              IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT,
-              download_->GetFileNameToReportUser().LossyDisplayName());
-        }
+        return l10n_util::GetStringFUTF16(
+            IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT,
+            download_->GetFileNameToReportUser().LossyDisplayName());
       }
       case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
-        if (safe_browsing::AdvancedProtectionStatusManager::
-                RequestsAdvancedProtectionVerdicts(profile_)) {
-          return l10n_util::GetStringFUTF16(
-              IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS_IN_ADVANCED_PROTECTION,
-              download_->GetFileNameToReportUser().LossyDisplayName());
-        } else {
-          return l10n_util::GetStringFUTF16(
-              IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS,
-              download_->GetFileNameToReportUser().LossyDisplayName());
-        }
+        return l10n_util::GetStringFUTF16(
+            IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS,
+            download_->GetFileNameToReportUser().LossyDisplayName());
       }
       case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
       case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
@@ -329,10 +298,8 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
     content::WebContents* web_contents,
     bool show_context,
     const OnDone& done) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   DownloadDangerPromptViews* download_danger_prompt =
-      new DownloadDangerPromptViews(item, profile, show_context, done);
+      new DownloadDangerPromptViews(item, show_context, done);
   constrained_window::ShowWebModalDialogViews(download_danger_prompt,
                                               web_contents);
   return download_danger_prompt;

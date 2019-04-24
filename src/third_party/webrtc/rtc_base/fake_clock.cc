@@ -17,38 +17,26 @@ namespace rtc {
 
 int64_t FakeClock::TimeNanos() const {
   CritScope cs(&lock_);
-  return time_ns_;
+  return time_;
 }
 
-void FakeClock::SetTime(webrtc::Timestamp new_time) {
-  CritScope cs(&lock_);
-  RTC_DCHECK(new_time.us() * 1000 >= time_ns_);
-  time_ns_ = new_time.us() * 1000;
-}
-
-void FakeClock::AdvanceTime(webrtc::TimeDelta delta) {
-  CritScope cs(&lock_);
-  time_ns_ += delta.ns();
-}
-
-void ThreadProcessingFakeClock::SetTime(webrtc::Timestamp time) {
-  clock_.SetTime(time);
+void FakeClock::SetTimeNanos(int64_t nanos) {
+  {
+    CritScope cs(&lock_);
+    RTC_DCHECK(nanos >= time_);
+    time_ = nanos;
+  }
   // If message queues are waiting in a socket select() with a timeout provided
   // by the OS, they should wake up and dispatch all messages that are ready.
   MessageQueueManager::ProcessAllMessageQueuesForTesting();
 }
 
-void ThreadProcessingFakeClock::AdvanceTime(webrtc::TimeDelta delta) {
-  clock_.AdvanceTime(delta);
+void FakeClock::AdvanceTime(webrtc::TimeDelta delta) {
+  {
+    CritScope cs(&lock_);
+    time_ += delta.ns();
+  }
   MessageQueueManager::ProcessAllMessageQueuesForTesting();
-}
-
-ScopedBaseFakeClock::ScopedBaseFakeClock() {
-  prev_clock_ = SetClockForTesting(this);
-}
-
-ScopedBaseFakeClock::~ScopedBaseFakeClock() {
-  SetClockForTesting(prev_clock_);
 }
 
 ScopedFakeClock::ScopedFakeClock() {

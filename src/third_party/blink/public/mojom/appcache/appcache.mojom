@@ -33,15 +33,9 @@ enum AppCacheErrorReason {
   APPCACHE_UNKNOWN_ERROR,
 };
 
-// Per-resource information displayed in DevTools.
 struct AppCacheResourceInfo {
   url.mojom.Url url;
-  // Disk space consumed by this resource.
-  int64 response_size;
-  // Padding added when the Quota API counts this resource.
-  //
-  // Non-zero only for opaque responses.
-  int64 padding_size;
+  int64 size;
   bool is_master;
   bool is_manifest;
   bool is_intercept;

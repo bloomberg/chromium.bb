@@ -32,13 +32,12 @@ CSSTransformValue* CSSTransformValue::Create(
 }
 
 CSSTransformValue* CSSTransformValue::FromCSSValue(const CSSValue& css_value) {
-  auto* css_value_list = DynamicTo<CSSValueList>(css_value);
-  if (!css_value_list) {
+  if (!css_value.IsValueList()) {
     // TODO(meade): Also need to check the separator here if we care.
     return nullptr;
   }
   HeapVector<Member<CSSTransformComponent>> components;
-  for (const CSSValue* value : *css_value_list) {
+  for (const CSSValue* value : ToCSSValueList(css_value)) {
     CSSTransformComponent* component =
         CSSTransformComponent::FromCSSValue(*value);
     if (!component)

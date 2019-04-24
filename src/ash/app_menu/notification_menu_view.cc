@@ -41,6 +41,10 @@ NotificationMenuView::NotificationMenuView(
 
 NotificationMenuView::~NotificationMenuView() = default;
 
+bool NotificationMenuView::IsEmpty() const {
+  return notification_item_views_.empty();
+}
+
 gfx::Size NotificationMenuView::CalculatePreferredSize() const {
   return gfx::Size(
       views::MenuConfig::instance().touchable_menu_width,
@@ -62,10 +66,11 @@ void NotificationMenuView::Layout() {
       gfx::Rect(gfx::Point(0, y), header_view_->GetPreferredSize()));
   y += header_view_->GetPreferredSize().height();
 
-  auto* item = GetDisplayedNotificationItemView();
-  if (item) {
-    item->SetBoundsRect(gfx::Rect(gfx::Point(0, y), item->GetPreferredSize()));
-    y = item->bounds().bottom();
+  if (!notification_item_views_.empty()) {
+    notification_item_views_.front()->SetBoundsRect(
+        gfx::Rect(gfx::Point(0, y),
+                  notification_item_views_.front()->GetPreferredSize()));
+    y += notification_item_views_.front()->GetPreferredSize().height();
   }
 
   if (overflow_view_) {
@@ -74,29 +79,26 @@ void NotificationMenuView::Layout() {
   }
 }
 
-bool NotificationMenuView::IsEmpty() const {
-  return notification_item_views_.empty();
-}
-
 void NotificationMenuView::AddNotificationItemView(
     const message_center::Notification& notification) {
-  auto* old_displayed_item = GetDisplayedNotificationItemView();
+  NotificationItemView* old_displayed_notification_item_view =
+      notification_item_views_.empty() ? nullptr
+                                       : notification_item_views_.front().get();
 
-  auto notification_view = std::make_unique<NotificationItemView>(
+  notification_item_views_.push_front(std::make_unique<NotificationItemView>(
       notification_item_view_delegate_, slide_out_controller_delegate_,
       notification.title(), notification.message(), notification.icon(),
-      notification.id());
-  notification_view->set_owned_by_client();
-  AddChildView(notification_view.get());
-  notification_item_views_.push_front(std::move(notification_view));
+      notification.id()));
+  notification_item_views_.front()->set_owned_by_client();
+  AddChildView(notification_item_views_.front().get());
 
   header_view_->UpdateCounter(notification_item_views_.size());
 
-  if (!old_displayed_item)
+  if (!old_displayed_notification_item_view)
     return;
 
   // Push |old_displayed_notification_item_view| to |overflow_view_|.
-  RemoveChildView(old_displayed_item);
+  RemoveChildView(old_displayed_notification_item_view);
 
   const bool overflow_view_created = !overflow_view_;
   if (!overflow_view_) {
@@ -104,8 +106,9 @@ void NotificationMenuView::AddNotificationItemView(
     overflow_view_->set_owned_by_client();
     AddChildView(overflow_view_.get());
   }
-  overflow_view_->AddIcon(old_displayed_item->proportional_image_view(),
-                          old_displayed_item->notification_id());
+  overflow_view_->AddIcon(
+      old_displayed_notification_item_view->proportional_image_view(),
+      old_displayed_notification_item_view->notification_id());
 
   if (overflow_view_created) {
     PreferredSizeChanged();
@@ -118,36 +121,47 @@ void NotificationMenuView::AddNotificationItemView(
 void NotificationMenuView::UpdateNotificationItemView(
     const message_center::Notification& notification) {
   // Find the view which corresponds to |notification|.
-  const auto i = NotificationIterForId(notification.id());
-  if (i == notification_item_views_.end())
+  auto notification_iter = std::find_if(
+      notification_item_views_.begin(), notification_item_views_.end(),
+      [&notification](
+          const std::unique_ptr<NotificationItemView>& notification_item_view) {
+        return notification_item_view->notification_id() == notification.id();
+      });
+
+  if (notification_iter == notification_item_views_.end())
     return;
 
-  (*i)->UpdateContents(notification.title(), notification.message(),
+  (*notification_iter)
+      ->UpdateContents(notification.title(), notification.message(),
                        notification.icon());
 }
 
 void NotificationMenuView::OnNotificationRemoved(
     const std::string& notification_id) {
   // Find the view which corresponds to |notification_id|.
-  const auto i = NotificationIterForId(notification_id);
-  if (i == notification_item_views_.end())
+  auto notification_iter = std::find_if(
+      notification_item_views_.begin(), notification_item_views_.end(),
+      [&notification_id](
+          const std::unique_ptr<NotificationItemView>& notification_item_view) {
+        return notification_item_view->notification_id() == notification_id;
+      });
+  if (notification_iter == notification_item_views_.end())
     return;
-  const bool removed_displayed_notification =
-      i->get() == GetDisplayedNotificationItemView();
 
-  notification_item_views_.erase(i);
+  // Erase the notification from |notification_item_views_| and
+  // |overflow_view_|.
+  notification_item_views_.erase(notification_iter);
+  if (overflow_view_)
+    overflow_view_->RemoveIcon(notification_id);
   header_view_->UpdateCounter(notification_item_views_.size());
 
-  if (removed_displayed_notification) {
-    // Display the next notification.
-    auto* item = GetDisplayedNotificationItemView();
-    if (item) {
-      AddChildView(item);
-      if (overflow_view_)
-        overflow_view_->RemoveIcon(item->notification_id());
+  // Display the next notification.
+  if (!notification_item_views_.empty()) {
+    AddChildView(notification_item_views_.front().get());
+    if (overflow_view_) {
+      overflow_view_->RemoveIcon(
+          notification_item_views_.front()->notification_id());
     }
-  } else if (overflow_view_) {
-    overflow_view_->RemoveIcon(notification_id);
   }
 
   if (overflow_view_ && overflow_view_->is_empty()) {
@@ -158,27 +172,14 @@ void NotificationMenuView::OnNotificationRemoved(
 }
 
 ui::Layer* NotificationMenuView::GetSlideOutLayer() {
-  auto* item = GetDisplayedNotificationItemView();
-  return item ? item->layer() : nullptr;
+  if (notification_item_views_.empty())
+    return nullptr;
+  return notification_item_views_.front()->layer();
 }
 
-const NotificationItemView*
-NotificationMenuView::GetDisplayedNotificationItemView() const {
-  return notification_item_views_.empty()
-             ? nullptr
-             : notification_item_views_.front().get();
-}
-
-const std::string& NotificationMenuView::GetDisplayedNotificationID() const {
+const std::string& NotificationMenuView::GetDisplayedNotificationID() {
   DCHECK(!notification_item_views_.empty());
-  return GetDisplayedNotificationItemView()->notification_id();
-}
-
-NotificationMenuView::NotificationItemViews::iterator
-NotificationMenuView::NotificationIterForId(const std::string& id) {
-  return std::find_if(
-      notification_item_views_.begin(), notification_item_views_.end(),
-      [id](const auto& item) { return item->notification_id() == id; });
+  return notification_item_views_.front()->notification_id();
 }
 
 }  // namespace ash

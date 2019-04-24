@@ -54,10 +54,10 @@ CanvasGradient::CanvasGradient(const FloatPoint& p0,
                                  Gradient::ColorInterpolation::kUnpremultiplied,
                                  Gradient::DegenerateHandling::kDisallow)) {}
 
-void CanvasGradient::addColorStop(double value,
+void CanvasGradient::addColorStop(float value,
                                   const String& color_string,
                                   ExceptionState& exception_state) {
-  if (!(value >= 0 && value <= 1.0)) {
+  if (!(value >= 0 && value <= 1.0f)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kIndexSizeError,
                                       "The provided value (" +
                                           String::Number(value) +

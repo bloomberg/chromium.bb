@@ -236,15 +236,13 @@ bool CSSParser::ParseColor(Color& color, const String& string, bool strict) {
     // context mode. If a function/unit/etc will require a secure context check
     // in the future, plumbing will need to be added.
     value = ParseSingleValue(
-        CSSPropertyID::kColor, string,
+        CSSPropertyColor, string,
         StrictCSSParserContext(SecureContextMode::kInsecureContext));
   }
 
-  auto* color_value = DynamicTo<CSSColorValue>(value);
-  if (!color_value)
+  if (!value || !value->IsColorValue())
     return false;
-
-  color = color_value->Value();
+  color = ToCSSColorValue(*value).Value();
   return true;
 }
 

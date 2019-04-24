@@ -366,11 +366,9 @@ class ServiceWorkerNavigationLoaderTest
     // Make the registration findable via storage functions.
     registration_->set_last_update_check(base::Time::Now());
     base::Optional<blink::ServiceWorkerStatusCode> status;
-    base::RunLoop run_loop;
-    storage()->StoreRegistration(
-        registration_.get(), version_.get(),
-        ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
-    run_loop.Run();
+    storage()->StoreRegistration(registration_.get(), version_.get(),
+                                 CreateReceiverOnCurrentThread(&status));
+    base::RunLoop().RunUntilIdle();
     ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk, status.value());
 
     // Set up custom fakes to let tests customize how to respond to fetch
@@ -475,6 +473,8 @@ class ServiceWorkerNavigationLoaderTest
 
  protected:
   // ServiceWorkerNavigationLoader::Delegate -----------------------------------
+  void OnPrepareToRestart() override {}
+
   ServiceWorkerVersion* GetServiceWorkerVersion(
       ServiceWorkerMetrics::URLRequestJobResult* result) override {
     return version_.get();
@@ -791,8 +791,10 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
   ASSERT_EQ(MOJO_RESULT_OK, mojo_result);
   EXPECT_EQ(sizeof(kResponseBody) - 1, written_bytes);
   EXPECT_TRUE(data_pipe.producer_handle.is_valid());
+  EXPECT_TRUE(HasWorkInBrowser(version_.get()));
   loader_ptr_.reset();
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(HasWorkInBrowser(version_.get()));
 
   // Although ServiceWorkerNavigationLoader resets its URLLoaderClient pointer
   // on connection error, the URLLoaderClient still exists. In this test, it is

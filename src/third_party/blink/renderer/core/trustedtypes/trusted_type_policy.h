@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy_options.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
 
@@ -23,6 +24,10 @@ class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static TrustedTypePolicy* Create(const String& policy_name,
+                                   TrustedTypePolicyOptions*,
+                                   bool exposed);
+
   TrustedTypePolicy(const String& policy_name,
                     TrustedTypePolicyOptions*,
                     bool exposed);
@@ -51,7 +56,7 @@ class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
 
  private:
   String name_;
-  Member<TrustedTypePolicyOptions> policy_options_;
+  TraceWrapperMember<TrustedTypePolicyOptions> policy_options_;
 };
 
 }  // namespace blink

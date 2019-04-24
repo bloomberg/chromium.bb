@@ -23,6 +23,10 @@
     }
   </style>
   <script>
+    if (window.testRunner) {
+      testRunner.dumpAsTextWithPixelResults();
+      testRunner.waitUntilDone();
+    }
     function doTest() {
       runAfterLayoutAndPaint(function() {
         // The change in clip style should be reflected immediately in the size
@@ -30,7 +34,9 @@
         // entirely cover the indicator.
         var clipper = document.getElementById("clipper");
         clipper.style.clip = "rect(0px, 100px, 100px, 0px)";
-      }, true);
+        if (window.testRunner)
+          testRunner.notifyDone();
+      });
     }
     window.addEventListener("load", doTest, false);
   </script>

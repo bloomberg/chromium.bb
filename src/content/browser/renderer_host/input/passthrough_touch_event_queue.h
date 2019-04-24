@@ -192,7 +192,6 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   // has no touch handler.
   PreFilterResult FilterBeforeForwarding(const blink::WebTouchEvent& event);
   PreFilterResult FilterBeforeForwardingImpl(const blink::WebTouchEvent& event);
-  bool ShouldFilterForEvent(const blink::WebTouchEvent& event);
 
   void AckTouchEventToClient(const TouchEventWithLatencyInfo& acked_event,
                              InputEventAckSource ack_source,

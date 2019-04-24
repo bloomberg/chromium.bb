@@ -8,24 +8,18 @@ suite('sync-page-test', function() {
   setup(function() {
     PolymerTest.clearBody();
 
-    settings.navigateTo(settings.routes.SYNC);
     syncPage = document.createElement('settings-sync-page');
     document.body.appendChild(syncPage);
   });
 
-  test('autofocus passphrase input', function() {
-    syncPage.unifiedConsentEnabled = true;
-    Polymer.dom.flush();
-
-    cr.webUIListenerCallback('sync-prefs-changed', {passphraseRequired: false});
-    Polymer.dom.flush();
-    // Passphrase input is not available when no passphrase is required.
-    assertFalse(!!syncPage.$$('#existingPassphraseInput'));
-
+  test('autofocus correctly after container is shown', function() {
     cr.webUIListenerCallback('sync-prefs-changed', {passphraseRequired: true});
+    syncPage.unifiedConsentEnabled = false;
     Polymer.dom.flush();
-    // Passphrase input is available and focused when a passphrase is required.
-    assertTrue(!!syncPage.$$('#existingPassphraseInput'));
+
+    // Simulate event normally fired by main_page_behavior after subpage
+    // animation ends.
+    syncPage.fire('show-container');
     assertEquals(
         syncPage.$$('#existingPassphraseInput').inputElement,
         syncPage.$$('#existingPassphraseInput').shadowRoot.activeElement);

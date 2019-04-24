@@ -13,9 +13,11 @@
 namespace identity {
 
 IdentityService::IdentityService(IdentityManager* identity_manager,
+                                 AccountTrackerService* account_tracker,
                                  service_manager::mojom::ServiceRequest request)
     : service_binding_(this, std::move(request)),
-      identity_manager_(identity_manager) {
+      identity_manager_(identity_manager),
+      account_tracker_(account_tracker) {
   registry_.AddInterface<mojom::IdentityAccessor>(
       base::Bind(&IdentityService::Create, base::Unretained(this)));
 }
@@ -36,6 +38,7 @@ void IdentityService::ShutDown() {
     return;
 
   identity_manager_ = nullptr;
+  account_tracker_ = nullptr;
 }
 
 bool IdentityService::IsShutDown() {
@@ -47,7 +50,8 @@ void IdentityService::Create(mojom::IdentityAccessorRequest request) {
   if (IsShutDown())
     return;
 
-  IdentityAccessorImpl::Create(std::move(request), identity_manager_);
+  IdentityAccessorImpl::Create(std::move(request), identity_manager_,
+                               account_tracker_);
 }
 
 }  // namespace identity

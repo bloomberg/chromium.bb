@@ -87,42 +87,37 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
   }
 
   int GetOrientationAngle() {
-    int angle =
-        ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
-                                 "screen.orientation.angle")
-            .GetInt();
+    int angle;
+    ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                             "screen.orientation.angle")->GetAsInteger(&angle);
     return angle;
   }
 
   std::string GetOrientationType() {
-    std::string type =
-        ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
-                                 "screen.orientation.type")
-            .GetString();
+    std::string type;
+    ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                             "screen.orientation.type")->GetAsString(&type);
     return type;
   }
 
   bool ScreenOrientationSupported() {
-    bool support =
-        ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
-                                 "'orientation' in screen")
-            .GetBool();
+    bool support;
+    ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                             "'orientation' in screen")->GetAsBoolean(&support);
     return support;
   }
 
   bool WindowOrientationSupported() {
-    bool support =
-        ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
-                                 "'orientation' in window")
-            .GetBool();
+    bool support;
+    ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                             "'orientation' in window")->GetAsBoolean(&support);
     return support;
   }
 
   int GetWindowOrientationAngle() {
-    int angle =
-        ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
-                                 "window.orientation")
-            .GetInt();
+    int angle;
+    ExecuteScriptAndGetValue(shell()->web_contents()->GetMainFrame(),
+                             "window.orientation")->GetAsInteger(&angle);
     return angle;
   }
 

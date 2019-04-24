@@ -368,10 +368,8 @@ sk_sp<PaintShader> PaintOpWriter::TransformShaderIfNecessary(
                                         &quality, paint_image_needs_mips);
   }
 
-  if (type == PaintShader::Type::kPaintRecord) {
-    return original->CreateScaledPaintRecord(ctm, options_.max_texture_size,
-                                             paint_record_post_scale);
-  }
+  if (type == PaintShader::Type::kPaintRecord)
+    return original->CreateScaledPaintRecord(ctm, paint_record_post_scale);
 
   return sk_ref_sp<PaintShader>(original);
 }
@@ -408,7 +406,7 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
   WriteSimple(shader->flags_);
   WriteSimple(shader->end_radius_);
   WriteSimple(shader->start_radius_);
-  // SkTileMode does not have an explicitly defined backing type, so
+  // SkShader::TileMode does not have an explicitly defined backing type, so
   // write a consistently sized value.
   Write(static_cast<int32_t>(shader->tx_));
   Write(static_cast<int32_t>(shader->ty_));

@@ -38,9 +38,6 @@ class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl {
   void Initialize(WebTestInterfaces* interfaces,
                   content::RenderViewImpl* render_view_for_frame);
 
-  // RenderFrameImpl overrides.
-  void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
-
   // WebLocalFrameClient implementation.
   blink::WebPlugin* CreatePlugin(const blink::WebPluginParams& params) override;
   void DidAddMessageToConsole(const blink::WebConsoleMessage& message,
@@ -79,7 +76,7 @@ class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl {
                             bool subtree) override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
-      blink::WebSetSinkIdCompleteCallback completion_callback) override;
+      std::unique_ptr<blink::WebSetSinkIdCallbacks> web_callbacks) override;
   void DidClearWindowObject() override;
 
  private:

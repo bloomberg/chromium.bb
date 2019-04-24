@@ -1,8 +1,9 @@
 # Speed Operations: Services
 
-TL: simonhatch@chromium.org<br>
-Team: simonhatch@chromium.org, dberris@chromium.org, benjhayden@chromium.org<br>
-TPM: benhenry@chromium.org, ushesh@chromium.org<br>
+TL: simonhatch@<br>
+Team: simonhatch@ benjhayden@, dtu@, eakuefner@<br>
+TPM: benhenry@<br>
+Mailing List: speed-services-dev@chromium.org<br>
 **[go/chrome-speed-services](https://goto.google.com/chrome-speed-services)**
 
 ## Mission

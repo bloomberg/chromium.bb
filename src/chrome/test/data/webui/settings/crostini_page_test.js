@@ -12,11 +12,12 @@ function setCrostiniPrefs(enabled, opt_sharedPaths, opt_sharedUsbDevices) {
   crostiniPage.prefs = {
     crostini: {
       enabled: {value: enabled},
-    },
-    guest_os: {
-      paths_shared_to_vms: {value: opt_sharedPaths || {}},
+      shared_paths: {value: opt_sharedPaths || []},
+      shared_usb_devices: {value: opt_sharedUsbDevices || []},
     }
   };
+  crostiniBrowserProxy.enabled = enabled;
+  crostiniBrowserProxy.sharedPaths = opt_sharedPaths || [];
   crostiniBrowserProxy.sharedUsbDevices = opt_sharedUsbDevices || [];
   Polymer.dom.flush();
 }
@@ -54,9 +55,8 @@ suite('CrostiniPageTests', function() {
 
       button.click();
       Polymer.dom.flush();
-      assertEquals(
-          1, crostiniBrowserProxy.getCallCount('requestCrostiniInstallerView'));
-      setCrostiniPrefs(true);
+      setCrostiniPrefs(crostiniBrowserProxy.enabled);
+      assertTrue(crostiniPage.prefs.crostini.enabled.value);
 
       assertTrue(!!crostiniPage.$$('.subpage-arrow'));
     });
@@ -106,8 +106,8 @@ suite('CrostiniPageTests', function() {
 
     test('Sanity', function() {
       assertTrue(!!subpage.$$('#crostini-shared-paths'));
-      assertTrue(!!subpage.$$('#crostini-shared-usb-devices'));
-      assertTrue(!!subpage.$$('#crostini-export-import'));
+      assertTrue(!!subpage.$$('#export'));
+      assertTrue(!!subpage.$$('#import'));
       assertTrue(!!subpage.$$('#remove'));
     });
 
@@ -121,35 +121,24 @@ suite('CrostiniPageTests', function() {
     });
 
     test('Export', function() {
-      assertTrue(!!subpage.$$('#crostini-export-import .subpage-arrow'));
-      subpage.$$('#crostini-export-import .subpage-arrow').click();
-      return flushAsync().then(() => {
-        subpage = crostiniPage.$$('settings-crostini-export-import');
-        assertTrue(!!subpage.$$('#export paper-button'));
-        subpage.$$('#export paper-button').click();
-        assertEquals(
-            1, crostiniBrowserProxy.getCallCount('exportCrostiniContainer'));
-      });
+      assertTrue(!!subpage.$$('#export paper-button'));
+      subpage.$$('#export paper-button').click();
+      assertEquals(
+          1, crostiniBrowserProxy.getCallCount('exportCrostiniContainer'));
     });
 
     test('Import', function() {
-      assertTrue(!!subpage.$$('#crostini-export-import .subpage-arrow'));
-      subpage.$$('#crostini-export-import .subpage-arrow').click();
-      return flushAsync().then(() => {
-        subpage = crostiniPage.$$('settings-crostini-export-import');
-        assertTrue(!!subpage.$$('#import paper-button'));
-        subpage.$$('#import paper-button').click();
-        assertEquals(
-            1, crostiniBrowserProxy.getCallCount('importCrostiniContainer'));
-      });
+      assertTrue(!!subpage.$$('#import paper-button'));
+      subpage.$$('#import paper-button').click();
+      assertEquals(
+          1, crostiniBrowserProxy.getCallCount('importCrostiniContainer'));
     });
 
     test('Remove', function() {
-      assertTrue(!!subpage.$$('#remove paper-button'));
-      subpage.$$('#remove paper-button').click();
-      assertEquals(
-          1, crostiniBrowserProxy.getCallCount('requestRemoveCrostini'));
-      setCrostiniPrefs(false);
+      assertTrue(!!subpage.$$('#remove .subpage-arrow'));
+      subpage.$$('#remove .subpage-arrow').click();
+      setCrostiniPrefs(crostiniBrowserProxy.enabled);
+      assertFalse(crostiniPage.prefs.crostini.enabled.value);
       return whenPopState().then(function() {
         assertEquals(settings.getCurrentRoute(), settings.routes.CROSTINI);
         assertTrue(!!crostiniPage.$$('#enable'));
@@ -187,7 +176,7 @@ suite('CrostiniPageTests', function() {
     let subpage;
 
     setup(function() {
-      setCrostiniPrefs(true, {'path1': ['termina'], 'path2': ['termina']});
+      setCrostiniPrefs(true, crostiniBrowserProxy.sharedPaths);
       return flushAsync().then(() => {
         settings.navigateTo(settings.routes.CROSTINI_SHARED_PATHS);
         return flushAsync().then(() => {
@@ -205,16 +194,12 @@ suite('CrostiniPageTests', function() {
 
     test('Remove', function() {
       assertFalse(subpage.$.crostiniInstructionsRemove.hidden);
-      assertTrue(!!subpage.$$('.list-item cr-icon-button'));
+      assertTrue(!!subpage.$$('.list-item button'));
       // Remove first shared path, still one left.
-      subpage.$$('.list-item cr-icon-button').click();
-      return crostiniBrowserProxy.whenCalled('removeCrostiniSharedPath')
-          .then(([vmName, path]) => {
-            assertEquals('termina', vmName);
-            assertEquals('path1', path);
-            setCrostiniPrefs(true, {'path2': ['termina']});
-            return flushAsync();
-          })
+      subpage.$$('.list-item button').click();
+      assertEquals(1, crostiniBrowserProxy.sharedPaths.length);
+      setCrostiniPrefs(true, crostiniBrowserProxy.sharedPaths);
+      return flushAsync()
           .then(() => {
             Polymer.dom.flush();
             assertEquals(
@@ -222,14 +207,9 @@ suite('CrostiniPageTests', function() {
             assertFalse(subpage.$.crostiniInstructionsRemove.hidden);
 
             // Remove remaining shared path, none left.
-            crostiniBrowserProxy.resetResolver('removeCrostiniSharedPath');
-            subpage.$$('.list-item cr-icon-button').click();
-            return crostiniBrowserProxy.whenCalled('removeCrostiniSharedPath');
-          })
-          .then(([vmName, path]) => {
-            assertEquals('termina', vmName);
-            assertEquals('path2', path);
-            setCrostiniPrefs(true, {});
+            subpage.$$('.list-item button').click();
+            assertEquals(0, crostiniBrowserProxy.sharedPaths.length);
+            setCrostiniPrefs(true, crostiniBrowserProxy.sharedPaths);
             return flushAsync();
           })
           .then(() => {
@@ -246,12 +226,11 @@ suite('CrostiniPageTests', function() {
     let subpage;
 
     setup(function() {
-      setCrostiniPrefs(true, {}, [
+      setCrostiniPrefs(true, [], [
         {'shared': true, 'guid': '0001', 'name': 'usb_dev1'},
         {'shared': false, 'guid': '0002', 'name': 'usb_dev2'},
         {'shared': true, 'guid': '0003', 'name': 'usb_dev3'}
       ]);
-
       return flushAsync()
           .then(() => {
             settings.navigateTo(settings.routes.CROSTINI_SHARED_USB_DEVICES);
@@ -267,26 +246,21 @@ suite('CrostiniPageTests', function() {
       assertEquals(3, subpage.shadowRoot.querySelectorAll('.toggle').length);
     });
 
-    test('USB shared state is updated by toggling', function() {
+    test('USB shared pref is updated by toggling', function() {
       assertTrue(!!subpage.$$('.toggle'));
       subpage.$$('.toggle').click();
       return flushAsync()
           .then(() => {
             Polymer.dom.flush();
-            return crostiniBrowserProxy.whenCalled(
-                'setCrostiniUsbDeviceShared');
-          })
-          .then(args => {
-            assertEquals('0001', args[0]);
-            assertEquals(false, args[1]);
-
-            // Simulate a change in the underlying model.
-            cr.webUIListenerCallback('crostini-shared-usb-devices-changed', [
-              {'shared': true, 'guid': '0001', 'name': 'usb_dev1'},
-            ]);
-            Polymer.dom.flush();
             assertEquals(
-                1, subpage.shadowRoot.querySelectorAll('.toggle').length);
+                crostiniBrowserProxy.sharedUsbDevices[0].shared, false);
+
+            subpage.$$('.toggle').click();
+            return flushAsync();
+          })
+          .then(() => {
+            Polymer.dom.flush();
+            assertEquals(crostiniBrowserProxy.sharedUsbDevices[0].shared, true);
           });
     });
   });

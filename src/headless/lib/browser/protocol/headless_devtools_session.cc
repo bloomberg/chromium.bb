@@ -4,10 +4,8 @@
 
 #include "headless/lib/browser/protocol/headless_devtools_session.h"
 
-#include "base/command_line.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
-#include "content/public/common/content_switches.h"
 #include "headless/lib/browser/protocol/browser_handler.h"
 #include "headless/lib/browser/protocol/headless_handler.h"
 #include "headless/lib/browser/protocol/page_handler.h"
@@ -15,11 +13,6 @@
 
 namespace headless {
 namespace protocol {
-static bool EnableInternalDevToolsBinaryProtocol() {
-  static bool disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kDisableInternalDevToolsBinaryProtocol);
-  return !disabled;
-}
 
 HeadlessDevToolsSession::HeadlessDevToolsSession(
     base::WeakPtr<HeadlessBrowserImpl> browser,
@@ -60,8 +53,7 @@ void HeadlessDevToolsSession::HandleCommand(
   std::string unused;
   std::unique_ptr<protocol::DictionaryValue> value =
       protocol::DictionaryValue::cast(protocol::StringUtil::parseMessage(
-          message, client_->UsesBinaryProtocol() ||
-                       EnableInternalDevToolsBinaryProtocol()));
+          message, client_->UsesBinaryProtocol()));
   if (!dispatcher_->parseCommand(value.get(), &call_id, &unused))
     return;
   pending_commands_[call_id] = std::move(callback);

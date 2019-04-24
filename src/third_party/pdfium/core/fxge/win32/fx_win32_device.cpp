@@ -27,7 +27,6 @@
 #include "core/fxge/win32/cfx_windowsdib.h"
 #include "core/fxge/win32/win32_int.h"
 #include "third_party/base/ptr_util.h"
-#include "third_party/base/win/win_util.h"
 
 #ifndef _SKIA_SUPPORT_
 #include "core/fxge/agg/fx_agg_driver.h"
@@ -79,6 +78,15 @@ bool GetSubFontName(ByteString* name) {
     }
   }
   return false;
+}
+
+bool IsGDIEnabled() {
+  // If GDI is disabled then GetDC for the desktop will fail.
+  HDC hdc = ::GetDC(nullptr);
+  if (!hdc)
+    return false;
+  ::ReleaseDC(nullptr, hdc);
+  return true;
 }
 
 HPEN CreateExtPen(const CFX_GraphStateData* pGraphState,
@@ -666,7 +674,7 @@ WindowsPrintMode g_pdfium_print_mode = WindowsPrintMode::kModeEmf;
 
 std::unique_ptr<SystemFontInfoIface> SystemFontInfoIface::CreateDefault(
     const char** pUnused) {
-  if (pdfium::base::win::IsUser32AndGdi32Available())
+  if (IsGDIEnabled())
     return std::unique_ptr<SystemFontInfoIface>(new CFX_Win32FontInfo);
 
   // Select the fallback font information class if GDI is disabled.
@@ -689,7 +697,7 @@ void CFX_GEModule::InitPlatform() {
   ver.dwOSVersionInfoSize = sizeof(ver);
   GetVersionEx(&ver);
   pPlatformData->m_bHalfTone = ver.dwMajorVersion >= 5;
-  if (pdfium::base::win::IsUser32AndGdi32Available())
+  if (IsGDIEnabled())
     pPlatformData->m_GdiplusExt.Load();
   m_pPlatformData = pPlatformData;
   m_pFontMgr->SetSystemFontInfo(SystemFontInfoIface::CreateDefault(nullptr));

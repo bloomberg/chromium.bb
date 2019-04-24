@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from __future__ import print_function
-
 import os
 import re
 import struct
@@ -194,7 +192,7 @@ class RdfaTestRunner(test_format.TestRunner):
     result += 'return code: %d\n' % return_code
 
     if return_code == 0:
-      print('  Checking jump targets...')
+      print '  Checking jump targets...'
       CheckValidJumpTargets(options, data_chunks)
 
     return result

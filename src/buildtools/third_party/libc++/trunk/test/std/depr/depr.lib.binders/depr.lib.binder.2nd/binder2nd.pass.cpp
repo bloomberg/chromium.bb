@@ -23,8 +23,6 @@
 //   typename Fn::result_type operator()(typename Fn::first_argument_type& x) const;
 // };
 
-#define _LIBCPP_DISABLE_DEPRECATION_WARNINGS
-
 #include <functional>
 #include <type_traits>
 #include <cassert>

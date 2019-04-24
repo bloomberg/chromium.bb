@@ -32,7 +32,7 @@ class VULKAN_EXPORT VulkanSurface {
 
   VulkanSurface(VkInstance vk_instance, VkSurfaceKHR surface);
 
-  virtual ~VulkanSurface();
+  ~VulkanSurface();
 
   bool Initialize(VulkanDeviceQueue* device_queue,
                   VulkanSurface::Format format);
@@ -44,14 +44,11 @@ class VULKAN_EXPORT VulkanSurface {
 
   void Finish();
 
-  virtual bool SetSize(const gfx::Size& size);
-
+  bool SetSize(const gfx::Size& size);
   const gfx::Size& size() const { return size_; }
   VkSurfaceFormatKHR surface_format() const { return surface_format_; }
 
  private:
-  bool CreateSwapChain(const gfx::Size& size);
-
   const VkInstance vk_instance_;
   gfx::Size size_;
   VkSurfaceKHR surface_ = VK_NULL_HANDLE;

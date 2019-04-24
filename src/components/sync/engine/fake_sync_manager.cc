@@ -210,6 +210,10 @@ const std::string FakeSyncManager::cache_guid() {
   return test_user_share_.user_share()->directory->cache_guid();
 }
 
+bool FakeSyncManager::ReceivedExperiment(Experiments* experiments) {
+  return false;
+}
+
 bool FakeSyncManager::HasUnsyncedItemsForTest() {
   NOTIMPLEMENTED();
   return false;

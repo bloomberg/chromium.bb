@@ -178,7 +178,7 @@ std::unique_ptr<protocol::Array<String>> GetEnabledWindowFeatures(
 
 }  // namespace
 
-static bool PrepareResourceBuffer(const Resource* cached_resource,
+static bool PrepareResourceBuffer(Resource* cached_resource,
                                   bool* has_zero_size) {
   if (!cached_resource)
     return false;
@@ -197,7 +197,7 @@ static bool PrepareResourceBuffer(const Resource* cached_resource,
   return true;
 }
 
-static bool HasTextContent(const Resource* cached_resource) {
+static bool HasTextContent(Resource* cached_resource) {
   ResourceType type = cached_resource->GetType();
   return type == ResourceType::kCSSStyleSheet ||
          type == ResourceType::kXSLStyleSheet ||
@@ -209,26 +209,26 @@ static std::unique_ptr<TextResourceDecoder> CreateResourceTextDecoder(
     const String& mime_type,
     const String& text_encoding_name) {
   if (!text_encoding_name.IsEmpty()) {
-    return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
+    return TextResourceDecoder::Create(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent,
         WTF::TextEncoding(text_encoding_name)));
   }
   if (DOMImplementation::IsXMLMIMEType(mime_type)) {
     TextResourceDecoderOptions options(TextResourceDecoderOptions::kXMLContent);
     options.SetUseLenientXMLDecoding();
-    return std::make_unique<TextResourceDecoder>(options);
+    return TextResourceDecoder::Create(options);
   }
   if (DeprecatedEqualIgnoringCase(mime_type, "text/html")) {
-    return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
+    return TextResourceDecoder::Create(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kHTMLContent, UTF8Encoding()));
   }
   if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type) ||
       DOMImplementation::IsJSONMIMEType(mime_type)) {
-    return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
+    return TextResourceDecoder::Create(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent, UTF8Encoding()));
   }
   if (DOMImplementation::IsTextMIMEType(mime_type)) {
-    return std::make_unique<TextResourceDecoder>(TextResourceDecoderOptions(
+    return TextResourceDecoder::Create(TextResourceDecoderOptions(
         TextResourceDecoderOptions::kPlainTextContent,
         WTF::TextEncoding("ISO-8859-1")));
   }
@@ -310,7 +310,7 @@ bool InspectorPageAgent::SharedBufferContent(
 }
 
 // static
-bool InspectorPageAgent::CachedResourceContent(const Resource* cached_resource,
+bool InspectorPageAgent::CachedResourceContent(Resource* cached_resource,
                                                String* result,
                                                bool* base64_encoded) {
   bool has_zero_size;
@@ -361,6 +361,15 @@ bool InspectorPageAgent::CachedResourceContent(const Resource* cached_resource,
           cached_resource->GetResponse().MimeType(), text_encoding_name, result,
           base64_encoded);
   }
+}
+
+InspectorPageAgent* InspectorPageAgent::Create(
+    InspectedFrames* inspected_frames,
+    Client* client,
+    InspectorResourceContentLoader* resource_content_loader,
+    v8_inspector::V8InspectorSession* v8_session) {
+  return MakeGarbageCollected<InspectorPageAgent>(
+      inspected_frames, client, resource_content_loader, v8_session);
 }
 
 String InspectorPageAgent::ResourceTypeJson(
@@ -926,15 +935,6 @@ void InspectorPageAgent::FrameStoppedLoading(LocalFrame* frame) {
   GetFrontend()->frameStoppedLoading(IdentifiersFactory::FrameId(frame));
 }
 
-void InspectorPageAgent::FrameRequestedNavigation(
-    LocalFrame* frame,
-    const KURL& url,
-    ClientNavigationReason reason) {
-  GetFrontend()->frameRequestedNavigation(
-      IdentifiersFactory::FrameId(frame),
-      ClientNavigationReasonToProtocol(reason), url.GetString());
-}
-
 void InspectorPageAgent::FrameScheduledNavigation(
     LocalFrame* frame,
     const KURL& url,
@@ -1146,7 +1146,7 @@ Response InspectorPageAgent::getLayoutMetrics(
   LocalFrame* main_frame = inspected_frames_->Root();
   VisualViewport& visual_viewport = main_frame->GetPage()->GetVisualViewport();
 
-  main_frame->GetDocument()->UpdateStyleAndLayout();
+  main_frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   IntRect visible_contents =
       main_frame->View()->LayoutViewport()->VisibleContentRect();

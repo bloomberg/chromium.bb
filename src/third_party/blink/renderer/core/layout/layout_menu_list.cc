@@ -91,14 +91,12 @@ void LayoutMenuList::CreateInnerBlock() {
   }
 
   // Create an anonymous block.
-  LegacyLayout legacy =
-      ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
   DCHECK(!FirstChild());
-  inner_block_ = LayoutBlockFlow::CreateAnonymous(&GetDocument(),
-                                                  CreateInnerStyle(), legacy);
+  inner_block_ =
+      LayoutBlockFlow::CreateAnonymous(&GetDocument(), CreateInnerStyle());
 
   button_text_ =
-      LayoutText::CreateEmptyAnonymous(GetDocument(), MutableStyle(), legacy);
+      LayoutText::CreateEmptyAnonymous(GetDocument(), MutableStyle());
   // We need to set the text explicitly though it was specified in the
   // constructor because LayoutText doesn't refer to the text
   // specified in the constructor in a case of re-transforming.

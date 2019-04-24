@@ -73,7 +73,7 @@ class CORE_EXPORT SVGFilterElement final : public SVGElement,
   void SvgAttributeChanged(const QualifiedName&) override;
   void ChildrenChanged(const ChildrenChange&) override;
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
   bool SelfHasRelativeLengths() const override;
 

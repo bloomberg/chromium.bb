@@ -12,7 +12,6 @@ namespace blink {
 
 struct PaintInfo;
 class CellSpan;
-class LayoutPoint;
 class LayoutTableRow;
 
 class TableRowPainter {
@@ -26,7 +25,8 @@ class TableRowPainter {
   void PaintOutline(const PaintInfo&);
   void PaintBoxDecorationBackground(const PaintInfo&,
                                     const CellSpan& dirtied_columns);
-  void PaintCollapsedBorders(const PaintInfo&, const CellSpan& dirtied_columns);
+  void PaintCollapsedBorders(const PaintInfo&,
+                             const CellSpan& dirtied_columns);
 
  private:
   void HandleChangedPartialPaint(const PaintInfo&,

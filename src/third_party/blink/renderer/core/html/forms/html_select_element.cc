@@ -49,7 +49,6 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
@@ -332,8 +331,7 @@ bool HTMLSelectElement::CanSelectAll() const {
   return !UsesMenuList();
 }
 
-LayoutObject* HTMLSelectElement::CreateLayoutObject(const ComputedStyle&,
-                                                    LegacyLayout) {
+LayoutObject* HTMLSelectElement::CreateLayoutObject(const ComputedStyle&) {
   if (UsesMenuList())
     return new LayoutMenuList(this);
   return new LayoutListBox(this);
@@ -382,8 +380,7 @@ void HTMLSelectElement::SetOption(unsigned index,
   if (index >= kMaxListItems ||
       GetListItems().size() + diff + 1 > kMaxListItems) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kWarning,
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
         String::Format("Blocked to expand the option list and set an option at "
                        "index=%u.  The maximum list length is %u.",
                        index, kMaxListItems)));
@@ -415,8 +412,7 @@ void HTMLSelectElement::setLength(unsigned new_len,
   if (new_len > kMaxListItems ||
       GetListItems().size() + new_len - length() > kMaxListItems) {
     GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kWarning,
+        kJSMessageSource, mojom::ConsoleMessageLevel::kWarning,
         String::Format("Blocked to expand the option list to %u items.  The "
                        "maximum list length is %u.",
                        new_len, kMaxListItems)));
@@ -912,7 +908,7 @@ void HTMLSelectElement::ScrollToOptionTask() {
   // OptionRemoved() makes sure option_to_scroll_to_ doesn't have an option with
   // another owner.
   DCHECK_EQ(option->OwnerSelectElement(), this);
-  GetDocument().UpdateStyleAndLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   if (!GetLayoutObject() || !GetLayoutObject()->IsListBox())
     return;
   LayoutRect bounds = option->BoundingBoxForScrollIntoView();
@@ -2004,19 +2000,6 @@ void HTMLSelectElement::DidRecalcStyle(const StyleRecalcChange change) {
   HTMLFormControlElementWithState::DidRecalcStyle(change);
   if (PopupIsVisible())
     popup_->UpdateFromElement(PopupMenu::kByStyleChange);
-}
-
-void HTMLSelectElement::AttachLayoutTree(AttachContext& context) {
-  HTMLFormControlElementWithState::AttachLayoutTree(context);
-
-  if (const ComputedStyle* style = GetComputedStyle()) {
-    if (style->Visibility() != EVisibility::kHidden) {
-      if (IsMultiple())
-        UseCounter::Count(GetDocument(), WebFeature::kSelectElementMultiple);
-      else
-        UseCounter::Count(GetDocument(), WebFeature::kSelectElementSingle);
-    }
-  }
 }
 
 void HTMLSelectElement::DetachLayoutTree(const AttachContext& context) {

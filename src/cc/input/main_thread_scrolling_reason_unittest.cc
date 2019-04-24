@@ -19,6 +19,7 @@ TEST_F(MainThreadScrollingReasonTest, AsText) {
       "Scrollbar scrolling,"
       "Frame overlay,"
       "Handling scroll from main thread,"
+      "Custom scrollbar scrolling,"
       "Has opacity and LCD text,"
       "Has transform and LCD text,"
       "Background is not opaque in rect and LCD text,"

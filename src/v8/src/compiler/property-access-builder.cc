@@ -32,31 +32,28 @@ SimplifiedOperatorBuilder* PropertyAccessBuilder::simplified() const {
   return jsgraph()->simplified();
 }
 
-bool HasOnlyStringMaps(JSHeapBroker* broker, MapHandles const& maps) {
+bool HasOnlyStringMaps(MapHandles const& maps) {
   for (auto map : maps) {
-    MapRef map_ref(broker, map);
-    if (!map_ref.IsStringMap()) return false;
+    if (!map->IsStringMap()) return false;
   }
   return true;
 }
 
 namespace {
 
-bool HasOnlyNumberMaps(JSHeapBroker* broker, MapHandles const& maps) {
+bool HasOnlyNumberMaps(MapHandles const& maps) {
   for (auto map : maps) {
-    MapRef map_ref(broker, map);
-    if (map_ref.instance_type() != HEAP_NUMBER_TYPE) return false;
+    if (map->instance_type() != HEAP_NUMBER_TYPE) return false;
   }
   return true;
 }
 
 }  // namespace
 
-bool PropertyAccessBuilder::TryBuildStringCheck(JSHeapBroker* broker,
-                                                MapHandles const& maps,
+bool PropertyAccessBuilder::TryBuildStringCheck(MapHandles const& maps,
                                                 Node** receiver, Node** effect,
                                                 Node* control) {
-  if (HasOnlyStringMaps(broker, maps)) {
+  if (HasOnlyStringMaps(maps)) {
     // Monormorphic string access (ignoring the fact that there are multiple
     // String maps).
     *receiver = *effect =
@@ -67,11 +64,10 @@ bool PropertyAccessBuilder::TryBuildStringCheck(JSHeapBroker* broker,
   return false;
 }
 
-bool PropertyAccessBuilder::TryBuildNumberCheck(JSHeapBroker* broker,
-                                                MapHandles const& maps,
+bool PropertyAccessBuilder::TryBuildNumberCheck(MapHandles const& maps,
                                                 Node** receiver, Node** effect,
                                                 Node* control) {
-  if (HasOnlyNumberMaps(broker, maps)) {
+  if (HasOnlyNumberMaps(maps)) {
     // Monomorphic number access (we also deal with Smis here).
     *receiver = *effect =
         graph()->NewNode(simplified()->CheckNumber(VectorSlotPair()), *receiver,
@@ -143,16 +139,16 @@ Node* PropertyAccessBuilder::BuildCheckHeapObject(Node* receiver, Node** effect,
   return receiver;
 }
 
-void PropertyAccessBuilder::BuildCheckMaps(Node* receiver, Node** effect,
-                                           Node* control,
-                                           MapHandles const& receiver_maps) {
+void PropertyAccessBuilder::BuildCheckMaps(
+    Node* receiver, Node** effect, Node* control,
+    std::vector<Handle<Map>> const& receiver_maps) {
   HeapObjectMatcher m(receiver);
   if (m.HasValue()) {
-    MapRef receiver_map = m.Ref(broker()).map();
-    if (receiver_map.is_stable()) {
+    Handle<Map> receiver_map(m.Value()->map(), isolate());
+    if (receiver_map->is_stable()) {
       for (Handle<Map> map : receiver_maps) {
-        if (MapRef(broker(), map).equals(receiver_map)) {
-          dependencies()->DependOnStableMap(receiver_map);
+        if (map.is_identical_to(receiver_map)) {
+          dependencies()->DependOnStableMap(MapRef(broker(), receiver_map));
           return;
         }
       }
@@ -161,9 +157,8 @@ void PropertyAccessBuilder::BuildCheckMaps(Node* receiver, Node** effect,
   ZoneHandleSet<Map> maps;
   CheckMapsFlags flags = CheckMapsFlag::kNone;
   for (Handle<Map> map : receiver_maps) {
-    MapRef receiver_map(broker(), map);
-    maps.insert(receiver_map.object(), graph()->zone());
-    if (receiver_map.is_migration_target()) {
+    maps.insert(map, graph()->zone());
+    if (map->is_migration_target()) {
       flags |= CheckMapsFlag::kTryMigrateInstance;
     }
   }
@@ -195,72 +190,54 @@ Node* PropertyAccessBuilder::ResolveHolder(
 }
 
 Node* PropertyAccessBuilder::TryBuildLoadConstantDataField(
-    NameRef const& name, PropertyAccessInfo const& access_info,
-    Node* receiver) {
+    Handle<Name> name, PropertyAccessInfo const& access_info, Node* receiver) {
   // Optimize immutable property loads.
+  HeapObjectMatcher m(receiver);
+  if (m.HasValue() && m.Value()->IsJSObject()) {
+    // TODO(ishell): Use something simpler like
+    //
+    // Handle<Object> value =
+    //     JSObject::FastPropertyAt(Handle<JSObject>::cast(m.Value()),
+    //                              Representation::Tagged(), field_index);
+    //
+    // here, once we have the immutable bit in the access_info.
 
-  // First, determine if we have a constant holder to load from.
-  Handle<JSObject> holder;
-  // If {access_info} has a holder, just use it.
-  if (!access_info.holder().ToHandle(&holder)) {
-    // Otherwise, try to match the {receiver} as a constant.
-    HeapObjectMatcher m(receiver);
-    if (!m.HasValue() || !m.Ref(broker()).IsJSObject()) return nullptr;
-
-    // Let us make sure the actual map of the constant receiver is among
-    // the maps in {access_info}.
-    MapRef receiver_map = m.Ref(broker()).map();
-    if (std::find_if(access_info.receiver_maps().begin(),
-                     access_info.receiver_maps().end(), [&](Handle<Map> map) {
-                       return map.address() == receiver_map.object().address();
-                     }) == access_info.receiver_maps().end()) {
-      // The map of the receiver is not in the feedback, let us bail out.
-      return nullptr;
-    }
-    holder = Handle<JSObject>::cast(m.Value());
-  }
-
-  // TODO(ishell): Use something simpler like
-  //
-  // Handle<Object> value =
-  //     JSObject::FastPropertyAt(Handle<JSObject>::cast(m.Value()),
-  //                              Representation::Tagged(), field_index);
-  //
-  // here, once we have the immutable bit in the access_info.
-
-  // TODO(turbofan): Given that we already have the field_index here, we
-  // might be smarter in the future and not rely on the LookupIterator.
-  LookupIterator it(isolate(), holder, name.object(),
-                    LookupIterator::OWN_SKIP_INTERCEPTOR);
-  if (it.state() == LookupIterator::DATA) {
-    bool is_readonly_non_configurable = it.IsReadOnly() && !it.IsConfigurable();
-    if (is_readonly_non_configurable ||
-        (FLAG_track_constant_fields && access_info.IsDataConstantField())) {
-      Node* value = jsgraph()->Constant(JSReceiver::GetDataProperty(&it));
-      if (!is_readonly_non_configurable) {
-        // It's necessary to add dependency on the map that introduced
-        // the field.
-        DCHECK(access_info.IsDataConstantField());
-        DCHECK(!it.is_dictionary_holder());
-        MapRef map(broker(),
-                   handle(it.GetHolder<HeapObject>()->map(), isolate()));
-        map.SerializeOwnDescriptors();  // TODO(neis): Remove later.
-        if (dependencies()->DependOnFieldConstness(
-                map, it.GetFieldDescriptorIndex()) !=
-            PropertyConstness::kConst) {
-          return nullptr;
+    // TODO(turbofan): Given that we already have the field_index here, we
+    // might be smarter in the future and not rely on the LookupIterator.
+    LookupIterator it(isolate(), m.Value(), name,
+                      LookupIterator::OWN_SKIP_INTERCEPTOR);
+    if (it.state() == LookupIterator::DATA) {
+      bool is_readonly_non_configurable =
+          it.IsReadOnly() && !it.IsConfigurable();
+      if (is_readonly_non_configurable ||
+          (FLAG_track_constant_fields && access_info.IsDataConstantField())) {
+        Node* value = jsgraph()->Constant(JSReceiver::GetDataProperty(&it));
+        if (!is_readonly_non_configurable) {
+          // It's necessary to add dependency on the map that introduced
+          // the field.
+          DCHECK(access_info.IsDataConstantField());
+          DCHECK(!it.is_dictionary_holder());
+          MapRef map(broker(),
+                     handle(it.GetHolder<HeapObject>()->map(), isolate()));
+          map.SerializeOwnDescriptors();  // TODO(neis): Remove later.
+          if (dependencies()->DependOnFieldConstness(
+                  map, it.GetFieldDescriptorIndex()) !=
+              PropertyConstness::kConst) {
+            return nullptr;
+          }
         }
+        return value;
       }
-      return value;
     }
   }
   return nullptr;
 }
 
 Node* PropertyAccessBuilder::BuildLoadDataField(
-    NameRef const& name, PropertyAccessInfo const& access_info, Node* receiver,
+    Handle<Name> name, PropertyAccessInfo const& access_info, Node* receiver,
     Node** effect, Node** control) {
   DCHECK(access_info.IsDataField() || access_info.IsDataConstantField());
+  receiver = ResolveHolder(access_info, receiver);
   if (Node* value =
           TryBuildLoadConstantDataField(name, access_info, receiver)) {
     return value;
@@ -270,7 +247,7 @@ Node* PropertyAccessBuilder::BuildLoadDataField(
   Type const field_type = access_info.field_type();
   MachineRepresentation const field_representation =
       access_info.field_representation();
-  Node* storage = ResolveHolder(access_info, receiver);
+  Node* storage = receiver;
   if (!field_index.is_inobject()) {
     storage = *effect = graph()->NewNode(
         simplified()->LoadField(AccessBuilder::ForJSObjectPropertiesOrHash()),
@@ -279,7 +256,7 @@ Node* PropertyAccessBuilder::BuildLoadDataField(
   FieldAccess field_access = {
       kTaggedBase,
       field_index.offset(),
-      name.object(),
+      name,
       MaybeHandle<Map>(),
       field_type,
       MachineType::TypeForRepresentation(field_representation),
@@ -288,11 +265,14 @@ Node* PropertyAccessBuilder::BuildLoadDataField(
   if (field_representation == MachineRepresentation::kFloat64) {
     if (!field_index.is_inobject() || field_index.is_hidden_field() ||
         !FLAG_unbox_double_fields) {
-      FieldAccess const storage_access = {
-          kTaggedBase,           field_index.offset(),
-          name.object(),         MaybeHandle<Map>(),
-          Type::OtherInternal(), MachineType::TaggedPointer(),
-          kPointerWriteBarrier,  LoadSensitivity::kCritical};
+      FieldAccess const storage_access = {kTaggedBase,
+                                          field_index.offset(),
+                                          name,
+                                          MaybeHandle<Map>(),
+                                          Type::OtherInternal(),
+                                          MachineType::TaggedPointer(),
+                                          kPointerWriteBarrier,
+                                          LoadSensitivity::kCritical};
       storage = *effect = graph()->NewNode(
           simplified()->LoadField(storage_access), storage, *effect, *control);
       field_access.offset = HeapNumber::kValueOffset;
@@ -303,9 +283,8 @@ Node* PropertyAccessBuilder::BuildLoadDataField(
     // used by the LoadElimination to eliminate map checks on the result.
     Handle<Map> field_map;
     if (access_info.field_map().ToHandle(&field_map)) {
-      MapRef field_map_ref(broker(), field_map);
-      if (field_map_ref.is_stable()) {
-        dependencies()->DependOnStableMap(field_map_ref);
+      if (field_map->is_stable()) {
+        dependencies()->DependOnStableMap(MapRef(broker(), field_map));
         field_access.map = field_map;
       }
     }

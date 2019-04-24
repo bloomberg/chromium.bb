@@ -26,20 +26,19 @@ using content::WebContents;
 
 // static
 void ExternalProtocolHandler::RunExternalProtocolDialog(
-    const GURL& url,
-    WebContents* web_contents,
-    ui::PageTransition page_transition,
-    bool has_user_gesture) {
-  DCHECK(web_contents);
+    const GURL& url, int render_process_host_id, int routing_id,
+    ui::PageTransition page_transition, bool has_user_gesture) {
   std::unique_ptr<ExternalProtocolDialogDelegate> delegate(
-      new ExternalProtocolDialogDelegate(url, web_contents));
+      new ExternalProtocolDialogDelegate(url, render_process_host_id,
+                                         routing_id));
   if (delegate->program_name().empty()) {
     // ShellExecute won't do anything. Don't bother warning the user.
     return;
   }
 
   // Windowing system takes ownership.
-  new ExternalProtocolDialog(std::move(delegate), web_contents);
+  new ExternalProtocolDialog(std::move(delegate), render_process_host_id,
+                             routing_id);
 }
 
 ExternalProtocolDialog::~ExternalProtocolDialog() {}
@@ -97,8 +96,12 @@ ui::ModalType ExternalProtocolDialog::GetModalType() const {
 
 ExternalProtocolDialog::ExternalProtocolDialog(
     std::unique_ptr<const ProtocolDialogDelegate> delegate,
-    WebContents* web_contents)
-    : delegate_(std::move(delegate)), creation_time_(base::TimeTicks::Now()) {
+    int render_process_host_id,
+    int routing_id)
+    : delegate_(std::move(delegate)),
+      render_process_host_id_(render_process_host_id),
+      routing_id_(routing_id),
+      creation_time_(base::TimeTicks::Now()) {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   set_margins(
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
@@ -110,6 +113,11 @@ ExternalProtocolDialog::ExternalProtocolDialog(
       new views::Checkbox(delegate_->GetCheckboxText());
   AddChildView(remember_decision_checkbox_);
 
-  constrained_window::ShowWebModalDialogViews(this, web_contents);
+  WebContents* web_contents = tab_util::GetWebContentsByID(
+      render_process_host_id_, routing_id_);
+  // Only launch the dialog if there is a web contents associated with the
+  // request.
+  if (web_contents)
+    constrained_window::ShowWebModalDialogViews(this, web_contents);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTERNAL_PROTOCOL);
 }

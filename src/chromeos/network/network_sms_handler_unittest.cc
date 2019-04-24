@@ -12,8 +12,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/constants/chromeos_switches.h"
-#include "chromeos/dbus/shill/shill_clients.h"
-#include "chromeos/dbus/shill/shill_device_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_device_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -62,9 +62,10 @@ class NetworkSmsHandlerTest : public testing::Test {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(chromeos::switches::kSmsTestMessages);
 
-    shill_clients::InitializeFakes();
+    // Initialize DBusThreadManager with a stub implementation.
+    DBusThreadManager::Initialize();
     ShillDeviceClient::TestInterface* device_test =
-        ShillDeviceClient::Get()->GetTestInterface();
+        DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     ASSERT_TRUE(device_test);
     device_test->AddDevice("/org/freedesktop/ModemManager1/stub/0",
                            shill::kTypeCellular,
@@ -85,7 +86,7 @@ class NetworkSmsHandlerTest : public testing::Test {
   void TearDown() override {
     network_sms_handler_->RemoveObserver(test_observer_.get());
     network_sms_handler_.reset();
-    shill_clients::Shutdown();
+    DBusThreadManager::Shutdown();
   }
 
  protected:

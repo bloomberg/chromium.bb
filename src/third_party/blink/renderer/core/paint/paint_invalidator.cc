@@ -30,27 +30,29 @@ namespace blink {
 // layer raster invalidations during animation with subpixels.
 // See crbug.com/833083 for details.
 template <typename Rect, typename Point>
-void PaintInvalidatorContext::ExcludeCompositedLayerSubpixelAccumulation(
+void PaintInvalidator::ExcludeCompositedLayerSubpixelAccumulation(
     const LayoutObject& object,
-    Rect& rect) const {
+    const PaintInvalidatorContext& context,
+    Rect& rect) {
   // TODO(wangxianzhu): How to handle sub-pixel location animation for CAP?
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     return;
 
   // One of the following conditions happened in crbug.com/837226.
-  if (!paint_invalidation_container ||
-      !paint_invalidation_container->FirstFragment()
+  if (!context.paint_invalidation_container ||
+      !context.paint_invalidation_container->FirstFragment()
            .HasLocalBorderBoxProperties() ||
-      !tree_builder_context_)
+      !context.tree_builder_context_)
     return;
 
-  if (!(paint_invalidation_container->Layer()->GetCompositingReasons() &
+  if (!(context.paint_invalidation_container->Layer()->GetCompositingReasons() &
         CompositingReason::kComboAllDirectReasons))
     return;
 
-  if (object != paint_invalidation_container &&
-      &paint_invalidation_container->FirstFragment().PostScrollTranslation() !=
-          tree_builder_context_->current.transform) {
+  if (object != context.paint_invalidation_container &&
+      &context.paint_invalidation_container->FirstFragment()
+              .PostScrollTranslation() !=
+          context.tree_builder_context_->current.transform) {
     // Subpixel accumulation doesn't propagate through non-translation
     // transforms. Also skip all transforms, to avoid the runtime cost of
     // verifying whether the transform is a translation.
@@ -64,72 +66,77 @@ void PaintInvalidatorContext::ExcludeCompositedLayerSubpixelAccumulation(
   // make sure the code is synced.
   // TODO(wangxianzhu): Avoid exposing subpixel accumulation to platform code.
   rect.MoveBy(Point(LayoutPoint(
-      -paint_invalidation_container->Layer()->SubpixelAccumulation())));
+      -context.paint_invalidation_container->Layer()->SubpixelAccumulation())));
 }
 
-IntRect PaintInvalidatorContext::MapLocalRectToVisualRect(
+// This function is templatized to avoid FloatRect<->LayoutRect conversions
+// which affect performance.
+template <typename Rect, typename Point>
+LayoutRect PaintInvalidator::MapLocalRectToVisualRect(
     const LayoutObject& object,
-    const LayoutRect& local_rect) const {
-  DCHECK(NeedsVisualRectUpdate(object));
-
+    const Rect& local_rect,
+    const PaintInvalidatorContext& context,
+    bool disable_flip) {
+  DCHECK(context.NeedsVisualRectUpdate(object));
   if (local_rect.IsEmpty())
-    return IntRect();
+    return LayoutRect();
 
-  DCHECK(!object.IsSVGChild() ||
-         // This function applies to SVG children derived from non-SVG layout
-         // objects, for carets, selections, etc.
-         object.IsBoxModelObject() || object.IsText());
+  bool is_svg_child = object.IsSVGChild();
 
-  // The flip below is required because local visual rects are currently in
-  // "physical coordinates with flipped block-flow direction" (see
-  // LayoutBoxModelObject.h) but we need them to be in physical coordinates.
-  auto rect = local_rect;
-  if (object.IsBox()) {
-    ToLayoutBox(object).FlipForWritingMode(rect);
-  } else {
-    // Also convert the rect for non-boxes into physical coordinates before
-    // applying paint offset.
-    // TODO(wangxianzhu): Avoid ContainingBlock().
-    object.ContainingBlock()->FlipForWritingMode(rect);
+  // TODO(wkorman): The flip below is required because local visual rects are
+  // currently in "physical coordinates with flipped block-flow direction"
+  // (see LayoutBoxModelObject.h) but we need them to be in physical
+  // coordinates.
+  Rect rect = local_rect;
+  // Writing-mode flipping doesn't apply to non-root SVG.
+  if (!is_svg_child) {
+    if (!disable_flip) {
+      if (object.IsBox()) {
+        ToLayoutBox(object).FlipForWritingMode(rect);
+      } else if (!(context.subtree_flags &
+                   PaintInvalidatorContext::kSubtreeSlowPathRect)) {
+        // For CAP and the GeometryMapper path, we also need to convert the
+        // rect for non-boxes into physical coordinates before applying paint
+        // offset. (Otherwise we'll call mapToVisualrectInAncestorSpace() which
+        // requires physical coordinates for boxes, but "physical coordinates
+        // with flipped block-flow direction" for non-boxes for which we don't
+        // need to flip.)
+        // TODO(wangxianzhu): Avoid containingBlock().
+        object.ContainingBlock()->FlipForWritingMode(rect);
+      }
+    }
+
+    // Unite visual rect with clip path bounding rect.
+    // It is because the clip path display items are owned by the layout object
+    // who has the clip path, and uses its visual rect as bounding rect too.
+    // Usually it is done at layout object level and included as a part of
+    // local visual overflow, but clip-path can be a reference to SVG, and we
+    // have to wait until pre-paint to ensure clean layout.
+    // Note: SVG children don't need this adjustment because their visual
+    // overflow rects are already adjusted by clip path.
+    if (base::Optional<FloatRect> clip_path_bounding_box =
+            ClipPathClipper::LocalClipPathBoundingBox(object)) {
+      Rect box(EnclosingIntRect(*clip_path_bounding_box));
+      rect.Unite(box);
+    }
   }
-
-  // Unite visual rect with clip path bounding rect.
-  // It is because the clip path display items are owned by the layout object
-  // who has the clip path, and uses its visual rect as bounding rect too.
-  // Usually it is done at layout object level and included as a part of
-  // local visual overflow, but clip-path can be a reference to SVG, and we
-  // have to wait until pre-paint to ensure clean layout.
-  if (base::Optional<FloatRect> clip_path_bounding_box =
-          ClipPathClipper::LocalClipPathBoundingBox(object))
-    rect.Unite(LayoutRect(EnclosingIntRect(*clip_path_bounding_box)));
-
-  rect.MoveBy(fragment_data->PaintOffset());
-  ExcludeCompositedLayerSubpixelAccumulation<LayoutRect, LayoutPoint>(object,
-                                                                      rect);
-  // Use EnclosingIntRect to ensure the final visual rect will cover the rect
-  // in source coordinates no matter if the painting will snap to pixels.
-  return EnclosingIntRect(rect);
-}
-
-IntRect PaintInvalidatorContext::MapLocalRectToVisualRectForSVGChild(
-    const LayoutObject& object,
-    const FloatRect& local_rect) const {
-  DCHECK(object.IsSVGChild());
-  DCHECK(NeedsVisualRectUpdate(object));
-
-  if (local_rect.IsEmpty())
-    return IntRect();
 
   // Visual rects are in the space of their local transform node. For SVG, the
   // input rect is in local SVG coordinates in which paint offset doesn't apply.
-  // We also don't need to adjust for clip path here because SVG the local
-  // visual rect has already been adjusted by clip path.
-  auto rect = local_rect;
-  ExcludeCompositedLayerSubpixelAccumulation<FloatRect, FloatPoint>(object,
-                                                                    rect);
+  if (!is_svg_child)
+    rect.MoveBy(Point(context.fragment_data->PaintOffset()));
+  ExcludeCompositedLayerSubpixelAccumulation<Rect, Point>(object, context,
+                                                          rect);
   // Use EnclosingIntRect to ensure the final visual rect will cover the rect
   // in source coordinates no matter if the painting will snap to pixels.
-  return EnclosingIntRect(rect);
+  return LayoutRect(EnclosingIntRect(rect));
+}
+
+void PaintInvalidatorContext::MapLocalRectToVisualRect(
+    const LayoutObject& object,
+    LayoutRect& rect) const {
+  rect = PaintInvalidator::MapLocalRectToVisualRect<LayoutRect, LayoutPoint>(
+      object, rect, *this);
 }
 
 const PaintInvalidatorContext*
@@ -139,15 +146,17 @@ PaintInvalidatorContext::ParentContextAccessor::ParentContext() const {
                     : nullptr;
 }
 
-IntRect PaintInvalidator::ComputeVisualRect(
+LayoutRect PaintInvalidator::ComputeVisualRect(
     const LayoutObject& object,
     const PaintInvalidatorContext& context) {
   if (object.IsSVGChild()) {
-    return context.MapLocalRectToVisualRectForSVGChild(
-        object, SVGLayoutSupport::LocalVisualRect(object));
+    FloatRect local_rect = SVGLayoutSupport::LocalVisualRect(object);
+    return MapLocalRectToVisualRect<FloatRect, FloatPoint>(object, local_rect,
+                                                           context);
   }
-
-  return context.MapLocalRectToVisualRect(object, object.LocalVisualRect());
+  LayoutRect local_rect = object.LocalVisualRect();
+  return MapLocalRectToVisualRect<LayoutRect, LayoutPoint>(object, local_rect,
+                                                           context);
 }
 
 void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
@@ -164,9 +173,8 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
     context.painting_layer = object.PaintingLayer();
   }
 
-  auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(object);
-  if (layout_block_flow && !object.IsLayoutNGBlockFlow() &&
-      layout_block_flow->ContainsFloats())
+  if (object.IsLayoutBlockFlow() && !object.IsLayoutNGBlockFlow() &&
+      ToLayoutBlockFlow(object).ContainsFloats())
     context.painting_layer->SetNeedsPaintPhaseFloat();
 
   if (object.IsFloating() &&
@@ -199,7 +207,7 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
     context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
   } else {
     // Hit testing rects for touch action paint in the background phase.
-    if (object.HasEffectiveAllowedTouchAction())
+    if (object.HasEffectiveWhitelistedTouchAction())
       context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
   }
 }
@@ -282,7 +290,11 @@ void PaintInvalidator::UpdateVisualRect(const LayoutObject& object,
   DCHECK(context.tree_builder_context_->current.paint_offset ==
          fragment_data.PaintOffset());
 
-  fragment_data.SetVisualRect(ComputeVisualRect(object, context));
+  LayoutRect new_visual_rect = ComputeVisualRect(object, context);
+  // Make the empty visual rect more meaningful for debugging and testing.
+  if (new_visual_rect.IsEmpty())
+    new_visual_rect.SetLocation(fragment_data.PaintOffset());
+  fragment_data.SetVisualRect(new_visual_rect);
 }
 
 void PaintInvalidator::UpdateEmptyVisualRectFlag(
@@ -324,6 +336,17 @@ bool PaintInvalidator::InvalidatePaint(
   object.GetMutableForPainting().EnsureIsReadyForPaintInvalidation();
 
   UpdatePaintingLayer(object, context);
+
+  // TODO(chrishtr): refactor to remove these slow paths by expanding their
+  // LocalVisualRect to include repeated locations.
+  if (object.IsTableSection()) {
+    const auto& section = ToLayoutTableSection(object);
+    if (section.IsRepeatingHeaderGroup() || section.IsRepeatingFooterGroup())
+      context.subtree_flags |= PaintInvalidatorContext::kSubtreeSlowPathRect;
+  }
+  if (object.IsFixedPositionObjectInPagedMedia())
+    context.subtree_flags |= PaintInvalidatorContext::kSubtreeSlowPathRect;
+
   UpdatePaintInvalidationContainer(object, context);
   UpdateEmptyVisualRectFlag(object, context);
 
@@ -332,7 +355,7 @@ bool PaintInvalidator::InvalidatePaint(
 
   unsigned tree_builder_index = 0;
 
-  for (auto* fragment_data = &object.GetMutableForPainting().FirstFragment();
+  for (auto *fragment_data = &object.GetMutableForPainting().FirstFragment();
        fragment_data;
        fragment_data = fragment_data->NextFragment(), tree_builder_index++) {
     context.old_visual_rect = fragment_data->VisualRect();

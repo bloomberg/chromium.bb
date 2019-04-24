@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/language/core/browser/language_model_manager.h"
-#include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
@@ -28,6 +27,7 @@
 #include "ios/chrome/browser/infobars/infobar_controller.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/language/language_model_manager_factory.h"
+#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/translate/after_translate_infobar_controller.h"
 #import "ios/chrome/browser/translate/before_translate_infobar_controller.h"
 #import "ios/chrome/browser/translate/language_selection_handler.h"
@@ -86,8 +86,7 @@ ChromeIOSTranslateClient::~ChromeIOSTranslateClient() {
 std::unique_ptr<translate::TranslatePrefs>
 ChromeIOSTranslateClient::CreateTranslatePrefs(PrefService* prefs) {
   return std::unique_ptr<translate::TranslatePrefs>(
-      new translate::TranslatePrefs(prefs, language::prefs::kAcceptLanguages,
-                                    nullptr));
+      new translate::TranslatePrefs(prefs, prefs::kAcceptLanguages, nullptr));
 }
 
 translate::TranslateManager* ChromeIOSTranslateClient::GetTranslateManager() {
@@ -139,6 +138,9 @@ std::unique_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
   return std::make_unique<InfoBarIOS>(controller, std::move(delegate));
 }
 
+void ChromeIOSTranslateClient::RecordTranslateEvent(
+    const metrics::TranslateEventProto& translate_event) {}
+
 bool ChromeIOSTranslateClient::ShowTranslateUI(
     translate::TranslateStep step,
     const std::string& source_language,
@@ -189,6 +191,9 @@ ChromeIOSTranslateClient::GetTranslateAcceptLanguages() {
 int ChromeIOSTranslateClient::GetInfobarIconID() const {
   return IDR_IOS_INFOBAR_TRANSLATE;
 }
+
+void ChromeIOSTranslateClient::RecordLanguageDetectionEvent(
+    const translate::LanguageDetectionDetails& details) const {}
 
 bool ChromeIOSTranslateClient::IsTranslatableURL(const GURL& url) {
   return TranslateServiceIOS::IsTranslatableURL(url);

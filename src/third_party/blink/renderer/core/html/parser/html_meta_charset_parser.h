@@ -43,7 +43,10 @@ class HTMLMetaCharsetParser {
   USING_FAST_MALLOC(HTMLMetaCharsetParser);
 
  public:
-  HTMLMetaCharsetParser();
+  static std::unique_ptr<HTMLMetaCharsetParser> Create() {
+    return base::WrapUnique(new HTMLMetaCharsetParser());
+  }
+
   ~HTMLMetaCharsetParser();
 
   // Returns true if done checking, regardless whether an encoding is found.
@@ -52,6 +55,8 @@ class HTMLMetaCharsetParser {
   const WTF::TextEncoding& Encoding() { return encoding_; }
 
  private:
+  HTMLMetaCharsetParser();
+
   bool ProcessMeta();
 
   std::unique_ptr<HTMLTokenizer> tokenizer_;

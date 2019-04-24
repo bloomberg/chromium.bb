@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
 </head>
 <body>
 
@@ -19,7 +20,7 @@ function parseObject(str) {
     return Function('"use strict"; return (' + str  + ');')();
 }
 
-test((t) => {
+test_after_layout_and_paint((t) => {
     var axParagraph = accessibilityController.accessibleElementById('paragraph');
     var axStaticText = axParagraph.childAtIndex(0);
 

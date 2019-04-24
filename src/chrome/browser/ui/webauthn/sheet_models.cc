@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -17,42 +16,10 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
-#include "device/fido/authenticator_get_assertion_response.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/text_utils.h"
 #include "url/gurl.h"
-
-namespace {
-
-base::string16 GetRelyingPartyIdString(
-    AuthenticatorRequestDialogModel* dialog_model) {
-  static constexpr char kRpIdUrlPrefix[] = "https://";
-  // The preferred width of medium snap point modal dialog view is 448 dp, but
-  // we leave some room for padding between the text and the modal views.
-  static constexpr int kDialogWidth = 300;
-  const auto& rp_id = dialog_model->relying_party_id();
-  DCHECK(!rp_id.empty());
-  GURL rp_id_url(kRpIdUrlPrefix + rp_id);
-  auto max_static_string_length = gfx::GetStringWidthF(
-      l10n_util::GetStringUTF16(IDS_WEBAUTHN_GENERIC_TITLE), gfx::FontList(),
-      gfx::Typesetter::DEFAULT);
-  return url_formatter::ElideHost(rp_id_url, gfx::FontList(),
-                                  kDialogWidth - max_static_string_length);
-}
-
-// Possibly returns a resident key warning if the model indicates that it's
-// needed.
-base::Optional<base::string16> PossibleResidentKeyWarning(
-    AuthenticatorRequestDialogModel* dialog_model) {
-  if (dialog_model->might_create_resident_credential()) {
-    return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_RESIDENT_KEY_PRIVACY,
-                                      GetRelyingPartyIdString(dialog_model));
-  }
-  return base::nullopt;
-}
-
-}  // namespace
 
 // AuthenticatorSheetModelBase ------------------------------------------------
 
@@ -105,11 +72,6 @@ base::string16 AuthenticatorSheetModelBase::GetAcceptButtonLabel() const {
   return base::string16();
 }
 
-base::Optional<base::string16>
-AuthenticatorSheetModelBase::GetAdditionalDescription() const {
-  return base::nullopt;
-}
-
 ui::MenuModel* AuthenticatorSheetModelBase::GetOtherTransportsMenuModel() {
   return nullptr;
 }
@@ -128,22 +90,34 @@ void AuthenticatorSheetModelBase::OnCancel() {
     dialog_model()->Cancel();
 }
 
+base::string16 AuthenticatorSheetModelBase::GetRelyingPartyIdString() const {
+  static constexpr char kRpIdUrlPrefix[] = "https://";
+  // The preferred width of medium snap point modal dialog view is 448 dp, but
+  // we leave some room for padding between the text and the modal views.
+  static constexpr int kDialogWidth = 300;
+  const auto& rp_id = dialog_model()->transport_availability()->rp_id;
+  DCHECK(!rp_id.empty());
+  GURL rp_id_url(kRpIdUrlPrefix + rp_id);
+  auto max_static_string_length = gfx::GetStringWidthF(
+      l10n_util::GetStringUTF16(IDS_WEBAUTHN_GENERIC_TITLE), gfx::FontList(),
+      gfx::Typesetter::DEFAULT);
+  return url_formatter::ElideHost(rp_id_url, gfx::FontList(),
+                                  kDialogWidth - max_static_string_length);
+}
+
 void AuthenticatorSheetModelBase::OnModelDestroyed() {
   dialog_model_ = nullptr;
 }
 
 // AuthenticatorWelcomeSheetModel ---------------------------------------------
 
-gfx::ImageSkia* AuthenticatorWelcomeSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_WELCOME_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_WELCOME);
+gfx::ImageSkia* AuthenticatorWelcomeSheetModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_WELCOME);
 }
 
 base::string16 AuthenticatorWelcomeSheetModel::GetStepTitle() const {
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_TITLE,
-                                    GetRelyingPartyIdString(dialog_model()));
+                                    GetRelyingPartyIdString());
 }
 
 base::string16 AuthenticatorWelcomeSheetModel::GetStepDescription() const {
@@ -173,16 +147,14 @@ bool AuthenticatorTransportSelectorSheetModel::IsBackButtonVisible() const {
   return false;
 }
 
-gfx::ImageSkia* AuthenticatorTransportSelectorSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_WELCOME_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_WELCOME);
+gfx::ImageSkia* AuthenticatorTransportSelectorSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_WELCOME);
 }
 
 base::string16 AuthenticatorTransportSelectorSheetModel::GetStepTitle() const {
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TRANSPORT_SELECTION_TITLE,
-                                    GetRelyingPartyIdString(dialog_model()));
+                                    GetRelyingPartyIdString());
 }
 
 base::string16 AuthenticatorTransportSelectorSheetModel::GetStepDescription()
@@ -201,10 +173,10 @@ void AuthenticatorTransportSelectorSheetModel::OnTransportSelected(
 AuthenticatorInsertAndActivateUsbSheetModel::
     AuthenticatorInsertAndActivateUsbSheetModel(
         AuthenticatorRequestDialogModel* dialog_model)
-    : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
-          dialog_model,
-          AuthenticatorTransport::kUsbHumanInterfaceDevice)) {}
+    : AuthenticatorSheetModelBase(dialog_model) {
+  other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
+      dialog_model, AuthenticatorTransport::kUsbHumanInterfaceDevice);
+}
 
 AuthenticatorInsertAndActivateUsbSheetModel::
     ~AuthenticatorInsertAndActivateUsbSheetModel() = default;
@@ -215,27 +187,19 @@ bool AuthenticatorInsertAndActivateUsbSheetModel::IsActivityIndicatorVisible()
 }
 
 gfx::ImageSkia*
-AuthenticatorInsertAndActivateUsbSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_USB_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_USB);
+AuthenticatorInsertAndActivateUsbSheetModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_USB);
 }
 
 base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepTitle()
     const {
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_GENERIC_TITLE,
-                                    GetRelyingPartyIdString(dialog_model()));
+                                    GetRelyingPartyIdString());
 }
 
 base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepDescription()
     const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_ACTIVATE_DESCRIPTION);
-}
-
-base::Optional<base::string16>
-AuthenticatorInsertAndActivateUsbSheetModel::GetAdditionalDescription() const {
-  return PossibleResidentKeyWarning(dialog_model());
 }
 
 ui::MenuModel*
@@ -253,11 +217,8 @@ base::string16 AuthenticatorTimeoutErrorModel::GetCancelButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
-gfx::ImageSkia* AuthenticatorTimeoutErrorModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR);
+gfx::ImageSkia* AuthenticatorTimeoutErrorModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorTimeoutErrorModel::GetStepTitle() const {
@@ -280,11 +241,8 @@ AuthenticatorNoAvailableTransportsErrorModel::GetCancelButtonLabel() const {
 }
 
 gfx::ImageSkia*
-AuthenticatorNoAvailableTransportsErrorModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR);
+AuthenticatorNoAvailableTransportsErrorModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorNoAvailableTransportsErrorModel::GetStepTitle()
@@ -309,11 +267,9 @@ base::string16 AuthenticatorNotRegisteredErrorModel::GetCancelButtonLabel()
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
-gfx::ImageSkia* AuthenticatorNotRegisteredErrorModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR);
+gfx::ImageSkia* AuthenticatorNotRegisteredErrorModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorNotRegisteredErrorModel::GetStepTitle() const {
@@ -337,11 +293,9 @@ base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetCancelButtonLabel()
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
-gfx::ImageSkia* AuthenticatorAlreadyRegisteredErrorModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR);
+gfx::ImageSkia* AuthenticatorAlreadyRegisteredErrorModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetStepTitle() const {
@@ -358,11 +312,8 @@ base::string16 AuthenticatorAlreadyRegisteredErrorModel::GetStepDescription()
 // -----------------------------------
 
 gfx::ImageSkia*
-AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR);
+AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR);
 }
 
 base::string16 AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepTitle()
@@ -379,11 +330,9 @@ AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepDescription() const {
 
 // AuthenticatorBlePowerOnManualSheetModel ------------------------------------
 
-gfx::ImageSkia* AuthenticatorBlePowerOnManualSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH);
+gfx::ImageSkia* AuthenticatorBlePowerOnManualSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH);
 }
 
 base::string16 AuthenticatorBlePowerOnManualSheetModel::GetStepTitle() const {
@@ -426,11 +375,9 @@ bool AuthenticatorBlePowerOnAutomaticSheetModel::IsActivityIndicatorVisible()
   return busy_powering_on_ble_;
 }
 
-gfx::ImageSkia* AuthenticatorBlePowerOnAutomaticSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH);
+gfx::ImageSkia*
+AuthenticatorBlePowerOnAutomaticSheetModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH);
 }
 
 base::string16 AuthenticatorBlePowerOnAutomaticSheetModel::GetStepTitle()
@@ -465,11 +412,9 @@ void AuthenticatorBlePowerOnAutomaticSheetModel::OnAccept() {
 
 // AuthenticatorBlePairingBeginSheetModel -------------------------------------
 
-gfx::ImageSkia* AuthenticatorBlePairingBeginSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_BLE_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_BLE);
+gfx::ImageSkia* AuthenticatorBlePairingBeginSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE);
 }
 
 base::string16 AuthenticatorBlePairingBeginSheetModel::GetStepTitle() const {
@@ -501,11 +446,9 @@ void AuthenticatorBlePairingBeginSheetModel::OnAccept() {
 
 // AuthenticatorBleEnterPairingModeSheetModel ---------------------------------
 
-gfx::ImageSkia* AuthenticatorBleEnterPairingModeSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_BLE_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_BLE);
+gfx::ImageSkia*
+AuthenticatorBleEnterPairingModeSheetModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE);
 }
 
 base::string16 AuthenticatorBleEnterPairingModeSheetModel::GetStepTitle()
@@ -526,11 +469,9 @@ bool AuthenticatorBleDeviceSelectionSheetModel::IsActivityIndicatorVisible()
   return true;
 }
 
-gfx::ImageSkia* AuthenticatorBleDeviceSelectionSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_BLE_NAME_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_BLE_NAME);
+gfx::ImageSkia* AuthenticatorBleDeviceSelectionSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_NAME);
 }
 
 base::string16 AuthenticatorBleDeviceSelectionSheetModel::GetStepTitle() const {
@@ -549,11 +490,9 @@ void AuthenticatorBlePinEntrySheetModel::SetPinCode(base::string16 pin_code) {
   pin_code_ = std::move(pin_code);
 }
 
-gfx::ImageSkia* AuthenticatorBlePinEntrySheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_BLE_PIN_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_BLE_PIN);
+gfx::ImageSkia* AuthenticatorBlePinEntrySheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_PIN);
 }
 
 base::string16 AuthenticatorBlePinEntrySheetModel::GetStepTitle() const {
@@ -595,11 +534,9 @@ bool AuthenticatorBleVerifyingSheetModel::IsActivityIndicatorVisible() const {
   return true;
 }
 
-gfx::ImageSkia* AuthenticatorBleVerifyingSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_BLE_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_BLE);
+gfx::ImageSkia* AuthenticatorBleVerifyingSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE);
 }
 
 base::string16 AuthenticatorBleVerifyingSheetModel::GetStepTitle() const {
@@ -614,10 +551,10 @@ base::string16 AuthenticatorBleVerifyingSheetModel::GetStepDescription() const {
 
 AuthenticatorBleActivateSheetModel::AuthenticatorBleActivateSheetModel(
     AuthenticatorRequestDialogModel* dialog_model)
-    : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
-          dialog_model,
-          AuthenticatorTransport::kBluetoothLowEnergy)) {}
+    : AuthenticatorSheetModelBase(dialog_model) {
+  other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
+      dialog_model, AuthenticatorTransport::kBluetoothLowEnergy);
+}
 
 AuthenticatorBleActivateSheetModel::~AuthenticatorBleActivateSheetModel() =
     default;
@@ -626,25 +563,18 @@ bool AuthenticatorBleActivateSheetModel::IsActivityIndicatorVisible() const {
   return true;
 }
 
-gfx::ImageSkia* AuthenticatorBleActivateSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_BLE_TAP_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_BLE_TAP);
+gfx::ImageSkia* AuthenticatorBleActivateSheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_BLE_TAP);
 }
 
 base::string16 AuthenticatorBleActivateSheetModel::GetStepTitle() const {
   return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_GENERIC_TITLE,
-                                    GetRelyingPartyIdString(dialog_model()));
+                                    GetRelyingPartyIdString());
 }
 
 base::string16 AuthenticatorBleActivateSheetModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_ACTIVATE_DESCRIPTION);
-}
-
-base::Optional<base::string16>
-AuthenticatorBleActivateSheetModel::GetAdditionalDescription() const {
-  return PossibleResidentKeyWarning(dialog_model());
 }
 
 ui::MenuModel*
@@ -652,85 +582,65 @@ AuthenticatorBleActivateSheetModel::GetOtherTransportsMenuModel() {
   return other_transports_menu_model_.get();
 }
 
-// AuthenticatorTouchIdIncognitoBumpSheetModel
-// -----------------------------------------
+// AuthenticatorTouchIdSheetModel -----------------------------------------
 
-AuthenticatorTouchIdIncognitoBumpSheetModel::
-    AuthenticatorTouchIdIncognitoBumpSheetModel(
-        AuthenticatorRequestDialogModel* dialog_model)
-    : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
-          dialog_model,
-          AuthenticatorTransport::kInternal)) {}
-
-AuthenticatorTouchIdIncognitoBumpSheetModel::
-    ~AuthenticatorTouchIdIncognitoBumpSheetModel() = default;
-
-gfx::ImageSkia*
-AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_PERMISSION_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_PERMISSION);
+AuthenticatorTouchIdSheetModel::AuthenticatorTouchIdSheetModel(
+    AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model) {
+  other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
+      dialog_model, AuthenticatorTransport::kInternal);
 }
 
-base::string16 AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepTitle()
-    const {
+AuthenticatorTouchIdSheetModel::~AuthenticatorTouchIdSheetModel() = default;
+
+bool AuthenticatorTouchIdSheetModel::IsActivityIndicatorVisible() const {
+  return true;
+}
+
+bool AuthenticatorTouchIdSheetModel::IsBackButtonVisible() const {
+  // Clicking back would not dismiss the native Touch ID dialog, which would be
+  // confusing. The user can cancel the native dialog to dismiss it.
+  return false;
+}
+
+gfx::ImageSkia* AuthenticatorTouchIdSheetModel::GetStepIllustration() const {
 #if defined(OS_MACOSX)
-  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TOUCH_ID_INCOGNITO_BUMP_TITLE,
-                                    GetRelyingPartyIdString(dialog_model()));
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_TOUCHID);
+#else
+  // Avoid bundling the PNG on platforms where it's not needed.
+  return nullptr;
+#endif  // defined(OS_MACOSX)
+}
+
+base::string16 AuthenticatorTouchIdSheetModel::GetStepTitle() const {
+#if defined(OS_MACOSX)
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_TOUCH_ID_TITLE,
+                                    GetRelyingPartyIdString());
 #else
   return base::string16();
 #endif  // defined(OS_MACOSX)
 }
 
-base::string16 AuthenticatorTouchIdIncognitoBumpSheetModel::GetStepDescription()
-    const {
-#if defined(OS_MACOSX)
-  return l10n_util::GetStringUTF16(
-      IDS_WEBAUTHN_TOUCH_ID_INCOGNITO_BUMP_DESCRIPTION);
-#else
+base::string16 AuthenticatorTouchIdSheetModel::GetStepDescription() const {
   return base::string16();
-#endif  // defined(OS_MACOSX)
 }
 
-ui::MenuModel*
-AuthenticatorTouchIdIncognitoBumpSheetModel::GetOtherTransportsMenuModel() {
+ui::MenuModel* AuthenticatorTouchIdSheetModel::GetOtherTransportsMenuModel() {
+  if (!other_transports_menu_model_) {
+    other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
+        dialog_model(), AuthenticatorTransport::kInternal);
+  }
   return other_transports_menu_model_.get();
-}
-
-bool AuthenticatorTouchIdIncognitoBumpSheetModel::IsAcceptButtonVisible()
-    const {
-  return true;
-}
-
-bool AuthenticatorTouchIdIncognitoBumpSheetModel::IsAcceptButtonEnabled()
-    const {
-  return true;
-}
-
-base::string16
-AuthenticatorTouchIdIncognitoBumpSheetModel::GetAcceptButtonLabel() const {
-#if defined(OS_MACOSX)
-  return l10n_util::GetStringUTF16(
-      IDS_WEBAUTHN_TOUCH_ID_INCOGNITO_BUMP_CONTINUE);
-#else
-  return base::string16();
-#endif  // defined(OS_MACOSX)
-}
-
-void AuthenticatorTouchIdIncognitoBumpSheetModel::OnAccept() {
-  dialog_model()->HideDialogAndTryTouchId();
 }
 
 // AuthenticatorPaaskSheetModel -----------------------------------------
 
 AuthenticatorPaaskSheetModel::AuthenticatorPaaskSheetModel(
     AuthenticatorRequestDialogModel* dialog_model)
-    : AuthenticatorSheetModelBase(dialog_model),
-      other_transports_menu_model_(std::make_unique<OtherTransportsMenuModel>(
-          dialog_model,
-          AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy)) {}
+    : AuthenticatorSheetModelBase(dialog_model) {
+  other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
+      dialog_model, AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy);
+}
 
 AuthenticatorPaaskSheetModel::~AuthenticatorPaaskSheetModel() = default;
 
@@ -738,11 +648,8 @@ bool AuthenticatorPaaskSheetModel::IsActivityIndicatorVisible() const {
   return true;
 }
 
-gfx::ImageSkia* AuthenticatorPaaskSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_PHONE_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_PHONE);
+gfx::ImageSkia* AuthenticatorPaaskSheetModel::GetStepIllustration() const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_PHONE);
 }
 
 base::string16 AuthenticatorPaaskSheetModel::GetStepTitle() const {
@@ -784,35 +691,9 @@ void AuthenticatorClientPinEntrySheetModel::SetPinConfirmation(
   pin_confirmation_ = std::move(pin_confirmation);
 }
 
-void AuthenticatorClientPinEntrySheetModel::MaybeShowRetryError() {
-  if (!delegate_) {
-    NOTREACHED();
-    return;
-  }
-  if (!dialog_model()->has_attempted_pin_entry()) {
-    return;
-  }
-
-  base::string16 error;
-  if (mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinEntry) {
-    auto attempts = dialog_model()->pin_attempts();
-    error =
-        attempts && *attempts <= 3
-            ? l10n_util::GetPluralStringFUTF16(
-                  IDS_WEBAUTHN_PIN_ENTRY_ERROR_FAILED_RETRIES, *attempts)
-            : l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_ENTRY_ERROR_FAILED);
-  } else {
-    DCHECK(mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinSetup);
-    error = l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_SETUP_ERROR_FAILED);
-  }
-  delegate_->ShowPinError(std::move(error));
-}
-
-gfx::ImageSkia* AuthenticatorClientPinEntrySheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_PIN_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_PIN);
+gfx::ImageSkia* AuthenticatorClientPinEntrySheetModel::GetStepIllustration()
+    const {
+  return GetImage(IDR_WEBAUTHN_ILLUSTRATION_PIN);
 }
 
 base::string16 AuthenticatorClientPinEntrySheetModel::GetStepTitle() const {
@@ -881,253 +762,4 @@ void AuthenticatorClientPinEntrySheetModel::OnAccept() {
   if (dialog_model()) {
     dialog_model()->OnHavePIN(base::UTF16ToUTF8(pin_code_));
   }
-}
-
-// AuthenticatorClientPinTapAgainSheetModel ----------------------
-
-AuthenticatorClientPinTapAgainSheetModel::
-    AuthenticatorClientPinTapAgainSheetModel(
-        AuthenticatorRequestDialogModel* dialog_model)
-    : AuthenticatorSheetModelBase(dialog_model) {}
-
-AuthenticatorClientPinTapAgainSheetModel::
-    ~AuthenticatorClientPinTapAgainSheetModel() = default;
-
-bool AuthenticatorClientPinTapAgainSheetModel::IsActivityIndicatorVisible()
-    const {
-  return true;
-}
-
-gfx::ImageSkia* AuthenticatorClientPinTapAgainSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_USB_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_USB);
-}
-
-base::string16 AuthenticatorClientPinTapAgainSheetModel::GetStepTitle() const {
-  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_GENERIC_TITLE,
-                                    GetRelyingPartyIdString(dialog_model()));
-}
-
-base::string16 AuthenticatorClientPinTapAgainSheetModel::GetStepDescription()
-    const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_TAP_AGAIN_DESCRIPTION);
-}
-
-base::Optional<base::string16>
-AuthenticatorClientPinTapAgainSheetModel::GetAdditionalDescription() const {
-  return PossibleResidentKeyWarning(dialog_model());
-}
-
-// AuthenticatorGenericErrorSheetModel -----------------------------------
-
-// static
-std::unique_ptr<AuthenticatorGenericErrorSheetModel>
-AuthenticatorGenericErrorSheetModel::ForClientPinErrorSoftBlock(
-    AuthenticatorRequestDialogModel* dialog_model) {
-  return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
-      dialog_model, l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_GENERIC_TITLE),
-      l10n_util::GetStringUTF16(
-          IDS_WEBAUTHN_CLIENT_PIN_SOFT_BLOCK_DESCRIPTION)));
-}
-
-// static
-std::unique_ptr<AuthenticatorGenericErrorSheetModel>
-AuthenticatorGenericErrorSheetModel::ForClientPinErrorHardBlock(
-    AuthenticatorRequestDialogModel* dialog_model) {
-  return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
-      dialog_model, l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_GENERIC_TITLE),
-      l10n_util::GetStringUTF16(
-          IDS_WEBAUTHN_CLIENT_PIN_HARD_BLOCK_DESCRIPTION)));
-}
-
-// static
-std::unique_ptr<AuthenticatorGenericErrorSheetModel>
-AuthenticatorGenericErrorSheetModel::ForClientPinErrorAuthenticatorRemoved(
-    AuthenticatorRequestDialogModel* dialog_model) {
-  return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
-      dialog_model, l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_GENERIC_TITLE),
-      l10n_util::GetStringUTF16(
-          IDS_WEBAUTHN_CLIENT_PIN_AUTHENTICATOR_REMOVED_DESCRIPTION)));
-}
-
-// static
-std::unique_ptr<AuthenticatorGenericErrorSheetModel>
-AuthenticatorGenericErrorSheetModel::ForMissingResidentKeysSupport(
-    AuthenticatorRequestDialogModel* dialog_model) {
-  return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
-      dialog_model,
-      l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE),
-      l10n_util::GetStringUTF16(IDS_WEBAUTHN_MISSING_RESIDENT_KEYS_DESC)));
-}
-
-// static
-std::unique_ptr<AuthenticatorGenericErrorSheetModel>
-AuthenticatorGenericErrorSheetModel::ForMissingUserVerificationSupport(
-    AuthenticatorRequestDialogModel* dialog_model) {
-  return base::WrapUnique(new AuthenticatorGenericErrorSheetModel(
-      dialog_model,
-      l10n_util::GetStringUTF16(IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE),
-      l10n_util::GetStringFUTF16(IDS_WEBAUTHN_MISSING_USER_VERIFICATION_DESC,
-                                 GetRelyingPartyIdString(dialog_model))));
-}
-
-AuthenticatorGenericErrorSheetModel::AuthenticatorGenericErrorSheetModel(
-    AuthenticatorRequestDialogModel* dialog_model,
-    base::string16 title,
-    base::string16 description)
-    : AuthenticatorSheetModelBase(dialog_model),
-      title_(std::move(title)),
-      description_(std::move(description)) {}
-
-bool AuthenticatorGenericErrorSheetModel::IsBackButtonVisible() const {
-  return false;
-}
-
-base::string16 AuthenticatorGenericErrorSheetModel::GetCancelButtonLabel()
-    const {
-  return l10n_util::GetStringUTF16(IDS_CLOSE);
-}
-
-gfx::ImageSkia* AuthenticatorGenericErrorSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_ERROR_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_ERROR);
-}
-
-base::string16 AuthenticatorGenericErrorSheetModel::GetStepTitle() const {
-  return title_;
-}
-
-base::string16 AuthenticatorGenericErrorSheetModel::GetStepDescription() const {
-  return description_;
-}
-
-// AuthenticatorSelectAccountSheetModel ---------------------------------------
-
-AuthenticatorSelectAccountSheetModel::AuthenticatorSelectAccountSheetModel(
-    AuthenticatorRequestDialogModel* dialog_model)
-    : AuthenticatorSheetModelBase(dialog_model) {}
-
-AuthenticatorSelectAccountSheetModel::~AuthenticatorSelectAccountSheetModel() =
-    default;
-
-void AuthenticatorSelectAccountSheetModel::SetCurrentSelection(int selected) {
-  DCHECK_LE(0, selected);
-  DCHECK_LT(static_cast<size_t>(selected), dialog_model()->responses().size());
-  selected_ = selected;
-}
-
-void AuthenticatorSelectAccountSheetModel::OnAccept() {
-  dialog_model()->OnAccountSelected(selected_);
-}
-
-gfx::ImageSkia* AuthenticatorSelectAccountSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  // TODO: this is likely the wrong image.
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_WELCOME_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_WELCOME);
-}
-
-base::string16 AuthenticatorSelectAccountSheetModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_SELECT_ACCOUNT);
-}
-
-base::string16 AuthenticatorSelectAccountSheetModel::GetStepDescription()
-    const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_SELECT_ACCOUNT_DESC);
-}
-
-bool AuthenticatorSelectAccountSheetModel::IsAcceptButtonVisible() const {
-  return true;
-}
-
-bool AuthenticatorSelectAccountSheetModel::IsAcceptButtonEnabled() const {
-  return true;
-}
-
-base::string16 AuthenticatorSelectAccountSheetModel::GetAcceptButtonLabel()
-    const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_WELCOME_SCREEN_NEXT);
-}
-
-int AuthenticatorSelectAccountSheetModel::RowCount() {
-  return dialog_model()->responses().size();
-}
-
-base::string16 AuthenticatorSelectAccountSheetModel::GetText(int row,
-                                                             int column_id) {
-  const auto user = dialog_model()->responses()[row].user_entity();
-
-  if (column_id == IDS_WEBAUTHN_ACCOUNT_COLUMN) {
-    return base::UTF8ToUTF16(user->name.value_or(""));
-  } else {
-    return base::UTF8ToUTF16(user->display_name.value_or(""));
-  }
-}
-
-void AuthenticatorSelectAccountSheetModel::SetObserver(
-    ui::TableModelObserver* observer) {}
-
-// AttestationPermissionRequestSheetModel -------------------------------------
-
-AttestationPermissionRequestSheetModel::AttestationPermissionRequestSheetModel(
-    AuthenticatorRequestDialogModel* dialog_model)
-    : AuthenticatorSheetModelBase(dialog_model) {}
-
-AttestationPermissionRequestSheetModel::
-    ~AttestationPermissionRequestSheetModel() = default;
-
-void AttestationPermissionRequestSheetModel::OnAccept() {
-  dialog_model()->OnAttestationPermissionResponse(true);
-}
-
-void AttestationPermissionRequestSheetModel::OnCancel() {
-  dialog_model()->OnAttestationPermissionResponse(false);
-}
-
-gfx::ImageSkia* AttestationPermissionRequestSheetModel::GetStepIllustration(
-    ImageColorScheme color_scheme) const {
-  return GetImage(color_scheme == ImageColorScheme::kDark
-                      ? IDR_WEBAUTHN_ILLUSTRATION_PERMISSION_DARK
-                      : IDR_WEBAUTHN_ILLUSTRATION_PERMISSION);
-}
-
-base::string16 AttestationPermissionRequestSheetModel::GetStepTitle() const {
-  return l10n_util::GetStringUTF16(
-      IDS_WEBAUTHN_REQUEST_ATTESTATION_PERMISSION_TITLE);
-}
-
-base::string16 AttestationPermissionRequestSheetModel::GetStepDescription()
-    const {
-  return l10n_util::GetStringFUTF16(
-      IDS_WEBAUTHN_REQUEST_ATTESTATION_PERMISSION_DESC,
-      GetRelyingPartyIdString(dialog_model()));
-}
-
-bool AttestationPermissionRequestSheetModel::IsAcceptButtonVisible() const {
-  return true;
-}
-
-bool AttestationPermissionRequestSheetModel::IsAcceptButtonEnabled() const {
-  return true;
-}
-
-base::string16 AttestationPermissionRequestSheetModel::GetAcceptButtonLabel()
-    const {
-  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_ALLOW_ATTESTATION);
-}
-
-bool AttestationPermissionRequestSheetModel::IsCancelButtonVisible() const {
-  return true;
-}
-
-base::string16 AttestationPermissionRequestSheetModel::GetCancelButtonLabel()
-    const {
-  // TODO(martinkr): This should be its own string definition; but we had to
-  // make a change post string freeze and therefore reused this.
-  return l10n_util::GetStringUTF16(IDS_PERMISSION_DENY);
 }

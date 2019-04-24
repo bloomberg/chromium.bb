@@ -174,8 +174,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
   gfx::Rect rect1(display_rect_);
   shared_quad_state1->SetAll(
       gfx::Transform(), rect1 /* quad_layer_rect */,
-      rect1 /* visible_quad_layer_rect */,
-      gfx::RRectF() /* rounded_corner_bounds */, rect1 /*clip_rect */,
+      rect1 /* visible_quad_layer_rect */, rect1 /*clip_rect */,
       false /* is_clipped */, false /* are_contents_opaque */,
       0.5f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
   auto* quad1 = pass1->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
@@ -211,8 +210,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
   transform2.Translate(-200, -100);
   shared_quad_state2->SetAll(
       transform2, rect2 /* quad_layer_rect */,
-      rect2 /* visible_quad_layer_rect */,
-      gfx::RRectF() /* rounded_corner_bounds */, rect2 /*clip_rect */,
+      rect2 /* visible_quad_layer_rect */, rect2 /*clip_rect */,
       false /* is_clipped */, false /* are_contents_opaque */,
       0.5f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
   auto* quad2 = pass2->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
@@ -229,8 +227,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
   gfx::Rect rect3(display_rect_);
   shared_quad_state3->SetAll(
       gfx::Transform(), rect3 /* quad_layer_rect */,
-      rect3 /* visible_quad_layer_rect */,
-      gfx::RRectF() /* rounded_corner_bounds */, rect3 /*clip_rect */,
+      rect3 /* visible_quad_layer_rect */, rect3 /*clip_rect */,
       false /* is_clipped */, false /* are_contents_opaque */,
       0.5f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
   auto* quad3 = pass3->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
@@ -253,8 +250,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
   transform4.matrix().set(3, 3, 0.f);
   shared_quad_state4->SetAll(
       transform4, rect4 /* quad_layer_rect */,
-      rect4 /* visible_quad_layer_rect */,
-      gfx::RRectF() /* rounded_corner_bounds */, rect4 /*clip_rect */,
+      rect4 /* visible_quad_layer_rect */, rect4 /*clip_rect */,
       false /* is_clipped */, false /* are_contents_opaque */,
       0.5f /* opacity */, SkBlendMode::kSrcOver, 0 /* sorting_context_id */);
   auto* quad4 = pass4->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
@@ -271,8 +267,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
   gfx::Rect rect5_root(display_rect_);
   shared_quad_state5_root->SetAll(
       gfx::Transform(), /*quad_layer_rect=*/rect5_root,
-      /*visible_quad_layer_rect=*/rect5_root,
-      gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect5_root,
+      /*visible_quad_layer_rect=*/rect5_root, /*clip_rect=*/rect5_root,
       /*is_clipped=*/false, /*are_contents_opaque=*/false,
       /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
   auto* quad5_root_1 =
@@ -337,8 +332,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     gfx::Rect rect1(display_rect_);
     shared_quad_state1->SetAll(
         gfx::Transform(), /*quad_layer_rect=*/rect1,
-        /*visible_quad_layer_rect=*/rect1,
-        gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect1,
+        /*visible_quad_layer_rect=*/rect1, /*clip_rect=*/rect1,
         /*is_clipped=*/false, /*are_contents_opaque=*/false,
         /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
     auto* quad1 = pass1->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
@@ -358,8 +352,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     gfx::Rect rect2(display_rect_);
     shared_quad_state2->SetAll(
         gfx::Transform(), /*quad_layer_rect=*/rect2,
-        /*visible_quad_layer_rect=*/rect2,
-        gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect2,
+        /*visible_quad_layer_rect=*/rect2, /*clip_rect=*/rect2,
         /*is_clipped=*/false, /*are_contents_opaque=*/false,
         /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
     auto* quad2 = pass2->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
@@ -391,8 +384,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     transform3_0.Translate(-200, -100);
     shared_quad_state3_0->SetAll(
         transform3_0, /*quad_layer_rect=*/rect3_0,
-        /*visible_quad_layer_rect=*/rect3_0,
-        gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect3_0,
+        /*visible_quad_layer_rect=*/rect3_0, /*clip_rect=*/rect3_0,
         /*is_clipped=*/false, /*are_contents_opaque=*/false,
         /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
     auto* quad3_0 = pass3_0->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
@@ -411,8 +403,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     gfx::Rect rect3_1(display_rect_);
     shared_quad_state3_1->SetAll(
         gfx::Transform(), /*quad_layer_rect=*/rect3_1,
-        /*visible_quad_layer_rect=*/rect3_1,
-        gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect3_1,
+        /*visible_quad_layer_rect=*/rect3_1, /*clip_rect=*/rect3_1,
         /*is_clipped=*/false, /*are_contents_opaque=*/false,
         /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
     auto* quad3_1 =
@@ -430,8 +421,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     gfx::Rect rect3_root(display_rect_);
     shared_quad_state3_root->SetAll(
         gfx::Transform(), /*quad_layer_rect=*/rect3_root,
-        /*visible_quad_layer_rect=*/rect3_root,
-        gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect3_root,
+        /*visible_quad_layer_rect=*/rect3_root, /*clip_rect=*/rect3_root,
         /*is_clipped=*/false, /*are_contents_opaque=*/false,
         /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
     auto* quad3_root_1 =
@@ -466,8 +456,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     transform4_0.Translate(-199, -100);
     shared_quad_state4_0->SetAll(
         transform4_0, /*quad_layer_rect=*/rect4_0,
-        /*visible_quad_layer_rect=*/rect4_0,
-        gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect4_0,
+        /*visible_quad_layer_rect=*/rect4_0, /*clip_rect=*/rect4_0,
         /*is_clipped=*/false, /*are_contents_opaque=*/false,
         /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
     auto* quad4_0 = pass4_0->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
@@ -486,8 +475,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     gfx::Rect rect4_1(display_rect_);
     shared_quad_state4_1->SetAll(
         gfx::Transform(), /*quad_layer_rect=*/rect4_1,
-        /*visible_quad_layer_rect=*/rect4_1,
-        gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect4_1,
+        /*visible_quad_layer_rect=*/rect4_1, /*clip_rect=*/rect4_1,
         /*is_clipped=*/false, /*are_contents_opaque=*/false,
         /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
     auto* quad4_1 =
@@ -505,8 +493,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     gfx::Rect rect4_root(display_rect_);
     shared_quad_state4_root->SetAll(
         gfx::Transform(), /*quad_layer_rect=*/rect4_root,
-        /*visible_quad_layer_rect=*/rect4_root,
-        gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect4_root,
+        /*visible_quad_layer_rect=*/rect4_root, /*clip_rect=*/rect4_root,
         /*is_clipped=*/false, /*are_contents_opaque=*/false,
         /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
     auto* quad4_root_1 =
@@ -543,8 +530,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     transform5_0.Translate(-199, -100);
     shared_quad_state5_0->SetAll(
         transform5_0, /*quad_layer_rect=*/rect5_0,
-        /*visible_quad_layer_rect=*/rect5_0,
-        gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect5_0,
+        /*visible_quad_layer_rect=*/rect5_0, /*clip_rect=*/rect5_0,
         /*is_clipped=*/false, /*are_contents_opaque=*/false,
         /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
     auto* quad5_0 = pass5_0->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
@@ -563,8 +549,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     gfx::Rect rect5_1(display_rect_);
     shared_quad_state5_1->SetAll(
         gfx::Transform(), /*quad_layer_rect=*/rect5_1,
-        /*visible_quad_layer_rect=*/rect5_1,
-        gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect5_1,
+        /*visible_quad_layer_rect=*/rect5_1, /*clip_rect=*/rect5_1,
         /*is_clipped=*/false, /*are_contents_opaque=*/false,
         /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
     auto* quad5_1 =
@@ -582,8 +567,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     gfx::Rect rect5_root(display_rect_);
     shared_quad_state5_root->SetAll(
         gfx::Transform(), /*quad_layer_rect=*/rect5_root,
-        /*visible_quad_layer_rect=*/rect5_root,
-        gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect5_root,
+        /*visible_quad_layer_rect=*/rect5_root, /*clip_rect=*/rect5_root,
         /*is_clipped=*/false, /*are_contents_opaque=*/false,
         /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
     auto* quad5_root_1 =
@@ -621,8 +605,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     transform6_0.Translate(-199, -100);
     shared_quad_state6_0->SetAll(
         transform6_0, /*quad_layer_rect=*/rect6_0,
-        /*visible_quad_layer_rect=*/rect6_0,
-        gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect6_0,
+        /*visible_quad_layer_rect=*/rect6_0, /*clip_rect=*/rect6_0,
         /*is_clipped=*/false, /*are_contents_opaque=*/false,
         /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
     auto* quad6_0 = pass6_0->quad_list.AllocateAndConstruct<SurfaceDrawQuad>();
@@ -641,8 +624,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     gfx::Rect rect6_1(display_rect_);
     shared_quad_state6_1->SetAll(
         gfx::Transform(), /*quad_layer_rect=*/rect6_1,
-        /*visible_quad_layer_rect=*/rect6_1,
-        gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect6_1,
+        /*visible_quad_layer_rect=*/rect6_1, /*clip_rect=*/rect6_1,
         /*is_clipped=*/false, /*are_contents_opaque=*/false,
         /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
     auto* quad6_1 =
@@ -660,8 +642,7 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     gfx::Rect rect6_root(display_rect_);
     shared_quad_state6_root->SetAll(
         gfx::Transform(), /*quad_layer_rect=*/rect6_root,
-        /*visible_quad_layer_rect=*/rect6_root,
-        gfx::RRectF() /* rounded_corner_bounds */, /*clip_rect=*/rect6_root,
+        /*visible_quad_layer_rect=*/rect6_root, /*clip_rect=*/rect6_root,
         /*is_clipped=*/false, /*are_contents_opaque=*/false,
         /*opacity=*/0.6f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
     auto* quad6_root_1 =

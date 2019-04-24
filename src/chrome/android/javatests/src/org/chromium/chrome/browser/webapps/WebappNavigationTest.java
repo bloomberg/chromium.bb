@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -49,7 +50,6 @@ import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
@@ -296,10 +296,8 @@ public class WebappNavigationTest {
     public void testRegularLinkToExternalApp() throws Exception {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
 
-        InterceptNavigationDelegateImpl navigationDelegate = TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> InterceptNavigationDelegateImpl.get(
-                                mActivityTestRule.getActivity().getActivityTab()));
+        InterceptNavigationDelegateImpl navigationDelegate =
+                mActivityTestRule.getActivity().getActivityTab().getInterceptNavigationDelegate();
 
         addAnchorAndClick(YOUTUBE_URL, "_self");
 
@@ -336,7 +334,7 @@ public class WebappNavigationTest {
 
         ChromeTabbedActivity tabbedChrome =
                 ChromeActivityTestRule.waitFor(ChromeTabbedActivity.class);
-        TestThreadUtils.runOnUiThreadBlocking(
+        ThreadUtils.runOnUiThreadBlocking(
                 () -> tabbedChrome.getActivityTab().loadUrl(new LoadUrlParams(offOriginUrl())));
         ChromeTabUtils.waitForTabPageLoaded(tabbedChrome.getActivityTab(), offOriginUrl());
     }
@@ -363,11 +361,11 @@ public class WebappNavigationTest {
         WebappActivityTestRule.assertToolbarShowState(activity, true);
 
         // Navigate back to in-scope through a close button.
-        TestThreadUtils.runOnUiThreadBlocking(()
-                                                      -> activity.getToolbarManager()
-                                                                 .getToolbarLayoutForTesting()
-                                                                 .findViewById(R.id.close_button)
-                                                                 .callOnClick());
+        ThreadUtils.runOnUiThreadBlocking(()
+                                                  -> activity.getToolbarManager()
+                                                             .getToolbarLayoutForTesting()
+                                                             .findViewById(R.id.close_button)
+                                                             .callOnClick());
 
         // We should end up on most recent in-scope URL.
         ChromeTabUtils.waitForTabPageLoaded(tab, otherInScopeUrl);
@@ -403,11 +401,11 @@ public class WebappNavigationTest {
 
         // Close the Minimal UI.
         WebappActivityTestRule.assertToolbarShowState(activity, true);
-        TestThreadUtils.runOnUiThreadBlocking(()
-                                                      -> activity.getToolbarManager()
-                                                                 .getToolbarLayoutForTesting()
-                                                                 .findViewById(R.id.close_button)
-                                                                 .callOnClick());
+        ThreadUtils.runOnUiThreadBlocking(()
+                                                  -> activity.getToolbarManager()
+                                                             .getToolbarLayoutForTesting()
+                                                             .findViewById(R.id.close_button)
+                                                             .callOnClick());
 
         // The WebappActivity should be navigated to the page prior to the redirect.
         ChromeTabUtils.waitForTabPageLoaded(activity.getActivityTab(), initialInScopeUrl);

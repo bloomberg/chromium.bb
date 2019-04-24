@@ -81,10 +81,6 @@ EventInjector::EventAndHost EventInjector::DetermineEventAndHost(
       return event_and_host;
     }
 
-    located_event->UpdateForRootTransform(
-        event_and_host.host->GetRootTransform(),
-        event_and_host.host->GetRootTransformForLocalEventCoordinates());
-
     // NOTE: this does not correctly account for coordinates with capture
     // across displays. If needed, the implementation should match something
     // like:

@@ -52,6 +52,7 @@ class JSArrayBuffer : public JSObject {
   V(IsDetachableBit, bool, 1, _)               \
   V(WasDetachedBit, bool, 1, _)                \
   V(IsSharedBit, bool, 1, _)                   \
+  V(IsGrowableBit, bool, 1, _)                 \
   V(IsWasmMemoryBit, bool, 1, _)
   DEFINE_BIT_FIELDS(JS_ARRAY_BUFFER_BIT_FIELD_FIELDS)
 #undef JS_ARRAY_BUFFER_BIT_FIELD_FIELDS
@@ -69,6 +70,9 @@ class JSArrayBuffer : public JSObject {
 
   // [is_shared]: tells whether this is an ArrayBuffer or a SharedArrayBuffer.
   DECL_BOOLEAN_ACCESSORS(is_shared)
+
+  // [is_growable]: indicates whether it's possible to grow this buffer.
+  DECL_BOOLEAN_ACCESSORS(is_growable)
 
   // [is_wasm_memory]: whether the buffer is tracked by the WasmMemoryTracker.
   DECL_BOOLEAN_ACCESSORS(is_wasm_memory)
@@ -91,9 +95,8 @@ class JSArrayBuffer : public JSObject {
     bool is_wasm_memory;
   };
 
-  V8_EXPORT_PRIVATE void FreeBackingStoreFromMainThread();
-  V8_EXPORT_PRIVATE static void FreeBackingStore(Isolate* isolate,
-                                                 Allocation allocation);
+  void FreeBackingStoreFromMainThread();
+  static void FreeBackingStore(Isolate* isolate, Allocation allocation);
 
   V8_EXPORT_PRIVATE static void Setup(
       Handle<JSArrayBuffer> array_buffer, Isolate* isolate, bool is_external,
@@ -108,7 +111,7 @@ class JSArrayBuffer : public JSObject {
 
   // Returns false if array buffer contents could not be allocated.
   // In this case, |array_buffer| will not be set up.
-  V8_EXPORT_PRIVATE static bool SetupAllocatingData(
+  static bool SetupAllocatingData(
       Handle<JSArrayBuffer> array_buffer, Isolate* isolate,
       size_t allocated_length, bool initialize = true,
       SharedFlag shared_flag = SharedFlag::kNotShared) V8_WARN_UNUSED_RESULT;
@@ -180,7 +183,8 @@ class JSArrayBufferView : public JSObject {
 class JSTypedArray : public JSArrayBufferView {
  public:
   // [length]: length of typed array in elements.
-  DECL_PRIMITIVE_ACCESSORS(length, size_t)
+  DECL_ACCESSORS(length, Object)
+  inline size_t length_value() const;
 
   // ES6 9.4.5.3
   V8_WARN_UNUSED_RESULT static Maybe<bool> DefineOwnProperty(
@@ -192,7 +196,7 @@ class JSTypedArray : public JSArrayBufferView {
   ExternalArrayType type();
   V8_EXPORT_PRIVATE size_t element_size();
 
-  V8_EXPORT_PRIVATE Handle<JSArrayBuffer> GetBuffer();
+  Handle<JSArrayBuffer> GetBuffer();
 
   // Whether the buffer's backing store is on-heap or off-heap.
   inline bool is_on_heap() const;
@@ -223,8 +227,9 @@ class JSTypedArray : public JSArrayBufferView {
  private:
   static Handle<JSArrayBuffer> MaterializeArrayBuffer(
       Handle<JSTypedArray> typed_array);
-
+#ifdef VERIFY_HEAP
   DECL_ACCESSORS(raw_length, Object)
+#endif
 
   OBJECT_CONSTRUCTORS(JSTypedArray, JSArrayBufferView);
 };

@@ -14,7 +14,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/interfaces/bindings/tests/new_endpoint_types.test-mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,9 +26,15 @@ class FactoryImpl;
 
 class WidgetImpl : public mojom::Widget {
  public:
-  explicit WidgetImpl(mojo::PendingRemote<mojom::WidgetClient> client)
-      : client_(std::move(client)) {
-    client_->OnInitialized();
+  WidgetImpl(FactoryImpl* factory,
+             mojo::PendingReceiver<mojom::Widget> receiver,
+             mojo::PendingRemote<mojom::WidgetClient> client)
+      : factory_(factory),
+        receiver_(this, std::move(receiver)),
+        client_(std::move(client)) {
+    client_.rpc(FROM_HERE)->OnInitialized();
+    receiver_.set_disconnect_handler(
+        base::BindOnce(&WidgetImpl::OnDisconnect, base::Unretained(this)));
   }
 
   ~WidgetImpl() override = default;
@@ -37,7 +42,7 @@ class WidgetImpl : public mojom::Widget {
   // mojom::Widget:
   void Click() override {
     for (auto& observer : observers_)
-      observer->OnClick();
+      observer.rpc(FROM_HERE)->OnClick();
   }
 
   void AddObserver(
@@ -46,6 +51,10 @@ class WidgetImpl : public mojom::Widget {
   }
 
  private:
+  void OnDisconnect();
+
+  FactoryImpl* const factory_;
+  mojo::Receiver<mojom::Widget> receiver_;
   mojo::Remote<mojom::WidgetClient> client_;
   std::vector<mojo::Remote<mojom::WidgetObserver>> observers_;
 
@@ -61,24 +70,38 @@ class FactoryImpl : public mojom::WidgetFactory {
   // mojom::WidgetFactory:
   void CreateWidget(mojo::PendingReceiver<mojom::Widget> receiver,
                     mojo::PendingRemote<mojom::WidgetClient> client) override {
-    widgets_.Add(std::make_unique<WidgetImpl>(std::move(client)),
-                 std::move(receiver));
+    widgets_.push_back(std::make_unique<WidgetImpl>(this, std::move(receiver),
+                                                    std::move(client)));
+  }
+
+  void DestroyWidget(WidgetImpl* widget) {
+    for (auto it = widgets_.begin(); it != widgets_.end(); ++it) {
+      if (it->get() == widget) {
+        widgets_.erase(it);
+        return;
+      }
+    }
   }
 
  private:
   mojo::Receiver<mojom::WidgetFactory> receiver_;
-  mojo::OwnedReceiverSet<mojom::Widget> widgets_;
+  std::vector<std::unique_ptr<WidgetImpl>> widgets_;
 
   DISALLOW_COPY_AND_ASSIGN(FactoryImpl);
 };
+
+void WidgetImpl::OnDisconnect() {
+  // Deletes |this|.
+  factory_->DestroyWidget(this);
+}
 
 class ClientImpl : public mojom::WidgetClient {
  public:
   ClientImpl() = default;
   ~ClientImpl() override = default;
 
-  mojo::PendingRemote<mojom::WidgetClient> BindNewPipeAndPassRemote() {
-    return receiver_.BindNewPipeAndPassRemote();
+  mojo::PendingRemote<mojom::WidgetClient> BindNewRemote() {
+    return receiver_.BindNewRemote();
   }
 
   void WaitForInitialize() { wait_loop_.Run(); }
@@ -98,8 +121,8 @@ class ObserverImpl : public mojom::WidgetObserver {
   ObserverImpl() = default;
   ~ObserverImpl() override = default;
 
-  mojo::PendingRemote<mojom::WidgetObserver> BindNewPipeAndPassRemote() {
-    auto remote = receiver_.BindNewPipeAndPassRemote();
+  mojo::PendingRemote<mojom::WidgetObserver> BindNewRemote() {
+    auto remote = receiver_.BindNewRemote();
     receiver_.set_disconnect_handler(
         base::BindOnce(&ObserverImpl::OnDisconnect, base::Unretained(this)));
     return remote;
@@ -139,11 +162,11 @@ TEST(NewEndpointTypesTest, BasicUsage) {
   // Remote<T> calling it, or it can live in another process. For simplicity in
   // this test we have the implementation living in the test process.
   //
-  // |BindNewPipeAndPassReceiver()| creates a new message pipe to carry
+  // |BindNewReceiver()| creates a new message pipe to carry
   // |mojom:WidgetFactory| interface messages. It binds one end to the
   // |factory| Remote above, and the other end is passed to |factory_impl| so
   // it can receive messages.
-  FactoryImpl factory_impl(factory.BindNewPipeAndPassReceiver());
+  FactoryImpl factory_impl(factory.BindNewReceiver());
   EXPECT_TRUE(factory.is_bound());
 
   // Similar to above, we create another Remote. this time to control a
@@ -164,8 +187,8 @@ TEST(NewEndpointTypesTest, BasicUsage) {
   // the factory implementation, as is the WidgetClient's Remote endpoint.
   // This allows the factory to bind and begin receiving Widget messages on
   // one pipe, and to bind and begin sending WidgetClient messages on the other.
-  factory->CreateWidget(widget.BindNewPipeAndPassReceiver(),
-                        client.BindNewPipeAndPassRemote());
+  factory.rpc(FROM_HERE)->CreateWidget(widget.BindNewReceiver(),
+                                       client.BindNewRemote());
 
   // Similar to |client| above, we create some implementations of
   // |mojom::WidgetObserver| here to receive messages from Remote
@@ -176,8 +199,8 @@ TEST(NewEndpointTypesTest, BasicUsage) {
   // pipes (one for each impl object) and pass their Remote ends to the remote
   // Widget implementation to bind and use. This allows the remote Widget
   // implementation to send messages to both |observer1| and |observer2|.
-  widget->AddObserver(observer1.BindNewPipeAndPassRemote());
-  widget->AddObserver(observer2.BindNewPipeAndPassRemote());
+  widget.rpc(FROM_HERE)->AddObserver(observer1.BindNewRemote());
+  widget.rpc(FROM_HERE)->AddObserver(observer2.BindNewRemote());
 
   // When the FactoryImpl asynchronously receives our |CreateWidget| call, it
   // will send back a |mojom::WidgetClient::Initialize()| message to our
@@ -186,7 +209,7 @@ TEST(NewEndpointTypesTest, BasicUsage) {
   client.WaitForInitialize();
 
   // Send another message, this time to the remote Widget implementation.
-  widget->Click();
+  widget.rpc(FROM_HERE)->Click();
 
   // When the remote Widget implementation receives a |Click()| message, it
   // broadcasts a |mojom::WidgetObserver::OnClick()| event to all registered

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.tab;
 
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
-import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 
@@ -24,14 +23,12 @@ public class TabDelegateFactory {
     }
 
     /**
-     * Creates the {@link ExternalNavigationHandler} the tab will use for its
-     * {@link InterceptNavigationDelegate}.
+     * Creates the {@link InterceptNavigationDelegate} the tab will be initialized with.
      * @param tab The associated {@link Tab}.
-     * @return The {@link ExternalNavigationHandler} to be used for this tab.
+     * @return The {@link InterceptNavigationDelegate} to be used for this tab.
      */
-
-    public ExternalNavigationHandler createExternalNavigationHandler(Tab tab) {
-        return new ExternalNavigationHandler(tab);
+    public InterceptNavigationDelegateImpl createInterceptNavigationDelegate(Tab tab) {
+        return new InterceptNavigationDelegateImpl(tab);
     }
 
     /**
@@ -55,9 +52,10 @@ public class TabDelegateFactory {
     /**
      * Creates the {@link BrowserControlsVisibilityDelegate} the tab will be initialized with.
      * @param tab The associated {@link Tab}.
+     * @return {@link BrowserControlsVisibilityDelegate} to be used for the given tab.
      */
-    public void createBrowserControlsState(Tab tab) {
-        TabBrowserControlsState.create(tab, new TabStateBrowserControlsVisibilityDelegate(tab));
+    public BrowserControlsVisibilityDelegate createBrowserControlsVisibilityDelegate(Tab tab) {
+        return new TabStateBrowserControlsVisibilityDelegate(tab);
     }
 
     public TabDelegateFactory createNewTabDelegateFactory() {

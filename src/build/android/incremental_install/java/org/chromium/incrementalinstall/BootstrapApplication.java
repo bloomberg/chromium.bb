@@ -121,8 +121,7 @@ public final class BootstrapApplication extends Application {
                 if (mOrigInstrumentation instanceof SecondInstrumentation) {
                     metaDataName = REAL_INSTRUMENTATION_META_DATA_NAME1;
                 }
-                mRealInstrumentation =
-                        initInstrumentation(getClassNameFromMetadata(metaDataName, instContext));
+                initInstrumentation(getClassNameFromMetadata(metaDataName, instContext));
             } else {
                 Log.i(TAG, "No instrumentation active.");
             }
@@ -138,10 +137,9 @@ public final class BootstrapApplication extends Application {
             // the Application instances until onCreate() is called.
             String realApplicationName = getClassNameFromMetadata(REAL_APP_META_DATA_NAME, context);
             Log.i(TAG, "Instantiating " + realApplicationName);
-            Instrumentation anyInstrumentation =
-                    mRealInstrumentation != null ? mRealInstrumentation : mOrigInstrumentation;
-            mRealApplication = anyInstrumentation.newApplication(
-                    getClassLoader(), realApplicationName, context);
+            mRealApplication =
+                    (Application) Reflect.newInstance(Class.forName(realApplicationName));
+            Reflect.invokeMethod(mRealApplication, "attachBaseContext", context);
 
             // Between attachBaseContext() and onCreate(), ActivityThread tries to instantiate
             // all ContentProviders. The ContentProviders break without the correct Application
@@ -173,29 +171,30 @@ public final class BootstrapApplication extends Application {
     /**
      * Instantiates and initializes mRealInstrumentation (the real Instrumentation class).
      */
-    private Instrumentation initInstrumentation(String realInstrumentationName)
+    private void initInstrumentation(String realInstrumentationName)
             throws ReflectiveOperationException {
         if (realInstrumentationName == null) {
             // This is the case when an incremental app is used as a target for an instrumentation
             // test. In this case, ActivityThread can instantiate the proper class just fine since
             // it exists within the test apk (as opposed to the incremental apk-under-test).
             Log.i(TAG, "Running with external instrumentation");
-            return null;
+            mRealInstrumentation = mOrigInstrumentation;
+            return;
         }
         // For unit tests, the instrumentation class is replaced in the manifest by a build step
         // because ActivityThread tries to instantiate it before we get a chance to load the
         // incremental dex files.
         Log.i(TAG, "Instantiating instrumentation " + realInstrumentationName);
-        Instrumentation ret =
-                (Instrumentation) Reflect.newInstance(Class.forName(realInstrumentationName));
+        mRealInstrumentation = (Instrumentation) Reflect.newInstance(
+                Class.forName(realInstrumentationName));
 
         // Initialize the fields that are set by Instrumentation.init().
         String[] initFields = {"mAppContext", "mComponent", "mInstrContext", "mMessageQueue",
                 "mThread", "mUiAutomationConnection", "mWatcher"};
         for (String fieldName : initFields) {
-            Reflect.setField(ret, fieldName, Reflect.getField(mOrigInstrumentation, fieldName));
+            Reflect.setField(mRealInstrumentation, fieldName,
+                    Reflect.getField(mOrigInstrumentation, fieldName));
         }
-        return ret;
     }
 
     /**
@@ -254,6 +253,7 @@ public final class BootstrapApplication extends Application {
     /**
      * Changes all fields within framework classes that have stored an reference to this
      * BootstrapApplication to instead store references to mRealApplication.
+     * @throws NoSuchFieldException
      */
     @SuppressWarnings("unchecked")
     private void swapApplicationReferences() throws ReflectiveOperationException {
@@ -271,8 +271,8 @@ public final class BootstrapApplication extends Application {
 
         // Contains a reference to BootstrapApplication and will cause BroadCastReceivers to fail
         // if not replaced.
-        Context contextImpl = mRealApplication.getBaseContext();
-        Reflect.setField(contextImpl, "mOuterContext", mRealApplication);
+        Object contextWrapperBase = Reflect.getField(mRealApplication, "mBase");
+        Reflect.setField(contextWrapperBase, "mOuterContext", mRealApplication);
 
         for (String fieldName : new String[] {"mPackages", "mResourcePackages"}) {
             Map<String, WeakReference<?>> packageMap =
@@ -281,6 +281,7 @@ public final class BootstrapApplication extends Application {
                 Object loadedApk = entry.getValue().get();
                 if (loadedApk != null && Reflect.getField(loadedApk, "mApplication") == this) {
                     Reflect.setField(loadedApk, "mApplication", mRealApplication);
+                    Reflect.setField(mRealApplication, "mLoadedApk", loadedApk);
                 }
             }
         }

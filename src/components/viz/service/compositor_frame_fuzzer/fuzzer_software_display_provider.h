@@ -22,8 +22,7 @@ namespace viz {
 // ignoring the BeginFrameSource parameters passed to CreateDisplay.
 class FuzzerSoftwareDisplayProvider : public DisplayProvider {
  public:
-  FuzzerSoftwareDisplayProvider(
-      ServerSharedBitmapManager* server_shared_bitmap_manager,
+  explicit FuzzerSoftwareDisplayProvider(
       base::Optional<base::FilePath> png_dir_path);
   ~FuzzerSoftwareDisplayProvider() override;
 
@@ -33,15 +32,15 @@ class FuzzerSoftwareDisplayProvider : public DisplayProvider {
       gpu::SurfaceHandle surface_handle,
       bool gpu_compositing,
       mojom::DisplayClient* display_client,
-      BeginFrameSource* begin_frame_source,
-      UpdateVSyncParametersCallback update_vsync_callback,
+      ExternalBeginFrameSource* external_begin_frame_source,
+      SyntheticBeginFrameSource* synthetic_begin_frame_source,
       const RendererSettings& renderer_settings,
       bool send_swap_size_notifications) override;
   uint32_t GetRestartId() const override;
 
  private:
-  ServerSharedBitmapManager* const shared_bitmap_manager_;
   base::Optional<base::FilePath> png_dir_path_;
+  ServerSharedBitmapManager shared_bitmap_manager_;
   std::unique_ptr<StubBeginFrameSource> begin_frame_source_;
 
   DISALLOW_COPY_AND_ASSIGN(FuzzerSoftwareDisplayProvider);

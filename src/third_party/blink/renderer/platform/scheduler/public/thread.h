@@ -63,7 +63,7 @@ struct PLATFORM_EXPORT ThreadCreationParams {
   WebThreadType thread_type;
   const char* name;
   FrameOrWorkerScheduler* frame_or_worker_scheduler;  // NOT OWNED
-  base::ThreadPriority thread_priority = base::ThreadPriority::NORMAL;
+  base::Thread::Options thread_options;
 };
 
 // The interface of a thread recognized by Blink.

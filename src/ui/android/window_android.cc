@@ -358,22 +358,6 @@ void WindowAndroid::SetVSyncPaused(JNIEnv* env,
   begin_frame_source_->OnPauseChanged(paused);
 }
 
-void WindowAndroid::OnCursorVisibilityChanged(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    bool visible) {
-  for (WindowAndroidObserver& observer : observer_list_)
-    observer.OnCursorVisibilityChanged(visible);
-}
-
-void WindowAndroid::OnFallbackCursorModeToggled(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
-    bool is_on) {
-  for (WindowAndroidObserver& observer : observer_list_)
-    observer.OnFallbackCursorModeToggled(is_on);
-}
-
 void WindowAndroid::OnUpdateRefreshRate(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,

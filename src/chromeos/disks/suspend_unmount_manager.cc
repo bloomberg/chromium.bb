@@ -26,7 +26,7 @@ SuspendUnmountManager::SuspendUnmountManager(
 SuspendUnmountManager::~SuspendUnmountManager() {
   PowerManagerClient::Get()->RemoveObserver(this);
   if (!suspend_readiness_callback_.is_null())
-    std::move(suspend_readiness_callback_).Run();
+    suspend_readiness_callback_.Run();
 }
 
 void SuspendUnmountManager::SuspendImminent(
@@ -69,8 +69,10 @@ void SuspendUnmountManager::OnUnmountComplete(const std::string& mount_path,
   // This can happen when unmount completes after suspend done is called.
   if (unmounting_paths_.erase(mount_path) != 1)
     return;
-  if (unmounting_paths_.empty() && !suspend_readiness_callback_.is_null())
-    std::move(suspend_readiness_callback_).Run();
+  if (unmounting_paths_.empty() && !suspend_readiness_callback_.is_null()) {
+    suspend_readiness_callback_.Run();
+    suspend_readiness_callback_.Reset();
+  }
 }
 
 }  // namespace disks

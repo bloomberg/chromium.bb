@@ -14,7 +14,6 @@
 #include "components/history/core/common/pref_names.h"
 #include "components/invalidation/impl/invalidator_registrar_with_memory.h"
 #include "components/invalidation/impl/per_user_topic_registration_manager.h"
-#include "components/language/core/browser/language_prefs.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/network_time/network_time_tracker.h"
@@ -41,7 +40,6 @@
 #include "components/sync_sessions/session_sync_prefs.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
-#include "components/ukm/ios/features.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "components/update_client/update_client.h"
 #include "components/variations/service/variations_service.h"
@@ -59,7 +57,6 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/user/special_user_prefs.h"
 #include "services/identity/public/cpp/identity_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -75,7 +72,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   BrowserStateInfoCache::RegisterPrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterPrefs(registry);
   gcm::GCMChannelStatusSyncer::RegisterPrefs(registry);
-  identity::IdentityManager::RegisterLocalStatePrefs(registry);
+  identity::IdentityManager::RegisterPrefs(registry);
   IOSChromeMetricsServiceClient::RegisterPrefs(registry);
   network_time::NetworkTimeTracker::RegisterPrefs(registry);
   ios::NotificationPromo::RegisterPrefs(registry);
@@ -103,11 +100,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
                                 false);
   registry->RegisterBooleanPref(prefs::kLastSessionExitedCleanly, true);
-  registry->RegisterIntegerPref(prefs::kSpecialUserType,
-                                prefs::kSpecialUserTypeUnknown);
-  if (!base::FeatureList::IsEnabled(kUmaCellular)) {
-    registry->RegisterBooleanPref(prefs::kMetricsReportingWifiOnly, true);
-  }
+  registry->RegisterBooleanPref(prefs::kMetricsReportingWifiOnly, true);
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -116,7 +109,6 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   FirstRun::RegisterProfilePrefs(registry);
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
-  language::LanguagePrefs::RegisterProfilePrefs(registry);
   ntp_snippets::ClickBasedCategoryRanker::RegisterProfilePrefs(registry);
   ntp_snippets::ContentSuggestionsService::RegisterProfilePrefs(registry);
   ntp_snippets::RemoteSuggestionsProviderImpl::RegisterProfilePrefs(registry);
@@ -152,6 +144,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kOfferTranslateEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kAcceptLanguages,
+                               l10n_util::GetStringUTF8(IDS_ACCEPT_LANGUAGES));
   registry->RegisterStringPref(prefs::kDefaultCharset,
                                l10n_util::GetStringUTF8(IDS_DEFAULT_ENCODING),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);

@@ -15,7 +15,11 @@ class CORE_EXPORT TrustedScript final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit TrustedScript(const String& script);
+  static TrustedScript* Create(const String& script) {
+    return MakeGarbageCollected<TrustedScript>(script);
+  }
+
+  TrustedScript(const String& script);
 
   // TrustedScript.idl
   String toString() const;

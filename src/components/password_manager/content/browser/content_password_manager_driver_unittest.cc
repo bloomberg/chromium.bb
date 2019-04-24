@@ -125,7 +125,10 @@ PasswordFormFillData GetTestPasswordFormFillData() {
   non_preferred_match.password_value = ASCIIToUTF16("test1");
   matches[non_preferred_match.username_value] = &non_preferred_match;
 
-  return PasswordFormFillData(form_on_page, matches, preferred_match, true);
+  PasswordFormFillData result;
+  InitPasswordFormFillData(form_on_page, matches, &preferred_match, true,
+                           &result);
+  return result;
 }
 
 MATCHER(WerePasswordsCleared, "Passwords not cleared") {

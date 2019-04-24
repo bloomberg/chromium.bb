@@ -197,7 +197,7 @@ Extensions::Extensions()
       standardDerivatives(false),
       shaderTextureLOD(false),
       fragDepth(false),
-      multiview2(false),
+      multiview(false),
       maxViews(1u),
       textureUsage(false),
       translatedShaderSource(false),
@@ -208,10 +208,6 @@ Extensions::Extensions()
       eglImageExternal(false),
       eglImageExternalEssl3(false),
       eglSync(false),
-      memoryObject(false),
-      memoryObjectFd(false),
-      semaphore(false),
-      semaphoreFd(false),
       eglStreamConsumerExternal(false),
       unpackSubimage(false),
       packSubimage(false),
@@ -691,7 +687,7 @@ static bool DetermineColorBufferFloatRGBASupport(const TextureCapsMap &textureCa
         GL_RGBA32F,
     };
 
-    return GetFormatSupport(textureCaps, requiredFormats, true, false, true, true);
+    return GetFormatSupport(textureCaps, requiredFormats, true, false, true, false);
 }
 
 // Check for GL_EXT_color_buffer_float
@@ -865,7 +861,7 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_OES_standard_derivatives"] = enableableExtension(&Extensions::standardDerivatives);
         map["GL_EXT_shader_texture_lod"] = enableableExtension(&Extensions::shaderTextureLOD);
         map["GL_EXT_frag_depth"] = enableableExtension(&Extensions::fragDepth);
-        map["GL_OVR_multiview2"] = enableableExtension(&Extensions::multiview2);
+        map["GL_ANGLE_multiview"] = enableableExtension(&Extensions::multiview);
         map["GL_ANGLE_texture_usage"] = enableableExtension(&Extensions::textureUsage);
         map["GL_ANGLE_translated_shader_source"] = esOnlyExtension(&Extensions::translatedShaderSource);
         map["GL_OES_fbo_render_mipmap"] = enableableExtension(&Extensions::fboRenderMipmap);
@@ -875,10 +871,6 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_OES_EGL_image_external"] = enableableExtension(&Extensions::eglImageExternal);
         map["GL_OES_EGL_image_external_essl3"] = enableableExtension(&Extensions::eglImageExternalEssl3);
         map["GL_OES_EGL_sync"] = esOnlyExtension(&Extensions::eglSync);
-        map["GL_EXT_memory_object"] = enableableExtension(&Extensions::memoryObject);
-        map["GL_EXT_memory_object_fd"] = enableableExtension(&Extensions::memoryObjectFd);
-        map["GL_EXT_semaphore"] = enableableExtension(&Extensions::semaphore);
-        map["GL_EXT_semaphore_fd"] = enableableExtension(&Extensions::semaphoreFd);
         map["GL_NV_EGL_stream_consumer_external"] = enableableExtension(&Extensions::eglStreamConsumerExternal);
         map["GL_EXT_unpack_subimage"] = enableableExtension(&Extensions::unpackSubimage);
         map["GL_NV_pack_subimage"] = enableableExtension(&Extensions::packSubimage);
@@ -922,7 +914,6 @@ const ExtensionInfoMap &GetExtensionInfoMap()
         map["GL_ANGLE_texture_multisample"] = enableableExtension(&Extensions::textureMultisample);
         map["GL_ANGLE_multi_draw"] = enableableExtension(&Extensions::multiDraw);
         map["GL_ANGLE_provoking_vertex"] = enableableExtension(&Extensions::provokingVertex);
-        map["GL_CHROMIUM_lose_context"] = enableableExtension(&Extensions::loseContextCHROMIUM);
         // GLES1 extensinos
         map["GL_OES_point_size_array"] = enableableExtension(&Extensions::pointSizeArray);
         map["GL_OES_texture_cube_map"] = enableableExtension(&Extensions::textureCubeMap);
@@ -1079,8 +1070,6 @@ Caps::Caps()
       maxGeometryOutputVertices(0),
       maxGeometryTotalOutputComponents(0),
       maxGeometryShaderInvocations(0),
-
-      subPixelBits(4),
 
       // GLES1 emulation: Table 6.20 / 6.22 (ES 1.1 spec)
       maxMultitextureUnits(0),

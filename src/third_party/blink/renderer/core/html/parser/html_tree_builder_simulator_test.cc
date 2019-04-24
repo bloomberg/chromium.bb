@@ -14,8 +14,7 @@ namespace blink {
 TEST(HTMLTreeBuilderSimulatorTest, SelfClosingSVGFollowedByScript) {
   HTMLParserOptions options;
   HTMLTreeBuilderSimulator simulator(options);
-  std::unique_ptr<HTMLTokenizer> tokenizer =
-      std::make_unique<HTMLTokenizer>(options);
+  std::unique_ptr<HTMLTokenizer> tokenizer = HTMLTokenizer::Create(options);
   SegmentedString input("<svg/><script></script>");
   HTMLToken token;
   EXPECT_TRUE(tokenizer->NextToken(input, token));
@@ -41,8 +40,7 @@ TEST(HTMLTreeBuilderSimulatorTest, SelfClosingSVGFollowedByScript) {
 TEST(HTMLTreeBuilderSimulatorTest, SelfClosingMathFollowedByScript) {
   HTMLParserOptions options;
   HTMLTreeBuilderSimulator simulator(options);
-  std::unique_ptr<HTMLTokenizer> tokenizer =
-      std::make_unique<HTMLTokenizer>(options);
+  std::unique_ptr<HTMLTokenizer> tokenizer = HTMLTokenizer::Create(options);
   SegmentedString input("<math/><script></script>");
   HTMLToken token;
   EXPECT_TRUE(tokenizer->NextToken(input, token));
@@ -68,8 +66,7 @@ TEST(HTMLTreeBuilderSimulatorTest, SelfClosingMathFollowedByScript) {
 TEST(HTMLTreeBuilderSimulatorTest, DetectInvalidScriptType) {
   HTMLParserOptions options;
   HTMLTreeBuilderSimulator simulator(options);
-  std::unique_ptr<HTMLTokenizer> tokenizer =
-      std::make_unique<HTMLTokenizer>(options);
+  std::unique_ptr<HTMLTokenizer> tokenizer = HTMLTokenizer::Create(options);
   SegmentedString input("<script type=\"text/html\"></script>");
   HTMLToken token;
   EXPECT_TRUE(tokenizer->NextToken(input, token));

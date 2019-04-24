@@ -16,7 +16,6 @@ from chromite.lib import osutils
 from chromite.lib import partial_mock
 
 from chromite.scripts import build_dlc
-from chromite.scripts import cros_set_lsb_release
 
 
 _FS_TYPE_SQUASHFS = 'squashfs'
@@ -24,7 +23,6 @@ _FS_TYPE_EXT4 = 'ext4'
 _PRE_ALLOCATED_BLOCKS = 100
 _VERSION = '1.0'
 _ID = 'id'
-_PACKAGE = 'package'
 _NAME = 'name'
 _META_DIR = 'opt/google/dlc/'
 _IMAGE_DIR = 'build/rootfs/dlc/'
@@ -51,10 +49,6 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     osutils.SafeMakedirs(src_dir)
 
     sysroot = os.path.join(self.tempdir, 'build_root')
-    osutils.WriteFile(os.path.join(sysroot, build_dlc.LSB_RELEASE),
-                      '%s=%s\n' % (cros_set_lsb_release.LSB_KEY_APPID_RELEASE,
-                                   'foo'),
-                      makedirs=True)
     ue_conf = os.path.join(sysroot, 'etc', 'update_engine.conf')
     osutils.WriteFile(ue_conf, 'foo-content', makedirs=True)
 
@@ -65,16 +59,20 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
                                   pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
                                   version=_VERSION,
                                   dlc_id=_ID,
-                                  dlc_package=_PACKAGE,
                                   name=_NAME)
+
+  def testGetImageFileName(self):
+    """Tests getting the correct image file name."""
+    generator = self.GetDlcGenerator()
+    self.assertEqual(generator.GetImageFileName(), 'dlc_%s.img' % _ID)
 
   def testSetInstallDir(self):
     """Tests install_root_dir is used correclty."""
     generator = self.GetDlcGenerator()
     self.assertEqual(generator.meta_dir,
-                     os.path.join(self.tempdir, _META_DIR, _ID, _PACKAGE))
+                     os.path.join(self.tempdir, _META_DIR, _ID))
     self.assertEqual(generator.image_dir,
-                     os.path.join(self.tempdir, _IMAGE_DIR, _ID, _PACKAGE))
+                     os.path.join(self.tempdir, _IMAGE_DIR, _ID))
 
   def testSquashOwnerships(self):
     """Test build_dlc.SquashOwnershipsTest"""
@@ -116,15 +114,8 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
 
     generator.PrepareLsbRelease(dlc_dir)
 
-    expected_lsb_release = '\n'.join([
-        'DLC_ID=%s' % _ID,
-        'DLC_NAME=%s' % _NAME,
-        'DLC_PACKAGE=%s' % _PACKAGE,
-        'DLC_RELEASE_APPID=foo_%s' % _ID,
-    ]) + '\n'
-
     self.assertEqual(osutils.ReadFile(os.path.join(dlc_dir, 'etc/lsb-release')),
-                     expected_lsb_release)
+                     'DLC_ID=%s\nDLC_NAME=%s\n' %  (_ID, _NAME))
 
   def testCollectExtraResources(self):
     """Tests that extra resources are collected correctly."""
@@ -146,8 +137,7 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(content, {
         'fs-type': _FS_TYPE_SQUASHFS,
         'pre-allocated-size': _PRE_ALLOCATED_BLOCKS * 4096,
-        'id': _ID,
-        'package': _PACKAGE,
+        'id': 'id',
         'size': blocks * 4096,
         'table-sha256-hash': 'deadbeef',
         'name': _NAME,

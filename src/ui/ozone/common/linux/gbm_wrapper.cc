@@ -5,8 +5,10 @@
 #include "ui/ozone/common/linux/gbm_wrapper.h"
 
 #include <gbm.h>
-#include <memory>
-#include <utility>
+#if !defined(MINIGBM)
+#include <fcntl.h>
+#include <xf86drm.h>
+#endif
 
 #include "base/posix/eintr_wrapper.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -14,11 +16,6 @@
 #include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/common/linux/gbm_buffer.h"
 #include "ui/ozone/common/linux/gbm_device.h"
-
-#if !defined(MINIGBM)
-#include <fcntl.h>
-#include <xf86drm.h>
-#endif
 
 namespace gbm_wrapper {
 
@@ -88,14 +85,18 @@ class Buffer final : public ui::GbmBuffer {
          uint32_t format,
          uint32_t flags,
          uint64_t modifier,
+         std::vector<base::ScopedFD> fds,
          const gfx::Size& size,
-         gfx::NativePixmapHandle handle)
+         std::vector<gfx::NativePixmapPlane> planes)
       : bo_(bo),
         format_(format),
         format_modifier_(modifier),
         flags_(flags),
+        fds_(std::move(fds)),
         size_(size),
-        handle_(std::move(handle)) {}
+        planes_(std::move(planes)) {
+    DCHECK_EQ(fds_.size(), planes_.size());
+  }
 
   ~Buffer() override {
     DCHECK(!mmap_data_);
@@ -112,39 +113,54 @@ class Buffer final : public ui::GbmBuffer {
     return ui::GetBufferFormatFromFourCCFormat(format_);
   }
   bool AreFdsValid() const override {
-    if (handle_.planes.empty())
+    if (fds_.empty())
       return false;
 
-    for (const auto& plane : handle_.planes) {
-      if (!plane.fd.is_valid())
+    for (const auto& fd : fds_) {
+      if (fd.get() == -1)
         return false;
     }
     return true;
   }
-  size_t GetNumPlanes() const override { return handle_.planes.size(); }
+  size_t GetNumPlanes() const override { return planes_.size(); }
   int GetPlaneFd(size_t plane) const override {
-    DCHECK_LT(plane, handle_.planes.size());
-    return handle_.planes[plane].fd.get();
+    DCHECK_LT(plane, fds_.size());
+    return fds_[plane].get();
   }
   int GetPlaneStride(size_t plane) const override {
-    DCHECK_LT(plane, handle_.planes.size());
-    return handle_.planes[plane].stride;
+    DCHECK_LT(plane, planes_.size());
+    return planes_[plane].stride;
   }
   int GetPlaneOffset(size_t plane) const override {
-    DCHECK_LT(plane, handle_.planes.size());
-    return handle_.planes[plane].offset;
+    DCHECK_LT(plane, planes_.size());
+    return planes_[plane].offset;
   }
   size_t GetPlaneSize(size_t plane) const override {
-    DCHECK_LT(plane, handle_.planes.size());
-    return handle_.planes[plane].size;
+    DCHECK_LT(plane, planes_.size());
+    return planes_[plane].size;
   }
   uint32_t GetPlaneHandle(size_t plane) const override {
-    DCHECK_LT(plane, handle_.planes.size());
+    DCHECK_LT(plane, planes_.size());
     return gbm_bo_get_handle_for_plane(bo_, plane).u32;
   }
   uint32_t GetHandle() const override { return gbm_bo_get_handle(bo_).u32; }
   gfx::NativePixmapHandle ExportHandle() const override {
-    return CloneHandleForIPC(handle_);
+    gfx::NativePixmapHandle handle;
+    gfx::BufferFormat format = ui::GetBufferFormatFromFourCCFormat(format_);
+    // TODO(dcastagna): Use gbm_bo_get_num_planes once all the formats we use
+    // are supported by gbm.
+    for (size_t i = 0; i < gfx::NumberOfPlanesForBufferFormat(format); ++i) {
+      base::ScopedFD scoped_fd(HANDLE_EINTR(dup(GetPlaneFd(i))));
+      if (!scoped_fd.is_valid()) {
+        PLOG(ERROR) << "dup";
+        return gfx::NativePixmapHandle();
+      }
+      handle.fds.emplace_back(
+          base::FileDescriptor(scoped_fd.release(), true /* auto_close */));
+      handle.planes.emplace_back(GetPlaneStride(i), GetPlaneOffset(i),
+                                 GetPlaneSize(i), GetFormatModifier());
+    }
+    return handle;
   }
 
   sk_sp<SkSurface> GetSurface() override {
@@ -169,12 +185,6 @@ class Buffer final : public ui::GbmBuffer {
   }
 
  private:
-  static void UnmapGbmBo(void* pixels, void* context) {
-    Buffer* buffer = static_cast<Buffer*>(context);
-    gbm_bo_unmap(buffer->bo_, buffer->mmap_data_);
-    buffer->mmap_data_ = nullptr;
-  }
-
   gbm_bo* bo_ = nullptr;
   void* mmap_data_ = nullptr;
 
@@ -182,9 +192,17 @@ class Buffer final : public ui::GbmBuffer {
   uint64_t format_modifier_ = 0;
   uint32_t flags_ = 0;
 
+  std::vector<base::ScopedFD> fds_;
+
   gfx::Size size_;
 
-  gfx::NativePixmapHandle handle_;
+  std::vector<gfx::NativePixmapPlane> planes_;
+
+  static void UnmapGbmBo(void* pixels, void* context) {
+    Buffer* buffer = static_cast<Buffer*>(context);
+    gbm_bo_unmap(buffer->bo_, buffer->mmap_data_);
+    buffer->mmap_data_ = nullptr;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
@@ -194,7 +212,8 @@ std::unique_ptr<Buffer> CreateBufferForBO(struct gbm_bo* bo,
                                           const gfx::Size& size,
                                           uint32_t flags) {
   DCHECK(bo);
-  gfx::NativePixmapHandle handle;
+  std::vector<base::ScopedFD> fds;
+  std::vector<gfx::NativePixmapPlane> planes;
 
   const uint64_t modifier = gbm_bo_get_modifier(bo);
   const int plane_count = gbm_bo_get_plane_count(bo);
@@ -214,13 +233,14 @@ std::unique_ptr<Buffer> CreateBufferForBO(struct gbm_bo* bo,
       gbm_bo_destroy(bo);
       return nullptr;
     }
+    fds.emplace_back(std::move(fd));
 
-    handle.planes.emplace_back(
-        gbm_bo_get_stride_for_plane(bo, i), gbm_bo_get_offset(bo, i),
-        GetSizeOfPlane(bo, format, size, i), std::move(fd), modifier);
+    planes.emplace_back(gbm_bo_get_stride_for_plane(bo, i),
+                        gbm_bo_get_offset(bo, i),
+                        GetSizeOfPlane(bo, format, size, i), modifier);
   }
-  return std::make_unique<Buffer>(bo, format, flags, modifier, size,
-                                  std::move(handle));
+  return std::make_unique<Buffer>(bo, format, flags, modifier, std::move(fds),
+                                  size, std::move(planes));
 }
 
 class Device final : public ui::GbmDevice {
@@ -255,11 +275,13 @@ class Device final : public ui::GbmDevice {
     return CreateBufferForBO(bo, format, size, flags);
   }
 
-  std::unique_ptr<ui::GbmBuffer> CreateBufferFromHandle(
+  std::unique_ptr<ui::GbmBuffer> CreateBufferFromFds(
       uint32_t format,
       const gfx::Size& size,
-      gfx::NativePixmapHandle handle) override {
-    DCHECK_EQ(handle.planes[0].offset, 0);
+      std::vector<base::ScopedFD> fds,
+      const std::vector<gfx::NativePixmapPlane>& planes) override {
+    DCHECK_LE(fds.size(), planes.size());
+    DCHECK_EQ(planes[0].offset, 0);
 
     // Try to use scanout if supported.
     int gbm_flags = GBM_BO_USE_SCANOUT;
@@ -279,16 +301,16 @@ class Device final : public ui::GbmDevice {
     fd_data.width = size.width();
     fd_data.height = size.height();
     fd_data.format = format;
-    fd_data.num_fds = handle.planes.size();
-    fd_data.modifier = handle.planes[0].modifier;
+    fd_data.num_fds = planes.size();
+    fd_data.modifier = planes[0].modifier;
 
-    DCHECK_LE(handle.planes.size(), 3u);
-    for (size_t i = 0; i < handle.planes.size(); ++i) {
-      fd_data.fds[i] = handle.planes[i < handle.planes.size() ? i : 0].fd.get();
-      fd_data.strides[i] = handle.planes[i].stride;
-      fd_data.offsets[i] = handle.planes[i].offset;
+    DCHECK_LE(planes.size(), 3u);
+    for (size_t i = 0; i < planes.size(); ++i) {
+      fd_data.fds[i] = fds[i < fds.size() ? i : 0].get();
+      fd_data.strides[i] = planes[i].stride;
+      fd_data.offsets[i] = planes[i].offset;
       // Make sure the modifier is the same for all the planes.
-      DCHECK_EQ(fd_data.modifier, handle.planes[i].modifier);
+      DCHECK_EQ(fd_data.modifier, planes[i].modifier);
     }
 
     // The fd passed to gbm_bo_import is not ref-counted and need to be
@@ -299,9 +321,8 @@ class Device final : public ui::GbmDevice {
       return nullptr;
     }
 
-    return std::make_unique<Buffer>(bo, format, gbm_flags,
-                                    handle.planes[0].modifier, size,
-                                    std::move(handle));
+    return std::make_unique<Buffer>(bo, format, gbm_flags, planes[0].modifier,
+                                    std::move(fds), size, std::move(planes));
   }
 
  private:

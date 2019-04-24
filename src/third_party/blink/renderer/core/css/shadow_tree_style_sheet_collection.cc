@@ -77,7 +77,7 @@ void ShadowTreeStyleSheetCollection::CollectStyleSheets(
 void ShadowTreeStyleSheetCollection::UpdateActiveStyleSheets(
     StyleEngine& master_engine) {
   // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
-  auto* collection = MakeGarbageCollected<StyleSheetCollection>();
+  StyleSheetCollection* collection = StyleSheetCollection::Create();
   CollectStyleSheets(master_engine, *collection);
   ApplyActiveStyleSheetChanges(*collection);
 }

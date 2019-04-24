@@ -54,7 +54,7 @@ namespace GrGradientShader {
         SkColor4f fColors4f[kMaxRandomGradientColors];
         sk_sp<SkColorSpace> fColorSpace;
         SkScalar fStopStorage[kMaxRandomGradientColors];
-        SkTileMode fTileMode;
+        SkShader::TileMode fTileMode;
         int fColorCount;
         SkScalar* fStops;
     };

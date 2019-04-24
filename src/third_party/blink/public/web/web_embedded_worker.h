@@ -40,6 +40,7 @@
 
 namespace blink {
 
+class WebContentSettingsClient;
 class WebServiceWorkerContextClient;
 class WebURL;
 struct WebConsoleMessage;
@@ -60,10 +61,11 @@ struct WebServiceWorkerInstalledScriptsManagerParams {
 class BLINK_EXPORT WebEmbeddedWorker {
  public:
   // Invoked on the main thread to instantiate a WebEmbeddedWorker.
-  // WebServiceWorkerContextClient is owned by caller and must survive the
-  // instance of WebEmbeddedWorker.
+  // The given WebWorkerContextClient and WebContentSettingsClient are going to
+  // be passed on to the worker thread and is held by a newly created
+  // WorkerGlobalScope.
   static std::unique_ptr<WebEmbeddedWorker> Create(
-      WebServiceWorkerContextClient*,
+      std::unique_ptr<WebServiceWorkerContextClient>,
       std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
       mojo::ScopedMessagePipeHandle content_settings_handle,
       mojo::ScopedMessagePipeHandle cache_storage,

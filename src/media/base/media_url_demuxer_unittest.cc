@@ -21,16 +21,13 @@ class MediaUrlDemuxerTest : public testing::Test {
       : default_media_url_("http://example.com/file.mp4"),
         default_first_party_url_("http://example.com/") {}
 
-  void InitializeTest(const GURL& media_url,
-                      const GURL& first_party,
-                      bool allow_credentials) {
+  void InitializeTest(const GURL& media_url, const GURL& first_party) {
     demuxer_.reset(new MediaUrlDemuxer(base::ThreadTaskRunnerHandle::Get(),
-                                       media_url, first_party,
-                                       allow_credentials));
+                                       media_url, first_party));
   }
 
   void InitializeTest() {
-    InitializeTest(default_media_url_, default_first_party_url_, true);
+    InitializeTest(default_media_url_, default_first_party_url_);
   }
 
   void VerifyCallbackOk(PipelineStatus status) {
@@ -56,16 +53,14 @@ TEST_F(MediaUrlDemuxerTest, BaseCase) {
   MediaUrlParams params = demuxer_->GetMediaUrlParams();
   EXPECT_EQ(default_media_url_, params.media_url);
   EXPECT_EQ(default_first_party_url_, params.site_for_cookies);
-  EXPECT_EQ(true, params.allow_credentials);
 }
 
 TEST_F(MediaUrlDemuxerTest, AcceptsEmptyStrings) {
-  InitializeTest(GURL(), GURL(), false);
+  InitializeTest(GURL(), GURL());
 
   MediaUrlParams params = demuxer_->GetMediaUrlParams();
   EXPECT_EQ(GURL::EmptyGURL(), params.media_url);
   EXPECT_EQ(GURL::EmptyGURL(), params.site_for_cookies);
-  EXPECT_EQ(false, params.allow_credentials);
 }
 
 TEST_F(MediaUrlDemuxerTest, InitializeReturnsPipelineOk) {

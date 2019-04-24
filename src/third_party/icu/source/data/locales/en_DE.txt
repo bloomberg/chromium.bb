@@ -8,11 +8,9 @@ en_DE{
                 percentFormat{"#,##0 %"}
             }
             symbols{
-                decimal{","}
-                group{"."}
                 superscriptingExponent{"·"}
             }
         }
     }
-    Version{"2.1.47.69"}
+    Version{"2.1.38.69"}
 }

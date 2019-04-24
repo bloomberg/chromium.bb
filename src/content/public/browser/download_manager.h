@@ -41,7 +41,6 @@
 #include "components/download/public/common/download_stream.mojom-forward.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/input_stream.h"
-#include "components/download/public/common/simple_download_manager.h"
 #include "content/common/content_export.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -60,8 +59,7 @@ class BrowserContext;
 class DownloadManagerDelegate;
 
 // Browser's download manager: manages all downloads and destination view.
-class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data,
-                                       public download::SimpleDownloadManager {
+class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
  public:
   ~DownloadManager() override {}
 
@@ -112,6 +110,12 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data,
     virtual ~Observer() {}
   };
 
+  typedef std::vector<download::DownloadItem*> DownloadVector;
+
+  // Add all download items to |downloads|, no matter the type or state, without
+  // clearing |downloads| first.
+  virtual void GetAllDownloads(DownloadVector* downloads) = 0;
+
   // Called by a download source (Currently DownloadResourceHandler)
   // to initiate the non-source portions of a download.
   // If the DownloadCreateInfo specifies an id, that id will be used.
@@ -133,7 +137,11 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data,
       base::Time remove_begin,
       base::Time remove_end) = 0;
 
-  using SimpleDownloadManager::DownloadUrl;
+  // See download::DownloadUrlParameters for details about controlling the
+  // download.
+  virtual void DownloadUrl(
+      std::unique_ptr<download::DownloadUrlParameters> parameters) = 0;
+
   // For downloads of blob URLs, the caller can pass a BlobDataHandle object so
   // that the blob will remain valid until the download starts. The
   // BlobDataHandle will be attached to the associated URLRequest.
@@ -227,6 +235,10 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data,
   // download::DownloadItem if you need to keep track of a specific download.
   // (http://crbug.com/593020)
   virtual download::DownloadItem* GetDownload(uint32_t id) = 0;
+
+  // Get the download item for |guid|.
+  virtual download::DownloadItem* GetDownloadByGuid(
+      const std::string& guid) = 0;
 
   using GetNextIdCallback = base::OnceCallback<void(uint32_t)>;
   // Called to get an ID for a new download. |callback| may be called

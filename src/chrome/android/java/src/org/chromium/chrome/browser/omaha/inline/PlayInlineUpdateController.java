@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.omaha.inline;
 
 import android.app.Activity;
 import android.content.IntentSender.SendIntentException;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
@@ -57,7 +59,7 @@ public class PlayInlineUpdateController
         int ERROR_INTERNAL_ERROR = 8;
         int ERROR_UNTRACKED = 9;
 
-        int NUM_ENTRIES = 10;
+        int COUNT = 10;
     }
 
     /**
@@ -73,12 +75,14 @@ public class PlayInlineUpdateController
         int COMPLETE_FAILED = 2;
         int QUERY_FAILED = 3;
 
-        int NUM_ENTRIES = 4;
+        int COUNT = 4;
     }
 
     private static final String TAG = "PlayInline";
     private static final int RESULT_IN_APP_UPDATE_FAILED = 1;
     private static final int REQUEST_CODE = 8123;
+
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
 
     private final Runnable mCallback;
     private final AppUpdateManager mAppUpdateManager;
@@ -161,7 +165,7 @@ public class PlayInlineUpdateController
             RecordHistogram.recordEnumeratedHistogram("GoogleUpdate.Inline.StateChange.Error."
                             + installStatusToEnumSuffix(state.installStatus()),
                     installErrorCodeToMetrics(state.installErrorCode()),
-                    InstallErrorCodeMetrics.NUM_ENTRIES);
+                    InstallErrorCodeMetrics.COUNT);
         }
 
         mInstallStatus = state.installStatus();
@@ -286,6 +290,6 @@ public class PlayInlineUpdateController
 
     private static void recordCallFailure(@CallFailure int failure) {
         RecordHistogram.recordEnumeratedHistogram(
-                "GoogleUpdate.Inline.CallFailure", failure, CallFailure.NUM_ENTRIES);
+                "GoogleUpdate.Inline.CallFailure", failure, CallFailure.COUNT);
     }
 }

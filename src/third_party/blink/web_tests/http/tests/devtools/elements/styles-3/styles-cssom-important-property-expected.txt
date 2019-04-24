@@ -3,7 +3,7 @@ Tests that !important modifier is shown for CSSOM-generated properties.
 element.style { ()
 
 [expanded] 
-div { (<style>)
+div { (<style>…</style>)
     color: red !important;
 
 [expanded] 

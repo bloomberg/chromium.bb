@@ -19,7 +19,6 @@ class EditorTest : public EditingTestBase {
  public:
   void TearDown() override {
     SystemClipboard::GetInstance().WritePlainText(String(""));
-    SystemClipboard::GetInstance().CommitWrite();
     EditingTestBase::TearDown();
   }
 

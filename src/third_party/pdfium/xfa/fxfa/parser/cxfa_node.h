@@ -147,7 +147,7 @@ class CXFA_Node : public CXFA_Object {
   void SetXMLMappingNode(CFX_XMLNode* node) { xml_node_ = node; }
   CFX_XMLNode* GetXMLMappingNode() const { return xml_node_.Get(); }
   CFX_XMLNode* CreateXMLMappingNode();
-  bool IsNeedSavingXMLNode() const;
+  bool IsNeedSavingXMLNode();
 
   void SetToXML(const WideString& value);
 
@@ -192,12 +192,11 @@ class CXFA_Node : public CXFA_Object {
   std::vector<CXFA_Node*>* GetBindItems() { return &binding_nodes_; }
   int32_t AddBindItem(CXFA_Node* pFormNode);
   int32_t RemoveBindItem(CXFA_Node* pFormNode);
-  bool HasBindItem() const;
+  bool HasBindItem();
   CXFA_Node* GetContainerNode();
   LocaleIface* GetLocale();
   Optional<WideString> GetLocaleName();
   XFA_AttributeValue GetIntact();
-  WideString GetNameExpression();
 
   CXFA_Node* GetFirstChildByName(WideStringView wsNodeName) const;
   CXFA_Node* GetFirstChildByName(uint32_t dwNodeNameHash) const;
@@ -215,14 +214,6 @@ class CXFA_Node : public CXFA_Object {
     return static_cast<T*>(GetNextSameClassSiblingInternal(eType));
   }
 
-  CXFA_Node* GetOneChildNamed(WideStringView wsName);
-  CXFA_Node* GetOneChildOfClass(WideStringView wsClass);
-
-  std::vector<CXFA_Node*> GetSiblings(bool bIsClassName);
-  size_t GetIndex(bool bIsProperty, bool bIsClassIndex);
-  size_t GetIndexByName();
-  size_t GetIndexByClassName();
-
   CXFA_Node* GetInstanceMgrOfSubform();
 
   Optional<bool> GetDefaultBoolean(XFA_Attribute attr) const;
@@ -231,7 +222,7 @@ class CXFA_Node : public CXFA_Object {
   Optional<WideString> GetDefaultCData(XFA_Attribute attr) const;
   Optional<XFA_AttributeValue> GetDefaultEnum(XFA_Attribute attr) const;
 
-  bool IsOpenAccess() const;
+  bool IsOpenAccess();
 
   CXFA_Occur* GetOccurIfExists();
   CXFA_Border* GetBorderIfExists() const;
@@ -253,20 +244,20 @@ class CXFA_Node : public CXFA_Object {
   CXFA_Value* GetFormValueIfExists() const;
   WideString GetRawValue();
 
-  int32_t GetRotate() const;
+  int32_t GetRotate();
   Optional<float> TryWidth();
 
   CXFA_Node* GetExclGroupIfExists();
 
-  int32_t ProcessEvent(CXFA_FFDocView* pDocView,
+  int32_t ProcessEvent(CXFA_FFDocView* docView,
                        XFA_AttributeValue iActivity,
                        CXFA_EventParam* pEventParam);
-  int32_t ProcessCalculate(CXFA_FFDocView* pDocView);
-  int32_t ProcessValidate(CXFA_FFDocView* pDocView, int32_t iFlags);
-  int32_t ExecuteScript(CXFA_FFDocView* pDocView,
+  int32_t ProcessCalculate(CXFA_FFDocView* docView);
+  int32_t ProcessValidate(CXFA_FFDocView* docView, int32_t iFlags);
+  int32_t ExecuteScript(CXFA_FFDocView* docView,
                         CXFA_Script* script,
                         CXFA_EventParam* pEventParam);
-  std::pair<int32_t, bool> ExecuteBoolScript(CXFA_FFDocView* pDocView,
+  std::pair<int32_t, bool> ExecuteBoolScript(CXFA_FFDocView* docView,
                                              CXFA_Script* script,
                                              CXFA_EventParam* pEventParam);
 
@@ -291,9 +282,9 @@ class CXFA_Node : public CXFA_Object {
   void StartWidgetLayout(CXFA_FFDoc* doc,
                          float* pCalcWidth,
                          float* pCalcHeight);
-  Optional<float> FindSplitPos(CXFA_FFDocView* pDocView,
-                               size_t szBlockIndex,
-                               float fCalcHeight);
+  bool FindSplitPos(CXFA_FFDocView* docView,
+                    size_t szBlockIndex,
+                    float* pCalcHeight);
 
   bool LoadCaption(CXFA_FFDoc* doc);
   CXFA_TextLayout* GetCaptionTextLayout();
@@ -308,7 +299,7 @@ class CXFA_Node : public CXFA_Object {
   RetainPtr<CFX_DIBitmap> GetImageEditImage();
   void SetImageImage(const RetainPtr<CFX_DIBitmap>& newImage);
   void SetImageEditImage(const RetainPtr<CFX_DIBitmap>& newImage);
-  void UpdateUIDisplay(CXFA_FFDocView* pDocView, CXFA_FFWidget* pExcept);
+  void UpdateUIDisplay(CXFA_FFDocView* docView, CXFA_FFWidget* pExcept);
 
   RetainPtr<CFGAS_GEFont> GetFDEFont(CXFA_FFDoc* doc);
 
@@ -382,9 +373,6 @@ class CXFA_Node : public CXFA_Object {
 
   WideString NumericLimit(const WideString& wsValue);
 
-  bool IsTransparent() const;
-  bool IsProperty() const;
-
  protected:
   CXFA_Node(CXFA_Document* pDoc,
             XFA_PacketType ePacket,
@@ -399,15 +387,15 @@ class CXFA_Node : public CXFA_Object {
   virtual XFA_FFWidgetType GetDefaultFFWidgetType() const;
 
  private:
-  void ProcessScriptTestValidate(CXFA_FFDocView* pDocView,
+  void ProcessScriptTestValidate(CXFA_FFDocView* docView,
                                  CXFA_Validate* validate,
                                  int32_t iRet,
                                  bool pRetValue,
                                  bool bVersionFlag);
-  int32_t ProcessFormatTestValidate(CXFA_FFDocView* pDocView,
+  int32_t ProcessFormatTestValidate(CXFA_FFDocView* docView,
                                     CXFA_Validate* validate,
                                     bool bVersionFlag);
-  int32_t ProcessNullTestValidate(CXFA_FFDocView* pDocView,
+  int32_t ProcessNullTestValidate(CXFA_FFDocView* docView,
                                   CXFA_Validate* validate,
                                   int32_t iFlags,
                                   bool bVersionFlag);
@@ -415,15 +403,14 @@ class CXFA_Node : public CXFA_Object {
   WideString GetValidateMessage(bool bError, bool bVersionFlag);
 
   bool HasFlag(XFA_NodeFlag dwFlag) const;
+  CXFA_Node* Deprecated_GetPrevSibling();
   const PropertyData* GetPropertyData(XFA_Element property) const;
   const AttributeData* GetAttributeData(XFA_Attribute attr) const;
-  Optional<XFA_Element> GetFirstPropertyWithFlag(uint8_t flag) const;
-  void OnRemoved(bool bNotify) const;
+  Optional<XFA_Element> GetFirstPropertyWithFlag(uint8_t flag);
+  void OnRemoved(bool bNotify);
   Optional<void*> GetDefaultValue(XFA_Attribute attr,
                                   XFA_AttributeType eType) const;
-  CXFA_Node* GetChildInternal(size_t index,
-                              XFA_Element eType,
-                              bool bOnlyChild) const;
+  CXFA_Node* GetChildInternal(size_t index, XFA_Element eType, bool bOnlyChild);
   CXFA_Node* GetFirstChildByClassInternal(XFA_Element eType) const;
   CXFA_Node* GetNextSameNameSiblingInternal(WideStringView wsNodeName) const;
   CXFA_Node* GetNextSameClassSiblingInternal(XFA_Element eType) const;
@@ -472,14 +459,13 @@ class CXFA_Node : public CXFA_Object {
   Optional<XFA_AttributeValue> GetIntactFromKeep(
       const CXFA_Keep* pKeep,
       XFA_AttributeValue eLayoutType) const;
-  CXFA_Node* GetTransparentParent();
 
   Optional<float> TryHeight();
   Optional<float> TryMinWidth();
   Optional<float> TryMinHeight();
   Optional<float> TryMaxWidth();
   Optional<float> TryMaxHeight();
-  int32_t ProcessEvent(CXFA_FFDocView* pDocView,
+  int32_t ProcessEvent(CXFA_FFDocView* docView,
                        XFA_AttributeValue iActivity,
                        CXFA_Event* event,
                        CXFA_EventParam* pEventParam);

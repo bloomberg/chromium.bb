@@ -14,7 +14,6 @@
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/http/http_util.h"
-#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -132,18 +131,12 @@ TEST_P(OriginPolicyThrottleTest, RunRequestEndToEnd) {
   navigation->ReadyToCommit();
   EXPECT_TRUE(navigation->IsDeferred());
 
-  // Set TestURLLoaderFactory because we could not make actual network requests
-  // in this unit tests, but this test would make.
-  OriginPolicyThrottle* policy_throttle = static_cast<OriginPolicyThrottle*>(
-      nav_handle->GetDeferringThrottleForTesting());
-  EXPECT_TRUE(policy_throttle);
-  policy_throttle->SetURLLoaderFactoryForTesting(
-      std::make_unique<network::TestURLLoaderFactory>());
-
   // For the purpose of this unit test we don't care about policy content,
   // only that it's non-empty. We check whether the throttle will pass it on.
   const char* policy = "{}";
-  policy_throttle->InjectPolicyForTesting(policy);
+  static_cast<OriginPolicyThrottle*>(
+      nav_handle->GetDeferringThrottleForTesting())
+      ->InjectPolicyForTesting(policy);
 
   // At the end of the navigation, the navigation handle should have a copy
   // of the origin policy.

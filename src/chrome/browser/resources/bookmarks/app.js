@@ -160,9 +160,4 @@ Polymer({
   searchInputHasFocus: function() {
     return this.$$('bookmarks-toolbar').searchField.isSearchFocused();
   },
-
-  /** @private */
-  onUndoClick_: function() {
-    this.fire('command-undo');
-  },
 });

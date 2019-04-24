@@ -20,7 +20,7 @@ static const int kAssumedLoopEntryIndex = 0;  // assume loops are entered here.
 
 class LoopFinderImpl;
 
-using NodeRange = base::iterator_range<Node**>;
+typedef base::iterator_range<Node**> NodeRange;
 
 // Represents a tree of loops in a graph.
 class LoopTree : public ZoneObject {

@@ -8,11 +8,11 @@ namespace viz {
 
 ResourceMetadata::ResourceMetadata() = default;
 
-ResourceMetadata::ResourceMetadata(const ResourceMetadata& other) = default;
+ResourceMetadata::ResourceMetadata(ResourceMetadata&& other) = default;
 
 ResourceMetadata::~ResourceMetadata() = default;
 
-ResourceMetadata& ResourceMetadata::operator=(const ResourceMetadata& other) =
+ResourceMetadata& ResourceMetadata::operator=(ResourceMetadata&& other) =
     default;
 
 }  // namespace viz

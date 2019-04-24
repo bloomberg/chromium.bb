@@ -146,13 +146,15 @@ void DesktopDropTargetWin::Translate(
   if (!*delegate)
     return;
 
-  *data = std::make_unique<OSExchangeData>(
-      std::make_unique<OSExchangeDataProviderWin>(data_object));
+  data->reset(new OSExchangeData(
+      std::make_unique<OSExchangeDataProviderWin>(data_object)));
   location = root_location;
   aura::Window::ConvertPointToTarget(root_window_, target_window_, &location);
-  *event = std::make_unique<ui::DropTargetEvent>(
-      *(data->get()), gfx::PointF(location), gfx::PointF(root_location),
-      ui::DragDropTypes::DropEffectToDragOperation(effect));
+  event->reset(new ui::DropTargetEvent(
+      *(data->get()),
+      gfx::PointF(location),
+      gfx::PointF(root_location),
+      ui::DragDropTypes::DropEffectToDragOperation(effect)));
   (*event)->set_flags(ConvertKeyStateToAuraEventFlags(key_state));
   if (target_window_changed)
     (*delegate)->OnDragEntered(*event->get());

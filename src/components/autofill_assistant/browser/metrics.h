@@ -38,9 +38,8 @@ class Metrics {
     GET_SCRIPTS_FAILED = 17,
     GET_SCRIPTS_UNPARSABLE = 18,
     NO_INITIAL_SCRIPTS = 19,
-    DFM_CANCELLED = 19,
 
-    NUM_ENTRIES = 21,
+    NUM_ENTRIES = 20,
   };
 
   static void RecordDropOut(DropOutReason reason);

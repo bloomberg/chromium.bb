@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/settings/google_services/advanced_signin_settings_coordinator.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_presenting.h"
 
@@ -18,9 +17,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface SigninInteractionCoordinator () <
-    AdvancedSigninSettingsCoordinatorDelegate,
-    SigninInteractionPresenting>
+@interface SigninInteractionCoordinator ()<SigninInteractionPresenting>
 
 // Coordinator to present alerts.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
@@ -40,16 +37,15 @@
 // Bookkeeping for the top-most view controller.
 @property(nonatomic, strong) UIViewController* topViewController;
 
-// Sign-in completion.
-@property(nonatomic, copy) signin_ui::CompletionCallback signinCompletion;
-
-// Advanced sign-in settings coordinator.
-@property(nonatomic, strong)
-    AdvancedSigninSettingsCoordinator* advancedSigninSettingsCoordinator;
-
 @end
 
 @implementation SigninInteractionCoordinator
+@synthesize alertCoordinator = _alertCoordinator;
+@synthesize browserState = _browserState;
+@synthesize controller = _controller;
+@synthesize dispatcher = _dispatcher;
+@synthesize presentingViewController = _presentingViewController;
+@synthesize topViewController = _topViewController;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                           dispatcher:(id<ApplicationCommands>)dispatcher {
@@ -74,11 +70,11 @@
 
   [self setupForSigninOperationWithAccessPoint:accessPoint
                                    promoAction:promoAction
-                      presentingViewController:viewController
-                                    completion:completion];
+                      presentingViewController:viewController];
 
-  [self.controller signInWithIdentity:identity
-                           completion:[self callbackToClearState]];
+  [self.controller
+      signInWithIdentity:identity
+              completion:[self callbackToClearStateWithCompletion:completion]];
 }
 
 - (void)reAuthenticateWithAccessPoint:(signin_metrics::AccessPoint)accessPoint
@@ -93,10 +89,10 @@
 
   [self setupForSigninOperationWithAccessPoint:accessPoint
                                    promoAction:promoAction
-                      presentingViewController:viewController
-                                    completion:completion];
+                      presentingViewController:viewController];
 
-  [self.controller reAuthenticateWithCompletion:[self callbackToClearState]];
+  [self.controller reAuthenticateWithCompletion:
+                       [self callbackToClearStateWithCompletion:completion]];
 }
 
 - (void)addAccountWithAccessPoint:(signin_metrics::AccessPoint)accessPoint
@@ -110,34 +106,22 @@
 
   [self setupForSigninOperationWithAccessPoint:accessPoint
                                    promoAction:promoAction
-                      presentingViewController:viewController
-                                    completion:completion];
+                      presentingViewController:viewController];
 
-  [self.controller addAccountWithCompletion:[self callbackToClearState]];
+  [self.controller addAccountWithCompletion:
+                       [self callbackToClearStateWithCompletion:completion]];
 }
 
 - (void)cancel {
   [self.controller cancel];
-  [self.advancedSigninSettingsCoordinator abortWithDismiss:NO];
 }
 
 - (void)cancelAndDismiss {
   [self.controller cancelAndDismiss];
-  [self.advancedSigninSettingsCoordinator abortWithDismiss:YES];
 }
 
 - (BOOL)isActive {
   return self.controller != nil;
-}
-
-#pragma mark - AdvancedSigninSettingsCoordinatorDelegate
-
-- (void)advancedSigninSettingsCoordinatorDidClose:
-            (AdvancedSigninSettingsCoordinator*)coordinator
-                                         signedin:(BOOL)signedin {
-  DCHECK_EQ(self.advancedSigninSettingsCoordinator, coordinator);
-  self.advancedSigninSettingsCoordinator = nil;
-  [self signinDoneWithSuccess:signedin];
 }
 
 #pragma mark - SigninInteractionPresenting
@@ -187,6 +171,16 @@
   self.alertCoordinator = nil;
 }
 
+- (void)showAccountsSettings {
+  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
+    [self.dispatcher showGoogleServicesSettingsFromViewController:
+                         self.presentingViewController];
+  } else {
+    [self.dispatcher
+        showAccountsSettingsFromViewController:self.presentingViewController];
+  }
+}
+
 - (BOOL)isPresenting {
   return self.presentingViewController.presentedViewController != nil;
 }
@@ -194,17 +188,12 @@
 #pragma mark - Private Methods
 
 // Sets up relevant instance variables for a sign in operation.
-- (void)setupForSigninOperationWithAccessPoint:
-            (signin_metrics::AccessPoint)accessPoint
-                                   promoAction:
-                                       (signin_metrics::PromoAction)promoAction
-                      presentingViewController:
-                          (UIViewController*)presentingViewController
-                                    completion:(signin_ui::CompletionCallback)
-                                                   completion {
+- (void)
+setupForSigninOperationWithAccessPoint:(signin_metrics::AccessPoint)accessPoint
+                           promoAction:(signin_metrics::PromoAction)promoAction
+              presentingViewController:
+                  (UIViewController*)presentingViewController {
   DCHECK(![self isPresenting]);
-  DCHECK(!self.signinCompletion);
-  self.signinCompletion = completion;
   self.presentingViewController = presentingViewController;
   self.topViewController = presentingViewController;
 
@@ -218,58 +207,19 @@
 
 // Returns a callback that clears the state of the coordinator and runs
 // |completion|.
-- (SigninInteractionControllerCompletionCallback)callbackToClearState {
+- (signin_ui::CompletionCallback)callbackToClearStateWithCompletion:
+    (signin_ui::CompletionCallback)completion {
   __weak SigninInteractionCoordinator* weakSelf = self;
-  SigninInteractionControllerCompletionCallback completionCallback =
-      ^(SigninResult signinResult) {
-        [weakSelf
-            signinInteractionControllerCompletionWithSigninResult:signinResult];
-      };
+  signin_ui::CompletionCallback completionCallback = ^(BOOL success) {
+    weakSelf.controller = nil;
+    weakSelf.presentingViewController = nil;
+    weakSelf.topViewController = nil;
+    weakSelf.alertCoordinator = nil;
+    if (completion) {
+      completion(success);
+    }
+  };
   return completionCallback;
-}
-
-// Called when SigninInteractionController is completed.
-- (void)signinInteractionControllerCompletionWithSigninResult:
-    (SigninResult)signinResult {
-  self.controller = nil;
-  self.topViewController = nil;
-  self.alertCoordinator = nil;
-  if (signinResult == SigninResultSignedInnAndOpennSettings) {
-    [self showAccountsSettings];
-  } else {
-    [self signinDoneWithSuccess:signinResult != SigninResultCanceled];
-  }
-}
-
-// Shows the accounts settings UI.
-- (void)showAccountsSettings {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    DCHECK(!self.advancedSigninSettingsCoordinator);
-    self.advancedSigninSettingsCoordinator =
-        [[AdvancedSigninSettingsCoordinator alloc]
-            initWithBaseViewController:self.presentingViewController
-                          browserState:self.browserState];
-    self.advancedSigninSettingsCoordinator.delegate = self;
-    self.advancedSigninSettingsCoordinator.dispatcher = self.dispatcher;
-    [self.advancedSigninSettingsCoordinator start];
-  } else {
-    [self signinDoneWithSuccess:YES];
-    [self.dispatcher
-        showAccountsSettingsFromViewController:self.presentingViewController];
-  }
-}
-
-// Called when the sign-in is done.
-- (void)signinDoneWithSuccess:(BOOL)success {
-  DCHECK(!self.controller);
-  DCHECK(!self.topViewController);
-  DCHECK(!self.alertCoordinator);
-  if (self.signinCompletion) {
-    self.signinCompletion(success);
-    self.signinCompletion = nil;
-  }
-  [self.advancedSigninSettingsCoordinator stop];
-  self.advancedSigninSettingsCoordinator = nil;
 }
 
 @end

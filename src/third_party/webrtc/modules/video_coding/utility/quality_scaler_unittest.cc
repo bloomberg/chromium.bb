@@ -15,7 +15,7 @@
 
 #include "rtc_base/checks.h"
 #include "rtc_base/event.h"
-#include "rtc_base/task_queue_for_test.h"
+#include "rtc_base/task_queue.h"
 #include "test/field_trial.h"
 #include "test/gtest.h"
 
@@ -27,6 +27,16 @@ static const int kHighQp = 40;
 static const int kMinFramesNeededToScale = 60;  // From quality_scaler.cc.
 static const size_t kDefaultTimeoutMs = 150;
 }  // namespace
+
+#define DO_SYNC(q, block)        \
+  do {                           \
+    rtc::Event event;            \
+    q->PostTask([this, &event] { \
+      block;                     \
+      event.Set();               \
+    });                          \
+    RTC_CHECK(event.Wait(1000)); \
+  } while (0)
 
 class MockAdaptationObserver : public AdaptationObserverInterface {
  public:
@@ -49,10 +59,9 @@ class MockAdaptationObserver : public AdaptationObserverInterface {
 // Pass a lower sampling period to speed up the tests.
 class QualityScalerUnderTest : public QualityScaler {
  public:
-  explicit QualityScalerUnderTest(rtc::TaskQueue* task_queue,
-                                  AdaptationObserverInterface* observer,
+  explicit QualityScalerUnderTest(AdaptationObserverInterface* observer,
                                   VideoEncoder::QpThresholds thresholds)
-      : QualityScaler(task_queue, observer, thresholds, 5) {}
+      : QualityScaler(observer, thresholds, 5) {}
 };
 
 class QualityScalerTest : public ::testing::Test,
@@ -68,17 +77,16 @@ class QualityScalerTest : public ::testing::Test,
 
   QualityScalerTest()
       : scoped_field_trial_(GetParam()),
-        task_queue_("QualityScalerTestQueue"),
+        q_(new rtc::TaskQueue("QualityScalerTestQueue")),
         observer_(new MockAdaptationObserver()) {
-    task_queue_.SendTask([this] {
+    DO_SYNC(q_, {
       qs_ = std::unique_ptr<QualityScaler>(new QualityScalerUnderTest(
-          &task_queue_, observer_.get(),
-          VideoEncoder::QpThresholds(kLowQp, kHighQp)));
+          observer_.get(), VideoEncoder::QpThresholds(kLowQp, kHighQp)));
     });
   }
 
   ~QualityScalerTest() {
-    task_queue_.SendTask([this] { qs_ = nullptr; });
+    DO_SYNC(q_, { qs_.reset(nullptr); });
   }
 
   void TriggerScale(ScaleDirection scale_direction) {
@@ -104,7 +112,7 @@ class QualityScalerTest : public ::testing::Test,
   }
 
   test::ScopedFieldTrials scoped_field_trial_;
-  TaskQueueForTest task_queue_;
+  std::unique_ptr<rtc::TaskQueue> q_;
   std::unique_ptr<QualityScaler> qs_;
   std::unique_ptr<MockAdaptationObserver> observer_;
 };
@@ -117,28 +125,28 @@ INSTANTIATE_TEST_SUITE_P(
         ""));
 
 TEST_P(QualityScalerTest, DownscalesAfterContinuousFramedrop) {
-  task_queue_.SendTask([this] { TriggerScale(kScaleDown); });
+  DO_SYNC(q_, { TriggerScale(kScaleDown); });
   EXPECT_TRUE(observer_->event.Wait(kDefaultTimeoutMs));
   EXPECT_EQ(1, observer_->adapt_down_events_);
   EXPECT_EQ(0, observer_->adapt_up_events_);
 }
 
 TEST_P(QualityScalerTest, KeepsScaleAtHighQp) {
-  task_queue_.SendTask([this] { TriggerScale(kKeepScaleAtHighQp); });
+  DO_SYNC(q_, { TriggerScale(kKeepScaleAtHighQp); });
   EXPECT_FALSE(observer_->event.Wait(kDefaultTimeoutMs));
   EXPECT_EQ(0, observer_->adapt_down_events_);
   EXPECT_EQ(0, observer_->adapt_up_events_);
 }
 
 TEST_P(QualityScalerTest, DownscalesAboveHighQp) {
-  task_queue_.SendTask([this] { TriggerScale(kScaleDownAboveHighQp); });
+  DO_SYNC(q_, { TriggerScale(kScaleDownAboveHighQp); });
   EXPECT_TRUE(observer_->event.Wait(kDefaultTimeoutMs));
   EXPECT_EQ(1, observer_->adapt_down_events_);
   EXPECT_EQ(0, observer_->adapt_up_events_);
 }
 
 TEST_P(QualityScalerTest, DownscalesAfterTwoThirdsFramedrop) {
-  task_queue_.SendTask([this] {
+  DO_SYNC(q_, {
     for (int i = 0; i < kFramerate * 5; ++i) {
       qs_->ReportDroppedFrameByMediaOpt();
       qs_->ReportDroppedFrameByMediaOpt();
@@ -151,7 +159,7 @@ TEST_P(QualityScalerTest, DownscalesAfterTwoThirdsFramedrop) {
 }
 
 TEST_P(QualityScalerTest, DoesNotDownscaleAfterHalfFramedrop) {
-  task_queue_.SendTask([this] {
+  DO_SYNC(q_, {
     for (int i = 0; i < kFramerate * 5; ++i) {
       qs_->ReportDroppedFrameByMediaOpt();
       qs_->ReportQp(kHighQp, 0);
@@ -164,7 +172,7 @@ TEST_P(QualityScalerTest, DoesNotDownscaleAfterHalfFramedrop) {
 
 TEST_P(QualityScalerTest, DownscalesAfterTwoThirdsIfFieldTrialEnabled) {
   const bool kDownScaleExpected = !GetParam().empty();
-  task_queue_.SendTask([this] {
+  DO_SYNC(q_, {
     for (int i = 0; i < kFramerate * 5; ++i) {
       qs_->ReportDroppedFrameByMediaOpt();
       qs_->ReportDroppedFrameByEncoder();
@@ -177,39 +185,39 @@ TEST_P(QualityScalerTest, DownscalesAfterTwoThirdsIfFieldTrialEnabled) {
 }
 
 TEST_P(QualityScalerTest, KeepsScaleOnNormalQp) {
-  task_queue_.SendTask([this] { TriggerScale(kKeepScaleAboveLowQp); });
+  DO_SYNC(q_, { TriggerScale(kKeepScaleAboveLowQp); });
   EXPECT_FALSE(observer_->event.Wait(kDefaultTimeoutMs));
   EXPECT_EQ(0, observer_->adapt_down_events_);
   EXPECT_EQ(0, observer_->adapt_up_events_);
 }
 
 TEST_P(QualityScalerTest, UpscalesAfterLowQp) {
-  task_queue_.SendTask([this] { TriggerScale(kScaleUp); });
+  DO_SYNC(q_, { TriggerScale(kScaleUp); });
   EXPECT_TRUE(observer_->event.Wait(kDefaultTimeoutMs));
   EXPECT_EQ(0, observer_->adapt_down_events_);
   EXPECT_EQ(1, observer_->adapt_up_events_);
 }
 
 TEST_P(QualityScalerTest, ScalesDownAndBackUp) {
-  task_queue_.SendTask([this] { TriggerScale(kScaleDown); });
+  DO_SYNC(q_, { TriggerScale(kScaleDown); });
   EXPECT_TRUE(observer_->event.Wait(kDefaultTimeoutMs));
   EXPECT_EQ(1, observer_->adapt_down_events_);
   EXPECT_EQ(0, observer_->adapt_up_events_);
-  task_queue_.SendTask([this] { TriggerScale(kScaleUp); });
+  DO_SYNC(q_, { TriggerScale(kScaleUp); });
   EXPECT_TRUE(observer_->event.Wait(kDefaultTimeoutMs));
   EXPECT_EQ(1, observer_->adapt_down_events_);
   EXPECT_EQ(1, observer_->adapt_up_events_);
 }
 
 TEST_P(QualityScalerTest, DoesNotScaleUntilEnoughFramesObserved) {
-  task_queue_.SendTask([this] {
+  DO_SYNC(q_, {
     // Not enough frames to make a decision.
     for (int i = 0; i < kMinFramesNeededToScale - 1; ++i) {
       qs_->ReportQp(kLowQp, 0);
     }
   });
   EXPECT_FALSE(observer_->event.Wait(kDefaultTimeoutMs));
-  task_queue_.SendTask([this] {
+  DO_SYNC(q_, {
     // Send 1 more. Enough frames observed, should result in an adapt request.
     qs_->ReportQp(kLowQp, 0);
   });
@@ -218,7 +226,7 @@ TEST_P(QualityScalerTest, DoesNotScaleUntilEnoughFramesObserved) {
   EXPECT_EQ(1, observer_->adapt_up_events_);
 
   // Samples should be cleared after an adapt request.
-  task_queue_.SendTask([this] {
+  DO_SYNC(q_, {
     // Not enough frames to make a decision.
     qs_->ReportQp(kLowQp, 0);
   });
@@ -228,7 +236,7 @@ TEST_P(QualityScalerTest, DoesNotScaleUntilEnoughFramesObserved) {
 }
 
 TEST_P(QualityScalerTest, ScalesDownAndBackUpWithMinFramesNeeded) {
-  task_queue_.SendTask([this] {
+  DO_SYNC(q_, {
     for (int i = 0; i < kMinFramesNeededToScale; ++i) {
       qs_->ReportQp(kHighQp + 1, 0);
     }
@@ -237,7 +245,7 @@ TEST_P(QualityScalerTest, ScalesDownAndBackUpWithMinFramesNeeded) {
   EXPECT_EQ(1, observer_->adapt_down_events_);
   EXPECT_EQ(0, observer_->adapt_up_events_);
   // Samples cleared.
-  task_queue_.SendTask([this] {
+  DO_SYNC(q_, {
     for (int i = 0; i < kMinFramesNeededToScale; ++i) {
       qs_->ReportQp(kLowQp, 0);
     }
@@ -248,3 +256,4 @@ TEST_P(QualityScalerTest, ScalesDownAndBackUpWithMinFramesNeeded) {
 }
 
 }  // namespace webrtc
+#undef DO_SYNC

@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/platform/graphics/box_reflection.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -124,8 +123,18 @@ class CORE_EXPORT FilterOperation
   DISALLOW_COPY_AND_ASSIGN(FilterOperation);
 };
 
+#define DEFINE_FILTER_OPERATION_TYPE_CASTS(thisType, operationType)  \
+  DEFINE_TYPE_CASTS(thisType, FilterOperation, op,                   \
+                    op->GetType() == FilterOperation::operationType, \
+                    op.GetType() == FilterOperation::operationType)
+
 class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
  public:
+  static ReferenceFilterOperation* Create(const AtomicString& url,
+                                          SVGResource* resource) {
+    return MakeGarbageCollected<ReferenceFilterOperation>(url, resource);
+  }
+
   ReferenceFilterOperation(const AtomicString& url, SVGResource*);
 
   bool AffectsOpacity() const override { return true; }
@@ -158,17 +167,17 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
   Member<Filter> filter_;
 };
 
-template <>
-struct DowncastTraits<ReferenceFilterOperation> {
-  static bool AllowFrom(const FilterOperation& op) {
-    return op.GetType() == FilterOperation::REFERENCE;
-  }
-};
+DEFINE_FILTER_OPERATION_TYPE_CASTS(ReferenceFilterOperation, REFERENCE);
 
 // GRAYSCALE, SEPIA, SATURATE and HUE_ROTATE are variations on a basic color
 // matrix effect.  For HUE_ROTATE, the angle of rotation is stored in m_amount.
 class CORE_EXPORT BasicColorMatrixFilterOperation : public FilterOperation {
  public:
+  static BasicColorMatrixFilterOperation* Create(double amount,
+                                                 OperationType type) {
+    return MakeGarbageCollected<BasicColorMatrixFilterOperation>(amount, type);
+  }
+
   BasicColorMatrixFilterOperation(double amount, OperationType type)
       : FilterOperation(type), amount_(amount) {}
 
@@ -196,18 +205,23 @@ inline bool IsBasicColorMatrixFilterOperation(
          type == FilterOperation::HUE_ROTATE;
 }
 
-template <>
-struct DowncastTraits<BasicColorMatrixFilterOperation> {
-  static bool AllowFrom(const FilterOperation& op) {
-    return IsBasicColorMatrixFilterOperation(op);
-  }
-};
+DEFINE_TYPE_CASTS(BasicColorMatrixFilterOperation,
+                  FilterOperation,
+                  op,
+                  IsBasicColorMatrixFilterOperation(*op),
+                  IsBasicColorMatrixFilterOperation(op));
 
 // INVERT, BRIGHTNESS, CONTRAST and OPACITY are variations on a basic component
 // transfer effect.
 class CORE_EXPORT BasicComponentTransferFilterOperation
     : public FilterOperation {
  public:
+  static BasicComponentTransferFilterOperation* Create(double amount,
+                                                       OperationType type) {
+    return MakeGarbageCollected<BasicComponentTransferFilterOperation>(amount,
+                                                                       type);
+  }
+
   BasicComponentTransferFilterOperation(double amount, OperationType type)
       : FilterOperation(type), amount_(amount) {}
 
@@ -237,16 +251,19 @@ inline bool IsBasicComponentTransferFilterOperation(
          type == FilterOperation::CONTRAST;
 }
 
-template <>
-struct DowncastTraits<BasicComponentTransferFilterOperation> {
-  static bool AllowFrom(const FilterOperation& op) {
-    return IsBasicComponentTransferFilterOperation(op);
-  }
-};
+DEFINE_TYPE_CASTS(BasicComponentTransferFilterOperation,
+                  FilterOperation,
+                  op,
+                  IsBasicComponentTransferFilterOperation(*op),
+                  IsBasicComponentTransferFilterOperation(op));
 
 class CORE_EXPORT BlurFilterOperation : public FilterOperation {
  public:
-  explicit BlurFilterOperation(const Length& std_deviation)
+  static BlurFilterOperation* Create(const Length& std_deviation) {
+    return MakeGarbageCollected<BlurFilterOperation>(std_deviation);
+  }
+
+  BlurFilterOperation(const Length& std_deviation)
       : FilterOperation(BLUR), std_deviation_(std_deviation) {}
 
   const Length& StdDeviation() const { return std_deviation_; }
@@ -269,12 +286,7 @@ class CORE_EXPORT BlurFilterOperation : public FilterOperation {
   Length std_deviation_;
 };
 
-template <>
-struct DowncastTraits<BlurFilterOperation> {
-  static bool AllowFrom(const FilterOperation& op) {
-    return op.GetType() == FilterOperation::BLUR;
-  }
-};
+DEFINE_FILTER_OPERATION_TYPE_CASTS(BlurFilterOperation, BLUR);
 
 class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
  public:
@@ -305,16 +317,15 @@ class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
   ShadowData shadow_;
 };
 
-template <>
-struct DowncastTraits<DropShadowFilterOperation> {
-  static bool AllowFrom(const FilterOperation& op) {
-    return op.GetType() == FilterOperation::DROP_SHADOW;
-  }
-};
+DEFINE_FILTER_OPERATION_TYPE_CASTS(DropShadowFilterOperation, DROP_SHADOW);
 
 class CORE_EXPORT BoxReflectFilterOperation : public FilterOperation {
  public:
-  explicit BoxReflectFilterOperation(const BoxReflection& reflection)
+  static BoxReflectFilterOperation* Create(const BoxReflection& reflection) {
+    return MakeGarbageCollected<BoxReflectFilterOperation>(reflection);
+  }
+
+  BoxReflectFilterOperation(const BoxReflection& reflection)
       : FilterOperation(BOX_REFLECT), reflection_(reflection) {}
 
   const BoxReflection& Reflection() const { return reflection_; }
@@ -330,13 +341,7 @@ class CORE_EXPORT BoxReflectFilterOperation : public FilterOperation {
 
   BoxReflection reflection_;
 };
-
-template <>
-struct DowncastTraits<BoxReflectFilterOperation> {
-  static bool AllowFrom(const FilterOperation& op) {
-    return op.GetType() == FilterOperation::BOX_REFLECT;
-  }
-};
+DEFINE_FILTER_OPERATION_TYPE_CASTS(BoxReflectFilterOperation, BOX_REFLECT);
 
 #undef DEFINE_FILTER_OPERATION_TYPE_CASTS
 

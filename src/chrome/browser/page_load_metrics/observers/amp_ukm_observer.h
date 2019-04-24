@@ -16,8 +16,6 @@ class AmpUkmObserver : public page_load_metrics::PageLoadMetricsObserver {
   ~AmpUkmObserver() override;
 
   void OnLoadingBehaviorObserved(
-      content::RenderFrameHost* rfh,
-      int behavior_flags,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
  private:

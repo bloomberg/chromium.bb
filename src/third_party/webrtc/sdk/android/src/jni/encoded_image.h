@@ -14,7 +14,7 @@
 #include <jni.h>
 #include <vector>
 
-#include "api/video/video_frame_type.h"
+#include "common_types.h"  // NOLINT(build/include)
 
 #include "sdk/android/native_api/jni/scoped_java_ref.h"
 
@@ -25,12 +25,12 @@ class EncodedImage;
 namespace jni {
 
 ScopedJavaLocalRef<jobject> NativeToJavaFrameType(JNIEnv* env,
-                                                  VideoFrameType frame_type);
+                                                  FrameType frame_type);
 ScopedJavaLocalRef<jobject> NativeToJavaEncodedImage(JNIEnv* jni,
                                                      const EncodedImage& image);
 ScopedJavaLocalRef<jobjectArray> NativeToJavaFrameTypeArray(
     JNIEnv* env,
-    const std::vector<VideoFrameType>& frame_types);
+    const std::vector<FrameType>& frame_types);
 
 }  // namespace jni
 }  // namespace webrtc

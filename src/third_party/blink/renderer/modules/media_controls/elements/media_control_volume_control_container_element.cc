@@ -14,7 +14,7 @@ namespace blink {
 
 MediaControlVolumeControlContainerElement::
     MediaControlVolumeControlContainerElement(MediaControlsImpl& media_controls)
-    : MediaControlDivElement(media_controls) {
+    : MediaControlDivElement(media_controls, kMediaIgnore) {
   SetShadowPseudoId(
       AtomicString("-webkit-media-controls-volume-control-container"));
   MediaControlElementsHelper::CreateDiv(

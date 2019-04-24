@@ -13,7 +13,6 @@
 #include "src/heap/heap-write-barrier-inl.h"
 #include "src/objects-inl.h"
 #include "src/objects/bigint.h"
-#include "src/objects/compressed-slots.h"
 #include "src/objects/heap-number-inl.h"
 #include "src/objects/map.h"
 #include "src/objects/maybe-object-inl.h"
@@ -206,12 +205,6 @@ void FixedArray::MoveElements(Heap* heap, int dst_index, int src_index, int len,
                               WriteBarrierMode mode) {
   DisallowHeapAllocation no_gc;
   heap->MoveElements(*this, dst_index, src_index, len, mode);
-}
-
-void FixedArray::CopyElements(Heap* heap, int dst_index, FixedArray src,
-                              int src_index, int len, WriteBarrierMode mode) {
-  DisallowHeapAllocation no_gc;
-  heap->CopyElements(*this, src, dst_index, src_index, len, mode);
 }
 
 // Perform a binary search in a fixed array.
@@ -549,9 +542,9 @@ PodArray<T> PodArray<T>::cast(Object object) {
 // static
 template <class T>
 Handle<PodArray<T>> PodArray<T>::New(Isolate* isolate, int length,
-                                     AllocationType allocation) {
+                                     PretenureFlag pretenure) {
   return Handle<PodArray<T>>::cast(
-      isolate->factory()->NewByteArray(length * sizeof(T), allocation));
+      isolate->factory()->NewByteArray(length * sizeof(T), pretenure));
 }
 
 template <class T>
@@ -641,9 +634,7 @@ double Float64ArrayTraits::defaultValue() {
 
 template <class Traits>
 typename Traits::ElementType FixedTypedArray<Traits>::get_scalar(int index) {
-  // TODO(bmeurer, v8:4153): Solve this differently.
-  // DCHECK((index < this->length()));
-  CHECK_GE(index, 0);
+  DCHECK((index >= 0) && (index < this->length()));
   return FixedTypedArray<Traits>::get_scalar_from_data_ptr(DataPtr(), index);
 }
 
@@ -661,39 +652,18 @@ typename Traits::ElementType FixedTypedArray<Traits>::get_scalar_from_data_ptr(
   // JavaScript memory model to have tear-free reads of overlapping accesses,
   // and using relaxed atomics may introduce overhead.
   TSAN_ANNOTATE_IGNORE_READS_BEGIN;
-  ElementType result;
-  if (COMPRESS_POINTERS_BOOL && alignof(ElementType) > kTaggedSize) {
-    // TODO(ishell, v8:8875): When pointer compression is enabled 8-byte size
-    // fields (external pointers, doubles and BigInt data) are only kTaggedSize
-    // aligned so we have to use unaligned pointer friendly way of accessing
-    // them in order to avoid undefined behavior in C++ code.
-    result = ReadUnalignedValue<ElementType>(reinterpret_cast<Address>(ptr) +
-                                             index * sizeof(ElementType));
-  } else {
-    result = ptr[index];
-  }
+  auto result = ptr[index];
   TSAN_ANNOTATE_IGNORE_READS_END;
   return result;
 }
 
 template <class Traits>
 void FixedTypedArray<Traits>::set(int index, ElementType value) {
-  // TODO(bmeurer, v8:4153): Solve this differently.
-  // CHECK((index < this->length()));
-  CHECK_GE(index, 0);
+  CHECK((index >= 0) && (index < this->length()));
   // See the comment in FixedTypedArray<Traits>::get_scalar.
   auto* ptr = reinterpret_cast<ElementType*>(DataPtr());
   TSAN_ANNOTATE_IGNORE_WRITES_BEGIN;
-  if (COMPRESS_POINTERS_BOOL && alignof(ElementType) > kTaggedSize) {
-    // TODO(ishell, v8:8875): When pointer compression is enabled 8-byte size
-    // fields (external pointers, doubles and BigInt data) are only kTaggedSize
-    // aligned so we have to use unaligned pointer friendly way of accessing
-    // them in order to avoid undefined behavior in C++ code.
-    WriteUnalignedValue<ElementType>(
-        reinterpret_cast<Address>(ptr) + index * sizeof(ElementType), value);
-  } else {
-    ptr[index] = value;
-  }
+  ptr[index] = value;
   TSAN_ANNOTATE_IGNORE_WRITES_END;
 }
 
@@ -767,9 +737,6 @@ inline uint64_t FixedTypedArray<BigUint64ArrayTraits>::from(double value) {
 
 template <>
 inline float FixedTypedArray<Float32ArrayTraits>::from(double value) {
-  using limits = std::numeric_limits<float>;
-  if (value > limits::max()) return limits::infinity();
-  if (value < limits::lowest()) return -limits::infinity();
   return static_cast<float>(value);
 }
 

@@ -186,13 +186,11 @@ void ScriptInjectionManager::RFOHelper::DidFinishDocumentLoad() {
   // delayed task from here - but if we finish everything before that point
   // (i.e., RunScriptsAtDocumentIdle() is triggered), then there's no reason to
   // keep waiting.
-  render_frame()
-      ->GetTaskRunner(blink::TaskType::kInternalDefault)
-      ->PostDelayedTask(
-          FROM_HERE,
-          base::BindOnce(&ScriptInjectionManager::RFOHelper::RunIdle,
-                         weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kScriptIdleTimeoutInMs));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&ScriptInjectionManager::RFOHelper::RunIdle,
+                     weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kScriptIdleTimeoutInMs));
 
   ExtensionFrameHelper::Get(render_frame())
       ->ScheduleAtDocumentIdle(

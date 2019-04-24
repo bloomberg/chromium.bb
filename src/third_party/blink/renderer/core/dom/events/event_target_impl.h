@@ -25,7 +25,9 @@ class CORE_EXPORT EventTargetImpl final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(EventTargetImpl);
 
  public:
-  explicit EventTargetImpl(ScriptState*);
+  static EventTargetImpl* Create(ScriptState*);
+
+  EventTargetImpl(ScriptState*);
   ~EventTargetImpl() override = default;
 
   const AtomicString& InterfaceName() const override;

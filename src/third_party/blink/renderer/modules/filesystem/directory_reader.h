@@ -44,6 +44,11 @@ class DirectoryReader : public DirectoryReaderBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  static DirectoryReader* Create(DOMFileSystemBase* file_system,
+                                 const String& full_path) {
+    return MakeGarbageCollected<DirectoryReader>(file_system, full_path);
+  }
+
   DirectoryReader(DOMFileSystemBase*, const String& full_path);
   ~DirectoryReader() override = default;
 
@@ -56,6 +61,9 @@ class DirectoryReader : public DirectoryReaderBase {
   void Trace(blink::Visitor*) override;
 
  private:
+  class EntriesCallbackHelper;
+  class ErrorCallbackHelper;
+
   void AddEntries(const EntryHeapVector& entries);
 
   void OnError(base::File::Error error);

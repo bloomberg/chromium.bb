@@ -9,17 +9,11 @@ This library is used by scripts that download tarballs, zipfiles, etc. as part
 of the build process.
 """
 
-from __future__ import print_function
-
 import hashlib
 import os.path
 import re
 import sys
-
-try:
-  import urllib2 as urllib
-except ImportError:  # For Py3 compatibility
-  import urllib.request as urllib
+import urllib2
 
 import http_download
 
@@ -161,7 +155,7 @@ def HashUrlByDownloading(url):
     sha1 of the data at the url.
   """
   try:
-    fh = urllib.urlopen(url)
+    fh = urllib2.urlopen(url)
   except:
     sys.stderr.write('Failed fetching URL: %s\n' % url)
     raise
@@ -175,10 +169,10 @@ def HashUrlByDownloading(url):
 def HashUrl(url):
   hash_url = '%s.sha1hash' % url
   try:
-    fh = urllib.urlopen(hash_url)
+    fh = urllib2.urlopen(hash_url)
     data = fh.read(100)
     fh.close()
-  except urllib.HTTPError as exn:
+  except urllib2.HTTPError, exn:
     if exn.code == 404:
       return HashUrlByDownloading(url)
     raise
@@ -227,12 +221,12 @@ def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
   if tarball_ok and stamp_dir is not None:
     if StampIsCurrent(stamp_dir, SOURCE_STAMP, url, min_time):
       if verbose:
-        print('%s is already up to date.' % filename)
+        print '%s is already up to date.' % filename
       return False
     if (hash_val is not None and
         StampIsCurrent(stamp_dir, HASH_STAMP, hash_val, min_time, stamp_index)):
       if verbose:
-        print('%s is identical to the up to date file.' % filename)
+        print '%s is identical to the up to date file.' % filename
       return False
 
   if (os.path.isfile(filename)
@@ -241,7 +235,7 @@ def SyncURL(url, filename=None, stamp_dir=None, min_time=None,
     return True
 
   if verbose:
-    print('Updating %s\n\tfrom %s.' % (filename, url))
+    print 'Updating %s\n\tfrom %s.' % (filename, url)
   EnsureFileCanBeWritten(filename)
   http_download.HttpDownload(url, filename)
 

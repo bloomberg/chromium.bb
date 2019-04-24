@@ -33,7 +33,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_analysis.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -57,10 +56,9 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this. Increment this number if you
-// change default theme assets, if you need themes to recreate their generated
-// images (which are cached), or if you changed how missing values are
-// generated.
-const int kThemePackVersion = 64;
+// change default theme assets or if you need themes to recreate their generated
+// images (which are cached).
+const int kThemePackVersion = 63;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -243,20 +241,19 @@ constexpr StringToIntTable kOverwritableColorTable[] = {
     {"background_tab_incognito", TP::COLOR_BACKGROUND_TAB_INCOGNITO},
     {"background_tab_incognito_inactive",
      TP::COLOR_BACKGROUND_TAB_INCOGNITO_INACTIVE},
-    {"bookmark_text", TP::COLOR_BOOKMARK_TEXT},
-    {"button_background", TP::COLOR_CONTROL_BUTTON_BACKGROUND},
+    {"toolbar", TP::COLOR_TOOLBAR},
+    {"tab_text", TP::COLOR_TAB_TEXT},
     {"tab_background_text", TP::COLOR_BACKGROUND_TAB_TEXT},
     {"tab_background_text_inactive", TP::COLOR_BACKGROUND_TAB_TEXT_INACTIVE},
     {"tab_background_text_incognito", TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO},
     {"tab_background_text_incognito_inactive",
      TP::COLOR_BACKGROUND_TAB_TEXT_INCOGNITO_INACTIVE},
-    {"tab_text", TP::COLOR_TAB_TEXT},
-    {"toolbar", TP::COLOR_TOOLBAR},
-    {"toolbar_button_icon", TP::COLOR_TOOLBAR_BUTTON_ICON},
+    {"bookmark_text", TP::COLOR_BOOKMARK_TEXT},
     {"ntp_background", TP::COLOR_NTP_BACKGROUND},
-    {"ntp_header", TP::COLOR_NTP_HEADER},
-    {"ntp_link", TP::COLOR_NTP_LINK},
     {"ntp_text", TP::COLOR_NTP_TEXT},
+    {"ntp_link", TP::COLOR_NTP_LINK},
+    {"ntp_header", TP::COLOR_NTP_HEADER},
+    {"button_background", TP::COLOR_BUTTON_BACKGROUND},
 };
 constexpr size_t kOverwritableColorTableLength =
     base::size(kOverwritableColorTable);
@@ -267,6 +264,7 @@ constexpr int kNonOverwritableColorTable[] = {
     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE,
     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
     TP::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
+    TP::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
     TP::COLOR_INFOBAR,
     TP::COLOR_DOWNLOAD_SHELF,
     TP::COLOR_STATUS_BUBBLE,
@@ -369,50 +367,6 @@ SkBitmap CreateLowQualityResizedBitmap(const SkBitmap& source_bitmap,
   // a mask image.
   canvas.drawBitmapRect(source_bitmap, scaled_bounds, NULL);
   return scaled_bitmap;
-}
-
-// Decreases the lightness of the given color.
-SkColor DarkenColor(SkColor color, float change) {
-  color_utils::HSL hsl;
-  SkColorToHSL(color, &hsl);
-  hsl.l -= change;
-  if (hsl.l >= 0.0f)
-    return HSLToSkColor(hsl, 255);
-  return color;
-}
-
-// Increases the lightness of |source| until it reaches |contrast_ratio| with
-// |base| or reaches |white_contrast| with white. This avoids decreasing
-// saturation, as the alternative contrast-guaranteeing functions in color_utils
-// would do.
-SkColor LightenUntilContrast(SkColor source,
-                             SkColor base,
-                             float contrast_ratio,
-                             float white_contrast) {
-  const float kBaseLuminance = color_utils::GetRelativeLuminance(base);
-  constexpr float kWhiteLuminance = 1.0f;
-
-  color_utils::HSL hsl;
-  SkColorToHSL(source, &hsl);
-  float min_l = hsl.l;
-  float max_l = 1.0f;
-
-  // Need only precision of 2 digits.
-  while (max_l - min_l > 0.01) {
-    hsl.l = min_l + (max_l - min_l) / 2;
-    float luminance = color_utils::GetRelativeLuminance(HSLToSkColor(hsl, 255));
-    if (color_utils::GetContrastRatio(kBaseLuminance, luminance) >=
-            contrast_ratio ||
-        (color_utils::GetContrastRatio(kWhiteLuminance, luminance) <
-         white_contrast)) {
-      max_l = hsl.l;
-    } else {
-      min_l = hsl.l;
-    }
-  }
-
-  hsl.l = max_l;
-  return HSLToSkColor(hsl, 255);
 }
 
 // A ImageSkiaSource that scales 100P image to the target scale factor
@@ -556,8 +510,8 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
       gfx::ImageSkia bg_tint = gfx::ImageSkiaOperations::CreateHSLShiftedImage(
           image_to_tint_, hsl_shift_);
       canvas->TileImageInt(bg_tint, 0, vertical_offset_, 0, 0, size().width(),
-                           size().height(), 1.0f, SkTileMode::kRepeat,
-                           SkTileMode::kMirror);
+                           size().height(), 1.0f, SkShader::kRepeat_TileMode,
+                           SkShader::kMirror_TileMode);
     }
 
     // If the theme has a custom tab background image, overlay it.  Vertical
@@ -565,8 +519,8 @@ class TabBackgroundImageSource: public gfx::CanvasImageSource {
     // stay in sync with how tabs are drawn.
     if (!overlay_.isNull()) {
       canvas->TileImageInt(overlay_, 0, 0, 0, 0, size().width(),
-                           size().height(), 1.0f, SkTileMode::kRepeat,
-                           SkTileMode::kMirror);
+                           size().height(), 1.0f, SkShader::kRepeat_TileMode,
+                           SkShader::kMirror_TileMode);
     }
   }
 
@@ -651,6 +605,29 @@ SkColor BrowserThemePack::ComputeImageColor(const gfx::Image& image,
       *image.ToSkBitmap(), height, kNoBounds, kNoBounds, false);
 
   return color;
+}
+
+// static
+void BrowserThemePack::BuildFromColor(SkColor color, BrowserThemePack* pack) {
+  DCHECK(!pack->is_valid());
+
+  pack->InitEmptyPack();
+
+  // Init |source_images_| only here as other code paths initialize it
+  // differently.
+  pack->InitSourceImages();
+
+  // TODO(gayane): Implement complementary color generation logic.
+  SkColor complementary_color = color;
+
+  pack->SetColor(TP::COLOR_FRAME, color);
+  pack->SetColor(TP::COLOR_TOOLBAR, complementary_color);
+  pack->SetColor(TP::COLOR_NTP_BACKGROUND, complementary_color);
+
+  pack->AdjustThemePack();
+
+  // The BrowserThemePack is now in a consistent state.
+  pack->is_valid_ = true;
 }
 
 // static
@@ -762,110 +739,6 @@ bool BrowserThemePack::IsPersistentImageID(int id) {
       return true;
 
   return false;
-}
-
-// static
-void BrowserThemePack::BuildFromColor(SkColor color, BrowserThemePack* pack) {
-  DCHECK(!pack->is_valid());
-
-  pack->InitEmptyPack();
-
-  // Init |source_images_| only here as other code paths initialize it
-  // differently.
-  pack->InitSourceImages();
-
-  GenerateFrameAndTabColors(color, pack);
-
-  SkColor tab_color;
-  pack->GetColor(TP::COLOR_TOOLBAR, &tab_color);
-  pack->SetColor(TP::COLOR_NTP_BACKGROUND, tab_color);
-
-  SkColor tab_text_color;
-  pack->GetColor(TP::COLOR_TAB_TEXT, &tab_text_color);
-  pack->SetColor(TP::COLOR_TOOLBAR_BUTTON_ICON, tab_text_color);
-  pack->SetColor(TP::COLOR_BOOKMARK_TEXT, tab_text_color);
-
-  pack->AdjustThemePack();
-
-  // The BrowserThemePack is now in a consistent state.
-  pack->is_valid_ = true;
-}
-
-// static
-void BrowserThemePack::GenerateFrameAndTabColors(SkColor color,
-                                                 BrowserThemePack* pack) {
-  SkColor frame_color = color;
-  SkColor frame_text_color;
-  SkColor active_tab_color = color;
-  SkColor tab_text_color;
-  constexpr float kDarkenStep = 0.03f;
-  constexpr float kMinWhiteContrast = 1.3f;
-  constexpr float kNoWhiteContrast = 0.0f;
-
-  // Increasingly darken frame color and calculate the rest until colors with
-  // sufficient contrast are found.
-  while (true) {
-    // Calculate frame color to have sufficient contrast with white or dark grey
-    // text.
-    frame_text_color = color_utils::GetColorWithMaxContrast(frame_color);
-    SkColor blend_target =
-        color_utils::GetColorWithMaxContrast(frame_text_color);
-    SkAlpha alpha = color_utils::GetBlendValueWithMinimumContrast(
-        frame_color, blend_target, frame_text_color,
-        kPreferredReadableContrastRatio);
-    frame_color = color_utils::AlphaBlend(blend_target, frame_color, alpha);
-
-    // Generate active tab color so that it has enough contrast with the
-    // |frame_color| to avoid the isolation line in the tab strip.
-    active_tab_color = LightenUntilContrast(
-        frame_color, frame_color, kActiveTabMinContrast, kNoWhiteContrast);
-    // Try lightening the color to get more contrast with frame without getting
-    // too close to white.
-    active_tab_color =
-        LightenUntilContrast(active_tab_color, frame_color,
-                             kActiveTabPreferredContrast, kMinWhiteContrast);
-
-    // If we didn't succeed in generating active tab color with minimum
-    // contrast with frame, then darken the frame color and try again.
-    if (color_utils::GetContrastRatio(frame_color, active_tab_color) <
-        kActiveTabMinContrast) {
-      frame_color = DarkenColor(frame_color, kDarkenStep);
-      continue;
-    }
-
-    // Select active tab text color, if possible.
-    tab_text_color = color_utils::GetColorWithMaxContrast(active_tab_color);
-
-    if (!color_utils::IsDark(active_tab_color)) {
-      // If active tab is light color then continue lightening it until enough
-      // contrast with dark text is reached.
-      tab_text_color = color_utils::GetColorWithMaxContrast(active_tab_color);
-      active_tab_color = LightenUntilContrast(active_tab_color, tab_text_color,
-                                              kPreferredReadableContrastRatio,
-                                              kNoWhiteContrast);
-      break;
-    }
-
-    // If the active tab color is dark and has enough contrast with white text.
-    // Then we are all set.
-    if (color_utils::GetContrastRatio(active_tab_color, SK_ColorWHITE) >=
-        kPreferredReadableContrastRatio)
-      break;
-
-    // If the active tab color is a dark color but the contrast with white is
-    // not enough then we should darken the active tab color to reach the
-    // contrast with white. But to keep the contrast with the frame we should
-    // also darken the frame color. Therefore, just darken the frame color and
-    // try again.
-    frame_color = DarkenColor(frame_color, kDarkenStep);
-  }
-
-  pack->SetColor(TP::COLOR_FRAME, frame_color);
-  pack->SetColor(TP::COLOR_BACKGROUND_TAB, frame_color);
-  pack->SetColor(TP::COLOR_BACKGROUND_TAB_TEXT, frame_text_color);
-
-  pack->SetColor(TP::COLOR_TOOLBAR, active_tab_color);
-  pack->SetColor(TP::COLOR_TAB_TEXT, tab_text_color);
 }
 
 BrowserThemePack::BrowserThemePack(ThemeType theme_type)
@@ -1059,10 +932,10 @@ void BrowserThemePack::AdjustThemePack() {
   // compositing the image).
   CreateFrameImagesAndColors(&images_);
 
-  // Generate any missing frame colors from tints. This must be done after
-  // generating colors from the frame images, so only colors with no matching
-  // images are generated.
-  GenerateFrameColorsFromTints();
+  // Generate any missing frame colors.  This must be done after generating
+  // colors from the frame images, so only colors with no matching images are
+  // generated.
+  GenerateFrameColors();
 
   // Generate background color information for window control buttons.  This
   // must be done after frame colors are set, since they are used when
@@ -1470,6 +1343,7 @@ void BrowserThemePack::SetToolbarRelatedColors() {
   // was introduced).
   SkColor toolbar_color;
   if (GetColor(TP::COLOR_TOOLBAR, &toolbar_color)) {
+    SetColor(TP::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND, toolbar_color);
     SetColor(TP::COLOR_INFOBAR, toolbar_color);
     SetColor(TP::COLOR_DOWNLOAD_SHELF, toolbar_color);
     SetColor(TP::COLOR_STATUS_BUBBLE, toolbar_color);
@@ -1504,8 +1378,7 @@ void BrowserThemePack::CreateToolbarImageAndColors(ImageCache* images) {
   const gfx::Image dest_image(gfx::ImageSkia(std::move(source), dest_size));
   temp_output[kSrcImageId] = dest_image;
 
-  SetColorIfUnspecified(kToolbarColorId,
-                        ComputeImageColor(dest_image, dest_size.height()));
+  SetColor(kToolbarColorId, ComputeImageColor(dest_image, dest_size.height()));
 
   MergeImageCaches(temp_output, images);
 }
@@ -1563,33 +1436,37 @@ void BrowserThemePack::CreateFrameImagesAndColors(ImageCache* images) {
       temp_output[frame_values.prs_id] = dest_image;
 
       if (frame_values.color_id) {
-        SetColorIfUnspecified(
-            frame_values.color_id.value(),
-            ComputeImageColor(dest_image, kTallestFrameHeight));
+        SetColor(frame_values.color_id.value(),
+                 ComputeImageColor(dest_image, kTallestFrameHeight));
       }
     }
   }
   MergeImageCaches(temp_output, images);
 }
 
-void BrowserThemePack::GenerateFrameColorsFromTints() {
+void BrowserThemePack::GenerateFrameColors() {
   SkColor frame;
   if (!GetColor(TP::COLOR_FRAME, &frame)) {
     frame = TP::GetDefaultColor(TP::COLOR_FRAME, false);
     SetColor(TP::COLOR_FRAME, HSLShift(frame, GetTintInternal(TP::TINT_FRAME)));
   }
 
-  SetColorIfUnspecified(
-      TP::COLOR_FRAME_INACTIVE,
-      HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INACTIVE)));
+  SkColor temp;
+  if (!GetColor(TP::COLOR_FRAME_INACTIVE, &temp)) {
+    SetColor(TP::COLOR_FRAME_INACTIVE,
+             HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INACTIVE)));
+  }
 
-  SetColorIfUnspecified(
-      TP::COLOR_FRAME_INCOGNITO,
-      HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INCOGNITO)));
+  if (!GetColor(TP::COLOR_FRAME_INCOGNITO, &temp)) {
+    SetColor(TP::COLOR_FRAME_INCOGNITO,
+             HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INCOGNITO)));
+  }
 
-  SetColorIfUnspecified(
-      TP::COLOR_FRAME_INCOGNITO_INACTIVE,
-      HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INCOGNITO_INACTIVE)));
+  if (!GetColor(TP::COLOR_FRAME_INCOGNITO_INACTIVE, &temp)) {
+    SetColor(
+        TP::COLOR_FRAME_INCOGNITO_INACTIVE,
+        HSLShift(frame, GetTintInternal(TP::TINT_FRAME_INCOGNITO_INACTIVE)));
+  }
 }
 
 void BrowserThemePack::GenerateWindowControlButtonColor(ImageCache* images) {
@@ -1619,7 +1496,7 @@ void BrowserThemePack::GenerateWindowControlButtonColor(ImageCache* images) {
 
   SkColor button_bg_color;
   SkAlpha button_bg_alpha = SK_AlphaTRANSPARENT;
-  if (GetColor(TP::COLOR_CONTROL_BUTTON_BACKGROUND, &button_bg_color))
+  if (GetColor(TP::COLOR_BUTTON_BACKGROUND, &button_bg_color))
     button_bg_alpha = SkColorGetA(button_bg_color);
 
   button_bg_alpha =

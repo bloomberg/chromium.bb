@@ -29,6 +29,7 @@ class NET_EXPORT SSLConfigService {
     //     version_min
     //     version_max
     //     disabled_cipher_suites
+    //     channel_id_enabled
     //     false_start_enabled
     //     require_ecdhe
     virtual void OnSSLConfigChanged() = 0;

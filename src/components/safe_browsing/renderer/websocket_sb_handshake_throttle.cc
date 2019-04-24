@@ -25,6 +25,7 @@ WebSocketSBHandshakeThrottle::WebSocketSBHandshakeThrottle(
     mojom::SafeBrowsing* safe_browsing,
     int render_frame_id)
     : render_frame_id_(render_frame_id),
+      callbacks_(nullptr),
       safe_browsing_(safe_browsing),
       result_(Result::UNKNOWN),
       weak_factory_(this) {}
@@ -46,10 +47,10 @@ WebSocketSBHandshakeThrottle::~WebSocketSBHandshakeThrottle() {
 
 void WebSocketSBHandshakeThrottle::ThrottleHandshake(
     const blink::WebURL& url,
-    blink::WebSocketHandshakeThrottle::OnCompletion completion_callback) {
+    blink::WebCallbacks<void, const blink::WebString&>* callbacks) {
+  DCHECK(!callbacks_);
   DCHECK(!url_checker_);
-  DCHECK(!completion_callback_);
-  completion_callback_ = std::move(completion_callback);
+  callbacks_ = callbacks;
   url_ = url;
   int load_flags = 0;
   start_time_ = base::TimeTicks::Now();
@@ -75,16 +76,15 @@ void WebSocketSBHandshakeThrottle::OnCompleteCheck(bool proceed,
   if (proceed) {
     result_ = Result::SAFE;
     UMA_HISTOGRAM_TIMES("SafeBrowsing.WebSocket.Elapsed.Safe", elapsed);
-    std::move(completion_callback_).Run(base::nullopt);
+    callbacks_->OnSuccess();
   } else {
     // When the insterstitial is dismissed the page is navigated and this object
     // is destroyed before reaching here.
     result_ = Result::BLOCKED;
     UMA_HISTOGRAM_TIMES("SafeBrowsing.WebSocket.Elapsed.Blocked", elapsed);
-    std::move(completion_callback_)
-        .Run(blink::WebString::FromUTF8(base::StringPrintf(
-            "WebSocket connection to %s failed safe browsing check",
-            url_.spec().c_str())));
+    callbacks_->OnError(blink::WebString::FromUTF8(base::StringPrintf(
+        "WebSocket connection to %s failed safe browsing check",
+        url_.spec().c_str())));
   }
   // |this| is destroyed here.
 }
@@ -115,7 +115,7 @@ void WebSocketSBHandshakeThrottle::OnConnectionError() {
   // Make the destructor record NOT_SUPPORTED in the result histogram.
   result_ = Result::NOT_SUPPORTED;
   // Don't record the time elapsed because it's unlikely to be meaningful.
-  std::move(completion_callback_).Run(base::nullopt);
+  callbacks_->OnSuccess();
   // |this| is destroyed here.
 }
 

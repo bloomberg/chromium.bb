@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "build/build_config.h"
 #include "ui/events/event.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/metrics.h"

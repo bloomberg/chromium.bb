@@ -39,7 +39,7 @@ namespace content {
 namespace {
 
 SharedWorkerHost::CreateNetworkFactoryCallback&
-GetCreateNetworkFactoryCallbackForSharedWorker() {
+GetCreateNetworkFactoryCallback() {
   static base::NoDestructor<SharedWorkerHost::CreateNetworkFactoryCallback>
       s_callback;
   return *s_callback;
@@ -67,15 +67,6 @@ bool AllowIndexedDBOnIOThread(const GURL& url,
                               std::vector<GlobalFrameRoutingId> render_frames) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return GetContentClient()->browser()->AllowWorkerIndexedDB(
-      url, resource_context, render_frames);
-}
-
-bool AllowCacheStorageOnIOThread(
-    const GURL& url,
-    ResourceContext* resource_context,
-    std::vector<GlobalFrameRoutingId> render_frames) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return GetContentClient()->browser()->AllowWorkerCacheStorage(
       url, resource_context, render_frames);
 }
 
@@ -162,11 +153,10 @@ void SharedWorkerHost::SetNetworkFactoryForTesting(
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(create_network_factory_callback.is_null() ||
-         GetCreateNetworkFactoryCallbackForSharedWorker().is_null())
+         GetCreateNetworkFactoryCallback().is_null())
       << "It is not expected that this is called with non-null callback when "
       << "another overriding callback is already set.";
-  GetCreateNetworkFactoryCallbackForSharedWorker() =
-      create_network_factory_callback;
+  GetCreateNetworkFactoryCallback() = create_network_factory_callback;
 }
 
 void SharedWorkerHost::Start(
@@ -316,15 +306,15 @@ void SharedWorkerHost::CreateNetworkFactory(
   RenderProcessHost* process = RenderProcessHost::FromID(process_id_);
   url::Origin origin = instance_->constructor_origin();
   network::mojom::TrustedURLLoaderHeaderClientPtrInfo no_header_client;
-  if (GetCreateNetworkFactoryCallbackForSharedWorker().is_null()) {
+  if (GetCreateNetworkFactoryCallback().is_null()) {
     process->CreateURLLoaderFactory(origin, std::move(no_header_client),
                                     std::move(request));
   } else {
     network::mojom::URLLoaderFactoryPtr original_factory;
     process->CreateURLLoaderFactory(origin, std::move(no_header_client),
                                     mojo::MakeRequest(&original_factory));
-    GetCreateNetworkFactoryCallbackForSharedWorker().Run(
-        std::move(request), process_id_, original_factory.PassInterface());
+    GetCreateNetworkFactoryCallback().Run(std::move(request), process_id_,
+                                          original_factory.PassInterface());
   }
 }
 
@@ -345,19 +335,6 @@ void SharedWorkerHost::AllowIndexedDB(const GURL& url,
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&AllowIndexedDBOnIOThread, url,
-                     RenderProcessHost::FromID(process_id_)
-                         ->GetBrowserContext()
-                         ->GetResourceContext(),
-                     GetRenderFrameIDsForWorker()),
-      std::move(callback));
-}
-
-void SharedWorkerHost::AllowCacheStorage(
-    const GURL& url,
-    base::OnceCallback<void(bool)> callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&AllowCacheStorageOnIOThread, url,
                      RenderProcessHost::FromID(process_id_)
                          ->GetBrowserContext()
                          ->GetResourceContext(),

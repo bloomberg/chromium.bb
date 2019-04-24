@@ -148,8 +148,7 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
     } else if (first_letter_text_layout_object->IsListMarker() ||
                first_letter_text_layout_object == marker) {
       first_letter_text_layout_object =
-          first_letter_text_layout_object->NextInPreOrderAfterChildren(
-              parent_layout_object);
+          first_letter_text_layout_object->NextSibling();
     } else if (first_letter_text_layout_object
                    ->IsFloatingOrOutOfFlowPositioned()) {
       if (first_letter_text_layout_object->Style()->StyleType() ==
@@ -311,17 +310,14 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* fi
   // This text fragment might be empty.
   LayoutTextFragment* remaining_text;
 
-  LegacyLayout legacy_layout = first_letter_text->ForceLegacyLayout()
-                                   ? LegacyLayout::kForce
-                                   : LegacyLayout::kAuto;
-
   if (first_letter_text->GetNode()) {
     remaining_text = LayoutTextFragment::Create(
-        first_letter_text->GetNode(), old_text.Impl(), length, remaining_length,
-        legacy_layout);
+        *first_letter_text->Style(), first_letter_text->GetNode(),
+        old_text.Impl(), length, remaining_length);
   } else {
     remaining_text = LayoutTextFragment::CreateAnonymous(
-        *this, old_text.Impl(), length, remaining_length, legacy_layout);
+        *first_letter_text->Style(), *this, old_text.Impl(), length,
+        remaining_length);
   }
 
   remaining_text->SetFirstLetterPseudoElement(this);
@@ -339,7 +335,7 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* fi
   // Construct text fragment for the first letter.
   ComputedStyle* const letter_style = MutableComputedStyle();
   LayoutTextFragment* letter = LayoutTextFragment::CreateAnonymous(
-      *this, old_text.Impl(), 0, length, legacy_layout);
+      *letter_style, *this, old_text.Impl(), 0, length);
   letter->SetFirstLetterPseudoElement(this);
   letter->SetStyle(letter_style);
   GetLayoutObject()->AddChild(letter);

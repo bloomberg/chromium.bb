@@ -19,7 +19,6 @@ from chromite.cbuildbot.stages import workspace_stages
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
-from chromite.lib import path_util
 from chromite.lib import portage_util
 
 # pylint: disable=too-many-ancestors
@@ -34,7 +33,7 @@ class WorkspaceStageBase(
   OLD_VERSION = '1.2.3'
 
   # Version newer than all "limits" in workspace_stages.
-  MODERN_VERSION = '11900.0.0'
+  MODERN_VERSION = '11000.0.0'
 
   def setUp(self):
     self.workspace = os.path.join(self.tempdir, 'workspace')
@@ -289,7 +288,7 @@ class WorkspaceSyncStageTest(WorkspaceStageBase):
         mock.call(self._run, self.buildstore,
                   patch_pool=mock.ANY,
                   suffix=' [test-branch]',
-                  external=False,
+                  external=True,
                   branch='test-branch',
                   version=None,
                   build_root=self.workspace,
@@ -508,14 +507,6 @@ class WorkspaceUpdateSDKStageTest(WorkspaceStageBase):
 class WorkspaceSetupBoardStageTest(WorkspaceStageBase):
   """Test the WorkspaceSetupBoardStage."""
 
-  def setUp(self):
-    # Prevent the setup_board tempdir path from being translated because it
-    # ends up raising an error when that path can't be found in the chroot.
-    self.PatchObject(path_util, 'ToChrootPath', side_effect=lambda x: x)
-    self.setup_board = os.path.join(self.workspace,
-                                    constants.CHROMITE_BIN_SUBDIR,
-                                    'setup_board')
-
   def ConstructStage(self):
     return workspace_stages.WorkspaceSetupBoardStage(
         self._run, self.buildstore, build_root=self.workspace, board='board')
@@ -547,34 +538,6 @@ class WorkspaceSetupBoardStageTest(WorkspaceStageBase):
         cwd=self.workspace,
     )
 
-  def testSetupBoardModern(self):
-    """Test setup_board modern workspace version."""
-    self._Prepare(
-        'test-firmwarebranch',
-        site_config=workspace_builders_unittest.CreateMockSiteConfig(),
-        extra_cmd_args=['--cache-dir', '/cache'])
-
-    self.SetWorkspaceVersion(self.MODERN_VERSION)
-    self.RunStage()
-
-    self.assertEqual(self.rc.call_count, 1)
-    self.rc.assertCommandCalled(
-        [
-            self.setup_board,
-            '--board=board',
-            '--accept-licenses=@CHROMEOS',
-            '--nousepkg',
-            '--reuse_pkgs_from_local_boards',
-        ],
-        enter_chroot=True,
-        chroot_args=['--cache-dir', '/cache'],
-        extra_env={
-            'USE': '-cros-debug chrome_internal chromeless_tty',
-            'FEATURES': 'separatedebug',
-        },
-        cwd=self.workspace,
-    )
-
   def testSetupBoardWithChrome(self):
     """Test setup_board old workspace version."""
     self._Prepare(
@@ -582,7 +545,6 @@ class WorkspaceSetupBoardStageTest(WorkspaceStageBase):
         site_config=workspace_builders_unittest.CreateMockSiteConfig(),
         extra_cmd_args=['--cache-dir', '/cache', '--chrome_root', '/chrome'])
 
-    self.SetWorkspaceVersion(self.OLD_VERSION)
     self.RunStage()
 
     self.assertEqual(self.rc.call_count, 1)
@@ -591,35 +553,6 @@ class WorkspaceSetupBoardStageTest(WorkspaceStageBase):
             './setup_board',
             '--board=board',
             '--accept_licenses=@CHROMEOS',
-            '--nousepkg',
-            '--reuse_pkgs_from_local_boards',
-        ],
-        enter_chroot=True,
-        chroot_args=['--cache-dir', '/cache', '--chrome_root', '/chrome'],
-        extra_env={
-            'USE': '-cros-debug chrome_internal chromeless_tty',
-            'FEATURES': 'separatedebug',
-            'CHROME_ORIGIN': 'LOCAL_SOURCE',
-        },
-        cwd=self.workspace,
-    )
-
-  def testSetupBoardWithChromeModern(self):
-    """Test setup_board modern workspace version."""
-    self._Prepare(
-        'test-firmwarebranch',
-        site_config=workspace_builders_unittest.CreateMockSiteConfig(),
-        extra_cmd_args=['--cache-dir', '/cache', '--chrome_root', '/chrome'])
-
-    self.SetWorkspaceVersion(self.MODERN_VERSION)
-    self.RunStage()
-
-    self.assertEqual(self.rc.call_count, 1)
-    self.rc.assertCommandCalled(
-        [
-            self.setup_board,
-            '--board=board',
-            '--accept-licenses=@CHROMEOS',
             '--nousepkg',
             '--reuse_pkgs_from_local_boards',
         ],
@@ -835,8 +768,8 @@ class WorkspaceBuildImageStageTest(WorkspaceStageBase):
             './build_image',
             '--board', 'board',
             '--replace',
-            '--version', 'R1-%s' % self.MODERN_VERSION,
-            '--builder_path', 'test-factorybranch/R1-%s' % self.MODERN_VERSION,
+            '--version', 'R1-11000.0.0',
+            '--builder_path', 'test-factorybranch/R1-11000.0.0',
             'test',
         ],
         enter_chroot=True,
@@ -896,22 +829,19 @@ class WorkspaceDebugSymbolsStageTest(WorkspaceStageBase):
     self.assertEqual(
         self.tarball_mock.call_args_list,
         [
-            mock.call(buildroot=self.workspace,
-                      board='board',
-                      archive_path=os.path.join(
-                          self.build_root,
-                          'buildbot_archive/test-factorybranch/R10-infra-tag'),
-                      gdb_symbols=True,
-                      archive_name='debug.tgz',
-                      chroot_compression=False),
-            mock.call(buildroot=self.workspace,
-                      board='board',
-                      archive_path=os.path.join(
-                          self.build_root,
-                          'buildbot_archive/test-factorybranch/R10-infra-tag'),
-                      gdb_symbols=False,
-                      archive_name='debug_breakpad.tar.xz',
-                      chroot_compression=False),
+            mock.call(self.workspace,
+                      'board',
+                      os.path.join(self.build_root,
+                                   'buildbot_archive/test-factorybranch',
+                                   'R10-infra-tag'),
+                      True),
+            mock.call(self.workspace,
+                      'board',
+                      os.path.join(self.build_root,
+                                   'buildbot_archive/test-factorybranch',
+                                   'R10-infra-tag'),
+                      False,
+                      archive_name='debug_breakpad.tar.xz'),
         ],
     )
 

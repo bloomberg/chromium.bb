@@ -21,8 +21,9 @@ struct WrapperTypeInfo;
 // methods that allow for announcing reachable objects to V8.
 class PLATFORM_EXPORT UnifiedHeapMarkingVisitor final : public MarkingVisitor {
  public:
-  UnifiedHeapMarkingVisitor(ThreadState*, MarkingMode, v8::Isolate*);
-
+  static std::unique_ptr<UnifiedHeapMarkingVisitor> Create(ThreadState*,
+                                                           MarkingMode,
+                                                           v8::Isolate*);
   // Write barriers for annotating a write during incremental marking.
   static void WriteBarrier(const TraceWrapperV8Reference<v8::Value>&);
   static void WriteBarrier(v8::Isolate*, const WrapperTypeInfo*, void*);
@@ -33,6 +34,8 @@ class PLATFORM_EXPORT UnifiedHeapMarkingVisitor final : public MarkingVisitor {
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final;
 
  private:
+  UnifiedHeapMarkingVisitor(ThreadState*, MarkingMode, v8::Isolate*);
+
   v8::Isolate* const isolate_;
   v8::EmbedderHeapTracer* const controller_;
 

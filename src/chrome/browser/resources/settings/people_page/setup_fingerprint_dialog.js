@@ -39,13 +39,6 @@ Polymer({
     },
 
     /**
-     * Authentication token provided by settings-fingerprint-list
-     */
-    authToken: {
-      type: String,
-      value: '',
-    },
-    /**
      * The problem message to display.
      * @private
      */
@@ -94,7 +87,7 @@ Polymer({
     this.browserProxy_ = settings.FingerprintBrowserProxyImpl.getInstance();
 
     this.$.arc.reset();
-    this.browserProxy_.startEnroll(this.authToken);
+    this.browserProxy_.startEnroll();
     this.$.dialog.showModal();
   },
 
@@ -274,7 +267,7 @@ Polymer({
     this.reset_();
     this.$.arc.reset();
     this.step_ = settings.FingerprintSetupStep.MOVE_FINGER;
-    this.browserProxy_.startEnroll(this.authToken);
+    this.browserProxy_.startEnroll();
   },
 
   /**

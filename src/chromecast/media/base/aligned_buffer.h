@@ -28,9 +28,7 @@ class AlignedBuffer {
         data_(static_cast<T*>(
             base::AlignedAlloc(size_ * sizeof(T), kAlignment))) {}
 
-  AlignedBuffer(int size, const T& val) : AlignedBuffer(size) {
-    std::fill_n(data_.get(), size_, val);
-  }
+  AlignedBuffer(int size, const T& val) : AlignedBuffer(size) {}
 
   // Copy constructor
   AlignedBuffer(const AlignedBuffer& other)

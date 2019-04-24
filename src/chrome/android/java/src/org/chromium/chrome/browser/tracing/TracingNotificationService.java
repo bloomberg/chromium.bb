@@ -9,8 +9,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 
-import org.chromium.base.task.PostTask;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.base.ThreadUtils;
 
 /**
  * Service that handles the actions on tracing notifications.
@@ -72,7 +71,7 @@ public class TracingNotificationService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             // Clear the notification but don't do anything else if the TracingController went away.
             if (!TracingController.isInitialized()) {
                 TracingNotificationManager.dismissNotification();

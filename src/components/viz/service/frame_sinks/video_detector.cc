@@ -6,7 +6,6 @@
 
 #include "base/time/time.h"
 #include "components/viz/common/quads/compositor_frame.h"
-#include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"

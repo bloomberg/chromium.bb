@@ -9,7 +9,6 @@
 #include "base/stl_util.h"
 #include "base/timer/timer.h"
 #include "chromeos/services/assistant/public/features.h"
-#include "chromeos/services/assistant/utils.h"
 #include "libassistant/shared/public/platform_audio_buffer.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
@@ -24,11 +23,11 @@ namespace assistant {
 namespace {
 
 constexpr assistant_client::BufferFormat kFormatMono{
-    16000 /* sample_rate */, assistant_client::INTERLEAVED_S16, 1 /* channels */
+    16000 /* sample_rate */, assistant_client::INTERLEAVED_S32, 1 /* channels */
 };
 
 constexpr assistant_client::BufferFormat kFormatStereo{
-    44100 /* sample_rate */, assistant_client::INTERLEAVED_S16, 2 /* channels */
+    16000 /* sample_rate */, assistant_client::INTERLEAVED_S32, 2 /* channels */
 };
 
 assistant_client::BufferFormat g_current_format = kFormatMono;
@@ -194,17 +193,12 @@ void AudioInputImpl::Capture(const media::AudioBus* audio_source,
 
   state_manager_->OnCaptureDataArrived();
 
-  std::vector<int16_t> buffer(audio_source->channels() *
+  std::vector<int32_t> buffer(audio_source->channels() *
                               audio_source->frames());
-  audio_source->ToInterleaved<media::SignedInt16SampleTypeTraits>(
+  audio_source->ToInterleaved<media::SignedInt32SampleTypeTraits>(
       audio_source->frames(), buffer.data());
-  int64_t time = 0;
-  // Only provide accurate timestamp when eraser is enabled, otherwise it seems
-  // break normal libassistant voice recognition.
-  if (features::IsAudioEraserEnabled()) {
-    time = base::TimeTicks::Now().since_origin().InMicroseconds() -
-           1000 * audio_delay_milliseconds;
-  }
+  int64_t time = base::TimeTicks::Now().since_origin().InMilliseconds() -
+                 audio_delay_milliseconds;
   AudioInputBufferImpl input_buffer(buffer.data(), audio_source->frames());
   {
     base::AutoLock lock(lock_);
@@ -217,7 +211,7 @@ void AudioInputImpl::Capture(const media::AudioBus* audio_source,
     auto now = base::TimeTicks::Now();
     if ((now - last_frame_count_report_time_) >
         base::TimeDelta::FromMinutes(2)) {
-      VLOG(1) << device_id_ << " captured frames: " << captured_frames_count_;
+      VLOG(1) << "Captured frames: " << captured_frames_count_;
       last_frame_count_report_time_ = now;
     }
   }
@@ -225,7 +219,7 @@ void AudioInputImpl::Capture(const media::AudioBus* audio_source,
 
 // Runs on audio service thread.
 void AudioInputImpl::OnCaptureError(const std::string& message) {
-  LOG(ERROR) << device_id_ << " capture error " << message;
+  LOG(ERROR) << "Capture error " << message;
   base::AutoLock lock(lock_);
   for (auto* observer : observers_)
     observer->OnAudioError(AudioInput::Error::FATAL_ERROR);
@@ -243,15 +237,12 @@ assistant_client::BufferFormat AudioInputImpl::GetFormat() const {
 void AudioInputImpl::AddObserver(
     assistant_client::AudioInput::Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(observer_sequence_checker_);
-  VLOG(1) << device_id_ << " add observer";
+  VLOG(1) << "Add observer";
 
   // Feed the observer one frame of empty data to work around crbug/942268
-  std::vector<int16_t> buffer(g_current_format.num_channels);
-  int64_t time = features::IsAudioEraserEnabled()
-                     ? base::TimeTicks::Now().since_origin().InMicroseconds()
-                     : 0;
+  std::vector<int32_t> buffer(g_current_format.num_channels);
   AudioInputBufferImpl input_buffer(buffer.data(), /*frame_count=*/1);
-  observer->OnAudioBufferAvailable(input_buffer, time);
+  observer->OnAudioBufferAvailable(input_buffer, /*timestamp=*/0);
 
   bool have_first_observer = false;
   {
@@ -274,7 +265,7 @@ void AudioInputImpl::AddObserver(
 void AudioInputImpl::RemoveObserver(
     assistant_client::AudioInput::Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(observer_sequence_checker_);
-  VLOG(1) << device_id_ << " remove observer";
+  VLOG(1) << "Remove observer";
   bool have_no_observer = false;
   {
     base::AutoLock lock(lock_);
@@ -360,7 +351,7 @@ void AudioInputImpl::RecreateAudioInputStream(bool use_dsp) {
 
   source_->Initialize(param, this);
   source_->Start();
-  VLOG(1) << device_id_ << " start recording";
+  VLOG(1) << "Start recording";
 }
 
 bool AudioInputImpl::IsHotwordAvailable() {
@@ -376,11 +367,10 @@ void AudioInputImpl::StartRecording() {
 void AudioInputImpl::StopRecording() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (source_) {
-    VLOG(1) << device_id_ << " stop recording";
+    VLOG(1) << "Stop recording";
     source_->Stop();
     source_.reset();
-    VLOG(1) << device_id_
-            << " ending captured frames: " << captured_frames_count_;
+    VLOG(1) << "Ending captured frames: " << captured_frames_count_;
   }
 }
 

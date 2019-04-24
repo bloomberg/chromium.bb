@@ -68,32 +68,38 @@ class TestSliderListener : public views::SliderListener {
 
  private:
   // The epoch of the last event.
-  int last_event_epoch_ = 0;
+  int last_event_epoch_;
   // The epoch of the last time SliderDragStarted was called.
-  int last_drag_started_epoch_ = -1;
+  int last_drag_started_epoch_;
   // The epoch of the last time SliderDragEnded was called.
-  int last_drag_ended_epoch_ = -1;
+  int last_drag_ended_epoch_;
   // The sender from the last SliderDragStarted call.
-  views::Slider* last_drag_started_sender_ = nullptr;
+  views::Slider* last_drag_started_sender_;
   // The sender from the last SliderDragEnded call.
-  views::Slider* last_drag_ended_sender_ = nullptr;
+  views::Slider* last_drag_ended_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSliderListener);
 };
 
-TestSliderListener::TestSliderListener() = default;
+TestSliderListener::TestSliderListener()
+  : last_event_epoch_(0),
+    last_drag_started_epoch_(-1),
+    last_drag_ended_epoch_(-1),
+    last_drag_started_sender_(NULL),
+    last_drag_ended_sender_(NULL) {
+}
 
 TestSliderListener::~TestSliderListener() {
-  last_drag_started_sender_ = nullptr;
-  last_drag_ended_sender_ = nullptr;
+  last_drag_started_sender_ = NULL;
+  last_drag_ended_sender_ = NULL;
 }
 
 void TestSliderListener::ResetCallHistory() {
   last_event_epoch_ = 0;
   last_drag_started_epoch_ = -1;
   last_drag_ended_epoch_ = -1;
-  last_drag_started_sender_ = nullptr;
-  last_drag_ended_sender_ = nullptr;
+  last_drag_started_sender_ = NULL;
+  last_drag_ended_sender_ = NULL;
 }
 
 void TestSliderListener::SliderValueChanged(views::Slider* sender,

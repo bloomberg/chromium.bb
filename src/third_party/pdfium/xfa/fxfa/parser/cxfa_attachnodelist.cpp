@@ -29,16 +29,12 @@ void CXFA_AttachNodeList::Append(CXFA_Node* pNode) {
   m_pAttachNode->InsertChild(pNode, nullptr);
 }
 
-bool CXFA_AttachNodeList::Insert(CXFA_Node* pNewNode, CXFA_Node* pBeforeNode) {
-  if (pBeforeNode && pBeforeNode->GetParent() != m_pAttachNode)
-    return false;
-
+void CXFA_AttachNodeList::Insert(CXFA_Node* pNewNode, CXFA_Node* pBeforeNode) {
   CXFA_Node* pParent = pNewNode->GetParent();
   if (pParent)
     pParent->RemoveChild(pNewNode, true);
 
   m_pAttachNode->InsertChild(pNewNode, pBeforeNode);
-  return true;
 }
 
 void CXFA_AttachNodeList::Remove(CXFA_Node* pNode) {

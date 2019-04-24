@@ -13,16 +13,15 @@ import android.content.SyncResult;
 import android.os.Bundle;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.invalidation.PendingInvalidation;
 import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -82,14 +81,18 @@ public class ChromeBrowserSyncAdapter extends AbstractThreadedSyncAdapter {
     private void startBrowserProcess(final BrowserParts parts, final SyncResult syncResult,
             Semaphore semaphore) {
         try {
-            PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
-                ChromeBrowserInitializer.getInstance(getContext()).handlePreNativeStartup(parts);
-                try {
-                    ChromeBrowserInitializer.getInstance(getContext())
-                            .handlePostNativeStartup(false, parts);
-                } catch (ProcessInitException e) {
-                    Log.e(TAG, "Unable to load native library.", e);
-                    System.exit(-1);
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    ChromeBrowserInitializer.getInstance(getContext()).handlePreNativeStartup(
+                            parts);
+                    try {
+                        ChromeBrowserInitializer.getInstance(getContext())
+                                .handlePostNativeStartup(false, parts);
+                    } catch (ProcessInitException e) {
+                        Log.e(TAG, "Unable to load native library.", e);
+                        System.exit(-1);
+                    }
                 }
             });
         } catch (RuntimeException e) {

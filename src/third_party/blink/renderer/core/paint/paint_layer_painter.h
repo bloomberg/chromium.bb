@@ -75,10 +75,11 @@ class CORE_EXPORT PaintLayerPainter {
                               const ClipRect&,
                               const PaintLayerPaintingInfo&,
                               PaintLayerFlags);
-  void PaintBackgroundForFragments(const PaintLayerFragments&,
-                                   GraphicsContext&,
-                                   const PaintLayerPaintingInfo&,
-                                   PaintLayerFlags);
+  void PaintBackgroundForFragments(
+      const PaintLayerFragments&,
+      GraphicsContext&,
+      const PaintLayerPaintingInfo&,
+      PaintLayerFlags);
   void PaintForegroundForFragments(const PaintLayerFragments&,
                                    GraphicsContext&,
                                    const PaintLayerPaintingInfo&,

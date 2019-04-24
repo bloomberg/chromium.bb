@@ -9,9 +9,12 @@
 
 namespace views {
 
-UnhandledKeyboardEventHandler::UnhandledKeyboardEventHandler() = default;
+UnhandledKeyboardEventHandler::UnhandledKeyboardEventHandler()
+    : ignore_next_char_event_(false) {
+}
 
-UnhandledKeyboardEventHandler::~UnhandledKeyboardEventHandler() = default;
+UnhandledKeyboardEventHandler::~UnhandledKeyboardEventHandler() {
+}
 
 bool UnhandledKeyboardEventHandler::HandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event,
