@@ -34,7 +34,7 @@
 
 namespace blink {
 
-inline SVGPatternElement::SVGPatternElement(Document& document)
+SVGPatternElement::SVGPatternElement(Document& document)
     : SVGElement(svg_names::kPatternTag, document),
       SVGURIReference(this),
       SVGTests(this),

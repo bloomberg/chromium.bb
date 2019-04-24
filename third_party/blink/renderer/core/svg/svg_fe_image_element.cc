@@ -35,7 +35,7 @@
 
 namespace blink {
 
-inline SVGFEImageElement::SVGFEImageElement(Document& document)
+SVGFEImageElement::SVGFEImageElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEImageTag, document),
       SVGURIReference(this),
       preserve_aspect_ratio_(

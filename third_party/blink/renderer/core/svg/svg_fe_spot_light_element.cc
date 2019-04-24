@@ -25,7 +25,7 @@
 
 namespace blink {
 
-inline SVGFESpotLightElement::SVGFESpotLightElement(Document& document)
+SVGFESpotLightElement::SVGFESpotLightElement(Document& document)
     : SVGFELightElement(svg_names::kFESpotLightTag, document) {}
 
 DEFINE_NODE_FACTORY(SVGFESpotLightElement)

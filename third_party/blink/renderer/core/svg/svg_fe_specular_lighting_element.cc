@@ -30,8 +30,7 @@
 
 namespace blink {
 
-inline SVGFESpecularLightingElement::SVGFESpecularLightingElement(
-    Document& document)
+SVGFESpecularLightingElement::SVGFESpecularLightingElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFESpecularLightingTag,
                                            document),
       specular_constant_(MakeGarbageCollected<SVGAnimatedNumber>(

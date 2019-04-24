@@ -39,7 +39,7 @@ const SVGEnumerationMap& GetEnumerationMap<ColorMatrixType>() {
   return entries;
 }
 
-inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
+SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEColorMatrixTag,
                                            document),
       values_(

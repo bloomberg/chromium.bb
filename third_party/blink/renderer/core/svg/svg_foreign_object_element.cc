@@ -29,7 +29,7 @@
 
 namespace blink {
 
-inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
+SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     : SVGGraphicsElement(svg_names::kForeignObjectTag, document),
       x_(MakeGarbageCollected<SVGAnimatedLength>(
           this,

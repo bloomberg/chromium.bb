@@ -45,7 +45,7 @@ const SVGEnumerationMap& GetEnumerationMap<TurbulenceType>() {
   return entries;
 }
 
-inline SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
+SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFETurbulenceTag,
                                            document),
       base_frequency_(MakeGarbageCollected<SVGAnimatedNumberOptionalNumber>(

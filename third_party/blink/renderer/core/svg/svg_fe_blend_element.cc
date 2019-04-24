@@ -81,7 +81,7 @@ const SVGEnumerationMap& GetEnumerationMap<SVGFEBlendElement::Mode>() {
   return entries;
 }
 
-inline SVGFEBlendElement::SVGFEBlendElement(Document& document)
+SVGFEBlendElement::SVGFEBlendElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEBlendTag, document),
       in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)),
       in2_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kIn2Attr)),

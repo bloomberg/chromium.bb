@@ -34,9 +34,8 @@
 
 namespace blink {
 
-inline SVGDiscardElement::SVGDiscardElement(Document& document)
-    : SVGSMILElement(svg_names::kDiscardTag, document) {
-}
+SVGDiscardElement::SVGDiscardElement(Document& document)
+    : SVGSMILElement(svg_names::kDiscardTag, document) {}
 
 DEFINE_NODE_FACTORY(SVGDiscardElement)
 

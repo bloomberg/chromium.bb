@@ -75,8 +75,7 @@ SVGParsingError SVGAnimatedOrder::AttributeChanged(const String& value) {
   return parse_status;
 }
 
-inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(
-    Document& document)
+SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEConvolveMatrixTag,
                                            document),
       bias_(MakeGarbageCollected<SVGAnimatedNumber>(this,

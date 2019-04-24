@@ -49,7 +49,7 @@
 
 namespace blink {
 
-inline SVGUseElement::SVGUseElement(Document& document)
+SVGUseElement::SVGUseElement(Document& document)
     : SVGGraphicsElement(svg_names::kUseTag, document),
       SVGURIReference(this),
       x_(MakeGarbageCollected<SVGAnimatedLength>(

@@ -29,7 +29,7 @@
 
 namespace blink {
 
-inline SVGFEDropShadowElement::SVGFEDropShadowElement(Document& document)
+SVGFEDropShadowElement::SVGFEDropShadowElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEDropShadowTag,
                                            document),
       dx_(MakeGarbageCollected<SVGAnimatedNumber>(this, svg_names::kDxAttr, 2)),

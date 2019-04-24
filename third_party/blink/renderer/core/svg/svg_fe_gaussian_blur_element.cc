@@ -27,7 +27,7 @@
 
 namespace blink {
 
-inline SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(Document& document)
+SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEGaussianBlurTag,
                                            document),
       std_deviation_(MakeGarbageCollected<SVGAnimatedNumberOptionalNumber>(

@@ -28,8 +28,7 @@
 
 namespace blink {
 
-inline SVGAnimateTransformElement::SVGAnimateTransformElement(
-    Document& document)
+SVGAnimateTransformElement::SVGAnimateTransformElement(Document& document)
     : SVGAnimateElement(svg_names::kAnimateTransformTag, document),
       transform_type_(SVGTransformType::kUnknown) {}
 

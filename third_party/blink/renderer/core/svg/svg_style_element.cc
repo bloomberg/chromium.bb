@@ -31,8 +31,8 @@
 
 namespace blink {
 
-inline SVGStyleElement::SVGStyleElement(Document& document,
-                                        const CreateElementFlags flags)
+SVGStyleElement::SVGStyleElement(Document& document,
+                                 const CreateElementFlags flags)
     : SVGElement(svg_names::kStyleTag, document),
       StyleElement(&document, flags.IsCreatedByParser()) {}
 

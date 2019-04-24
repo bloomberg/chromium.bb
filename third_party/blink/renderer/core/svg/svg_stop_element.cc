@@ -27,7 +27,7 @@
 
 namespace blink {
 
-inline SVGStopElement::SVGStopElement(Document& document)
+SVGStopElement::SVGStopElement(Document& document)
     : SVGElement(svg_names::kStopTag, document),
       offset_(MakeGarbageCollected<SVGAnimatedNumber>(
           this,

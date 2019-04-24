@@ -40,7 +40,7 @@ const SVGEnumerationMap& GetEnumerationMap<SVGMarkerUnitsType>() {
   return entries;
 }
 
-inline SVGMarkerElement::SVGMarkerElement(Document& document)
+SVGMarkerElement::SVGMarkerElement(Document& document)
     : SVGElement(svg_names::kMarkerTag, document),
       SVGFitToViewBox(this),
       ref_x_(MakeGarbageCollected<SVGAnimatedLength>(

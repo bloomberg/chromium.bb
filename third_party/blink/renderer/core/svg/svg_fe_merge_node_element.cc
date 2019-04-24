@@ -25,7 +25,7 @@
 
 namespace blink {
 
-inline SVGFEMergeNodeElement::SVGFEMergeNodeElement(Document& document)
+SVGFEMergeNodeElement::SVGFEMergeNodeElement(Document& document)
     : SVGElement(svg_names::kFEMergeNodeTag, document),
       in1_(MakeGarbageCollected<SVGAnimatedString>(this, svg_names::kInAttr)) {
   AddToPropertyMap(in1_);

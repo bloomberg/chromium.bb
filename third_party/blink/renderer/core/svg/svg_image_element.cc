@@ -35,7 +35,7 @@
 
 namespace blink {
 
-inline SVGImageElement::SVGImageElement(Document& document)
+SVGImageElement::SVGImageElement(Document& document)
     : SVGGraphicsElement(svg_names::kImageTag, document),
       SVGURIReference(this),
       is_default_overridden_intrinsic_size_(false),

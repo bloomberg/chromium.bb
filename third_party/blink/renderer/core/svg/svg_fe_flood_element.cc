@@ -29,7 +29,7 @@
 
 namespace blink {
 
-inline SVGFEFloodElement::SVGFEFloodElement(Document& document)
+SVGFEFloodElement::SVGFEFloodElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEFloodTag, document) {}
 
 DEFINE_NODE_FACTORY(SVGFEFloodElement)

@@ -29,7 +29,7 @@
 
 namespace blink {
 
-inline SVGPathElement::SVGPathElement(Document& document)
+SVGPathElement::SVGPathElement(Document& document)
     : SVGGeometryElement(svg_names::kPathTag, document),
       path_(MakeGarbageCollected<SVGAnimatedPath>(this,
                                                   svg_names::kDAttr,

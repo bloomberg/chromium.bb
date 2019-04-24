@@ -43,7 +43,7 @@ const SVGEnumerationMap& GetEnumerationMap<CompositeOperationType>() {
   return entries;
 }
 
-inline SVGFECompositeElement::SVGFECompositeElement(Document& document)
+SVGFECompositeElement::SVGFECompositeElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFECompositeTag,
                                            document),
       k1_(MakeGarbageCollected<SVGAnimatedNumber>(this,

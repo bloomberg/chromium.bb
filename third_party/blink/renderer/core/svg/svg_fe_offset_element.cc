@@ -27,7 +27,7 @@
 
 namespace blink {
 
-inline SVGFEOffsetElement::SVGFEOffsetElement(Document& document)
+SVGFEOffsetElement::SVGFEOffsetElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEOffsetTag, document),
       dx_(MakeGarbageCollected<SVGAnimatedNumber>(this,
                                                   svg_names::kDxAttr,

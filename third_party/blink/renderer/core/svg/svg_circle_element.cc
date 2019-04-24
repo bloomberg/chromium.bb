@@ -26,7 +26,7 @@
 
 namespace blink {
 
-inline SVGCircleElement::SVGCircleElement(Document& document)
+SVGCircleElement::SVGCircleElement(Document& document)
     : SVGGeometryElement(svg_names::kCircleTag, document),
       cx_(MakeGarbageCollected<SVGAnimatedLength>(
           this,

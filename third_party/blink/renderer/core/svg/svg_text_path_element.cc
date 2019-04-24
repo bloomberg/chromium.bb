@@ -46,7 +46,7 @@ const SVGEnumerationMap& GetEnumerationMap<SVGTextPathSpacingType>() {
   return entries;
 }
 
-inline SVGTextPathElement::SVGTextPathElement(Document& document)
+SVGTextPathElement::SVGTextPathElement(Document& document)
     : SVGTextContentElement(svg_names::kTextPathTag, document),
       SVGURIReference(this),
       start_offset_(MakeGarbageCollected<SVGAnimatedLength>(

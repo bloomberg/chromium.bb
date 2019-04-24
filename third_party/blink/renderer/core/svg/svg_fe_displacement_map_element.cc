@@ -35,8 +35,7 @@ const SVGEnumerationMap& GetEnumerationMap<ChannelSelectorType>() {
   return entries;
 }
 
-inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(
-    Document& document)
+SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEDisplacementMapTag,
                                            document),
       scale_(MakeGarbageCollected<SVGAnimatedNumber>(this,

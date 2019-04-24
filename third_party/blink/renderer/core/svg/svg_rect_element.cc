@@ -26,7 +26,7 @@
 
 namespace blink {
 
-inline SVGRectElement::SVGRectElement(Document& document)
+SVGRectElement::SVGRectElement(Document& document)
     : SVGGeometryElement(svg_names::kRectTag, document),
       x_(MakeGarbageCollected<SVGAnimatedLength>(
           this,

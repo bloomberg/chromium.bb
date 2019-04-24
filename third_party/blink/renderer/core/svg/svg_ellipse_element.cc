@@ -26,7 +26,7 @@
 
 namespace blink {
 
-inline SVGEllipseElement::SVGEllipseElement(Document& document)
+SVGEllipseElement::SVGEllipseElement(Document& document)
     : SVGGeometryElement(svg_names::kEllipseTag, document),
       cx_(MakeGarbageCollected<SVGAnimatedLength>(
           this,

@@ -33,8 +33,8 @@
 
 namespace blink {
 
-inline SVGScriptElement::SVGScriptElement(Document& document,
-                                          const CreateElementFlags flags)
+SVGScriptElement::SVGScriptElement(Document& document,
+                                   const CreateElementFlags flags)
     : SVGElement(svg_names::kScriptTag, document),
       SVGURIReference(this),
       loader_(InitializeScriptLoader(flags.IsCreatedByParser(),

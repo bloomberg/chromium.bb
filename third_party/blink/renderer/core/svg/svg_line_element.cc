@@ -26,7 +26,7 @@
 
 namespace blink {
 
-inline SVGLineElement::SVGLineElement(Document& document)
+SVGLineElement::SVGLineElement(Document& document)
     : SVGGeometryElement(svg_names::kLineTag, document),
       x1_(MakeGarbageCollected<SVGAnimatedLength>(
           this,

@@ -26,7 +26,7 @@
 
 namespace blink {
 
-inline SVGClipPathElement::SVGClipPathElement(Document& document)
+SVGClipPathElement::SVGClipPathElement(Document& document)
     : SVGGraphicsElement(svg_names::kClipPathTag, document),
       clip_path_units_(MakeGarbageCollected<
                        SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>>(

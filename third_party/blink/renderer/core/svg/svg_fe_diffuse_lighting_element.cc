@@ -28,8 +28,7 @@
 
 namespace blink {
 
-inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(
-    Document& document)
+SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEDiffuseLightingTag,
                                            document),
       diffuse_constant_(MakeGarbageCollected<SVGAnimatedNumber>(

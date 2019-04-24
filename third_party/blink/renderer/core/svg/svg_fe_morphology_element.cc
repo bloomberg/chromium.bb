@@ -36,7 +36,7 @@ const SVGEnumerationMap& GetEnumerationMap<MorphologyOperatorType>() {
   return entries;
 }
 
-inline SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
+SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
     : SVGFilterPrimitiveStandardAttributes(svg_names::kFEMorphologyTag,
                                            document),
       radius_(MakeGarbageCollected<SVGAnimatedNumberOptionalNumber>(

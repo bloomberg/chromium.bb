@@ -27,9 +27,8 @@
 
 namespace blink {
 
-inline SVGMPathElement::SVGMPathElement(Document& document)
-    : SVGElement(svg_names::kMPathTag, document), SVGURIReference(this) {
-}
+SVGMPathElement::SVGMPathElement(Document& document)
+    : SVGElement(svg_names::kMPathTag, document), SVGURIReference(this) {}
 
 void SVGMPathElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_id_observer_);
