@@ -49,11 +49,5 @@ const base::Feature kDataReductionProxyPopulatePreviewsPageIDToPingback{
     "DataReductionProxyPopulatePreviewsPageIDToPingback",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables not allowing proxies that fail warmup url fetch, to custom proxy
-// config updates when network service is enabled.
-const base::Feature kDataReductionProxyDisableProxyFailedWarmup{
-    "DataReductionProxyDisableProxyFailedWarmup",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 }  // namespace features
 }  // namespace data_reduction_proxy
