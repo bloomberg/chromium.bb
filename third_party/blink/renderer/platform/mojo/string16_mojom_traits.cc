@@ -54,14 +54,10 @@ mojo_base::BigBuffer StructTraits<mojo_base::mojom::BigString16DataView,
   if (input.Is8Bit()) {
     base::string16 input16(input.Characters8(),
                            input.Characters8() + input.length());
-    return mojo_base::BigBuffer(
-        base::make_span(reinterpret_cast<const uint8_t*>(input16.data()),
-                        input16.size() * sizeof(UChar)));
+    return mojo_base::BigBuffer(base::as_bytes(base::make_span(input16)));
   }
 
-  return mojo_base::BigBuffer(
-      base::make_span(reinterpret_cast<const uint8_t*>(input.Characters16()),
-                      input.length() * sizeof(UChar)));
+  return mojo_base::BigBuffer(base::as_bytes(input.Span16()));
 }
 
 // static
