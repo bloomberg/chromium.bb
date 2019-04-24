@@ -402,29 +402,31 @@ bool TaskTracker::CanRunPriority(TaskPriority priority) const {
   return false;
 }
 
-scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
-    scoped_refptr<Sequence> sequence) {
-  DCHECK(sequence);
+scoped_refptr<TaskSource> TaskTracker::RunAndPopNextTask(
+    scoped_refptr<TaskSource> task_source) {
+  DCHECK(task_source);
 
-  // Run the next task in |sequence|.
+  // Run the next task in |task_source|.
   Optional<Task> task;
   TaskTraits traits;
   {
-    Sequence::Transaction sequence_transaction(sequence->BeginTransaction());
-    task = sequence_transaction.TakeTask();
+    TaskSource::Transaction task_source_transaction(
+        task_source->BeginTransaction());
+    task = task_source_transaction.TakeTask();
     // TODO(fdoray): Support TakeTask() returning null. https://crbug.com/783309
     DCHECK(task);
 
-    traits = sequence_transaction.traits();
+    traits = task_source_transaction.traits();
   }
 
   const TaskShutdownBehavior effective_shutdown_behavior =
-      GetEffectiveShutdownBehavior(sequence->shutdown_behavior(),
+      GetEffectiveShutdownBehavior(task_source->shutdown_behavior(),
                                    !task->delayed_run_time.is_null());
 
   const bool can_run_task = BeforeRunTask(effective_shutdown_behavior);
 
-  RunOrSkipTask(std::move(task.value()), sequence.get(), traits, can_run_task);
+  RunOrSkipTask(std::move(task.value()), task_source.get(), traits,
+                can_run_task);
   if (can_run_task) {
     IncrementNumTasksRun();
     AfterRunTask(effective_shutdown_behavior);
@@ -433,13 +435,13 @@ scoped_refptr<Sequence> TaskTracker::RunAndPopNextTask(
   if (task->delayed_run_time.is_null())
     DecrementNumIncompleteUndelayedTasks();
 
-  const bool sequence_must_be_queued =
-      sequence->BeginTransaction().DidRunTask();
+  const bool task_source_must_be_queued =
+      task_source->BeginTransaction().DidRunTask();
 
-  // The sequence should be reenqueued iff requested by DidRunTask().
-  if (!sequence_must_be_queued)
+  // The task source should be reenqueued iff requested by DidRunTask().
+  if (!task_source_must_be_queued)
     return nullptr;
-  return sequence;
+  return task_source;
 }
 
 bool TaskTracker::HasShutdownStarted() const {
@@ -493,14 +495,14 @@ void TaskTracker::IncrementNumTasksRun() {
 }
 
 void TaskTracker::RunOrSkipTask(Task task,
-                                Sequence* sequence,
+                                TaskSource* task_source,
                                 const TaskTraits& traits,
                                 bool can_run_task) {
-  DCHECK(sequence);
+  DCHECK(task_source);
   RecordLatencyHistogram(LatencyHistogramType::TASK_LATENCY, traits,
                          task.queue_time);
 
-  const auto environment = sequence->GetExecutionEnvironment();
+  const auto environment = task_source->GetExecutionEnvironment();
 
   const bool previous_singleton_allowed =
       ThreadRestrictions::SetSingletonAllowed(
@@ -532,18 +534,18 @@ void TaskTracker::RunOrSkipTask(Task task,
     // Set up TaskRunnerHandle as expected for the scope of the task.
     Optional<SequencedTaskRunnerHandle> sequenced_task_runner_handle;
     Optional<ThreadTaskRunnerHandle> single_thread_task_runner_handle;
-    switch (sequence->execution_mode()) {
+    switch (task_source->execution_mode()) {
       case TaskSourceExecutionMode::kParallel:
         break;
       case TaskSourceExecutionMode::kSequenced:
-        DCHECK(sequence->task_runner());
+        DCHECK(task_source->task_runner());
         sequenced_task_runner_handle.emplace(
-            static_cast<SequencedTaskRunner*>(sequence->task_runner()));
+            static_cast<SequencedTaskRunner*>(task_source->task_runner()));
         break;
       case TaskSourceExecutionMode::kSingleThread:
-        DCHECK(sequence->task_runner());
+        DCHECK(task_source->task_runner());
         single_thread_task_runner_handle.emplace(
-            static_cast<SingleThreadTaskRunner*>(sequence->task_runner()));
+            static_cast<SingleThreadTaskRunner*>(task_source->task_runner()));
         break;
     }
 
@@ -557,7 +559,7 @@ void TaskTracker::RunOrSkipTask(Task task,
                    std::make_unique<TaskTracingInfo>(
                        traits,
                        kExecutionModeString[static_cast<size_t>(
-                           sequence->execution_mode())],
+                           task_source->execution_mode())],
                        environment.token));
 
       RunTaskWithShutdownBehavior(traits.shutdown_behavior(), &task);

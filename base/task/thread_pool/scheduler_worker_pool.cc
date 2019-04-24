@@ -32,19 +32,19 @@ SchedulerWorkerPool::ScopedReenqueueExecutor::ScopedReenqueueExecutor() =
 
 SchedulerWorkerPool::ScopedReenqueueExecutor::~ScopedReenqueueExecutor() {
   if (destination_pool_) {
-    destination_pool_->PushSequenceAndWakeUpWorkers(
-        std::move(sequence_and_transaction_.value()));
+    destination_pool_->PushTaskSourceAndWakeUpWorkers(
+        std::move(task_source_and_transaction_.value()));
   }
 }
 
 void SchedulerWorkerPool::ScopedReenqueueExecutor::
-    SchedulePushSequenceAndWakeUpWorkers(
-        SequenceAndTransaction sequence_and_transaction,
+    SchedulePushTaskSourceAndWakeUpWorkers(
+        TaskSourceAndTransaction task_source_and_transaction,
         SchedulerWorkerPool* destination_pool) {
   DCHECK(destination_pool);
   DCHECK(!destination_pool_);
-  DCHECK(!sequence_and_transaction_);
-  sequence_and_transaction_.emplace(std::move(sequence_and_transaction));
+  DCHECK(!task_source_and_transaction_);
+  task_source_and_transaction_.emplace(std::move(task_source_and_transaction));
   destination_pool_ = destination_pool;
 }
 
@@ -82,16 +82,18 @@ void SchedulerWorkerPool::PostTaskWithSequenceNow(
   // in the past).
   DCHECK_LE(task.delayed_run_time, TimeTicks::Now());
 
-  const bool task_source_should_be_queued =
+  const bool sequence_should_be_queued =
       sequence_and_transaction.transaction.PushTask(std::move(task));
-  if (task_source_should_be_queued) {
-    PushSequenceAndWakeUpWorkers(std::move(sequence_and_transaction));
+  if (sequence_should_be_queued) {
+    PushTaskSourceAndWakeUpWorkers(
+        {std::move(sequence_and_transaction.sequence),
+         std::move(sequence_and_transaction.transaction)});
   }
 }
 
-size_t SchedulerWorkerPool::GetNumQueuedCanRunBestEffortSequences() const {
+size_t SchedulerWorkerPool::GetNumQueuedCanRunBestEffortTaskSources() const {
   const size_t num_queued =
-      priority_queue_.GetNumSequencesWithPriority(TaskPriority::BEST_EFFORT);
+      priority_queue_.GetNumTaskSourcesWithPriority(TaskPriority::BEST_EFFORT);
   if (num_queued == 0 ||
       !task_tracker_->CanRunPriority(TaskPriority::BEST_EFFORT)) {
     return 0U;
@@ -99,10 +101,11 @@ size_t SchedulerWorkerPool::GetNumQueuedCanRunBestEffortSequences() const {
   return num_queued;
 }
 
-size_t SchedulerWorkerPool::GetNumQueuedCanRunForegroundSequences() const {
-  const size_t num_queued =
-      priority_queue_.GetNumSequencesWithPriority(TaskPriority::USER_VISIBLE) +
-      priority_queue_.GetNumSequencesWithPriority(TaskPriority::USER_BLOCKING);
+size_t SchedulerWorkerPool::GetNumQueuedCanRunForegroundTaskSources() const {
+  const size_t num_queued = priority_queue_.GetNumTaskSourcesWithPriority(
+                                TaskPriority::USER_VISIBLE) +
+                            priority_queue_.GetNumTaskSourcesWithPriority(
+                                TaskPriority::USER_BLOCKING);
   if (num_queued == 0 ||
       !task_tracker_->CanRunPriority(TaskPriority::HIGHEST)) {
     return 0U;
@@ -110,51 +113,52 @@ size_t SchedulerWorkerPool::GetNumQueuedCanRunForegroundSequences() const {
   return num_queued;
 }
 
-bool SchedulerWorkerPool::RemoveSequence(scoped_refptr<Sequence> sequence) {
+bool SchedulerWorkerPool::RemoveTaskSource(
+    scoped_refptr<TaskSource> task_source) {
   AutoSchedulerLock auto_lock(lock_);
-  return priority_queue_.RemoveSequence(std::move(sequence));
+  return priority_queue_.RemoveTaskSource(std::move(task_source));
 }
 
-void SchedulerWorkerPool::ReEnqueueSequenceLockRequired(
+void SchedulerWorkerPool::ReEnqueueTaskSourceLockRequired(
     BaseScopedWorkersExecutor* workers_executor,
     ScopedReenqueueExecutor* reenqueue_executor,
-    SequenceAndTransaction sequence_and_transaction) {
-  // Decide in which pool the Sequence should be reenqueued.
+    TaskSourceAndTransaction task_source_and_transaction) {
+  // Decide in which pool the TaskSource should be reenqueued.
   SchedulerWorkerPool* destination_pool = delegate_->GetWorkerPoolForTraits(
-      sequence_and_transaction.transaction.traits());
+      task_source_and_transaction.transaction.traits());
 
   if (destination_pool == this) {
-    // If the Sequence should be reenqueued in the current pool, reenqueue it
+    // If the TaskSource should be reenqueued in the current pool, reenqueue it
     // inside the scope of the lock.
-    priority_queue_.Push(std::move(sequence_and_transaction.sequence),
-                         sequence_and_transaction.transaction.GetSortKey());
+    priority_queue_.Push(std::move(task_source_and_transaction.task_source),
+                         task_source_and_transaction.transaction.GetSortKey());
     EnsureEnoughWorkersLockRequired(workers_executor);
   } else {
     // Otherwise, schedule a reenqueue after releasing the lock.
-    reenqueue_executor->SchedulePushSequenceAndWakeUpWorkers(
-        std::move(sequence_and_transaction), destination_pool);
+    reenqueue_executor->SchedulePushTaskSourceAndWakeUpWorkers(
+        std::move(task_source_and_transaction), destination_pool);
   }
 }
 
 void SchedulerWorkerPool::UpdateSortKeyImpl(
     BaseScopedWorkersExecutor* executor,
-    SequenceAndTransaction sequence_and_transaction) {
+    TaskSourceAndTransaction task_source_and_transaction) {
   AutoSchedulerLock auto_lock(lock_);
-  priority_queue_.UpdateSortKey(std::move(sequence_and_transaction));
+  priority_queue_.UpdateSortKey(std::move(task_source_and_transaction));
   EnsureEnoughWorkersLockRequired(executor);
 }
 
-void SchedulerWorkerPool::PushSequenceAndWakeUpWorkersImpl(
+void SchedulerWorkerPool::PushTaskSourceAndWakeUpWorkersImpl(
     BaseScopedWorkersExecutor* executor,
-    SequenceAndTransaction sequence_and_transaction) {
+    TaskSourceAndTransaction task_source_and_transaction) {
   AutoSchedulerLock auto_lock(lock_);
   DCHECK(!replacement_pool_);
-  priority_queue_.Push(std::move(sequence_and_transaction.sequence),
-                       sequence_and_transaction.transaction.GetSortKey());
+  priority_queue_.Push(std::move(task_source_and_transaction.task_source),
+                       task_source_and_transaction.transaction.GetSortKey());
   EnsureEnoughWorkersLockRequired(executor);
 }
 
-void SchedulerWorkerPool::InvalidateAndHandoffAllSequencesToOtherPool(
+void SchedulerWorkerPool::InvalidateAndHandoffAllTaskSourcesToOtherPool(
     SchedulerWorkerPool* destination_pool) {
   AutoSchedulerLock current_pool_lock(lock_);
   AutoSchedulerLock destination_pool_lock(destination_pool->lock_);

@@ -33,9 +33,9 @@ class BASE_EXPORT PlatformNativeWorkerPool : public SchedulerWorkerPool {
                            TrackedRef<Delegate> delegate,
                            SchedulerWorkerPool* predecessor_pool);
 
-  // Runs a task off the next sequence on the |priority_queue_|. Called by
+  // Runs a task off the next task source on the |priority_queue_|. Called by
   // callbacks posted to platform native thread pools.
-  void RunNextSequenceImpl();
+  void RunNextTaskSourceImpl();
 
   virtual void JoinImpl() = 0;
   virtual void StartImpl() = 0;
@@ -48,21 +48,22 @@ class BASE_EXPORT PlatformNativeWorkerPool : public SchedulerWorkerPool {
   class ScopedWorkersExecutor;
 
   // SchedulerWorkerPool:
-  void UpdateSortKey(SequenceAndTransaction sequence_and_transaction) override;
-  void PushSequenceAndWakeUpWorkers(
-      SequenceAndTransaction sequence_and_transaction) override;
+  void UpdateSortKey(
+      TaskSourceAndTransaction task_source_and_transaction) override;
+  void PushTaskSourceAndWakeUpWorkers(
+      TaskSourceAndTransaction task_source_and_transaction) override;
   void EnsureEnoughWorkersLockRequired(BaseScopedWorkersExecutor* executor)
       override EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Returns the top Sequence off the |priority_queue_|. Returns nullptr
+  // Returns the top TaskSource off the |priority_queue_|. Returns nullptr
   // if the |priority_queue_| is empty.
-  scoped_refptr<Sequence> GetWork();
+  scoped_refptr<TaskSource> GetWork();
 
   // Indicates whether the pool has been started yet.
   bool started_ GUARDED_BY(lock_) = false;
 
   // Number of threadpool work submitted to the pool which haven't popped a
-  // Sequence from the PriorityQueue yet.
+  // TaskSource from the PriorityQueue yet.
   size_t num_pending_threadpool_work_ GUARDED_BY(lock_) = 0;
 
 #if DCHECK_IS_ON()

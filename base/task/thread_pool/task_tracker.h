@@ -23,8 +23,8 @@
 #include "base/task/common/task_annotator.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/scheduler_lock.h"
-#include "base/task/thread_pool/sequence.h"
 #include "base/task/thread_pool/task.h"
+#include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/tracked_ref.h"
 
 namespace base {
@@ -45,9 +45,9 @@ enum class CanRunPolicy {
 };
 
 // TaskTracker enforces policies that determines whether:
-// - A task can be added to a sequence (WillPostTask).
+// - A task can be added to a task source (WillPostTask).
 // - Tasks for a given priority can run (CanRunPriority).
-// - The next task in a scheduled sequence can run (RunAndPopNextTask).
+// - The next task in a scheduled task source can run (RunAndPopNextTask).
 // TaskTracker also sets up the environment to run a task (RunAndPopNextTask)
 // and records metrics and trace events. This class is thread-safe.
 class BASE_EXPORT TaskTracker {
@@ -90,7 +90,7 @@ class BASE_EXPORT TaskTracker {
   // tasks that are allowed to run by the new policy can be scheduled.
   void SetCanRunPolicy(CanRunPolicy can_run_policy);
 
-  // Informs this TaskTracker that |task| from a |shutdown_behavior| sequence
+  // Informs this TaskTracker that |task| from a |shutdown_behavior| task source
   // is about to be posted. Returns true if this operation is allowed (|task|
   // should be posted if-and-only-if it is). This method may also modify
   // metadata on |task| if desired.
@@ -99,12 +99,14 @@ class BASE_EXPORT TaskTracker {
   // Returns true if a task with |priority| can run under to the current policy.
   bool CanRunPriority(TaskPriority priority) const;
 
-  // Runs the next task in |sequence| unless the current shutdown state prevents
-  // that. Then, pops the task from |sequence| (even if it didn't run). Returns
-  // |sequence| if non-empty after popping a task from it (which indicates that
-  // it should be reenqueued). WillPostTask() must have allowed the task in
-  // front of |sequence| to be posted before this is called.
-  scoped_refptr<Sequence> RunAndPopNextTask(scoped_refptr<Sequence> sequence);
+  // Runs the next task in |task_source| unless the current shutdown state
+  // prevents that. Then, pops the task from |task_source| (even if it didn't
+  // run). Returns |task_source| if non-empty after popping a task from it
+  // (which indicates that it should be reenqueued). WillPostTask() must have
+  // allowed the task in front of |task_source| to be posted before this is
+  // called.
+  scoped_refptr<TaskSource> RunAndPopNextTask(
+      scoped_refptr<TaskSource> task_source);
 
   // Returns true once shutdown has started (StartShutdown() was called).
   // Note: sequential consistency with the thread calling StartShutdown() isn't
@@ -148,12 +150,12 @@ class BASE_EXPORT TaskTracker {
  protected:
   // Runs and deletes |task| if |can_run_task| is true. Otherwise, just deletes
   // |task|. |task| is always deleted in the environment where it runs or would
-  // have run. |sequence| is the sequence from which |task| was extracted.
-  // |traits| are the traits of |sequence|. An override is expected to call its
-  // parent's implementation but is free to perform extra work before and after
-  // doing so.
+  // have run. |task_source| is the task source from which |task| was extracted.
+  // |traits| are the traits of |task_source|. An override is expected to call
+  // its parent's implementation but is free to perform extra work before and
+  // after doing so.
   virtual void RunOrSkipTask(Task task,
-                             Sequence* sequence,
+                             TaskSource* task_source,
                              const TaskTraits& traits,
                              bool can_run_task);
 

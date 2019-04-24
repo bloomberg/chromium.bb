@@ -324,9 +324,9 @@ void SchedulerWorker::RunWorker() {
 
     UpdateThreadPriority(GetDesiredThreadPriority());
 
-    // Get the sequence containing the next task to execute.
-    scoped_refptr<Sequence> sequence = delegate_->GetWork(this);
-    if (!sequence) {
+    // Get the task source containing the next task to execute.
+    scoped_refptr<TaskSource> task_source = delegate_->GetWork(this);
+    if (!task_source) {
       // Exit immediately if GetWork() resulted in detaching this worker.
       if (ShouldExit())
         break;
@@ -337,12 +337,12 @@ void SchedulerWorker::RunWorker() {
       continue;
     }
 
-    sequence = task_tracker_->RunAndPopNextTask(std::move(sequence));
+    task_source = task_tracker_->RunAndPopNextTask(std::move(task_source));
 
-    delegate_->DidRunTask(std::move(sequence));
+    delegate_->DidRunTask(std::move(task_source));
 
     // Calling WakeUp() guarantees that this SchedulerWorker will run Tasks from
-    // Sequences returned by the GetWork() method of |delegate_| until it
+    // TaskSources returned by the GetWork() method of |delegate_| until it
     // returns nullptr. Resetting |wake_up_event_| here doesn't break this
     // invariant and avoids a useless loop iteration before going to sleep if
     // WakeUp() is called while this SchedulerWorker is awake.

@@ -26,8 +26,8 @@
 #include "base/task/thread_pool/scheduler_worker.h"
 #include "base/task/thread_pool/scheduler_worker_pool.h"
 #include "base/task/thread_pool/scheduler_worker_stack.h"
-#include "base/task/thread_pool/sequence.h"
 #include "base/task/thread_pool/task.h"
+#include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/tracked_ref.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
@@ -145,9 +145,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
                            ThreadBlockUnblockPremature);
 
   // SchedulerWorkerPool:
-  void UpdateSortKey(SequenceAndTransaction sequence_and_transaction) override;
-  void PushSequenceAndWakeUpWorkers(
-      SequenceAndTransaction sequence_and_transaction) override;
+  void UpdateSortKey(
+      TaskSourceAndTransaction task_source_and_transaction) override;
+  void PushTaskSourceAndWakeUpWorkers(
+      TaskSourceAndTransaction task_source_and_transaction) override;
   void EnsureEnoughWorkersLockRequired(BaseScopedWorkersExecutor* executor)
       override EXCLUSIVE_LOCKS_REQUIRED(lock_);
 

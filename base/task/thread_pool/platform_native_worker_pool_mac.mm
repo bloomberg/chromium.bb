@@ -33,7 +33,7 @@ void PlatformNativeWorkerPoolMac::SubmitWork() {
   // TODO(adityakeerthi): Handle priorities by having multiple dispatch queues
   // with different qualities-of-service.
   dispatch_group_async(group_, queue_, ^{
-    RunNextSequenceImpl();
+    RunNextTaskSourceImpl();
   });
 }
 

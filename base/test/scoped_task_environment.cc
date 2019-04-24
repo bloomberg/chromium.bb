@@ -295,7 +295,7 @@ class ScopedTaskEnvironment::TestTaskTracker
 
   // internal::ThreadPoolImpl::TaskTrackerImpl:
   void RunOrSkipTask(internal::Task task,
-                     internal::Sequence* sequence,
+                     internal::TaskSource* sequence,
                      const TaskTraits& traits,
                      bool can_run_task) override;
 
@@ -675,7 +675,7 @@ bool ScopedTaskEnvironment::TestTaskTracker::DisallowRunTasks() {
 
 void ScopedTaskEnvironment::TestTaskTracker::RunOrSkipTask(
     internal::Task task,
-    internal::Sequence* sequence,
+    internal::TaskSource* sequence,
     const TaskTraits& traits,
     bool can_run_task) {
   {

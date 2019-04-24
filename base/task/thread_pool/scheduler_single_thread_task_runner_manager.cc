@@ -22,6 +22,7 @@
 #include "base/task/thread_pool/scheduler_worker.h"
 #include "base/task/thread_pool/sequence.h"
 #include "base/task/thread_pool/task.h"
+#include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/task_tracker.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -99,33 +100,33 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
     PlatformThread::SetName(thread_name_);
   }
 
-  scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
+  scoped_refptr<TaskSource> GetWork(SchedulerWorker* worker) override {
     AutoSchedulerLock auto_lock(lock_);
     DCHECK(worker_awake_);
-    auto sequence = GetWorkLockRequired(worker);
-    if (sequence == nullptr) {
+    auto task_source = GetWorkLockRequired(worker);
+    if (task_source == nullptr) {
       // The worker will sleep after this returns nullptr.
       worker_awake_ = false;
     }
-    return sequence;
+    return task_source;
   }
 
-  void DidRunTask(scoped_refptr<Sequence> sequence) override {
-    if (sequence) {
-      EnqueueSequence(
-          SequenceAndTransaction::FromSequence(std::move(sequence)));
+  void DidRunTask(scoped_refptr<TaskSource> task_source) override {
+    if (task_source) {
+      EnqueueTaskSource(
+          TaskSourceAndTransaction::FromTaskSource(std::move(task_source)));
     }
   }
 
   TimeDelta GetSleepTimeout() override { return TimeDelta::Max(); }
 
   void PostTaskNow(scoped_refptr<Sequence> sequence, Task task) {
-    auto sequence_and_transaction =
-        SequenceAndTransaction::FromSequence(std::move(sequence));
-    const bool task_source_should_be_queued =
-        sequence_and_transaction.transaction.PushTask(std::move(task));
-    if (task_source_should_be_queued) {
-      bool should_wakeup = EnqueueSequence(std::move(sequence_and_transaction));
+    auto transaction = sequence->BeginTransaction();
+    const bool sequence_should_be_queued =
+        transaction.PushTask(std::move(task));
+    if (sequence_should_be_queued) {
+      bool should_wakeup =
+          EnqueueTaskSource({std::move(sequence), std::move(transaction)});
       if (should_wakeup)
         worker_->WakeUp();
     }
@@ -143,7 +144,7 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
     bool should_wakeup = false;
     {
       AutoSchedulerLock auto_lock(lock_);
-      if (!worker_awake_ && CanRunNextSequence()) {
+      if (!worker_awake_ && CanRunNextTaskSource()) {
         should_wakeup = true;
         worker_awake_ = true;
       }
@@ -152,18 +153,18 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
       worker_->WakeUp();
   }
 
-  void EnableFlushPriorityQueueSequencesOnDestroyForTesting() {
+  void EnableFlushPriorityQueueTaskSourcesOnDestroyForTesting() {
     AutoSchedulerLock auto_lock(lock_);
-    priority_queue_.EnableFlushSequencesOnDestroyForTesting();
+    priority_queue_.EnableFlushTaskSourcesOnDestroyForTesting();
   }
 
  protected:
-  scoped_refptr<Sequence> GetWorkLockRequired(SchedulerWorker* worker)
+  scoped_refptr<TaskSource> GetWorkLockRequired(SchedulerWorker* worker)
       EXCLUSIVE_LOCKS_REQUIRED(lock_) {
-    if (!CanRunNextSequence()) {
+    if (!CanRunNextTaskSource()) {
       return nullptr;
     }
-    return priority_queue_.PopSequence();
+    return priority_queue_.PopTaskSource();
   }
 
   const TrackedRef<TaskTracker>& task_tracker() { return task_tracker_; }
@@ -172,21 +173,21 @@ class SchedulerWorkerDelegate : public SchedulerWorker::Delegate {
   bool worker_awake_ GUARDED_BY(lock_) = false;
 
  private:
-  // Enqueues a sequence in this single-threaded worker's priority queue.
-  // Returns true iff the worker must wakeup, i.e. sequence is allowed to run
+  // Enqueues a task source in this single-threaded worker's priority queue.
+  // Returns true iff the worker must wakeup, i.e. task source is allowed to run
   // and the worker was not awake.
-  bool EnqueueSequence(SequenceAndTransaction sequence_and_transaction) {
+  bool EnqueueTaskSource(TaskSourceAndTransaction task_source_and_transaction) {
     AutoSchedulerLock auto_lock(lock_);
-    priority_queue_.Push(std::move(sequence_and_transaction.sequence),
-                         sequence_and_transaction.transaction.GetSortKey());
-    if (!worker_awake_ && CanRunNextSequence()) {
+    priority_queue_.Push(std::move(task_source_and_transaction.task_source),
+                         task_source_and_transaction.transaction.GetSortKey());
+    if (!worker_awake_ && CanRunNextTaskSource()) {
       worker_awake_ = true;
       return true;
     }
     return false;
   }
 
-  bool CanRunNextSequence() EXCLUSIVE_LOCKS_REQUIRED(lock_) {
+  bool CanRunNextTaskSource() EXCLUSIVE_LOCKS_REQUIRED(lock_) {
     return !priority_queue_.IsEmpty() &&
            task_tracker_->CanRunPriority(
                priority_queue_.PeekSortKey().priority());
@@ -229,43 +230,43 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
     scoped_com_initializer_ = std::make_unique<win::ScopedCOMInitializer>();
   }
 
-  scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
+  scoped_refptr<TaskSource> GetWork(SchedulerWorker* worker) override {
     // This scheme below allows us to cover the following scenarios:
     // * Only SchedulerWorkerDelegate::GetWork() has work:
-    //   Always return the sequence from GetWork().
+    //   Always return the task source from GetWork().
     // * Only the Windows Message Queue has work:
-    //   Always return the sequence from GetWorkFromWindowsMessageQueue();
+    //   Always return the task source from GetWorkFromWindowsMessageQueue();
     // * Both SchedulerWorkerDelegate::GetWork() and the Windows Message Queue
     //   have work:
-    //   Process sequences from each source round-robin style.
+    //   Process task sources from each source round-robin style.
     AutoSchedulerLock auto_lock(lock_);
     DCHECK(worker_awake_);
-    scoped_refptr<Sequence> sequence;
+    scoped_refptr<TaskSource> task_source;
     if (get_work_first_) {
-      sequence = SchedulerWorkerDelegate::GetWorkLockRequired(worker);
-      if (sequence)
+      task_source = SchedulerWorkerDelegate::GetWorkLockRequired(worker);
+      if (task_source)
         get_work_first_ = false;
     }
 
-    if (!sequence) {
+    if (!task_source) {
       AutoSchedulerUnlock auto_unlock(lock_);
-      sequence = GetWorkFromWindowsMessageQueue();
-      if (sequence)
+      task_source = GetWorkFromWindowsMessageQueue();
+      if (task_source)
         get_work_first_ = true;
     }
 
-    if (!sequence && !get_work_first_) {
+    if (!task_source && !get_work_first_) {
       // This case is important if we checked the Windows Message Queue first
       // and found there was no work. We don't want to return null immediately
       // as that could cause the thread to go to sleep while work is waiting via
       // SchedulerWorkerDelegate::GetWork().
-      sequence = SchedulerWorkerDelegate::GetWorkLockRequired(worker);
+      task_source = SchedulerWorkerDelegate::GetWorkLockRequired(worker);
     }
-    if (sequence == nullptr) {
+    if (task_source == nullptr) {
       // The worker will sleep after this returns nullptr.
       worker_awake_ = false;
     }
-    return sequence;
+    return task_source;
   }
 
   void OnMainExit(SchedulerWorker* /* worker */) override {
@@ -287,7 +288,7 @@ class SchedulerWorkerCOMDelegate : public SchedulerWorkerDelegate {
   }
 
  private:
-  scoped_refptr<Sequence> GetWorkFromWindowsMessageQueue() {
+  scoped_refptr<TaskSource> GetWorkFromWindowsMessageQueue() {
     MSG msg;
     if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE) != FALSE) {
       Task pump_message_task(FROM_HERE,
@@ -580,7 +581,7 @@ void SchedulerSingleThreadTaskRunnerManager::JoinForTesting() {
 
   for (const auto& worker : local_workers) {
     static_cast<SchedulerWorkerDelegate*>(worker->delegate())
-        ->EnableFlushPriorityQueueSequencesOnDestroyForTesting();
+        ->EnableFlushPriorityQueueTaskSourcesOnDestroyForTesting();
     worker->JoinForTesting();
   }
 

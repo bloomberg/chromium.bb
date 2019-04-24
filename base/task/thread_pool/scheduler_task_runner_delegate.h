@@ -9,6 +9,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/sequence.h"
 #include "base/task/thread_pool/task.h"
+#include "base/task/thread_pool/task_source.h"
 
 namespace base {
 namespace internal {
@@ -42,7 +43,7 @@ class BASE_EXPORT SchedulerTaskRunnerDelegate {
   // implementation must update |sequence|'s priority to |priority|, then place
   // |sequence| in the correct priority-queue position within the appropriate
   // worker pool.
-  virtual void UpdatePriority(scoped_refptr<Sequence> sequence,
+  virtual void UpdatePriority(scoped_refptr<TaskSource> task_source,
                               TaskPriority priority) = 0;
 };
 

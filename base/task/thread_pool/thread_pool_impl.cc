@@ -23,10 +23,10 @@
 #include "base/task/thread_pool/scheduler_sequenced_task_runner.h"
 #include "base/task/thread_pool/scheduler_worker_pool_impl.h"
 #include "base/task/thread_pool/scheduler_worker_pool_params.h"
-#include "base/task/thread_pool/sequence.h"
 #include "base/task/thread_pool/sequence_sort_key.h"
 #include "base/task/thread_pool/service_thread.h"
 #include "base/task/thread_pool/task.h"
+#include "base/task/thread_pool/task_source.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 
@@ -123,7 +123,7 @@ void ThreadPoolImpl::Start(const ThreadPool::InitParams& init_params,
     foreground_pool_ = std::make_unique<PlatformNativeWorkerPoolImpl>(
         task_tracker_->GetTrackedRef(), tracked_ref_factory_.GetTrackedRef(),
         pool.get());
-    pool->InvalidateAndHandoffAllSequencesToOtherPool(foreground_pool_.get());
+    pool->InvalidateAndHandoffAllTaskSourcesToOtherPool(foreground_pool_.get());
   }
 #endif
 
@@ -355,29 +355,29 @@ bool ThreadPoolImpl::IsRunningPoolWithTraits(const TaskTraits& traits) const {
   return GetWorkerPoolForTraits(traits)->IsBoundToCurrentThread();
 }
 
-void ThreadPoolImpl::UpdatePriority(scoped_refptr<Sequence> sequence,
+void ThreadPoolImpl::UpdatePriority(scoped_refptr<TaskSource> task_source,
                                     TaskPriority priority) {
-  auto sequence_and_transaction =
-      SequenceAndTransaction::FromSequence(std::move(sequence));
+  auto task_source_and_transaction =
+      TaskSourceAndTransaction::FromTaskSource(std::move(task_source));
 
   SchedulerWorkerPool* const current_worker_pool =
-      GetWorkerPoolForTraits(sequence_and_transaction.transaction.traits());
-  sequence_and_transaction.transaction.UpdatePriority(priority);
+      GetWorkerPoolForTraits(task_source_and_transaction.transaction.traits());
+  task_source_and_transaction.transaction.UpdatePriority(priority);
   SchedulerWorkerPool* const new_worker_pool =
-      GetWorkerPoolForTraits(sequence_and_transaction.transaction.traits());
+      GetWorkerPoolForTraits(task_source_and_transaction.transaction.traits());
 
   if (new_worker_pool == current_worker_pool) {
-    // |sequence|'s position needs to be updated within its current pool.
-    current_worker_pool->UpdateSortKey(std::move(sequence_and_transaction));
+    // |task_source|'s position needs to be updated within its current pool.
+    current_worker_pool->UpdateSortKey(std::move(task_source_and_transaction));
   } else {
-    // |sequence| is changing pools; remove it from its current pool and
+    // |task_source| is changing pools; remove it from its current pool and
     // reenqueue it.
-    const bool sequence_was_found =
-        current_worker_pool->RemoveSequence(sequence_and_transaction.sequence);
-    if (sequence_was_found) {
-      DCHECK(sequence_and_transaction.sequence);
-      new_worker_pool->PushSequenceAndWakeUpWorkers(
-          std::move(sequence_and_transaction));
+    const bool task_source_was_found = current_worker_pool->RemoveTaskSource(
+        task_source_and_transaction.task_source);
+    if (task_source_was_found) {
+      DCHECK(task_source_and_transaction.task_source);
+      new_worker_pool->PushTaskSourceAndWakeUpWorkers(
+          std::move(task_source_and_transaction));
     }
   }
 }

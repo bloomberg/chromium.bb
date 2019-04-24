@@ -35,9 +35,10 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin
 
  private:
   // Callback that gets run by |pool_|.
-  static void CALLBACK RunNextSequence(PTP_CALLBACK_INSTANCE,
-                                       void* scheduler_worker_pool_windows_impl,
-                                       PTP_WORK);
+  static void CALLBACK
+  RunNextTaskSource(PTP_CALLBACK_INSTANCE,
+                    void* scheduler_worker_pool_windows_impl,
+                    PTP_WORK);
 
   // PlatformNativeWorkerPool:
   void JoinImpl() override;
@@ -51,9 +52,9 @@ class BASE_EXPORT PlatformNativeWorkerPoolWin
   // work objects using this environment run on |pool_|.
   TP_CALLBACK_ENVIRON environment_ = {};
 
-  // Work object that executes RunNextSequence. It has a pointer to the current
-  // |PlatformNativeWorkerPoolWin| and a pointer to |environment_| bound to
-  // it.
+  // Work object that executes RunNextTaskSource. It has a pointer to the
+  // current |PlatformNativeWorkerPoolWin| and a pointer to |environment_| bound
+  // to it.
   PTP_WORK work_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformNativeWorkerPoolWin);

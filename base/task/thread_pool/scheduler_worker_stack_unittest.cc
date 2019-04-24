@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/thread_pool/scheduler_worker.h"
-#include "base/task/thread_pool/sequence.h"
+#include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/task_tracker.h"
 #include "base/test/gtest_util.h"
 #include "base/threading/platform_thread.h"
@@ -25,10 +25,10 @@ class MockSchedulerWorkerDelegate : public SchedulerWorker::Delegate {
     return SchedulerWorker::ThreadLabel::DEDICATED;
   }
   void OnMainEntry(const SchedulerWorker* worker) override {}
-  scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
+  scoped_refptr<TaskSource> GetWork(SchedulerWorker* worker) override {
     return nullptr;
   }
-  void DidRunTask(scoped_refptr<Sequence> sequence) override {
+  void DidRunTask(scoped_refptr<TaskSource> task_source) override {
     ADD_FAILURE() << "Unexpected call to DidRunTask()";
   }
   TimeDelta GetSleepTimeout() override { return TimeDelta::Max(); }

@@ -57,10 +57,10 @@ class SchedulerWorkerDefaultDelegate : public SchedulerWorker::Delegate {
     return SchedulerWorker::ThreadLabel::DEDICATED;
   }
   void OnMainEntry(const SchedulerWorker* worker) override {}
-  scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
+  scoped_refptr<TaskSource> GetWork(SchedulerWorker* worker) override {
     return nullptr;
   }
-  void DidRunTask(scoped_refptr<Sequence> sequence) override {
+  void DidRunTask(scoped_refptr<TaskSource> sequence) override {
     ADD_FAILURE() << "Unexpected call to DidRunTask()";
   }
   TimeDelta GetSleepTimeout() override { return TimeDelta::Max(); }
@@ -117,12 +117,12 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
     return num_run_tasks_;
   }
 
-  std::vector<scoped_refptr<Sequence>> CreatedSequences() {
+  std::vector<scoped_refptr<TaskSource>> CreatedTaskSources() {
     AutoSchedulerLock auto_lock(lock_);
     return created_sequences_;
   }
 
-  std::vector<scoped_refptr<Sequence>> DidRunTaskSequences() {
+  std::vector<scoped_refptr<TaskSource>> DidRunTaskSequences() {
     AutoSchedulerLock auto_lock(lock_);
     return did_run_task_sequences_;
   }
@@ -151,7 +151,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
       outer_->main_entry_called_.Signal();
     }
 
-    scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
+    scoped_refptr<TaskSource> GetWork(SchedulerWorker* worker) override {
       EXPECT_FALSE(IsCallToDidRunTaskExpected());
       EXPECT_EQ(outer_->worker_.get(), worker);
 
@@ -200,7 +200,7 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
     // and adds it to |did_run_task_sequences_|. Unlike a normal DidRunTask()
     // implementation, it doesn't add |sequence| to a queue for further
     // execution.
-    void DidRunTask(scoped_refptr<Sequence> sequence) override {
+    void DidRunTask(scoped_refptr<TaskSource> sequence) override {
       {
         AutoSchedulerLock auto_lock(expect_did_run_task_lock_);
         EXPECT_TRUE(expect_did_run_task_);
@@ -282,10 +282,10 @@ class ThreadPoolWorkerTest : public testing::TestWithParam<int> {
   std::unique_ptr<ConditionVariable> num_get_work_cv_;
 
   // Sequences created by GetWork().
-  std::vector<scoped_refptr<Sequence>> created_sequences_;
+  std::vector<scoped_refptr<TaskSource>> created_sequences_;
 
   // Sequences passed to DidRunTask().
-  std::vector<scoped_refptr<Sequence>> did_run_task_sequences_;
+  std::vector<scoped_refptr<TaskSource>> did_run_task_sequences_;
 
   // Number of times that RunTaskCallback() has been called.
   size_t num_run_tasks_ = 0;
@@ -322,7 +322,7 @@ TEST_P(ThreadPoolWorkerTest, ContinuousWork) {
   // empty after the worker pops Tasks from them and thus should be returned to
   // DidRunTask().
   if (TasksPerSequence() > 1)
-    EXPECT_EQ(CreatedSequences(), DidRunTaskSequences());
+    EXPECT_EQ(CreatedTaskSources(), DidRunTaskSequences());
   else
     EXPECT_TRUE(DidRunTaskSequences().empty());
 }
@@ -353,7 +353,7 @@ TEST_P(ThreadPoolWorkerTest, IntermittentWork) {
     // aren't empty after the worker pops Tasks from them and thus should be
     // returned to DidRunTask().
     if (TasksPerSequence() > 1)
-      EXPECT_EQ(CreatedSequences(), DidRunTaskSequences());
+      EXPECT_EQ(CreatedTaskSources(), DidRunTaskSequences());
     else
       EXPECT_TRUE(DidRunTaskSequences().empty());
   }
@@ -424,7 +424,7 @@ class ControllableCleanupDelegate : public SchedulerWorkerDefaultDelegate {
 
   ~ControllableCleanupDelegate() override { controls_->destroyed_.Signal(); }
 
-  scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
+  scoped_refptr<TaskSource> GetWork(SchedulerWorker* worker) override {
     EXPECT_TRUE(controls_->expect_get_work_);
 
     // Sends one item of work to signal |work_processed_|. On subsequent calls,
@@ -459,7 +459,7 @@ class ControllableCleanupDelegate : public SchedulerWorkerDefaultDelegate {
     return sequence;
   }
 
-  void DidRunTask(scoped_refptr<Sequence>) override {}
+  void DidRunTask(scoped_refptr<TaskSource>) override {}
 
   void OnMainExit(SchedulerWorker* worker) override {
     controls_->exited_.Signal();
@@ -702,7 +702,7 @@ class ExpectThreadPriorityDelegate : public SchedulerWorkerDefaultDelegate {
   void OnMainEntry(const SchedulerWorker* worker) override {
     VerifyThreadPriority();
   }
-  scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
+  scoped_refptr<TaskSource> GetWork(SchedulerWorker* worker) override {
     VerifyThreadPriority();
     priority_verified_in_get_work_event_.Signal();
     return nullptr;
@@ -821,7 +821,7 @@ class CoInitializeDelegate : public SchedulerWorkerDefaultDelegate {
  public:
   CoInitializeDelegate() = default;
 
-  scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override {
+  scoped_refptr<TaskSource> GetWork(SchedulerWorker* worker) override {
     EXPECT_FALSE(get_work_returned_.IsSignaled());
     EXPECT_EQ(E_UNEXPECTED, coinitialize_hresult_);
 

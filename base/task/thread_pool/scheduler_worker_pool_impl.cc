@@ -210,8 +210,8 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   // SchedulerWorker::Delegate:
   SchedulerWorker::ThreadLabel GetThreadLabel() const override;
   void OnMainEntry(const SchedulerWorker* worker) override;
-  scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) override;
-  void DidRunTask(scoped_refptr<Sequence> sequence) override;
+  scoped_refptr<TaskSource> GetWork(SchedulerWorker* worker) override;
+  void DidRunTask(scoped_refptr<TaskSource> task_source) override;
   TimeDelta GetSleepTimeout() override;
   void OnMainExit(SchedulerWorker* worker) override;
 
@@ -272,7 +272,8 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
     size_t num_tasks_since_last_detach = 0;
 
     // Whether the worker is currently running a task (i.e. GetWork() has
-    // returned a non-empty sequence and DidRunTask() hasn't been called yet).
+    // returned a non-empty task source and DidRunTask() hasn't been called
+    // yet).
     bool is_running_task = false;
 
 #if defined(OS_WIN)
@@ -435,16 +436,16 @@ SchedulerWorkerPoolImpl::~SchedulerWorkerPoolImpl() {
 }
 
 void SchedulerWorkerPoolImpl::UpdateSortKey(
-    SequenceAndTransaction sequence_and_transaction) {
+    TaskSourceAndTransaction task_source_and_transaction) {
   ScopedWorkersExecutor executor(this);
-  UpdateSortKeyImpl(&executor, std::move(sequence_and_transaction));
+  UpdateSortKeyImpl(&executor, std::move(task_source_and_transaction));
 }
 
-void SchedulerWorkerPoolImpl::PushSequenceAndWakeUpWorkers(
-    SequenceAndTransaction sequence_and_transaction) {
+void SchedulerWorkerPoolImpl::PushTaskSourceAndWakeUpWorkers(
+    TaskSourceAndTransaction task_source_and_transaction) {
   ScopedWorkersExecutor executor(this);
-  PushSequenceAndWakeUpWorkersImpl(&executor,
-                                   std::move(sequence_and_transaction));
+  PushTaskSourceAndWakeUpWorkersImpl(&executor,
+                                     std::move(task_source_and_transaction));
 }
 
 size_t SchedulerWorkerPoolImpl::GetMaxConcurrentNonBlockedTasksDeprecated()
@@ -496,7 +497,7 @@ void SchedulerWorkerPoolImpl::JoinForTesting() {
   decltype(workers_) workers_copy;
   {
     AutoSchedulerLock auto_lock(lock_);
-    priority_queue_.EnableFlushSequencesOnDestroyForTesting();
+    priority_queue_.EnableFlushTaskSourcesOnDestroyForTesting();
 
     DCHECK_GT(workers_.size(), size_t(0)) << "Joined an unstarted worker pool.";
 
@@ -592,7 +593,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::OnMainEntry(
   SetBlockingObserverForCurrentThread(this);
 }
 
-scoped_refptr<Sequence>
+scoped_refptr<TaskSource>
 SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
     SchedulerWorker* worker) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
@@ -645,12 +646,12 @@ SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::GetWork(
               outer_->max_best_effort_tasks_);
   }
 
-  // Pop the Sequence from which to run a task from the PriorityQueue.
-  return outer_->priority_queue_.PopSequence();
+  // Pop the TaskSource from which to run a task from the PriorityQueue.
+  return outer_->priority_queue_.PopTaskSource();
 }
 
 void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask(
-    scoped_refptr<Sequence> sequence) {
+    scoped_refptr<TaskSource> task_source) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(worker_only().is_running_task);
   DCHECK(read_worker().may_block_start_time.is_null());
@@ -658,13 +659,13 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask(
   ++worker_only().num_tasks_since_last_wait;
   ++worker_only().num_tasks_since_last_detach;
 
-  // A transaction to the Sequence to reenqueue, if any. Instantiated here as
-  // |Sequence::lock_| is a UniversalPredecessor and must always be acquired
+  // A transaction to the TaskSource to reenqueue, if any. Instantiated here as
+  // |TaskSource::lock_| is a UniversalPredecessor and must always be acquired
   // prior to acquiring a second lock
-  Optional<SequenceAndTransaction> sequence_and_transaction;
-  if (sequence) {
-    sequence_and_transaction.emplace(
-        SequenceAndTransaction::FromSequence(std::move(sequence)));
+  Optional<TaskSourceAndTransaction> task_source_and_transaction;
+  if (task_source) {
+    task_source_and_transaction.emplace(
+        TaskSourceAndTransaction::FromTaskSource(std::move(task_source)));
   }
 
   ScopedWorkersExecutor workers_executor(outer_.get());
@@ -685,10 +686,10 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::DidRunTask(
     write_worker().is_running_best_effort_task = false;
   }
 
-  if (sequence_and_transaction) {
-    outer_->ReEnqueueSequenceLockRequired(
+  if (task_source_and_transaction) {
+    outer_->ReEnqueueTaskSourceLockRequired(
         &workers_executor, &reenqueue_executor,
-        std::move(sequence_and_transaction.value()));
+        std::move(task_source_and_transaction.value()));
   }
 }
 
@@ -1020,27 +1021,28 @@ size_t SchedulerWorkerPoolImpl::GetNumAwakeWorkersLockRequired() const {
 }
 
 size_t SchedulerWorkerPoolImpl::GetDesiredNumAwakeWorkersLockRequired() const {
-  // Number of BEST_EFFORT sequences that are running or queued and allowed to
-  // run by the CanRunPolicy.
-  const size_t num_running_or_queued_can_run_best_effort_sequences =
-      num_running_best_effort_tasks_ + GetNumQueuedCanRunBestEffortSequences();
+  // Number of BEST_EFFORT task sources that are running or queued and allowed
+  // to run by the CanRunPolicy.
+  const size_t num_running_or_queued_can_run_best_effort_task_sources =
+      num_running_best_effort_tasks_ +
+      GetNumQueuedCanRunBestEffortTaskSources();
 
-  const size_t workers_for_best_effort_sequences =
-      std::max(std::min(num_running_or_queued_can_run_best_effort_sequences,
+  const size_t workers_for_best_effort_task_sources =
+      std::max(std::min(num_running_or_queued_can_run_best_effort_task_sources,
                         max_best_effort_tasks_),
                num_running_best_effort_tasks_);
 
-  // Number of USER_{VISIBLE|BLOCKING} sequences that are running or queued.
-  const size_t num_running_or_queued_foreground_sequences =
+  // Number of USER_{VISIBLE|BLOCKING} task sources that are running or queued.
+  const size_t num_running_or_queued_foreground_task_sources =
       (num_running_tasks_ - num_running_best_effort_tasks_) +
-      GetNumQueuedCanRunForegroundSequences();
+      GetNumQueuedCanRunForegroundTaskSources();
 
-  const size_t workers_for_foreground_sequences =
-      num_running_or_queued_foreground_sequences;
+  const size_t workers_for_foreground_task_sources =
+      num_running_or_queued_foreground_task_sources;
 
-  return std::min(
-      {workers_for_best_effort_sequences + workers_for_foreground_sequences,
-       max_tasks_, kMaxNumberOfWorkers});
+  return std::min({workers_for_best_effort_task_sources +
+                       workers_for_foreground_task_sources,
+                   max_tasks_, kMaxNumberOfWorkers});
 }
 
 void SchedulerWorkerPoolImpl::DidUpdateCanRunPolicy() {
@@ -1138,25 +1140,25 @@ void SchedulerWorkerPoolImpl::MaybeScheduleAdjustMaxTasksLockRequired(
 bool SchedulerWorkerPoolImpl::ShouldPeriodicallyAdjustMaxTasksLockRequired() {
   // AdjustMaxTasks() should be scheduled to periodically adjust |max_tasks_|
   // and |max_best_effort_tasks_| when (1) the concurrency limits are not large
-  // enough to accommodate all queued and running sequences and an idle worker
-  // and (2) there are unresolved MAY_BLOCK ScopedBlockingCalls.
+  // enough to accommodate all queued and running task sources and an idle
+  // worker and (2) there are unresolved MAY_BLOCK ScopedBlockingCalls.
   // - When (1) is false: No worker would be created or woken up if the
   //   concurrency limits were increased, so there is no hurry to increase them.
   // - When (2) is false: The concurrency limits could not be increased by
   //   AdjustMaxTasks().
 
-  const size_t num_running_or_queued_best_effort_sequences =
+  const size_t num_running_or_queued_best_effort_task_sources =
       num_running_best_effort_tasks_ +
-      priority_queue_.GetNumSequencesWithPriority(TaskPriority::BEST_EFFORT);
-  if (num_running_or_queued_best_effort_sequences > max_best_effort_tasks_ &&
+      priority_queue_.GetNumTaskSourcesWithPriority(TaskPriority::BEST_EFFORT);
+  if (num_running_or_queued_best_effort_task_sources > max_best_effort_tasks_ &&
       num_unresolved_best_effort_may_block_ > 0) {
     return true;
   }
 
-  const size_t num_running_or_queued_sequences =
+  const size_t num_running_or_queued_task_sources =
       num_running_tasks_ + priority_queue_.Size();
   constexpr size_t kIdleWorker = 1;
-  return num_running_or_queued_sequences + kIdleWorker > max_tasks_ &&
+  return num_running_or_queued_task_sources + kIdleWorker > max_tasks_ &&
          num_unresolved_may_block_ > 0;
 }
 

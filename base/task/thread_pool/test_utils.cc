@@ -149,12 +149,12 @@ bool MockSchedulerTaskRunnerDelegate::IsRunningPoolWithTraits(
 }
 
 void MockSchedulerTaskRunnerDelegate::UpdatePriority(
-    scoped_refptr<Sequence> sequence,
+    scoped_refptr<TaskSource> task_source,
     TaskPriority priority) {
-  auto sequence_and_transaction =
-      SequenceAndTransaction::FromSequence(std::move(sequence));
-  sequence_and_transaction.transaction.UpdatePriority(priority);
-  worker_pool_->UpdateSortKey(std::move(sequence_and_transaction));
+  auto task_source_and_transaction =
+      TaskSourceAndTransaction::FromTaskSource(std::move(task_source));
+  task_source_and_transaction.transaction.UpdatePriority(priority);
+  worker_pool_->UpdateSortKey(std::move(task_source_and_transaction));
 }
 
 void MockSchedulerTaskRunnerDelegate::SetWorkerPool(

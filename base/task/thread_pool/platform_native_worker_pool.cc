@@ -74,32 +74,32 @@ void PlatformNativeWorkerPool::JoinForTesting() {
 #endif
 }
 
-void PlatformNativeWorkerPool::RunNextSequenceImpl() {
-  scoped_refptr<Sequence> sequence = GetWork();
+void PlatformNativeWorkerPool::RunNextTaskSourceImpl() {
+  scoped_refptr<TaskSource> task_source = GetWork();
 
-  if (sequence) {
+  if (task_source) {
     BindToCurrentThread();
-    sequence = task_tracker_->RunAndPopNextTask(std::move(sequence));
+    task_source = task_tracker_->RunAndPopNextTask(std::move(task_source));
     UnbindFromCurrentThread();
 
-    if (sequence) {
+    if (task_source) {
       ScopedWorkersExecutor workers_executor(this);
       ScopedReenqueueExecutor reenqueue_executor;
-      auto sequence_and_transaction =
-          SequenceAndTransaction::FromSequence(std::move(sequence));
+      auto task_source_and_transaction =
+          TaskSourceAndTransaction::FromTaskSource(std::move(task_source));
       AutoSchedulerLock auto_lock(lock_);
-      ReEnqueueSequenceLockRequired(&workers_executor, &reenqueue_executor,
-                                    std::move(sequence_and_transaction));
+      ReEnqueueTaskSourceLockRequired(&workers_executor, &reenqueue_executor,
+                                      std::move(task_source_and_transaction));
     }
   }
 }
 
-scoped_refptr<Sequence> PlatformNativeWorkerPool::GetWork() {
+scoped_refptr<TaskSource> PlatformNativeWorkerPool::GetWork() {
   AutoSchedulerLock auto_lock(lock_);
   DCHECK_GT(num_pending_threadpool_work_, 0U);
   --num_pending_threadpool_work_;
-  // There can be more pending threadpool work than Sequences in the
-  // PriorityQueue after RemoveSequence().
+  // There can be more pending threadpool work than TaskSources in the
+  // PriorityQueue after RemoveTaskSource().
   if (priority_queue_.IsEmpty())
     return nullptr;
 
@@ -107,31 +107,31 @@ scoped_refptr<Sequence> PlatformNativeWorkerPool::GetWork() {
   const TaskPriority priority = priority_queue_.PeekSortKey().priority();
   if (!task_tracker_->CanRunPriority(priority))
     return nullptr;
-  return priority_queue_.PopSequence();
+  return priority_queue_.PopTaskSource();
 }
 
 void PlatformNativeWorkerPool::UpdateSortKey(
-    SequenceAndTransaction sequence_and_transaction) {
+    TaskSourceAndTransaction task_source_and_transaction) {
   ScopedWorkersExecutor executor(this);
-  UpdateSortKeyImpl(&executor, std::move(sequence_and_transaction));
+  UpdateSortKeyImpl(&executor, std::move(task_source_and_transaction));
 }
 
-void PlatformNativeWorkerPool::PushSequenceAndWakeUpWorkers(
-    SequenceAndTransaction sequence_and_transaction) {
+void PlatformNativeWorkerPool::PushTaskSourceAndWakeUpWorkers(
+    TaskSourceAndTransaction task_source_and_transaction) {
   ScopedWorkersExecutor executor(this);
-  PushSequenceAndWakeUpWorkersImpl(&executor,
-                                   std::move(sequence_and_transaction));
+  PushTaskSourceAndWakeUpWorkersImpl(&executor,
+                                     std::move(task_source_and_transaction));
 }
 
 void PlatformNativeWorkerPool::EnsureEnoughWorkersLockRequired(
     BaseScopedWorkersExecutor* executor) {
   if (!started_)
     return;
-  // Ensure that there is at least one pending threadpool work per Sequence in
+  // Ensure that there is at least one pending threadpool work per TaskSource in
   // the PriorityQueue.
   const size_t desired_num_pending_threadpool_work =
-      GetNumQueuedCanRunBestEffortSequences() +
-      GetNumQueuedCanRunForegroundSequences();
+      GetNumQueuedCanRunBestEffortTaskSources() +
+      GetNumQueuedCanRunForegroundTaskSources();
 
   if (desired_num_pending_threadpool_work > num_pending_threadpool_work_) {
     static_cast<ScopedWorkersExecutor*>(executor)

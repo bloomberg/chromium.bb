@@ -121,7 +121,7 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPool,
   bool PostTaskWithSequence(Task task,
                             scoped_refptr<Sequence> sequence) override;
   bool IsRunningPoolWithTraits(const TaskTraits& traits) const override;
-  void UpdatePriority(scoped_refptr<Sequence> sequence,
+  void UpdatePriority(scoped_refptr<TaskSource> task_source,
                       TaskPriority priority) override;
 
   const std::unique_ptr<TaskTrackerImpl> task_tracker_;

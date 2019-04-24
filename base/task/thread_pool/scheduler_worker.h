@@ -14,7 +14,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/thread_pool/scheduler_lock.h"
 #include "base/task/thread_pool/scheduler_worker_params.h"
-#include "base/task/thread_pool/sequence.h"
+#include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/tracked_ref.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
@@ -33,12 +33,12 @@ namespace internal {
 
 class TaskTracker;
 
-// A worker that manages a single thread to run Tasks from Sequences returned
+// A worker that manages a single thread to run Tasks from TaskSources returned
 // by a delegate.
 //
 // A SchedulerWorker starts out sleeping. It is woken up by a call to WakeUp().
-// After a wake-up, a SchedulerWorker runs Tasks from Sequences returned by the
-// GetWork() method of its delegate as long as it doesn't return nullptr. It
+// After a wake-up, a SchedulerWorker runs Tasks from TaskSources returned by
+// the GetWork() method of its delegate as long as it doesn't return nullptr. It
 // also periodically checks with its TaskTracker whether shutdown has completed
 // and exits when it has.
 //
@@ -73,13 +73,13 @@ class BASE_EXPORT SchedulerWorker
     // Called by |worker|'s thread when it enters its main function.
     virtual void OnMainEntry(const SchedulerWorker* worker) = 0;
 
-    // Called by |worker|'s thread to get a Sequence from which to run a Task.
-    virtual scoped_refptr<Sequence> GetWork(SchedulerWorker* worker) = 0;
+    // Called by |worker|'s thread to get a TaskSource from which to run a Task.
+    virtual scoped_refptr<TaskSource> GetWork(SchedulerWorker* worker) = 0;
 
-    // Called by the SchedulerWorker after it ran a Task. If the Task's Sequence
-    // should be reenqueued, it is passed to |sequence|. Otherwise, |sequence|
-    // is nullptr.
-    virtual void DidRunTask(scoped_refptr<Sequence> sequence) = 0;
+    // Called by the SchedulerWorker after it ran a Task. If the Task's
+    // TaskSource should be reenqueued, it is passed to |task_source|.
+    // Otherwise, |task_source| is nullptr.
+    virtual void DidRunTask(scoped_refptr<TaskSource> task_source) = 0;
 
     // Called to determine how long to sleep before the next call to GetWork().
     // GetWork() may be called before this timeout expires if the worker's
@@ -99,7 +99,7 @@ class BASE_EXPORT SchedulerWorker
     virtual void OnMainExit(SchedulerWorker* worker) {}
   };
 
-  // Creates a SchedulerWorker that runs Tasks from Sequences returned by
+  // Creates a SchedulerWorker that runs Tasks from TaskSources returned by
   // |delegate|. No actual thread will be created for this SchedulerWorker
   // before Start() is called. |priority_hint| is the preferred thread priority;
   // the actual thread priority depends on shutdown state and platform
@@ -124,9 +124,9 @@ class BASE_EXPORT SchedulerWorker
   bool Start(SchedulerWorkerObserver* scheduler_worker_observer = nullptr);
 
   // Wakes up this SchedulerWorker if it wasn't already awake. After this is
-  // called, this SchedulerWorker will run Tasks from Sequences returned by the
-  // GetWork() method of its delegate until it returns nullptr. No-op if Start()
-  // wasn't called. DCHECKs if called after Start() has failed or after
+  // called, this SchedulerWorker will run Tasks from TaskSources returned by
+  // the GetWork() method of its delegate until it returns nullptr. No-op if
+  // Start() wasn't called. DCHECKs if called after Start() has failed or after
   // Cleanup() has been called.
   void WakeUp();
 

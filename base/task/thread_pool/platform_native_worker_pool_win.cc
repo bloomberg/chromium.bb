@@ -33,7 +33,7 @@ void PlatformNativeWorkerPoolWin::StartImpl() {
   ::SetThreadpoolThreadMinimum(pool_, 1);
   ::SetThreadpoolThreadMaximum(pool_, 256);
 
-  work_ = ::CreateThreadpoolWork(&RunNextSequence, this, &environment_);
+  work_ = ::CreateThreadpoolWork(&RunNextTaskSource, this, &environment_);
   DCHECK(work_) << "LastError: " << GetLastError();
   ::SetThreadpoolCallbackPool(&environment_, pool_);
 }
@@ -49,7 +49,7 @@ void PlatformNativeWorkerPoolWin::SubmitWork() {
 }
 
 // static
-void CALLBACK PlatformNativeWorkerPoolWin::RunNextSequence(
+void CALLBACK PlatformNativeWorkerPoolWin::RunNextTaskSource(
     PTP_CALLBACK_INSTANCE,
     void* scheduler_worker_pool_windows_impl,
     PTP_WORK) {
@@ -63,7 +63,7 @@ void CALLBACK PlatformNativeWorkerPoolWin::RunNextSequence(
   if (worker_pool->worker_environment_ == WorkerEnvironment::COM_MTA)
     com_initializer.emplace(win::ScopedCOMInitializer::kMTA);
 
-  worker_pool->RunNextSequenceImpl();
+  worker_pool->RunNextTaskSourceImpl();
 }
 
 }  // namespace internal

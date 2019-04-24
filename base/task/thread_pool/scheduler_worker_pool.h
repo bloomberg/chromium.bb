@@ -11,6 +11,7 @@
 #include "base/task/thread_pool/scheduler_lock.h"
 #include "base/task/thread_pool/sequence.h"
 #include "base/task/thread_pool/task.h"
+#include "base/task/thread_pool/task_source.h"
 #include "base/task/thread_pool/tracked_ref.h"
 #include "build/build_config.h"
 
@@ -27,9 +28,9 @@ class BASE_EXPORT SchedulerWorkerPool {
    public:
     virtual ~Delegate() = default;
 
-    // Invoked when the Sequence in |sequence_and_transaction| is non-empty
+    // Invoked when the TaskSource in |task_source_and_transaction| is non-empty
     // after the SchedulerWorkerPool has run a task from it. The implementation
-    // must return the pool in which the Sequence should be reenqueued.
+    // must return the pool in which the TaskSource should be reenqueued.
     virtual SchedulerWorkerPool* GetWorkerPoolForTraits(
         const TaskTraits& traits) = 0;
   };
@@ -61,34 +62,34 @@ class BASE_EXPORT SchedulerWorkerPool {
   // Returns true if the worker pool is registered in TLS.
   bool IsBoundToCurrentThread() const;
 
-  // Removes |sequence| from |priority_queue_|. Returns true if successful, or
-  // false if |sequence| is not currently in |priority_queue_|, such as when a
-  // worker is running a task from it.
-  bool RemoveSequence(scoped_refptr<Sequence> sequence);
+  // Removes |task_source| from |priority_queue_|. Returns true if successful,
+  // or false if |task_source| is not currently in |priority_queue_|, such as
+  // when a worker is running a task from it.
+  bool RemoveTaskSource(scoped_refptr<TaskSource> task_source);
 
-  // Updates the position of the Sequence in |sequence_and_transaction| in
-  // this pool's PriorityQueue based on the Sequence's current traits.
+  // Updates the position of the TaskSource in |task_source_and_transaction| in
+  // this pool's PriorityQueue based on the TaskSource's current traits.
   //
   // Implementations should instantiate a concrete ScopedWorkersExecutor and
   // invoke UpdateSortKeyImpl().
   virtual void UpdateSortKey(
-      SequenceAndTransaction sequence_and_transaction) = 0;
+      TaskSourceAndTransaction task_source_and_transaction) = 0;
 
-  // Pushes the Sequence in |sequence_and_transaction| into this pool's
+  // Pushes the TaskSource in |task_source_and_transaction| into this pool's
   // PriorityQueue and wakes up workers as appropriate.
   //
   // Implementations should instantiate a concrete ScopedWorkersExecutor and
-  // invoke PushSequenceAndWakeUpWorkersImpl().
-  virtual void PushSequenceAndWakeUpWorkers(
-      SequenceAndTransaction sequence_and_transaction) = 0;
+  // invoke PushTaskSourceAndWakeUpWorkersImpl().
+  virtual void PushTaskSourceAndWakeUpWorkers(
+      TaskSourceAndTransaction task_source_and_transaction) = 0;
 
-  // Removes all sequences from this pool's PriorityQueue and enqueues them in
-  // another |destination_pool|. After this method is called, any sequences
-  // posted to this pool will be forwarded to |destination_pool|.
+  // Removes all task sources from this pool's PriorityQueue and enqueues them
+  // in another |destination_pool|. After this method is called, any task
+  // sources posted to this pool will be forwarded to |destination_pool|.
   //
   // TODO(crbug.com/756547): Remove this method once the UseNativeThreadPool
   // experiment is complete.
-  void InvalidateAndHandoffAllSequencesToOtherPool(
+  void InvalidateAndHandoffAllTaskSourcesToOtherPool(
       SchedulerWorkerPool* destination_pool);
 
   // Prevents new tasks from starting to run and waits for currently running
@@ -123,27 +124,27 @@ class BASE_EXPORT SchedulerWorkerPool {
     DISALLOW_COPY_AND_ASSIGN(BaseScopedWorkersExecutor);
   };
 
-  // Allows a sequence to be pushed to a pool's PriorityQueue at the end of a
+  // Allows a task source to be pushed to a pool's PriorityQueue at the end of a
   // scope, when all locks have been released.
   class ScopedReenqueueExecutor {
    public:
     ScopedReenqueueExecutor();
     ~ScopedReenqueueExecutor();
 
-    void SchedulePushSequenceAndWakeUpWorkers(
-        SequenceAndTransaction sequence_and_transaction,
+    void SchedulePushTaskSourceAndWakeUpWorkers(
+        TaskSourceAndTransaction task_source_and_transaction,
         SchedulerWorkerPool* destination_pool);
 
    private:
-    // A SequenceAndTransaction and the pool in which it should be enqueued.
-    Optional<SequenceAndTransaction> sequence_and_transaction_;
+    // A TaskSourceAndTransaction and the pool in which it should be enqueued.
+    Optional<TaskSourceAndTransaction> task_source_and_transaction_;
     SchedulerWorkerPool* destination_pool_ = nullptr;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReenqueueExecutor);
   };
 
   // |predecessor_pool| is a pool whose lock can be acquired before the
-  // constructed pool's lock. This is necessary to move all sequences from
+  // constructed pool's lock. This is necessary to move all task sources from
   // |predecessor_pool| to the constructed pool and support the
   // UseNativeThreadPool experiment.
   //
@@ -156,35 +157,36 @@ class BASE_EXPORT SchedulerWorkerPool {
   const TrackedRef<TaskTracker> task_tracker_;
   const TrackedRef<Delegate> delegate_;
 
-  // Returns the number of queued BEST_EFFORT sequences allowed to run by the
+  // Returns the number of queued BEST_EFFORT task sources allowed to run by the
   // current CanRunPolicy.
-  size_t GetNumQueuedCanRunBestEffortSequences() const
+  size_t GetNumQueuedCanRunBestEffortTaskSources() const
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Returns the number of queued USER_VISIBLE/USER_BLOCKING sequences allowed
-  // to run by the current CanRunPolicy.
-  size_t GetNumQueuedCanRunForegroundSequences() const
+  // Returns the number of queued USER_VISIBLE/USER_BLOCKING task sources
+  // allowed to run by the current CanRunPolicy.
+  size_t GetNumQueuedCanRunForegroundTaskSources() const
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // Ensures that there are enough workers to run queued sequences. |executor|
-  // is forwarded from the one received in PushSequenceAndWakeUpWorkersImpl()
+  // Ensures that there are enough workers to run queued task sources.
+  // |executor| is forwarded from the one received in
+  // PushTaskSourceAndWakeUpWorkersImpl()
   virtual void EnsureEnoughWorkersLockRequired(
       BaseScopedWorkersExecutor* executor) EXCLUSIVE_LOCKS_REQUIRED(lock_) = 0;
 
-  // Reenqueues a |sequence_and_transaction| from which a Task just ran in the
-  // current pool into the appropriate pool.
-  void ReEnqueueSequenceLockRequired(
+  // Reenqueues a |task_source_and_transaction| from which a Task just ran in
+  // the current pool into the appropriate pool.
+  void ReEnqueueTaskSourceLockRequired(
       BaseScopedWorkersExecutor* workers_executor,
       ScopedReenqueueExecutor* reenqueue_executor,
-      SequenceAndTransaction sequence_and_transaction)
+      TaskSourceAndTransaction task_source_and_transaction)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   // Must be invoked by implementations of the corresponding non-Impl() methods.
   void UpdateSortKeyImpl(BaseScopedWorkersExecutor* executor,
-                         SequenceAndTransaction sequence_and_transaction);
-  void PushSequenceAndWakeUpWorkersImpl(
+                         TaskSourceAndTransaction task_source_and_transaction);
+  void PushTaskSourceAndWakeUpWorkersImpl(
       BaseScopedWorkersExecutor* executor,
-      SequenceAndTransaction sequence_and_transaction);
+      TaskSourceAndTransaction task_source_and_transaction);
 
   // Synchronizes accesses to all members of this class which are neither const,
   // atomic, nor immutable after start. Since this lock is a bottleneck to post
@@ -195,8 +197,8 @@ class BASE_EXPORT SchedulerWorkerPool {
   // PriorityQueue from which all threads of this worker pool get work.
   PriorityQueue priority_queue_ GUARDED_BY(lock_);
 
-  // If |replacement_pool_| is non-null, this pool is invalid and all sequences
-  // should be scheduled on |replacement_pool_|. Used to support the
+  // If |replacement_pool_| is non-null, this pool is invalid and all task
+  // sources should be scheduled on |replacement_pool_|. Used to support the
   // UseNativeThreadPool experiment.
   SchedulerWorkerPool* replacement_pool_ = nullptr;
 
