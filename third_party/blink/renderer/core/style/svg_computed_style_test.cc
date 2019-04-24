@@ -11,15 +11,15 @@
 namespace blink {
 
 // Ensures RefPtr values are compared by their values, not by pointers.
-#define TEST_STYLE_REFCOUNTED_VALUE_NO_DIFF(type, fieldName)           \
-  {                                                                    \
-    scoped_refptr<SVGComputedStyle> svg1 = SVGComputedStyle::Create(); \
-    scoped_refptr<SVGComputedStyle> svg2 = SVGComputedStyle::Create(); \
-    scoped_refptr<type> value1 = new type();                           \
-    scoped_refptr<type> value2 = new type(value1->data);               \
-    svg1->Set##fieldName(value1);                                      \
-    svg2->Set##fieldName(value2);                                      \
-    EXPECT_FALSE(svg1->Diff(*svg2).HasDifference());                   \
+#define TEST_STYLE_REFCOUNTED_VALUE_NO_DIFF(type, fieldName)               \
+  {                                                                        \
+    scoped_refptr<SVGComputedStyle> svg1 = SVGComputedStyle::Create();     \
+    scoped_refptr<SVGComputedStyle> svg2 = SVGComputedStyle::Create();     \
+    scoped_refptr<type> value1 = base::MakeRefCounted<type>();             \
+    scoped_refptr<type> value2 = base::MakeRefCounted<type>(value1->data); \
+    svg1->Set##fieldName(value1);                                          \
+    svg2->Set##fieldName(value2);                                          \
+    EXPECT_FALSE(svg1->Diff(*svg2).HasDifference());                       \
   }
 
 // This is not very useful for fields directly stored by values, because they

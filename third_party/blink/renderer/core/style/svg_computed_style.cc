@@ -110,7 +110,8 @@ void SVGComputedStyle::CopyNonInheritedFromCached(
 }
 
 scoped_refptr<SVGDashArray> SVGComputedStyle::InitialStrokeDashArray() {
-  DEFINE_STATIC_REF(SVGDashArray, initial_dash_array, new SVGDashArray);
+  DEFINE_STATIC_REF(SVGDashArray, initial_dash_array,
+                    base::MakeRefCounted<SVGDashArray>());
   return initial_dash_array;
 }
 

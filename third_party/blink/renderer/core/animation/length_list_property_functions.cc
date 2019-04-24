@@ -205,9 +205,10 @@ void LengthListPropertyFunctions::SetLengthList(const CSSProperty& property,
                                                 Vector<Length>&& length_list) {
   switch (property.PropertyID()) {
     case CSSPropertyID::kStrokeDasharray:
-      style.SetStrokeDashArray(length_list.IsEmpty()
-                                   ? nullptr
-                                   : new SVGDashArray(std::move(length_list)));
+      style.SetStrokeDashArray(
+          length_list.IsEmpty()
+              ? nullptr
+              : base::MakeRefCounted<SVGDashArray>(std::move(length_list)));
       return;
 
     case CSSPropertyID::kObjectPosition:
