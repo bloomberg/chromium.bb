@@ -123,6 +123,10 @@ public class AwContentsStatics {
         nativeSetCheckClearTextPermitted(permitted);
     }
 
+    public static void logCommandLineForDebugging() {
+        nativeLogCommandLineForDebugging();
+    }
+
     /**
      * Return the first substring consisting of the address of a physical location.
      * @see {@link android.webkit.WebView#findAddress(String)}
@@ -147,6 +151,7 @@ public class AwContentsStatics {
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
+    private static native void nativeLogCommandLineForDebugging();
     private static native String nativeGetSafeBrowsingPrivacyPolicyUrl();
     private static native void nativeClearClientCertPreferences(Runnable callback);
     private static native String nativeGetUnreachableWebDataUrl();

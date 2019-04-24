@@ -462,7 +462,14 @@ public class WebViewChromiumAwInit {
                 return;
             }
 
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> FieldTrialList.logActiveTrials());
+            PostTask.postTask(UiThreadTaskTraits.BEST_EFFORT, () -> {
+                // TODO(ntfschr): CommandLine can change at any time. For simplicity, only log it
+                // once during startup.
+                AwContentsStatics.logCommandLineForDebugging();
+                // Field trials can be activated at any time. We'll continue logging them as they're
+                // activated.
+                FieldTrialList.logActiveTrials();
+            });
         });
     }
 
