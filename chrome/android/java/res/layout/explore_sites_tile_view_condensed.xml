@@ -59,5 +59,6 @@
             android:gravity="center_horizontal"
             android:lines="2"
             android:lineSpacingMultiplier="1.17"
+            android:layout_marginBottom="@dimen/explore_sites_tile_view_text_margin_bottom_condensed"
             android:textAppearance="@style/TextAppearance.BlackCaptionDefault" />
 </org.chromium.chrome.browser.explore_sites.ExploreSitesTileView>
