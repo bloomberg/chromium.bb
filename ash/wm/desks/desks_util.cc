@@ -82,8 +82,13 @@ bool IsDeskContainerId(int id) {
 }
 
 int GetActiveDeskContainerId() {
-  // TODO(afakhry): Return the correct ID based on the currently active app.
-  return kShellWindowId_DefaultContainerDeprecated;
+  if (!features::IsVirtualDesksEnabled())
+    return kShellWindowId_DefaultContainerDeprecated;
+
+  auto* controller = DesksController::Get();
+  DCHECK(controller);
+
+  return controller->active_desk()->container_id();
 }
 
 ASH_EXPORT bool IsActiveDeskContainer(const aura::Window* container) {
@@ -94,6 +99,20 @@ ASH_EXPORT bool IsActiveDeskContainer(const aura::Window* container) {
 aura::Window* GetActiveDeskContainerForRoot(aura::Window* root) {
   DCHECK(root);
   return root->GetChildById(GetActiveDeskContainerId());
+}
+
+aura::Window* GetDeskContainerForContext(aura::Window* context) {
+  DCHECK(context);
+
+  while (context && !IsDeskContainerId(context->id()) &&
+         !context->IsRootWindow()) {
+    context = context->parent();
+  }
+
+  if (context->IsRootWindow())
+    return GetActiveDeskContainerForRoot(context);
+
+  return context;
 }
 
 }  // namespace desks_util

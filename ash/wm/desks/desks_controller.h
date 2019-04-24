@@ -6,11 +6,16 @@
 #define ASH_WM_DESKS_DESKS_CONTROLLER_H_
 
 #include <memory>
+#include <queue>
 #include <vector>
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+
+namespace aura {
+class Window;
+}  // namespace aura
 
 namespace ash {
 
@@ -38,13 +43,13 @@ class ASH_EXPORT DesksController {
   DesksController();
   ~DesksController();
 
-  static constexpr size_t kMaxNumberOfDesks = 4;
-
   // Convenience method for returning the DesksController instance. The actual
   // instance is created and owned by Shell.
   static DesksController* Get();
 
   const std::vector<std::unique_ptr<Desk>>& desks() const { return desks_; }
+
+  const Desk* active_desk() const { return active_desk_; }
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -63,8 +68,26 @@ class ASH_EXPORT DesksController {
   // CanRemoveDesks() must be checked before this.
   void RemoveDesk(const Desk* desk);
 
+  // Activates the given |desk| and deactivates the currently active one. |desk|
+  // has to be an existing desk.
+  void ActivateDesk(const Desk* desk);
+
+  // Called explicitly by the RootWindowController when a root window has been
+  // added or about to be removed in order to update all the available desks.
+  void OnRootWindowAdded(aura::Window* root_window);
+  void OnRootWindowClosing(aura::Window* root_window);
+
  private:
+  bool HasDesk(const Desk* desk) const;
+
   std::vector<std::unique_ptr<Desk>> desks_;
+
+  Desk* active_desk_ = nullptr;
+
+  // A free list of desk container IDs to be used for newly-created desks. New
+  // desks pops from this queue and removed desks's associated container IDs are
+  // re-pushed on this queue.
+  std::queue<int> available_container_ids_;
 
   base::ObserverList<Observer>::Unchecked observers_;
 

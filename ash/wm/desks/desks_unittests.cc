@@ -8,20 +8,28 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/close_desk_button.h"
+#include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/new_desk_button.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/window_util.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 
 namespace {
+
+bool DoesActiveDeskContainWindow(aura::Window* window) {
+  return DesksController::Get()->active_desk()->windows().contains(window);
+}
 
 // Defines an observer to test DesksController notifications.
 class TestObserver : public DesksController::Observer {
@@ -75,8 +83,8 @@ TEST_F(DesksTest, DesksCreationAndRemoval) {
 
   // Expect we've reached the max number of desks, and we've been notified only
   // with the newly created desks.
-  EXPECT_EQ(DesksController::kMaxNumberOfDesks, controller->desks().size());
-  EXPECT_EQ(DesksController::kMaxNumberOfDesks - 1, observer.desks().size());
+  EXPECT_EQ(desks_util::kMaxNumberOfDesks, controller->desks().size());
+  EXPECT_EQ(desks_util::kMaxNumberOfDesks - 1, observer.desks().size());
   EXPECT_TRUE(controller->CanRemoveDesks());
 
   // Remove all desks until no longer possible, and expect that there's always
@@ -123,11 +131,11 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
 
   auto* event_generator = GetEventGenerator();
   event_generator->MoveMouseTo(button_center);
-  for (size_t i = 0; i < DesksController::kMaxNumberOfDesks + 2; ++i)
+  for (size_t i = 0; i < desks_util::kMaxNumberOfDesks + 2; ++i)
     event_generator->ClickLeftButton();
 
   EXPECT_TRUE(overview_grid->IsDesksBarViewActive());
-  EXPECT_EQ(DesksController::kMaxNumberOfDesks, controller->desks().size());
+  EXPECT_EQ(desks_util::kMaxNumberOfDesks, controller->desks().size());
   EXPECT_EQ(controller->desks().size(), desks_bar_view->mini_views().size());
   EXPECT_FALSE(controller->CanCreateDesks());
   EXPECT_TRUE(controller->CanRemoveDesks());
@@ -148,7 +156,7 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   event_generator->ClickLeftButton();
 
   // The new desk button is now enabled again.
-  EXPECT_EQ(DesksController::kMaxNumberOfDesks - 1, controller->desks().size());
+  EXPECT_EQ(desks_util::kMaxNumberOfDesks - 1, controller->desks().size());
   EXPECT_EQ(controller->desks().size(), desks_bar_view->mini_views().size());
   EXPECT_TRUE(controller->CanCreateDesks());
   EXPECT_TRUE(desks_bar_view->new_desk_button()->enabled());
@@ -172,6 +180,193 @@ TEST_F(DesksTest, DesksBarViewDeskCreation) {
   EXPECT_EQ(controller->desks().size(), desks_bar_view->mini_views().size());
   EXPECT_TRUE(desks_bar_view->new_desk_button()->enabled());
 }
+
+TEST_F(DesksTest, DeskActivation) {
+  auto* controller = DesksController::Get();
+  ASSERT_EQ(1u, controller->desks().size());
+  const Desk* desk_1 = controller->desks()[0].get();
+  EXPECT_EQ(desk_1, controller->active_desk());
+  EXPECT_TRUE(desk_1->is_active());
+
+  auto* root = Shell::GetPrimaryRootWindow();
+  EXPECT_TRUE(desk_1->GetDeskContainerForRoot(root)->IsVisible());
+  EXPECT_EQ(desks_util::GetActiveDeskContainerForRoot(root),
+            desk_1->GetDeskContainerForRoot(root));
+
+  // Create three new desks, and activate the one in the middle.
+  controller->NewDesk();
+  controller->NewDesk();
+  controller->NewDesk();
+  ASSERT_EQ(4u, controller->desks().size());
+  const Desk* desk_2 = controller->desks()[1].get();
+  const Desk* desk_3 = controller->desks()[2].get();
+  const Desk* desk_4 = controller->desks()[3].get();
+  controller->ActivateDesk(desk_2);
+  EXPECT_EQ(desk_2, controller->active_desk());
+  EXPECT_FALSE(desk_1->is_active());
+  EXPECT_TRUE(desk_2->is_active());
+  EXPECT_FALSE(desk_3->is_active());
+  EXPECT_FALSE(desk_4->is_active());
+  EXPECT_FALSE(desk_1->GetDeskContainerForRoot(root)->IsVisible());
+  EXPECT_TRUE(desk_2->GetDeskContainerForRoot(root)->IsVisible());
+  EXPECT_FALSE(desk_3->GetDeskContainerForRoot(root)->IsVisible());
+  EXPECT_FALSE(desk_4->GetDeskContainerForRoot(root)->IsVisible());
+
+  // Remove the active desk, which is in the middle, activation should move to
+  // the left, so desk 1 should be activated.
+  controller->RemoveDesk(desk_2);
+  ASSERT_EQ(3u, controller->desks().size());
+  EXPECT_EQ(desk_1, controller->active_desk());
+  EXPECT_TRUE(desk_1->is_active());
+  EXPECT_FALSE(desk_3->is_active());
+  EXPECT_FALSE(desk_4->is_active());
+  EXPECT_TRUE(desk_1->GetDeskContainerForRoot(root)->IsVisible());
+  EXPECT_FALSE(desk_3->GetDeskContainerForRoot(root)->IsVisible());
+  EXPECT_FALSE(desk_4->GetDeskContainerForRoot(root)->IsVisible());
+
+  // Remove the active desk, it's the first one on the left, so desk_3 (on the
+  // right) will be activated.
+  controller->RemoveDesk(desk_1);
+  ASSERT_EQ(2u, controller->desks().size());
+  EXPECT_EQ(desk_3, controller->active_desk());
+  EXPECT_TRUE(desk_3->is_active());
+  EXPECT_FALSE(desk_4->is_active());
+  EXPECT_TRUE(desk_3->GetDeskContainerForRoot(root)->IsVisible());
+  EXPECT_FALSE(desk_4->GetDeskContainerForRoot(root)->IsVisible());
+}
+
+TEST_F(DesksTest, TransientWindows) {
+  auto* controller = DesksController::Get();
+  ASSERT_EQ(1u, controller->desks().size());
+  const Desk* desk_1 = controller->desks()[0].get();
+  EXPECT_EQ(desk_1, controller->active_desk());
+  EXPECT_TRUE(desk_1->is_active());
+
+  // Create two windows, one is a transient child of the other.
+  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateTestWindow(gfx::Rect(100, 100, 100, 100),
+                               aura::client::WINDOW_TYPE_POPUP);
+  ::wm::AddTransientChild(win0.get(), win1.get());
+
+  EXPECT_EQ(2u, desk_1->windows().size());
+  EXPECT_TRUE(DoesActiveDeskContainWindow(win0.get()));
+  EXPECT_TRUE(DoesActiveDeskContainWindow(win1.get()));
+
+  auto* root = Shell::GetPrimaryRootWindow();
+  EXPECT_EQ(desks_util::GetActiveDeskContainerForRoot(root),
+            desks_util::GetDeskContainerForContext(win0.get()));
+  EXPECT_EQ(desks_util::GetActiveDeskContainerForRoot(root),
+            desks_util::GetDeskContainerForContext(win1.get()));
+
+  // Create a new desk and activate it.
+  controller->NewDesk();
+  const Desk* desk_2 = controller->desks()[1].get();
+  EXPECT_TRUE(desk_2->windows().empty());
+  controller->ActivateDesk(desk_2);
+  EXPECT_FALSE(desk_1->is_active());
+  EXPECT_TRUE(desk_2->is_active());
+
+  // Remove the inactive desk 1, and expect that its windows, including
+  // transient will move to desk 2.
+  controller->RemoveDesk(desk_1);
+  EXPECT_EQ(1u, controller->desks().size());
+  EXPECT_EQ(desk_2, controller->active_desk());
+  EXPECT_EQ(2u, desk_2->windows().size());
+  EXPECT_TRUE(DoesActiveDeskContainWindow(win0.get()));
+  EXPECT_TRUE(DoesActiveDeskContainWindow(win1.get()));
+}
+
+TEST_F(DesksTest, WindowActivation) {
+  // Create three windows.
+  auto win0 = CreateTestWindow(gfx::Rect(0, 0, 250, 100));
+  auto win1 = CreateTestWindow(gfx::Rect(50, 50, 200, 200));
+  auto win2 = CreateTestWindow(gfx::Rect(100, 100, 100, 100));
+
+  EXPECT_TRUE(DoesActiveDeskContainWindow(win0.get()));
+  EXPECT_TRUE(DoesActiveDeskContainWindow(win1.get()));
+  EXPECT_TRUE(DoesActiveDeskContainWindow(win2.get()));
+
+  // Activate win0 and expects that it remains activated until we switch desks.
+  wm::ActivateWindow(win0.get());
+
+  // Create a new desk and activate it. Expect it's not tracking any windows
+  // yet.
+  auto* controller = DesksController::Get();
+  controller->NewDesk();
+  ASSERT_EQ(2u, controller->desks().size());
+  const Desk* desk_1 = controller->desks()[0].get();
+  const Desk* desk_2 = controller->desks()[1].get();
+  EXPECT_EQ(desk_1, controller->active_desk());
+  EXPECT_EQ(3u, desk_1->windows().size());
+  EXPECT_TRUE(desk_2->windows().empty());
+  EXPECT_EQ(win0.get(), wm::GetActiveWindow());
+
+  // Activate the newly-added desk. Expect that the tracked windows per each
+  // desk will remain the same.
+  controller->ActivateDesk(desk_2);
+  EXPECT_EQ(desk_2, controller->active_desk());
+  EXPECT_EQ(3u, desk_1->windows().size());
+  EXPECT_TRUE(desk_2->windows().empty());
+
+  // `desk_2` has no windows, so now no window should be active, and windows on
+  // `desk_1` cannot be activated.
+  EXPECT_EQ(nullptr, wm::GetActiveWindow());
+  EXPECT_FALSE(wm::CanActivateWindow(win0.get()));
+  EXPECT_FALSE(wm::CanActivateWindow(win1.get()));
+  EXPECT_FALSE(wm::CanActivateWindow(win2.get()));
+
+  // Create two new windows, they should now go to desk_2.
+  auto win3 = CreateTestWindow(gfx::Rect(0, 0, 300, 200));
+  auto win4 = CreateTestWindow(gfx::Rect(10, 30, 400, 200));
+  wm::ActivateWindow(win3.get());
+  EXPECT_EQ(2u, desk_2->windows().size());
+  EXPECT_TRUE(DoesActiveDeskContainWindow(win3.get()));
+  EXPECT_TRUE(DoesActiveDeskContainWindow(win4.get()));
+  EXPECT_FALSE(DoesActiveDeskContainWindow(win0.get()));
+  EXPECT_FALSE(DoesActiveDeskContainWindow(win1.get()));
+  EXPECT_FALSE(DoesActiveDeskContainWindow(win2.get()));
+  EXPECT_EQ(win3.get(), wm::GetActiveWindow());
+
+  // Delete `win0` and expect that `desk_1`'s windows will be updated.
+  win0.reset();
+  EXPECT_EQ(2u, desk_1->windows().size());
+  EXPECT_EQ(2u, desk_2->windows().size());
+  // No change in the activation.
+  EXPECT_EQ(win3.get(), wm::GetActiveWindow());
+
+  // Switch back to `desk_1`. Now we can activate its windows.
+  controller->ActivateDesk(desk_1);
+  EXPECT_EQ(desk_1, controller->active_desk());
+  EXPECT_TRUE(wm::CanActivateWindow(win1.get()));
+  EXPECT_TRUE(wm::CanActivateWindow(win2.get()));
+  EXPECT_FALSE(wm::CanActivateWindow(win3.get()));
+  EXPECT_FALSE(wm::CanActivateWindow(win4.get()));
+
+  // After `win0` has been deleted, `win2` is next on the MRU list.
+  EXPECT_EQ(win2.get(), wm::GetActiveWindow());
+
+  // Remove `desk_2` and expect that its windows will be moved to the active
+  // desk.
+  controller->RemoveDesk(desk_2);
+  EXPECT_EQ(1u, controller->desks().size());
+  EXPECT_EQ(desk_1, controller->active_desk());
+  EXPECT_EQ(4u, desk_1->windows().size());
+  EXPECT_TRUE(DoesActiveDeskContainWindow(win3.get()));
+  EXPECT_TRUE(DoesActiveDeskContainWindow(win4.get()));
+
+  // `desk_2`'s windows moved to `desk_1`, but that should not change the
+  // already active window.
+  EXPECT_EQ(win2.get(), wm::GetActiveWindow());
+
+  // Moved windows can now be activated.
+  EXPECT_TRUE(wm::CanActivateWindow(win3.get()));
+  EXPECT_TRUE(wm::CanActivateWindow(win4.get()));
+}
+
+// TODO(afakhry): Add more tests:
+// - Multi displays.
+// - Always on top windows are not tracked by any desk.
+// - Reusing containers when desks are removed and created.
 
 }  // namespace
 

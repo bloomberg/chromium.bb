@@ -21,6 +21,7 @@
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -43,6 +44,7 @@
 #include "ash/window_factory.h"
 #include "ash/wm/always_on_top_controller.h"
 #include "ash/wm/container_finder.h"
+#include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/fullscreen_window_finder.h"
 #include "ash/wm/lock_action_handler_layout_manager.h"
@@ -571,6 +573,9 @@ void RootWindowController::CloseChildWindows() {
 
   aura::Window* root = GetRootWindow();
 
+  if (features::IsVirtualDesksEnabled())
+    Shell::Get()->desks_controller()->OnRootWindowClosing(root);
+
   // Notify the keyboard controller before closing child windows and shutting
   // down associated layout managers.
   Shell::Get()->ash_keyboard_controller()->OnRootWindowClosing(root);
@@ -754,6 +759,13 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   }
 
   root_window_layout_manager_->OnWindowResized();
+
+  // Explicitly update the desks controller before notifying the ShellObservers.
+  // This is to make sure the desks' states are correct before clients are
+  // updated.
+  if (features::IsVirtualDesksEnabled())
+    Shell::Get()->desks_controller()->OnRootWindowAdded(root_window);
+
   if (root_window_type == RootWindowType::PRIMARY) {
     shell->ash_keyboard_controller()->RebuildKeyboardIfEnabled();
   } else {

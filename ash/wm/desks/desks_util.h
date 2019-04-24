@@ -36,6 +36,10 @@ ASH_EXPORT bool IsActiveDeskContainer(const aura::Window* container);
 
 ASH_EXPORT aura::Window* GetActiveDeskContainerForRoot(aura::Window* root);
 
+// If |context| is a descendent window of a desk container, return that desk
+// container, otherwise return the active desk container.
+ASH_EXPORT aura::Window* GetDeskContainerForContext(aura::Window* context);
+
 }  // namespace desks_util
 
 }  // namespace ash

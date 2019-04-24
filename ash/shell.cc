@@ -820,8 +820,6 @@ Shell::~Shell() {
   // |overview_controller_|.
   split_view_controller_.reset();
 
-  desks_controller_.reset();
-
   // Stop dispatching events (e.g. synthesized mouse exits from window close).
   // https://crbug.com/874156
   for (RootWindowController* rwc : GetAllRootWindowControllers())
@@ -919,6 +917,12 @@ Shell::~Shell() {
 
   // Depends on |focus_controller_|, so must be destroyed before.
   window_tree_host_manager_.reset();
+
+  // The desks controller is destroyed after the window tree host manager. At
+  // this point it is guaranteed that querying the active desk is no longer
+  // needed.
+  desks_controller_.reset();
+
   focus_rules_ = nullptr;
   focus_controller_.reset();
   screen_position_controller_.reset();
@@ -1116,6 +1120,14 @@ void Shell::Init(
   AshWindowTreeHostInitParams ash_init_params;
   window_tree_host_manager_->CreatePrimaryHost(ash_init_params);
 
+  // Create the desks controller right after the window tree host manager is
+  // started, and before anything else is created, including the initialization
+  // of the hosts and the root window controllers. Many things may need to query
+  // the active desk, even at this early stage. For this the controller must be
+  // present at all times.
+  if (features::IsVirtualDesksEnabled())
+    desks_controller_ = std::make_unique<DesksController>();
+
   time_to_first_present_recorder_ =
       std::make_unique<TimeToFirstPresentRecorder>(GetPrimaryRootWindow());
 
@@ -1283,9 +1295,6 @@ void Shell::Init(
   sms_observer_.reset(new SmsObserver());
 
   split_view_controller_.reset(new SplitViewController());
-
-  if (features::IsVirtualDesksEnabled())
-    desks_controller_ = std::make_unique<DesksController>();
 
   key_accessibility_enabler_ = std::make_unique<KeyAccessibilityEnabler>();
 
