@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -236,6 +237,13 @@ void ArcBootPhaseMonitorBridge::OnExtensionsReady() {
 }
 
 void ArcBootPhaseMonitorBridge::MaybeDisableCpuRestriction() {
+  // Unthrottle ARC instance if the instance is being tested, indicated by the
+  // disable cpu restriction switch.
+  if (chromeos::switches::IsArcCpuRestrictionDisabled() && delegate_) {
+    delegate_->DisableCpuRestriction();
+    return;
+  }
+
   if (throttle_)
     return;
   if (!extensions_ready_ || !enabled_by_policy_)
