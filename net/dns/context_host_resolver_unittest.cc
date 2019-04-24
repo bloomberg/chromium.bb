@@ -40,8 +40,8 @@ const IPEndPoint kEndpoint(IPAddress(1, 2, 3, 4), 100);
 class ContextHostResolverTest : public TestWithScopedTaskEnvironment {
  protected:
   void SetUp() override {
-    manager_ =
-        std::make_unique<HostResolverManager>(HostResolver::Options(), nullptr);
+    manager_ = std::make_unique<HostResolverManager>(
+        HostResolver::ManagerOptions(), nullptr);
   }
 
   void SetMockDnsRules(MockDnsClientRuleList rules) {

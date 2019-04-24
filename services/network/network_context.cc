@@ -1349,8 +1349,9 @@ void NetworkContext::CreateHostResolver(
     // now, much easier to create entirely separate net::HostResolver instances.
     private_internal_resolver =
         network_service_->host_resolver_factory()->CreateStandaloneResolver(
-            url_request_context_->net_log(), net::HostResolver::Options(),
-            "" /* host_mapping_rules */, false /* enable_caching */);
+            url_request_context_->net_log(),
+            net::HostResolver::ManagerOptions(), "" /* host_mapping_rules */,
+            false /* enable_caching */);
     private_internal_resolver->SetRequestContext(url_request_context_);
     internal_resolver = private_internal_resolver.get();
 

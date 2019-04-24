@@ -44,6 +44,8 @@
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -60,6 +62,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/request_priority.h"
 #include "net/base/trace_constants.h"
 #include "net/base/url_util.h"
 #include "net/dns/address_sorter.h"
@@ -394,6 +397,70 @@ void LogCancelRequest(const NetLogWithSource& source_net_log) {
 }
 
 //-----------------------------------------------------------------------------
+
+// Maximum of 6 concurrent resolver threads (excluding retries).
+// Some routers (or resolvers) appear to start to provide host-not-found if
+// too many simultaneous resolutions are pending.  This number needs to be
+// further optimized, but 8 is what FF currently does. We found some routers
+// that limit this to 6, so we're temporarily holding it at that level.
+const size_t kDefaultMaxProcTasks = 6u;
+
+PrioritizedDispatcher::Limits GetDispatcherLimits(
+    const HostResolver::ManagerOptions& options) {
+  PrioritizedDispatcher::Limits limits(NUM_PRIORITIES,
+                                       options.max_concurrent_resolves);
+
+  // If not using default, do not use the field trial.
+  if (limits.total_jobs != HostResolver::ManagerOptions::kDefaultParallelism)
+    return limits;
+
+  // Default, without trial is no reserved slots.
+  limits.total_jobs = kDefaultMaxProcTasks;
+
+  // Parallelism is determined by the field trial.
+  std::string group =
+      base::FieldTrialList::FindFullName("HostResolverDispatch");
+
+  if (group.empty())
+    return limits;
+
+  // The format of the group name is a list of non-negative integers separated
+  // by ':'. Each of the elements in the list corresponds to an element in
+  // |reserved_slots|, except the last one which is the |total_jobs|.
+  std::vector<base::StringPiece> group_parts = base::SplitStringPiece(
+      group, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (group_parts.size() != NUM_PRIORITIES + 1) {
+    NOTREACHED();
+    return limits;
+  }
+
+  std::vector<size_t> parsed(group_parts.size());
+  size_t total_reserved_slots = 0;
+
+  for (size_t i = 0; i < group_parts.size(); ++i) {
+    if (!base::StringToSizeT(group_parts[i], &parsed[i])) {
+      NOTREACHED();
+      return limits;
+    }
+  }
+
+  size_t total_jobs = parsed.back();
+  parsed.pop_back();
+  for (size_t i = 0; i < parsed.size(); ++i) {
+    total_reserved_slots += parsed[i];
+  }
+
+  // There must be some unreserved slots available for the all priorities.
+  if (total_reserved_slots > total_jobs ||
+      (total_reserved_slots == total_jobs && parsed[MINIMUM_PRIORITY] == 0)) {
+    NOTREACHED();
+    return limits;
+  }
+
+  limits.total_jobs = total_jobs;
+  limits.reserved_slots = parsed;
+  return limits;
+}
 
 // Keeps track of the highest priority.
 class PriorityTracker {
@@ -2241,10 +2308,11 @@ class HostResolverManager::Job : public PrioritizedDispatcher::Job,
 
 //-----------------------------------------------------------------------------
 
-HostResolverManager::HostResolverManager(const Options& options,
-                                         NetLog* net_log)
+HostResolverManager::HostResolverManager(
+    const HostResolver::ManagerOptions& options,
+    NetLog* net_log)
     : max_queued_jobs_(0),
-      proc_params_(nullptr, options.max_retry_attempts),
+      proc_params_(nullptr, options.max_system_retry_attempts),
       net_log_(net_log),
       received_dns_config_(false),
       num_dns_failures_(0),
@@ -2258,7 +2326,7 @@ HostResolverManager::HostResolverManager(const Options& options,
       invalidation_in_progress_(false),
       weak_ptr_factory_(this),
       probe_weak_ptr_factory_(this) {
-  PrioritizedDispatcher::Limits job_limits = options.GetDispatcherLimits();
+  PrioritizedDispatcher::Limits job_limits = GetDispatcherLimits(options);
   dispatcher_.reset(new PrioritizedDispatcher(job_limits));
   max_queued_jobs_ = job_limits.total_jobs * 100u;
 

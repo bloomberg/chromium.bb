@@ -60,9 +60,9 @@ void ResolverThread::Run() {
   base::MessageLoopForIO loop;
 
   net::NetLog net_log;
-  net::HostResolver::Options options;
+  net::HostResolver::ManagerOptions options;
   options.max_concurrent_resolves = 6;
-  options.max_retry_attempts = 3u;
+  options.max_system_retry_attempts = 3u;
   std::unique_ptr<net::HostResolver> resolver =
       net::HostResolver::CreateStandaloneResolver(&net_log, options);
 

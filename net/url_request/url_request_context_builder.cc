@@ -445,12 +445,12 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     // the builder should never have to create a standalone resolver.
     if (host_resolver_factory_) {
       host_resolver_ = host_resolver_factory_->CreateStandaloneResolver(
-          context->net_log(), HostResolver::Options(), host_mapping_rules_,
-          true /* enable_caching */);
+          context->net_log(), HostResolver::ManagerOptions(),
+          host_mapping_rules_, true /* enable_caching */);
     } else {
       host_resolver_ = HostResolver::CreateStandaloneResolver(
-          context->net_log(), HostResolver::Options(), host_mapping_rules_,
-          true /* enable_caching */);
+          context->net_log(), HostResolver::ManagerOptions(),
+          host_mapping_rules_, true /* enable_caching */);
     }
   }
   host_resolver_->SetRequestContext(context.get());

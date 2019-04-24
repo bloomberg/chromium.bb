@@ -301,7 +301,7 @@ class FuzzedMdnsSocketFactory : public MDnsSocketFactory {
 class FuzzedHostResolverManager : public HostResolverManager {
  public:
   // |data_provider| and |net_log| must outlive the FuzzedHostResolver.
-  FuzzedHostResolverManager(const Options& options,
+  FuzzedHostResolverManager(const HostResolver::ManagerOptions& options,
                             NetLog* net_log,
                             base::FuzzedDataProvider* data_provider)
       : HostResolverManager(options, net_log),
@@ -345,7 +345,7 @@ class FuzzedHostResolverManager : public HostResolverManager {
 }  // namespace
 
 FuzzedContextHostResolver::FuzzedContextHostResolver(
-    const Options& options,
+    const ManagerOptions& options,
     NetLog* net_log,
     base::FuzzedDataProvider* data_provider,
     bool enable_caching)

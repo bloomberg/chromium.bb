@@ -140,7 +140,8 @@ struct NET_EXPORT_PRIVATE ProcTaskParams {
   scoped_refptr<HostResolverProc> resolver_proc;
 
   // Maximum number retry attempts to resolve the hostname.
-  // Pass HostResolver::kDefaultRetryAttempts to choose a default value.
+  // Pass HostResolver::Options::kDefaultRetryAttempts to choose a default
+  // value.
   size_t max_retry_attempts;
 
   // This is the limit after which we make another attempt to resolve the host

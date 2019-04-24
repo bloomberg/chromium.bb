@@ -83,8 +83,8 @@ static struct Env* env = new Env();
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   base::FuzzedDataProvider data_provider(data, size);
 
-  FuzzedContextHostResolver host_resolver(HostResolver::Options(), nullptr,
-                                          &data_provider,
+  FuzzedContextHostResolver host_resolver(HostResolver::ManagerOptions(),
+                                          nullptr, &data_provider,
                                           true /* enable_caching */);
   FuzzedSocketFactory socket_factory(&data_provider);
 

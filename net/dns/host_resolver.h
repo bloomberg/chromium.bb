@@ -18,7 +18,6 @@
 #include "net/base/address_family.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/prioritized_dispatcher.h"
 #include "net/base/request_priority.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/host_cache.h"
@@ -112,19 +111,24 @@ class NET_EXPORT HostResolver {
     virtual void ChangeRequestPriority(RequestPriority priority) {}
   };
 
-  // |max_concurrent_resolves| is how many resolve requests will be allowed to
-  // run in parallel. Pass HostResolver::kDefaultParallelism to choose a
-  // default value.
-  // |max_retry_attempts| is the maximum number of times we will retry for host
-  // resolution. Pass HostResolver::kDefaultRetryAttempts to choose a default
-  // value.
-  struct NET_EXPORT Options {
-    Options();
+  // Parameter-grouping struct for additional optional parameters for creation
+  // of HostResolverManagers and stand-alone HostResolvers.
+  struct NET_EXPORT ManagerOptions {
+    // Set |max_concurrent_resolves| to this to select a default level
+    // of concurrency.
+    static const size_t kDefaultParallelism = 0;
 
-    PrioritizedDispatcher::Limits GetDispatcherLimits() const;
+    // Set |max_system_retry_attempts| to this to select a default retry value.
+    static const size_t kDefaultRetryAttempts = static_cast<size_t>(-1);
 
-    size_t max_concurrent_resolves;
-    size_t max_retry_attempts;
+    // How many resolve requests will be allowed to run in parallel.
+    // |kDefaultParallelism| for the resolver to choose a default value.
+    size_t max_concurrent_resolves = kDefaultParallelism;
+
+    // The maximum number of times to retry for host resolution if using the
+    // system resolver. No effect when the system resolver is not used.
+    // |kDefaultRetryAttempts| for the resolver to choose a default value.
+    size_t max_system_retry_attempts = kDefaultRetryAttempts;
   };
 
   // Factory class. Useful for classes that need to inject and override resolver
@@ -142,7 +146,7 @@ class NET_EXPORT HostResolver {
     // See HostResolver::CreateStandaloneResolver.
     virtual std::unique_ptr<HostResolver> CreateStandaloneResolver(
         NetLog* net_log,
-        const Options& options,
+        const ManagerOptions& options,
         base::StringPiece host_mapping_rules,
         bool enable_caching);
   };
@@ -234,13 +238,6 @@ class NET_EXPORT HostResolver {
     virtual int Start(Delegate* delegate) = 0;
   };
 
-  // Set Options.max_concurrent_resolves to this to select a default level
-  // of concurrency.
-  static const size_t kDefaultParallelism = 0;
-
-  // Set Options.max_retry_attempts to this to select a default retry value.
-  static const size_t kDefaultRetryAttempts = static_cast<size_t>(-1);
-
   // If any completion callbacks are pending when the resolver is destroyed,
   // the host resolutions are cancelled, and the completion callbacks will not
   // be called.
@@ -330,7 +327,7 @@ class NET_EXPORT HostResolver {
   // requests.  See MappedHostResolver for details.
   static std::unique_ptr<HostResolver> CreateStandaloneResolver(
       NetLog* net_log,
-      base::Optional<Options> options = base::nullopt,
+      base::Optional<ManagerOptions> options = base::nullopt,
       base::StringPiece host_mapping_rules = "",
       bool enable_caching = true);
   // Same, but explicitly returns the implementing ContextHostResolver. Only
@@ -338,7 +335,7 @@ class NET_EXPORT HostResolver {
   // applied because doing so requires wrapping the ContextHostResolver.
   static std::unique_ptr<ContextHostResolver> CreateStandaloneContextResolver(
       NetLog* net_log,
-      base::Optional<Options> options = base::nullopt,
+      base::Optional<ManagerOptions> options = base::nullopt,
       bool enable_caching = true);
 
   // Helpers for interacting with HostCache and ProcResolver.

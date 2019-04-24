@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/prioritized_dispatcher.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_cache.h"
@@ -84,7 +85,6 @@ class NET_EXPORT HostResolverManager
       public NetworkChangeNotifier::DNSObserver {
  public:
   using MdnsListener = HostResolver::MdnsListener;
-  using Options = HostResolver::Options;
   using ResolveHostRequest = HostResolver::ResolveHostRequest;
   using ResolveHostParameters = HostResolver::ResolveHostParameters;
 
@@ -107,7 +107,8 @@ class NET_EXPORT HostResolverManager
   // outstanding DNS transactions (not counting retransmissions and retries).
   //
   // |net_log| must remain valid for the life of the HostResolverManager.
-  HostResolverManager(const Options& options, NetLog* net_log);
+  HostResolverManager(const HostResolver::ManagerOptions& options,
+                      NetLog* net_log);
 
   // If any completion callbacks are pending when the resolver is destroyed,
   // the host resolutions are cancelled, and the completion callbacks will not

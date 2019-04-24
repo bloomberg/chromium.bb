@@ -314,7 +314,7 @@ class MockHostResolverFactory : public HostResolver::Factory {
       bool enable_caching) override;
   std::unique_ptr<HostResolver> CreateStandaloneResolver(
       NetLog* net_log,
-      const HostResolver::Options& options,
+      const HostResolver::ManagerOptions& options,
       base::StringPiece host_mapping_rules,
       bool enable_caching) override;
 

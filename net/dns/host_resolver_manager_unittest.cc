@@ -76,10 +76,10 @@ namespace {
 const size_t kMaxJobs = 10u;
 const size_t kMaxRetryAttempts = 4u;
 
-HostResolver::Options DefaultOptions() {
-  HostResolver::Options options;
+HostResolver::ManagerOptions DefaultOptions() {
+  HostResolver::ManagerOptions options;
   options.max_concurrent_resolves = kMaxJobs;
-  options.max_retry_attempts = kMaxRetryAttempts;
+  options.max_system_retry_attempts = kMaxRetryAttempts;
   return options;
 }
 
@@ -420,10 +420,11 @@ class LookupAttemptHostResolverProc : public HostResolverProc {
 // well as IPv4 only machines.
 class TestHostResolverManager : public HostResolverManager {
  public:
-  TestHostResolverManager(const Options& options, NetLog* net_log)
+  TestHostResolverManager(const HostResolver::ManagerOptions& options,
+                          NetLog* net_log)
       : TestHostResolverManager(options, net_log, true) {}
 
-  TestHostResolverManager(const Options& options,
+  TestHostResolverManager(const HostResolver::ManagerOptions& options,
                           NetLog* net_log,
                           bool ipv6_reachable)
       : HostResolverManager(options, net_log),
@@ -515,7 +516,7 @@ class HostResolverManagerTest : public TestWithScopedTaskEnvironment {
                                                  bool ipv6_reachable) {
     DestroyResolver();
 
-    HostResolverManager::Options options = DefaultOptions();
+    HostResolver::ManagerOptions options = DefaultOptions();
     options.max_concurrent_resolves = max_concurrent_resolves;
     resolver_.reset(
         new TestHostResolverManager(options, nullptr, ipv6_reachable));
@@ -3365,7 +3366,7 @@ class HostResolverManagerDnsTest : public HostResolverManagerTest {
                                          bool ipv6_reachable) override {
     DestroyResolver();
 
-    HostResolverManager::Options options = DefaultOptions();
+    HostResolver::ManagerOptions options = DefaultOptions();
     options.max_concurrent_resolves = max_concurrent_resolves;
     resolver_.reset(
         new TestHostResolverManager(options, nullptr, ipv6_reachable));

@@ -9,9 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/values.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -24,77 +22,6 @@
 
 namespace net {
 
-namespace {
-
-// Maximum of 6 concurrent resolver threads (excluding retries).
-// Some routers (or resolvers) appear to start to provide host-not-found if
-// too many simultaneous resolutions are pending.  This number needs to be
-// further optimized, but 8 is what FF currently does. We found some routers
-// that limit this to 6, so we're temporarily holding it at that level.
-const size_t kDefaultMaxProcTasks = 6u;
-
-}  // namespace
-
-PrioritizedDispatcher::Limits HostResolver::Options::GetDispatcherLimits()
-    const {
-  PrioritizedDispatcher::Limits limits(NUM_PRIORITIES, max_concurrent_resolves);
-
-  // If not using default, do not use the field trial.
-  if (limits.total_jobs != HostResolver::kDefaultParallelism)
-    return limits;
-
-  // Default, without trial is no reserved slots.
-  limits.total_jobs = kDefaultMaxProcTasks;
-
-  // Parallelism is determined by the field trial.
-  std::string group =
-      base::FieldTrialList::FindFullName("HostResolverDispatch");
-
-  if (group.empty())
-    return limits;
-
-  // The format of the group name is a list of non-negative integers separated
-  // by ':'. Each of the elements in the list corresponds to an element in
-  // |reserved_slots|, except the last one which is the |total_jobs|.
-  std::vector<base::StringPiece> group_parts = base::SplitStringPiece(
-      group, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  if (group_parts.size() != NUM_PRIORITIES + 1) {
-    NOTREACHED();
-    return limits;
-  }
-
-  std::vector<size_t> parsed(group_parts.size());
-  size_t total_reserved_slots = 0;
-
-  for (size_t i = 0; i < group_parts.size(); ++i) {
-    if (!base::StringToSizeT(group_parts[i], &parsed[i])) {
-      NOTREACHED();
-      return limits;
-    }
-  }
-
-  size_t total_jobs = parsed.back();
-  parsed.pop_back();
-  for (size_t i = 0; i < parsed.size(); ++i) {
-    total_reserved_slots += parsed[i];
-  }
-
-  // There must be some unreserved slots available for the all priorities.
-  if (total_reserved_slots > total_jobs ||
-      (total_reserved_slots == total_jobs && parsed[MINIMUM_PRIORITY] == 0)) {
-    NOTREACHED();
-    return limits;
-  }
-
-  limits.total_jobs = total_jobs;
-  limits.reserved_slots = parsed;
-  return limits;
-}
-
-HostResolver::Options::Options()
-    : max_concurrent_resolves(kDefaultParallelism),
-      max_retry_attempts(kDefaultRetryAttempts) {}
-
 std::unique_ptr<HostResolver> HostResolver::Factory::CreateResolver(
     HostResolverManager* manager,
     base::StringPiece host_mapping_rules,
@@ -105,7 +32,7 @@ std::unique_ptr<HostResolver> HostResolver::Factory::CreateResolver(
 
 std::unique_ptr<HostResolver> HostResolver::Factory::CreateStandaloneResolver(
     NetLog* net_log,
-    const Options& options,
+    const ManagerOptions& options,
     base::StringPiece host_mapping_rules,
     bool enable_caching) {
   return HostResolver::CreateStandaloneResolver(
@@ -194,7 +121,7 @@ std::unique_ptr<HostResolver> HostResolver::CreateResolver(
 // static
 std::unique_ptr<HostResolver> HostResolver::CreateStandaloneResolver(
     NetLog* net_log,
-    base::Optional<Options> options,
+    base::Optional<ManagerOptions> options,
     base::StringPiece host_mapping_rules,
     bool enable_caching) {
   std::unique_ptr<ContextHostResolver> resolver =
@@ -211,14 +138,15 @@ std::unique_ptr<HostResolver> HostResolver::CreateStandaloneResolver(
 
 // static
 std::unique_ptr<ContextHostResolver>
-HostResolver::CreateStandaloneContextResolver(NetLog* net_log,
-                                              base::Optional<Options> options,
-                                              bool enable_caching) {
+HostResolver::CreateStandaloneContextResolver(
+    NetLog* net_log,
+    base::Optional<ManagerOptions> options,
+    bool enable_caching) {
   auto cache = enable_caching ? HostCache::CreateDefaultCache() : nullptr;
 
   return std::make_unique<ContextHostResolver>(
       std::make_unique<HostResolverManager>(
-          std::move(options).value_or(Options()), net_log),
+          std::move(options).value_or(ManagerOptions()), net_log),
       std::move(cache));
 }
 

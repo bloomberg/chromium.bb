@@ -41,7 +41,7 @@ class NetLog;
 // methods that make system calls are stubbed out.
 class FuzzedContextHostResolver : public ContextHostResolver {
  public:
-  FuzzedContextHostResolver(const Options& options,
+  FuzzedContextHostResolver(const ManagerOptions& options,
                             NetLog* net_log,
                             base::FuzzedDataProvider* data_provider,
                             bool enable_caching);

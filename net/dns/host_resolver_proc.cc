@@ -287,7 +287,7 @@ ProcTaskParams::ProcTaskParams(HostResolverProc* resolver_proc,
       retry_factor(2) {
   // Maximum of 4 retry attempts for host resolution.
   static const size_t kDefaultMaxRetryAttempts = 4u;
-  if (max_retry_attempts == HostResolver::kDefaultRetryAttempts)
+  if (max_retry_attempts == HostResolver::ManagerOptions::kDefaultRetryAttempts)
     max_retry_attempts = kDefaultMaxRetryAttempts;
 }
 

@@ -641,7 +641,7 @@ std::unique_ptr<HostResolver> MockHostResolverFactory::CreateResolver(
 
 std::unique_ptr<HostResolver> MockHostResolverFactory::CreateStandaloneResolver(
     NetLog* net_log,
-    const HostResolver::Options& options,
+    const HostResolver::ManagerOptions& options,
     base::StringPiece host_mapping_rules,
     bool enable_caching) {
   return CreateResolver(nullptr, host_mapping_rules, enable_caching);

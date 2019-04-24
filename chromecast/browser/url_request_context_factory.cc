@@ -235,7 +235,7 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
     return;
 
   host_resolver_manager_ = std::make_unique<net::HostResolverManager>(
-      net::HostResolver::Options(), nullptr);
+      net::HostResolver::ManagerOptions(), nullptr);
   cert_verifier_ =
       net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
   ssl_config_service_.reset(new net::SSLConfigServiceDefaults);
